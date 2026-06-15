@@ -58,7 +58,7 @@ export default async function TransactionsPage({
       </Suspense>
 
       {/* Table */}
-      <div className="bg-gray-900/60 border border-gray-800/50 rounded-2xl p-5">
+      <div className="bg-gray-900/60 border border-gray-800/50 rounded-2xl p-5 overflow-x-auto">
         {/* Column Headers */}
         <div className="flex items-center gap-3 pb-3 border-b border-gray-800/50 mb-1">
           <div className="w-9 flex-shrink-0" />

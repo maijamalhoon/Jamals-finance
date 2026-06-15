@@ -10,15 +10,11 @@ import {
   ResponsiveContainer,
 } from "recharts";
 
-const data = [
-  { date: "01 May", income: 35000, expenses: 12000 },
-  { date: "06 May", income: 42000, expenses: 18000 },
-  { date: "11 May", income: 38000, expenses: 22000 },
-  { date: "16 May", income: 55000, expenses: 15000 },
-  { date: "21 May", income: 48000, expenses: 19000 },
-  { date: "26 May", income: 60000, expenses: 25000 },
-  { date: "31 May", income: 52000, expenses: 20000 },
-];
+interface ChartData {
+  date: string;
+  income: number;
+  expenses: number;
+}
 
 function CustomTooltip({ active, payload, label }: any) {
   if (!active || !payload?.length) return null;
@@ -35,7 +31,7 @@ function CustomTooltip({ active, payload, label }: any) {
   );
 }
 
-export default function IncomeExpenseChart() {
+export default function IncomeExpenseChart({ data }: { data: ChartData[] }) {
   return (
     <div className="bg-gray-900/60 border border-gray-800/50 rounded-2xl p-5 h-full">
       <div className="flex items-center justify-between mb-5">
@@ -51,7 +47,6 @@ export default function IncomeExpenseChart() {
           </div>
         </div>
       </div>
-
       <ResponsiveContainer width="100%" height={220}>
         <AreaChart
           data={data}
@@ -74,12 +69,13 @@ export default function IncomeExpenseChart() {
           />
           <XAxis
             dataKey="date"
-            tick={{ fill: "#6b7280", fontSize: 11 }}
+            tick={{ fill: "#6b7280", fontSize: 10 }}
             axisLine={false}
             tickLine={false}
+            interval="preserveStartEnd"
           />
           <YAxis
-            tick={{ fill: "#6b7280", fontSize: 11 }}
+            tick={{ fill: "#6b7280", fontSize: 10 }}
             axisLine={false}
             tickLine={false}
             tickFormatter={(v) => `${v / 1000}k`}

@@ -36,7 +36,7 @@ export default async function GoalsPage() {
 
       {/* Summary — only when goals exist */}
       {list.length > 0 && (
-        <div className="grid grid-cols-3 gap-4 mb-6">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
           <div className="bg-gray-900/60 border border-gray-800/50 rounded-2xl p-4">
             <p className="text-gray-500 text-xs mb-1.5">Total Target</p>
             <p className="text-white text-xl font-bold">{fmt(totTarget)}</p>

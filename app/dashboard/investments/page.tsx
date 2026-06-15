@@ -40,7 +40,7 @@ export default async function InvestmentsPage() {
 
       {/* Portfolio Summary — only shown when there's data */}
       {list.length > 0 && (
-        <div className="grid grid-cols-3 gap-4 mb-6">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
           <div className="bg-gray-900/60 border border-gray-800/50 rounded-2xl p-4">
             <p className="text-gray-500 text-xs mb-1.5">Total Invested</p>
             <p className="text-white text-xl font-bold">{fmt(totalInvested)}</p>
@@ -88,7 +88,7 @@ export default async function InvestmentsPage() {
             Click "Add Investment" to track your first holding
           </p>
         </div>
-      : <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+      : <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
           {list.map((inv) => (
             <InvestmentCard key={inv.id} inv={inv as any} />
           ))}

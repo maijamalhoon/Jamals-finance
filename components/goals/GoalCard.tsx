@@ -2,9 +2,9 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Pencil, Trash2, Target, CheckCircle2 } from "lucide-react";
+import { Pencil, Trash2, CheckCircle2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
-import GoalModal, { ExistingGoal } from "./GoalModal";
+import GoalModal, { ExistingGoal, GOAL_ICONS } from "./GoalModal";
 
 export default function GoalCard({ goal }: { goal: ExistingGoal }) {
   const router = useRouter();
@@ -15,10 +15,15 @@ export default function GoalCard({ goal }: { goal: ExistingGoal }) {
 
   const current = Number(goal.current_amount);
   const target = Number(goal.target_amount);
-  const pct = target > 0 ? Math.min((current / target) * 100, 100) : 0;
+  const pct = Math.min((current / target) * 100, 100);
   const done = current >= target;
 
-  // Days left calculation
+  // Find the matching lucide icon
+  const iconEntry =
+    GOAL_ICONS.find((i) => i.value === goal.icon) ||
+    GOAL_ICONS[GOAL_ICONS.length - 1];
+  const GoalIcon = iconEntry.icon;
+
   let daysLeft: number | null = null;
   if (goal.deadline) {
     daysLeft = Math.ceil(
@@ -68,15 +73,15 @@ export default function GoalCard({ goal }: { goal: ExistingGoal }) {
         >
           {done ?
             <CheckCircle2 size={18} className="text-green-400" />
-          : <Target size={18} className="text-indigo-400" />}
+          : <GoalIcon size={18} className="text-indigo-400" />}
         </div>
 
-        {/* Goal Name */}
+        {/* Name */}
         <p className="text-white font-semibold text-sm mb-1 pr-16 truncate">
           {goal.name}
         </p>
 
-        {/* Status line */}
+        {/* Status */}
         {done ?
           <p className="text-green-400 text-xs mb-3 font-medium">
             ✓ Completed!

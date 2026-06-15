@@ -1,68 +1,90 @@
-import { Home, Shield, Car } from "lucide-react";
-import { LucideIcon } from "lucide-react";
+import Link from "next/link";
+import { CheckCircle2 } from "lucide-react";
+import { GOAL_ICONS } from "@/components/goals/GoalModal";
 
-const goals: {
+interface Goal {
+  id: string;
   name: string;
-  current: number;
-  target: number;
-  pct: number;
-  icon: LucideIcon;
-}[] = [
-  { name: "New House", current: 2250000, target: 5000000, pct: 45, icon: Home },
-  {
-    name: "Emergency Fund",
-    current: 300000,
-    target: 500000,
-    pct: 60,
-    icon: Shield,
-  },
-  { name: "New Car", current: 600000, target: 2000000, pct: 30, icon: Car },
-];
+  current_amount: number;
+  target_amount: number;
+  icon: string;
+}
 
-export default function GoalsProgress() {
+export default function GoalsProgress({ goals }: { goals: Goal[] }) {
   return (
     <div className="bg-gray-900/60 border border-gray-800/50 rounded-2xl p-5">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-white font-medium text-sm">Goals Progress</h3>
-        <button className="text-indigo-400 text-xs hover:text-indigo-300 transition-colors">
+        <Link
+          href="/dashboard/goals"
+          className="text-indigo-400 text-xs hover:text-indigo-300 transition-colors"
+        >
           View All
-        </button>
+        </Link>
       </div>
 
-      <div className="space-y-4">
-        {goals.map((g, i) => {
-          const Icon = g.icon;
-          return (
-            <div key={i}>
-              <div className="flex items-center gap-3 mb-2">
-                <div className="w-8 h-8 rounded-lg bg-gray-800 flex items-center justify-center flex-shrink-0">
-                  <Icon size={14} className="text-gray-400" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between">
-                    <span className="text-white text-xs font-medium">
-                      {g.name}
-                    </span>
-                    <span className="text-yellow-400 text-xs font-semibold">
-                      {g.pct}%
-                    </span>
+      {goals.length === 0 ?
+        <div className="py-6 text-center">
+          <p className="text-gray-600 text-sm">No goals yet</p>
+        </div>
+      : <div className="space-y-4">
+          {goals.map((g) => {
+            const pct = Math.min(
+              (Number(g.current_amount) / Number(g.target_amount)) * 100,
+              100,
+            );
+            const done = pct >= 100;
+            const entry =
+              GOAL_ICONS.find((i) => i.value === g.icon) ||
+              GOAL_ICONS[GOAL_ICONS.length - 1];
+            const GoalIcon = entry.icon;
+
+            return (
+              <div key={g.id}>
+                <div className="flex items-center gap-3 mb-2">
+                  <div
+                    className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${
+                      done ? "bg-green-500/15" : "bg-gray-800"
+                    }`}
+                  >
+                    {done ?
+                      <CheckCircle2 size={14} className="text-green-400" />
+                    : <GoalIcon size={14} className="text-gray-400" />}
                   </div>
-                  <p className="text-gray-600 text-[10px] mt-0.5">
-                    PKR {g.current.toLocaleString()} /{" "}
-                    {g.target.toLocaleString()}
-                  </p>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between">
+                      <span className="text-white text-xs font-medium truncate">
+                        {g.name}
+                      </span>
+                      <span
+                        className={`text-xs font-semibold ml-2 ${done ? "text-green-400" : "text-yellow-400"}`}
+                      >
+                        {pct.toFixed(0)}%
+                      </span>
+                    </div>
+                    <p className="text-gray-600 text-[10px] mt-0.5">
+                      PKR{" "}
+                      {Number(g.current_amount).toLocaleString(undefined, {
+                        maximumFractionDigits: 0,
+                      })}{" "}
+                      /{" "}
+                      {Number(g.target_amount).toLocaleString(undefined, {
+                        maximumFractionDigits: 0,
+                      })}
+                    </p>
+                  </div>
+                </div>
+                <div className="h-1.5 bg-gray-800 rounded-full overflow-hidden">
+                  <div
+                    className={`h-full rounded-full ${done ? "bg-green-400" : "bg-yellow-400"}`}
+                    style={{ width: `${pct}%` }}
+                  />
                 </div>
               </div>
-              <div className="h-1.5 bg-gray-800 rounded-full overflow-hidden">
-                <div
-                  className="h-full bg-yellow-400 rounded-full transition-all"
-                  style={{ width: `${g.pct}%` }}
-                />
-              </div>
-            </div>
-          );
-        })}
-      </div>
+            );
+          })}
+        </div>
+      }
     </div>
   );
 }

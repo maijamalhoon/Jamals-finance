@@ -8,6 +8,33 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  Home,
+  Shield,
+  Car,
+  Plane,
+  GraduationCap,
+  Heart,
+  Briefcase,
+  Smartphone,
+  ShoppingBag,
+  Target,
+  LucideIcon,
+} from "lucide-react";
+
+export const GOAL_ICONS: { value: string; label: string; icon: LucideIcon }[] =
+  [
+    { value: "home", label: "House", icon: Home },
+    { value: "shield", label: "Emergency", icon: Shield },
+    { value: "car", label: "Car", icon: Car },
+    { value: "plane", label: "Travel", icon: Plane },
+    { value: "graduation", label: "Education", icon: GraduationCap },
+    { value: "heart", label: "Health", icon: Heart },
+    { value: "briefcase", label: "Business", icon: Briefcase },
+    { value: "smartphone", label: "Electronics", icon: Smartphone },
+    { value: "shopping", label: "Shopping", icon: ShoppingBag },
+    { value: "target", label: "Other", icon: Target },
+  ];
 
 export interface ExistingGoal {
   id: string;
@@ -15,6 +42,7 @@ export interface ExistingGoal {
   target_amount: number;
   current_amount: number;
   deadline: string | null;
+  icon: string;
 }
 
 interface Props {
@@ -32,6 +60,7 @@ export default function GoalModal({ open, onClose, onSuccess, goal }: Props) {
   const [targetAmount, setTargetAmount] = useState("");
   const [currentAmount, setCurrentAmount] = useState("0");
   const [deadline, setDeadline] = useState("");
+  const [icon, setIcon] = useState("target");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -42,11 +71,13 @@ export default function GoalModal({ open, onClose, onSuccess, goal }: Props) {
       setTargetAmount(String(goal.target_amount));
       setCurrentAmount(String(goal.current_amount));
       setDeadline(goal.deadline || "");
+      setIcon(goal.icon || "target");
     } else {
       setName("");
       setTargetAmount("");
       setCurrentAmount("0");
       setDeadline("");
+      setIcon("target");
     }
     setError("");
   }, [open, goal]);
@@ -64,6 +95,7 @@ export default function GoalModal({ open, onClose, onSuccess, goal }: Props) {
       target_amount: parseFloat(targetAmount),
       current_amount: parseFloat(currentAmount) || 0,
       deadline: deadline || null,
+      icon,
     };
 
     const { error: e } =
@@ -90,6 +122,28 @@ export default function GoalModal({ open, onClose, onSuccess, goal }: Props) {
         </DialogHeader>
 
         <div className="p-5 space-y-4">
+          {/* Icon Picker */}
+          <div>
+            <label className="text-gray-400 text-xs block mb-2">Icon</label>
+            <div className="grid grid-cols-5 gap-2">
+              {GOAL_ICONS.map(({ value, label, icon: Icon }) => (
+                <button
+                  key={value}
+                  onClick={() => setIcon(value)}
+                  title={label}
+                  className={`flex flex-col items-center gap-1 p-2 rounded-xl border transition-all ${
+                    icon === value ?
+                      "bg-indigo-600/20 border-indigo-500/50 text-indigo-400"
+                    : "bg-gray-800/50 border-gray-700/50 text-gray-500 hover:text-white hover:border-gray-600"
+                  }`}
+                >
+                  <Icon size={16} />
+                  <span className="text-[9px]">{label}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
           {/* Name */}
           <div>
             <label className="text-gray-400 text-xs block mb-1.5">

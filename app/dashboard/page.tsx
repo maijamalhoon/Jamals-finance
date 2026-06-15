@@ -14,38 +14,34 @@ import {
   PieChart,
 } from "lucide-react";
 
-function pct(current: number, previous: number) {
-  if (previous === 0) return 0;
-  return parseFloat((((current - previous) / previous) * 100).toFixed(2));
-}
-
 export default async function DashboardPage() {
   const supabase = await createClient();
-
   const now = new Date();
 
-  // This month range
   const firstDay = new Date(now.getFullYear(), now.getMonth(), 1)
     .toISOString()
     .split("T")[0];
   const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0)
     .toISOString()
     .split("T")[0];
-
-  // Last month range (for % change)
   const lastFirst = new Date(now.getFullYear(), now.getMonth() - 1, 1)
     .toISOString()
     .split("T")[0];
   const lastLast = new Date(now.getFullYear(), now.getMonth(), 0)
     .toISOString()
     .split("T")[0];
+  const daysInMonth = new Date(
+    now.getFullYear(),
+    now.getMonth() + 1,
+    0,
+  ).getDate();
 
-  // Fetch everything in parallel
   const [
-    { data: thisMonthTxns },
-    { data: lastMonthTxns },
+    { data: thisTxns },
+    { data: lastTxns },
     { data: accounts },
     { data: investments },
+    { data: goals },
   ] = await Promise.all([
     supabase
       .from("transactions")
@@ -53,62 +49,88 @@ export default async function DashboardPage() {
       .gte("date", firstDay)
       .lte("date", lastDay)
       .order("date", { ascending: false }),
-
     supabase
       .from("transactions")
       .select("type, amount")
       .gte("date", lastFirst)
       .lte("date", lastLast),
-
     supabase.from("accounts").select("balance"),
-
     supabase.from("investments").select("current_price, quantity"),
+    supabase.from("goals").select("*").order("created_at").limit(3),
   ]);
 
-  // This month totals
-  const income =
-    thisMonthTxns
-      ?.filter((t) => t.type === "income")
-      .reduce((s, t) => s + Number(t.amount), 0) ?? 0;
-  const expenses =
-    thisMonthTxns
-      ?.filter((t) => t.type === "expense")
-      .reduce((s, t) => s + Number(t.amount), 0) ?? 0;
+  const txns = thisTxns ?? [];
+
+  // Totals
+  const income = txns
+    .filter((t) => t.type === "income")
+    .reduce((s, t) => s + Number(t.amount), 0);
+  const expenses = txns
+    .filter((t) => t.type === "expense")
+    .reduce((s, t) => s + Number(t.amount), 0);
   const netProfit = income - expenses;
+  const totalBalance = (accounts ?? []).reduce(
+    (s, a) => s + Number(a.balance),
+    0,
+  );
+  const investmentsValue = (investments ?? []).reduce(
+    (s, i) => s + Number(i.current_price) * Number(i.quantity),
+    0,
+  );
+  const lastIncome = (lastTxns ?? [])
+    .filter((t) => t.type === "income")
+    .reduce((s, t) => s + Number(t.amount), 0);
+  const lastExpenses = (lastTxns ?? [])
+    .filter((t) => t.type === "expense")
+    .reduce((s, t) => s + Number(t.amount), 0);
+  const pct = (cur: number, prev: number) =>
+    prev > 0 ? parseFloat((((cur - prev) / prev) * 100).toFixed(2)) : 0;
 
-  // Last month totals (for % change)
-  const lastIncome =
-    lastMonthTxns
-      ?.filter((t) => t.type === "income")
-      .reduce((s, t) => s + Number(t.amount), 0) ?? 0;
-  const lastExpenses =
-    lastMonthTxns
-      ?.filter((t) => t.type === "expense")
-      .reduce((s, t) => s + Number(t.amount), 0) ?? 0;
-  const lastNet = lastIncome - lastExpenses;
+  // Daily chart data for this month
+  const chartData = Array.from({ length: daysInMonth }, (_, i) => {
+    const day = i + 1;
+    const dateStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+    const dayTxns = txns.filter((t) => t.date === dateStr);
+    return {
+      date: `${day} ${now.toLocaleDateString("en-US", { month: "short" })}`,
+      income: dayTxns
+        .filter((t) => t.type === "income")
+        .reduce((s, t) => s + Number(t.amount), 0),
+      expenses: dayTxns
+        .filter((t) => t.type === "expense")
+        .reduce((s, t) => s + Number(t.amount), 0),
+    };
+  });
 
-  // Total balance across all accounts
-  const totalBalance =
-    accounts?.reduce((s, a) => s + Number(a.balance), 0) ?? 0;
-
-  // Total investment portfolio value
-  const investmentsValue =
-    investments?.reduce(
-      (s, i) => s + Number(i.current_price) * Number(i.quantity),
-      0,
-    ) ?? 0;
-
-  // Recent 5 transactions for the table
-  const recentTxns = (thisMonthTxns ?? []).slice(0, 5);
+  // Spending breakdown by category
+  const catMap: Record<string, { amount: number; color: string }> = {};
+  txns
+    .filter((t) => t.type === "expense")
+    .forEach((t) => {
+      const name = (t.categories as any)?.name || "Other";
+      const color = (t.categories as any)?.color || "#6b7280";
+      if (!catMap[name]) catMap[name] = { amount: 0, color };
+      catMap[name].amount += Number(t.amount);
+    });
+  const spendingData = Object.entries(catMap)
+    .map(([name, { amount, color }]) => ({
+      name,
+      value: amount,
+      color,
+      percentage: expenses > 0 ? (amount / expenses) * 100 : 0,
+    }))
+    .sort((a, b) => b.value - a.value)
+    .slice(0, 5);
 
   const fmt = (n: number) =>
     `PKR ${n.toLocaleString("en-PK", { maximumFractionDigits: 0 })}`;
+  const usd = (n: number) => `$${(n / 281.2).toFixed(2)} USD`;
 
   const stats = [
     {
       title: "Total Balance",
       amount: fmt(totalBalance),
-      usd: `$${(totalBalance / 281.2).toFixed(2)} USD`,
+      usd: usd(totalBalance),
       change: 4.35,
       icon: Wallet,
       iconColor: "text-indigo-400",
@@ -117,7 +139,7 @@ export default async function DashboardPage() {
     {
       title: "Total Income",
       amount: fmt(income),
-      usd: `$${(income / 281.2).toFixed(2)} USD`,
+      usd: usd(income),
       change: pct(income, lastIncome),
       icon: TrendingUp,
       iconColor: "text-green-400",
@@ -126,7 +148,7 @@ export default async function DashboardPage() {
     {
       title: "Total Expenses",
       amount: fmt(expenses),
-      usd: `$${(expenses / 281.2).toFixed(2)} USD`,
+      usd: usd(expenses),
       change: pct(expenses, lastExpenses),
       icon: TrendingDown,
       iconColor: "text-red-400",
@@ -135,8 +157,8 @@ export default async function DashboardPage() {
     {
       title: "Net Profit",
       amount: fmt(netProfit),
-      usd: `$${(netProfit / 281.2).toFixed(2)} USD`,
-      change: pct(netProfit, lastNet),
+      usd: usd(netProfit),
+      change: pct(netProfit, lastIncome - lastExpenses),
       icon: BarChart2,
       iconColor: "text-blue-400",
       iconBg: "bg-blue-500/15",
@@ -144,7 +166,7 @@ export default async function DashboardPage() {
     {
       title: "Investments Value",
       amount: fmt(investmentsValue),
-      usd: `$${(investmentsValue / 281.2).toFixed(2)} USD`,
+      usd: usd(investmentsValue),
       change: 7.65,
       icon: PieChart,
       iconColor: "text-purple-400",
@@ -153,30 +175,30 @@ export default async function DashboardPage() {
   ];
 
   return (
-    <div className="space-y-5 pb-4">
-      {/* Row 1 — Stat Cards */}
-      <div className="grid grid-cols-5 gap-4">
+    <div className="space-y-4 pb-4">
+      {/* Stat Cards — 2 cols mobile, 3 cols tablet, 5 cols desktop */}
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
         {stats.map((s, i) => (
           <StatCard key={i} {...s} />
         ))}
       </div>
 
-      {/* Row 2 — Charts */}
-      <div className="grid grid-cols-3 gap-4">
-        <div className="col-span-2">
-          <IncomeExpenseChart />
+      {/* Charts — stacked mobile, side by side desktop */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        <div className="lg:col-span-2">
+          <IncomeExpenseChart data={chartData} />
         </div>
-        <SpendingBreakdown />
+        <SpendingBreakdown data={spendingData} total={expenses} />
       </div>
 
-      {/* Row 3 — Transactions + Right Panel */}
-      <div className="grid grid-cols-4 gap-4">
-        <div className="col-span-3">
-          <RecentTransactions transactions={recentTxns as any} />
+      {/* Bottom — stacked mobile, side by side desktop */}
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
+        <div className="lg:col-span-3">
+          <RecentTransactions transactions={txns.slice(0, 5) as any} />
         </div>
         <div className="space-y-4">
           <AIInsightPanel />
-          <GoalsProgress />
+          <GoalsProgress goals={(goals ?? []) as any} />
           <CurrencyConverter />
         </div>
       </div>
