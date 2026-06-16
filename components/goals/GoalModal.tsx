@@ -1,5 +1,5 @@
 "use client";
-
+import { toast } from "sonner";
 import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
 import {
@@ -104,10 +104,13 @@ export default function GoalModal({ open, onClose, onSuccess, goal }: Props) {
       : await supabase.from("goals").insert(payload);
 
     setLoading(false);
+    // Replace the if/else at the bottom of handleSave:
     if (e) {
       setError("Failed to save. Try again.");
+      toast.error("Failed to save goal");
       return;
     }
+    toast.success(isEditing ? "Goal updated!" : "Goal created!");
     onSuccess();
     onClose();
   }
