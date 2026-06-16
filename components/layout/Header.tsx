@@ -1,8 +1,16 @@
 "use client";
 
-import { Bell, ChevronDown, Search } from "lucide-react";
+import {
+  Bell,
+  ChevronDown,
+  Search,
+  Settings,
+  LogOut,
+  User,
+} from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
+import { createClient } from "@/lib/supabase/client";
 
 function getGreeting() {
   const h = new Date().getHours();
@@ -13,7 +21,30 @@ function getGreeting() {
 
 export default function Header() {
   const router = useRouter();
+  const supabase = createClient();
+
   const [query, setQuery] = useState("");
+  const [profileOpen, setProfileOpen] = useState(false);
+  const [bellOpen, setBellOpen] = useState(false);
+  const profileRef = useRef<HTMLDivElement>(null);
+  const bellRef = useRef<HTMLDivElement>(null);
+
+  // Close dropdowns when clicking outside
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (
+        profileRef.current &&
+        !profileRef.current.contains(e.target as Node)
+      ) {
+        setProfileOpen(false);
+      }
+      if (bellRef.current && !bellRef.current.contains(e.target as Node)) {
+        setBellOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, []);
 
   function handleSearch(e: React.FormEvent) {
     e.preventDefault();
@@ -22,6 +53,11 @@ export default function Header() {
       `/dashboard/transactions?search=${encodeURIComponent(query.trim())}`,
     );
     setQuery("");
+  }
+
+  async function handleSignOut() {
+    await supabase.auth.signOut();
+    router.push("/login");
   }
 
   return (
@@ -34,7 +70,6 @@ export default function Header() {
         <p className="text-gray-500 text-xs">Here's your financial overview</p>
       </div>
 
-      {/* Right Controls */}
       <div className="flex items-center gap-3">
         {/* Search */}
         <form
@@ -61,14 +96,87 @@ export default function Header() {
         </div>
 
         {/* Bell */}
-        <button className="relative w-9 h-9 rounded-xl bg-gray-800/60 border border-gray-700/50 flex items-center justify-center hover:bg-gray-700/60 transition-colors">
-          <Bell size={15} className="text-gray-400" />
-          <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-indigo-500 rounded-full border-2 border-[#0F1117]" />
-        </button>
+        <div className="relative" ref={bellRef}>
+          <button
+            onClick={() => {
+              setBellOpen((p) => !p);
+              setProfileOpen(false);
+            }}
+            className="relative w-9 h-9 rounded-xl bg-gray-800/60 border border-gray-700/50 flex items-center justify-center hover:bg-gray-700/60 transition-colors"
+          >
+            <Bell size={15} className="text-gray-400" />
+            <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-indigo-500 rounded-full border-2 border-[#0F1117]" />
+          </button>
 
-        {/* Avatar */}
-        <div className="w-9 h-9 rounded-full bg-indigo-600 flex items-center justify-center text-sm font-semibold cursor-pointer hover:bg-indigo-700 transition-colors">
-          J
+          {bellOpen && (
+            <div className="absolute right-0 top-11 w-72 bg-[#111827] border border-gray-800 rounded-2xl shadow-2xl z-50 overflow-hidden">
+              <div className="p-4 border-b border-gray-800">
+                <p className="text-white text-sm font-semibold">
+                  Notifications
+                </p>
+              </div>
+              <div className="p-4 text-center py-8">
+                <Bell size={24} className="text-gray-700 mx-auto mb-2" />
+                <p className="text-gray-600 text-sm">No new notifications</p>
+                <p className="text-gray-700 text-xs mt-1">
+                  You're all caught up
+                </p>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Avatar + Profile Dropdown */}
+        <div className="relative" ref={profileRef}>
+          <button
+            onClick={() => {
+              setProfileOpen((p) => !p);
+              setBellOpen(false);
+            }}
+            className="w-9 h-9 rounded-full bg-indigo-600 flex items-center justify-center text-sm font-semibold hover:bg-indigo-700 transition-colors"
+          >
+            J
+          </button>
+
+          {profileOpen && (
+            <div className="absolute right-0 top-11 w-52 bg-[#111827] border border-gray-800 rounded-2xl shadow-2xl z-50 overflow-hidden">
+              {/* User info */}
+              <div className="p-4 border-b border-gray-800">
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-full bg-indigo-600 flex items-center justify-center text-sm font-semibold flex-shrink-0">
+                    J
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-white text-sm font-medium">Jamal</p>
+                    <p className="text-gray-500 text-xs truncate">
+                      jamal@example.com
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Menu items */}
+              <div className="p-2">
+                <button
+                  onClick={() => {
+                    router.push("/dashboard/settings");
+                    setProfileOpen(false);
+                  }}
+                  className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-gray-400 hover:text-white hover:bg-gray-800 transition-colors text-sm"
+                >
+                  <Settings size={15} />
+                  Settings
+                </button>
+                <button
+                  onClick={handleSignOut}
+                  className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-colors text-sm"
+                >
+                  <LogOut size={15} />
+                  Sign Out
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>
