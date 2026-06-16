@@ -175,3 +175,27 @@ textarea {
     font-size: 14px !important;
   }
 }
+/* Smooth page transitions */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Better touch scrolling on mobile */
+html {
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Prevent text from being too small on mobile */
+input,
+select,
+textarea {
+  font-size: 16px !important;
+}
+
+@media (min-width: 1024px) {
+  input,
+  select,
+  textarea {
+    font-size: 14px !important;
+  }
+}
