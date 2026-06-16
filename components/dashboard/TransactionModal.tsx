@@ -1,5 +1,5 @@
 "use client";
-import { toast } from "sonner";
+
 import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
 import {
@@ -8,6 +8,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { toast } from "sonner";
 
 interface Category {
   id: string;
@@ -98,7 +99,6 @@ export default function TransactionModal({
     setLoading(true);
     setError("");
 
-    // Get current user
     const {
       data: { user },
     } = await supabase.auth.getUser();
@@ -128,17 +128,17 @@ export default function TransactionModal({
 
     setLoading(false);
 
-    // Inside handleSave, replace the if/else at the bottom:
-if (saveError) {
-  setError(`Error: ${saveError.message}`)
-  toast.error('Failed to save transaction')
-} else {
-  setAmount('')
-  setNote('')
-  setError('')
-  toast.success(isEditing ? 'Transaction updated!' : 'Transaction saved!')
-  onSuccess()
-}
+    if (saveError) {
+      setError(`Error: ${saveError.message}`);
+      toast.error("Failed to save transaction");
+    } else {
+      setAmount("");
+      setNote("");
+      setError("");
+      toast.success(isEditing ? "Transaction updated!" : "Transaction saved!");
+      onSuccess();
+    }
+  }
 
   const isIncome = type === "income";
   const btnColor =
