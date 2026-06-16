@@ -1,15 +1,29 @@
 "use client";
 
-import { Bell, Search, ChevronDown } from "lucide-react";
+import { Bell, ChevronDown, Search } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 
 function getGreeting() {
-  const hour = new Date().getHours();
-  if (hour < 12) return "Good morning";
-  if (hour < 17) return "Good afternoon";
+  const h = new Date().getHours();
+  if (h < 12) return "Good morning";
+  if (h < 17) return "Good afternoon";
   return "Good evening";
 }
 
 export default function Header() {
+  const router = useRouter();
+  const [query, setQuery] = useState("");
+
+  function handleSearch(e: React.FormEvent) {
+    e.preventDefault();
+    if (!query.trim()) return;
+    router.push(
+      `/dashboard/transactions?search=${encodeURIComponent(query.trim())}`,
+    );
+    setQuery("");
+  }
+
   return (
     <div className="h-16 border-b border-gray-800/50 bg-[#0F1117] flex items-center justify-between px-6 flex-shrink-0">
       {/* Greeting */}
@@ -23,16 +37,21 @@ export default function Header() {
       {/* Right Controls */}
       <div className="flex items-center gap-3">
         {/* Search */}
-        <div className="flex items-center gap-2 bg-gray-800/60 border border-gray-700/50 rounded-xl px-3 py-2 w-48">
+        <form
+          onSubmit={handleSearch}
+          className="flex items-center gap-2 bg-gray-800/60 border border-gray-700/50 rounded-xl px-3 py-2 w-52"
+        >
           <Search size={13} className="text-gray-500 flex-shrink-0" />
           <input
-            placeholder="Search anything..."
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Search transactions…"
             className="bg-transparent text-xs text-gray-300 placeholder-gray-600 outline-none w-full"
           />
-        </div>
+        </form>
 
         {/* Date */}
-        <div className="flex items-center gap-2 bg-gray-800/60 border border-gray-700/50 rounded-xl px-3 py-2 text-xs text-gray-300 cursor-pointer">
+        <div className="flex items-center gap-2 bg-gray-800/60 border border-gray-700/50 rounded-xl px-3 py-2 text-xs text-gray-300">
           {new Date().toLocaleDateString("en-US", {
             month: "short",
             day: "numeric",
@@ -41,14 +60,14 @@ export default function Header() {
           <ChevronDown size={12} className="text-gray-500" />
         </div>
 
-        {/* Notification Bell */}
-        <button className="relative w-9 h-9 rounded-xl bg-gray-800/60 border border-gray-700/50 flex items-center justify-center">
+        {/* Bell */}
+        <button className="relative w-9 h-9 rounded-xl bg-gray-800/60 border border-gray-700/50 flex items-center justify-center hover:bg-gray-700/60 transition-colors">
           <Bell size={15} className="text-gray-400" />
-          <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-indigo-500 rounded-full border border-[#0F1117]" />
+          <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-indigo-500 rounded-full border-2 border-[#0F1117]" />
         </button>
 
         {/* Avatar */}
-        <div className="w-9 h-9 rounded-full bg-indigo-600 flex items-center justify-center text-sm font-semibold cursor-pointer">
+        <div className="w-9 h-9 rounded-full bg-indigo-600 flex items-center justify-center text-sm font-semibold cursor-pointer hover:bg-indigo-700 transition-colors">
           J
         </div>
       </div>

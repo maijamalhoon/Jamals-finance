@@ -35,7 +35,7 @@ interface Props {
   defaultType: "income" | "expense";
   onClose: () => void;
   onSuccess: () => void;
-  transaction?: ExistingTransaction; // ← pass this when editing
+  transaction?: ExistingTransaction;
 }
 
 export default function TransactionModal({
@@ -46,6 +46,7 @@ export default function TransactionModal({
   transaction,
 }: Props) {
   const supabase = createClient();
+  const isEditing = !!transaction;
 
   const [type, setType] = useState<"income" | "expense">(defaultType);
   const [amount, setAmount] = useState("");
@@ -58,9 +59,6 @@ export default function TransactionModal({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const isEditing = !!transaction;
-
-  // Pre-fill form when editing, or reset when adding
   useEffect(() => {
     if (!open) return;
     if (transaction) {
@@ -74,9 +72,9 @@ export default function TransactionModal({
       setDate(new Date().toISOString().split("T")[0]);
       setNote("");
     }
+    setError("");
   }, [open, transaction, defaultType]);
 
-  // Load categories + accounts whenever modal opens or type changes
   useEffect(() => {
     if (!open) return;
     async function load() {
@@ -86,7 +84,6 @@ export default function TransactionModal({
       ]);
       setCategories(cats || []);
       setAccounts(accs || []);
-      // Pre-select existing IDs when editing, otherwise select first option
       setCategoryId(transaction?.category_id || cats?.[0]?.id || "");
       setAccountId(transaction?.account_id || accs?.[0]?.id || "");
     }
@@ -101,7 +98,18 @@ export default function TransactionModal({
     setLoading(true);
     setError("");
 
+    // Get current user
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) {
+      setError("Not logged in. Please refresh.");
+      setLoading(false);
+      return;
+    }
+
     const payload = {
+      user_id: user.id,
       type,
       amount: parseFloat(amount),
       category_id: categoryId,
@@ -121,7 +129,7 @@ export default function TransactionModal({
     setLoading(false);
 
     if (saveError) {
-      setError("Failed to save. Please try again.");
+      setError(`Error: ${saveError.message}`);
     } else {
       setAmount("");
       setNote("");
@@ -247,7 +255,11 @@ export default function TransactionModal({
             />
           </div>
 
-          {error && <p className="text-red-400 text-xs">{error}</p>}
+          {error && (
+            <p className="text-red-400 text-xs bg-red-500/10 p-3 rounded-xl">
+              {error}
+            </p>
+          )}
 
           <button
             onClick={handleSave}
