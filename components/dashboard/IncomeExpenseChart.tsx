@@ -19,12 +19,12 @@ interface ChartData {
 function CustomTooltip({ active, payload, label }: any) {
   if (!active || !payload?.length) return null;
   return (
-    <div className="bg-gray-900 border border-gray-700 rounded-xl p-3 text-xs shadow-xl">
-      <p className="text-gray-400 mb-2">{label}</p>
-      <p className="text-green-400">
+    <div className="finance-panel p-3 text-xs shadow-xl">
+      <p className="text-slate-400 mb-2">{label}</p>
+      <p className="text-green-300">
         Income: PKR {payload[0]?.value?.toLocaleString()}
       </p>
-      <p className="text-red-400 mt-1">
+      <p className="text-red-300 mt-1">
         Expenses: PKR {payload[1]?.value?.toLocaleString()}
       </p>
     </div>
@@ -33,17 +33,22 @@ function CustomTooltip({ active, payload, label }: any) {
 
 export default function IncomeExpenseChart({ data }: { data: ChartData[] }) {
   return (
-    <div className="bg-gray-900/60 border border-gray-800/50 rounded-2xl p-5 h-full">
-      <div className="flex items-center justify-between mb-5">
-        <h3 className="text-white font-medium text-sm">Income vs Expenses</h3>
-        <div className="flex items-center gap-4">
+    <div className="finance-panel p-5 h-full">
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-5">
+        <div>
+          <h3 className="text-white font-semibold text-sm">
+            Income vs Expenses
+          </h3>
+          <p className="text-slate-500 text-xs mt-1">Daily flow this month</p>
+        </div>
+        <div className="flex items-center gap-4 rounded-lg bg-white/[0.04] px-3 py-2">
           <div className="flex items-center gap-1.5">
-            <div className="w-2 h-2 rounded-full bg-green-400" />
-            <span className="text-gray-500 text-xs">Income</span>
+            <div className="w-2 h-2 rounded-full bg-green-300" />
+            <span className="text-slate-400 text-xs">Income</span>
           </div>
           <div className="flex items-center gap-1.5">
-            <div className="w-2 h-2 rounded-full bg-red-400" />
-            <span className="text-gray-500 text-xs">Expenses</span>
+            <div className="w-2 h-2 rounded-full bg-red-300" />
+            <span className="text-slate-400 text-xs">Expenses</span>
           </div>
         </div>
       </div>
@@ -54,28 +59,28 @@ export default function IncomeExpenseChart({ data }: { data: ChartData[] }) {
         >
           <defs>
             <linearGradient id="incomeGrad" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="#22c55e" stopOpacity={0.25} />
-              <stop offset="95%" stopColor="#22c55e" stopOpacity={0} />
+              <stop offset="5%" stopColor="#86efac" stopOpacity={0.28} />
+              <stop offset="95%" stopColor="#86efac" stopOpacity={0} />
             </linearGradient>
             <linearGradient id="expenseGrad" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="#ef4444" stopOpacity={0.25} />
-              <stop offset="95%" stopColor="#ef4444" stopOpacity={0} />
+              <stop offset="5%" stopColor="#fca5a5" stopOpacity={0.26} />
+              <stop offset="95%" stopColor="#fca5a5" stopOpacity={0} />
             </linearGradient>
           </defs>
           <CartesianGrid
             strokeDasharray="3 3"
-            stroke="#1f2937"
+            stroke="rgba(148, 163, 184, 0.12)"
             vertical={false}
           />
           <XAxis
             dataKey="date"
-            tick={{ fill: "#6b7280", fontSize: 10 }}
+            tick={{ fill: "#64748b", fontSize: 10 }}
             axisLine={false}
             tickLine={false}
             interval="preserveStartEnd"
           />
           <YAxis
-            tick={{ fill: "#6b7280", fontSize: 10 }}
+            tick={{ fill: "#64748b", fontSize: 10 }}
             axisLine={false}
             tickLine={false}
             tickFormatter={(v) => `${v / 1000}k`}
@@ -84,14 +89,14 @@ export default function IncomeExpenseChart({ data }: { data: ChartData[] }) {
           <Area
             type="monotone"
             dataKey="income"
-            stroke="#22c55e"
+            stroke="#86efac"
             strokeWidth={2}
             fill="url(#incomeGrad)"
           />
           <Area
             type="monotone"
             dataKey="expenses"
-            stroke="#ef4444"
+            stroke="#fca5a5"
             strokeWidth={2}
             fill="url(#expenseGrad)"
           />

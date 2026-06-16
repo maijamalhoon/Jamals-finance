@@ -22,10 +22,10 @@ export default function BottomBar() {
 
   return (
     <>
-      <div className="h-16 border-t border-gray-800/50 bg-[#0F1117]/90 backdrop-blur-sm flex items-center justify-center gap-6 flex-shrink-0">
+      <div className="h-16 border-t border-white/[0.08] bg-[#0d121f]/92 backdrop-blur flex items-center justify-center gap-6 flex-shrink-0">
         <button
           onClick={() => openAs("income")}
-          className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-green-500/10 border border-green-500/30 text-green-400 text-sm font-medium hover:bg-green-500/20 transition-colors"
+          className="flex items-center gap-2 px-5 py-2.5 rounded-lg bg-green-500/10 border border-green-500/30 text-green-300 text-sm font-medium hover:bg-green-500/20 transition-colors"
         >
           <ArrowDownLeft size={15} />
           Add Income
@@ -33,14 +33,15 @@ export default function BottomBar() {
 
         <button
           onClick={() => openAs("income")}
-          className="w-12 h-12 rounded-full bg-indigo-600 hover:bg-indigo-700 flex items-center justify-center transition-colors shadow-lg shadow-indigo-600/25"
+          className="w-12 h-12 rounded-lg bg-indigo-500 hover:bg-indigo-600 flex items-center justify-center transition-colors shadow-lg shadow-indigo-950/35"
+          aria-label="Add transaction"
         >
           <Plus size={22} className="text-white" />
         </button>
 
         <button
           onClick={() => openAs("expense")}
-          className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-sm font-medium hover:bg-red-500/20 transition-colors"
+          className="flex items-center gap-2 px-5 py-2.5 rounded-lg bg-red-500/10 border border-red-500/30 text-red-300 text-sm font-medium hover:bg-red-500/20 transition-colors"
         >
           Add Expense
           <ArrowUpRight size={15} />

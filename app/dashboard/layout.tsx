@@ -10,7 +10,7 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex h-screen bg-[#0B0D17] overflow-hidden">
+    <div className="flex h-screen overflow-hidden bg-[#0B0D17] text-white">
       {/* Sidebar — desktop only */}
       <div className="hidden lg:block flex-shrink-0">
         <Sidebar />
@@ -26,7 +26,9 @@ export default function DashboardLayout({
         <MobileHeader />
 
         {/* Page content */}
-        <main className="flex-1 overflow-y-auto p-4 lg:p-6">{children}</main>
+        <main className="flex-1 overflow-y-auto px-4 py-5 lg:px-7 lg:py-6">
+          <div className="mx-auto w-full max-w-[1600px]">{children}</div>
+        </main>
 
         {/* Desktop bottom bar */}
         <div className="hidden lg:block">

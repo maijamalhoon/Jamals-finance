@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 interface Transaction {
   id: string;
   type: "income" | "expense";
@@ -14,67 +16,71 @@ export default function RecentTransactions({
   transactions: Transaction[];
 }) {
   return (
-    <div className="bg-gray-900/60 border border-gray-800/50 rounded-2xl p-5">
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="text-white font-medium text-sm">Recent Transactions</h3>
-        <button className="text-indigo-400 text-xs border border-gray-700/60 rounded-lg px-3 py-1.5 hover:bg-gray-800 transition-colors">
+    <div className="finance-panel p-5">
+      <div className="flex items-center justify-between gap-3 mb-4">
+        <div>
+          <h3 className="text-white font-semibold text-sm">
+            Recent Transactions
+          </h3>
+          <p className="text-slate-500 text-xs mt-1">Latest activity</p>
+        </div>
+        <Link
+          href="/dashboard/transactions"
+          className="text-indigo-300 text-xs border border-indigo-400/20 rounded-lg px-3 py-1.5 hover:bg-indigo-500/10 transition-colors"
+        >
           View All
-        </button>
+        </Link>
       </div>
 
       {transactions.length === 0 ?
         <div className="py-12 text-center">
-          <p className="text-gray-600 text-sm">No transactions yet</p>
-          <p className="text-gray-700 text-xs mt-1">
+          <p className="text-slate-400 text-sm">No transactions yet</p>
+          <p className="text-slate-600 text-xs mt-1">
             Add your first income or expense below
           </p>
         </div>
-      : <div className="space-y-0.5">
+      : <div className="divide-y divide-white/[0.06]">
           {transactions.map((tx) => {
-            const catColor = tx.categories?.color || "#6366f1";
+            const catColor = tx.categories?.color || "#818cf8";
             const catInitial = tx.categories?.name?.charAt(0) || "T";
             return (
               <div
                 key={tx.id}
-                className="flex items-center gap-3 py-3 border-b border-gray-800/40 last:border-0"
+                className="flex items-center gap-3 py-3 transition-colors hover:bg-white/[0.025]"
               >
-                {/* Icon */}
                 <div
-                  className="w-9 h-9 rounded-xl flex items-center justify-center text-xs font-bold flex-shrink-0"
-                  style={{ background: catColor + "25", color: catColor }}
+                  className="w-9 h-9 rounded-lg flex items-center justify-center text-xs font-bold flex-shrink-0 ring-1 ring-white/[0.06]"
+                  style={{ background: `${catColor}22`, color: catColor }}
                 >
                   {catInitial}
                 </div>
 
-                {/* Name + Account */}
                 <div className="flex-1 min-w-0">
                   <p className="text-white text-sm font-medium truncate">
                     {tx.note || tx.categories?.name || "Transaction"}
                   </p>
-                  <p className="text-gray-500 text-xs">
-                    {tx.accounts?.name || "—"}
+                  <p className="text-slate-500 text-xs">
+                    {tx.accounts?.name || "No account"}
                   </p>
                 </div>
 
-                {/* Type Badge */}
                 <span
-                  className={`text-xs px-2.5 py-1 rounded-full font-medium flex-shrink-0 ${
+                  className={`text-xs px-2.5 py-1 rounded-md font-medium flex-shrink-0 ${
                     tx.type === "income" ?
-                      "bg-green-500/10 text-green-400"
-                    : "bg-red-500/10 text-red-400"
+                      "bg-green-500/10 text-green-300"
+                    : "bg-red-500/10 text-red-300"
                   }`}
                 >
                   {tx.type === "income" ? "Income" : "Expense"}
                 </span>
 
-                {/* Amount + Date */}
                 <div className="text-right flex-shrink-0">
                   <p
-                    className={`text-sm font-semibold ${tx.type === "income" ? "text-green-400" : "text-red-400"}`}
+                    className={`text-sm font-semibold ${tx.type === "income" ? "text-green-300" : "text-red-300"}`}
                   >
                     PKR {Number(tx.amount).toLocaleString()}
                   </p>
-                  <p className="text-gray-600 text-xs">
+                  <p className="text-slate-600 text-xs">
                     {new Date(tx.date).toLocaleDateString("en-US", {
                       month: "short",
                       day: "numeric",

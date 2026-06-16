@@ -37,26 +37,26 @@ export default function CurrencyConverter() {
     : "...";
 
   return (
-    <div className="bg-gray-900/60 border border-gray-800/50 rounded-2xl p-5">
+    <div className="finance-panel p-5">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-white font-medium text-sm">Currency Converter</h3>
+        <h3 className="text-white font-semibold text-sm">Currency Converter</h3>
         <button
           onClick={fetchRate}
           disabled={loading}
-          className="w-7 h-7 rounded-lg bg-gray-800 hover:bg-gray-700 flex items-center justify-center transition-colors disabled:opacity-50"
+          className="finance-control w-7 h-7 flex items-center justify-center disabled:opacity-50"
+          aria-label="Refresh exchange rate"
         >
           <RefreshCw
             size={12}
-            className={`text-gray-400 ${loading ? "animate-spin" : ""}`}
+            className={`text-slate-300 ${loading ? "animate-spin" : ""}`}
           />
         </button>
       </div>
 
       <div className="flex items-center gap-2">
-        {/* From */}
-        <div className="flex-1 bg-gray-800/60 rounded-xl p-3">
-          <p className="text-gray-500 text-[10px] mb-1">From</p>
-          <p className="text-gray-400 text-xs mb-1.5">
+        <div className="flex-1 finance-panel-soft p-3">
+          <p className="text-slate-500 text-[10px] mb-1">From</p>
+          <p className="text-slate-400 text-xs mb-1.5">
             {fromUSD ? "USD" : "PKR"}
           </p>
           <input
@@ -68,38 +68,36 @@ export default function CurrencyConverter() {
           />
         </div>
 
-        {/* Swap */}
         <button
           onClick={() => setFromUSD((p) => !p)}
-          className="w-8 h-8 rounded-lg bg-gray-800 border border-gray-700/50 flex items-center justify-center hover:bg-gray-700 transition-colors flex-shrink-0"
+          className="finance-control w-8 h-8 flex items-center justify-center flex-shrink-0"
+          aria-label="Swap currencies"
         >
-          <ArrowLeftRight size={13} className="text-gray-400" />
+          <ArrowLeftRight size={13} className="text-slate-300" />
         </button>
 
-        {/* To */}
-        <div className="flex-1 bg-gray-800/60 rounded-xl p-3">
-          <p className="text-gray-500 text-[10px] mb-1">To</p>
-          <p className="text-gray-400 text-xs mb-1.5">
+        <div className="flex-1 finance-panel-soft p-3">
+          <p className="text-slate-500 text-[10px] mb-1">To</p>
+          <p className="text-slate-400 text-xs mb-1.5">
             {fromUSD ? "PKR" : "USD"}
           </p>
           <p className="text-white text-sm font-semibold">{converted}</p>
         </div>
       </div>
 
-      {/* Rate + Status */}
       <div className="flex items-center gap-2 mt-3">
         {loading ?
-          <p className="text-gray-600 text-xs">Fetching rate…</p>
+          <p className="text-slate-500 text-xs">Fetching rate...</p>
         : <>
-            <p className="text-gray-500 text-xs">
+            <p className="text-slate-500 text-xs">
               1 USD = {rate?.toFixed(2)} PKR
             </p>
             <span className="flex items-center gap-1">
               <span
-                className={`w-1.5 h-1.5 rounded-full ${live ? "bg-green-400" : "bg-yellow-400"}`}
+                className={`w-1.5 h-1.5 rounded-full ${live ? "bg-green-300" : "bg-amber-300"}`}
               />
               <span
-                className={`text-[10px] ${live ? "text-green-400" : "text-yellow-400"}`}
+                className={`text-[10px] ${live ? "text-green-300" : "text-amber-300"}`}
               >
                 {live ? "Live" : "Fallback"}
               </span>

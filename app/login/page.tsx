@@ -14,7 +14,6 @@ export default function LoginPage() {
   const [isSignUp, setIsSignUp] = useState(false);
   const [step, setStep] = useState<Step>("auth");
 
-  // Form fields
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
@@ -26,7 +25,6 @@ export default function LoginPage() {
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
 
-  // ── Sign In ──────────────────────────────────────
   async function handleSignIn() {
     if (!email || !password) {
       setError("Enter email and password.");
@@ -48,7 +46,6 @@ export default function LoginPage() {
     }
   }
 
-  // ── Sign Up → send OTP ────────────────────────────
   async function handleSignUp() {
     if (!name || !email || !password) {
       setError("Name, email, and password are required.");
@@ -78,7 +75,6 @@ export default function LoginPage() {
     }
   }
 
-  // ── Verify OTP ───────────────────────────────────
   async function handleVerifyOtp() {
     if (!otp || otp.length < 6) {
       setError("Enter the 6-digit code.");
@@ -109,26 +105,33 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="min-h-screen bg-[#0B0D17] flex items-center justify-center px-4">
+    <main className="min-h-screen bg-[#0B0D17] flex items-center justify-center px-4 py-10 text-white">
       <div className="w-full max-w-sm">
-        {/* Logo */}
-        <div className="flex items-center justify-center gap-2 mb-8">
-          <BarChart3 size={24} className="text-indigo-500" />
-          <span className="text-white font-bold text-xl">Jamal's Finance</span>
+        <div className="mb-8 flex items-center justify-center gap-3">
+          <div className="grid h-10 w-10 place-items-center rounded-lg bg-indigo-500/15 text-indigo-300 ring-1 ring-indigo-400/20">
+            <BarChart3 size={21} />
+          </div>
+          <div>
+            <span className="block text-white font-bold text-xl">
+              Jamal's Finance
+            </span>
+            <span className="block text-slate-500 text-xs">
+              Personal finance workspace
+            </span>
+          </div>
         </div>
 
-        <div className="bg-gray-900/60 border border-gray-800/50 rounded-2xl p-7">
-          {/* OTP Step */}
+        <div className="finance-panel p-7">
           {step === "otp" ?
             <>
-              <h2 className="text-white font-semibold text-base mb-1">
+              <h2 className="text-white font-semibold text-lg mb-1">
                 Check your email
               </h2>
-              <p className="text-gray-500 text-xs mb-5">{message}</p>
+              <p className="text-slate-400 text-xs mb-5">{message}</p>
 
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
-                  <label className="text-gray-400 text-xs block mb-1.5">
+                  <label className="text-slate-300 text-xs block mb-1.5">
                     6-digit code
                   </label>
                   <input
@@ -139,12 +142,12 @@ export default function LoginPage() {
                     }
                     placeholder="000000"
                     maxLength={6}
-                    className="w-full bg-gray-800/60 border border-gray-700/50 rounded-xl px-4 py-3 text-white text-center text-2xl font-bold tracking-widest outline-none focus:border-indigo-500 transition-colors placeholder-gray-700"
+                    className="w-full finance-control px-4 py-3 text-white text-center text-2xl font-bold tracking-widest outline-none focus:border-indigo-400 placeholder-slate-700"
                   />
                 </div>
 
                 {error && (
-                  <p className="text-red-400 text-xs bg-red-500/10 p-3 rounded-xl">
+                  <p className="text-red-300 text-xs bg-red-500/10 p-3 rounded-lg">
                     {error}
                   </p>
                 )}
@@ -152,9 +155,9 @@ export default function LoginPage() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-sm font-semibold transition-colors disabled:opacity-50"
+                  className="w-full py-3 bg-indigo-500 hover:bg-indigo-600 text-white rounded-lg text-sm font-semibold transition-colors disabled:opacity-50 shadow-lg shadow-indigo-950/25"
                 >
-                  {loading ? "Verifying…" : "Verify & Create Account"}
+                  {loading ? "Verifying..." : "Verify & Create Account"}
                 </button>
 
                 <button
@@ -164,27 +167,26 @@ export default function LoginPage() {
                     setOtp("");
                     setError("");
                   }}
-                  className="w-full text-gray-500 text-xs hover:text-gray-400 transition-colors"
+                  className="w-full text-slate-500 text-xs hover:text-slate-300 transition-colors"
                 >
-                  ← Back to sign up
+                  Back to sign up
                 </button>
               </form>
             </>
           : <>
-              <h2 className="text-white font-semibold text-base mb-1">
+              <h2 className="text-white font-semibold text-lg mb-1">
                 {isSignUp ? "Create account" : "Welcome back"}
               </h2>
-              <p className="text-gray-500 text-xs mb-5">
+              <p className="text-slate-400 text-xs mb-5">
                 {isSignUp ?
                   "Fill in your details to get started"
                 : "Sign in to your dashboard"}
               </p>
 
               <form onSubmit={handleSubmit} className="space-y-3">
-                {/* Name — signup only */}
                 {isSignUp && (
                   <div>
-                    <label className="text-gray-400 text-xs block mb-1.5">
+                    <label className="text-slate-300 text-xs block mb-1.5">
                       Full Name
                     </label>
                     <input
@@ -192,15 +194,14 @@ export default function LoginPage() {
                       value={name}
                       onChange={(e) => setName(e.target.value)}
                       placeholder="Jamal Malhoon"
-                      className="w-full bg-gray-800/60 border border-gray-700/50 rounded-xl px-4 py-3 text-white text-sm outline-none focus:border-indigo-500 transition-colors placeholder-gray-700"
+                      className="w-full finance-control px-4 py-3 text-white text-sm outline-none focus:border-indigo-400 placeholder-slate-600"
                     />
                   </div>
                 )}
 
-                {/* Phone — signup only */}
                 {isSignUp && (
                   <div>
-                    <label className="text-gray-400 text-xs block mb-1.5">
+                    <label className="text-slate-300 text-xs block mb-1.5">
                       Phone Number (Optional)
                     </label>
                     <input
@@ -208,14 +209,13 @@ export default function LoginPage() {
                       value={phone}
                       onChange={(e) => setPhone(e.target.value)}
                       placeholder="+92 300 0000000"
-                      className="w-full bg-gray-800/60 border border-gray-700/50 rounded-xl px-4 py-3 text-white text-sm outline-none focus:border-indigo-500 transition-colors placeholder-gray-700"
+                      className="w-full finance-control px-4 py-3 text-white text-sm outline-none focus:border-indigo-400 placeholder-slate-600"
                     />
                   </div>
                 )}
 
-                {/* Email */}
                 <div>
-                  <label className="text-gray-400 text-xs block mb-1.5">
+                  <label className="text-slate-300 text-xs block mb-1.5">
                     Email
                   </label>
                   <input
@@ -223,13 +223,12 @@ export default function LoginPage() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="you@example.com"
-                    className="w-full bg-gray-800/60 border border-gray-700/50 rounded-xl px-4 py-3 text-white text-sm outline-none focus:border-indigo-500 transition-colors placeholder-gray-700"
+                    className="w-full finance-control px-4 py-3 text-white text-sm outline-none focus:border-indigo-400 placeholder-slate-600"
                   />
                 </div>
 
-                {/* Password */}
                 <div>
-                  <label className="text-gray-400 text-xs block mb-1.5">
+                  <label className="text-slate-300 text-xs block mb-1.5">
                     Password
                   </label>
                   <div className="relative">
@@ -238,12 +237,13 @@ export default function LoginPage() {
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       placeholder="Min. 6 characters"
-                      className="w-full bg-gray-800/60 border border-gray-700/50 rounded-xl px-4 py-3 pr-10 text-white text-sm outline-none focus:border-indigo-500 transition-colors placeholder-gray-700"
+                      className="w-full finance-control px-4 py-3 pr-10 text-white text-sm outline-none focus:border-indigo-400 placeholder-slate-600"
                     />
                     <button
                       type="button"
                       onClick={() => setShowPass((p) => !p)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-300"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300"
+                      aria-label={showPass ? "Hide password" : "Show password"}
                     >
                       {showPass ?
                         <EyeOff size={15} />
@@ -253,7 +253,7 @@ export default function LoginPage() {
                 </div>
 
                 {error && (
-                  <p className="text-red-400 text-xs bg-red-500/10 p-3 rounded-xl">
+                  <p className="text-red-300 text-xs bg-red-500/10 p-3 rounded-lg">
                     {error}
                   </p>
                 )}
@@ -261,19 +261,19 @@ export default function LoginPage() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-sm font-semibold transition-colors disabled:opacity-50 mt-1"
+                  className="w-full py-3 bg-indigo-500 hover:bg-indigo-600 text-white rounded-lg text-sm font-semibold transition-colors disabled:opacity-50 mt-1 shadow-lg shadow-indigo-950/25"
                 >
                   {loading ?
                     isSignUp ?
-                      "Creating account…"
-                    : "Signing in…"
+                      "Creating account..."
+                    : "Signing in..."
                   : isSignUp ?
                     "Create Account"
                   : "Sign In"}
                 </button>
               </form>
 
-              <p className="text-center text-gray-600 text-xs mt-4">
+              <p className="text-center text-slate-500 text-xs mt-4">
                 {isSignUp ?
                   "Already have an account?"
                 : "Don't have an account?"}{" "}
@@ -283,7 +283,7 @@ export default function LoginPage() {
                     setError("");
                     setMessage("");
                   }}
-                  className="text-indigo-400 hover:text-indigo-300 transition-colors"
+                  className="text-indigo-300 hover:text-indigo-200 transition-colors"
                 >
                   {isSignUp ? "Sign in" : "Sign up"}
                 </button>

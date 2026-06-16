@@ -22,23 +22,23 @@ export default function StatCard({
   const positive = change >= 0;
 
   return (
-    <div className="bg-gray-900/60 border border-gray-800/50 rounded-2xl p-4 flex flex-col gap-3 hover:border-gray-700/50 transition-colors">
-      <div className="flex items-center justify-between">
-        <span className="text-gray-500 text-xs">{title}</span>
+    <div className="finance-panel card-hover p-4 flex min-h-[132px] flex-col justify-between gap-4 hover:border-white/[0.14]">
+      <div className="flex items-center justify-between gap-3">
+        <span className="text-slate-400 text-xs font-medium">{title}</span>
         <div
-          className={`w-8 h-8 rounded-lg ${iconBg} flex items-center justify-center`}
+          className={`w-9 h-9 rounded-lg ${iconBg} flex items-center justify-center ring-1 ring-white/[0.06]`}
         >
-          <Icon size={15} className={iconColor} />
+          <Icon size={16} className={iconColor} />
         </div>
       </div>
       <div>
-        <p className="text-white font-semibold text-[15px] leading-tight">
+        <p className="text-white font-semibold text-lg leading-tight tracking-normal">
           {amount}
         </p>
-        <div className="flex items-center gap-2 mt-1.5">
-          <span className="text-gray-500 text-[11px]">≈ {usd}</span>
+        <div className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1">
+          <span className="text-slate-500 text-[11px]">approx. {usd}</span>
           <span
-            className={`flex items-center gap-0.5 text-[11px] font-medium ${positive ? "text-green-400" : "text-red-400"}`}
+            className={`flex items-center gap-0.5 rounded-md px-1.5 py-0.5 text-[11px] font-semibold ${positive ? "bg-green-500/10 text-green-300" : "bg-red-500/10 text-red-300"}`}
           >
             {positive ?
               <ArrowUpRight size={11} />

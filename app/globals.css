@@ -49,29 +49,29 @@
 }
 
 :root {
-  --card: oklch(1 0 0);
+  --card: oklch(0.205 0.015 255);
   --card-foreground: oklch(0.145 0 0);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
+  --primary: oklch(0.58 0.22 265);
   --primary-foreground: oklch(0.985 0 0);
   --secondary: oklch(0.97 0 0);
   --secondary-foreground: oklch(0.205 0 0);
   --muted: oklch(0.97 0 0);
   --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
+  --accent: oklch(0.94 0.03 198);
   --accent-foreground: oklch(0.205 0 0);
   --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
+  --border: oklch(0.34 0.02 255 / 58%);
   --input: oklch(0.922 0 0);
   --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --radius: 0.625rem;
-  --sidebar: oklch(0.985 0 0);
+  --chart-1: oklch(0.72 0.18 149);
+  --chart-2: oklch(0.67 0.19 26);
+  --chart-3: oklch(0.68 0.17 255);
+  --chart-4: oklch(0.76 0.15 82);
+  --chart-5: oklch(0.66 0.18 305);
+  --radius: 0.5rem;
+  --sidebar: oklch(0.18 0.015 255);
   --sidebar-foreground: oklch(0.145 0 0);
   --sidebar-primary: oklch(0.205 0 0);
   --sidebar-primary-foreground: oklch(0.985 0 0);
@@ -79,8 +79,8 @@
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
+  --background: oklch(0.15 0.015 255);
+  --foreground: oklch(0.98 0.005 255);
 }
 
 .dark {
@@ -123,9 +123,30 @@
   }
   body {
     @apply bg-background text-foreground;
+    background:
+      linear-gradient(135deg, rgba(14, 18, 31, 0.98), rgba(8, 11, 20, 1) 48%, rgba(13, 19, 27, 1)),
+      #0b0d17;
   }
   html {
     @apply font-sans;
+  }
+}
+
+@layer components {
+  .finance-panel {
+    @apply rounded-lg border border-white/[0.08] bg-[#111827]/78 shadow-[0_18px_45px_rgba(0,0,0,0.22)] backdrop-blur;
+  }
+
+  .finance-panel-soft {
+    @apply rounded-lg border border-white/[0.08] bg-white/[0.045] backdrop-blur;
+  }
+
+  .finance-control {
+    @apply rounded-lg border border-white/10 bg-white/[0.055] transition-colors hover:border-white/[0.18] hover:bg-white/[0.08];
+  }
+
+  .finance-focus {
+    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400/45 focus-visible:ring-offset-0;
   }
 }
 /* Custom scrollbar */
@@ -139,17 +160,17 @@
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #374151;
+  background: #4b5563;
   border-radius: 999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #4b5563;
+  background: #64748b;
 }
 
 * {
   scrollbar-width: thin;
-  scrollbar-color: #374151 transparent;
+  scrollbar-color: #4b5563 transparent;
 }
 /* Smooth page transitions */
 * {
@@ -183,7 +204,7 @@ textarea {
 }
 .card-hover:hover {
   transform: translateY(-1px);
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 14px 36px rgba(0, 0, 0, 0.28);
 }
 
 /* Button press effect */
@@ -210,5 +231,5 @@ button:active {
 /* Input focus glow */
 input:focus,
 select:focus {
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+  box-shadow: 0 0 0 3px rgba(129, 140, 248, 0.16);
 }

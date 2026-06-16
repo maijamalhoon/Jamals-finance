@@ -46,20 +46,20 @@ export default function MobileNav() {
       {fabOpen && (
         <>
           <div
-            className="lg:hidden fixed inset-0 z-40 bg-black/50"
+            className="lg:hidden fixed inset-0 z-40 bg-black/55 backdrop-blur-sm"
             onClick={() => setFabOpen(false)}
           />
           <div className="lg:hidden fixed bottom-20 left-1/2 -translate-x-1/2 z-50 flex flex-col items-center gap-3">
             <button
               onClick={() => openTx("income")}
-              className="flex items-center gap-3 px-5 py-3 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-2xl shadow-lg transition-colors"
+              className="flex items-center gap-3 px-5 py-3 bg-green-500 hover:bg-green-600 text-white text-sm font-medium rounded-lg shadow-lg shadow-green-950/30 transition-colors"
             >
               <TrendingUp size={16} />
               Add Income
             </button>
             <button
               onClick={() => openTx("expense")}
-              className="flex items-center gap-3 px-5 py-3 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-2xl shadow-lg transition-colors"
+              className="flex items-center gap-3 px-5 py-3 bg-red-500 hover:bg-red-600 text-white text-sm font-medium rounded-lg shadow-lg shadow-red-950/30 transition-colors"
             >
               <TrendingDown size={16} />
               Add Expense
@@ -69,14 +69,14 @@ export default function MobileNav() {
       )}
 
       {/* Bottom nav bar */}
-      <div className="lg:hidden h-16 bg-[#0F1117] border-t border-gray-800/50 flex items-center justify-around px-2 flex-shrink-0 relative z-30">
+      <div className="lg:hidden h-16 bg-[#0d121f]/95 border-t border-white/[0.08] flex items-center justify-around px-2 flex-shrink-0 relative z-30 backdrop-blur">
         {NAV.slice(0, 2).map(({ label, href, icon: Icon }) => (
           <Link
             key={href}
             href={href}
-            className={`flex flex-col items-center gap-1 px-3 py-1.5 rounded-xl transition-colors ${
+            className={`flex flex-col items-center gap-1 px-3 py-1.5 rounded-lg transition-colors ${
               pathname === href ? "text-indigo-400" : (
-                "text-gray-600 hover:text-gray-400"
+                "text-slate-500 hover:text-slate-300"
               )
             }`}
           >
@@ -88,7 +88,8 @@ export default function MobileNav() {
         {/* Center FAB */}
         <button
           onClick={() => setFabOpen((p) => !p)}
-          className="w-12 h-12 rounded-full bg-indigo-600 hover:bg-indigo-700 flex items-center justify-center shadow-lg shadow-indigo-600/30 transition-all"
+          className="w-12 h-12 rounded-lg bg-indigo-500 hover:bg-indigo-600 flex items-center justify-center shadow-lg shadow-indigo-950/35 transition-all"
+          aria-label={fabOpen ? "Close quick actions" : "Open quick actions"}
         >
           {fabOpen ?
             <X size={20} className="text-white" />
@@ -99,9 +100,9 @@ export default function MobileNav() {
           <Link
             key={href}
             href={href}
-            className={`flex flex-col items-center gap-1 px-3 py-1.5 rounded-xl transition-colors ${
+            className={`flex flex-col items-center gap-1 px-3 py-1.5 rounded-lg transition-colors ${
               pathname === href ? "text-indigo-400" : (
-                "text-gray-600 hover:text-gray-400"
+                "text-slate-500 hover:text-slate-300"
               )
             }`}
           >

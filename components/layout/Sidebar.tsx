@@ -42,24 +42,29 @@ export default function Sidebar() {
 
   return (
     <div
-      className={`${collapsed ? "w-16" : "w-56"} bg-[#0F1117] border-r border-gray-800/50 flex flex-col h-full transition-all duration-300 flex-shrink-0`}
+      className={`${collapsed ? "w-16" : "w-60"} border-r border-white/[0.08] bg-[#0d121f]/95 flex flex-col h-full transition-all duration-300 flex-shrink-0 shadow-[18px_0_45px_rgba(0,0,0,0.22)]`}
     >
       {/* Logo + Toggle */}
-      <div className="h-16 flex items-center justify-between px-4 border-b border-gray-800/50 flex-shrink-0">
+      <div className="h-16 flex items-center justify-between px-4 border-b border-white/[0.08] flex-shrink-0">
         {!collapsed && (
           <div className="flex items-center gap-2.5">
-            <BarChart3 size={20} className="text-indigo-500 flex-shrink-0" />
+            <div className="grid h-8 w-8 place-items-center rounded-lg bg-indigo-500/15 text-indigo-300 ring-1 ring-indigo-400/20">
+              <BarChart3 size={17} className="flex-shrink-0" />
+            </div>
             <span className="text-white font-semibold text-sm whitespace-nowrap">
               Jamal's Finance
             </span>
           </div>
         )}
         {collapsed && (
-          <BarChart3 size={20} className="text-indigo-500 mx-auto" />
+          <div className="mx-auto grid h-8 w-8 place-items-center rounded-lg bg-indigo-500/15 text-indigo-300 ring-1 ring-indigo-400/20">
+            <BarChart3 size={17} />
+          </div>
         )}
         <button
           onClick={() => setCollapsed((p) => !p)}
-          className={`w-6 h-6 rounded-lg bg-gray-800 hover:bg-gray-700 flex items-center justify-center transition-colors flex-shrink-0 ${collapsed ? "mx-auto" : ""}`}
+          className={`w-7 h-7 rounded-lg bg-white/[0.06] hover:bg-white/[0.1] border border-white/[0.08] flex items-center justify-center transition-colors flex-shrink-0 ${collapsed ? "mx-auto" : ""}`}
+          aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
         >
           {collapsed ?
             <ChevronRight size={13} className="text-gray-400" />
@@ -68,7 +73,7 @@ export default function Sidebar() {
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 px-2 py-4 space-y-0.5 overflow-y-auto overflow-x-hidden">
+      <nav className="flex-1 px-2.5 py-4 space-y-1 overflow-y-auto overflow-x-hidden">
         {navItems.map(({ label, href, icon: Icon }) => {
           const active = pathname === href;
           return (
@@ -76,15 +81,18 @@ export default function Sidebar() {
               key={href}
               href={href}
               title={collapsed ? label : undefined}
-              className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all ${
+              className={`group flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all ${
                 collapsed ? "justify-center" : ""
               } ${
                 active ?
-                  "bg-indigo-600/20 text-indigo-400 border border-indigo-600/30"
-                : "text-gray-500 hover:text-white hover:bg-white/5"
+                  "bg-indigo-500/15 text-indigo-200 border border-indigo-400/25 shadow-sm shadow-indigo-950/30"
+                : "border border-transparent text-slate-400 hover:text-white hover:bg-white/[0.06]"
               }`}
             >
-              <Icon size={16} className="flex-shrink-0" />
+              <Icon
+                size={16}
+                className={`flex-shrink-0 ${active ? "text-indigo-300" : "text-slate-500 group-hover:text-slate-200"}`}
+              />
               {!collapsed && <span className="truncate">{label}</span>}
             </Link>
           );
@@ -93,9 +101,9 @@ export default function Sidebar() {
 
       {/* User info — only when expanded */}
       {!collapsed && (
-        <div className="p-4 border-t border-gray-800/50">
+        <div className="p-4 border-t border-white/[0.08]">
           <div className="flex items-center gap-3 mb-4">
-            <div className="w-9 h-9 rounded-full bg-indigo-600 flex items-center justify-center text-sm font-semibold flex-shrink-0">
+            <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-indigo-500 to-cyan-500 flex items-center justify-center text-sm font-semibold flex-shrink-0 shadow-lg shadow-indigo-950/30">
               J
             </div>
             <div className="min-w-0">
@@ -106,18 +114,20 @@ export default function Sidebar() {
             </div>
           </div>
 
-          <div className="bg-gray-800/40 rounded-xl p-3 space-y-2">
-            <p className="text-xs text-gray-500 font-medium">Today's Summary</p>
+          <div className="finance-panel-soft p-3 space-y-2">
+            <p className="text-xs text-slate-400 font-medium">
+              Today's Summary
+            </p>
             <div className="flex justify-between text-xs">
-              <span className="text-gray-400">Income</span>
+              <span className="text-slate-400">Income</span>
               <span className="text-green-400 font-medium">PKR 0</span>
             </div>
             <div className="flex justify-between text-xs">
-              <span className="text-gray-400">Expenses</span>
+              <span className="text-slate-400">Expenses</span>
               <span className="text-red-400 font-medium">PKR 0</span>
             </div>
-            <div className="flex justify-between text-xs border-t border-gray-700/50 pt-2">
-              <span className="text-gray-400">Net</span>
+            <div className="flex justify-between text-xs border-t border-white/[0.08] pt-2">
+              <span className="text-slate-400">Net</span>
               <span className="text-green-400 font-medium">PKR 0</span>
             </div>
           </div>

@@ -133,7 +133,7 @@ export default async function DashboardPage() {
       usd: usd(totalBalance),
       change: 4.35,
       icon: Wallet,
-      iconColor: "text-indigo-400",
+      iconColor: "text-indigo-300",
       iconBg: "bg-indigo-500/15",
     },
     {
@@ -142,7 +142,7 @@ export default async function DashboardPage() {
       usd: usd(income),
       change: pct(income, lastIncome),
       icon: TrendingUp,
-      iconColor: "text-green-400",
+      iconColor: "text-green-300",
       iconBg: "bg-green-500/15",
     },
     {
@@ -151,7 +151,7 @@ export default async function DashboardPage() {
       usd: usd(expenses),
       change: pct(expenses, lastExpenses),
       icon: TrendingDown,
-      iconColor: "text-red-400",
+      iconColor: "text-red-300",
       iconBg: "bg-red-500/15",
     },
     {
@@ -160,8 +160,8 @@ export default async function DashboardPage() {
       usd: usd(netProfit),
       change: pct(netProfit, lastIncome - lastExpenses),
       icon: BarChart2,
-      iconColor: "text-blue-400",
-      iconBg: "bg-blue-500/15",
+      iconColor: "text-cyan-300",
+      iconBg: "bg-cyan-500/15",
     },
     {
       title: "Investments Value",
@@ -169,15 +169,37 @@ export default async function DashboardPage() {
       usd: usd(investmentsValue),
       change: 7.65,
       icon: PieChart,
-      iconColor: "text-purple-400",
-      iconBg: "bg-purple-500/15",
+      iconColor: "text-amber-300",
+      iconBg: "bg-amber-500/15",
     },
   ];
 
   return (
-    <div className="space-y-4 pb-4">
+    <div className="space-y-5 pb-4">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <p className="text-xs font-medium uppercase tracking-[0.18em] text-cyan-300/80">
+            Finance command center
+          </p>
+          <h2 className="mt-2 text-2xl font-semibold tracking-normal text-white">
+            This month's overview
+          </h2>
+          <p className="mt-1 text-sm text-slate-400">
+            Balance, cash flow, spending, and progress in one place.
+          </p>
+        </div>
+        <div className="flex items-center gap-2 text-xs text-slate-400">
+          <span className="h-2 w-2 rounded-full bg-green-300" />
+          Updated{" "}
+          {now.toLocaleDateString("en-US", {
+            month: "short",
+            day: "numeric",
+            year: "numeric",
+          })}
+        </div>
+      </div>
       {/* Stat Cards — 2 cols mobile, 3 cols tablet, 5 cols desktop */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-3">
         {stats.map((s, i) => (
           <StatCard key={i} {...s} />
         ))}
