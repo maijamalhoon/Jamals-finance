@@ -1,4 +1,6 @@
-import { BarChart3, Bell } from "lucide-react";
+"use client";
+
+import { BarChart3, Bell, Menu } from "lucide-react";
 
 export default function MobileHeader() {
   return (
@@ -9,10 +11,15 @@ export default function MobileHeader() {
           Jamal's Finance
         </span>
       </div>
-      <button className="relative w-8 h-8 rounded-xl bg-gray-800/60 flex items-center justify-center">
-        <Bell size={15} className="text-gray-400" />
-        <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-indigo-500 rounded-full border border-[#0F1117]" />
-      </button>
+      <div className="flex items-center gap-2">
+        <button className="relative w-8 h-8 rounded-xl bg-gray-800/60 border border-gray-700/50 flex items-center justify-center">
+          <Bell size={14} className="text-gray-400" />
+          <span className="absolute top-1 right-1 w-1.5 h-1.5 bg-indigo-500 rounded-full" />
+        </button>
+        <div className="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center text-xs font-semibold">
+          J
+        </div>
+      </div>
     </div>
   );
 }

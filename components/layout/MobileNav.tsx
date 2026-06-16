@@ -9,6 +9,9 @@ import {
   Plus,
   Target,
   Settings,
+  X,
+  TrendingUp,
+  TrendingDown,
 } from "lucide-react";
 import TransactionModal from "@/components/dashboard/TransactionModal";
 
@@ -26,17 +29,55 @@ const NAV = [
 export default function MobileNav() {
   const pathname = usePathname();
   const router = useRouter();
-  const [open, setOpen] = useState(false);
+
+  const [fabOpen, setFabOpen] = useState(false);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [txType, setTxType] = useState<"income" | "expense">("income");
+
+  function openTx(type: "income" | "expense") {
+    setTxType(type);
+    setFabOpen(false);
+    setModalOpen(true);
+  }
 
   return (
     <>
-      <div className="lg:hidden h-16 bg-[#0F1117] border-t border-gray-800/50 flex items-center justify-around px-2 flex-shrink-0">
+      {/* FAB action menu */}
+      {fabOpen && (
+        <>
+          <div
+            className="lg:hidden fixed inset-0 z-40 bg-black/50"
+            onClick={() => setFabOpen(false)}
+          />
+          <div className="lg:hidden fixed bottom-20 left-1/2 -translate-x-1/2 z-50 flex flex-col items-center gap-3">
+            <button
+              onClick={() => openTx("income")}
+              className="flex items-center gap-3 px-5 py-3 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-2xl shadow-lg transition-colors"
+            >
+              <TrendingUp size={16} />
+              Add Income
+            </button>
+            <button
+              onClick={() => openTx("expense")}
+              className="flex items-center gap-3 px-5 py-3 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-2xl shadow-lg transition-colors"
+            >
+              <TrendingDown size={16} />
+              Add Expense
+            </button>
+          </div>
+        </>
+      )}
+
+      {/* Bottom nav bar */}
+      <div className="lg:hidden h-16 bg-[#0F1117] border-t border-gray-800/50 flex items-center justify-around px-2 flex-shrink-0 relative z-30">
         {NAV.slice(0, 2).map(({ label, href, icon: Icon }) => (
           <Link
             key={href}
             href={href}
             className={`flex flex-col items-center gap-1 px-3 py-1.5 rounded-xl transition-colors ${
-              pathname === href ? "text-indigo-400" : "text-gray-600"
+              pathname === href ? "text-indigo-400" : (
+                "text-gray-600 hover:text-gray-400"
+              )
             }`}
           >
             <Icon size={20} />
@@ -44,12 +85,14 @@ export default function MobileNav() {
           </Link>
         ))}
 
-        {/* Center + button */}
+        {/* Center FAB */}
         <button
-          onClick={() => setOpen(true)}
-          className="w-12 h-12 rounded-full bg-indigo-600 hover:bg-indigo-700 flex items-center justify-center shadow-lg shadow-indigo-600/25 transition-colors"
+          onClick={() => setFabOpen((p) => !p)}
+          className="w-12 h-12 rounded-full bg-indigo-600 hover:bg-indigo-700 flex items-center justify-center shadow-lg shadow-indigo-600/30 transition-all"
         >
-          <Plus size={22} className="text-white" />
+          {fabOpen ?
+            <X size={20} className="text-white" />
+          : <Plus size={22} className="text-white" />}
         </button>
 
         {NAV.slice(2).map(({ label, href, icon: Icon }) => (
@@ -57,7 +100,9 @@ export default function MobileNav() {
             key={href}
             href={href}
             className={`flex flex-col items-center gap-1 px-3 py-1.5 rounded-xl transition-colors ${
-              pathname === href ? "text-indigo-400" : "text-gray-600"
+              pathname === href ? "text-indigo-400" : (
+                "text-gray-600 hover:text-gray-400"
+              )
             }`}
           >
             <Icon size={20} />
@@ -67,11 +112,11 @@ export default function MobileNav() {
       </div>
 
       <TransactionModal
-        open={open}
-        defaultType="income"
-        onClose={() => setOpen(false)}
+        open={modalOpen}
+        defaultType={txType}
+        onClose={() => setModalOpen(false)}
         onSuccess={() => {
-          setOpen(false);
+          setModalOpen(false);
           router.refresh();
         }}
       />
