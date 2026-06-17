@@ -68,7 +68,12 @@ export default function AccountModal({
     setLoading(true);
     setError("");
 
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
     const payload = {
+      user_id: user!.id,
       name: name.trim(),
       type,
       balance: parseFloat(balance) || 0,
