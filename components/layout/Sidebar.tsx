@@ -36,13 +36,25 @@ const navItems = [
   { label: "Settings", href: "/dashboard/settings", icon: Settings },
 ];
 
-export default function Sidebar() {
+interface SidebarProps {
+  todayIncome: number;
+  todayExpenses: number;
+}
+
+export default function Sidebar({ todayIncome, todayExpenses }: SidebarProps) {
   const pathname = usePathname();
   const [collapsed, setCollapsed] = useState(false);
 
+  const net = todayIncome - todayExpenses;
+
+  const fmt = (n: number) =>
+    `PKR ${n.toLocaleString(undefined, { maximumFractionDigits: 0 })}`;
+
   return (
     <div
-      className={`${collapsed ? "w-16" : "w-60"} border-r border-white/[0.08] bg-[#0d121f]/95 flex flex-col h-full transition-all duration-300 flex-shrink-0 shadow-[18px_0_45px_rgba(0,0,0,0.22)]`}
+      className={`${
+        collapsed ? "w-16" : "w-60"
+      } border-r border-white/[0.08] bg-[#0d121f]/95 flex flex-col h-full transition-all duration-300 flex-shrink-0 shadow-[18px_0_45px_rgba(0,0,0,0.22)]`}
     >
       {/* Logo + Toggle */}
       <div className="h-16 flex items-center justify-between px-4 border-b border-white/[0.08] flex-shrink-0">
@@ -63,7 +75,9 @@ export default function Sidebar() {
         )}
         <button
           onClick={() => setCollapsed((p) => !p)}
-          className={`w-7 h-7 rounded-lg bg-white/[0.06] hover:bg-white/[0.1] border border-white/[0.08] flex items-center justify-center transition-colors flex-shrink-0 ${collapsed ? "mx-auto" : ""}`}
+          className={`w-7 h-7 rounded-lg bg-white/[0.06] hover:bg-white/[0.1] border border-white/[0.08] flex items-center justify-center transition-colors flex-shrink-0 ${
+            collapsed ? "mx-auto" : ""
+          }`}
           aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
         >
           {collapsed ?
@@ -91,7 +105,11 @@ export default function Sidebar() {
             >
               <Icon
                 size={16}
-                className={`flex-shrink-0 ${active ? "text-indigo-300" : "text-slate-500 group-hover:text-slate-200"}`}
+                className={`flex-shrink-0 ${
+                  active ? "text-indigo-300" : (
+                    "text-slate-500 group-hover:text-slate-200"
+                  )
+                }`}
               />
               {!collapsed && <span className="truncate">{label}</span>}
             </Link>
@@ -120,15 +138,26 @@ export default function Sidebar() {
             </p>
             <div className="flex justify-between text-xs">
               <span className="text-slate-400">Income</span>
-              <span className="text-green-400 font-medium">PKR 0</span>
+              <span className="text-green-400 font-medium">
+                {fmt(todayIncome)}
+              </span>
             </div>
             <div className="flex justify-between text-xs">
               <span className="text-slate-400">Expenses</span>
-              <span className="text-red-400 font-medium">PKR 0</span>
+              <span className="text-red-400 font-medium">
+                {fmt(todayExpenses)}
+              </span>
             </div>
             <div className="flex justify-between text-xs border-t border-white/[0.08] pt-2">
               <span className="text-slate-400">Net</span>
-              <span className="text-green-400 font-medium">PKR 0</span>
+              <span
+                className={`font-medium ${
+                  net >= 0 ? "text-green-400" : "text-red-400"
+                }`}
+              >
+                {net >= 0 ? "+" : "-"}
+                {fmt(Math.abs(net))}
+              </span>
             </div>
           </div>
         </div>
