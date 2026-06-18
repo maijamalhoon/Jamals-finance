@@ -70,10 +70,18 @@ export default function AccountModal({
 
     const {
       data: { user },
+      error: userError,
     } = await supabase.auth.getUser();
 
+    if (userError || !user) {
+      setLoading(false);
+      setError("Not logged in. Please sign in again.");
+      toast.error("Please sign in again");
+      return;
+    }
+
     const payload = {
-      user_id: user!.id,
+      user_id: user.id,
       name: name.trim(),
       type,
       balance: parseFloat(balance) || 0,

@@ -4,7 +4,8 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Pencil, Trash2, CheckCircle2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
-import GoalModal, { ExistingGoal, GOAL_ICONS } from "./GoalModal";
+import GoalModal, { ExistingGoal } from "./GoalModal";
+import { GOAL_ICONS } from "./goal-icons";
 
 export default function GoalCard({ goal }: { goal: ExistingGoal }) {
   const router = useRouter();

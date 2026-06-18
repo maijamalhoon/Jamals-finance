@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { CheckCircle2 } from "lucide-react";
-import { GOAL_ICONS } from "@/components/goals/GoalModal";
+import { GOAL_ICONS } from "@/components/goals/goal-icons";
 
 interface Goal {
   id: string;

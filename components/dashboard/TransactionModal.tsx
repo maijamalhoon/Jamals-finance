@@ -96,14 +96,23 @@ export default function TransactionModal({
       setError("Please fill in all fields.");
       return;
     }
+
+    const parsedAmount = Number(amount);
+    if (!Number.isFinite(parsedAmount) || parsedAmount <= 0) {
+      setError("Enter an amount greater than 0.");
+      return;
+    }
+
     setLoading(true);
     setError("");
 
     const {
       data: { user },
+      error: userError,
     } = await supabase.auth.getUser();
-    if (!user) {
-      setError("Not logged in. Please refresh.");
+    if (userError || !user) {
+      setError("Not logged in. Please sign in again.");
+      toast.error("Please sign in again");
       setLoading(false);
       return;
     }
@@ -111,7 +120,7 @@ export default function TransactionModal({
     const payload = {
       user_id: user.id,
       type,
-      amount: parseFloat(amount),
+      amount: parsedAmount,
       category_id: categoryId,
       account_id: accountId,
       date,

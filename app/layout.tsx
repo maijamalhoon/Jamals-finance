@@ -1,9 +1,6 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "sonner";
-
-const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "Jamal's Finance",
@@ -17,9 +14,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body
-        className={`${inter.className} bg-[#0B0D17] text-white antialiased`}
-      >
+      <body className="bg-[#0B0D17] text-white antialiased">
         {children}
         <Toaster
           position="top-right"
