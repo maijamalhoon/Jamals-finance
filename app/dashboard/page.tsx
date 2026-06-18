@@ -7,6 +7,7 @@ import AIInsightPanel from "@/components/dashboard/AIInsightPanel";
 import GoalsProgress from "@/components/dashboard/GoalsProgress";
 import CurrencyConverter from "@/components/dashboard/CurrencyConverter";
 import DashboardSignals from "@/components/dashboard/DashboardSignals";
+import TodaysOverview from "@/components/dashboard/TodaysOverview";
 import {
   Wallet,
   TrendingUp,
@@ -94,7 +95,12 @@ export default async function DashboardPage() {
     if (t.type === "expense") current.expenses += Number(t.amount);
     dailyTotals.set(t.date, current);
   });
-  const activeDays = dailyTotals.size;
+  const todayStr = now.toISOString().split("T")[0];
+  const todayTotals = dailyTotals.get(todayStr) ?? { income: 0, expenses: 0 };
+  const todayTransactions = txns.filter((t) => t.date === todayStr);
+  const activeDayNumbers = Array.from(dailyTotals.keys()).map((date) =>
+    Number(date.split("-")[2]),
+  );
 
   const chartData = Array.from({ length: daysInMonth }, (_, i) => {
     const day = i + 1;
@@ -133,6 +139,7 @@ export default async function DashboardPage() {
   const dayOfMonth = now.getDate();
   const savingsRate = income > 0 ? ((income - expenses) / income) * 100 : 0;
   const dailySpend = expenses / Math.max(dayOfMonth, 1);
+  const dailyExpenseTrend = chartData.map((day) => day.expenses);
   const topCategory =
     spendingData[0] ?
       {
@@ -190,7 +197,7 @@ export default async function DashboardPage() {
   ];
 
   return (
-    <div className="space-y-5 pb-4">
+    <div className="space-y-5 pb-8">
       <div className="page-heading">
         <div>
           <p className="text-xs font-medium uppercase tracking-[0.18em] text-cyan-300/80">
@@ -213,22 +220,31 @@ export default async function DashboardPage() {
           })}
         </div>
       </div>
-      {/* Stat Cards — 2 cols mobile, 3 cols tablet, 5 cols desktop */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-3">
         {stats.map((s, i) => (
           <StatCard key={i} {...s} />
         ))}
       </div>
 
+      <TodaysOverview
+        income={fmt(todayTotals.income)}
+        expenses={fmt(todayTotals.expenses)}
+        net={fmt(todayTotals.income - todayTotals.expenses)}
+        netPositive={todayTotals.income - todayTotals.expenses >= 0}
+        transactionCount={todayTransactions.length}
+        avgDailySpend={fmt(dailySpend)}
+        topCategory={topCategory}
+        savingsRate={savingsRate}
+      />
+
       <DashboardSignals
         savingsRate={savingsRate}
         dailySpend={fmt(dailySpend)}
-        activeDays={activeDays}
+        dailyExpenseTrend={dailyExpenseTrend}
+        activeDayNumbers={activeDayNumbers}
         daysInMonth={daysInMonth}
-        topCategory={topCategory}
       />
 
-      {/* Charts — stacked mobile, side by side desktop */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <div className="lg:col-span-2">
           <IncomeExpenseChart data={chartData} />
@@ -236,7 +252,6 @@ export default async function DashboardPage() {
         <SpendingBreakdown data={spendingData} total={expenses} />
       </div>
 
-      {/* Bottom — stacked mobile, side by side desktop */}
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
         <div className="lg:col-span-3">
           <RecentTransactions transactions={txns.slice(0, 5) as any} />

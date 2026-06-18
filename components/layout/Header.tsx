@@ -3,13 +3,19 @@
 import {
   Bell,
   ChevronDown,
+  CircleDollarSign,
   Search,
   Settings,
   LogOut,
+  Plus,
+  TrendingDown,
+  TrendingUp,
 } from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { useState, useRef, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
+import TransactionModal from "@/components/dashboard/TransactionModal";
 
 function getGreeting() {
   const h = new Date().getHours();
@@ -25,8 +31,12 @@ export default function Header() {
   const [query, setQuery] = useState("");
   const [profileOpen, setProfileOpen] = useState(false);
   const [bellOpen, setBellOpen] = useState(false);
+  const [actionOpen, setActionOpen] = useState(false);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [txType, setTxType] = useState<"income" | "expense">("income");
   const profileRef = useRef<HTMLDivElement>(null);
   const bellRef = useRef<HTMLDivElement>(null);
+  const actionRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     function handleClick(e: MouseEvent) {
@@ -38,6 +48,12 @@ export default function Header() {
       }
       if (bellRef.current && !bellRef.current.contains(e.target as Node)) {
         setBellOpen(false);
+      }
+      if (
+        actionRef.current &&
+        !actionRef.current.contains(e.target as Node)
+      ) {
+        setActionOpen(false);
       }
     }
     document.addEventListener("mousedown", handleClick);
@@ -58,12 +74,80 @@ export default function Header() {
     router.push("/login");
   }
 
+  function openTransaction(type: "income" | "expense") {
+    setTxType(type);
+    setActionOpen(false);
+    setModalOpen(true);
+  }
+
   return (
-    <div className="flex h-16 flex-shrink-0 items-center justify-between border-b border-white/[0.08] bg-[#0b1118]/96 px-6 backdrop-blur-xl">
+    <>
+    <div className="flex h-16 flex-shrink-0 items-center justify-between border-b border-white/[0.08] bg-[#17181c]/95 px-6 backdrop-blur-xl">
       <div>
-        <h1 className="text-white font-semibold text-base">
-          {getGreeting()}, Jamal
-        </h1>
+        <div className="flex items-center gap-2">
+          <h1 className="text-white font-semibold text-base">
+            {getGreeting()}, Jamal
+          </h1>
+          <div className="relative" ref={actionRef}>
+            <button
+              onClick={() => {
+                setActionOpen((p) => !p);
+                setBellOpen(false);
+                setProfileOpen(false);
+              }}
+              className="finance-focus grid h-8 w-8 place-items-center rounded-full border border-white/[0.1] bg-white/[0.07] text-white shadow-[0_10px_28px_rgba(0,0,0,0.22)] transition duration-200 ease-out hover:border-cyan-300/35 hover:bg-cyan-300/15"
+              aria-label="Open quick actions"
+            >
+              <Plus size={17} />
+            </button>
+
+            <AnimatePresence>
+              {actionOpen && (
+                <motion.div
+                  initial={{ opacity: 0, y: -6, scale: 0.98 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: -6, scale: 0.98 }}
+                  transition={{ duration: 0.18, ease: [0.16, 1, 0.3, 1] }}
+                  className="finance-glass-panel absolute left-0 top-10 z-50 w-64 overflow-hidden p-2"
+                >
+                  <div className="flex items-center gap-2 px-3 py-2">
+                    <span className="grid h-8 w-8 place-items-center rounded-2xl bg-cyan-300/15 text-cyan-200">
+                      <CircleDollarSign size={15} />
+                    </span>
+                    <div>
+                      <p className="text-sm font-semibold text-white">
+                        Quick entry
+                      </p>
+                      <p className="text-[11px] text-slate-500">
+                        Add a transaction
+                      </p>
+                    </div>
+                  </div>
+                  <div className="mt-1 grid gap-2">
+                    <button
+                      onClick={() => openTransaction("income")}
+                      className="finance-focus flex items-center gap-3 rounded-2xl border border-emerald-300/20 bg-emerald-400/12 px-3 py-3 text-left text-sm font-semibold text-emerald-100 transition duration-200 ease-out hover:bg-emerald-400/18"
+                    >
+                      <span className="grid h-9 w-9 place-items-center rounded-2xl bg-emerald-300 text-slate-950">
+                        <TrendingUp size={17} />
+                      </span>
+                      Add Income
+                    </button>
+                    <button
+                      onClick={() => openTransaction("expense")}
+                      className="finance-focus flex items-center gap-3 rounded-2xl border border-rose-300/20 bg-rose-400/12 px-3 py-3 text-left text-sm font-semibold text-rose-100 transition duration-200 ease-out hover:bg-rose-400/18"
+                    >
+                      <span className="grid h-9 w-9 place-items-center rounded-2xl bg-rose-300 text-slate-950">
+                        <TrendingDown size={17} />
+                      </span>
+                      Add Expense
+                    </button>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+        </div>
         <p className="text-slate-400 text-xs">Here's your financial overview</p>
       </div>
 
@@ -173,5 +257,15 @@ export default function Header() {
         </div>
       </div>
     </div>
+    <TransactionModal
+      open={modalOpen}
+      defaultType={txType}
+      onClose={() => setModalOpen(false)}
+      onSuccess={() => {
+        setModalOpen(false);
+        router.refresh();
+      }}
+    />
+    </>
   );
 }

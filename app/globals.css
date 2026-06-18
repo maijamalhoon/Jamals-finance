@@ -125,37 +125,41 @@
   body {
     @apply bg-background text-foreground;
     background:
-      linear-gradient(135deg, rgba(9, 15, 18, 0.98), rgba(7, 10, 14, 1) 48%, rgba(9, 16, 18, 1)),
-      #070a0e;
+      linear-gradient(135deg, rgba(23, 24, 28, 0.98), rgba(18, 19, 24, 1) 52%, rgba(20, 23, 28, 1)),
+      #121318;
     overflow-x: hidden;
     text-rendering: geometricPrecision;
   }
   html {
     @apply font-sans;
-    background: #070a0e;
+    background: #121318;
     scroll-behavior: smooth;
   }
 }
 
 @layer components {
   .finance-panel {
-    @apply rounded-lg border border-white/[0.08] bg-[#101820]/78 shadow-[0_18px_45px_rgba(0,0,0,0.22)] backdrop-blur;
+    @apply rounded-[28px] border border-white/[0.08] bg-[#1b1d23]/82 shadow-[0_18px_45px_rgba(0,0,0,0.22)] backdrop-blur;
     transition:
-      border-color 0.2s ease,
-      background-color 0.2s ease,
-      box-shadow 0.2s ease,
-      transform 0.2s ease;
+      border-color 0.18s ease-out,
+      background-color 0.18s ease-out,
+      box-shadow 0.18s ease-out,
+      transform 0.18s ease-out;
   }
 
   .finance-panel-soft {
-    @apply rounded-lg border border-white/[0.08] bg-white/[0.045] backdrop-blur;
+    @apply rounded-[24px] border border-white/[0.08] bg-white/[0.045] backdrop-blur;
     transition:
-      border-color 0.2s ease,
-      background-color 0.2s ease;
+      border-color 0.18s ease-out,
+      background-color 0.18s ease-out;
   }
 
   .finance-control {
-    @apply rounded-lg border border-white/10 bg-white/[0.055] transition-all duration-200 ease-out hover:border-white/[0.18] hover:bg-white/[0.08];
+    @apply rounded-2xl border border-white/10 bg-white/[0.055] transition-all duration-200 ease-out hover:border-white/[0.18] hover:bg-white/[0.08];
+  }
+
+  .finance-glass-panel {
+    @apply rounded-[28px] border border-white/[0.12] bg-[#202229]/70 shadow-[0_24px_70px_rgba(0,0,0,0.38)] backdrop-blur-2xl;
   }
 
   .finance-focus {
@@ -175,10 +179,10 @@
   }
 
   .summary-card {
-    @apply rounded-lg border border-white/[0.08] bg-[#101820]/78 p-4 shadow-[0_18px_45px_rgba(0,0,0,0.22)] backdrop-blur;
+    @apply rounded-[28px] border border-white/[0.08] bg-[#1b1d23]/82 p-4 shadow-[0_18px_45px_rgba(0,0,0,0.22)] backdrop-blur;
     transition:
-      transform 0.2s ease,
-      box-shadow 0.2s ease;
+      transform 0.18s ease-out,
+      box-shadow 0.18s ease-out;
   }
 
   .icon-button {
@@ -190,7 +194,7 @@
   }
 
   .finance-skeleton {
-    @apply rounded-lg border border-white/[0.08] bg-white/[0.045];
+    @apply rounded-[28px] border border-white/[0.08] bg-white/[0.045];
     background-image: linear-gradient(
       90deg,
       rgba(255, 255, 255, 0.02),
@@ -384,9 +388,9 @@ span.flatpickr-weekday {
 /* Smooth card hover */
 .card-hover {
   transition:
-    transform 0.2s ease,
-    border-color 0.2s ease,
-    box-shadow 0.2s ease;
+    transform 0.18s ease-out,
+    border-color 0.18s ease-out,
+    box-shadow 0.18s ease-out;
 }
 .card-hover:hover {
   transform: translateY(-1px);
@@ -439,7 +443,7 @@ button:active {
 /* Input focus glow */
 input:focus,
 select:focus {
-  box-shadow: 0 0 0 3px rgba(129, 140, 248, 0.16);
+  box-shadow: 0 0 0 3px rgba(103, 232, 249, 0.14);
 }
 
 @media (prefers-reduced-motion: reduce) {

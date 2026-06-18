@@ -1,0 +1,8 @@
+⨯ Another next dev server is already running.
+
+- Local:        http://localhost:3000
+- PID:          840
+- Dir:          D:\old pc\JAMAL\projects\jamals-finance
+- Log:          .next\dev\logs\next-development.log
+
+Run taskkill /PID 840 /F to stop it.

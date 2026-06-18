@@ -3,9 +3,11 @@
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
-import { BarChart3, Eye, EyeOff } from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
+import { BarChart3, Eye, EyeOff, LoaderCircle } from "lucide-react";
 
 type Step = "auth" | "otp";
+type LoadingMode = "syncing" | "creating" | "verifying" | null;
 
 export default function LoginPage() {
   const supabase = createClient();
@@ -22,6 +24,7 @@ export default function LoginPage() {
   const [showPass, setShowPass] = useState(false);
 
   const [loading, setLoading] = useState(false);
+  const [loadingMode, setLoadingMode] = useState<LoadingMode>(null);
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
 
@@ -31,6 +34,7 @@ export default function LoginPage() {
       return;
     }
     setLoading(true);
+    setLoadingMode("syncing");
     setError("");
 
     const { error: e } = await supabase.auth.signInWithPassword({
@@ -38,8 +42,9 @@ export default function LoginPage() {
       password,
     });
 
-    setLoading(false);
     if (e) {
+      setLoading(false);
+      setLoadingMode(null);
       setError("Wrong email or password.");
     } else {
       router.push("/dashboard");
@@ -56,6 +61,7 @@ export default function LoginPage() {
       return;
     }
     setLoading(true);
+    setLoadingMode("creating");
     setError("");
 
     const { error: e } = await supabase.auth.signUp({
@@ -67,6 +73,7 @@ export default function LoginPage() {
     });
 
     setLoading(false);
+    setLoadingMode(null);
     if (e) {
       setError(e.message);
     } else {
@@ -81,6 +88,7 @@ export default function LoginPage() {
       return;
     }
     setLoading(true);
+    setLoadingMode("verifying");
     setError("");
 
     const { error: e } = await supabase.auth.verifyOtp({
@@ -89,8 +97,9 @@ export default function LoginPage() {
       type: "signup",
     });
 
-    setLoading(false);
     if (e) {
+      setLoading(false);
+      setLoadingMode(null);
       setError("Invalid or expired code. Try again.");
     } else {
       router.push("/dashboard");
@@ -105,10 +114,10 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="min-h-screen bg-[#0B0D17] flex items-center justify-center px-4 py-10 text-white">
-      <div className="w-full max-w-sm">
+    <main className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[#121318] px-4 py-10 text-white">
+      <div className="w-full max-w-md">
         <div className="mb-8 flex items-center justify-center gap-3">
-          <div className="grid h-10 w-10 place-items-center rounded-lg bg-indigo-500/15 text-indigo-300 ring-1 ring-indigo-400/20">
+          <div className="grid h-12 w-12 place-items-center rounded-3xl bg-cyan-300/15 text-cyan-200 ring-1 ring-cyan-300/20">
             <BarChart3 size={21} />
           </div>
           <div>
@@ -121,7 +130,7 @@ export default function LoginPage() {
           </div>
         </div>
 
-        <div className="finance-panel p-7">
+        <div className="finance-panel p-7 sm:p-8">
           {step === "otp" ?
             <>
               <h2 className="text-white font-semibold text-lg mb-1">
@@ -142,7 +151,7 @@ export default function LoginPage() {
                     }
                     placeholder="000000"
                     maxLength={6}
-                    className="w-full finance-control px-4 py-3 text-white text-center text-2xl font-bold tracking-widest outline-none focus:border-indigo-400 placeholder-slate-700"
+                    className="w-full finance-control px-5 py-4 text-center text-2xl font-bold tracking-widest text-white outline-none placeholder-slate-700 focus:border-cyan-300"
                   />
                 </div>
 
@@ -155,7 +164,7 @@ export default function LoginPage() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full py-3 bg-indigo-500 hover:bg-indigo-600 text-white rounded-lg text-sm font-semibold transition-colors disabled:opacity-50 shadow-lg shadow-indigo-950/25"
+                  className="w-full rounded-3xl bg-cyan-400 py-4 text-sm font-semibold text-slate-950 shadow-lg shadow-cyan-950/25 transition-colors hover:bg-cyan-300 disabled:opacity-50"
                 >
                   {loading ? "Verifying..." : "Verify & Create Account"}
                 </button>
@@ -194,7 +203,7 @@ export default function LoginPage() {
                       value={name}
                       onChange={(e) => setName(e.target.value)}
                       placeholder="Jamal Malhoon"
-                      className="w-full finance-control px-4 py-3 text-white text-sm outline-none focus:border-indigo-400 placeholder-slate-600"
+                      className="w-full finance-control px-5 py-4 text-sm text-white outline-none placeholder-slate-600 focus:border-cyan-300"
                     />
                   </div>
                 )}
@@ -209,7 +218,7 @@ export default function LoginPage() {
                       value={phone}
                       onChange={(e) => setPhone(e.target.value)}
                       placeholder="+92 300 0000000"
-                      className="w-full finance-control px-4 py-3 text-white text-sm outline-none focus:border-indigo-400 placeholder-slate-600"
+                      className="w-full finance-control px-5 py-4 text-sm text-white outline-none placeholder-slate-600 focus:border-cyan-300"
                     />
                   </div>
                 )}
@@ -223,7 +232,7 @@ export default function LoginPage() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="you@example.com"
-                    className="w-full finance-control px-4 py-3 text-white text-sm outline-none focus:border-indigo-400 placeholder-slate-600"
+                    className="w-full finance-control px-5 py-4 text-sm text-white outline-none placeholder-slate-600 focus:border-cyan-300"
                   />
                 </div>
 
@@ -237,7 +246,7 @@ export default function LoginPage() {
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       placeholder="Min. 6 characters"
-                      className="w-full finance-control px-4 py-3 pr-10 text-white text-sm outline-none focus:border-indigo-400 placeholder-slate-600"
+                      className="w-full finance-control px-5 py-4 pr-12 text-sm text-white outline-none placeholder-slate-600 focus:border-cyan-300"
                     />
                     <button
                       type="button"
@@ -261,7 +270,7 @@ export default function LoginPage() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full py-3 bg-indigo-500 hover:bg-indigo-600 text-white rounded-lg text-sm font-semibold transition-colors disabled:opacity-50 mt-1 shadow-lg shadow-indigo-950/25"
+                  className="mt-1 w-full rounded-3xl bg-cyan-400 py-4 text-sm font-semibold text-slate-950 shadow-lg shadow-cyan-950/25 transition-colors hover:bg-cyan-300 disabled:opacity-50"
                 >
                   {loading ?
                     isSignUp ?
@@ -283,7 +292,7 @@ export default function LoginPage() {
                     setError("");
                     setMessage("");
                   }}
-                  className="text-indigo-300 hover:text-indigo-200 transition-colors"
+                  className="text-cyan-200 transition-colors hover:text-cyan-100"
                 >
                   {isSignUp ? "Sign in" : "Sign up"}
                 </button>
@@ -292,6 +301,63 @@ export default function LoginPage() {
           }
         </div>
       </div>
+      <AnimatePresence>
+        {loadingMode && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.18, ease: [0.16, 1, 0.3, 1] }}
+            className="fixed inset-0 z-50 grid place-items-center bg-[#121318]/72 px-4 backdrop-blur-xl"
+          >
+            <motion.div
+              initial={{ opacity: 0, y: 10, scale: 0.98 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 8, scale: 0.98 }}
+              transition={{ duration: 0.18, ease: [0.16, 1, 0.3, 1] }}
+              className="finance-glass-panel w-full max-w-sm p-7 text-center"
+            >
+              {loadingMode === "creating" ? (
+                <>
+                  <div className="mx-auto mb-5 h-2 overflow-hidden rounded-full bg-white/[0.08]">
+                    <motion.div
+                      className="h-full rounded-full bg-cyan-300"
+                      initial={{ width: "18%" }}
+                      animate={{ width: ["18%", "58%", "86%"] }}
+                      transition={{
+                        duration: 1.4,
+                        repeat: Infinity,
+                        ease: "easeOut",
+                      }}
+                    />
+                  </div>
+                  <motion.p
+                    animate={{ opacity: [0.72, 1, 0.72] }}
+                    transition={{ duration: 1.35, repeat: Infinity }}
+                    className="text-lg font-bold text-white"
+                  >
+                    Creating your account...
+                  </motion.p>
+                  <p className="mt-2 text-sm text-slate-400">
+                    Setting up your financial command center...
+                  </p>
+                </>
+              ) : (
+                <>
+                  <LoaderCircle className="mx-auto h-10 w-10 animate-spin text-cyan-200" />
+                  <motion.p
+                    animate={{ opacity: [0.72, 1, 0.72] }}
+                    transition={{ duration: 1.35, repeat: Infinity }}
+                    className="mt-5 text-lg font-bold text-white"
+                  >
+                    Loading your data...
+                  </motion.p>
+                </>
+              )}
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </main>
   );
 }
