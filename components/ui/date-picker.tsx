@@ -76,7 +76,11 @@ export default function DatePicker({
       ? formatDate(picker.selectedDates[0])
       : "";
     if (selected !== value) {
-      picker.setDate(value || null, false);
+      if (value) {
+        picker.setDate(value, false);
+      } else {
+        picker.clear(false);
+      }
     }
   }, [value]);
 
