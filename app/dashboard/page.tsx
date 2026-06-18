@@ -6,6 +6,7 @@ import RecentTransactions from "@/components/dashboard/RecentTransactions";
 import AIInsightPanel from "@/components/dashboard/AIInsightPanel";
 import GoalsProgress from "@/components/dashboard/GoalsProgress";
 import CurrencyConverter from "@/components/dashboard/CurrencyConverter";
+import DashboardSignals from "@/components/dashboard/DashboardSignals";
 import {
   Wallet,
   TrendingUp,
@@ -93,6 +94,7 @@ export default async function DashboardPage() {
     if (t.type === "expense") current.expenses += Number(t.amount);
     dailyTotals.set(t.date, current);
   });
+  const activeDays = dailyTotals.size;
 
   const chartData = Array.from({ length: daysInMonth }, (_, i) => {
     const day = i + 1;
@@ -128,6 +130,16 @@ export default async function DashboardPage() {
   const fmt = (n: number) =>
     `PKR ${n.toLocaleString("en-PK", { maximumFractionDigits: 0 })}`;
   const usd = (n: number) => `$${(n / 281.2).toFixed(2)} USD`;
+  const dayOfMonth = now.getDate();
+  const savingsRate = income > 0 ? ((income - expenses) / income) * 100 : 0;
+  const dailySpend = expenses / Math.max(dayOfMonth, 1);
+  const topCategory =
+    spendingData[0] ?
+      {
+        name: spendingData[0].name,
+        amount: fmt(spendingData[0].value),
+      }
+    : null;
 
   const stats = [
     {
@@ -207,6 +219,14 @@ export default async function DashboardPage() {
           <StatCard key={i} {...s} />
         ))}
       </div>
+
+      <DashboardSignals
+        savingsRate={savingsRate}
+        dailySpend={fmt(dailySpend)}
+        activeDays={activeDays}
+        daysInMonth={daysInMonth}
+        topCategory={topCategory}
+      />
 
       {/* Charts — stacked mobile, side by side desktop */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">

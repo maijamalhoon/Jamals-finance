@@ -47,14 +47,17 @@ export default function DatePicker({
     pickerRef.current = flatpickr(inputRef.current, {
       allowInput: false,
       appendTo: document.body,
+      clickOpens: true,
       dateFormat: "Y-m-d",
-      defaultDate: value || undefined,
       disableMobile: true,
       maxDate,
       minDate,
       monthSelectorType: "static",
       nextArrow: ">",
       prevArrow: "<",
+      onReady: (_selectedDates, _dateStr, instance) => {
+        instance.calendarContainer.classList.add("finance-datepicker");
+      },
       onChange: (selectedDates) => {
         onChangeRef.current(
           selectedDates[0] ? formatDate(selectedDates[0]) : "",
@@ -99,6 +102,9 @@ export default function DatePicker({
       <input
         id={id}
         ref={inputRef}
+        type="text"
+        inputMode="none"
+        autoComplete="off"
         value={value}
         readOnly
         disabled={disabled}
