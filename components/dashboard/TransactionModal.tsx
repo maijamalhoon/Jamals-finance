@@ -8,6 +8,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import DatePicker from "@/components/ui/date-picker";
 import { toast } from "sonner";
 
 interface Category {
@@ -243,12 +244,10 @@ export default function TransactionModal({
           {/* Date */}
           <div>
             <label className="text-gray-400 text-xs block mb-1.5">Date</label>
-            <input
-              type="date"
+            <DatePicker
               value={date}
-              onChange={(e) => setDate(e.target.value)}
-              className="w-full bg-gray-800/60 border border-gray-700/50 rounded-xl px-4 py-3 text-white text-sm outline-none focus:border-indigo-500 transition-colors"
-              style={{ colorScheme: "dark" }}
+              onChange={setDate}
+              placeholder="Select transaction date"
             />
           </div>
 

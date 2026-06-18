@@ -8,6 +8,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import DatePicker from "@/components/ui/date-picker";
 
 const TYPES = [
   { value: "crypto", label: "Crypto" },
@@ -205,12 +206,10 @@ export default function InvestmentModal({
             <label className="text-gray-400 text-xs block mb-1.5">
               Purchase Date
             </label>
-            <input
-              type="date"
+            <DatePicker
               value={purchasedAt}
-              onChange={(e) => setPurchasedAt(e.target.value)}
-              className="w-full bg-gray-800/60 border border-gray-700/50 rounded-xl px-4 py-3 text-white text-sm outline-none focus:border-indigo-500 transition-colors"
-              style={{ colorScheme: "dark" }}
+              onChange={setPurchasedAt}
+              placeholder="Select purchase date"
             />
           </div>
 
