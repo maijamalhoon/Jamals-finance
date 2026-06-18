@@ -4,6 +4,8 @@ import AddExpenseButton from "@/components/expenses/AddExpenseButton";
 import EmptyState from "@/components/ui/empty-state";
 import { TrendingDown } from "lucide-react";
 
+export const dynamic = "force-dynamic";
+
 export default async function ExpensesPage() {
   const supabase = await createClient();
   const now = new Date();

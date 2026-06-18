@@ -4,6 +4,8 @@ import AddAccountButton from "@/components/accounts/AddAccountButton";
 import EmptyState from "@/components/ui/empty-state";
 import { WalletCards } from "lucide-react";
 
+export const dynamic = "force-dynamic";
+
 export default async function AccountsPage() {
   const supabase = await createClient();
 

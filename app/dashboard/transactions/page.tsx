@@ -5,6 +5,8 @@ import TransactionRow from "@/components/transactions/TransactionRow";
 import EmptyState from "@/components/ui/empty-state";
 import { ArrowLeftRight } from "lucide-react";
 
+export const dynamic = "force-dynamic";
+
 export default async function TransactionsPage({
   searchParams,
 }: {

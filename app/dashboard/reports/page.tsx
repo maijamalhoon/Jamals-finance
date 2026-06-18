@@ -3,6 +3,8 @@ import MonthlyChart from "@/components/reports/MonthlyChart";
 import CategoryBreakdown from "@/components/reports/CategoryBreakdown";
 import ExportButton from "@/components/reports/ExportButton";
 
+export const dynamic = "force-dynamic";
+
 interface RelatedCategory {
   name?: string;
   color?: string;

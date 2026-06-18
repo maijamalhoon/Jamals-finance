@@ -4,6 +4,8 @@ import AddIncomeButton from "@/components/income/AddIncomeButton";
 import EmptyState from "@/components/ui/empty-state";
 import { TrendingUp } from "lucide-react";
 
+export const dynamic = "force-dynamic";
+
 export default async function IncomePage() {
   const supabase = await createClient();
   const now = new Date();

@@ -1,5 +1,7 @@
 import InsightsPanel from "@/components/ai-insights/InsightsPanel";
 
+export const dynamic = "force-dynamic";
+
 export default function AIInsightsPage() {
   return (
     <div>
