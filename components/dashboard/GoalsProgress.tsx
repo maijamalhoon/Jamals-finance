@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { CheckCircle2 } from "lucide-react";
 import { GOAL_ICONS } from "@/components/goals/goal-icons";
+import EmptyState from "@/components/ui/empty-state";
 
 interface Goal {
   id: string;
@@ -24,9 +25,12 @@ export default function GoalsProgress({ goals }: { goals: Goal[] }) {
       </div>
 
       {goals.length === 0 ?
-        <div className="py-6 text-center">
-          <p className="text-slate-500 text-sm">No goals yet</p>
-        </div>
+        <EmptyState
+          compact
+          icon={CheckCircle2}
+          title="No goals yet"
+          description="Create goals to monitor savings progress from the dashboard."
+        />
       : <div className="space-y-4">
           {goals.map((g) => {
             const pct = Math.min(

@@ -1,6 +1,8 @@
 import { createClient } from "@/lib/supabase/server";
 import TransactionRow from "@/components/transactions/TransactionRow";
 import AddExpenseButton from "@/components/expenses/AddExpenseButton";
+import EmptyState from "@/components/ui/empty-state";
+import { TrendingDown } from "lucide-react";
 
 export default async function ExpensesPage() {
   const supabase = await createClient();
@@ -151,12 +153,11 @@ export default async function ExpensesPage() {
         </div>
 
         {expenses.length === 0 ? (
-          <div className="py-16 text-center">
-            <p className="text-sm text-slate-500">No expense records yet</p>
-            <p className="mt-1 text-xs text-slate-600">
-              Click "Add Expense" to record your first expense
-            </p>
-          </div>
+          <EmptyState
+            icon={TrendingDown}
+            title="No expense records yet"
+            description="Record your first expense to unlock category breakdowns and spend patterns."
+          />
         ) : (
           expenses.map((tx) => <TransactionRow key={tx.id} tx={tx as any} />)
         )}

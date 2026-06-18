@@ -2,6 +2,8 @@ import { Suspense } from "react";
 import { createClient } from "@/lib/supabase/server";
 import TransactionFilters from "@/components/transactions/TransactionFilters";
 import TransactionRow from "@/components/transactions/TransactionRow";
+import EmptyState from "@/components/ui/empty-state";
+import { ArrowLeftRight } from "lucide-react";
 
 export default async function TransactionsPage({
   searchParams,
@@ -68,12 +70,15 @@ export default async function TransactionsPage({
         </div>
 
         {transactions.length === 0 ? (
-          <div className="py-16 text-center">
-            <p className="text-sm text-slate-500">No transactions found</p>
-            <p className="mt-1 text-xs text-slate-600">
-              Try changing the filters
-            </p>
-          </div>
+          <EmptyState
+            icon={ArrowLeftRight}
+            title="No transactions found"
+            description={
+              searchTerm || from || to || type ?
+                "Try relaxing the filters or searching a different category, account, or note."
+              : "Add income or expenses to build your transaction history."
+            }
+          />
         ) : (
           transactions.map((tx) => <TransactionRow key={tx.id} tx={tx as any} />)
         )}

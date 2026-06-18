@@ -1,6 +1,8 @@
 import { createClient } from "@/lib/supabase/server";
 import GoalCard from "@/components/goals/GoalCard";
 import AddGoalButton from "@/components/goals/AddGoalButton";
+import EmptyState from "@/components/ui/empty-state";
+import { Target } from "lucide-react";
 
 export default async function GoalsPage() {
   const supabase = await createClient();
@@ -61,11 +63,12 @@ export default async function GoalsPage() {
       )}
 
       {list.length === 0 ? (
-        <div className="finance-panel p-12 text-center sm:p-16">
-          <p className="text-sm text-slate-500">No goals yet</p>
-          <p className="mt-1 text-xs text-slate-600">
-            Click "New Goal" to set your first financial target
-          </p>
+        <div className="finance-panel px-5">
+          <EmptyState
+            icon={Target}
+            title="No goals yet"
+            description="Create your first target to track savings progress and deadlines."
+          />
         </div>
       ) : (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">

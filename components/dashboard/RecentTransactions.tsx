@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ArrowDownLeft, ArrowUpRight } from "lucide-react";
+import EmptyState from "@/components/ui/empty-state";
 
 interface Transaction {
   id: string;
@@ -34,12 +35,12 @@ export default function RecentTransactions({
       </div>
 
       {transactions.length === 0 ?
-        <div className="py-12 text-center">
-          <p className="text-slate-400 text-sm">No transactions yet</p>
-          <p className="text-slate-600 text-xs mt-1">
-            Add your first income or expense below
-          </p>
-        </div>
+        <EmptyState
+          compact
+          icon={ArrowDownLeft}
+          title="No transactions yet"
+          description="Add your first income or expense to see recent activity here."
+        />
       : <div className="divide-y divide-white/[0.06]">
           {transactions.map((tx) => {
             const catColor = tx.categories?.color || "#818cf8";

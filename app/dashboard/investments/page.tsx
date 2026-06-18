@@ -1,6 +1,8 @@
 import { createClient } from "@/lib/supabase/server";
 import InvestmentCard from "@/components/investments/InvestmentCard";
 import AddInvestmentButton from "@/components/investments/AddInvestmentButton";
+import EmptyState from "@/components/ui/empty-state";
+import { BarChart2 } from "lucide-react";
 
 export default async function InvestmentsPage() {
   const supabase = await createClient();
@@ -85,11 +87,12 @@ export default async function InvestmentsPage() {
       )}
 
       {list.length === 0 ? (
-        <div className="finance-panel p-12 text-center sm:p-16">
-          <p className="text-sm text-slate-500">No investments yet</p>
-          <p className="mt-1 text-xs text-slate-600">
-            Click "Add Investment" to track your first holding
-          </p>
+        <div className="finance-panel px-5">
+          <EmptyState
+            icon={BarChart2}
+            title="No investments yet"
+            description="Add your first holding to track invested value and profit or loss."
+          />
         </div>
       ) : (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">

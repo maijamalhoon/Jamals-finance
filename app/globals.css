@@ -128,24 +128,34 @@
       linear-gradient(135deg, rgba(9, 15, 18, 0.98), rgba(7, 10, 14, 1) 48%, rgba(9, 16, 18, 1)),
       #070a0e;
     overflow-x: hidden;
+    text-rendering: geometricPrecision;
   }
   html {
     @apply font-sans;
     background: #070a0e;
+    scroll-behavior: smooth;
   }
 }
 
 @layer components {
   .finance-panel {
     @apply rounded-lg border border-white/[0.08] bg-[#101820]/78 shadow-[0_18px_45px_rgba(0,0,0,0.22)] backdrop-blur;
+    transition:
+      border-color 0.2s ease,
+      background-color 0.2s ease,
+      box-shadow 0.2s ease,
+      transform 0.2s ease;
   }
 
   .finance-panel-soft {
     @apply rounded-lg border border-white/[0.08] bg-white/[0.045] backdrop-blur;
+    transition:
+      border-color 0.2s ease,
+      background-color 0.2s ease;
   }
 
   .finance-control {
-    @apply rounded-lg border border-white/10 bg-white/[0.055] transition-colors hover:border-white/[0.18] hover:bg-white/[0.08];
+    @apply rounded-lg border border-white/10 bg-white/[0.055] transition-all duration-200 ease-out hover:border-white/[0.18] hover:bg-white/[0.08];
   }
 
   .finance-focus {
@@ -177,6 +187,18 @@
 
   .desktop-list-header {
     @apply hidden items-center gap-3 border-b border-white/[0.08] pb-3 text-xs font-medium uppercase tracking-wide text-slate-500 md:flex;
+  }
+
+  .finance-skeleton {
+    @apply rounded-lg border border-white/[0.08] bg-white/[0.045];
+    background-image: linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0.02),
+      rgba(255, 255, 255, 0.075),
+      rgba(255, 255, 255, 0.02)
+    );
+    background-size: 220% 100%;
+    animation: shimmer 1.35s ease-in-out infinite;
   }
 }
 /* Custom scrollbar */
@@ -363,11 +385,25 @@ span.flatpickr-weekday {
 .card-hover {
   transition:
     transform 0.2s ease,
+    border-color 0.2s ease,
     box-shadow 0.2s ease;
 }
 .card-hover:hover {
   transform: translateY(-1px);
   box-shadow: 0 14px 36px rgba(0, 0, 0, 0.28);
+}
+
+a,
+button {
+  transition-timing-function: ease-out;
+}
+
+button {
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: not-allowed;
 }
 
 /* Button press effect */
@@ -389,6 +425,15 @@ button:active {
 
 .page-enter {
   animation: fadeIn 0.3s ease forwards;
+}
+
+@keyframes shimmer {
+  from {
+    background-position: 120% 0;
+  }
+  to {
+    background-position: -120% 0;
+  }
 }
 
 /* Input focus glow */

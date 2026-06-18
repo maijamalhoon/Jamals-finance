@@ -1,6 +1,8 @@
 import { createClient } from "@/lib/supabase/server";
 import TransactionRow from "@/components/transactions/TransactionRow";
 import AddIncomeButton from "@/components/income/AddIncomeButton";
+import EmptyState from "@/components/ui/empty-state";
+import { TrendingUp } from "lucide-react";
 
 export default async function IncomePage() {
   const supabase = await createClient();
@@ -149,12 +151,11 @@ export default async function IncomePage() {
         </div>
 
         {income.length === 0 ? (
-          <div className="py-16 text-center">
-            <p className="text-sm text-slate-500">No income records yet</p>
-            <p className="mt-1 text-xs text-slate-600">
-              Click "Add Income" to record your first earning
-            </p>
-          </div>
+          <EmptyState
+            icon={TrendingUp}
+            title="No income records yet"
+            description="Add your first earning to start seeing source breakdowns and income trends."
+          />
         ) : (
           income.map((tx) => <TransactionRow key={tx.id} tx={tx as any} />)
         )}

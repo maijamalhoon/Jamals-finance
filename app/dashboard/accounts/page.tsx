@@ -1,6 +1,8 @@
 import { createClient } from "@/lib/supabase/server";
 import AccountCard from "@/components/accounts/AccountCard";
 import AddAccountButton from "@/components/accounts/AddAccountButton";
+import EmptyState from "@/components/ui/empty-state";
+import { WalletCards } from "lucide-react";
 
 export default async function AccountsPage() {
   const supabase = await createClient();
@@ -29,11 +31,12 @@ export default async function AccountsPage() {
       </div>
 
       {!accounts?.length ? (
-        <div className="finance-panel p-12 text-center sm:p-16">
-          <p className="text-sm text-slate-500">No accounts yet</p>
-          <p className="mt-1 text-xs text-slate-600">
-            Click "Add Account" to get started
-          </p>
+        <div className="finance-panel px-5">
+          <EmptyState
+            icon={WalletCards}
+            title="No accounts yet"
+            description="Add your cash, bank, or wallet accounts to start tracking balances."
+          />
         </div>
       ) : (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
