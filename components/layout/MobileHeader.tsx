@@ -1,17 +1,34 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
-import { BarChart3, Bell, Menu, X } from "lucide-react";
+import { usePathname, useRouter } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
+import {
+  BarChart3,
+  Bell,
+  CircleDollarSign,
+  Menu,
+  Plus,
+  TrendingDown,
+  TrendingUp,
+  X,
+} from "lucide-react";
 import { NAV_ITEMS, QUICK_ACTION_ITEMS } from "@/lib/navigation";
+import TransactionModal from "@/components/dashboard/TransactionModal";
 
 export default function MobileHeader() {
   const pathname = usePathname();
+  const router = useRouter();
   const [open, setOpen] = useState(false);
+  const [actionOpen, setActionOpen] = useState(false);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [txType, setTxType] = useState<"income" | "expense">("income");
+  const actionRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setOpen(false);
+    setActionOpen(false);
   }, [pathname]);
 
   useEffect(() => {
@@ -20,6 +37,26 @@ export default function MobileHeader() {
       document.body.style.overflow = "";
     };
   }, [open]);
+
+  useEffect(() => {
+    function handleClick(event: MouseEvent) {
+      if (
+        actionRef.current &&
+        !actionRef.current.contains(event.target as Node)
+      ) {
+        setActionOpen(false);
+      }
+    }
+
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, []);
+
+  function openTransaction(type: "income" | "expense") {
+    setTxType(type);
+    setActionOpen(false);
+    setModalOpen(true);
+  }
 
   return (
     <>
@@ -41,6 +78,61 @@ export default function MobileHeader() {
         </div>
 
         <div className="flex items-center gap-2">
+          <div className="relative" ref={actionRef}>
+            <button
+              onClick={() => setActionOpen((current) => !current)}
+              className="finance-focus grid h-9 w-9 place-items-center rounded-2xl border border-white/[0.1] bg-white/[0.07] text-white shadow-[0_10px_28px_rgba(0,0,0,0.22)]"
+              aria-label="Open quick actions"
+            >
+              <Plus size={17} />
+            </button>
+
+            <AnimatePresence>
+              {actionOpen && (
+                <motion.div
+                  initial={{ opacity: 0, y: -6, scale: 0.98 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: -6, scale: 0.98 }}
+                  transition={{ duration: 0.18, ease: [0.16, 1, 0.3, 1] }}
+                  className="finance-glass-panel absolute right-0 top-11 z-50 w-64 overflow-hidden p-2"
+                >
+                  <div className="flex items-center gap-2 px-3 py-2">
+                    <span className="grid h-8 w-8 place-items-center rounded-2xl bg-cyan-300/15 text-cyan-200">
+                      <CircleDollarSign size={15} />
+                    </span>
+                    <div>
+                      <p className="text-sm font-semibold text-white">
+                        Quick entry
+                      </p>
+                      <p className="text-[11px] text-slate-500">
+                        Add a transaction
+                      </p>
+                    </div>
+                  </div>
+                  <div className="mt-1 grid gap-2">
+                    <button
+                      onClick={() => openTransaction("income")}
+                      className="finance-focus flex items-center gap-3 rounded-2xl border border-emerald-300/20 bg-emerald-400/12 px-3 py-3 text-left text-sm font-semibold text-emerald-100"
+                    >
+                      <span className="grid h-9 w-9 place-items-center rounded-2xl bg-emerald-300 text-slate-950">
+                        <TrendingUp size={17} />
+                      </span>
+                      Add Income
+                    </button>
+                    <button
+                      onClick={() => openTransaction("expense")}
+                      className="finance-focus flex items-center gap-3 rounded-2xl border border-rose-300/20 bg-rose-400/12 px-3 py-3 text-left text-sm font-semibold text-rose-100"
+                    >
+                      <span className="grid h-9 w-9 place-items-center rounded-2xl bg-rose-300 text-slate-950">
+                        <TrendingDown size={17} />
+                      </span>
+                      Add Expense
+                    </button>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
           <button
             className="finance-focus finance-control relative flex h-9 w-9 items-center justify-center"
             aria-label="Open notifications"
@@ -140,6 +232,15 @@ export default function MobileHeader() {
           </aside>
         </div>
       )}
+      <TransactionModal
+        open={modalOpen}
+        defaultType={txType}
+        onClose={() => setModalOpen(false)}
+        onSuccess={() => {
+          setModalOpen(false);
+          router.refresh();
+        }}
+      />
     </>
   );
 }

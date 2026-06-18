@@ -1,3 +1,6 @@
+"use client";
+
+import { motion } from "framer-motion";
 import { Activity, CalendarCheck, Flame } from "lucide-react";
 
 function clamp(value: number, min = 0, max = 100) {
@@ -36,10 +39,19 @@ function Sparkline({ values }: { values: number[] }) {
           <stop offset="100%" stopColor="#fbbf24" stopOpacity="0" />
         </linearGradient>
       </defs>
-      <path d={areaPath} fill="url(#dailySpendSpark)" />
-      <path
+      <motion.path
+        d={areaPath}
+        fill="url(#dailySpendSpark)"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.18, ease: [0.16, 1, 0.3, 1] }}
+      />
+      <motion.path
         d={path}
         fill="none"
+        initial={{ pathLength: 0, opacity: 0.65 }}
+        animate={{ pathLength: 1, opacity: 1 }}
+        transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
         stroke="#fbbf24"
         strokeLinecap="round"
         strokeLinejoin="round"
@@ -67,14 +79,16 @@ function Donut({ value }: { value: number }) {
           stroke="rgba(255,255,255,0.07)"
           strokeWidth="12"
         />
-        <circle
+        <motion.circle
           cx="56"
           cy="56"
           r={radius}
           fill="none"
           stroke={positive ? "#86efac" : "#fda4af"}
           strokeDasharray={circumference}
-          strokeDashoffset={offset}
+          initial={{ strokeDashoffset: circumference }}
+          animate={{ strokeDashoffset: offset }}
+          transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
           strokeLinecap="round"
           strokeWidth="12"
         />
@@ -155,9 +169,16 @@ export default function DashboardSignals({
             const day = index + 1;
             const active = activeSet.has(day);
             return (
-              <span
+              <motion.span
                 key={day}
                 title={`Day ${day}`}
+                initial={{ opacity: 0, scale: 0.84 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{
+                  duration: 0.16,
+                  delay: Math.min(index * 0.006, 0.12),
+                  ease: [0.16, 1, 0.3, 1],
+                }}
                 className={`aspect-square rounded-[9px] ${
                   active ?
                     "bg-cyan-300 shadow-[0_0_18px_rgba(103,232,249,0.24)]"
