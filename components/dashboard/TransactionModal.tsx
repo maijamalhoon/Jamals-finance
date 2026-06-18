@@ -151,10 +151,6 @@ export default function TransactionModal({
   }
 
   const isIncome = type === "income";
-  const btnColor =
-    isIncome ?
-      "bg-green-600 hover:bg-green-700"
-    : "bg-red-600 hover:bg-red-700";
   const btnLabel =
     loading ? "Saving..."
     : isEditing ? `Update ${isIncome ? "Income" : "Expense"}`
@@ -162,8 +158,8 @@ export default function TransactionModal({
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="bg-[#111827] border border-gray-800 text-white max-w-md p-0 gap-0">
-        <DialogHeader className="p-5 border-b border-gray-800">
+      <DialogContent className="finance-glass-panel max-w-md gap-0 p-0 text-white">
+        <DialogHeader className="border-b border-white/[0.08] p-5">
           <DialogTitle className="text-base font-semibold">
             {isEditing ? "Edit Transaction" : "Add Transaction"}
           </DialogTitle>
@@ -171,17 +167,17 @@ export default function TransactionModal({
 
         <div className="p-5 space-y-4">
           {/* Type Toggle */}
-          <div className="flex gap-2 p-1 bg-gray-800/50 rounded-xl">
+          <div className="flex gap-2 rounded-2xl border border-white/[0.08] bg-white/[0.045] p-1">
             {(["income", "expense"] as const).map((t) => (
               <button
                 key={t}
                 onClick={() => setType(t)}
-                className={`flex-1 py-2 rounded-lg text-sm font-medium transition-colors ${
+                className={`flex-1 rounded-xl py-2 text-sm font-medium transition-colors ${
                   type === t ?
                     t === "income" ?
-                      "bg-green-600 text-white"
-                    : "bg-red-600 text-white"
-                  : "text-gray-500 hover:text-white"
+                      "bg-emerald-300 text-slate-950"
+                    : "bg-rose-300 text-slate-950"
+                  : "text-slate-500 hover:text-white"
                 }`}
               >
                 {t === "income" ? "Income" : "Expense"}
@@ -191,27 +187,23 @@ export default function TransactionModal({
 
           {/* Amount */}
           <div>
-            <label className="text-gray-400 text-xs block mb-1.5">
-              Amount (PKR)
-            </label>
+            <label className="field-label">Amount (PKR)</label>
             <input
               type="number"
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
               placeholder="0"
-              className="w-full bg-gray-800/60 border border-gray-700/50 rounded-xl px-4 py-3 text-white text-lg font-semibold outline-none focus:border-indigo-500 transition-colors placeholder-gray-700"
+              className="field-input text-lg font-semibold"
             />
           </div>
 
           {/* Category */}
           <div>
-            <label className="text-gray-400 text-xs block mb-1.5">
-              Category
-            </label>
+            <label className="field-label">Category</label>
             <select
               value={categoryId}
               onChange={(e) => setCategoryId(e.target.value)}
-              className="w-full bg-gray-800/60 border border-gray-700/50 rounded-xl px-4 py-3 text-white text-sm outline-none focus:border-indigo-500 transition-colors"
+              className="field-input"
               style={{ colorScheme: "dark" }}
             >
               {categories.map((c) => (
@@ -224,13 +216,11 @@ export default function TransactionModal({
 
           {/* Account */}
           <div>
-            <label className="text-gray-400 text-xs block mb-1.5">
-              Account
-            </label>
+            <label className="field-label">Account</label>
             <select
               value={accountId}
               onChange={(e) => setAccountId(e.target.value)}
-              className="w-full bg-gray-800/60 border border-gray-700/50 rounded-xl px-4 py-3 text-white text-sm outline-none focus:border-indigo-500 transition-colors"
+              className="field-input"
               style={{ colorScheme: "dark" }}
             >
               {accounts.map((a) => (
@@ -243,7 +233,7 @@ export default function TransactionModal({
 
           {/* Date */}
           <div>
-            <label className="text-gray-400 text-xs block mb-1.5">Date</label>
+            <label className="field-label">Date</label>
             <DatePicker
               value={date}
               onChange={setDate}
@@ -253,15 +243,13 @@ export default function TransactionModal({
 
           {/* Note */}
           <div>
-            <label className="text-gray-400 text-xs block mb-1.5">
-              Note (Optional)
-            </label>
+            <label className="field-label">Note (Optional)</label>
             <input
               type="text"
               value={note}
               onChange={(e) => setNote(e.target.value)}
               placeholder="What was this for?"
-              className="w-full bg-gray-800/60 border border-gray-700/50 rounded-xl px-4 py-3 text-white text-sm outline-none focus:border-indigo-500 transition-colors placeholder-gray-700"
+              className="field-input"
             />
           </div>
 
@@ -274,7 +262,7 @@ export default function TransactionModal({
           <button
             onClick={handleSave}
             disabled={loading}
-            className={`w-full py-3 rounded-xl text-sm font-semibold text-white transition-colors disabled:opacity-50 ${btnColor}`}
+            className={`w-full py-3 ${isIncome ? "success-action" : "danger-action"}`}
           >
             {btnLabel}
           </button>

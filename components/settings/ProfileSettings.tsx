@@ -45,62 +45,58 @@ export default function ProfileSettings({ email }: { email: string }) {
   }
 
   return (
-    <div className="bg-gray-900/60 border border-gray-800/50 rounded-2xl p-5">
-      <h3 className="text-white font-medium text-sm mb-4">Profile</h3>
+    <div className="finance-panel p-5">
+      <h3 className="mb-4 text-sm font-semibold text-white">Profile</h3>
 
       <div className="space-y-4">
-        {/* Email — read only */}
         <div>
-          <label className="text-gray-400 text-xs block mb-1.5">Email</label>
+          <label className="field-label">Email</label>
           <input
             value={email}
             disabled
-            className="w-full bg-gray-800/30 border border-gray-700/30 rounded-xl px-4 py-3 text-gray-500 text-sm cursor-not-allowed"
+            className="field-input cursor-not-allowed opacity-60"
           />
         </div>
 
-        {/* Change Password */}
-        <div className="border-t border-gray-800/50 pt-4">
-          <p className="text-gray-400 text-xs font-medium mb-3">
+        <div className="border-t border-white/[0.08] pt-4">
+          <p className="mb-3 text-xs font-medium text-slate-400">
             Change Password
           </p>
 
           <div className="space-y-3">
             <div>
-              <label className="text-gray-400 text-xs block mb-1.5">
-                New Password
-              </label>
+              <label className="field-label">New Password</label>
               <input
                 type="password"
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
                 placeholder="Minimum 6 characters"
-                className="w-full bg-gray-800/60 border border-gray-700/50 rounded-xl px-4 py-3 text-white text-sm outline-none focus:border-indigo-500 transition-colors placeholder-gray-700"
+                className="field-input"
               />
             </div>
             <div>
-              <label className="text-gray-400 text-xs block mb-1.5">
-                Confirm New Password
-              </label>
+              <label className="field-label">Confirm New Password</label>
               <input
                 type="password"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 placeholder="Repeat new password"
-                className="w-full bg-gray-800/60 border border-gray-700/50 rounded-xl px-4 py-3 text-white text-sm outline-none focus:border-indigo-500 transition-colors placeholder-gray-700"
+                className="field-input"
               />
             </div>
           </div>
 
-          {error && <p className="text-red-400   text-xs mt-2">{error}</p>}
-          {message && <p className="text-green-400 text-xs mt-2">{message}</p>}
+          {error && <p className="mt-2 text-xs text-red-300">{error}</p>}
+          {message && (
+            <p className="mt-2 text-xs text-emerald-300">{message}</p>
+          )}
 
           <button
             onClick={handlePasswordChange}
             disabled={loading}
-            className="mt-3 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-xl transition-colors disabled:opacity-50"
+            className="primary-action mt-3"
           >
-            {loading ? "Updating…" : "Update Password"}
+            {loading ? "Updating..." : "Update Password"}
           </button>
         </div>
       </div>

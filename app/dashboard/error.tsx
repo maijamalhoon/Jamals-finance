@@ -21,11 +21,11 @@ export default function DashboardError({
       </div>
       <div className="text-center">
         <p className="text-white font-medium text-sm">Something went wrong</p>
-        <p className="text-gray-500 text-xs mt-1">{error.message}</p>
+        <p className="mt-1 text-xs text-slate-500">{error.message}</p>
       </div>
       <button
         onClick={reset}
-        className="flex items-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-xl transition-colors"
+        className="primary-action"
       >
         <RefreshCw size={14} />
         Try again

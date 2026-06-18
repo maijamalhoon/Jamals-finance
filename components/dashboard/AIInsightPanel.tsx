@@ -64,8 +64,8 @@ export default function AIInsightPanel() {
     <div className="finance-panel p-5">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-lg bg-indigo-500/15 flex items-center justify-center ring-1 ring-indigo-400/20">
-            <Brain size={15} className="text-indigo-300" />
+          <div className="flex h-8 w-8 items-center justify-center rounded-2xl bg-cyan-300/15 ring-1 ring-cyan-300/20">
+            <Brain size={15} className="text-cyan-200" />
           </div>
           <h3 className="text-white font-semibold text-sm">AI Insight</h3>
         </div>
@@ -81,9 +81,9 @@ export default function AIInsightPanel() {
 
       {loading ?
         <div className="space-y-2 animate-pulse mb-4">
-          <div className="h-3 bg-gray-800 rounded w-full" />
-          <div className="h-3 bg-gray-800 rounded w-3/4" />
-          <div className="h-3 bg-gray-800 rounded w-5/6" />
+          <div className="h-3 w-full rounded bg-white/[0.06]" />
+          <div className="h-3 w-3/4 rounded bg-white/[0.06]" />
+          <div className="h-3 w-5/6 rounded bg-white/[0.06]" />
         </div>
       : topInsight && InsightIcon && cfg ?
         <div
@@ -95,12 +95,12 @@ export default function AIInsightPanel() {
               {topInsight.title}
             </p>
           </div>
-          <p className="text-gray-300 text-xs leading-relaxed">
+          <p className="text-xs leading-relaxed text-slate-300">
             {topInsight.message}
           </p>
         </div>
       : <div className="border-l-2 border-slate-600 bg-white/[0.035] px-3.5 py-3 mb-4">
-          <p className="text-gray-400 text-xs leading-relaxed">
+          <p className="text-xs leading-relaxed text-slate-400">
             Add transactions to get personalized AI insights about your
             finances.
           </p>
@@ -109,7 +109,7 @@ export default function AIInsightPanel() {
 
       <Link
         href="/dashboard/ai-insights"
-        className="w-full flex items-center justify-center gap-2 bg-indigo-500 hover:bg-indigo-600 text-white text-xs font-semibold py-2.5 rounded-lg transition-colors shadow-lg shadow-indigo-950/25"
+        className="primary-action w-full py-2.5 text-xs"
       >
         View Full Insights <ArrowRight size={12} />
       </Link>

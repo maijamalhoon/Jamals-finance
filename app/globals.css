@@ -50,20 +50,20 @@
 }
 
 :root {
-  --card: oklch(0.19 0.012 215);
+  --card: oklch(0.205 0.015 238);
   --card-foreground: oklch(0.985 0.003 215);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.72 0.13 194);
+  --primary: oklch(0.74 0.16 210);
   --primary-foreground: oklch(0.985 0 0);
   --secondary: oklch(0.97 0 0);
   --secondary-foreground: oklch(0.205 0 0);
   --muted: oklch(0.97 0 0);
   --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.94 0.03 198);
+  --accent: oklch(0.36 0.06 226);
   --accent-foreground: oklch(0.205 0 0);
   --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.34 0.02 215 / 58%);
+  --border: oklch(0.72 0.035 230 / 18%);
   --input: oklch(0.922 0 0);
   --ring: oklch(0.708 0 0);
   --chart-1: oklch(0.72 0.18 149);
@@ -72,7 +72,7 @@
   --chart-4: oklch(0.76 0.15 82);
   --chart-5: oklch(0.66 0.18 305);
   --radius: 0.5rem;
-  --sidebar: oklch(0.18 0.012 215);
+  --sidebar: oklch(0.165 0.014 236);
   --sidebar-foreground: oklch(0.145 0 0);
   --sidebar-primary: oklch(0.205 0 0);
   --sidebar-primary-foreground: oklch(0.985 0 0);
@@ -80,7 +80,7 @@
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
-  --background: oklch(0.145 0.012 215);
+  --background: oklch(0.135 0.014 236);
   --foreground: oklch(0.985 0.003 215);
 }
 
@@ -125,21 +125,23 @@
   body {
     @apply bg-background text-foreground;
     background:
-      linear-gradient(135deg, rgba(23, 24, 28, 0.98), rgba(18, 19, 24, 1) 52%, rgba(20, 23, 28, 1)),
-      #121318;
+      radial-gradient(circle at 18% -8%, rgba(73, 154, 255, 0.18), transparent 32rem),
+      radial-gradient(circle at 90% 12%, rgba(20, 184, 166, 0.13), transparent 28rem),
+      linear-gradient(135deg, rgba(13, 17, 24, 0.98), rgba(18, 20, 27, 1) 52%, rgba(10, 15, 22, 1)),
+      #0d1118;
     overflow-x: hidden;
     text-rendering: geometricPrecision;
   }
   html {
     @apply font-sans;
-    background: #121318;
+    background: #0d1118;
     scroll-behavior: smooth;
   }
 }
 
 @layer components {
   .finance-panel {
-    @apply rounded-[28px] border border-white/[0.08] bg-[#1b1d23]/82 shadow-[0_18px_45px_rgba(0,0,0,0.22)] backdrop-blur;
+    @apply rounded-[28px] border border-white/[0.09] bg-[#1b2029]/82 shadow-[0_18px_45px_rgba(0,0,0,0.28)] backdrop-blur-xl;
     transition:
       border-color 0.18s ease-out,
       background-color 0.18s ease-out,
@@ -148,18 +150,18 @@
   }
 
   .finance-panel-soft {
-    @apply rounded-[24px] border border-white/[0.08] bg-white/[0.045] backdrop-blur;
+    @apply rounded-[24px] border border-white/[0.08] bg-white/[0.052] shadow-[0_12px_34px_rgba(0,0,0,0.16)] backdrop-blur-xl;
     transition:
       border-color 0.18s ease-out,
       background-color 0.18s ease-out;
   }
 
   .finance-control {
-    @apply rounded-2xl border border-white/10 bg-white/[0.055] transition-all duration-200 ease-out hover:border-white/[0.18] hover:bg-white/[0.08];
+    @apply rounded-2xl border border-white/10 bg-white/[0.065] shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] transition-all duration-200 ease-out hover:border-white/[0.18] hover:bg-white/[0.09];
   }
 
   .finance-glass-panel {
-    @apply rounded-[28px] border border-white/[0.12] bg-[#202229]/70 shadow-[0_24px_70px_rgba(0,0,0,0.38)] backdrop-blur-2xl;
+    @apply rounded-[28px] border border-white/[0.12] bg-[#202633]/78 shadow-[0_24px_70px_rgba(0,0,0,0.42)] backdrop-blur-2xl;
   }
 
   .finance-focus {
@@ -167,19 +169,19 @@
   }
 
   .page-heading {
-    @apply flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between;
+    @apply flex flex-col gap-3 rounded-[28px] border border-white/[0.08] bg-white/[0.035] p-4 shadow-[0_16px_40px_rgba(0,0,0,0.14)] backdrop-blur-xl sm:flex-row sm:items-end sm:justify-between sm:p-5;
   }
 
   .page-title {
-    @apply text-xl font-semibold tracking-normal text-white;
+    @apply text-2xl font-bold tracking-normal text-white sm:text-3xl;
   }
 
   .page-subtitle {
-    @apply mt-1 text-sm text-slate-500;
+    @apply mt-1 text-sm leading-6 text-slate-400;
   }
 
   .summary-card {
-    @apply rounded-[28px] border border-white/[0.08] bg-[#1b1d23]/82 p-4 shadow-[0_18px_45px_rgba(0,0,0,0.22)] backdrop-blur;
+    @apply rounded-[28px] border border-white/[0.09] bg-[#1b2029]/82 p-4 shadow-[0_18px_45px_rgba(0,0,0,0.24)] backdrop-blur-xl;
     transition:
       transform 0.18s ease-out,
       box-shadow 0.18s ease-out;
@@ -187,6 +189,30 @@
 
   .icon-button {
     @apply flex h-8 w-8 items-center justify-center rounded-lg border border-white/[0.08] bg-white/[0.055] text-slate-400 transition-colors hover:bg-white/[0.1] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300/45 focus-visible:ring-offset-0 disabled:cursor-not-allowed disabled:opacity-50;
+  }
+
+  .primary-action {
+    @apply inline-flex items-center justify-center gap-2 rounded-2xl border border-cyan-200/20 bg-cyan-300 px-4 py-2.5 text-sm font-bold text-slate-950 shadow-[0_14px_32px_rgba(34,211,238,0.22)] transition-all duration-200 ease-out hover:bg-cyan-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300/45 focus-visible:ring-offset-0 disabled:opacity-50;
+  }
+
+  .danger-action {
+    @apply inline-flex items-center justify-center gap-2 rounded-2xl border border-rose-300/20 bg-rose-400/14 px-4 py-2.5 text-sm font-semibold text-rose-100 transition-all duration-200 ease-out hover:bg-rose-400/22 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300/45 focus-visible:ring-offset-0 disabled:opacity-50;
+  }
+
+  .success-action {
+    @apply inline-flex items-center justify-center gap-2 rounded-2xl border border-emerald-300/20 bg-emerald-400/14 px-4 py-2.5 text-sm font-semibold text-emerald-100 transition-all duration-200 ease-out hover:bg-emerald-400/22 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300/45 focus-visible:ring-offset-0 disabled:opacity-50;
+  }
+
+  .field-label {
+    @apply mb-1.5 block text-xs font-medium text-slate-300;
+  }
+
+  .field-input {
+    @apply w-full rounded-2xl border border-white/10 bg-white/[0.065] px-4 py-3 text-sm text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] outline-none placeholder-slate-600 transition-all duration-200 ease-out hover:border-white/[0.18] hover:bg-white/[0.09] focus:border-cyan-300;
+  }
+
+  .widget-link {
+    @apply cursor-pointer hover:-translate-y-0.5 hover:border-cyan-200/22 hover:bg-white/[0.07] hover:shadow-[0_22px_55px_rgba(0,0,0,0.28)];
   }
 
   .desktop-list-header {
@@ -393,8 +419,8 @@ span.flatpickr-weekday {
     box-shadow 0.18s ease-out;
 }
 .card-hover:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 14px 36px rgba(0, 0, 0, 0.28);
+  transform: translateY(-2px);
+  box-shadow: 0 22px 55px rgba(0, 0, 0, 0.3);
 }
 
 a,

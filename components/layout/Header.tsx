@@ -82,14 +82,14 @@ export default function Header() {
 
   return (
     <>
-    <div className="relative z-40 flex h-16 flex-shrink-0 items-center justify-between border-b border-white/[0.08] bg-[#17181c]/95 px-6 backdrop-blur-xl">
+    <div className="relative z-40 flex h-[68px] flex-shrink-0 items-center justify-between border-b border-white/[0.08] bg-[#111720]/92 px-6 shadow-[0_12px_40px_rgba(0,0,0,0.18)] backdrop-blur-2xl">
       <div>
         <div className="flex items-center gap-2">
           <h1 className="text-white font-semibold text-base">
             {getGreeting()}, Jamal
           </h1>
         </div>
-        <p className="text-slate-400 text-xs">Here's your financial overview</p>
+        <p className="text-slate-400 text-xs">Command center is ready</p>
       </div>
 
       <div className="absolute left-1/2 top-1/2 z-[110] -translate-x-1/2 -translate-y-1/2" ref={actionRef}>
@@ -99,7 +99,7 @@ export default function Header() {
             setBellOpen(false);
             setProfileOpen(false);
           }}
-          className="finance-focus grid h-11 w-11 place-items-center rounded-[22px] border border-cyan-200/20 bg-cyan-300 text-slate-950 shadow-[0_16px_42px_rgba(34,211,238,0.22)] transition duration-200 ease-out hover:bg-cyan-200"
+          className="finance-focus grid h-12 w-12 place-items-center rounded-[24px] border border-cyan-200/20 bg-cyan-300 text-slate-950 shadow-[0_16px_42px_rgba(34,211,238,0.28)] transition duration-200 ease-out hover:bg-cyan-200"
           aria-label="Open quick actions"
         >
           <Plus size={21} strokeWidth={2.4} />
@@ -155,7 +155,7 @@ export default function Header() {
       <div className="flex items-center gap-3">
         <form
           onSubmit={handleSearch}
-          className="finance-control finance-focus flex w-64 items-center gap-2 px-3 py-2"
+          className="finance-control finance-focus flex w-72 items-center gap-2 px-3 py-2"
         >
           <Search size={13} className="text-slate-500 flex-shrink-0" />
           <input
@@ -217,7 +217,7 @@ export default function Header() {
               setProfileOpen((p) => !p);
               setBellOpen(false);
             }}
-            className="finance-focus flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-cyan-400 to-emerald-400 text-sm font-bold text-slate-950 shadow-lg shadow-cyan-950/30 transition hover:brightness-110"
+            className="finance-focus flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br from-cyan-300 to-emerald-300 text-sm font-bold text-slate-950 shadow-lg shadow-cyan-950/30 transition hover:brightness-110"
             aria-label="Open profile menu"
           >
             J

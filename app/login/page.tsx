@@ -4,7 +4,15 @@ import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
-import { BarChart3, Eye, EyeOff, LoaderCircle } from "lucide-react";
+import {
+  BarChart3,
+  Eye,
+  EyeOff,
+  Landmark,
+  LoaderCircle,
+  ShieldCheck,
+  Sparkles,
+} from "lucide-react";
 
 type Step = "auth" | "otp";
 type LoadingMode = "syncing" | "creating" | "verifying" | null;
@@ -114,10 +122,85 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[#121318] px-4 py-10 text-white">
-      <div className="w-full max-w-md">
-        <div className="mb-8 flex items-center justify-center gap-3">
-          <div className="grid h-12 w-12 place-items-center rounded-3xl bg-cyan-300/15 text-cyan-200 ring-1 ring-cyan-300/20">
+    <main className="relative min-h-screen overflow-hidden bg-[#0d1118] px-4 py-8 text-white sm:px-6 lg:px-8">
+      <div className="pointer-events-none absolute left-[8%] top-[-10%] h-80 w-80 rounded-full bg-cyan-300/12 blur-3xl" />
+      <div className="pointer-events-none absolute bottom-[-14%] right-[6%] h-96 w-96 rounded-full bg-emerald-300/10 blur-3xl" />
+
+      <div className="relative mx-auto grid min-h-[calc(100vh-4rem)] w-full max-w-6xl items-center gap-6 lg:grid-cols-[1.08fr_0.92fr]">
+        <section className="hidden lg:block">
+          <div className="mb-8 flex items-center gap-3">
+            <div className="grid h-[52px] w-[52px] place-items-center rounded-[28px] bg-cyan-300 text-slate-950 shadow-[0_18px_42px_rgba(34,211,238,0.22)]">
+              <BarChart3 size={23} />
+            </div>
+            <div>
+              <span className="block text-2xl font-bold text-white">
+                Jamal's Finance
+              </span>
+              <span className="block text-sm text-slate-400">
+                One UI inspired personal finance OS
+              </span>
+            </div>
+          </div>
+
+          <div className="finance-glass-panel max-w-xl p-6">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-cyan-200/80">
+                  Live workspace preview
+                </p>
+                <h1 className="mt-3 text-4xl font-bold leading-tight tracking-normal text-white">
+                  Your money dashboard, polished for daily control.
+                </h1>
+              </div>
+              <div className="grid h-12 w-12 flex-shrink-0 place-items-center rounded-[24px] bg-white/[0.07] text-cyan-200 ring-1 ring-white/[0.08]">
+                <Sparkles size={20} />
+              </div>
+            </div>
+
+            <div className="mt-8 grid gap-3 sm:grid-cols-3">
+              {[
+                ["Balance", "PKR 1.2M", "Liquid view"],
+                ["Savings", "34%", "Monthly pace"],
+                ["Signals", "8", "Smart checks"],
+              ].map(([label, value, detail]) => (
+                <div
+                  key={label}
+                  className="rounded-[24px] border border-white/[0.08] bg-white/[0.055] p-4"
+                >
+                  <p className="text-[11px] text-slate-500">{label}</p>
+                  <p className="mt-2 text-xl font-bold text-white">{value}</p>
+                  <p className="mt-1 text-xs text-slate-400">{detail}</p>
+                </div>
+              ))}
+            </div>
+
+            <div className="mt-4 grid gap-3 sm:grid-cols-2">
+              <div className="rounded-[24px] border border-emerald-300/12 bg-emerald-300/[0.06] p-4">
+                <ShieldCheck size={18} className="text-emerald-200" />
+                <p className="mt-3 text-sm font-semibold text-white">
+                  Secure session
+                </p>
+                <p className="mt-1 text-xs leading-5 text-slate-400">
+                  Supabase auth with email verification for account creation.
+                </p>
+              </div>
+              <div className="rounded-[24px] border border-sky-300/12 bg-sky-300/[0.06] p-4">
+                <Landmark size={18} className="text-sky-200" />
+                <p className="mt-3 text-sm font-semibold text-white">
+                  Full finance stack
+                </p>
+                <p className="mt-1 text-xs leading-5 text-slate-400">
+                  Accounts, transactions, goals, reports, and AI insights.
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section className="w-full">
+        <div className="mx-auto w-full max-w-md">
+        <div className="mb-7 flex items-center justify-center gap-3 lg:hidden">
+          <div className="grid h-12 w-12 place-items-center rounded-3xl bg-cyan-300 text-slate-950 shadow-[0_18px_42px_rgba(34,211,238,0.22)]">
             <BarChart3 size={21} />
           </div>
           <div>
@@ -130,7 +213,7 @@ export default function LoginPage() {
           </div>
         </div>
 
-        <div className="finance-panel p-7 sm:p-8">
+        <div className="finance-panel p-6 sm:p-8">
           {step === "otp" ?
             <>
               <h2 className="text-white font-semibold text-lg mb-1">
@@ -151,7 +234,7 @@ export default function LoginPage() {
                     }
                     placeholder="000000"
                     maxLength={6}
-                    className="w-full finance-control px-5 py-4 text-center text-2xl font-bold tracking-widest text-white outline-none placeholder-slate-700 focus:border-cyan-300"
+                    className="field-input text-center text-2xl font-bold tracking-widest"
                   />
                 </div>
 
@@ -164,7 +247,7 @@ export default function LoginPage() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full rounded-3xl bg-cyan-400 py-4 text-sm font-semibold text-slate-950 shadow-lg shadow-cyan-950/25 transition-colors hover:bg-cyan-300 disabled:opacity-50"
+                  className="primary-action w-full py-4"
                 >
                   {loading ? "Verifying..." : "Verify & Create Account"}
                 </button>
@@ -195,7 +278,7 @@ export default function LoginPage() {
               <form onSubmit={handleSubmit} className="space-y-3">
                 {isSignUp && (
                   <div>
-                    <label className="text-slate-300 text-xs block mb-1.5">
+                    <label className="field-label">
                       Full Name
                     </label>
                     <input
@@ -203,14 +286,14 @@ export default function LoginPage() {
                       value={name}
                       onChange={(e) => setName(e.target.value)}
                       placeholder="Jamal Malhoon"
-                      className="w-full finance-control px-5 py-4 text-sm text-white outline-none placeholder-slate-600 focus:border-cyan-300"
+                      className="field-input"
                     />
                   </div>
                 )}
 
                 {isSignUp && (
                   <div>
-                    <label className="text-slate-300 text-xs block mb-1.5">
+                    <label className="field-label">
                       Phone Number (Optional)
                     </label>
                     <input
@@ -218,13 +301,13 @@ export default function LoginPage() {
                       value={phone}
                       onChange={(e) => setPhone(e.target.value)}
                       placeholder="+92 300 0000000"
-                      className="w-full finance-control px-5 py-4 text-sm text-white outline-none placeholder-slate-600 focus:border-cyan-300"
+                      className="field-input"
                     />
                   </div>
                 )}
 
                 <div>
-                  <label className="text-slate-300 text-xs block mb-1.5">
+                  <label className="field-label">
                     Email
                   </label>
                   <input
@@ -232,12 +315,12 @@ export default function LoginPage() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="you@example.com"
-                    className="w-full finance-control px-5 py-4 text-sm text-white outline-none placeholder-slate-600 focus:border-cyan-300"
+                    className="field-input"
                   />
                 </div>
 
                 <div>
-                  <label className="text-slate-300 text-xs block mb-1.5">
+                  <label className="field-label">
                     Password
                   </label>
                   <div className="relative">
@@ -246,7 +329,7 @@ export default function LoginPage() {
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       placeholder="Min. 6 characters"
-                      className="w-full finance-control px-5 py-4 pr-12 text-sm text-white outline-none placeholder-slate-600 focus:border-cyan-300"
+                      className="field-input pr-12"
                     />
                     <button
                       type="button"
@@ -270,7 +353,7 @@ export default function LoginPage() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="mt-1 w-full rounded-3xl bg-cyan-400 py-4 text-sm font-semibold text-slate-950 shadow-lg shadow-cyan-950/25 transition-colors hover:bg-cyan-300 disabled:opacity-50"
+                  className="primary-action mt-1 w-full py-4"
                 >
                   {loading ?
                     isSignUp ?
@@ -300,6 +383,8 @@ export default function LoginPage() {
             </>
           }
         </div>
+      </div>
+      </section>
       </div>
       <AnimatePresence>
         {loadingMode && (

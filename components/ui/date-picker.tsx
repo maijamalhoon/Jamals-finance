@@ -109,7 +109,7 @@ export default function DatePicker({
         readOnly
         disabled={disabled}
         placeholder={placeholder}
-        className="w-full cursor-pointer rounded-xl border border-gray-700/50 bg-gray-800/60 px-4 py-3 pr-11 text-sm text-white outline-none transition-colors placeholder-gray-700 focus:border-cyan-300/55 focus:ring-2 focus:ring-cyan-300/15 disabled:cursor-not-allowed disabled:opacity-50"
+        className="field-input cursor-pointer pr-11 disabled:cursor-not-allowed disabled:opacity-50"
         aria-label={placeholder}
       />
       <CalendarDays

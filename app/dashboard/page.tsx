@@ -184,6 +184,7 @@ export default async function DashboardPage() {
       iconBg: "bg-indigo-500/15",
       detail: `${Math.round(liquidityRatio)}% held as liquid balance`,
       progress: liquidityRatio,
+      href: "/dashboard/accounts",
     },
     {
       title: "Total Income",
@@ -195,6 +196,7 @@ export default async function DashboardPage() {
       iconBg: "bg-green-500/15",
       detail: `${fmt(averageIncomePerEntry)} average income entry`,
       progress: Math.min(100, Math.max(0, savingsRate)),
+      href: "/dashboard/income",
     },
     {
       title: "Total Expenses",
@@ -206,6 +208,7 @@ export default async function DashboardPage() {
       iconBg: "bg-red-500/15",
       detail: `${fmt(averageExpensePerEntry)} average expense entry`,
       progress: monthProgress,
+      href: "/dashboard/expenses",
     },
     {
       title: "Net Profit",
@@ -220,6 +223,7 @@ export default async function DashboardPage() {
           `${Math.round(savingsRate)}% savings efficiency`
         : "Recovery mode: reduce burn rate",
       progress: Math.min(100, Math.max(0, savingsRate)),
+      href: "/dashboard/reports",
     },
     {
       title: "Investments Value",
@@ -231,6 +235,7 @@ export default async function DashboardPage() {
       iconBg: "bg-amber-500/15",
       detail: `${Math.round(100 - liquidityRatio)}% of tracked wealth invested`,
       progress: Math.max(0, 100 - liquidityRatio),
+      href: "/dashboard/investments",
     },
   ];
 
@@ -322,7 +327,7 @@ export default async function DashboardPage() {
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
         {intelligenceTiles.map(({ label, value, detail, icon: Icon, tone }) => (
-          <div key={label} className="finance-panel-soft p-4">
+          <div key={label} className="finance-panel-soft widget-link p-4">
             <div className="flex items-start justify-between gap-3">
               <div>
                 <p className="text-[11px] font-medium text-slate-500">

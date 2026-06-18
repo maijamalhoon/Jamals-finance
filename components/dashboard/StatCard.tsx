@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { ArrowUpRight, ArrowDownRight, LucideIcon } from "lucide-react";
 
 interface StatCardProps {
@@ -10,6 +11,7 @@ interface StatCardProps {
   iconBg: string;
   detail?: string;
   progress?: number;
+  href?: string;
 }
 
 export default function StatCard({
@@ -22,13 +24,14 @@ export default function StatCard({
   iconBg,
   detail,
   progress,
+  href,
 }: StatCardProps) {
   const positive = change >= 0;
   const normalizedProgress =
     typeof progress === "number" ? Math.min(100, Math.max(0, progress)) : null;
 
-  return (
-    <div className="finance-panel card-hover flex min-h-[168px] flex-col justify-between gap-4 p-5 hover:border-white/[0.14]">
+  const content = (
+    <div className="finance-panel card-hover widget-link flex min-h-[176px] flex-col justify-between gap-4 p-5">
       <div className="flex items-center justify-between gap-3">
         <span className="text-slate-400 text-xs font-medium">{title}</span>
         <div
@@ -65,7 +68,19 @@ export default function StatCard({
             />
           </div>
         )}
+        <div className="mt-3 flex items-center gap-1 text-[11px] font-semibold text-cyan-200/80">
+          Open detail
+          <ArrowUpRight size={12} />
+        </div>
       </div>
     </div>
+  );
+
+  if (!href) return content;
+
+  return (
+    <Link href={href} className="block h-full">
+      {content}
+    </Link>
   );
 }

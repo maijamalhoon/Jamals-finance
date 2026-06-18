@@ -60,16 +60,16 @@ export default function MobileHeader() {
 
   return (
     <>
-      <header className="flex h-14 flex-shrink-0 items-center justify-between border-b border-white/[0.08] bg-[#0b1118]/96 px-3 backdrop-blur-xl lg:hidden">
+      <header className="flex h-[60px] flex-shrink-0 items-center justify-between border-b border-white/[0.08] bg-[#111720]/94 px-3 shadow-[0_10px_32px_rgba(0,0,0,0.2)] backdrop-blur-2xl lg:hidden">
         <div className="flex min-w-0 items-center gap-2">
           <button
             onClick={() => setOpen(true)}
-            className="finance-focus grid h-9 w-9 place-items-center rounded-lg border border-white/[0.08] bg-white/[0.055] text-slate-300"
+            className="finance-focus grid h-10 w-10 place-items-center rounded-2xl border border-white/[0.08] bg-white/[0.065] text-slate-300"
             aria-label="Open navigation"
           >
             <Menu size={17} />
           </button>
-          <div className="grid h-9 w-9 flex-shrink-0 place-items-center rounded-lg bg-cyan-500/15 text-cyan-200 ring-1 ring-cyan-300/20">
+          <div className="grid h-10 w-10 flex-shrink-0 place-items-center rounded-2xl bg-cyan-300 text-slate-950 shadow-lg shadow-cyan-950/25">
             <BarChart3 size={16} />
           </div>
           <span className="truncate text-sm font-semibold text-white">
@@ -153,10 +153,10 @@ export default function MobileHeader() {
             onClick={() => setOpen(false)}
             aria-label="Close navigation"
           />
-          <aside className="absolute left-0 top-0 flex h-full w-[min(86vw,360px)] flex-col border-r border-white/[0.1] bg-[#0b1118] shadow-2xl">
+          <aside className="absolute left-0 top-0 flex h-full w-[min(88vw,380px)] flex-col border-r border-white/[0.1] bg-[#111720] shadow-2xl">
             <div className="flex h-14 items-center justify-between border-b border-white/[0.08] px-4">
               <div className="flex min-w-0 items-center gap-2.5">
-                <div className="grid h-9 w-9 flex-shrink-0 place-items-center rounded-lg bg-cyan-500/15 text-cyan-200 ring-1 ring-cyan-300/20">
+                <div className="grid h-10 w-10 flex-shrink-0 place-items-center rounded-2xl bg-cyan-300 text-slate-950 shadow-lg shadow-cyan-950/25">
                   <BarChart3 size={17} />
                 </div>
                 <div className="min-w-0">
@@ -164,7 +164,7 @@ export default function MobileHeader() {
                     Jamal's Finance
                   </p>
                   <p className="truncate text-[11px] text-slate-500">
-                    Personal finance OS
+                    One UI finance workspace
                   </p>
                 </div>
               </div>
@@ -190,14 +190,14 @@ export default function MobileHeader() {
                     <Link
                       key={href}
                       href={href}
-                      className={`finance-focus flex items-center gap-3 rounded-lg border px-3 py-3 text-sm transition-colors ${
+                      className={`finance-focus flex items-center gap-3 rounded-[22px] border px-3 py-3 text-sm transition-colors ${
                         active
                           ? "border-cyan-300/20 bg-white/[0.075] text-white"
                           : "border-transparent text-slate-400 hover:border-white/[0.08] hover:bg-white/[0.045] hover:text-white"
                       }`}
                     >
                       <span
-                        className={`grid h-8 w-8 place-items-center rounded-lg ${
+                      className={`grid h-8 w-8 place-items-center rounded-2xl ${
                           active ? tone : "bg-white/[0.045] text-slate-500"
                         }`}
                       >
@@ -217,10 +217,10 @@ export default function MobileHeader() {
                   <Link
                     key={label}
                     href={href}
-                    className="finance-focus flex items-center gap-2 rounded-lg border border-white/[0.08] bg-white/[0.045] px-3 py-3 text-sm text-slate-300"
+                    className="finance-focus flex items-center gap-2 rounded-[22px] border border-white/[0.08] bg-white/[0.055] px-3 py-3 text-sm text-slate-300"
                   >
                     <span
-                      className={`grid h-8 w-8 flex-shrink-0 place-items-center rounded-lg ${tone}`}
+                      className={`grid h-8 w-8 flex-shrink-0 place-items-center rounded-2xl ${tone}`}
                     >
                       <Icon size={16} />
                     </span>

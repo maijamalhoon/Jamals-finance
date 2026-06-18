@@ -13,7 +13,7 @@ export default function AddExpenseButton() {
     <>
       <button
         onClick={() => setOpen(true)}
-        className="flex items-center gap-2 px-4 py-2.5 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-xl transition-colors"
+        className="danger-action"
       >
         <Plus size={16} />
         Add Expense

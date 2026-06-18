@@ -53,8 +53,8 @@ function HealthMeter({ score, label }: { score: number; label: string }) {
   const offset = circ - (score / 100) * circ;
 
   return (
-    <div className="bg-gray-900/60 border border-gray-800/50 rounded-2xl p-6 flex flex-col items-center">
-      <p className="text-gray-500 text-xs font-medium uppercase tracking-wide mb-4">
+    <div className="finance-panel flex flex-col items-center p-6">
+      <p className="mb-4 text-xs font-medium uppercase tracking-wide text-slate-500">
         Financial Health Score
       </p>
 
@@ -83,7 +83,7 @@ function HealthMeter({ score, label }: { score: number; label: string }) {
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-center">
           <p className="text-white text-3xl font-bold">{score}</p>
-          <p className="text-gray-500 text-xs">/ 100</p>
+          <p className="text-xs text-slate-500">/ 100</p>
         </div>
       </div>
 
@@ -123,30 +123,30 @@ export default function InsightsPanel() {
         <HealthMeter score={data.healthScore} label={data.healthLabel} />
       )}
       {loading && (
-        <div className="bg-gray-900/60 border border-gray-800/50 rounded-2xl p-6 flex flex-col items-center gap-3">
-          <div className="w-36 h-36 rounded-full bg-gray-800 animate-pulse" />
-          <div className="h-4 w-24 bg-gray-800 rounded animate-pulse" />
+        <div className="finance-panel flex flex-col items-center gap-3 p-6">
+          <div className="h-36 w-36 animate-pulse rounded-full bg-white/[0.06]" />
+          <div className="h-4 w-24 animate-pulse rounded bg-white/[0.06]" />
         </div>
       )}
 
       {/* Insights Feed */}
-      <div className="bg-gray-900/60 border border-gray-800/50 rounded-2xl p-5">
+      <div className="finance-panel p-5">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-indigo-600/20 flex items-center justify-center">
-              <Brain size={15} className="text-indigo-400" />
+            <div className="flex h-8 w-8 items-center justify-center rounded-2xl bg-cyan-300/15">
+              <Brain size={15} className="text-cyan-200" />
             </div>
             <h3 className="text-white font-medium text-sm">AI Insights</h3>
           </div>
           <button
             onClick={load}
             disabled={loading}
-            className="w-7 h-7 rounded-lg bg-gray-800 hover:bg-gray-700 flex items-center justify-center transition-colors disabled:opacity-50"
+            className="icon-button h-8 w-8 rounded-2xl"
             title="Refresh"
           >
             <RefreshCw
               size={12}
-              className={`text-gray-400 ${loading ? "animate-spin" : ""}`}
+              className={`text-slate-400 ${loading ? "animate-spin" : ""}`}
             />
           </button>
         </div>
@@ -156,7 +156,7 @@ export default function InsightsPanel() {
             {[1, 2, 3, 4].map((i) => (
               <div
                 key={i}
-                className="h-16 bg-gray-800/50 rounded-xl animate-pulse"
+                className="h-16 animate-pulse rounded-2xl bg-white/[0.06]"
               />
             ))}
           </div>
@@ -165,7 +165,7 @@ export default function InsightsPanel() {
             <p className="text-red-400 text-sm">{error}</p>
             <button
               onClick={load}
-              className="text-indigo-400 text-xs mt-3 hover:text-indigo-300"
+              className="mt-3 text-xs text-cyan-200 hover:text-cyan-100"
             >
               Try again
             </button>
@@ -177,7 +177,7 @@ export default function InsightsPanel() {
               return (
                 <div
                   key={i}
-                  className={`border rounded-xl p-4 ${cfg.bg} ${cfg.border}`}
+                  className={`rounded-2xl border p-4 ${cfg.bg} ${cfg.border}`}
                 >
                   <div className="flex items-start gap-3">
                     <Icon
@@ -188,7 +188,7 @@ export default function InsightsPanel() {
                       <p className={`text-xs font-semibold mb-1 ${cfg.color}`}>
                         {ins.title}
                       </p>
-                      <p className="text-gray-300 text-xs leading-relaxed">
+                      <p className="text-xs leading-relaxed text-slate-300">
                         {ins.message}
                       </p>
                     </div>

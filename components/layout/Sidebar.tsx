@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { BarChart3, ShieldCheck, Sparkles, Zap } from "lucide-react";
+import { BarChart3, ChevronRight, ShieldCheck, Sparkles, Zap } from "lucide-react";
 import { useState } from "react";
 import { NAV_ITEMS } from "@/lib/navigation";
 
@@ -21,13 +21,13 @@ export default function Sidebar() {
         }
       }}
       className={`${
-        expanded ? "w-[272px]" : "w-[76px]"
-      } relative z-50 flex h-full flex-shrink-0 flex-col border-r border-white/[0.08] bg-[#17181c]/95 shadow-[18px_0_45px_rgba(0,0,0,0.24)] backdrop-blur-xl transition-[width] duration-200 ease-out`}
+        expanded ? "w-[292px]" : "w-[82px]"
+      } relative z-50 flex h-full flex-shrink-0 flex-col border-r border-white/[0.08] bg-[#111720]/94 shadow-[18px_0_55px_rgba(0,0,0,0.32)] backdrop-blur-2xl transition-[width] duration-200 ease-out`}
     >
       <div className="absolute inset-y-6 right-0 w-px bg-gradient-to-b from-transparent via-cyan-200/20 to-transparent" />
-      <div className="flex h-16 flex-shrink-0 items-center justify-between border-b border-white/[0.08] px-4">
+      <div className="flex h-[72px] flex-shrink-0 items-center justify-between border-b border-white/[0.08] px-4 py-3">
         <div className="flex min-w-0 items-center gap-2.5">
-          <div className="grid h-10 w-10 flex-shrink-0 place-items-center rounded-[22px] bg-cyan-300 text-slate-950 shadow-[0_14px_34px_rgba(34,211,238,0.18)]">
+          <div className="grid h-11 w-11 flex-shrink-0 place-items-center rounded-[24px] bg-cyan-300 text-slate-950 shadow-[0_14px_34px_rgba(34,211,238,0.24)]">
             <BarChart3 size={17} />
           </div>
           <div
@@ -38,26 +38,26 @@ export default function Sidebar() {
             <span className="block truncate text-sm font-semibold text-white">
               Jamal's Finance
             </span>
-            <span className="block truncate text-[11px] text-slate-500">
-              Personal finance OS
+            <span className="block truncate text-[11px] text-slate-400">
+              One UI finance workspace
             </span>
           </div>
         </div>
       </div>
 
-      <nav className="min-h-0 flex-1 space-y-1.5 overflow-y-auto overflow-x-hidden px-3 py-4">
+      <nav className="min-h-0 flex-1 space-y-2 overflow-y-auto overflow-x-hidden px-3 py-4">
         <div
           className={`mb-3 overflow-hidden transition-all duration-200 ease-out ${
             expanded ? "h-[86px] opacity-100" : "h-0 opacity-0"
           }`}
         >
-          <div className="rounded-[24px] border border-cyan-200/10 bg-cyan-300/[0.06] p-3">
+          <div className="rounded-[24px] border border-cyan-200/12 bg-cyan-300/[0.07] p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
             <div className="flex items-center gap-2 text-xs font-semibold text-cyan-100">
               <Sparkles size={14} />
-              One UI command rail
+              Finance command rail
             </div>
             <p className="mt-2 text-[11px] leading-4 text-slate-500">
-              Navigation tuned for quick scanning and daily finance control.
+              Quick routes, live money context, and fewer wasted clicks.
             </p>
           </div>
         </div>
@@ -72,12 +72,12 @@ export default function Sidebar() {
               key={href}
               href={href}
               title={expanded ? undefined : label}
-              className={`finance-focus group flex items-center gap-3 rounded-2xl border px-3 py-2.5 text-sm transition-all duration-200 ease-out ${
+              className={`finance-focus group flex items-center gap-3 rounded-[22px] border px-3 py-2.5 text-sm transition-all duration-200 ease-out ${
                 expanded ? "" : "justify-center px-2"
               } ${
                 active
-                  ? "border-cyan-300/20 bg-white/[0.09] text-white shadow-[0_10px_26px_rgba(0,0,0,0.18)]"
-                  : "border-transparent text-slate-400 hover:border-white/[0.08] hover:bg-white/[0.045] hover:text-white"
+                  ? "border-cyan-300/22 bg-white/[0.095] text-white shadow-[0_12px_30px_rgba(0,0,0,0.22)]"
+                  : "border-transparent text-slate-400 hover:border-white/[0.1] hover:bg-white/[0.055] hover:text-white"
               }`}
             >
               <span
@@ -94,6 +94,9 @@ export default function Sidebar() {
               >
                 {label}
               </span>
+              {expanded && active && (
+                <ChevronRight size={14} className="ml-auto text-cyan-200" />
+              )}
             </Link>
           );
         })}

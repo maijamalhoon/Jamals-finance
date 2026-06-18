@@ -121,8 +121,8 @@ export default function InvestmentModal({
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="bg-[#111827] border border-gray-800 text-white max-w-md p-0 gap-0">
-        <DialogHeader className="p-5 border-b border-gray-800">
+      <DialogContent className="finance-glass-panel max-w-md gap-0 p-0 text-white">
+        <DialogHeader className="border-b border-white/[0.08] p-5">
           <DialogTitle className="text-base font-semibold">
             {isEditing ? "Edit Investment" : "Add Investment"}
           </DialogTitle>
@@ -131,24 +131,22 @@ export default function InvestmentModal({
         <div className="p-5 space-y-4">
           {/* Name */}
           <div>
-            <label className="text-gray-400 text-xs block mb-1.5">
-              Asset Name
-            </label>
+            <label className="field-label">Asset Name</label>
             <input
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="e.g. Bitcoin, Apple Stock"
-              className="w-full bg-gray-800/60 border border-gray-700/50 rounded-xl px-4 py-3 text-white text-sm outline-none focus:border-indigo-500 transition-colors placeholder-gray-700"
+              className="field-input"
             />
           </div>
 
           {/* Type */}
           <div>
-            <label className="text-gray-400 text-xs block mb-1.5">Type</label>
+            <label className="field-label">Type</label>
             <select
               value={type}
               onChange={(e) => setType(e.target.value)}
-              className="w-full bg-gray-800/60 border border-gray-700/50 rounded-xl px-4 py-3 text-white text-sm outline-none focus:border-indigo-500 transition-colors"
+              className="field-input"
               style={{ colorScheme: "dark" }}
             >
               {TYPES.map((t) => (
@@ -162,50 +160,42 @@ export default function InvestmentModal({
           {/* Quantity + Buy Price */}
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="text-gray-400 text-xs block mb-1.5">
-                Quantity
-              </label>
+              <label className="field-label">Quantity</label>
               <input
                 type="number"
                 value={quantity}
                 onChange={(e) => setQuantity(e.target.value)}
                 placeholder="1"
-                className="w-full bg-gray-800/60 border border-gray-700/50 rounded-xl px-4 py-3 text-white text-sm outline-none focus:border-indigo-500 transition-colors placeholder-gray-700"
+                className="field-input"
               />
             </div>
             <div>
-              <label className="text-gray-400 text-xs block mb-1.5">
-                Buy Price (PKR)
-              </label>
+              <label className="field-label">Buy Price (PKR)</label>
               <input
                 type="number"
                 value={purchasePrice}
                 onChange={(e) => setPurchasePrice(e.target.value)}
                 placeholder="0"
-                className="w-full bg-gray-800/60 border border-gray-700/50 rounded-xl px-4 py-3 text-white text-sm outline-none focus:border-indigo-500 transition-colors placeholder-gray-700"
+                className="field-input"
               />
             </div>
           </div>
 
           {/* Current Price */}
           <div>
-            <label className="text-gray-400 text-xs block mb-1.5">
-              Current Price (PKR)
-            </label>
+            <label className="field-label">Current Price (PKR)</label>
             <input
               type="number"
               value={currentPrice}
               onChange={(e) => setCurrentPrice(e.target.value)}
               placeholder="Leave blank to match buy price"
-              className="w-full bg-gray-800/60 border border-gray-700/50 rounded-xl px-4 py-3 text-white text-sm outline-none focus:border-indigo-500 transition-colors placeholder-gray-700"
+              className="field-input"
             />
           </div>
 
           {/* Date */}
           <div>
-            <label className="text-gray-400 text-xs block mb-1.5">
-              Purchase Date
-            </label>
+            <label className="field-label">Purchase Date</label>
             <DatePicker
               value={purchasedAt}
               onChange={setPurchasedAt}
@@ -218,7 +208,7 @@ export default function InvestmentModal({
           <button
             onClick={handleSave}
             disabled={loading}
-            className="w-full py-3 rounded-xl text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 transition-colors disabled:opacity-50"
+            className="primary-action w-full py-3"
           >
             {loading ?
               "Saving…"

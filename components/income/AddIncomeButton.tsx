@@ -13,7 +13,7 @@ export default function AddIncomeButton() {
     <>
       <button
         onClick={() => setOpen(true)}
-        className="flex items-center gap-2 px-4 py-2.5 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-xl transition-colors"
+        className="success-action"
       >
         <Plus size={16} />
         Add Income

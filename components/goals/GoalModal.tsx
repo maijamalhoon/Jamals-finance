@@ -97,8 +97,8 @@ export default function GoalModal({ open, onClose, onSuccess, goal }: Props) {
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="bg-[#111827] border border-gray-800 text-white max-w-sm p-0 gap-0">
-        <DialogHeader className="p-5 border-b border-gray-800">
+      <DialogContent className="finance-glass-panel max-w-sm gap-0 p-0 text-white">
+        <DialogHeader className="border-b border-white/[0.08] p-5">
           <DialogTitle className="text-base font-semibold">
             {isEditing ? "Edit Goal" : "New Goal"}
           </DialogTitle>
@@ -107,7 +107,7 @@ export default function GoalModal({ open, onClose, onSuccess, goal }: Props) {
         <div className="p-5 space-y-4">
           {/* Icon Picker */}
           <div>
-            <label className="text-gray-400 text-xs block mb-2">Icon</label>
+            <label className="field-label mb-2">Icon</label>
             <div className="grid grid-cols-5 gap-2">
               {GOAL_ICONS.map(({ value, label, icon: Icon }) => (
                 <button
@@ -116,8 +116,8 @@ export default function GoalModal({ open, onClose, onSuccess, goal }: Props) {
                   title={label}
                   className={`flex flex-col items-center gap-1 p-2 rounded-xl border transition-all ${
                     icon === value ?
-                      "bg-indigo-600/20 border-indigo-500/50 text-indigo-400"
-                    : "bg-gray-800/50 border-gray-700/50 text-gray-500 hover:text-white hover:border-gray-600"
+                      "border-cyan-300/35 bg-cyan-300/14 text-cyan-100"
+                    : "border-white/[0.08] bg-white/[0.045] text-slate-500 hover:border-white/[0.16] hover:text-white"
                   }`}
                 >
                   <Icon size={16} />
@@ -129,50 +129,42 @@ export default function GoalModal({ open, onClose, onSuccess, goal }: Props) {
 
           {/* Name */}
           <div>
-            <label className="text-gray-400 text-xs block mb-1.5">
-              Goal Name
-            </label>
+            <label className="field-label">Goal Name</label>
             <input
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="e.g. New House, Emergency Fund"
-              className="w-full bg-gray-800/60 border border-gray-700/50 rounded-xl px-4 py-3 text-white text-sm outline-none focus:border-indigo-500 transition-colors placeholder-gray-700"
+              className="field-input"
             />
           </div>
 
           {/* Target Amount */}
           <div>
-            <label className="text-gray-400 text-xs block mb-1.5">
-              Target Amount (PKR)
-            </label>
+            <label className="field-label">Target Amount (PKR)</label>
             <input
               type="number"
               value={targetAmount}
               onChange={(e) => setTargetAmount(e.target.value)}
               placeholder="5000000"
-              className="w-full bg-gray-800/60 border border-gray-700/50 rounded-xl px-4 py-3 text-white text-sm font-semibold outline-none focus:border-indigo-500 transition-colors placeholder-gray-700"
+              className="field-input font-semibold"
             />
           </div>
 
           {/* Saved So Far */}
           <div>
-            <label className="text-gray-400 text-xs block mb-1.5">
-              Saved So Far (PKR)
-            </label>
+            <label className="field-label">Saved So Far (PKR)</label>
             <input
               type="number"
               value={currentAmount}
               onChange={(e) => setCurrentAmount(e.target.value)}
               placeholder="0"
-              className="w-full bg-gray-800/60 border border-gray-700/50 rounded-xl px-4 py-3 text-white text-sm font-semibold outline-none focus:border-indigo-500 transition-colors placeholder-gray-700"
+              className="field-input font-semibold"
             />
           </div>
 
           {/* Deadline */}
           <div>
-            <label className="text-gray-400 text-xs block mb-1.5">
-              Deadline (Optional)
-            </label>
+            <label className="field-label">Deadline (Optional)</label>
             <DatePicker
               value={deadline}
               onChange={setDeadline}
@@ -185,7 +177,7 @@ export default function GoalModal({ open, onClose, onSuccess, goal }: Props) {
           <button
             onClick={handleSave}
             disabled={loading}
-            className="w-full py-3 rounded-xl text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 transition-colors disabled:opacity-50"
+            className="primary-action w-full py-3"
           >
             {loading ?
               "Saving…"

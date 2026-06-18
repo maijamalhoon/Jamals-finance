@@ -13,7 +13,7 @@ export default function AddAccountButton() {
     <>
       <button
         onClick={() => setOpen(true)}
-        className="flex items-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-xl transition-colors"
+        className="primary-action"
       >
         <Plus size={16} />
         Add Account

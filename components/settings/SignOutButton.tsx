@@ -14,15 +14,12 @@ export default function SignOutButton() {
   }
 
   return (
-    <div className="bg-gray-900/60 border border-gray-800/50 rounded-2xl p-5">
-      <h3 className="text-white font-medium text-sm mb-1">Account</h3>
-      <p className="text-gray-500 text-xs mb-4">
+    <div className="finance-panel p-5">
+      <h3 className="mb-1 text-sm font-semibold text-white">Account</h3>
+      <p className="mb-4 text-xs text-slate-500">
         Sign out of Jamal's Finance on this device
       </p>
-      <button
-        onClick={handleSignOut}
-        className="flex items-center gap-2 px-4 py-2.5 bg-gray-800 hover:bg-red-600/20 border border-gray-700/50 hover:border-red-500/30 text-gray-300 hover:text-red-400 text-sm font-medium rounded-xl transition-all"
-      >
+      <button onClick={handleSignOut} className="danger-action">
         <LogOut size={15} />
         Sign Out
       </button>

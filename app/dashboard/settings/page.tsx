@@ -20,15 +20,15 @@ export default async function SettingsPage() {
     .order("name");
 
   return (
-    <div>
-      <div className="mb-6">
-        <h2 className="text-white text-xl font-semibold">Settings</h2>
-        <p className="text-gray-500 text-sm mt-1">
-          Manage your account and preferences
-        </p>
+    <div className="space-y-5">
+      <div className="page-heading">
+        <div>
+          <h2 className="page-title">Settings</h2>
+          <p className="page-subtitle">Manage your account and preferences</p>
+        </div>
       </div>
 
-      <div className="max-w-xl space-y-4">
+      <div className="max-w-2xl space-y-4">
         <ProfileSettings email={user.email ?? ""} />
         <CategoriesSettings categories={categories ?? []} />
         <SignOutButton />
