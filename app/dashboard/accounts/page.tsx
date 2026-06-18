@@ -16,33 +16,32 @@ export default async function AccountsPage() {
   );
 
   return (
-    <div>
-      {/* Header */}
-      <div className="flex items-center justify-between mb-6">
+    <div className="space-y-5">
+      <div className="page-heading">
         <div>
-          <h2 className="text-white text-xl font-semibold">Accounts</h2>
-          <p className="text-gray-500 text-sm mt-1">
-            {accounts?.length ?? 0} accounts · Total PKR{" "}
+          <h2 className="page-title">Accounts</h2>
+          <p className="page-subtitle">
+            {accounts?.length ?? 0} accounts - Total PKR{" "}
             {totalBalance.toLocaleString()}
           </p>
         </div>
         <AddAccountButton />
       </div>
 
-      {/* Cards */}
-      {!accounts?.length ?
-        <div className="bg-gray-900/60 border border-gray-800/50 rounded-2xl p-16 text-center">
-          <p className="text-gray-600 text-sm">No accounts yet</p>
-          <p className="text-gray-700 text-xs mt-1">
+      {!accounts?.length ? (
+        <div className="finance-panel p-12 text-center sm:p-16">
+          <p className="text-sm text-slate-500">No accounts yet</p>
+          <p className="mt-1 text-xs text-slate-600">
             Click "Add Account" to get started
           </p>
         </div>
-      : <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+      ) : (
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
           {accounts.map((a) => (
             <AccountCard key={a.id} account={a} />
           ))}
         </div>
-      }
+      )}
     </div>
   );
 }

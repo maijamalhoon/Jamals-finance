@@ -15,6 +15,7 @@ export default async function TransactionsPage({
 }) {
   const { type, search, from, to } = await searchParams;
   const supabase = await createClient();
+  const searchTerm = search?.trim().toLowerCase();
 
   let query = supabase
     .from("transactions")
@@ -28,67 +29,54 @@ export default async function TransactionsPage({
   const { data: raw } = await query;
 
   const transactions =
-    search ?
-      (raw ?? []).filter(
-        (t) =>
-          t.note?.toLowerCase().includes(search.toLowerCase()) ||
-          (t.categories as any)?.name
-            ?.toLowerCase()
-            .includes(search.toLowerCase()) ||
-          (t.accounts as any)?.name
-            ?.toLowerCase()
-            .includes(search.toLowerCase()),
-      )
-    : (raw ?? []);
+    searchTerm
+      ? (raw ?? []).filter(
+          (t) =>
+            t.note?.toLowerCase().includes(searchTerm) ||
+            (t.categories as any)?.name?.toLowerCase().includes(searchTerm) ||
+            (t.accounts as any)?.name?.toLowerCase().includes(searchTerm),
+        )
+      : (raw ?? []);
 
   return (
-    <div>
-      <div className="mb-6">
-        <h2 className="text-white text-xl font-semibold">Transactions</h2>
-        <p className="text-gray-500 text-sm mt-1">
-          {transactions.length} transaction
-          {transactions.length !== 1 ? "s" : ""}
-          {search ? ` matching "${search}"` : ""}
-          {from || to ? ` · filtered by date` : ""}
-        </p>
+    <div className="space-y-5">
+      <div className="page-heading">
+        <div>
+          <h2 className="page-title">Transactions</h2>
+          <p className="page-subtitle">
+            {transactions.length} transaction
+            {transactions.length !== 1 ? "s" : ""}
+            {searchTerm ? ` matching "${search}"` : ""}
+            {from || to ? " - filtered by date" : ""}
+          </p>
+        </div>
       </div>
 
-      <Suspense fallback={<div className="h-12 mb-5" />}>
+      <Suspense fallback={<div className="mb-5 h-12" />}>
         <TransactionFilters />
       </Suspense>
 
-      <div className="bg-gray-900/60 border border-gray-800/50 rounded-2xl p-5 overflow-x-auto">
-        <div className="flex items-center gap-3 pb-3 border-b border-gray-800/50 mb-1">
-          <div className="w-9 flex-shrink-0" />
-          <p className="flex-1 text-gray-500 text-xs font-medium uppercase tracking-wide">
-            Description
-          </p>
-          <p className="text-gray-500 text-xs font-medium uppercase tracking-wide w-32 hidden md:block">
-            Category
-          </p>
-          <p className="text-gray-500 text-xs font-medium uppercase tracking-wide w-16">
-            Type
-          </p>
-          <p className="text-gray-500 text-xs font-medium uppercase tracking-wide w-32 text-right">
-            Amount
-          </p>
-          <p className="text-gray-500 text-xs font-medium uppercase tracking-wide w-24 text-right">
-            Date
-          </p>
+      <div className="finance-panel p-4 sm:p-5">
+        <div className="desktop-list-header mb-1">
+          <div className="w-10 flex-shrink-0" />
+          <p className="flex-1">Description</p>
+          <p className="w-32">Category</p>
+          <p className="w-20 text-center">Type</p>
+          <p className="w-32 text-right">Amount</p>
+          <p className="w-24 text-right">Date</p>
           <div className="w-16 flex-shrink-0" />
         </div>
 
-        {transactions.length === 0 ?
+        {transactions.length === 0 ? (
           <div className="py-16 text-center">
-            <p className="text-gray-600 text-sm">No transactions found</p>
-            <p className="text-gray-700 text-xs mt-1">
+            <p className="text-sm text-slate-500">No transactions found</p>
+            <p className="mt-1 text-xs text-slate-600">
               Try changing the filters
             </p>
           </div>
-        : transactions.map((tx) => (
-            <TransactionRow key={tx.id} tx={tx as any} />
-          ))
-        }
+        ) : (
+          transactions.map((tx) => <TransactionRow key={tx.id} tx={tx as any} />)
+        )}
       </div>
     </div>
   );

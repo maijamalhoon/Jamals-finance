@@ -3,38 +3,13 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
-  LayoutDashboard,
-  ArrowLeftRight,
-  TrendingUp,
-  TrendingDown,
-  BarChart2,
-  Wallet,
-  Target,
-  FileText,
-  Brain,
-  Settings,
   BarChart3,
   ChevronLeft,
   ChevronRight,
+  Sparkles,
 } from "lucide-react";
 import { useState } from "react";
-
-const navItems = [
-  { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-  {
-    label: "Transactions",
-    href: "/dashboard/transactions",
-    icon: ArrowLeftRight,
-  },
-  { label: "Income", href: "/dashboard/income", icon: TrendingUp },
-  { label: "Expenses", href: "/dashboard/expenses", icon: TrendingDown },
-  { label: "Investments", href: "/dashboard/investments", icon: BarChart2 },
-  { label: "Accounts", href: "/dashboard/accounts", icon: Wallet },
-  { label: "Goals", href: "/dashboard/goals", icon: Target },
-  { label: "Reports", href: "/dashboard/reports", icon: FileText },
-  { label: "AI Insights", href: "/dashboard/ai-insights", icon: Brain },
-  { label: "Settings", href: "/dashboard/settings", icon: Settings },
-];
+import { NAV_ITEMS } from "@/lib/navigation";
 
 interface SidebarProps {
   todayIncome: number;
@@ -46,110 +21,114 @@ export default function Sidebar({ todayIncome, todayExpenses }: SidebarProps) {
   const [collapsed, setCollapsed] = useState(false);
 
   const net = todayIncome - todayExpenses;
-
   const fmt = (n: number) =>
     `PKR ${n.toLocaleString(undefined, { maximumFractionDigits: 0 })}`;
 
   return (
-    <div
+    <aside
       className={`${
-        collapsed ? "w-16" : "w-60"
-      } border-r border-white/[0.08] bg-[#0d121f]/95 flex flex-col h-full transition-all duration-300 flex-shrink-0 shadow-[18px_0_45px_rgba(0,0,0,0.22)]`}
+        collapsed ? "w-[76px]" : "w-[272px]"
+      } flex h-full flex-shrink-0 flex-col border-r border-white/[0.08] bg-[#0b1118]/96 shadow-[18px_0_45px_rgba(0,0,0,0.24)] backdrop-blur-xl transition-[width] duration-300`}
     >
-      {/* Logo + Toggle */}
-      <div className="h-16 flex items-center justify-between px-4 border-b border-white/[0.08] flex-shrink-0">
+      <div className="flex h-16 flex-shrink-0 items-center justify-between border-b border-white/[0.08] px-4">
         {!collapsed && (
-          <div className="flex items-center gap-2.5">
-            <div className="grid h-8 w-8 place-items-center rounded-lg bg-indigo-500/15 text-indigo-300 ring-1 ring-indigo-400/20">
-              <BarChart3 size={17} className="flex-shrink-0" />
+          <div className="flex min-w-0 items-center gap-2.5">
+            <div className="grid h-9 w-9 flex-shrink-0 place-items-center rounded-lg bg-cyan-500/15 text-cyan-200 ring-1 ring-cyan-300/20">
+              <BarChart3 size={17} />
             </div>
-            <span className="text-white font-semibold text-sm whitespace-nowrap">
-              Jamal's Finance
-            </span>
+            <div className="min-w-0">
+              <span className="block truncate text-sm font-semibold text-white">
+                Jamal's Finance
+              </span>
+              <span className="block truncate text-[11px] text-slate-500">
+                Personal finance OS
+              </span>
+            </div>
           </div>
         )}
+
         {collapsed && (
-          <div className="mx-auto grid h-8 w-8 place-items-center rounded-lg bg-indigo-500/15 text-indigo-300 ring-1 ring-indigo-400/20">
+          <div className="mx-auto grid h-9 w-9 place-items-center rounded-lg bg-cyan-500/15 text-cyan-200 ring-1 ring-cyan-300/20">
             <BarChart3 size={17} />
           </div>
         )}
+
         <button
           onClick={() => setCollapsed((p) => !p)}
-          className={`w-7 h-7 rounded-lg bg-white/[0.06] hover:bg-white/[0.1] border border-white/[0.08] flex items-center justify-center transition-colors flex-shrink-0 ${
+          className={`finance-focus flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg border border-white/[0.08] bg-white/[0.055] text-slate-400 transition-colors hover:bg-white/[0.1] hover:text-white ${
             collapsed ? "mx-auto" : ""
           }`}
           aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
         >
-          {collapsed ?
-            <ChevronRight size={13} className="text-gray-400" />
-          : <ChevronLeft size={13} className="text-gray-400" />}
+          {collapsed ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
         </button>
       </div>
 
-      {/* Navigation */}
-      <nav className="flex-1 px-2.5 py-4 space-y-1 overflow-y-auto overflow-x-hidden">
-        {navItems.map(({ label, href, icon: Icon }) => {
-          const active = pathname === href;
+      <nav className="min-h-0 flex-1 space-y-1.5 overflow-y-auto overflow-x-hidden px-3 py-4">
+        {NAV_ITEMS.map(({ label, href, icon: Icon, tone }) => {
+          const active =
+            pathname === href ||
+            (href !== "/dashboard" && pathname.startsWith(href));
+
           return (
             <Link
               key={href}
               href={href}
               title={collapsed ? label : undefined}
-              className={`group flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all ${
-                collapsed ? "justify-center" : ""
+              className={`finance-focus group flex items-center gap-3 rounded-lg border px-3 py-2.5 text-sm transition-all ${
+                collapsed ? "justify-center px-2" : ""
               } ${
-                active ?
-                  "bg-indigo-500/15 text-indigo-200 border border-indigo-400/25 shadow-sm shadow-indigo-950/30"
-                : "border border-transparent text-slate-400 hover:text-white hover:bg-white/[0.06]"
+                active
+                  ? "border-cyan-300/20 bg-white/[0.075] text-white shadow-sm shadow-black/20"
+                  : "border-transparent text-slate-400 hover:border-white/[0.08] hover:bg-white/[0.045] hover:text-white"
               }`}
             >
-              <Icon
-                size={16}
-                className={`flex-shrink-0 ${
-                  active ? "text-indigo-300" : (
-                    "text-slate-500 group-hover:text-slate-200"
-                  )
-                }`}
-              />
+              <span
+                className={`grid h-8 w-8 flex-shrink-0 place-items-center rounded-lg transition-colors ${
+                  active ? tone : "bg-white/[0.045] text-slate-500"
+                } group-hover:text-slate-100`}
+              >
+                <Icon size={16} />
+              </span>
               {!collapsed && <span className="truncate">{label}</span>}
             </Link>
           );
         })}
       </nav>
 
-      {/* User info — only when expanded */}
       {!collapsed && (
-        <div className="p-4 border-t border-white/[0.08]">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-indigo-500 to-cyan-500 flex items-center justify-center text-sm font-semibold flex-shrink-0 shadow-lg shadow-indigo-950/30">
+        <div className="border-t border-white/[0.08] p-4">
+          <div className="mb-4 flex items-center gap-3">
+            <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-cyan-400 to-emerald-400 text-sm font-bold text-slate-950 shadow-lg shadow-cyan-950/30">
               J
             </div>
             <div className="min-w-0">
-              <p className="text-sm font-medium text-white">Jamal</p>
-              <p className="text-xs text-gray-500 truncate">
+              <p className="text-sm font-semibold text-white">Jamal</p>
+              <p className="truncate text-xs text-slate-500">
                 jamal@example.com
               </p>
             </div>
           </div>
 
-          <div className="finance-panel-soft p-3 space-y-2">
-            <p className="text-xs text-slate-400 font-medium">
+          <div className="finance-panel-soft space-y-2.5 p-3">
+            <p className="flex items-center gap-1.5 text-xs font-medium text-slate-300">
+              <Sparkles size={12} className="text-cyan-300" />
               Today's Summary
             </p>
-            <div className="flex justify-between text-xs">
-              <span className="text-slate-400">Income</span>
-              <span className="text-green-400 font-medium">
+            <div className="flex justify-between gap-3 text-xs">
+              <span className="text-slate-500">Income</span>
+              <span className="font-medium text-green-400">
                 {fmt(todayIncome)}
               </span>
             </div>
-            <div className="flex justify-between text-xs">
-              <span className="text-slate-400">Expenses</span>
-              <span className="text-red-400 font-medium">
+            <div className="flex justify-between gap-3 text-xs">
+              <span className="text-slate-500">Expenses</span>
+              <span className="font-medium text-red-400">
                 {fmt(todayExpenses)}
               </span>
             </div>
-            <div className="flex justify-between text-xs border-t border-white/[0.08] pt-2">
-              <span className="text-slate-400">Net</span>
+            <div className="flex justify-between gap-3 border-t border-white/[0.08] pt-2 text-xs">
+              <span className="text-slate-500">Net</span>
               <span
                 className={`font-medium ${
                   net >= 0 ? "text-green-400" : "text-red-400"
@@ -162,6 +141,6 @@ export default function Sidebar({ todayIncome, todayExpenses }: SidebarProps) {
           </div>
         </div>
       )}
-    </div>
+    </aside>
   );
 }

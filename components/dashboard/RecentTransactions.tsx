@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ArrowDownLeft, ArrowUpRight } from "lucide-react";
 
 interface Transaction {
   id: string;
@@ -16,7 +17,7 @@ export default function RecentTransactions({
   transactions: Transaction[];
 }) {
   return (
-    <div className="finance-panel p-5">
+    <div className="finance-panel p-4 sm:p-5">
       <div className="flex items-center justify-between gap-3 mb-4">
         <div>
           <h3 className="text-white font-semibold text-sm">
@@ -46,7 +47,7 @@ export default function RecentTransactions({
             return (
               <div
                 key={tx.id}
-                className="flex items-center gap-3 py-3 transition-colors hover:bg-white/[0.025]"
+                className="grid grid-cols-[auto,1fr] gap-3 py-3 transition-colors hover:bg-white/[0.025] sm:flex sm:items-center"
               >
                 <div
                   className="w-9 h-9 rounded-lg flex items-center justify-center text-xs font-bold flex-shrink-0 ring-1 ring-white/[0.06]"
@@ -65,20 +66,24 @@ export default function RecentTransactions({
                 </div>
 
                 <span
-                  className={`text-xs px-2.5 py-1 rounded-md font-medium flex-shrink-0 ${
+                  className={`col-start-2 inline-flex w-fit items-center gap-1 rounded-md px-2.5 py-1 text-xs font-medium sm:col-start-auto sm:flex-shrink-0 ${
                     tx.type === "income" ?
                       "bg-green-500/10 text-green-300"
                     : "bg-red-500/10 text-red-300"
                   }`}
                 >
+                  {tx.type === "income" ?
+                    <ArrowDownLeft size={12} />
+                  : <ArrowUpRight size={12} />}
                   {tx.type === "income" ? "Income" : "Expense"}
                 </span>
 
-                <div className="text-right flex-shrink-0">
+                <div className="col-span-2 flex items-center justify-between text-left sm:block sm:flex-shrink-0 sm:text-right">
                   <p
                     className={`text-sm font-semibold ${tx.type === "income" ? "text-green-300" : "text-red-300"}`}
                   >
-                    PKR {Number(tx.amount).toLocaleString()}
+                    {tx.type === "income" ? "+" : "-"} PKR{" "}
+                    {Number(tx.amount).toLocaleString()}
                   </p>
                   <p className="text-slate-600 text-xs">
                     {new Date(tx.date).toLocaleDateString("en-US", {

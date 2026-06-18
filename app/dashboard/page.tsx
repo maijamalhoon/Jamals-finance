@@ -86,19 +86,22 @@ export default async function DashboardPage() {
   const pct = (cur: number, prev: number) =>
     prev > 0 ? parseFloat((((cur - prev) / prev) * 100).toFixed(2)) : 0;
 
-  // Daily chart data for this month
+  const dailyTotals = new Map<string, { income: number; expenses: number }>();
+  txns.forEach((t) => {
+    const current = dailyTotals.get(t.date) ?? { income: 0, expenses: 0 };
+    if (t.type === "income") current.income += Number(t.amount);
+    if (t.type === "expense") current.expenses += Number(t.amount);
+    dailyTotals.set(t.date, current);
+  });
+
   const chartData = Array.from({ length: daysInMonth }, (_, i) => {
     const day = i + 1;
     const dateStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
-    const dayTxns = txns.filter((t) => t.date === dateStr);
+    const totals = dailyTotals.get(dateStr);
     return {
       date: `${day} ${now.toLocaleDateString("en-US", { month: "short" })}`,
-      income: dayTxns
-        .filter((t) => t.type === "income")
-        .reduce((s, t) => s + Number(t.amount), 0),
-      expenses: dayTxns
-        .filter((t) => t.type === "expense")
-        .reduce((s, t) => s + Number(t.amount), 0),
+      income: totals?.income ?? 0,
+      expenses: totals?.expenses ?? 0,
     };
   });
 
@@ -176,12 +179,12 @@ export default async function DashboardPage() {
 
   return (
     <div className="space-y-5 pb-4">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+      <div className="page-heading">
         <div>
           <p className="text-xs font-medium uppercase tracking-[0.18em] text-cyan-300/80">
             Finance command center
           </p>
-          <h2 className="mt-2 text-2xl font-semibold tracking-normal text-white">
+          <h2 className="mt-2 text-2xl font-semibold tracking-normal text-white sm:text-3xl">
             This month's overview
           </h2>
           <p className="mt-1 text-sm text-slate-400">

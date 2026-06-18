@@ -2,7 +2,12 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Pencil, Trash2 } from "lucide-react";
+import {
+  ArrowDownLeft,
+  ArrowUpRight,
+  Pencil,
+  Trash2,
+} from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import TransactionModal, {
   ExistingTransaction,
@@ -20,8 +25,10 @@ export default function TransactionRow({ tx }: { tx: Transaction }) {
   const [editOpen, setEditOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
-  const catColor = tx.categories?.color || "#6366f1";
+  const isIncome = tx.type === "income";
+  const catColor = tx.categories?.color || (isIncome ? "#22c55e" : "#f43f5e");
   const catInitial = tx.categories?.name?.charAt(0) || "T";
+  const TypeIcon = isIncome ? ArrowDownLeft : ArrowUpRight;
 
   async function handleDelete() {
     if (!confirm("Delete this transaction? This cannot be undone.")) return;
@@ -32,50 +39,81 @@ export default function TransactionRow({ tx }: { tx: Transaction }) {
 
   return (
     <>
-      <div className="flex items-center gap-3 py-3.5 border-b border-gray-800/40 last:border-0 group">
-        {/* Category Icon */}
+      <div className="group grid grid-cols-[auto,1fr] gap-3 border-b border-white/[0.06] py-3.5 last:border-0 md:flex md:items-center">
         <div
-          className="w-9 h-9 rounded-xl flex items-center justify-center text-xs font-bold flex-shrink-0"
-          style={{ background: catColor + "22", color: catColor }}
+          className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg text-xs font-bold ring-1 ring-white/[0.06]"
+          style={{ background: `${catColor}22`, color: catColor }}
         >
           {catInitial}
         </div>
 
-        {/* Description + Account */}
-        <div className="flex-1 min-w-0">
-          <p className="text-white text-sm font-medium truncate">
-            {tx.note || tx.categories?.name || "Transaction"}
-          </p>
-          <p className="text-gray-500 text-xs">{tx.accounts?.name || "—"}</p>
+        <div className="min-w-0 md:flex-1">
+          <div className="flex items-start justify-between gap-3 md:block">
+            <div className="min-w-0">
+              <p className="truncate text-sm font-medium text-white">
+                {tx.note || tx.categories?.name || "Transaction"}
+              </p>
+              <p className="mt-0.5 truncate text-xs text-slate-500">
+                {tx.accounts?.name || "No account"}
+              </p>
+            </div>
+            <p
+              className={`shrink-0 text-right text-sm font-semibold md:hidden ${
+                isIncome ? "text-green-300" : "text-red-300"
+              }`}
+            >
+              {isIncome ? "+" : "-"} PKR {Number(tx.amount).toLocaleString()}
+            </p>
+          </div>
+
+          <div className="mt-2 flex flex-wrap items-center gap-2 md:hidden">
+            <span
+              className={`inline-flex items-center gap-1 rounded-md px-2 py-1 text-[11px] font-medium ${
+                isIncome
+                  ? "bg-green-500/10 text-green-300"
+                  : "bg-red-500/10 text-red-300"
+              }`}
+            >
+              <TypeIcon size={12} />
+              {isIncome ? "Income" : "Expense"}
+            </span>
+            <span className="rounded-md bg-white/[0.045] px-2 py-1 text-[11px] text-slate-400">
+              {tx.categories?.name || "Uncategorized"}
+            </span>
+            <span className="text-[11px] text-slate-500">
+              {new Date(tx.date).toLocaleDateString("en-US", {
+                month: "short",
+                day: "numeric",
+                year: "numeric",
+              })}
+            </span>
+          </div>
         </div>
 
-        {/* Category Name */}
-        <p className="text-gray-400 text-xs w-32 truncate hidden md:block">
-          {tx.categories?.name || "—"}
+        <p className="hidden w-32 truncate text-xs text-slate-400 md:block">
+          {tx.categories?.name || "Uncategorized"}
         </p>
 
-        {/* Type Badge */}
         <span
-          className={`text-xs px-2.5 py-1 rounded-full font-medium flex-shrink-0 ${
-            tx.type === "income" ?
-              "bg-green-500/10 text-green-400"
-            : "bg-red-500/10 text-red-400"
+          className={`hidden w-20 flex-shrink-0 items-center justify-center gap-1 rounded-md px-2.5 py-1 text-xs font-medium md:inline-flex ${
+            isIncome
+              ? "bg-green-500/10 text-green-300"
+              : "bg-red-500/10 text-red-300"
           }`}
         >
-          {tx.type === "income" ? "Income" : "Expense"}
+          <TypeIcon size={12} />
+          {isIncome ? "Income" : "Expense"}
         </span>
 
-        {/* Amount */}
         <p
-          className={`text-sm font-semibold w-32 text-right flex-shrink-0 ${
-            tx.type === "income" ? "text-green-400" : "text-red-400"
+          className={`hidden w-32 flex-shrink-0 text-right text-sm font-semibold md:block ${
+            isIncome ? "text-green-300" : "text-red-300"
           }`}
         >
-          PKR {Number(tx.amount).toLocaleString()}
+          {isIncome ? "+" : "-"} PKR {Number(tx.amount).toLocaleString()}
         </p>
 
-        {/* Date */}
-        <p className="text-gray-500 text-xs w-24 text-right flex-shrink-0">
+        <p className="hidden w-24 flex-shrink-0 text-right text-xs text-slate-500 md:block">
           {new Date(tx.date).toLocaleDateString("en-US", {
             month: "short",
             day: "numeric",
@@ -83,25 +121,25 @@ export default function TransactionRow({ tx }: { tx: Transaction }) {
           })}
         </p>
 
-        {/* Edit / Delete — visible on row hover */}
-        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+        <div className="col-span-2 flex items-center justify-end gap-1 md:col-span-1 md:w-16 md:flex-shrink-0 md:opacity-0 md:transition-opacity md:group-hover:opacity-100 md:group-focus-within:opacity-100">
           <button
             onClick={() => setEditOpen(true)}
-            className="w-7 h-7 rounded-lg bg-gray-800 hover:bg-indigo-600/20 flex items-center justify-center transition-colors"
+            className="icon-button"
+            aria-label="Edit transaction"
           >
-            <Pencil size={12} className="text-gray-400" />
+            <Pencil size={12} />
           </button>
           <button
             onClick={handleDelete}
             disabled={deleting}
-            className="w-7 h-7 rounded-lg bg-gray-800 hover:bg-red-500/20 flex items-center justify-center transition-colors"
+            className="icon-button hover:border-red-400/20 hover:bg-red-500/10 hover:text-red-300"
+            aria-label="Delete transaction"
           >
-            <Trash2 size={12} className="text-red-400" />
+            <Trash2 size={12} />
           </button>
         </div>
       </div>
 
-      {/* Edit Modal */}
       <TransactionModal
         open={editOpen}
         defaultType={tx.type}

@@ -22,7 +22,7 @@ export default function StatCard({
   const positive = change >= 0;
 
   return (
-    <div className="finance-panel card-hover p-4 flex min-h-[132px] flex-col justify-between gap-4 hover:border-white/[0.14]">
+    <div className="finance-panel card-hover flex min-h-[132px] flex-col justify-between gap-4 p-4 hover:border-white/[0.14]">
       <div className="flex items-center justify-between gap-3">
         <span className="text-slate-400 text-xs font-medium">{title}</span>
         <div
@@ -32,7 +32,7 @@ export default function StatCard({
         </div>
       </div>
       <div>
-        <p className="text-white font-semibold text-lg leading-tight tracking-normal">
+        <p className="break-words text-lg font-semibold leading-tight tracking-normal text-white">
           {amount}
         </p>
         <div className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1">

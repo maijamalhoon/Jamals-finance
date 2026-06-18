@@ -59,7 +59,7 @@ export default function Header() {
   }
 
   return (
-    <div className="h-16 border-b border-white/[0.08] bg-[#0d121f]/95 flex items-center justify-between px-6 flex-shrink-0 backdrop-blur">
+    <div className="flex h-16 flex-shrink-0 items-center justify-between border-b border-white/[0.08] bg-[#0b1118]/96 px-6 backdrop-blur-xl">
       <div>
         <h1 className="text-white font-semibold text-base">
           {getGreeting()}, Jamal
@@ -70,7 +70,7 @@ export default function Header() {
       <div className="flex items-center gap-3">
         <form
           onSubmit={handleSearch}
-          className="finance-control flex items-center gap-2 px-3 py-2 w-60"
+          className="finance-control finance-focus flex w-64 items-center gap-2 px-3 py-2"
         >
           <Search size={13} className="text-slate-500 flex-shrink-0" />
           <input
@@ -96,15 +96,15 @@ export default function Header() {
               setBellOpen((p) => !p);
               setProfileOpen(false);
             }}
-            className="finance-control relative w-9 h-9 flex items-center justify-center"
+            className="finance-control finance-focus relative flex h-9 w-9 items-center justify-center"
             aria-label="Open notifications"
           >
             <Bell size={15} className="text-slate-300" />
-            <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-cyan-400 rounded-full border-2 border-[#0d121f]" />
+            <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full border-2 border-[#0b1118] bg-cyan-300" />
           </button>
 
           {bellOpen && (
-            <div className="absolute right-0 top-11 w-72 finance-panel z-50 overflow-hidden">
+            <div className="finance-panel absolute right-0 top-11 z-50 w-72 overflow-hidden">
               <div className="p-4 border-b border-white/[0.08]">
                 <p className="text-white text-sm font-semibold">
                   Notifications
@@ -127,17 +127,17 @@ export default function Header() {
               setProfileOpen((p) => !p);
               setBellOpen(false);
             }}
-            className="w-9 h-9 rounded-lg bg-gradient-to-br from-indigo-500 to-cyan-500 flex items-center justify-center text-sm font-semibold hover:brightness-110 transition shadow-lg shadow-indigo-950/30"
+            className="finance-focus flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-cyan-400 to-emerald-400 text-sm font-bold text-slate-950 shadow-lg shadow-cyan-950/30 transition hover:brightness-110"
             aria-label="Open profile menu"
           >
             J
           </button>
 
           {profileOpen && (
-            <div className="absolute right-0 top-11 w-52 finance-panel z-50 overflow-hidden">
+            <div className="finance-panel absolute right-0 top-11 z-50 w-52 overflow-hidden">
               <div className="p-4 border-b border-white/[0.08]">
                 <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-indigo-500 to-cyan-500 flex items-center justify-center text-sm font-semibold flex-shrink-0">
+                  <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-cyan-400 to-emerald-400 text-sm font-bold text-slate-950">
                     J
                   </div>
                   <div className="min-w-0">

@@ -3,16 +3,16 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import {
-  Pencil,
-  Trash2,
-  Coins,
-  TrendingUp,
+  ArrowDownRight,
+  ArrowUpRight,
   Banknote,
   Building2,
-  Package,
-  ArrowUpRight,
-  ArrowDownRight,
+  Coins,
   LucideIcon,
+  Package,
+  Pencil,
+  Trash2,
+  TrendingUp,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import InvestmentModal, { ExistingInvestment } from "./InvestmentModal";
@@ -24,32 +24,32 @@ const CONFIG: Record<
   crypto: {
     label: "Crypto",
     icon: Coins,
-    color: "text-yellow-400",
-    bg: "bg-yellow-500/15",
+    color: "text-amber-300",
+    bg: "bg-amber-500/15",
   },
   stocks: {
     label: "Stocks",
     icon: TrendingUp,
-    color: "text-blue-400",
-    bg: "bg-blue-500/15",
+    color: "text-sky-300",
+    bg: "bg-sky-500/15",
   },
   savings: {
     label: "Savings",
     icon: Banknote,
-    color: "text-green-400",
+    color: "text-green-300",
     bg: "bg-green-500/15",
   },
   real_estate: {
     label: "Real Estate",
     icon: Building2,
-    color: "text-orange-400",
+    color: "text-orange-300",
     bg: "bg-orange-500/15",
   },
   other: {
     label: "Other",
     icon: Package,
-    color: "text-gray-400",
-    bg: "bg-gray-500/15",
+    color: "text-slate-300",
+    bg: "bg-slate-500/15",
   },
 };
 
@@ -84,80 +84,77 @@ export default function InvestmentCard({ inv }: { inv: ExistingInvestment }) {
 
   return (
     <>
-      <div className="bg-gray-900/60 border border-gray-800/50 rounded-2xl p-5 hover:border-gray-700/60 transition-colors group relative">
-        {/* Edit / Delete */}
-        <div className="absolute top-4 right-4 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+      <div className="finance-panel card-hover group relative p-5 hover:border-white/[0.14]">
+        <div className="absolute right-4 top-4 flex gap-1 opacity-100 transition-opacity sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100">
           <button
             onClick={() => setEditOpen(true)}
-            className="w-7 h-7 rounded-lg bg-gray-800 hover:bg-indigo-600/20 flex items-center justify-center transition-colors"
+            className="icon-button"
+            aria-label="Edit investment"
           >
-            <Pencil size={12} className="text-gray-400" />
+            <Pencil size={12} />
           </button>
           <button
             onClick={handleDelete}
             disabled={deleting}
-            className="w-7 h-7 rounded-lg bg-gray-800 hover:bg-red-500/20 flex items-center justify-center transition-colors"
+            className="icon-button hover:border-red-400/20 hover:bg-red-500/10 hover:text-red-300"
+            aria-label="Delete investment"
           >
-            <Trash2 size={12} className="text-red-400" />
+            <Trash2 size={12} />
           </button>
         </div>
 
-        {/* Icon + Name */}
-        <div className="flex items-center gap-3 mb-4">
+        <div className="mb-4 flex items-center gap-3 pr-16">
           <div
-            className={`w-10 h-10 rounded-xl ${cfg.bg} flex items-center justify-center flex-shrink-0`}
+            className={`flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg ${cfg.bg}`}
           >
             <Icon size={18} className={cfg.color} />
           </div>
           <div className="min-w-0">
-            <p className="text-white font-semibold text-sm truncate">
+            <p className="truncate text-sm font-semibold text-white">
               {inv.name}
             </p>
             <p className={`text-xs ${cfg.color}`}>{cfg.label}</p>
           </div>
         </div>
 
-        {/* Quantity */}
-        <p className="text-gray-500 text-xs mb-3">
+        <p className="mb-3 text-xs text-slate-500">
           Qty:{" "}
-          <span className="text-gray-300 font-medium">
+          <span className="font-medium text-slate-300">
             {qty.toLocaleString()}
           </span>
         </p>
 
-        {/* Buy Price vs Current Price */}
-        <div className="grid grid-cols-2 gap-2 mb-4">
-          <div className="bg-gray-800/50 rounded-xl p-2.5">
-            <p className="text-gray-500 text-[10px] mb-0.5">Buy Price</p>
-            <p className="text-white text-xs font-medium">
+        <div className="mb-4 grid grid-cols-2 gap-2">
+          <div className="rounded-lg bg-white/[0.045] p-2.5">
+            <p className="mb-0.5 text-[10px] text-slate-500">Buy Price</p>
+            <p className="break-words text-xs font-medium text-white">
               PKR {fmt(buyPrice)}
             </p>
           </div>
-          <div className="bg-gray-800/50 rounded-xl p-2.5">
-            <p className="text-gray-500 text-[10px] mb-0.5">Current Price</p>
-            <p className="text-white text-xs font-medium">
+          <div className="rounded-lg bg-white/[0.045] p-2.5">
+            <p className="mb-0.5 text-[10px] text-slate-500">Current Price</p>
+            <p className="break-words text-xs font-medium text-white">
               PKR {fmt(curPrice)}
             </p>
           </div>
         </div>
 
-        {/* Current Value + P&L */}
-        <div className="border-t border-gray-800/50 pt-3 space-y-1.5">
-          <div className="flex items-center justify-between">
-            <p className="text-gray-500 text-xs">Current Value</p>
-            <p className="text-white text-sm font-bold">
+        <div className="space-y-2 border-t border-white/[0.08] pt-3">
+          <div className="flex items-center justify-between gap-3">
+            <p className="text-xs text-slate-500">Current Value</p>
+            <p className="break-words text-right text-sm font-bold text-white">
               PKR {fmt(currentValue)}
             </p>
           </div>
-          <div className="flex items-center justify-between">
-            <p className="text-gray-500 text-xs">P&L</p>
+          <div className="flex items-center justify-between gap-3">
+            <p className="text-xs text-slate-500">P&L</p>
             <div
-              className={`flex items-center gap-1 ${isProfit ? "text-green-400" : "text-red-400"}`}
+              className={`flex min-w-0 items-center justify-end gap-1 text-right ${
+                isProfit ? "text-green-400" : "text-red-400"
+              }`}
             >
-              {isProfit ?
-                <ArrowUpRight size={13} />
-              : <ArrowDownRight size={13} />}
-              <span className="text-sm font-semibold">
+              {isProfit ? <ArrowUpRight size={13} /> : <ArrowDownRight size={13} />}
+              <span className="truncate text-sm font-semibold">
                 PKR {fmt(Math.abs(pnl))}
               </span>
               <span className="text-xs opacity-80">

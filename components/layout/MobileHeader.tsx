@@ -1,30 +1,145 @@
 "use client";
 
-import { BarChart3, Bell } from "lucide-react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
+import { BarChart3, Bell, Menu, X } from "lucide-react";
+import { NAV_ITEMS, QUICK_ACTION_ITEMS } from "@/lib/navigation";
 
 export default function MobileHeader() {
+  const pathname = usePathname();
+  const [open, setOpen] = useState(false);
+
+  useEffect(() => {
+    setOpen(false);
+  }, [pathname]);
+
+  useEffect(() => {
+    document.body.style.overflow = open ? "hidden" : "";
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [open]);
+
   return (
-    <div className="h-14 bg-[#0d121f]/95 border-b border-white/[0.08] flex items-center justify-between px-4 lg:hidden flex-shrink-0 backdrop-blur">
-      <div className="flex items-center gap-2">
-        <div className="grid h-8 w-8 place-items-center rounded-lg bg-indigo-500/15 text-indigo-300 ring-1 ring-indigo-400/20">
-          <BarChart3 size={16} />
+    <>
+      <header className="flex h-14 flex-shrink-0 items-center justify-between border-b border-white/[0.08] bg-[#0b1118]/96 px-3 backdrop-blur-xl lg:hidden">
+        <div className="flex min-w-0 items-center gap-2">
+          <button
+            onClick={() => setOpen(true)}
+            className="finance-focus grid h-9 w-9 place-items-center rounded-lg border border-white/[0.08] bg-white/[0.055] text-slate-300"
+            aria-label="Open navigation"
+          >
+            <Menu size={17} />
+          </button>
+          <div className="grid h-9 w-9 flex-shrink-0 place-items-center rounded-lg bg-cyan-500/15 text-cyan-200 ring-1 ring-cyan-300/20">
+            <BarChart3 size={16} />
+          </div>
+          <span className="truncate text-sm font-semibold text-white">
+            Jamal's Finance
+          </span>
         </div>
-        <span className="text-white font-semibold text-sm">
-          Jamal's Finance
-        </span>
-      </div>
-      <div className="flex items-center gap-2">
-        <button
-          className="finance-control relative w-8 h-8 flex items-center justify-center"
-          aria-label="Open notifications"
-        >
-          <Bell size={14} className="text-slate-300" />
-          <span className="absolute top-1 right-1 w-1.5 h-1.5 bg-cyan-400 rounded-full" />
-        </button>
-        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-cyan-500 flex items-center justify-center text-xs font-semibold shadow-lg shadow-indigo-950/25">
-          J
+
+        <div className="flex items-center gap-2">
+          <button
+            className="finance-focus finance-control relative flex h-9 w-9 items-center justify-center"
+            aria-label="Open notifications"
+          >
+            <Bell size={14} className="text-slate-300" />
+            <span className="absolute right-1.5 top-1.5 h-1.5 w-1.5 rounded-full bg-cyan-300" />
+          </button>
+          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-cyan-400 to-emerald-400 text-xs font-bold text-slate-950 shadow-lg shadow-cyan-950/25">
+            J
+          </div>
         </div>
-      </div>
-    </div>
+      </header>
+
+      {open && (
+        <div className="fixed inset-0 z-50 lg:hidden">
+          <button
+            className="absolute inset-0 h-full w-full bg-black/60 backdrop-blur-sm"
+            onClick={() => setOpen(false)}
+            aria-label="Close navigation"
+          />
+          <aside className="absolute left-0 top-0 flex h-full w-[min(86vw,360px)] flex-col border-r border-white/[0.1] bg-[#0b1118] shadow-2xl">
+            <div className="flex h-14 items-center justify-between border-b border-white/[0.08] px-4">
+              <div className="flex min-w-0 items-center gap-2.5">
+                <div className="grid h-9 w-9 flex-shrink-0 place-items-center rounded-lg bg-cyan-500/15 text-cyan-200 ring-1 ring-cyan-300/20">
+                  <BarChart3 size={17} />
+                </div>
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-semibold text-white">
+                    Jamal's Finance
+                  </p>
+                  <p className="truncate text-[11px] text-slate-500">
+                    Personal finance OS
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setOpen(false)}
+                className="finance-focus grid h-9 w-9 place-items-center rounded-lg border border-white/[0.08] bg-white/[0.055] text-slate-300"
+                aria-label="Close navigation"
+              >
+                <X size={17} />
+              </button>
+            </div>
+
+            <div className="min-h-0 flex-1 overflow-y-auto px-4 py-4">
+              <p className="mb-2 px-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">
+                Navigation
+              </p>
+              <nav className="space-y-1.5">
+                {NAV_ITEMS.map(({ label, href, icon: Icon, tone }) => {
+                  const active =
+                    pathname === href ||
+                    (href !== "/dashboard" && pathname.startsWith(href));
+                  return (
+                    <Link
+                      key={href}
+                      href={href}
+                      className={`finance-focus flex items-center gap-3 rounded-lg border px-3 py-3 text-sm transition-colors ${
+                        active
+                          ? "border-cyan-300/20 bg-white/[0.075] text-white"
+                          : "border-transparent text-slate-400 hover:border-white/[0.08] hover:bg-white/[0.045] hover:text-white"
+                      }`}
+                    >
+                      <span
+                        className={`grid h-8 w-8 place-items-center rounded-lg ${
+                          active ? tone : "bg-white/[0.045] text-slate-500"
+                        }`}
+                      >
+                        <Icon size={16} />
+                      </span>
+                      <span>{label}</span>
+                    </Link>
+                  );
+                })}
+              </nav>
+
+              <p className="mb-2 mt-5 px-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">
+                Quick Categories
+              </p>
+              <div className="grid grid-cols-2 gap-2">
+                {QUICK_ACTION_ITEMS.map(({ label, href, icon: Icon, tone }) => (
+                  <Link
+                    key={label}
+                    href={href}
+                    className="finance-focus flex items-center gap-2 rounded-lg border border-white/[0.08] bg-white/[0.045] px-3 py-3 text-sm text-slate-300"
+                  >
+                    <span
+                      className={`grid h-8 w-8 flex-shrink-0 place-items-center rounded-lg ${tone}`}
+                    >
+                      <Icon size={16} />
+                    </span>
+                    <span className="truncate">{label}</span>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          </aside>
+        </div>
+      )}
+    </>
   );
 }

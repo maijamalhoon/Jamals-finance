@@ -27,7 +27,7 @@ export default async function DashboardLayout({
     .reduce((s, t) => s + Number(t.amount), 0);
 
   return (
-    <div className="flex h-screen overflow-hidden bg-[#0B0D17] text-white">
+    <div className="flex h-dvh overflow-hidden bg-[#070a0e] text-white">
       <div className="hidden lg:block flex-shrink-0">
         <Sidebar todayIncome={todayIncome} todayExpenses={todayExpenses} />
       </div>
@@ -39,7 +39,7 @@ export default async function DashboardLayout({
 
         <MobileHeader />
 
-        <main className="flex-1 overflow-y-auto px-4 py-5 lg:px-7 lg:py-6">
+        <main className="flex-1 overflow-y-auto px-3 py-4 sm:px-5 lg:px-7 lg:py-6">
           <div className="mx-auto w-full max-w-[1600px]">{children}</div>
         </main>
 

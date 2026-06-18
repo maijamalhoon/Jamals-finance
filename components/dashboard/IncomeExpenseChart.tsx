@@ -33,7 +33,7 @@ function CustomTooltip({ active, payload, label }: any) {
 
 export default function IncomeExpenseChart({ data }: { data: ChartData[] }) {
   return (
-    <div className="finance-panel p-5 h-full">
+    <div className="finance-panel h-full p-4 sm:p-5">
       <div className="flex flex-wrap items-center justify-between gap-3 mb-5">
         <div>
           <h3 className="text-white font-semibold text-sm">
@@ -52,7 +52,8 @@ export default function IncomeExpenseChart({ data }: { data: ChartData[] }) {
           </div>
         </div>
       </div>
-      <ResponsiveContainer width="100%" height={220}>
+      <div className="h-[220px] sm:h-[240px]">
+      <ResponsiveContainer width="100%" height="100%">
         <AreaChart
           data={data}
           margin={{ top: 5, right: 5, left: -20, bottom: 0 }}
@@ -102,6 +103,7 @@ export default function IncomeExpenseChart({ data }: { data: ChartData[] }) {
           />
         </AreaChart>
       </ResponsiveContainer>
+      </div>
     </div>
   );
 }
