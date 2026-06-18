@@ -164,11 +164,14 @@
   }
 
   .summary-card {
-    @apply finance-panel card-hover p-4;
+    @apply rounded-lg border border-white/[0.08] bg-[#101820]/78 p-4 shadow-[0_18px_45px_rgba(0,0,0,0.22)] backdrop-blur;
+    transition:
+      transform 0.2s ease,
+      box-shadow 0.2s ease;
   }
 
   .icon-button {
-    @apply finance-focus flex h-8 w-8 items-center justify-center rounded-lg border border-white/[0.08] bg-white/[0.055] text-slate-400 transition-colors hover:bg-white/[0.1] hover:text-white disabled:cursor-not-allowed disabled:opacity-50;
+    @apply flex h-8 w-8 items-center justify-center rounded-lg border border-white/[0.08] bg-white/[0.055] text-slate-400 transition-colors hover:bg-white/[0.1] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300/45 focus-visible:ring-offset-0 disabled:cursor-not-allowed disabled:opacity-50;
   }
 
   .desktop-list-header {

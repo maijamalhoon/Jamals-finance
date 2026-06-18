@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import {
   Dialog,
@@ -46,7 +46,7 @@ export default function TransactionModal({
   onSuccess,
   transaction,
 }: Props) {
-  const supabase = createClient();
+  const supabase = useMemo(() => createClient(), []);
   const isEditing = !!transaction;
 
   const [type, setType] = useState<"income" | "expense">(defaultType);
@@ -89,7 +89,7 @@ export default function TransactionModal({
       setAccountId(transaction?.account_id || accs?.[0]?.id || "");
     }
     load();
-  }, [open, type]);
+  }, [open, supabase, transaction?.account_id, transaction?.category_id, type]);
 
   async function handleSave() {
     if (!amount || !categoryId || !accountId) {
@@ -155,7 +155,7 @@ export default function TransactionModal({
       "bg-green-600 hover:bg-green-700"
     : "bg-red-600 hover:bg-red-700";
   const btnLabel =
-    loading ? "Saving…"
+    loading ? "Saving..."
     : isEditing ? `Update ${isIncome ? "Income" : "Expense"}`
     : `Save ${isIncome ? "Income" : "Expense"}`;
 

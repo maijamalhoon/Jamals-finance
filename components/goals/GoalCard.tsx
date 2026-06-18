@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Pencil, Trash2, CheckCircle2 } from "lucide-react";
+import { CheckCircle2, Pencil, Trash2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import GoalModal, { ExistingGoal } from "./GoalModal";
 import { GOAL_ICONS } from "./goal-icons";
@@ -13,13 +13,13 @@ export default function GoalCard({ goal }: { goal: ExistingGoal }) {
 
   const [editOpen, setEditOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [now] = useState(() => Date.now());
 
   const current = Number(goal.current_amount);
   const target = Number(goal.target_amount);
-  const pct = Math.min((current / target) * 100, 100);
-  const done = current >= target;
+  const pct = target > 0 ? Math.min((current / target) * 100, 100) : 0;
+  const done = target > 0 && current >= target;
 
-  // Find the matching lucide icon
   const iconEntry =
     GOAL_ICONS.find((i) => i.value === goal.icon) ||
     GOAL_ICONS[GOAL_ICONS.length - 1];
@@ -28,7 +28,7 @@ export default function GoalCard({ goal }: { goal: ExistingGoal }) {
   let daysLeft: number | null = null;
   if (goal.deadline) {
     daysLeft = Math.ceil(
-      (new Date(goal.deadline).getTime() - Date.now()) / 86400000,
+      (new Date(goal.deadline).getTime() - now) / 86400000,
     );
   }
 
@@ -45,51 +45,59 @@ export default function GoalCard({ goal }: { goal: ExistingGoal }) {
   return (
     <>
       <div
-        className={`bg-gray-900/60 border rounded-2xl p-5 hover:border-gray-700/60 transition-colors group relative ${
-          done ? "border-green-500/30" : "border-gray-800/50"
+        className={`finance-panel card-hover group relative p-5 hover:border-white/[0.14] ${
+          done ? "border-green-500/30 bg-green-500/5" : ""
         }`}
       >
-        {/* Edit / Delete */}
-        <div className="absolute top-4 right-4 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+        <div className="absolute right-4 top-4 flex gap-1 opacity-100 transition-opacity sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100">
           <button
             onClick={() => setEditOpen(true)}
-            className="w-7 h-7 rounded-lg bg-gray-800 hover:bg-indigo-600/20 flex items-center justify-center transition-colors"
+            className="icon-button"
+            aria-label="Edit goal"
           >
-            <Pencil size={12} className="text-gray-400" />
+            <Pencil size={12} />
           </button>
           <button
             onClick={handleDelete}
             disabled={deleting}
-            className="w-7 h-7 rounded-lg bg-gray-800 hover:bg-red-500/20 flex items-center justify-center transition-colors"
+            className="icon-button hover:border-red-400/20 hover:bg-red-500/10 hover:text-red-300"
+            aria-label="Delete goal"
           >
-            <Trash2 size={12} className="text-red-400" />
+            <Trash2 size={12} />
           </button>
         </div>
 
-        {/* Icon */}
-        <div
-          className={`w-10 h-10 rounded-xl flex items-center justify-center mb-3 ${
-            done ? "bg-green-500/15" : "bg-indigo-500/15"
-          }`}
-        >
-          {done ?
-            <CheckCircle2 size={18} className="text-green-400" />
-          : <GoalIcon size={18} className="text-indigo-400" />}
+        <div className="mb-4 flex items-center gap-3 pr-16">
+          <div
+            className={`flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg ${
+              done ? "bg-green-500/15" : "bg-indigo-500/15"
+            }`}
+          >
+            {done ?
+              <CheckCircle2 size={18} className="text-green-400" />
+            : <GoalIcon size={18} className="text-indigo-300" />}
+          </div>
+          <div className="min-w-0">
+            <p className="truncate text-sm font-semibold text-white">
+              {goal.name}
+            </p>
+            <p
+              className={`text-xs font-medium ${
+                done ? "text-green-400" : "text-indigo-300"
+              }`}
+            >
+              {done ? "Completed" : iconEntry.label}
+            </p>
+          </div>
         </div>
 
-        {/* Name */}
-        <p className="text-white font-semibold text-sm mb-1 pr-16 truncate">
-          {goal.name}
-        </p>
-
-        {/* Status */}
         {done ?
-          <p className="text-green-400 text-xs mb-3 font-medium">
-            ✓ Completed!
+          <p className="mb-3 text-xs font-medium text-green-400">
+            Goal reached
           </p>
         : daysLeft !== null ?
           <p
-            className={`text-xs mb-3 ${daysLeft < 30 ? "text-red-400" : "text-gray-500"}`}
+            className={`mb-3 text-xs ${daysLeft < 30 ? "text-red-400" : "text-slate-500"}`}
           >
             {daysLeft > 0 ?
               `${daysLeft} days left`
@@ -97,31 +105,33 @@ export default function GoalCard({ goal }: { goal: ExistingGoal }) {
               "Due today"
             : "Overdue"}
           </p>
-        : <p className="text-gray-600 text-xs mb-3">No deadline</p>}
+        : <p className="mb-3 text-xs text-slate-600">No deadline</p>}
 
-        {/* Progress Bar */}
-        <div className="h-1.5 bg-gray-800 rounded-full overflow-hidden mb-3">
+        <div className="mb-4 h-1.5 overflow-hidden rounded-full bg-white/[0.08]">
           <div
-            className={`h-full rounded-full transition-all duration-500 ${done ? "bg-green-400" : "bg-yellow-400"}`}
+            className={`h-full rounded-full transition-all duration-500 ${done ? "bg-green-300" : "bg-amber-300"}`}
             style={{ width: `${pct}%` }}
           />
         </div>
 
-        {/* Amounts */}
-        <div className="flex items-end justify-between">
-          <div>
-            <p className="text-white text-sm font-bold">{fmt(current)}</p>
-            <p className="text-gray-500 text-xs">of {fmt(target)}</p>
+        <div className="flex items-end justify-between gap-3 border-t border-white/[0.08] pt-3">
+          <div className="min-w-0">
+            <p className="break-words text-sm font-bold text-white">
+              {fmt(current)}
+            </p>
+            <p className="mt-0.5 break-words text-xs text-slate-500">
+              of {fmt(target)}
+            </p>
           </div>
-          <div className="text-right">
+          <div className="min-w-[76px] text-right">
             <p
-              className={`text-sm font-bold ${done ? "text-green-400" : "text-yellow-400"}`}
+              className={`text-sm font-bold ${done ? "text-green-400" : "text-amber-300"}`}
             >
               {pct.toFixed(0)}%
             </p>
             {!done && (
-              <p className="text-gray-600 text-xs">
-                {fmt(target - current)} to go
+              <p className="break-words text-xs text-slate-600">
+                {fmt(Math.max(target - current, 0))} to go
               </p>
             )}
           </div>

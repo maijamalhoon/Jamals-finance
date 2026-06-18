@@ -26,8 +26,8 @@ export default function ExportButton() {
       ...data.map((t) => [
         t.date,
         t.type,
-        (t.categories as any)?.name || "",
-        (t.accounts as any)?.name || "",
+        (t.categories as { name?: string } | null)?.name || "",
+        (t.accounts as { name?: string } | null)?.name || "",
         t.amount,
         t.note || "",
       ]),
@@ -49,10 +49,10 @@ export default function ExportButton() {
     <button
       onClick={handleExport}
       disabled={loading}
-      className="flex items-center gap-2 px-4 py-2.5 bg-gray-800 hover:bg-gray-700 border border-gray-700/50 text-white text-sm font-medium rounded-xl transition-colors disabled:opacity-50"
+      className="finance-control finance-focus flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-white disabled:opacity-50"
     >
       <Download size={15} />
-      {loading ? "Exporting…" : "Export CSV"}
+      {loading ? "Exporting..." : "Export CSV"}
     </button>
   );
 }

@@ -90,7 +90,7 @@ Respond ONLY with valid JSON. No markdown. No explanation. This exact format:
 
     return NextResponse.json(result)
 
-  } catch (err) {
+  } catch {
     return NextResponse.json({ error: 'Failed to generate insights' }, { status: 500 })
   }
 }

@@ -3,6 +3,18 @@ import MonthlyChart from "@/components/reports/MonthlyChart";
 import CategoryBreakdown from "@/components/reports/CategoryBreakdown";
 import ExportButton from "@/components/reports/ExportButton";
 
+interface RelatedCategory {
+  name?: string;
+  color?: string;
+}
+
+interface ReportTransaction {
+  amount: number | string;
+  date: string;
+  type: "income" | "expense" | string;
+  categories?: RelatedCategory | null;
+}
+
 function getLastSixMonths() {
   const now = new Date();
   return Array.from({ length: 6 }, (_, i) => {
@@ -22,16 +34,14 @@ export default async function ReportsPage() {
   const supabase = await createClient();
   const months = getLastSixMonths();
 
-  // Fetch all transactions in the last 6 months
   const { data: rawTxns } = await supabase
     .from("transactions")
     .select("*, categories(name, color)")
     .gte("date", months[0].first)
     .lte("date", months[5].last);
 
-  const txns = rawTxns ?? [];
+  const txns = (rawTxns ?? []) as ReportTransaction[];
 
-  // Build monthly bar chart data
   const chartData = months.map((m) => {
     const inMonth = txns.filter((t) => {
       const d = new Date(t.date);
@@ -48,7 +58,6 @@ export default async function ReportsPage() {
     };
   });
 
-  // This month's transactions
   const now = new Date();
   const thisMon = txns.filter((t) => {
     const d = new Date(t.date);
@@ -66,13 +75,12 @@ export default async function ReportsPage() {
   const net = income - expenses;
   const savings = income > 0 ? (net / income) * 100 : 0;
 
-  // Category breakdown for this month
   const catMap: Record<string, { amount: number; color: string }> = {};
   thisMon
     .filter((t) => t.type === "expense")
     .forEach((t) => {
-      const name = (t.categories as any)?.name || "Other";
-      const color = (t.categories as any)?.color || "#6b7280";
+      const name = t.categories?.name || "Other";
+      const color = t.categories?.color || "#6b7280";
       if (!catMap[name]) catMap[name] = { amount: 0, color };
       catMap[name].amount += Number(t.amount);
     });
@@ -101,17 +109,16 @@ export default async function ReportsPage() {
     {
       label: "Savings Rate",
       value: `${savings.toFixed(1)}%`,
-      color: savings >= 20 ? "text-green-400" : "text-yellow-400",
+      color: savings >= 20 ? "text-green-400" : "text-amber-300",
     },
   ];
 
   return (
-    <div>
-      {/* Header */}
-      <div className="flex items-center justify-between mb-6">
+    <div className="space-y-5">
+      <div className="page-heading">
         <div>
-          <h2 className="text-white text-xl font-semibold">Reports</h2>
-          <p className="text-gray-500 text-sm mt-1">
+          <h2 className="page-title">Reports</h2>
+          <p className="page-subtitle">
             {now.toLocaleDateString("en-US", {
               month: "long",
               year: "numeric",
@@ -121,31 +128,27 @@ export default async function ReportsPage() {
         <ExportButton />
       </div>
 
-      {/* This Month Summary */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        {summaryCards.map((s, i) => (
-          <div
-            key={i}
-            className="bg-gray-900/60 border border-gray-800/50 rounded-2xl p-4"
-          >
-            <p className="text-gray-500 text-xs mb-2">{s.label}</p>
-            <p className={`text-lg font-bold ${s.color}`}>{s.value}</p>
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+        {summaryCards.map((s) => (
+          <div key={s.label} className="summary-card">
+            <p className="mb-2 text-xs text-slate-500">{s.label}</p>
+            <p className={`break-words text-lg font-bold ${s.color}`}>
+              {s.value}
+            </p>
           </div>
         ))}
       </div>
 
-      {/* Charts */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         <MonthlyChart data={chartData} />
         <CategoryBreakdown data={categoryData} />
       </div>
 
-      {/* Transaction Counts */}
-      <div className="bg-gray-900/60 border border-gray-800/50 rounded-2xl p-5">
-        <p className="text-gray-500 text-xs font-medium uppercase tracking-wide mb-4">
-          This Month — Transaction Summary
+      <div className="finance-panel p-4 sm:p-5">
+        <p className="mb-4 text-xs font-medium uppercase tracking-wide text-slate-500">
+          This Month - Transaction Summary
         </p>
-        <div className="grid grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3 sm:gap-6">
           {[
             { label: "Total Transactions", value: thisMon.length },
             {
@@ -156,10 +159,10 @@ export default async function ReportsPage() {
               label: "Expense Entries",
               value: thisMon.filter((t) => t.type === "expense").length,
             },
-          ].map((s, i) => (
-            <div key={i}>
-              <p className="text-white text-2xl font-bold">{s.value}</p>
-              <p className="text-gray-500 text-xs mt-1">{s.label}</p>
+          ].map((s) => (
+            <div key={s.label}>
+              <p className="text-2xl font-bold text-white">{s.value}</p>
+              <p className="mt-1 text-xs text-slate-500">{s.label}</p>
             </div>
           ))}
         </div>

@@ -1,32 +1,46 @@
 "use client";
 
 import {
-  BarChart,
   Bar,
+  BarChart,
+  CartesianGrid,
+  ResponsiveContainer,
+  Tooltip,
   XAxis,
   YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
 } from "recharts";
 
 interface Props {
   data: { month: string; income: number; expenses: number }[];
 }
 
-function CustomTooltip({ active, payload, label }: any) {
+interface TooltipPayload {
+  value?: number;
+}
+
+function CustomTooltip({
+  active,
+  payload,
+  label,
+}: {
+  active?: boolean;
+  payload?: TooltipPayload[];
+  label?: string;
+}) {
   if (!active || !payload?.length) return null;
-  const net = payload[0]?.value - payload[1]?.value;
+
+  const income = Number(payload[0]?.value ?? 0);
+  const expenses = Number(payload[1]?.value ?? 0);
+  const net = income - expenses;
+
   return (
-    <div className="bg-gray-900 border border-gray-700 rounded-xl p-3 text-xs shadow-xl">
-      <p className="text-gray-400 font-medium mb-2">{label}</p>
-      <p className="text-green-400">
-        Income: PKR {payload[0]?.value?.toLocaleString()}
+    <div className="finance-panel p-3 text-xs shadow-xl">
+      <p className="mb-2 font-medium text-slate-400">{label}</p>
+      <p className="text-green-300">Income: PKR {income.toLocaleString()}</p>
+      <p className="mt-1 text-red-300">
+        Expenses: PKR {expenses.toLocaleString()}
       </p>
-      <p className="text-red-400 mt-1">
-        Expenses: PKR {payload[1]?.value?.toLocaleString()}
-      </p>
-      <p className={`mt-1 ${net >= 0 ? "text-blue-400" : "text-orange-400"}`}>
+      <p className={`mt-1 ${net >= 0 ? "text-sky-300" : "text-orange-300"}`}>
         Net: PKR {net.toLocaleString()}
       </p>
     </div>
@@ -35,8 +49,8 @@ function CustomTooltip({ active, payload, label }: any) {
 
 export default function MonthlyChart({ data }: Props) {
   return (
-    <div className="bg-gray-900/60 border border-gray-800/50 rounded-2xl p-5">
-      <h3 className="text-white font-medium text-sm mb-5">
+    <div className="finance-panel p-4 sm:p-5">
+      <h3 className="mb-5 text-sm font-semibold text-white">
         Monthly Overview (Last 6 Months)
       </h3>
       <ResponsiveContainer width="100%" height={260}>
@@ -46,17 +60,17 @@ export default function MonthlyChart({ data }: Props) {
         >
           <CartesianGrid
             strokeDasharray="3 3"
-            stroke="#1f2937"
+            stroke="rgba(148, 163, 184, 0.12)"
             vertical={false}
           />
           <XAxis
             dataKey="month"
-            tick={{ fill: "#6b7280", fontSize: 11 }}
+            tick={{ fill: "#64748b", fontSize: 11 }}
             axisLine={false}
             tickLine={false}
           />
           <YAxis
-            tick={{ fill: "#6b7280", fontSize: 11 }}
+            tick={{ fill: "#64748b", fontSize: 11 }}
             axisLine={false}
             tickLine={false}
             tickFormatter={(v) => `${v / 1000}k`}
@@ -65,14 +79,14 @@ export default function MonthlyChart({ data }: Props) {
           <Bar
             dataKey="income"
             name="Income"
-            fill="#22c55e"
+            fill="#86efac"
             radius={[4, 4, 0, 0]}
             maxBarSize={32}
           />
           <Bar
             dataKey="expenses"
             name="Expenses"
-            fill="#ef4444"
+            fill="#fca5a5"
             radius={[4, 4, 0, 0]}
             maxBarSize={32}
           />
