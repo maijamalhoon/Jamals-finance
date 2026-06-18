@@ -57,11 +57,16 @@ export default function TodaysOverview({
       tone: "text-cyan-200",
     },
   ];
+
   const diagnostics = [
-    ["Active days", String(activeDays)],
-    ["Forecast", projectedExpenses],
-    ["Days left", String(remainingDays)],
-    ["AI confidence", savingsRate >= 0 ? "Stable" : "Watch"],
+    { label: "Active days", value: String(activeDays), tone: "text-white" },
+    { label: "Forecast", value: projectedExpenses, tone: "text-white" },
+    { label: "Days left", value: String(remainingDays), tone: "text-white" },
+    {
+      label: "AI confidence",
+      value: savingsRate >= 0 ? "Stable" : "Watch",
+      tone: "text-white",
+    },
   ];
 
   return (
@@ -84,6 +89,7 @@ export default function TodaysOverview({
             </div>
           </div>
 
+          {/* First Row: Income, Expenses, Net Today, Entries */}
           <div className="mt-5 grid grid-cols-2 gap-3 md:grid-cols-4">
             {tiles.map((tile) => (
               <div
@@ -99,15 +105,19 @@ export default function TodaysOverview({
               </div>
             ))}
           </div>
-          <div className="mt-3 grid grid-cols-2 gap-2 md:grid-cols-4">
-            {diagnostics.map(([label, value]) => (
+
+          {/* Second Row: Active days, Forecast, Days left, AI confidence */}
+          <div className="mt-3 grid grid-cols-2 gap-3 md:grid-cols-4">
+            {diagnostics.map((diag) => (
               <div
-                key={label}
-                className="rounded-2xl border border-white/[0.08] bg-white/[0.045] px-3 py-2"
+                key={diag.label}
+                className="rounded-3xl border border-white/[0.08] bg-white/[0.045] p-4"
               >
-                <p className="text-[10px] text-slate-600">{label}</p>
-                <p className="mt-1 truncate text-xs font-semibold text-slate-200">
-                  {value}
+                <p className="text-[11px] font-medium text-slate-500">
+                  {diag.label}
+                </p>
+                <p className={`mt-2 truncate text-base font-bold ${diag.tone}`}>
+                  {diag.value}
                 </p>
               </div>
             ))}
