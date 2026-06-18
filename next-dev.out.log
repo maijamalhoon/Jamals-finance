@@ -1,0 +1,12 @@
+
+> jamals-finance@0.1.0 dev
+> next dev
+
+▲ Next.js 16.2.9 (Turbopack)
+- Local:         http://localhost:3000
+- Network:       http://192.168.100.163:3000
+- Environments: .env.local
+✓ Ready in 922ms
+Creating turbopack project { dir: 'D:\\old pc\\JAMAL\\projects\\jamals-finance', testMode: true }
+
+ GET /login 200 in 968ms (next.js: 148ms, proxy.ts: 375ms, application-code: 444ms)

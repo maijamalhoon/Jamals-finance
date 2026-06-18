@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { BarChart3 } from "lucide-react";
+import { BarChart3, ShieldCheck, Sparkles, Zap } from "lucide-react";
 import { useState } from "react";
 import { NAV_ITEMS } from "@/lib/navigation";
 
@@ -22,11 +22,12 @@ export default function Sidebar() {
       }}
       className={`${
         expanded ? "w-[272px]" : "w-[76px]"
-      } flex h-full flex-shrink-0 flex-col border-r border-white/[0.08] bg-[#17181c]/95 shadow-[18px_0_45px_rgba(0,0,0,0.24)] backdrop-blur-xl transition-[width] duration-200 ease-out`}
+      } relative z-50 flex h-full flex-shrink-0 flex-col border-r border-white/[0.08] bg-[#17181c]/95 shadow-[18px_0_45px_rgba(0,0,0,0.24)] backdrop-blur-xl transition-[width] duration-200 ease-out`}
     >
+      <div className="absolute inset-y-6 right-0 w-px bg-gradient-to-b from-transparent via-cyan-200/20 to-transparent" />
       <div className="flex h-16 flex-shrink-0 items-center justify-between border-b border-white/[0.08] px-4">
         <div className="flex min-w-0 items-center gap-2.5">
-          <div className="grid h-9 w-9 flex-shrink-0 place-items-center rounded-lg bg-cyan-500/15 text-cyan-200 ring-1 ring-cyan-300/20">
+          <div className="grid h-10 w-10 flex-shrink-0 place-items-center rounded-[22px] bg-cyan-300 text-slate-950 shadow-[0_14px_34px_rgba(34,211,238,0.18)]">
             <BarChart3 size={17} />
           </div>
           <div
@@ -45,6 +46,22 @@ export default function Sidebar() {
       </div>
 
       <nav className="min-h-0 flex-1 space-y-1.5 overflow-y-auto overflow-x-hidden px-3 py-4">
+        <div
+          className={`mb-3 overflow-hidden transition-all duration-200 ease-out ${
+            expanded ? "h-[86px] opacity-100" : "h-0 opacity-0"
+          }`}
+        >
+          <div className="rounded-[24px] border border-cyan-200/10 bg-cyan-300/[0.06] p-3">
+            <div className="flex items-center gap-2 text-xs font-semibold text-cyan-100">
+              <Sparkles size={14} />
+              One UI command rail
+            </div>
+            <p className="mt-2 text-[11px] leading-4 text-slate-500">
+              Navigation tuned for quick scanning and daily finance control.
+            </p>
+          </div>
+        </div>
+
         {NAV_ITEMS.map(({ label, href, icon: Icon, tone }) => {
           const active =
             pathname === href ||
@@ -59,7 +76,7 @@ export default function Sidebar() {
                 expanded ? "" : "justify-center px-2"
               } ${
                 active
-                  ? "border-cyan-300/20 bg-white/[0.075] text-white shadow-sm shadow-black/20"
+                  ? "border-cyan-300/20 bg-white/[0.09] text-white shadow-[0_10px_26px_rgba(0,0,0,0.18)]"
                   : "border-transparent text-slate-400 hover:border-white/[0.08] hover:bg-white/[0.045] hover:text-white"
               }`}
             >
@@ -84,15 +101,33 @@ export default function Sidebar() {
 
       <div className="border-t border-white/[0.08] p-4">
         {expanded ? (
-          <div className="mb-4 flex items-center gap-3">
-            <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-cyan-300 to-emerald-300 text-sm font-bold text-slate-950 shadow-lg shadow-cyan-950/30">
-              J
+          <div className="space-y-3">
+            <div className="rounded-[24px] border border-white/[0.08] bg-white/[0.045] p-3">
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-cyan-300 to-emerald-300 text-sm font-bold text-slate-950 shadow-lg shadow-cyan-950/30">
+                  J
+                </div>
+                <div className="min-w-0">
+                  <p className="text-sm font-semibold text-white">Jamal</p>
+                  <p className="truncate text-xs text-slate-500">
+                    Global finance workspace
+                  </p>
+                </div>
+              </div>
             </div>
-            <div className="min-w-0">
-              <p className="text-sm font-semibold text-white">Jamal</p>
-              <p className="truncate text-xs text-slate-500">
-                jamal@example.com
-              </p>
+            <div className="grid grid-cols-2 gap-2">
+              <div className="rounded-2xl border border-emerald-300/10 bg-emerald-300/[0.06] p-2.5">
+                <ShieldCheck size={14} className="text-emerald-200" />
+                <p className="mt-1 text-[11px] font-semibold text-white">
+                  Secure
+                </p>
+              </div>
+              <div className="rounded-2xl border border-amber-300/10 bg-amber-300/[0.06] p-2.5">
+                <Zap size={14} className="text-amber-200" />
+                <p className="mt-1 text-[11px] font-semibold text-white">
+                  Fast
+                </p>
+              </div>
             </div>
           </div>
         ) : (

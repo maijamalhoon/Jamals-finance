@@ -14,6 +14,10 @@ import {
   TrendingDown,
   BarChart2,
   PieChart,
+  CalendarDays,
+  Gauge,
+  Landmark,
+  Target,
 } from "lucide-react";
 
 export const dynamic = "force-dynamic";
@@ -141,6 +145,25 @@ export default async function DashboardPage() {
   const dayOfMonth = now.getDate();
   const savingsRate = income > 0 ? ((income - expenses) / income) * 100 : 0;
   const dailySpend = expenses / Math.max(dayOfMonth, 1);
+  const monthProgress = (dayOfMonth / daysInMonth) * 100;
+  const projectedExpenses = dailySpend * daysInMonth;
+  const remainingDays = Math.max(daysInMonth - dayOfMonth, 0);
+  const averageIncomePerEntry =
+    txns.filter((t) => t.type === "income").length > 0 ?
+      income / txns.filter((t) => t.type === "income").length
+    : 0;
+  const averageExpensePerEntry =
+    txns.filter((t) => t.type === "expense").length > 0 ?
+      expenses / txns.filter((t) => t.type === "expense").length
+    : 0;
+  const liquidityRatio =
+    totalBalance + investmentsValue > 0 ?
+      (totalBalance / (totalBalance + investmentsValue)) * 100
+    : 0;
+  const monthlyBurnStatus =
+    projectedExpenses > expenses ?
+      `${fmt(projectedExpenses)} projected by month end`
+    : "Spend pace is stable";
   const dailyExpenseTrend = chartData.map((day) => day.expenses);
   const topCategory =
     spendingData[0] ?
@@ -159,6 +182,8 @@ export default async function DashboardPage() {
       icon: Wallet,
       iconColor: "text-indigo-300",
       iconBg: "bg-indigo-500/15",
+      detail: `${Math.round(liquidityRatio)}% held as liquid balance`,
+      progress: liquidityRatio,
     },
     {
       title: "Total Income",
@@ -168,6 +193,8 @@ export default async function DashboardPage() {
       icon: TrendingUp,
       iconColor: "text-green-300",
       iconBg: "bg-green-500/15",
+      detail: `${fmt(averageIncomePerEntry)} average income entry`,
+      progress: Math.min(100, Math.max(0, savingsRate)),
     },
     {
       title: "Total Expenses",
@@ -177,6 +204,8 @@ export default async function DashboardPage() {
       icon: TrendingDown,
       iconColor: "text-red-300",
       iconBg: "bg-red-500/15",
+      detail: `${fmt(averageExpensePerEntry)} average expense entry`,
+      progress: monthProgress,
     },
     {
       title: "Net Profit",
@@ -186,6 +215,11 @@ export default async function DashboardPage() {
       icon: BarChart2,
       iconColor: "text-cyan-300",
       iconBg: "bg-cyan-500/15",
+      detail:
+        netProfit >= 0 ?
+          `${Math.round(savingsRate)}% savings efficiency`
+        : "Recovery mode: reduce burn rate",
+      progress: Math.min(100, Math.max(0, savingsRate)),
     },
     {
       title: "Investments Value",
@@ -195,6 +229,42 @@ export default async function DashboardPage() {
       icon: PieChart,
       iconColor: "text-amber-300",
       iconBg: "bg-amber-500/15",
+      detail: `${Math.round(100 - liquidityRatio)}% of tracked wealth invested`,
+      progress: Math.max(0, 100 - liquidityRatio),
+    },
+  ];
+
+  const intelligenceTiles = [
+    {
+      label: "Month Progress",
+      value: `${dayOfMonth}/${daysInMonth} days`,
+      detail: `${remainingDays} days left in this cycle`,
+      icon: CalendarDays,
+      tone: "text-sky-200 bg-sky-300/10",
+    },
+    {
+      label: "Spend Forecast",
+      value: fmt(projectedExpenses),
+      detail: monthlyBurnStatus,
+      icon: Gauge,
+      tone: "text-amber-200 bg-amber-300/10",
+    },
+    {
+      label: "Savings Efficiency",
+      value: `${Math.round(savingsRate)}%`,
+      detail:
+        savingsRate >= 25 ? "Strong retention pace"
+        : savingsRate >= 0 ? "Healthy, but can improve"
+        : "Expense pressure detected",
+      icon: Target,
+      tone: "text-emerald-200 bg-emerald-300/10",
+    },
+    {
+      label: "Capital Mix",
+      value: `${Math.round(liquidityRatio)}% liquid`,
+      detail: `${fmt(totalBalance + investmentsValue)} tracked capital`,
+      icon: Landmark,
+      tone: "text-violet-200 bg-violet-300/10",
     },
   ];
 
@@ -237,6 +307,9 @@ export default async function DashboardPage() {
         avgDailySpend={fmt(dailySpend)}
         topCategory={topCategory}
         savingsRate={savingsRate}
+        activeDays={activeDayNumbers.length}
+        projectedExpenses={fmt(projectedExpenses)}
+        remainingDays={remainingDays}
       />
 
       <DashboardSignals
@@ -246,6 +319,25 @@ export default async function DashboardPage() {
         activeDayNumbers={activeDayNumbers}
         daysInMonth={daysInMonth}
       />
+
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        {intelligenceTiles.map(({ label, value, detail, icon: Icon, tone }) => (
+          <div key={label} className="finance-panel-soft p-4">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <p className="text-[11px] font-medium text-slate-500">
+                  {label}
+                </p>
+                <p className="mt-2 text-lg font-bold text-white">{value}</p>
+              </div>
+              <div className={`grid h-10 w-10 place-items-center rounded-3xl ${tone}`}>
+                <Icon size={17} />
+              </div>
+            </div>
+            <p className="mt-3 text-xs leading-5 text-slate-500">{detail}</p>
+          </div>
+        ))}
+      </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <div className="lg:col-span-2">

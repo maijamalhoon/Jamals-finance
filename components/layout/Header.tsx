@@ -82,73 +82,74 @@ export default function Header() {
 
   return (
     <>
-    <div className="flex h-16 flex-shrink-0 items-center justify-between border-b border-white/[0.08] bg-[#17181c]/95 px-6 backdrop-blur-xl">
+    <div className="relative z-40 flex h-16 flex-shrink-0 items-center justify-between border-b border-white/[0.08] bg-[#17181c]/95 px-6 backdrop-blur-xl">
       <div>
         <div className="flex items-center gap-2">
           <h1 className="text-white font-semibold text-base">
             {getGreeting()}, Jamal
           </h1>
-          <div className="relative" ref={actionRef}>
-            <button
-              onClick={() => {
-                setActionOpen((p) => !p);
-                setBellOpen(false);
-                setProfileOpen(false);
-              }}
-              className="finance-focus grid h-8 w-8 place-items-center rounded-full border border-white/[0.1] bg-white/[0.07] text-white shadow-[0_10px_28px_rgba(0,0,0,0.22)] transition duration-200 ease-out hover:border-cyan-300/35 hover:bg-cyan-300/15"
-              aria-label="Open quick actions"
-            >
-              <Plus size={17} />
-            </button>
-
-            <AnimatePresence>
-              {actionOpen && (
-                <motion.div
-                  initial={{ opacity: 0, y: -6, scale: 0.98 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, y: -6, scale: 0.98 }}
-                  transition={{ duration: 0.18, ease: [0.16, 1, 0.3, 1] }}
-                  className="finance-glass-panel absolute left-0 top-10 z-50 w-64 overflow-hidden p-2"
-                >
-                  <div className="flex items-center gap-2 px-3 py-2">
-                    <span className="grid h-8 w-8 place-items-center rounded-2xl bg-cyan-300/15 text-cyan-200">
-                      <CircleDollarSign size={15} />
-                    </span>
-                    <div>
-                      <p className="text-sm font-semibold text-white">
-                        Quick entry
-                      </p>
-                      <p className="text-[11px] text-slate-500">
-                        Add a transaction
-                      </p>
-                    </div>
-                  </div>
-                  <div className="mt-1 grid gap-2">
-                    <button
-                      onClick={() => openTransaction("income")}
-                      className="finance-focus flex items-center gap-3 rounded-2xl border border-emerald-300/20 bg-emerald-400/12 px-3 py-3 text-left text-sm font-semibold text-emerald-100 transition duration-200 ease-out hover:bg-emerald-400/18"
-                    >
-                      <span className="grid h-9 w-9 place-items-center rounded-2xl bg-emerald-300 text-slate-950">
-                        <TrendingUp size={17} />
-                      </span>
-                      Add Income
-                    </button>
-                    <button
-                      onClick={() => openTransaction("expense")}
-                      className="finance-focus flex items-center gap-3 rounded-2xl border border-rose-300/20 bg-rose-400/12 px-3 py-3 text-left text-sm font-semibold text-rose-100 transition duration-200 ease-out hover:bg-rose-400/18"
-                    >
-                      <span className="grid h-9 w-9 place-items-center rounded-2xl bg-rose-300 text-slate-950">
-                        <TrendingDown size={17} />
-                      </span>
-                      Add Expense
-                    </button>
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
         </div>
         <p className="text-slate-400 text-xs">Here's your financial overview</p>
+      </div>
+
+      <div className="absolute left-1/2 top-1/2 z-[110] -translate-x-1/2 -translate-y-1/2" ref={actionRef}>
+        <button
+          onClick={() => {
+            setActionOpen((p) => !p);
+            setBellOpen(false);
+            setProfileOpen(false);
+          }}
+          className="finance-focus grid h-11 w-11 place-items-center rounded-[22px] border border-cyan-200/20 bg-cyan-300 text-slate-950 shadow-[0_16px_42px_rgba(34,211,238,0.22)] transition duration-200 ease-out hover:bg-cyan-200"
+          aria-label="Open quick actions"
+        >
+          <Plus size={21} strokeWidth={2.4} />
+        </button>
+
+        <AnimatePresence>
+          {actionOpen && (
+            <motion.div
+              initial={{ opacity: 0, y: -6, scale: 0.98 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -6, scale: 0.98 }}
+              transition={{ duration: 0.18, ease: [0.16, 1, 0.3, 1] }}
+              className="finance-glass-panel absolute left-1/2 top-14 z-[120] w-72 -translate-x-1/2 overflow-hidden p-2"
+            >
+              <div className="flex items-center gap-2 px-3 py-2">
+                <span className="grid h-8 w-8 place-items-center rounded-2xl bg-cyan-300/15 text-cyan-200">
+                  <CircleDollarSign size={15} />
+                </span>
+                <div>
+                  <p className="text-sm font-semibold text-white">
+                    Quick entry
+                  </p>
+                  <p className="text-[11px] text-slate-500">
+                    Add a transaction instantly
+                  </p>
+                </div>
+              </div>
+              <div className="mt-1 grid gap-2">
+                <button
+                  onClick={() => openTransaction("income")}
+                  className="finance-focus flex items-center gap-3 rounded-2xl border border-emerald-300/20 bg-emerald-400/12 px-3 py-3 text-left text-sm font-semibold text-emerald-100 transition duration-200 ease-out hover:bg-emerald-400/18"
+                >
+                  <span className="grid h-9 w-9 place-items-center rounded-2xl bg-emerald-300 text-slate-950">
+                    <TrendingUp size={17} />
+                  </span>
+                  Add Income
+                </button>
+                <button
+                  onClick={() => openTransaction("expense")}
+                  className="finance-focus flex items-center gap-3 rounded-2xl border border-rose-300/20 bg-rose-400/12 px-3 py-3 text-left text-sm font-semibold text-rose-100 transition duration-200 ease-out hover:bg-rose-400/18"
+                >
+                  <span className="grid h-9 w-9 place-items-center rounded-2xl bg-rose-300 text-slate-950">
+                    <TrendingDown size={17} />
+                  </span>
+                  Add Expense
+                </button>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
 
       <div className="flex items-center gap-3">
@@ -188,7 +189,12 @@ export default function Header() {
           </button>
 
           {bellOpen && (
-            <div className="finance-panel absolute right-0 top-11 z-50 w-72 overflow-hidden">
+            <motion.div
+              initial={{ opacity: 0, y: -6, scale: 0.98 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              transition={{ duration: 0.18, ease: [0.16, 1, 0.3, 1] }}
+              className="finance-panel absolute right-0 top-11 z-[120] w-72 overflow-hidden"
+            >
               <div className="p-4 border-b border-white/[0.08]">
                 <p className="text-white text-sm font-semibold">
                   Notifications
@@ -201,7 +207,7 @@ export default function Header() {
                   You're all caught up
                 </p>
               </div>
-            </div>
+            </motion.div>
           )}
         </div>
 
@@ -218,7 +224,7 @@ export default function Header() {
           </button>
 
           {profileOpen && (
-            <div className="finance-panel absolute right-0 top-11 z-50 w-52 overflow-hidden">
+            <div className="finance-panel absolute right-0 top-11 z-[120] w-52 overflow-hidden">
               <div className="p-4 border-b border-white/[0.08]">
                 <div className="flex items-center gap-3">
                   <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-cyan-400 to-emerald-400 text-sm font-bold text-slate-950">

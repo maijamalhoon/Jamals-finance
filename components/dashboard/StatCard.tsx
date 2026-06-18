@@ -8,6 +8,8 @@ interface StatCardProps {
   icon: LucideIcon;
   iconColor: string;
   iconBg: string;
+  detail?: string;
+  progress?: number;
 }
 
 export default function StatCard({
@@ -18,11 +20,15 @@ export default function StatCard({
   icon: Icon,
   iconColor,
   iconBg,
+  detail,
+  progress,
 }: StatCardProps) {
   const positive = change >= 0;
+  const normalizedProgress =
+    typeof progress === "number" ? Math.min(100, Math.max(0, progress)) : null;
 
   return (
-    <div className="finance-panel card-hover flex min-h-[142px] flex-col justify-between gap-4 p-5 hover:border-white/[0.14]">
+    <div className="finance-panel card-hover flex min-h-[168px] flex-col justify-between gap-4 p-5 hover:border-white/[0.14]">
       <div className="flex items-center justify-between gap-3">
         <span className="text-slate-400 text-xs font-medium">{title}</span>
         <div
@@ -46,6 +52,19 @@ export default function StatCard({
             {Math.abs(change)}%
           </span>
         </div>
+        {detail && (
+          <p className="mt-3 min-h-8 text-[11px] leading-4 text-slate-500">
+            {detail}
+          </p>
+        )}
+        {normalizedProgress !== null && (
+          <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-white/[0.06]">
+            <div
+              className="h-full rounded-full bg-cyan-300"
+              style={{ width: `${normalizedProgress}%` }}
+            />
+          </div>
+        )}
       </div>
     </div>
   );

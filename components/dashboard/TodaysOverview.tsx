@@ -15,6 +15,9 @@ interface TodaysOverviewProps {
   avgDailySpend: string;
   topCategory: { name: string; amount: string } | null;
   savingsRate: number;
+  activeDays: number;
+  projectedExpenses: string;
+  remainingDays: number;
 }
 
 export default function TodaysOverview({
@@ -26,6 +29,9 @@ export default function TodaysOverview({
   avgDailySpend,
   topCategory,
   savingsRate,
+  activeDays,
+  projectedExpenses,
+  remainingDays,
 }: TodaysOverviewProps) {
   const engineStatus =
     savingsRate >= 25 ? "Cash flow is comfortably ahead of spend."
@@ -46,6 +52,12 @@ export default function TodaysOverview({
       tone: netPositive ? "text-emerald-300" : "text-rose-300",
     },
     { label: "Entries", value: String(transactionCount), tone: "text-cyan-200" },
+  ];
+  const diagnostics = [
+    ["Active days", String(activeDays)],
+    ["Forecast", projectedExpenses],
+    ["Days left", String(remainingDays)],
+    ["AI confidence", savingsRate >= 0 ? "Stable" : "Watch"],
   ];
 
   return (
@@ -79,6 +91,19 @@ export default function TodaysOverview({
                 </p>
                 <p className={`mt-2 truncate text-base font-bold ${tile.tone}`}>
                   {tile.value}
+                </p>
+              </div>
+            ))}
+          </div>
+          <div className="mt-3 grid grid-cols-2 gap-2 md:grid-cols-4">
+            {diagnostics.map(([label, value]) => (
+              <div
+                key={label}
+                className="rounded-2xl border border-white/[0.06] bg-black/10 px-3 py-2"
+              >
+                <p className="text-[10px] text-slate-600">{label}</p>
+                <p className="mt-1 truncate text-xs font-semibold text-slate-200">
+                  {value}
                 </p>
               </div>
             ))}
