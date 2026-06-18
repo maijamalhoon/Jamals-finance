@@ -46,9 +46,17 @@ export default function CategoriesSettings({
   async function handleAdd() {
     if (!newName.trim() || !addingFor) return;
     setSaving(true);
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
     await supabase
       .from("categories")
-      .insert({ name: newName.trim(), type: addingFor, color: newColor });
+      .insert({
+        user_id: user!.id,
+        name: newName.trim(),
+        type: addingFor,
+        color: newColor,
+      });
     setSaving(false);
     setNewName("");
     setNewColor(COLORS[0]);
