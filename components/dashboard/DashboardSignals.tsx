@@ -160,7 +160,7 @@ export default function DashboardSignals({
               {activeDayNumbers.length}/{daysInMonth} days with activity
             </p>
           </div>
-          <div className="grid h-10 w-10 place-items-center rounded-3xl bg-cyan-300/15 text-cyan-200 ring-1 ring-cyan-200/15">
+          <div className="grid h-10 w-10 place-items-center rounded-[18px] bg-white/[0.08] text-white ring-1 ring-white/[0.10]">
             <CalendarCheck size={17} />
           </div>
         </div>
@@ -181,7 +181,7 @@ export default function DashboardSignals({
                 }}
                 className={`aspect-square rounded-[9px] ${
                   active ?
-                    "bg-cyan-300 shadow-[0_0_18px_rgba(103,232,249,0.24)]"
+                    "bg-white shadow-[0_0_18px_rgba(255,255,255,0.22)]"
                   : "bg-white/[0.055]"
                 }`}
               />

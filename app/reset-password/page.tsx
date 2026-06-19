@@ -43,47 +43,42 @@ export default function ResetPasswordPage() {
   }
 
   return (
-    <main className="grid min-h-screen place-items-center bg-[#0d1118] px-4 py-8 text-white">
-      <div className="pointer-events-none fixed left-[8%] top-[-10%] h-80 w-80 rounded-full bg-cyan-300/12 blur-3xl" />
+    <main className="chat-auth-shell grid min-h-screen place-items-center px-4 py-8">
       <div className="w-full max-w-md">
-        <div className="mb-7 flex items-center justify-center gap-3">
-          <div className="grid h-12 w-12 place-items-center rounded-3xl bg-cyan-300 text-slate-950 shadow-[0_18px_42px_rgba(34,211,238,0.22)]">
-            <BarChart3 size={21} />
+        <div className="mb-8 flex flex-col items-center text-center">
+          <div className="mb-5 grid h-14 w-14 place-items-center rounded-[22px] bg-slate-950 text-white shadow-[0_18px_50px_rgba(15,23,42,0.18)]">
+            <BarChart3 size={24} />
           </div>
-          <div>
-            <span className="block text-xl font-bold text-white">
-              Jamal's Finance
-            </span>
-            <span className="block text-xs text-slate-500">
-              Secure password reset
-            </span>
-          </div>
+          <h1 className="text-[28px] font-semibold text-slate-950">
+            Set new password
+          </h1>
+          <p className="mt-2 text-sm text-slate-500">
+            Choose a new password for Jamal's Finance.
+          </p>
         </div>
 
-        <div className="finance-panel p-6 sm:p-8">
-          <div className="mb-5 grid h-12 w-12 place-items-center rounded-3xl bg-white/[0.06] text-cyan-200">
+        <div className="chat-auth-card">
+          <div className="mb-5 grid h-12 w-12 place-items-center rounded-2xl bg-slate-100 text-slate-950">
             <LockKeyhole size={20} />
           </div>
-          <h1 className="text-lg font-semibold text-white">Set new password</h1>
-          <p className="mt-1 text-xs leading-5 text-slate-400">
-            Choose a new password for your finance workspace.
-          </p>
 
           <form onSubmit={handleReset} className="mt-5 space-y-4">
             <div>
-              <label className="field-label">New Password</label>
+              <label className="mb-1.5 block text-sm font-medium text-slate-700">
+                New Password
+              </label>
               <div className="relative">
                 <input
                   type={showPassword ? "text" : "password"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Min. 6 characters"
-                  className="field-input pr-12"
+                  className="chat-auth-input pr-12"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword((value) => !value)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300"
+                  className="absolute right-3 top-1/2 grid h-8 w-8 -translate-y-1/2 place-items-center rounded-xl text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700"
                   aria-label={showPassword ? "Hide password" : "Show password"}
                 >
                   {showPassword ? <EyeOff size={15} /> : <Eye size={15} />}
@@ -92,23 +87,25 @@ export default function ResetPasswordPage() {
             </div>
 
             <div>
-              <label className="field-label">Confirm Password</label>
+              <label className="mb-1.5 block text-sm font-medium text-slate-700">
+                Confirm Password
+              </label>
               <input
                 type={showPassword ? "text" : "password"}
                 value={confirm}
                 onChange={(e) => setConfirm(e.target.value)}
                 placeholder="Repeat password"
-                className="field-input"
+                className="chat-auth-input"
               />
             </div>
 
             {message && (
-              <p className="rounded-xl bg-emerald-500/10 p-3 text-xs text-emerald-300">
+              <p className="rounded-2xl border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-800">
                 {message}
               </p>
             )}
             {error && (
-              <p className="rounded-xl bg-red-500/10 p-3 text-xs text-red-300">
+              <p className="rounded-2xl border border-rose-200 bg-rose-50 p-3 text-sm text-rose-700">
                 {error}
               </p>
             )}
@@ -116,7 +113,7 @@ export default function ResetPasswordPage() {
             <button
               type="submit"
               disabled={loading}
-              className="primary-action w-full py-4"
+              className="chat-auth-button"
             >
               {loading && <LoaderCircle className="h-4 w-4 animate-spin" />}
               {loading ? "Updating..." : "Update Password"}

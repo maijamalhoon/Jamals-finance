@@ -138,7 +138,7 @@ export default function PayableCard({
           </div>
           <div className="h-2 overflow-hidden rounded-full bg-white/[0.06]">
             <div
-              className="h-full rounded-full bg-cyan-300 transition-all"
+              className="h-full rounded-full bg-white transition-all"
               style={{ width: `${progress}%` }}
             />
           </div>
@@ -177,7 +177,7 @@ export default function PayableCard({
 
         <div className="mt-5 border-t border-white/[0.08] pt-4">
           <div className="mb-3 flex items-center gap-2">
-            <ReceiptText size={14} className="text-cyan-200" />
+            <ReceiptText size={14} className="text-white/75" />
             <p className="text-sm font-semibold text-white">Payment History</p>
           </div>
 

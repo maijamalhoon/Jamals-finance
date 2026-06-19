@@ -229,8 +229,8 @@ export default async function DashboardPage() {
       usd: usd(netProfit),
       change: pct(netProfit, lastIncome - lastExpenses),
       icon: BarChart2,
-      iconColor: "text-cyan-300",
-      iconBg: "bg-cyan-500/15",
+      iconColor: "text-sky-200",
+      iconBg: "bg-sky-400/15",
       detail:
         netProfit >= 0 ?
           `${Math.round(savingsRate)}% savings efficiency`
@@ -305,7 +305,7 @@ export default async function DashboardPage() {
     <div className="space-y-5 pb-8">
       <div className="page-heading">
         <div>
-          <p className="text-xs font-medium uppercase tracking-[0.18em] text-cyan-300/80">
+          <p className="text-xs font-medium uppercase tracking-[0.18em] text-white/55">
             Finance command center
           </p>
           <h2 className="mt-2 text-2xl font-semibold tracking-normal text-white sm:text-3xl">

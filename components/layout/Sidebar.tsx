@@ -22,12 +22,12 @@ export default function Sidebar() {
       }}
       className={`${
         expanded ? "w-[292px]" : "w-[82px]"
-      } relative z-50 flex h-full flex-shrink-0 flex-col border-r border-white/[0.08] bg-[#111720]/94 shadow-[18px_0_55px_rgba(0,0,0,0.32)] backdrop-blur-2xl transition-[width] duration-200 ease-out`}
+      } relative z-50 flex h-full flex-shrink-0 flex-col border-r border-white/[0.10] bg-[#171a21]/92 shadow-[18px_0_60px_rgba(0,0,0,0.30)] backdrop-blur-2xl transition-[width] duration-200 ease-out`}
     >
-      <div className="absolute inset-y-6 right-0 w-px bg-gradient-to-b from-transparent via-cyan-200/20 to-transparent" />
-      <div className="flex h-[72px] flex-shrink-0 items-center justify-between border-b border-white/[0.08] px-4 py-3">
+      <div className="absolute inset-y-6 right-0 w-px bg-gradient-to-b from-transparent via-white/15 to-transparent" />
+      <div className="flex h-[72px] flex-shrink-0 items-center justify-between border-b border-white/[0.09] px-4 py-3">
         <div className="flex min-w-0 items-center gap-2.5">
-          <div className="grid h-11 w-11 flex-shrink-0 place-items-center rounded-[24px] bg-cyan-300 text-slate-950 shadow-[0_14px_34px_rgba(34,211,238,0.24)]">
+          <div className="grid h-11 w-11 flex-shrink-0 place-items-center rounded-[20px] bg-white text-[#111318] shadow-[0_14px_34px_rgba(0,0,0,0.22)]">
             <BarChart3 size={17} />
           </div>
           <div
@@ -39,7 +39,7 @@ export default function Sidebar() {
               Jamal's Finance
             </span>
             <span className="block truncate text-[11px] text-slate-400">
-              One UI finance workspace
+              Fluent One UI workspace
             </span>
           </div>
         </div>
@@ -51,8 +51,8 @@ export default function Sidebar() {
             expanded ? "h-[86px] opacity-100" : "h-0 opacity-0"
           }`}
         >
-          <div className="rounded-[24px] border border-cyan-200/12 bg-cyan-300/[0.07] p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
-            <div className="flex items-center gap-2 text-xs font-semibold text-cyan-100">
+          <div className="rounded-[22px] border border-white/[0.09] bg-white/[0.055] p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]">
+            <div className="flex items-center gap-2 text-xs font-semibold text-white">
               <Sparkles size={14} />
               Finance command rail
             </div>
@@ -76,7 +76,7 @@ export default function Sidebar() {
                 expanded ? "" : "justify-center px-2"
               } ${
                 active
-                  ? "border-cyan-300/22 bg-white/[0.095] text-white shadow-[0_12px_30px_rgba(0,0,0,0.22)]"
+                  ? "border-white/[0.16] bg-white/[0.11] text-white shadow-[0_12px_30px_rgba(0,0,0,0.22)]"
                   : "border-transparent text-slate-400 hover:border-white/[0.1] hover:bg-white/[0.055] hover:text-white"
               }`}
             >
@@ -95,7 +95,7 @@ export default function Sidebar() {
                 {label}
               </span>
               {expanded && active && (
-                <ChevronRight size={14} className="ml-auto text-cyan-200" />
+                <ChevronRight size={14} className="ml-auto text-white/70" />
               )}
             </Link>
           );
@@ -107,7 +107,7 @@ export default function Sidebar() {
           <div className="space-y-3">
             <div className="rounded-[24px] border border-white/[0.08] bg-white/[0.045] p-3">
               <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-cyan-300 to-emerald-300 text-sm font-bold text-slate-950 shadow-lg shadow-cyan-950/30">
+                <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-2xl bg-white text-sm font-bold text-[#111318] shadow-lg shadow-black/20">
                   J
                 </div>
                 <div className="min-w-0">
@@ -134,7 +134,7 @@ export default function Sidebar() {
             </div>
           </div>
         ) : (
-          <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br from-cyan-300 to-emerald-300 text-sm font-bold text-slate-950 shadow-lg shadow-cyan-950/30">
+          <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-2xl bg-white text-sm font-bold text-[#111318] shadow-lg shadow-black/20">
             J
           </div>
         )}

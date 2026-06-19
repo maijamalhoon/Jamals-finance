@@ -27,7 +27,7 @@ export const NAV_ITEMS: NavItem[] = [
     label: "Dashboard",
     href: "/dashboard",
     icon: LayoutDashboard,
-    tone: "text-cyan-300 bg-cyan-500/15",
+    tone: "text-white bg-white/12",
   },
   {
     label: "Transactions",

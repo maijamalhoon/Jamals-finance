@@ -136,7 +136,7 @@ export default async function PayablesPage({
                   href={paramsFor(tab.value)}
                   className={`finance-focus rounded-xl px-3 py-2 text-center text-xs font-semibold transition-colors ${
                     active ?
-                      "bg-cyan-300 text-slate-950"
+                      "bg-white text-[#111318] shadow-[0_8px_22px_rgba(0,0,0,0.18)]"
                     : "text-slate-400 hover:bg-white/[0.06] hover:text-white"
                   }`}
                 >

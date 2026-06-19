@@ -133,8 +133,8 @@ export default function InsightsPanel() {
       <div className="finance-panel p-5">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2.5">
-            <div className="flex h-8 w-8 items-center justify-center rounded-2xl bg-cyan-300/15">
-              <Brain size={15} className="text-cyan-200" />
+            <div className="flex h-8 w-8 items-center justify-center rounded-[15px] bg-white/[0.08]">
+              <Brain size={15} className="text-white/80" />
             </div>
             <h3 className="text-white font-medium text-sm">AI Insights</h3>
           </div>
@@ -165,7 +165,7 @@ export default function InsightsPanel() {
             <p className="text-red-400 text-sm">{error}</p>
             <button
               onClick={load}
-              className="mt-3 text-xs text-cyan-200 hover:text-cyan-100"
+              className="mt-3 text-xs text-white/70 hover:text-white"
             >
               Try again
             </button>

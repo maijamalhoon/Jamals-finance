@@ -71,14 +71,14 @@ export default function MobileNav() {
         </>
       )}
 
-      <div className="relative z-30 flex h-[68px] flex-shrink-0 items-center justify-around border-t border-white/[0.08] bg-[#111720]/94 px-2 shadow-[0_-12px_36px_rgba(0,0,0,0.22)] backdrop-blur-2xl lg:hidden">
+      <div className="relative z-30 flex h-[70px] flex-shrink-0 items-center justify-around border-t border-white/[0.10] bg-[#171a21]/92 px-2 shadow-[0_-14px_42px_rgba(0,0,0,0.24)] backdrop-blur-2xl lg:hidden">
         {NAV.slice(0, 2).map(({ label, href, icon: Icon }) => (
           <Link
             key={href}
             href={href}
             className={`finance-focus flex min-w-14 flex-col items-center gap-1 rounded-2xl px-2 py-1.5 transition-colors ${
               isActive(href)
-                ? "bg-white/[0.055] text-cyan-300"
+                ? "bg-white/[0.10] text-white"
                 : "text-slate-500 hover:text-slate-300"
             }`}
           >
@@ -89,7 +89,7 @@ export default function MobileNav() {
 
         <button
           onClick={() => setFabOpen((p) => !p)}
-          className="finance-focus flex h-[52px] w-[52px] items-center justify-center rounded-[24px] bg-cyan-300 text-slate-950 shadow-lg shadow-cyan-950/35 transition-all hover:bg-cyan-200"
+          className="finance-focus flex h-[52px] w-[52px] items-center justify-center rounded-[22px] bg-white text-[#111318] shadow-lg shadow-black/30 transition-all hover:bg-slate-100"
           aria-label={fabOpen ? "Close quick actions" : "Open quick actions"}
         >
           {fabOpen ? <X size={20} /> : <Plus size={22} />}
@@ -101,7 +101,7 @@ export default function MobileNav() {
             href={href}
             className={`finance-focus flex min-w-14 flex-col items-center gap-1 rounded-2xl px-2 py-1.5 transition-colors ${
               isActive(href)
-                ? "bg-white/[0.055] text-cyan-300"
+                ? "bg-white/[0.10] text-white"
                 : "text-slate-500 hover:text-slate-300"
             }`}
           >

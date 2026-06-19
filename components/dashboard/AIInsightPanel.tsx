@@ -64,8 +64,8 @@ export default function AIInsightPanel() {
     <div className="finance-panel p-5">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2.5">
-          <div className="flex h-8 w-8 items-center justify-center rounded-2xl bg-cyan-300/15 ring-1 ring-cyan-300/20">
-            <Brain size={15} className="text-cyan-200" />
+          <div className="flex h-8 w-8 items-center justify-center rounded-[15px] bg-white/[0.08] ring-1 ring-white/[0.10]">
+            <Brain size={15} className="text-white/80" />
           </div>
           <h3 className="text-white font-semibold text-sm">AI Insight</h3>
         </div>

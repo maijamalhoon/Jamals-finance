@@ -35,7 +35,7 @@ export default function StatCard({
       <div className="flex items-center justify-between gap-3">
         <span className="text-slate-400 text-xs font-medium">{title}</span>
         <div
-          className={`w-10 h-10 rounded-3xl ${iconBg} flex items-center justify-center ring-1 ring-white/[0.06]`}
+          className={`flex h-10 w-10 items-center justify-center rounded-[18px] ${iconBg} ring-1 ring-white/[0.08]`}
         >
           <Icon size={16} className={iconColor} />
         </div>
@@ -61,14 +61,14 @@ export default function StatCard({
           </p>
         )}
         {normalizedProgress !== null && (
-          <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-white/[0.06]">
+          <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-white/[0.07]">
             <div
-              className="h-full rounded-full bg-cyan-300"
+              className="h-full rounded-full bg-white"
               style={{ width: `${normalizedProgress}%` }}
             />
           </div>
         )}
-        <div className="mt-3 flex items-center gap-1 text-[11px] font-semibold text-cyan-200/80">
+        <div className="mt-3 flex items-center gap-1 text-[11px] font-semibold text-white/72">
           Open detail
           <ArrowUpRight size={12} />
         </div>

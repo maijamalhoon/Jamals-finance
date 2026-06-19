@@ -121,7 +121,7 @@ export default function CategoriesSettings({
               setNewColor(COLORS[0]);
               setParentId("");
             }}
-            className="finance-focus flex items-center gap-1 rounded-xl px-2 py-1 text-xs font-semibold text-cyan-200 transition-colors hover:bg-cyan-300/10"
+            className="finance-focus flex items-center gap-1 rounded-xl px-2 py-1 text-xs font-semibold text-white/75 transition-colors hover:bg-white/[0.08] hover:text-white"
           >
             <Plus size={12} /> Add
           </button>

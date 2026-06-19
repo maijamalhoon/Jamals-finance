@@ -82,14 +82,14 @@ export default function Header() {
 
   return (
     <>
-    <div className="relative z-40 flex h-[68px] flex-shrink-0 items-center justify-between border-b border-white/[0.08] bg-[#111720]/92 px-6 shadow-[0_12px_40px_rgba(0,0,0,0.18)] backdrop-blur-2xl">
+    <div className="relative z-40 flex h-[68px] flex-shrink-0 items-center justify-between border-b border-white/[0.10] bg-[#171a21]/86 px-6 shadow-[0_14px_44px_rgba(0,0,0,0.20)] backdrop-blur-2xl">
       <div>
         <div className="flex items-center gap-2">
-          <h1 className="text-white font-semibold text-base">
+          <h1 className="text-base font-semibold text-white">
             {getGreeting()}, Jamal
           </h1>
         </div>
-        <p className="text-slate-400 text-xs">Command center is ready</p>
+        <p className="text-xs text-slate-400">Command center is ready</p>
       </div>
 
       <div className="absolute left-1/2 top-1/2 z-[110] -translate-x-1/2 -translate-y-1/2" ref={actionRef}>
@@ -99,7 +99,7 @@ export default function Header() {
             setBellOpen(false);
             setProfileOpen(false);
           }}
-          className="finance-focus grid h-12 w-12 place-items-center rounded-[24px] border border-cyan-200/20 bg-cyan-300 text-slate-950 shadow-[0_16px_42px_rgba(34,211,238,0.28)] transition duration-200 ease-out hover:bg-cyan-200"
+          className="finance-focus grid h-12 w-12 place-items-center rounded-[22px] border border-white/[0.14] bg-white text-[#111318] shadow-[0_16px_42px_rgba(0,0,0,0.28)] transition duration-200 ease-out hover:bg-slate-100"
           aria-label="Open quick actions"
         >
           <Plus size={21} strokeWidth={2.4} />
@@ -115,7 +115,7 @@ export default function Header() {
               className="finance-glass-panel absolute left-1/2 top-14 z-[120] w-72 -translate-x-1/2 overflow-hidden p-2"
             >
               <div className="flex items-center gap-2 px-3 py-2">
-                <span className="grid h-8 w-8 place-items-center rounded-2xl bg-cyan-300/15 text-cyan-200">
+                <span className="grid h-8 w-8 place-items-center rounded-[15px] bg-white/[0.08] text-white/80">
                   <CircleDollarSign size={15} />
                 </span>
                 <div>
@@ -185,7 +185,7 @@ export default function Header() {
             aria-label="Open notifications"
           >
             <Bell size={15} className="text-slate-300" />
-            <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full border-2 border-[#0b1118] bg-cyan-300" />
+            <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full border-2 border-[#171a21] bg-emerald-300" />
           </button>
 
           {bellOpen && (
@@ -217,7 +217,7 @@ export default function Header() {
               setProfileOpen((p) => !p);
               setBellOpen(false);
             }}
-            className="finance-focus flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br from-cyan-300 to-emerald-300 text-sm font-bold text-slate-950 shadow-lg shadow-cyan-950/30 transition hover:brightness-110"
+            className="finance-focus flex h-10 w-10 items-center justify-center rounded-[18px] bg-white text-sm font-bold text-[#111318] shadow-lg shadow-black/20 transition hover:bg-slate-100"
             aria-label="Open profile menu"
           >
             J
@@ -227,7 +227,7 @@ export default function Header() {
             <div className="finance-panel absolute right-0 top-11 z-[120] w-52 overflow-hidden">
               <div className="p-4 border-b border-white/[0.08]">
                 <div className="flex items-center gap-3">
-                  <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-cyan-400 to-emerald-400 text-sm font-bold text-slate-950">
+                  <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-[16px] bg-white text-sm font-bold text-[#111318]">
                     J
                   </div>
                   <div className="min-w-0">

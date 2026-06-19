@@ -96,7 +96,7 @@ export default function TransactionFilters({
               onClick={() => updateParams({ type: tab.value })}
               className={`finance-focus rounded-md px-4 py-2 text-sm font-medium transition-colors ${
                 activeType === tab.value
-                  ? "bg-cyan-500 text-slate-950"
+                  ? "bg-white text-[#111318] shadow-[0_8px_22px_rgba(0,0,0,0.18)]"
                   : "text-slate-500 hover:text-white"
               }`}
             >

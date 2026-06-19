@@ -54,7 +54,7 @@ export default function TodaysOverview({
     {
       label: "Entries",
       value: String(transactionCount),
-      tone: "text-cyan-200",
+      tone: "text-sky-200",
     },
   ];
 
@@ -71,12 +71,12 @@ export default function TodaysOverview({
 
   return (
     <section className="finance-panel relative overflow-hidden p-5 sm:p-6">
-      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-cyan-200/40 to-transparent" />
+      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/25 to-transparent" />
       <div className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
         <div>
           <div className="flex items-start justify-between gap-4">
             <div>
-              <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-cyan-200/80">
+              <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-white/55">
                 <Sparkles size={14} />
                 Today's Overview
               </div>
@@ -84,7 +84,7 @@ export default function TodaysOverview({
                 Live financial pulse
               </h3>
             </div>
-            <div className="grid h-11 w-11 flex-shrink-0 place-items-center rounded-3xl bg-cyan-300/15 text-cyan-100 ring-1 ring-cyan-200/20">
+            <div className="grid h-11 w-11 flex-shrink-0 place-items-center rounded-[18px] bg-white/[0.08] text-white ring-1 ring-white/[0.10]">
               <Activity size={19} />
             </div>
           </div>
