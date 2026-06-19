@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import {
   Dialog,
@@ -11,7 +11,6 @@ import {
 import DatePicker from "@/components/ui/date-picker";
 import { INCOME_SOURCE_SUGGESTIONS } from "@/lib/finance-options";
 import { toast } from "sonner";
-import { Check, ChevronDown, Search } from "lucide-react";
 
 interface Category {
   id: string;
@@ -20,6 +19,7 @@ interface Category {
   parent_id?: string | null;
   parent?: { name: string } | { name: string }[] | null;
 }
+
 interface Account {
   id: string;
   name: string;
@@ -45,143 +45,6 @@ interface Props {
   onClose: () => void;
   onSuccess: () => void;
   transaction?: ExistingTransaction;
-}
-
-interface PickerOption {
-  value: string;
-  label: string;
-  meta?: string;
-  color?: string;
-}
-
-function OptionPicker({
-  value,
-  options,
-  placeholder,
-  emptyLabel,
-  onChange,
-}: {
-  value: string;
-  options: PickerOption[];
-  placeholder: string;
-  emptyLabel: string;
-  onChange: (value: string) => void;
-}) {
-  const rootRef = useRef<HTMLDivElement>(null);
-  const [open, setOpen] = useState(false);
-  const [query, setQuery] = useState("");
-  const selected = options.find((option) => option.value === value);
-  const filtered = options.filter((option) =>
-    `${option.label} ${option.meta ?? ""}`
-      .toLowerCase()
-      .includes(query.trim().toLowerCase()),
-  );
-
-  useEffect(() => {
-    function handlePointerDown(event: PointerEvent) {
-      if (!rootRef.current?.contains(event.target as Node)) {
-        setOpen(false);
-      }
-    }
-    document.addEventListener("pointerdown", handlePointerDown);
-    return () => document.removeEventListener("pointerdown", handlePointerDown);
-  }, []);
-
-  return (
-    <div ref={rootRef} className="relative">
-      <button
-        type="button"
-        onClick={() => setOpen((current) => !current)}
-        className="field-input finance-focus flex items-center justify-between gap-3 pr-3 text-left"
-        aria-haspopup="listbox"
-        aria-expanded={open}
-      >
-        <span className="flex min-w-0 items-center gap-2">
-          {selected?.color && (
-            <span
-              className="h-2.5 w-2.5 flex-shrink-0 rounded-full"
-              style={{ background: selected.color }}
-            />
-          )}
-          <span className={selected ? "truncate text-white" : "text-slate-500"}>
-            {selected?.label ?? placeholder}
-          </span>
-        </span>
-        <ChevronDown
-          size={16}
-          className={`flex-shrink-0 text-slate-400 transition-transform ${
-            open ? "rotate-180" : ""
-          }`}
-        />
-      </button>
-
-      {open && (
-        <div className="absolute left-0 top-[calc(100%+10px)] z-[170] w-full min-w-[280px] overflow-hidden rounded-[26px] border border-white/[0.13] bg-[#171b23]/96 p-2 text-white shadow-[0_24px_80px_rgba(0,0,0,0.42)] backdrop-blur-2xl">
-          <div className="mb-2 flex items-center gap-2 rounded-[18px] border border-white/[0.08] bg-white/[0.065] px-3 py-2">
-            <Search size={14} className="text-slate-500" />
-            <input
-              value={query}
-              onChange={(event) => setQuery(event.target.value)}
-              placeholder="Search..."
-              className="w-full bg-transparent text-sm text-white outline-none placeholder:text-slate-600"
-            />
-          </div>
-
-          <div className="max-h-64 space-y-1 overflow-y-auto pr-1" role="listbox">
-            {filtered.length === 0 ? (
-              <div className="rounded-[18px] border border-white/[0.08] bg-white/[0.045] px-3 py-4 text-center text-xs text-slate-500">
-                {emptyLabel}
-              </div>
-            ) : (
-              filtered.map((option) => {
-                const active = option.value === value;
-                return (
-                  <button
-                    key={option.value}
-                    type="button"
-                    onClick={() => {
-                      onChange(option.value);
-                      setOpen(false);
-                      setQuery("");
-                    }}
-                    className={`finance-focus flex w-full items-center gap-3 rounded-[18px] px-3 py-2.5 text-left transition-colors ${
-                      active
-                        ? "bg-white text-[#111318]"
-                        : "text-slate-300 hover:bg-white/[0.075] hover:text-white"
-                    }`}
-                    role="option"
-                    aria-selected={active}
-                  >
-                    {option.color && (
-                      <span
-                        className="h-2.5 w-2.5 flex-shrink-0 rounded-full"
-                        style={{ background: option.color }}
-                      />
-                    )}
-                    <span className="min-w-0 flex-1">
-                      <span className="block truncate text-sm font-semibold">
-                        {option.label}
-                      </span>
-                      {option.meta && (
-                        <span
-                          className={`block truncate text-[11px] ${
-                            active ? "text-slate-600" : "text-slate-500"
-                          }`}
-                        >
-                          {option.meta}
-                        </span>
-                      )}
-                    </span>
-                    {active && <Check size={15} />}
-                  </button>
-                );
-              })
-            )}
-          </div>
-        </div>
-      )}
-    </div>
-  );
 }
 
 export default function TransactionModal({
@@ -232,27 +95,32 @@ export default function TransactionModal({
 
   useEffect(() => {
     if (!open) return;
+
     async function load() {
       const [{ data: cats }, { data: accs }] = await Promise.all([
         supabase
           .from("categories")
-          .select("id, name, color, parent_id, parent:categories!categories_parent_id_fkey(name)")
+          .select(
+            "id, name, color, parent_id, parent:categories!categories_parent_id_fkey(name)",
+          )
           .eq("type", type)
           .order("parent_id", { ascending: true, nullsFirst: true })
           .order("name"),
-        supabase.from("accounts").select("*").order("name"),
+        supabase.from("accounts").select("id, name, type").order("name"),
       ]);
+
       setCategories(cats || []);
       setAccounts(accs || []);
       setCategoryId(transaction?.category_id || cats?.[0]?.id || "");
       setAccountId(transaction?.account_id || accs?.[0]?.id || "");
     }
+
     load();
   }, [open, supabase, transaction?.account_id, transaction?.category_id, type]);
 
   async function handleSave() {
     if (!amount || !categoryId || !accountId) {
-      setError("Please fill in all fields.");
+      setError("Please fill in all required fields.");
       return;
     }
 
@@ -269,6 +137,7 @@ export default function TransactionModal({
       data: { user },
       error: userError,
     } = await supabase.auth.getUser();
+
     if (userError || !user) {
       setError("Not logged in. Please sign in again.");
       toast.error("Please sign in again");
@@ -289,12 +158,8 @@ export default function TransactionModal({
       item_name: itemName.trim() || null,
     };
 
-    const { error: saveError } =
-      isEditing ?
-        await supabase
-          .from("transactions")
-          .update(payload)
-          .eq("id", transaction!.id)
+    const { error: saveError } = isEditing
+      ? await supabase.from("transactions").update(payload).eq("id", transaction!.id)
       : await supabase.from("transactions").insert(payload);
 
     setLoading(false);
@@ -302,35 +167,25 @@ export default function TransactionModal({
     if (saveError) {
       setError(`Error: ${saveError.message}`);
       toast.error("Failed to save transaction");
-    } else {
-      setAmount("");
-      setNote("");
-      setError("");
-      toast.success(isEditing ? "Transaction updated!" : "Transaction saved!");
-      onSuccess();
+      return;
     }
+
+    setAmount("");
+    setNote("");
+    setError("");
+    toast.success(isEditing ? "Transaction updated!" : "Transaction saved!");
+    onSuccess();
   }
 
   const isIncome = type === "income";
-  const btnLabel =
-    loading ? "Saving..."
-    : isEditing ? `Update ${isIncome ? "Income" : "Expense"}`
-    : `Save ${isIncome ? "Income" : "Expense"}`;
+  const btnLabel = loading
+    ? "Saving..."
+    : isEditing
+      ? `Update ${isIncome ? "Income" : "Expense"}`
+      : `Save ${isIncome ? "Income" : "Expense"}`;
+
   const parentName = (category: Category) =>
-    Array.isArray(category.parent) ?
-      category.parent[0]?.name
-    : category.parent?.name;
-  const categoryOptions = categories.map((category) => ({
-    value: category.id,
-    label: parentName(category) ? `${parentName(category)} / ${category.name}` : category.name,
-    meta: isIncome ? "Income category" : "Expense category",
-    color: category.color,
-  }));
-  const accountOptions = accounts.map((account) => ({
-    value: account.id,
-    label: account.name,
-    meta: account.type,
-  }));
+    Array.isArray(category.parent) ? category.parent[0]?.name : category.parent?.name;
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
@@ -341,50 +196,58 @@ export default function TransactionModal({
           </DialogTitle>
         </DialogHeader>
 
-        <div className="p-5 space-y-4">
-          {/* Type Toggle */}
+        <div className="space-y-4 p-5">
           <div className="flex gap-2 rounded-2xl border border-white/[0.08] bg-white/[0.045] p-1">
-            {(["income", "expense"] as const).map((t) => (
+            {(["income", "expense"] as const).map((nextType) => (
               <button
-                key={t}
-                onClick={() => setType(t)}
+                key={nextType}
+                type="button"
+                onClick={() => setType(nextType)}
                 className={`flex-1 rounded-xl py-2 text-sm font-medium transition-colors ${
-                  type === t ?
-                    t === "income" ?
-                      "bg-emerald-300 text-slate-950"
-                    : "bg-rose-300 text-slate-950"
-                  : "text-slate-500 hover:text-white"
+                  type === nextType
+                    ? nextType === "income"
+                      ? "bg-emerald-300 text-slate-950"
+                      : "bg-rose-300 text-slate-950"
+                    : "text-slate-500 hover:text-white"
                 }`}
               >
-                {t === "income" ? "Income" : "Expense"}
+                {nextType === "income" ? "Income" : "Expense"}
               </button>
             ))}
           </div>
 
-          {/* Amount */}
           <div>
             <label className="field-label">Amount (PKR)</label>
             <input
               type="number"
               value={amount}
-              onChange={(e) => setAmount(e.target.value)}
+              onChange={(event) => setAmount(event.target.value)}
               placeholder="0"
               className="field-input text-lg font-semibold"
             />
           </div>
 
-          {/* Category */}
           <div>
             <label className="field-label">
               {isIncome ? "Income Source Category" : "Expense Category"}
             </label>
-            <OptionPicker
+            <select
               value={categoryId}
-              onChange={setCategoryId}
-              options={categoryOptions}
-              placeholder={isIncome ? "Choose income category" : "Choose expense category"}
-              emptyLabel="No categories found. Add them from Settings."
-            />
+              onChange={(event) => setCategoryId(event.target.value)}
+              className="field-input"
+              style={{ colorScheme: "dark" }}
+            >
+              {categories.length === 0 && (
+                <option value="">No categories found</option>
+              )}
+              {categories.map((category) => (
+                <option key={category.id} value={category.id}>
+                  {parentName(category)
+                    ? `${parentName(category)} / ${category.name}`
+                    : category.name}
+                </option>
+              ))}
+            </select>
           </div>
 
           {isIncome && (
@@ -392,7 +255,7 @@ export default function TransactionModal({
               <label className="field-label">Exact Income Source</label>
               <input
                 value={sourceName}
-                onChange={(e) => setSourceName(e.target.value)}
+                onChange={(event) => setSourceName(event.target.value)}
                 placeholder="inDrive rides, Toyota commission, salary..."
                 className="field-input"
               />
@@ -415,19 +278,23 @@ export default function TransactionModal({
             </div>
           )}
 
-          {/* Account */}
           <div>
             <label className="field-label">Account</label>
-            <OptionPicker
+            <select
               value={accountId}
-              onChange={setAccountId}
-              options={accountOptions}
-              placeholder="Choose receiving/payment account"
-              emptyLabel="No accounts found. Add an account first."
-            />
+              onChange={(event) => setAccountId(event.target.value)}
+              className="field-input"
+              style={{ colorScheme: "dark" }}
+            >
+              {accounts.length === 0 && <option value="">No accounts found</option>}
+              {accounts.map((account) => (
+                <option key={account.id} value={account.id}>
+                  {account.name} ({account.type})
+                </option>
+              ))}
+            </select>
           </div>
 
-          {/* Date */}
           <div>
             <label className="field-label">Date</label>
             <DatePicker
@@ -437,13 +304,12 @@ export default function TransactionModal({
             />
           </div>
 
-          {/* Note */}
           <div>
             <label className="field-label">Note (Optional)</label>
             <input
               type="text"
               value={note}
-              onChange={(e) => setNote(e.target.value)}
+              onChange={(event) => setNote(event.target.value)}
               placeholder="What was this for?"
               className="field-input"
             />
@@ -455,7 +321,7 @@ export default function TransactionModal({
               <input
                 type="text"
                 value={personName}
-                onChange={(e) => setPersonName(e.target.value)}
+                onChange={(event) => setPersonName(event.target.value)}
                 placeholder="Related person"
                 className="field-input"
               />
@@ -465,7 +331,7 @@ export default function TransactionModal({
               <input
                 type="text"
                 value={itemName}
-                onChange={(e) => setItemName(e.target.value)}
+                onChange={(event) => setItemName(event.target.value)}
                 placeholder="Item, job, project"
                 className="field-input"
               />
@@ -473,12 +339,13 @@ export default function TransactionModal({
           </div>
 
           {error && (
-            <p className="text-red-400 text-xs bg-red-500/10 p-3 rounded-xl">
+            <p className="rounded-xl bg-red-500/10 p-3 text-xs text-red-400">
               {error}
             </p>
           )}
 
           <button
+            type="button"
             onClick={handleSave}
             disabled={loading}
             className={`w-full py-3 ${isIncome ? "success-action" : "danger-action"}`}
