@@ -15,32 +15,92 @@ export default async function TransactionsPage({
     search?: string;
     from?: string;
     to?: string;
+    source?: string;
+    category?: string;
+    account?: string;
+    person?: string;
+    item?: string;
+    min?: string;
+    max?: string;
   }>;
 }) {
-  const { type, search, from, to } = await searchParams;
+  const {
+    type,
+    search,
+    from,
+    to,
+    source,
+    category,
+    account,
+    person,
+    item,
+    min,
+    max,
+  } = await searchParams;
   const supabase = await createClient();
   const searchTerm = search?.trim().toLowerCase();
+  const sourceTerm = source?.trim().toLowerCase();
+  const personTerm = person?.trim().toLowerCase();
+  const itemTerm = item?.trim().toLowerCase();
+  const minAmount = min ? Number(min) : null;
+  const maxAmount = max ? Number(max) : null;
 
   let query = supabase
     .from("transactions")
-    .select("*, categories(name, color), accounts(name)")
+    .select("*, categories(name, color, parent:categories!categories_parent_id_fkey(name)), accounts(name)")
     .order("date", { ascending: false });
 
   if (type && type !== "all") query = query.eq("type", type);
   if (from) query = query.gte("date", from);
   if (to) query = query.lte("date", to);
+  if (category && category !== "all") query = query.eq("category_id", category);
+  if (account && account !== "all") query = query.eq("account_id", account);
+  if (Number.isFinite(minAmount)) query = query.gte("amount", minAmount);
+  if (Number.isFinite(maxAmount)) query = query.lte("amount", maxAmount);
 
-  const { data: raw } = await query;
+  const [{ data: raw }, { data: categories }, { data: accounts }] =
+    await Promise.all([
+      query,
+      supabase
+        .from("categories")
+        .select("id, name, type, parent:categories!categories_parent_id_fkey(name)")
+        .order("type")
+        .order("name"),
+      supabase.from("accounts").select("id, name").order("name"),
+    ]);
 
   const transactions =
-    searchTerm
-      ? (raw ?? []).filter(
-          (t) =>
-            t.note?.toLowerCase().includes(searchTerm) ||
-            (t.categories as any)?.name?.toLowerCase().includes(searchTerm) ||
-            (t.accounts as any)?.name?.toLowerCase().includes(searchTerm),
-        )
-      : (raw ?? []);
+    (raw ?? []).filter((t) => {
+      const categoryName =
+        (t.categories as any)?.parent?.name ?
+          `${(t.categories as any).parent.name} ${(t.categories as any).name}`
+        : (t.categories as any)?.name || "";
+      const accountName = (t.accounts as any)?.name || "";
+      const haystack = [
+        t.note,
+        t.source_name,
+        t.person_name,
+        t.item_name,
+        categoryName,
+        accountName,
+        t.type,
+      ]
+        .filter(Boolean)
+        .join(" ")
+        .toLowerCase();
+
+      if (searchTerm && !haystack.includes(searchTerm)) return false;
+      if (sourceTerm && !String(t.source_name ?? "").toLowerCase().includes(sourceTerm)) {
+        return false;
+      }
+      if (personTerm && !String(t.person_name ?? "").toLowerCase().includes(personTerm)) {
+        return false;
+      }
+      if (itemTerm && !String(t.item_name ?? "").toLowerCase().includes(itemTerm)) {
+        return false;
+      }
+      return true;
+    });
 
   return (
     <div className="space-y-5">
@@ -57,7 +117,10 @@ export default async function TransactionsPage({
       </div>
 
       <Suspense fallback={<div className="mb-5 h-12" />}>
-        <TransactionFilters />
+        <TransactionFilters
+          categories={(categories ?? []) as any}
+          accounts={(accounts ?? []) as any}
+        />
       </Suspense>
 
       <div className="finance-panel p-4 sm:p-5">

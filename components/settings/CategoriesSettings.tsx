@@ -25,6 +25,7 @@ interface Category {
   name: string;
   type: string;
   color: string;
+  parent_id: string | null;
 }
 
 export default function CategoriesSettings({
@@ -38,6 +39,7 @@ export default function CategoriesSettings({
   const [addingFor, setAddingFor] = useState<"income" | "expense" | null>(null);
   const [newName, setNewName] = useState("");
   const [newColor, setNewColor] = useState(COLORS[0]);
+  const [parentId, setParentId] = useState("");
   const [saving, setSaving] = useState(false);
 
   const income = categories.filter((c) => c.type === "income");
@@ -54,10 +56,12 @@ export default function CategoriesSettings({
       name: newName.trim(),
       type: addingFor,
       color: newColor,
+      parent_id: addingFor === "expense" && parentId ? parentId : null,
     });
     setSaving(false);
     setNewName("");
     setNewColor(COLORS[0]);
+    setParentId("");
     setAddingFor(null);
     router.refresh();
   }
@@ -77,6 +81,35 @@ export default function CategoriesSettings({
     items: Category[];
     type: "income" | "expense";
   }) {
+    const roots = items.filter((item) => !item.parent_id);
+    const childrenByParent = items.reduce<Record<string, Category[]>>((acc, item) => {
+      if (!item.parent_id) return acc;
+      acc[item.parent_id] = [...(acc[item.parent_id] ?? []), item];
+      return acc;
+    }, {});
+
+    const renderCategory = (cat: Category, nested = false) => (
+      <div
+        key={cat.id}
+        className={`group flex items-center gap-3 rounded-2xl border border-white/[0.06] bg-white/[0.045] px-3 py-2.5 ${
+          nested ? "ml-5" : ""
+        }`}
+      >
+        <div
+          className="h-2.5 w-2.5 flex-shrink-0 rounded-full"
+          style={{ background: cat.color }}
+        />
+        <span className="flex-1 text-sm text-white">{cat.name}</span>
+        <button
+          onClick={() => handleDelete(cat.id, cat.name)}
+          className="flex h-7 w-7 items-center justify-center rounded-xl opacity-0 transition-all hover:bg-red-500/20 group-hover:opacity-100"
+          aria-label={`Delete ${cat.name}`}
+        >
+          <Trash2 size={11} className="text-red-400" />
+        </button>
+      </div>
+    );
+
     return (
       <div>
         <div className="mb-2.5 flex items-center justify-between">
@@ -86,6 +119,7 @@ export default function CategoriesSettings({
               setAddingFor(type);
               setNewName("");
               setNewColor(COLORS[0]);
+              setParentId("");
             }}
             className="finance-focus flex items-center gap-1 rounded-xl px-2 py-1 text-xs font-semibold text-cyan-200 transition-colors hover:bg-cyan-300/10"
           >
@@ -94,23 +128,12 @@ export default function CategoriesSettings({
         </div>
 
         <div className="space-y-1.5">
-          {items.map((cat) => (
-            <div
-              key={cat.id}
-              className="group flex items-center gap-3 rounded-2xl border border-white/[0.06] bg-white/[0.045] px-3 py-2.5"
-            >
-              <div
-                className="h-2.5 w-2.5 flex-shrink-0 rounded-full"
-                style={{ background: cat.color }}
-              />
-              <span className="flex-1 text-sm text-white">{cat.name}</span>
-              <button
-                onClick={() => handleDelete(cat.id, cat.name)}
-                className="flex h-7 w-7 items-center justify-center rounded-xl opacity-0 transition-all hover:bg-red-500/20 group-hover:opacity-100"
-                aria-label={`Delete ${cat.name}`}
-              >
-                <Trash2 size={11} className="text-red-400" />
-              </button>
+          {roots.map((cat) => (
+            <div key={cat.id} className="space-y-1.5">
+              {renderCategory(cat)}
+              {(childrenByParent[cat.id] ?? []).map((child) =>
+                renderCategory(child, true),
+              )}
             </div>
           ))}
         </div>
@@ -123,6 +146,21 @@ export default function CategoriesSettings({
               placeholder="Category name"
               className="field-input py-2"
             />
+            {type === "expense" && (
+              <select
+                value={parentId}
+                onChange={(e) => setParentId(e.target.value)}
+                className="field-input py-2"
+                style={{ colorScheme: "dark" }}
+              >
+                <option value="">Top-level category</option>
+                {roots.map((root) => (
+                  <option key={root.id} value={root.id}>
+                    Subcategory of {root.name}
+                  </option>
+                ))}
+              </select>
+            )}
             <div className="flex flex-wrap gap-2">
               {COLORS.map((c) => (
                 <button

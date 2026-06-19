@@ -3,6 +3,7 @@ import {
   BarChart2,
   Brain,
   FileText,
+  HandCoins,
   LayoutDashboard,
   LucideIcon,
   PiggyBank,
@@ -45,6 +46,12 @@ export const NAV_ITEMS: NavItem[] = [
     href: "/dashboard/expenses",
     icon: TrendingDown,
     tone: "text-rose-300 bg-rose-500/15",
+  },
+  {
+    label: "Payables",
+    href: "/dashboard/payables",
+    icon: HandCoins,
+    tone: "text-amber-300 bg-amber-500/15",
   },
   {
     label: "Investments",

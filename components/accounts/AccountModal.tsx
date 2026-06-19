@@ -8,13 +8,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-
-const TYPES = [
-  { value: "bank", label: "Bank Account" },
-  { value: "cash", label: "Cash Wallet" },
-  { value: "freelance", label: "Freelance" },
-  { value: "investment", label: "Investment" },
-];
+import { ACCOUNT_TYPES } from "@/lib/finance-options";
 
 export interface ExistingAccount {
   id: string;
@@ -134,7 +128,7 @@ export default function AccountModal({
               className="field-input"
               style={{ colorScheme: "dark" }}
             >
-              {TYPES.map((t) => (
+              {ACCOUNT_TYPES.map((t) => (
                 <option key={t.value} value={t.value}>
                   {t.label}
                 </option>

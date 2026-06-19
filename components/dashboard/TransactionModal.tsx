@@ -9,12 +9,15 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import DatePicker from "@/components/ui/date-picker";
+import { INCOME_SOURCE_SUGGESTIONS } from "@/lib/finance-options";
 import { toast } from "sonner";
 
 interface Category {
   id: string;
   name: string;
   color: string;
+  parent_id?: string | null;
+  parent?: { name: string } | { name: string }[] | null;
 }
 interface Account {
   id: string;
@@ -30,6 +33,9 @@ export interface ExistingTransaction {
   account_id: string;
   date: string;
   note: string | null;
+  source_name?: string | null;
+  person_name?: string | null;
+  item_name?: string | null;
 }
 
 interface Props {
@@ -56,6 +62,9 @@ export default function TransactionModal({
   const [accountId, setAccountId] = useState("");
   const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
   const [note, setNote] = useState("");
+  const [sourceName, setSourceName] = useState("");
+  const [personName, setPersonName] = useState("");
+  const [itemName, setItemName] = useState("");
   const [categories, setCategories] = useState<Category[]>([]);
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [loading, setLoading] = useState(false);
@@ -68,11 +77,17 @@ export default function TransactionModal({
       setAmount(String(transaction.amount));
       setDate(transaction.date);
       setNote(transaction.note || "");
+      setSourceName(transaction.source_name || "");
+      setPersonName(transaction.person_name || "");
+      setItemName(transaction.item_name || "");
     } else {
       setType(defaultType);
       setAmount("");
       setDate(new Date().toISOString().split("T")[0]);
       setNote("");
+      setSourceName("");
+      setPersonName("");
+      setItemName("");
     }
     setError("");
   }, [open, transaction, defaultType]);
@@ -81,7 +96,12 @@ export default function TransactionModal({
     if (!open) return;
     async function load() {
       const [{ data: cats }, { data: accs }] = await Promise.all([
-        supabase.from("categories").select("*").eq("type", type).order("name"),
+        supabase
+          .from("categories")
+          .select("id, name, color, parent_id, parent:categories!categories_parent_id_fkey(name)")
+          .eq("type", type)
+          .order("parent_id", { ascending: true, nullsFirst: true })
+          .order("name"),
         supabase.from("accounts").select("*").order("name"),
       ]);
       setCategories(cats || []);
@@ -126,6 +146,9 @@ export default function TransactionModal({
       account_id: accountId,
       date,
       note: note.trim() || null,
+      source_name: type === "income" ? sourceName.trim() || null : null,
+      person_name: personName.trim() || null,
+      item_name: itemName.trim() || null,
     };
 
     const { error: saveError } =
@@ -155,10 +178,14 @@ export default function TransactionModal({
     loading ? "Saving..."
     : isEditing ? `Update ${isIncome ? "Income" : "Expense"}`
     : `Save ${isIncome ? "Income" : "Expense"}`;
+  const parentName = (category: Category) =>
+    Array.isArray(category.parent) ?
+      category.parent[0]?.name
+    : category.parent?.name;
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="finance-glass-panel max-w-md gap-0 p-0 text-white">
+      <DialogContent className="finance-glass-panel max-w-lg gap-0 p-0 text-white">
         <DialogHeader className="border-b border-white/[0.08] p-5">
           <DialogTitle className="text-base font-semibold">
             {isEditing ? "Edit Transaction" : "Add Transaction"}
@@ -199,7 +226,9 @@ export default function TransactionModal({
 
           {/* Category */}
           <div>
-            <label className="field-label">Category</label>
+            <label className="field-label">
+              {isIncome ? "Income Source Category" : "Expense Category"}
+            </label>
             <select
               value={categoryId}
               onChange={(e) => setCategoryId(e.target.value)}
@@ -208,11 +237,29 @@ export default function TransactionModal({
             >
               {categories.map((c) => (
                 <option key={c.id} value={c.id}>
-                  {c.name}
+                  {parentName(c) ? `${parentName(c)} / ${c.name}` : c.name}
                 </option>
               ))}
             </select>
           </div>
+
+          {isIncome && (
+            <div>
+              <label className="field-label">Exact Income Source</label>
+              <input
+                list="income-source-suggestions"
+                value={sourceName}
+                onChange={(e) => setSourceName(e.target.value)}
+                placeholder="inDrive rides, Toyota commission, salary..."
+                className="field-input"
+              />
+              <datalist id="income-source-suggestions">
+                {INCOME_SOURCE_SUGGESTIONS.map((source) => (
+                  <option key={source} value={source} />
+                ))}
+              </datalist>
+            </div>
+          )}
 
           {/* Account */}
           <div>
@@ -251,6 +298,29 @@ export default function TransactionModal({
               placeholder="What was this for?"
               className="field-input"
             />
+          </div>
+
+          <div className="grid gap-3 sm:grid-cols-2">
+            <div>
+              <label className="field-label">Person Name (Optional)</label>
+              <input
+                type="text"
+                value={personName}
+                onChange={(e) => setPersonName(e.target.value)}
+                placeholder="Related person"
+                className="field-input"
+              />
+            </div>
+            <div>
+              <label className="field-label">Item Name (Optional)</label>
+              <input
+                type="text"
+                value={itemName}
+                onChange={(e) => setItemName(e.target.value)}
+                placeholder="Item, job, project"
+                className="field-input"
+              />
+            </div>
           </div>
 
           {error && (

@@ -17,7 +17,7 @@ export default async function IncomePage() {
 
   const { data: raw } = await supabase
     .from("transactions")
-    .select("*, categories(name, color), accounts(name)")
+    .select("*, categories(name, color, parent:categories!categories_parent_id_fkey(name)), accounts(name)")
     .eq("type", "income")
     .order("date", { ascending: false });
 
@@ -43,7 +43,7 @@ export default async function IncomePage() {
     { amount: number; color: string; count: number }
   > = {};
   thisMonthEntries.forEach((t) => {
-    const name = (t.categories as any)?.name || "Other";
+    const name = t.source_name || (t.categories as any)?.name || "Other";
     const color = (t.categories as any)?.color || "#22c55e";
     if (!sourceMap[name]) sourceMap[name] = { amount: 0, color, count: 0 };
     sourceMap[name].amount += Number(t.amount);
@@ -90,6 +90,31 @@ export default async function IncomePage() {
           <p className="mt-0.5 text-xs text-slate-600">
             Your highest earning month
           </p>
+        </div>
+      </div>
+
+      <div className="finance-panel p-5">
+        <h3 className="mb-4 text-sm font-medium text-white">
+          Income by Account
+        </h3>
+        <div className="grid gap-2 md:grid-cols-2 xl:grid-cols-4">
+          {Object.entries(
+            income.reduce<Record<string, number>>((acc, tx) => {
+              const account = (tx.accounts as any)?.name || "No account";
+              acc[account] = (acc[account] ?? 0) + Number(tx.amount);
+              return acc;
+            }, {}),
+          ).map(([account, amount]) => (
+            <div
+              key={account}
+              className="rounded-2xl border border-white/[0.08] bg-white/[0.045] p-3"
+            >
+              <p className="truncate text-xs text-slate-500">{account}</p>
+              <p className="mt-1 text-sm font-bold text-emerald-200">
+                {fmt(amount)}
+              </p>
+            </div>
+          ))}
         </div>
       </div>
 

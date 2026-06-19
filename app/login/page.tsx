@@ -14,8 +14,8 @@ import {
   Sparkles,
 } from "lucide-react";
 
-type Step = "auth" | "otp";
-type LoadingMode = "syncing" | "creating" | "verifying" | null;
+type Step = "auth" | "otp" | "forgot";
+type LoadingMode = "syncing" | "creating" | "verifying" | "sending" | null;
 
 export default function LoginPage() {
   const supabase = createClient();
@@ -90,6 +90,48 @@ export default function LoginPage() {
     }
   }
 
+  async function handleGoogleSignIn() {
+    setLoading(true);
+    setLoadingMode("syncing");
+    setError("");
+
+    const { error: e } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo: `${window.location.origin}/auth/callback?next=/dashboard`,
+      },
+    });
+
+    if (e) {
+      setLoading(false);
+      setLoadingMode(null);
+      setError(e.message);
+    }
+  }
+
+  async function handleForgotPassword() {
+    if (!email) {
+      setError("Enter your email first.");
+      return;
+    }
+    setLoading(true);
+    setLoadingMode("sending");
+    setError("");
+
+    const { error: e } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/reset-password`,
+    });
+
+    setLoading(false);
+    setLoadingMode(null);
+
+    if (e) {
+      setError(e.message);
+    } else {
+      setMessage(`Password reset link sent to ${email}.`);
+    }
+  }
+
   async function handleVerifyOtp() {
     if (!otp || otp.length < 6) {
       setError("Enter the 6-digit code.");
@@ -116,6 +158,7 @@ export default function LoginPage() {
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (step === "forgot") return handleForgotPassword();
     if (step === "otp") return handleVerifyOtp();
     if (isSignUp) return handleSignUp();
     return handleSignIn();
@@ -265,6 +308,60 @@ export default function LoginPage() {
                 </button>
               </form>
             </>
+          : step === "forgot" ?
+            <>
+              <h2 className="text-white font-semibold text-lg mb-1">
+                Reset password
+              </h2>
+              <p className="text-slate-400 text-xs mb-5">
+                Enter your email and we will send a secure reset link.
+              </p>
+
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div>
+                  <label className="field-label">Email</label>
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="you@example.com"
+                    className="field-input"
+                  />
+                </div>
+
+                {message && (
+                  <p className="text-emerald-300 text-xs bg-emerald-500/10 p-3 rounded-lg">
+                    {message}
+                  </p>
+                )}
+
+                {error && (
+                  <p className="text-red-300 text-xs bg-red-500/10 p-3 rounded-lg">
+                    {error}
+                  </p>
+                )}
+
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="primary-action w-full py-4"
+                >
+                  {loading ? "Sending reset link..." : "Send Reset Link"}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setStep("auth");
+                    setError("");
+                    setMessage("");
+                  }}
+                  className="w-full text-slate-500 text-xs hover:text-slate-300 transition-colors"
+                >
+                  Back to sign in
+                </button>
+              </form>
+            </>
           : <>
               <h2 className="text-white font-semibold text-lg mb-1">
                 {isSignUp ? "Create account" : "Welcome back"}
@@ -364,6 +461,38 @@ export default function LoginPage() {
                   : "Sign In"}
                 </button>
               </form>
+
+              <div className="my-4 flex items-center gap-3">
+                <div className="h-px flex-1 bg-white/[0.08]" />
+                <span className="text-[11px] uppercase tracking-[0.18em] text-slate-600">
+                  or
+                </span>
+                <div className="h-px flex-1 bg-white/[0.08]" />
+              </div>
+
+              <button
+                type="button"
+                onClick={handleGoogleSignIn}
+                disabled={loading}
+                className="finance-focus flex w-full items-center justify-center gap-2 rounded-2xl border border-white/[0.1] bg-white/[0.055] px-4 py-3 text-sm font-semibold text-white transition-colors hover:bg-white/[0.09] disabled:opacity-50"
+              >
+                <ShieldCheck size={16} />
+                Continue with Google
+              </button>
+
+              {!isSignUp && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setStep("forgot");
+                    setError("");
+                    setMessage("");
+                  }}
+                  className="mt-4 w-full text-center text-xs text-cyan-200 transition-colors hover:text-cyan-100"
+                >
+                  Forgot password?
+                </button>
+              )}
 
               <p className="text-center text-slate-500 text-xs mt-4">
                 {isSignUp ?

@@ -2,56 +2,23 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import {
-  Briefcase,
-  Landmark,
-  LucideIcon,
-  Pencil,
-  Trash2,
-  TrendingUp,
-  Wallet,
-} from "lucide-react";
+import { Pencil, Trash2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import AccountModal, { ExistingAccount } from "./AccountModal";
+import { formatPKR, getAccountType } from "@/lib/finance-options";
 
-const CONFIG: Record<
-  string,
-  { label: string; icon: LucideIcon; color: string; bg: string }
-> = {
-  bank: {
-    label: "Bank Account",
-    icon: Landmark,
-    color: "text-sky-300",
-    bg: "bg-sky-500/15",
-  },
-  cash: {
-    label: "Cash Wallet",
-    icon: Wallet,
-    color: "text-green-300",
-    bg: "bg-green-500/15",
-  },
-  freelance: {
-    label: "Freelance",
-    icon: Briefcase,
-    color: "text-violet-300",
-    bg: "bg-violet-500/15",
-  },
-  investment: {
-    label: "Investment",
-    icon: TrendingUp,
-    color: "text-amber-300",
-    bg: "bg-amber-500/15",
-  },
-};
-
-export default function AccountCard({ account }: { account: ExistingAccount }) {
+export default function AccountCard({
+  account,
+}: {
+  account: ExistingAccount & { inflow?: number; outflow?: number };
+}) {
   const router = useRouter();
   const supabase = createClient();
 
   const [editOpen, setEditOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
-  const cfg = CONFIG[account.type] || CONFIG.bank;
+  const cfg = getAccountType(account.type);
   const Icon = cfg.icon;
 
   async function handleDelete() {
@@ -83,9 +50,9 @@ export default function AccountCard({ account }: { account: ExistingAccount }) {
         </div>
 
         <div
-          className={`mb-4 flex h-11 w-11 items-center justify-center rounded-lg ${cfg.bg}`}
+          className={`mb-4 flex h-11 w-11 items-center justify-center rounded-lg ${cfg.tone}`}
         >
-          <Icon size={19} className={cfg.color} />
+          <Icon size={19} />
         </div>
 
         <p className="mb-2 break-words pr-16 text-base font-semibold text-white">
@@ -93,7 +60,7 @@ export default function AccountCard({ account }: { account: ExistingAccount }) {
         </p>
 
         <span
-          className={`rounded-md px-2.5 py-1 text-xs font-medium ${cfg.bg} ${cfg.color}`}
+          className={`rounded-md px-2.5 py-1 text-xs font-medium ${cfg.tone}`}
         >
           {cfg.label}
         </span>
@@ -101,11 +68,26 @@ export default function AccountCard({ account }: { account: ExistingAccount }) {
         <div className="mt-4 border-t border-white/[0.08] pt-4">
           <p className="mb-1 text-xs text-slate-500">Balance</p>
           <p className="break-words text-xl font-bold text-white">
-            PKR {Number(account.balance).toLocaleString()}
+            {formatPKR(account.balance)}
           </p>
           <p className="mt-0.5 text-xs text-slate-600">
             Approx. ${(Number(account.balance) / 281.2).toFixed(2)} USD
           </p>
+        </div>
+
+        <div className="mt-4 grid grid-cols-2 gap-2">
+          <div className="rounded-2xl border border-emerald-300/10 bg-emerald-300/[0.055] p-3">
+            <p className="text-[11px] text-slate-500">Income In</p>
+            <p className="mt-1 text-sm font-semibold text-emerald-200">
+              {formatPKR(account.inflow ?? 0)}
+            </p>
+          </div>
+          <div className="rounded-2xl border border-rose-300/10 bg-rose-300/[0.055] p-3">
+            <p className="text-[11px] text-slate-500">Expense Out</p>
+            <p className="mt-1 text-sm font-semibold text-rose-200">
+              {formatPKR(account.outflow ?? 0)}
+            </p>
+          </div>
         </div>
       </div>
 

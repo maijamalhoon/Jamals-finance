@@ -10,7 +10,25 @@ const TABS = [
   { label: "Expense", value: "expense" },
 ];
 
-export default function TransactionFilters() {
+interface FilterCategory {
+  id: string;
+  name: string;
+  type: string;
+  parent?: { name: string } | null;
+}
+
+interface FilterAccount {
+  id: string;
+  name: string;
+}
+
+export default function TransactionFilters({
+  categories = [],
+  accounts = [],
+}: {
+  categories?: FilterCategory[];
+  accounts?: FilterAccount[];
+}) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -18,7 +36,14 @@ export default function TransactionFilters() {
   const activeType = searchParams.get("type") || "all";
   const activeFrom = searchParams.get("from") || "";
   const activeTo = searchParams.get("to") || "";
+  const activeCategory = searchParams.get("category") || "all";
+  const activeAccount = searchParams.get("account") || "all";
+  const activeMin = searchParams.get("min") || "";
+  const activeMax = searchParams.get("max") || "";
   const [search, setSearch] = useState(searchParams.get("search") || "");
+  const [source, setSource] = useState(searchParams.get("source") || "");
+  const [person, setPerson] = useState(searchParams.get("person") || "");
+  const [item, setItem] = useState(searchParams.get("item") || "");
 
   const updateParams = useCallback((updates: Record<string, string>) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -37,10 +62,29 @@ export default function TransactionFilters() {
 
   function clearFilters() {
     setSearch("");
+    setSource("");
+    setPerson("");
+    setItem("");
     router.push(pathname);
   }
 
-  const hasFilters = activeType !== "all" || activeFrom || activeTo || search;
+  const hasFilters =
+    activeType !== "all" ||
+    activeFrom ||
+    activeTo ||
+    activeCategory !== "all" ||
+    activeAccount !== "all" ||
+    activeMin ||
+    activeMax ||
+    search ||
+    source ||
+    person ||
+    item;
+
+  useEffect(() => {
+    const t = setTimeout(() => updateParams({ source, person, item }), 350);
+    return () => clearTimeout(t);
+  }, [source, person, item, updateParams]);
 
   return (
     <div className="mb-5 space-y-3">
@@ -102,6 +146,72 @@ export default function TransactionFilters() {
             style={{ colorScheme: "dark" }}
           />
         </div>
+
+        <select
+          value={activeCategory}
+          onChange={(e) => updateParams({ category: e.target.value })}
+          className="finance-control finance-focus min-h-10 px-3 py-2 text-xs text-white outline-none"
+          style={{ colorScheme: "dark" }}
+          aria-label="Filter by category"
+        >
+          <option value="all">All categories</option>
+          {categories.map((category) => (
+            <option key={category.id} value={category.id}>
+              {category.parent?.name ?
+                `${category.parent.name} / ${category.name}`
+              : `${category.name} (${category.type})`}
+            </option>
+          ))}
+        </select>
+
+        <select
+          value={activeAccount}
+          onChange={(e) => updateParams({ account: e.target.value })}
+          className="finance-control finance-focus min-h-10 px-3 py-2 text-xs text-white outline-none"
+          style={{ colorScheme: "dark" }}
+          aria-label="Filter by account"
+        >
+          <option value="all">All accounts</option>
+          {accounts.map((account) => (
+            <option key={account.id} value={account.id}>
+              {account.name}
+            </option>
+          ))}
+        </select>
+
+        <input
+          type="number"
+          value={activeMin}
+          onChange={(e) => updateParams({ min: e.target.value })}
+          placeholder="Min amount"
+          className="finance-control finance-focus min-h-10 px-3 py-2 text-xs text-white outline-none placeholder-slate-600"
+        />
+        <input
+          type="number"
+          value={activeMax}
+          onChange={(e) => updateParams({ max: e.target.value })}
+          placeholder="Max amount"
+          className="finance-control finance-focus min-h-10 px-3 py-2 text-xs text-white outline-none placeholder-slate-600"
+        />
+
+        <input
+          value={source}
+          onChange={(e) => setSource(e.target.value)}
+          placeholder="Income source"
+          className="finance-control finance-focus min-h-10 px-3 py-2 text-xs text-white outline-none placeholder-slate-600"
+        />
+        <input
+          value={person}
+          onChange={(e) => setPerson(e.target.value)}
+          placeholder="Person name"
+          className="finance-control finance-focus min-h-10 px-3 py-2 text-xs text-white outline-none placeholder-slate-600"
+        />
+        <input
+          value={item}
+          onChange={(e) => setItem(e.target.value)}
+          placeholder="Item name"
+          className="finance-control finance-focus min-h-10 px-3 py-2 text-xs text-white outline-none placeholder-slate-600"
+        />
 
         {hasFilters && (
           <button

@@ -17,6 +17,7 @@ import {
   CalendarDays,
   Gauge,
   Landmark,
+  HandCoins,
   Target,
 } from "lucide-react";
 
@@ -25,6 +26,7 @@ export const dynamic = "force-dynamic";
 export default async function DashboardPage() {
   const supabase = await createClient();
   const now = new Date();
+  const todayStr = now.toISOString().split("T")[0];
 
   const firstDay = new Date(now.getFullYear(), now.getMonth(), 1)
     .toISOString()
@@ -50,6 +52,7 @@ export default async function DashboardPage() {
     { data: accounts },
     { data: investments },
     { data: goals },
+    { data: liabilities },
   ] = await Promise.all([
     supabase
       .from("transactions")
@@ -65,6 +68,7 @@ export default async function DashboardPage() {
     supabase.from("accounts").select("balance"),
     supabase.from("investments").select("current_price, quantity"),
     supabase.from("goals").select("*").order("created_at").limit(3),
+    supabase.from("liabilities").select("remaining_amount, status, due_date"),
   ]);
 
   const txns = thisTxns ?? [];
@@ -85,6 +89,16 @@ export default async function DashboardPage() {
     (s, i) => s + Number(i.current_price) * Number(i.quantity),
     0,
   );
+  const payableRemaining = (liabilities ?? []).reduce(
+    (s, liability) => s + Number(liability.remaining_amount),
+    0,
+  );
+  const overduePayables = (liabilities ?? []).filter(
+    (liability) =>
+      Number(liability.remaining_amount) > 0 &&
+      liability.due_date &&
+      liability.due_date < todayStr,
+  ).length;
   const lastIncome = (lastTxns ?? [])
     .filter((t) => t.type === "income")
     .reduce((s, t) => s + Number(t.amount), 0);
@@ -101,7 +115,6 @@ export default async function DashboardPage() {
     if (t.type === "expense") current.expenses += Number(t.amount);
     dailyTotals.set(t.date, current);
   });
-  const todayStr = now.toISOString().split("T")[0];
   const todayTotals = dailyTotals.get(todayStr) ?? { income: 0, expenses: 0 };
   const todayTransactions = txns.filter((t) => t.date === todayStr);
   const activeDayNumbers = Array.from(dailyTotals.keys()).map((date) =>
@@ -237,6 +250,21 @@ export default async function DashboardPage() {
       progress: Math.max(0, 100 - liquidityRatio),
       href: "/dashboard/investments",
     },
+    {
+      title: "Payables Due",
+      amount: fmt(payableRemaining),
+      usd: usd(payableRemaining),
+      change: 0,
+      icon: HandCoins,
+      iconColor: "text-amber-300",
+      iconBg: "bg-amber-500/15",
+      detail:
+        overduePayables > 0 ?
+          `${overduePayables} overdue payable${overduePayables === 1 ? "" : "s"}`
+        : "No overdue payables",
+      progress: payableRemaining > 0 ? 65 : 0,
+      href: "/dashboard/payables",
+    },
   ];
 
   const intelligenceTiles = [
@@ -297,7 +325,7 @@ export default async function DashboardPage() {
           })}
         </div>
       </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3">
         {stats.map((s, i) => (
           <StatCard key={i} {...s} />
         ))}

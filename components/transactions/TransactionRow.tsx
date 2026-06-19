@@ -14,7 +14,7 @@ import TransactionModal, {
 } from "@/components/dashboard/TransactionModal";
 
 interface Transaction extends ExistingTransaction {
-  categories: { name: string; color: string } | null;
+  categories: { name: string; color: string; parent?: { name: string } | null } | null;
   accounts: { name: string } | null;
 }
 
@@ -29,6 +29,15 @@ export default function TransactionRow({ tx }: { tx: Transaction }) {
   const catColor = tx.categories?.color || (isIncome ? "#22c55e" : "#f43f5e");
   const catInitial = tx.categories?.name?.charAt(0) || "T";
   const TypeIcon = isIncome ? ArrowDownLeft : ArrowUpRight;
+  const categoryLabel =
+    tx.categories?.parent?.name ?
+      `${tx.categories.parent.name} / ${tx.categories.name}`
+    : tx.categories?.name || "Uncategorized";
+  const detailBits = [
+    isIncome && tx.source_name ? `Source: ${tx.source_name}` : null,
+    tx.person_name ? `Person: ${tx.person_name}` : null,
+    tx.item_name ? `Item: ${tx.item_name}` : null,
+  ].filter(Boolean);
 
   async function handleDelete() {
     if (!confirm("Delete this transaction? This cannot be undone.")) return;
@@ -56,6 +65,11 @@ export default function TransactionRow({ tx }: { tx: Transaction }) {
               <p className="mt-0.5 truncate text-xs text-slate-500">
                 {tx.accounts?.name || "No account"}
               </p>
+              {detailBits.length > 0 && (
+                <p className="mt-1 truncate text-[11px] text-slate-500">
+                  {detailBits.join(" - ")}
+                </p>
+              )}
             </div>
             <p
               className={`shrink-0 text-right text-sm font-semibold md:hidden ${
@@ -78,7 +92,7 @@ export default function TransactionRow({ tx }: { tx: Transaction }) {
               {isIncome ? "Income" : "Expense"}
             </span>
             <span className="rounded-md bg-white/[0.045] px-2 py-1 text-[11px] text-slate-400">
-              {tx.categories?.name || "Uncategorized"}
+              {isIncome && tx.source_name ? tx.source_name : categoryLabel}
             </span>
             <span className="text-[11px] text-slate-500">
               {new Date(tx.date).toLocaleDateString("en-US", {
@@ -91,7 +105,7 @@ export default function TransactionRow({ tx }: { tx: Transaction }) {
         </div>
 
         <p className="hidden w-32 truncate text-xs text-slate-400 md:block">
-          {tx.categories?.name || "Uncategorized"}
+          {isIncome && tx.source_name ? tx.source_name : categoryLabel}
         </p>
 
         <span

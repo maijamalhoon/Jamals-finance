@@ -17,7 +17,7 @@ export default async function ExpensesPage() {
 
   const { data: raw } = await supabase
     .from("transactions")
-    .select("*, categories(name, color), accounts(name)")
+    .select("*, categories(name, color, parent:categories!categories_parent_id_fkey(name)), accounts(name)")
     .eq("type", "expense")
     .order("date", { ascending: false });
 
@@ -43,7 +43,10 @@ export default async function ExpensesPage() {
     { amount: number; color: string; count: number }
   > = {};
   thisMonthEntries.forEach((t) => {
-    const name = (t.categories as any)?.name || "Other";
+    const category = t.categories as any;
+    const name =
+      category?.parent?.name ? `${category.parent.name} / ${category.name}`
+      : category?.name || "Other";
     const color = (t.categories as any)?.color || "#ef4444";
     if (!categoryMap[name]) categoryMap[name] = { amount: 0, color, count: 0 };
     categoryMap[name].amount += Number(t.amount);
@@ -65,6 +68,31 @@ export default async function ExpensesPage() {
           <p className="page-subtitle">{expenses.length} total entries</p>
         </div>
         <AddExpenseButton />
+      </div>
+
+      <div className="finance-panel p-5">
+        <h3 className="mb-4 text-sm font-medium text-white">
+          Expenses by Account
+        </h3>
+        <div className="grid gap-2 md:grid-cols-2 xl:grid-cols-4">
+          {Object.entries(
+            expenses.reduce<Record<string, number>>((acc, tx) => {
+              const account = (tx.accounts as any)?.name || "No account";
+              acc[account] = (acc[account] ?? 0) + Number(tx.amount);
+              return acc;
+            }, {}),
+          ).map(([account, amount]) => (
+            <div
+              key={account}
+              className="rounded-2xl border border-white/[0.08] bg-white/[0.045] p-3"
+            >
+              <p className="truncate text-xs text-slate-500">{account}</p>
+              <p className="mt-1 text-sm font-bold text-rose-200">
+                {fmt(amount)}
+              </p>
+            </div>
+          ))}
+        </div>
       </div>
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
