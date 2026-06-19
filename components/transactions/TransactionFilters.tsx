@@ -3,6 +3,7 @@
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { useState, useEffect, useCallback } from "react";
 import { Search, X } from "lucide-react";
+import DatePicker from "@/components/ui/date-picker";
 
 const TABS = [
   { label: "All", value: "all" },
@@ -128,22 +129,20 @@ export default function TransactionFilters({
       <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
         <div className="flex items-center gap-2">
           <label className="w-10 text-xs text-slate-500 sm:w-auto">From</label>
-          <input
-            type="date"
+          <DatePicker
             value={activeFrom}
-            onChange={(e) => updateParams({ from: e.target.value })}
-            className="finance-control finance-focus min-h-10 flex-1 px-3 py-2 text-xs text-white outline-none sm:flex-none"
-            style={{ colorScheme: "dark" }}
+            onChange={(value) => updateParams({ from: value })}
+            placeholder="Start date"
+            className="min-w-[160px] flex-1 sm:flex-none"
           />
         </div>
         <div className="flex items-center gap-2">
           <label className="w-10 text-xs text-slate-500 sm:w-auto">To</label>
-          <input
-            type="date"
+          <DatePicker
             value={activeTo}
-            onChange={(e) => updateParams({ to: e.target.value })}
-            className="finance-control finance-focus min-h-10 flex-1 px-3 py-2 text-xs text-white outline-none sm:flex-none"
-            style={{ colorScheme: "dark" }}
+            onChange={(value) => updateParams({ to: value })}
+            placeholder="End date"
+            className="min-w-[160px] flex-1 sm:flex-none"
           />
         </div>
 

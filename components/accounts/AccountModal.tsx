@@ -122,18 +122,29 @@ export default function AccountModal({
           {/* Type */}
           <div>
             <label className="field-label">Account Type</label>
-            <select
-              value={type}
-              onChange={(e) => setType(e.target.value)}
-              className="field-input"
-              style={{ colorScheme: "dark" }}
-            >
-              {ACCOUNT_TYPES.map((t) => (
-                <option key={t.value} value={t.value}>
-                  {t.label}
-                </option>
+            <div className="grid max-h-56 grid-cols-2 gap-2 overflow-y-auto pr-1">
+              {ACCOUNT_TYPES.map(({ value, label, icon: Icon, tone }) => (
+                <button
+                  key={value}
+                  type="button"
+                  onClick={() => setType(value)}
+                  className={`finance-focus flex items-center gap-2 rounded-[18px] border px-3 py-2.5 text-left text-xs font-semibold transition-colors ${
+                    type === value
+                      ? "border-white bg-white text-[#111318]"
+                      : "border-white/[0.10] bg-white/[0.055] text-slate-400 hover:bg-white/[0.09] hover:text-white"
+                  }`}
+                >
+                  <span
+                    className={`grid h-8 w-8 flex-shrink-0 place-items-center rounded-[15px] ${
+                      type === value ? "bg-slate-950 text-white" : tone
+                    }`}
+                  >
+                    <Icon size={14} />
+                  </span>
+                  <span className="truncate">{label}</span>
+                </button>
               ))}
-            </select>
+            </div>
           </div>
 
           {/* Balance */}

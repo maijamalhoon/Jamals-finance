@@ -1,7 +1,6 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
-@import "flatpickr/dist/flatpickr.css";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -84,8 +83,8 @@
     min-height: 100dvh;
     overflow-x: hidden;
     background:
-      linear-gradient(180deg, rgba(255, 255, 255, 0.035), transparent 19rem),
-      linear-gradient(135deg, #101216 0%, #17171d 42%, #101318 100%);
+      linear-gradient(180deg, rgba(255, 255, 255, 0.055), transparent 18rem),
+      linear-gradient(135deg, #0d1118 0%, #181b24 46%, #10141b 100%);
     text-rendering: geometricPrecision;
   }
 
@@ -97,7 +96,7 @@
 
 @layer components {
   .finance-panel {
-    @apply rounded-[26px] border border-white/[0.105] bg-[#1a1d24]/88 shadow-[0_22px_70px_rgba(0,0,0,0.30)] backdrop-blur-2xl;
+    @apply rounded-[28px] border border-white/[0.11] bg-[#171b23]/88 shadow-[0_22px_70px_rgba(0,0,0,0.30)] backdrop-blur-2xl;
     box-shadow:
       inset 0 1px 0 rgb(255 255 255 / 6%),
       0 22px 70px rgb(0 0 0 / 30%);
@@ -120,14 +119,14 @@
   }
 
   .finance-glass-panel {
-    @apply rounded-[28px] border border-white/[0.13] bg-[#1c2028]/90 shadow-[0_28px_90px_rgba(0,0,0,0.44)] backdrop-blur-2xl;
+    @apply rounded-[30px] border border-white/[0.14] bg-[#171b23]/92 shadow-[0_28px_90px_rgba(0,0,0,0.44)] backdrop-blur-2xl;
     box-shadow:
       inset 0 1px 0 rgb(255 255 255 / 7%),
       0 28px 90px rgb(0 0 0 / 44%);
   }
 
   .finance-control {
-    @apply rounded-[18px] border border-white/[0.11] bg-white/[0.075] shadow-[inset_0_1px_0_rgba(255,255,255,0.055)] transition-all duration-200 ease-out hover:border-white/[0.18] hover:bg-white/[0.105];
+    @apply rounded-[20px] border border-white/[0.11] bg-white/[0.075] shadow-[inset_0_1px_0_rgba(255,255,255,0.055)] transition-all duration-200 ease-out hover:border-white/[0.18] hover:bg-white/[0.105];
   }
 
   .finance-focus {
@@ -181,7 +180,7 @@
   }
 
   .field-input {
-    @apply w-full rounded-[18px] border border-white/[0.11] bg-white/[0.075] px-4 py-3 text-sm text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] outline-none placeholder-slate-500 transition-all duration-200 ease-out hover:border-white/[0.18] hover:bg-white/[0.105] focus:border-cyan-200;
+    @apply w-full rounded-[20px] border border-white/[0.11] bg-white/[0.075] px-4 py-3 text-sm text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] outline-none placeholder-slate-500 transition-all duration-200 ease-out hover:border-white/[0.18] hover:bg-white/[0.105] focus:border-cyan-200;
   }
 
   .widget-link {
@@ -253,142 +252,42 @@ html {
 
 input,
 select,
-textarea {
+textarea,
+button {
   font-size: 16px !important;
 }
 
 @media (min-width: 1024px) {
   input,
   select,
-  textarea {
+  textarea,
+  button {
     font-size: 14px !important;
   }
 }
 
-.flatpickr-calendar.finance-datepicker,
-.flatpickr-calendar {
-  width: 308px;
-  border: 1px solid rgb(255 255 255 / 12%);
-  border-radius: 18px;
-  background: rgb(28 32 40 / 98%);
-  box-shadow: 0 28px 80px rgb(0 0 0 / 42%);
-  color: #e5e7eb;
-  overflow: hidden;
-  z-index: 80;
+select {
+  appearance: none;
+  background-image:
+    linear-gradient(45deg, transparent 50%, rgb(203 213 225 / 85%) 50%),
+    linear-gradient(135deg, rgb(203 213 225 / 85%) 50%, transparent 50%);
+  background-position:
+    calc(100% - 18px) 52%,
+    calc(100% - 13px) 52%;
+  background-size:
+    5px 5px,
+    5px 5px;
+  background-repeat: no-repeat;
+  padding-right: 2.75rem !important;
 }
 
-.flatpickr-calendar::before,
-.flatpickr-calendar::after {
-  display: none;
+select option {
+  background: #171b23;
+  color: #f8fafc;
 }
 
-.flatpickr-months {
-  padding: 10px 10px 4px;
-}
-
-.flatpickr-months .flatpickr-prev-month,
-.flatpickr-months .flatpickr-next-month {
-  top: 9px;
-  height: 32px;
-  width: 32px;
-  border-radius: 12px;
-  color: #cbd5e1;
-  transition:
-    background 0.18s ease,
-    color 0.18s ease;
-}
-
-.flatpickr-months .flatpickr-prev-month:hover,
-.flatpickr-months .flatpickr-next-month:hover {
-  background: rgb(255 255 255 / 9%);
-  color: #ffffff;
-}
-
-.flatpickr-current-month {
-  height: 34px;
-  padding-top: 4px;
-  color: #ffffff;
-  font-size: 14px;
-}
-
-.flatpickr-current-month .flatpickr-monthDropdown-months,
-.flatpickr-current-month input.cur-year {
-  color: #ffffff;
-  font-weight: 700;
-}
-
-.flatpickr-current-month .flatpickr-monthDropdown-months {
-  background: transparent;
-}
-
-.flatpickr-weekdays {
-  height: 34px;
-  border-top: 1px solid rgb(255 255 255 / 7%);
-  border-bottom: 1px solid rgb(255 255 255 / 7%);
-  background: rgb(255 255 255 / 4%);
-}
-
-span.flatpickr-weekday {
-  color: #94a3b8;
-  font-size: 11px;
-  font-weight: 700;
-}
-
-.flatpickr-days {
-  width: 308px;
-  padding: 8px;
-}
-
-.dayContainer {
-  width: 292px;
-  min-width: 292px;
-  max-width: 292px;
-}
-
-.flatpickr-day {
-  height: 36px;
-  max-width: 41px;
-  border: 1px solid transparent;
-  border-radius: 12px;
-  color: #cbd5e1;
-  font-size: 13px;
-  line-height: 34px;
-  transition:
-    background 0.16s ease,
-    border-color 0.16s ease,
-    color 0.16s ease;
-}
-
-.flatpickr-day:hover,
-.flatpickr-day:focus {
-  border-color: rgb(118 228 247 / 32%);
-  background: rgb(118 228 247 / 12%);
-  color: #ffffff;
-}
-
-.flatpickr-day.today {
-  border-color: rgb(255 209 102 / 58%);
-  color: #ffd166;
-}
-
-.flatpickr-day.selected,
-.flatpickr-day.startRange,
-.flatpickr-day.endRange,
-.flatpickr-day.selected:hover {
-  border-color: rgb(118 228 247 / 90%);
-  background: #76e4f7;
-  color: #071014;
-  font-weight: 800;
-}
-
-.flatpickr-day.prevMonthDay,
-.flatpickr-day.nextMonthDay,
-.flatpickr-day.flatpickr-disabled {
-  color: #64748b;
-}
-
-.flatpickr-calendar.open {
-  animation: fadeIn 0.16s ease forwards;
+input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(1) opacity(0.65);
 }
 
 .card-hover {

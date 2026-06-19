@@ -143,18 +143,22 @@ export default function InvestmentModal({
           {/* Type */}
           <div>
             <label className="field-label">Type</label>
-            <select
-              value={type}
-              onChange={(e) => setType(e.target.value)}
-              className="field-input"
-              style={{ colorScheme: "dark" }}
-            >
-              {TYPES.map((t) => (
-                <option key={t.value} value={t.value}>
-                  {t.label}
-                </option>
+            <div className="grid grid-cols-2 gap-2">
+              {TYPES.map((item) => (
+                <button
+                  key={item.value}
+                  type="button"
+                  onClick={() => setType(item.value)}
+                  className={`finance-focus rounded-[18px] border px-3 py-2.5 text-sm font-semibold transition-colors ${
+                    type === item.value
+                      ? "border-white bg-white text-[#111318]"
+                      : "border-white/[0.10] bg-white/[0.055] text-slate-400 hover:bg-white/[0.09] hover:text-white"
+                  }`}
+                >
+                  {item.label}
+                </button>
               ))}
-            </select>
+            </div>
           </div>
 
           {/* Quantity + Buy Price */}

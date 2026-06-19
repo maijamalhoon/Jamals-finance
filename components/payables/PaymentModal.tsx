@@ -183,18 +183,31 @@ export default function PaymentModal({ open, onClose, payable, accounts }: Props
 
           <div>
             <label className="field-label">Paid From Account</label>
-            <select
-              value={accountId}
-              onChange={(e) => setAccountId(e.target.value)}
-              className="field-input"
-              style={{ colorScheme: "dark" }}
-            >
+            <div className="grid max-h-48 gap-2 overflow-y-auto pr-1 sm:grid-cols-2">
               {accounts.map((account) => (
-                <option key={account.id} value={account.id}>
-                  {account.name}
-                </option>
+                <button
+                  key={account.id}
+                  type="button"
+                  onClick={() => setAccountId(account.id)}
+                  className={`finance-focus rounded-[18px] border px-3 py-2.5 text-left transition-colors ${
+                    accountId === account.id
+                      ? "border-white bg-white text-[#111318]"
+                      : "border-white/[0.10] bg-white/[0.055] text-slate-400 hover:bg-white/[0.09] hover:text-white"
+                  }`}
+                >
+                  <span className="block truncate text-sm font-semibold">
+                    {account.name}
+                  </span>
+                  <span
+                    className={`block text-[11px] ${
+                      accountId === account.id ? "text-slate-600" : "text-slate-500"
+                    }`}
+                  >
+                    {account.type}
+                  </span>
+                </button>
               ))}
-            </select>
+            </div>
           </div>
 
           <div>

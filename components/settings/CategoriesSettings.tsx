@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Plus, Trash2 } from "lucide-react";
+import { Check, Pencil, Plus, Trash2, X } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 
 const COLORS = [
@@ -28,10 +28,18 @@ interface Category {
   parent_id: string | null;
 }
 
+interface CategoryStat {
+  monthAmount: number;
+  totalAmount: number;
+  count: number;
+}
+
 export default function CategoriesSettings({
   categories,
+  categoryStats,
 }: {
   categories: Category[];
+  categoryStats: Record<string, CategoryStat>;
 }) {
   const router = useRouter();
   const supabase = createClient();
@@ -40,10 +48,17 @@ export default function CategoriesSettings({
   const [newName, setNewName] = useState("");
   const [newColor, setNewColor] = useState(COLORS[0]);
   const [parentId, setParentId] = useState("");
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editName, setEditName] = useState("");
+  const [editColor, setEditColor] = useState(COLORS[0]);
+  const [editParentId, setEditParentId] = useState("");
   const [saving, setSaving] = useState(false);
 
-  const income = categories.filter((c) => c.type === "income");
-  const expense = categories.filter((c) => c.type === "expense");
+  const income = categories.filter((category) => category.type === "income");
+  const expense = categories.filter((category) => category.type === "expense");
+
+  const fmt = (amount: number) =>
+    `PKR ${amount.toLocaleString(undefined, { maximumFractionDigits: 0 })}`;
 
   async function handleAdd() {
     if (!newName.trim() || !addingFor) return;
@@ -66,10 +81,114 @@ export default function CategoriesSettings({
     router.refresh();
   }
 
+  function startEdit(category: Category) {
+    setEditingId(category.id);
+    setEditName(category.name);
+    setEditColor(category.color);
+    setEditParentId(category.parent_id ?? "");
+    setAddingFor(null);
+  }
+
+  async function handleUpdate(category: Category) {
+    if (!editName.trim()) return;
+    setSaving(true);
+    await supabase
+      .from("categories")
+      .update({
+        name: editName.trim(),
+        color: editColor,
+        parent_id:
+          category.type === "expense" && editParentId ? editParentId : null,
+      })
+      .eq("id", category.id);
+    setSaving(false);
+    setEditingId(null);
+    router.refresh();
+  }
+
   async function handleDelete(id: string, name: string) {
-    if (!confirm(`Delete "${name}"?`)) return;
+    if (!confirm(`Delete "${name}"? Existing transactions may still use it.`)) {
+      return;
+    }
     await supabase.from("categories").delete().eq("id", id);
     router.refresh();
+  }
+
+  function ColorPicker({
+    value,
+    onChange,
+  }: {
+    value: string;
+    onChange: (color: string) => void;
+  }) {
+    return (
+      <div className="flex flex-wrap gap-2">
+        {COLORS.map((color) => (
+          <button
+            key={color}
+            type="button"
+            onClick={() => onChange(color)}
+            className="finance-focus grid h-7 w-7 place-items-center rounded-full transition-transform hover:scale-110"
+            style={{
+              background: color,
+              outline: value === color ? "2px solid white" : "none",
+              outlineOffset: "2px",
+            }}
+            aria-label={`Pick ${color}`}
+          >
+            {value === color && <Check size={12} className="text-white" />}
+          </button>
+        ))}
+      </div>
+    );
+  }
+
+  function ParentPicker({
+    roots,
+    value,
+    onChange,
+    excludeId,
+  }: {
+    roots: Category[];
+    value: string;
+    onChange: (id: string) => void;
+    excludeId?: string;
+  }) {
+    const choices = roots.filter((root) => root.id !== excludeId);
+    return (
+      <div>
+        <p className="mb-2 text-[11px] font-medium text-slate-500">
+          Parent category
+        </p>
+        <div className="flex flex-wrap gap-2">
+          <button
+            type="button"
+            onClick={() => onChange("")}
+            className={`finance-focus rounded-full border px-3 py-1.5 text-[11px] font-semibold transition-colors ${
+              !value
+                ? "border-white bg-white text-[#111318]"
+                : "border-white/[0.10] bg-white/[0.055] text-slate-400 hover:bg-white/[0.09] hover:text-white"
+            }`}
+          >
+            Top level
+          </button>
+          {choices.map((root) => (
+            <button
+              key={root.id}
+              type="button"
+              onClick={() => onChange(root.id)}
+              className={`finance-focus rounded-full border px-3 py-1.5 text-[11px] font-semibold transition-colors ${
+                value === root.id
+                  ? "border-white bg-white text-[#111318]"
+                  : "border-white/[0.10] bg-white/[0.055] text-slate-400 hover:bg-white/[0.09] hover:text-white"
+              }`}
+            >
+              {root.name}
+            </button>
+          ))}
+        </div>
+      </div>
+    );
   }
 
   function Section({
@@ -82,56 +201,177 @@ export default function CategoriesSettings({
     type: "income" | "expense";
   }) {
     const roots = items.filter((item) => !item.parent_id);
-    const childrenByParent = items.reduce<Record<string, Category[]>>((acc, item) => {
-      if (!item.parent_id) return acc;
-      acc[item.parent_id] = [...(acc[item.parent_id] ?? []), item];
-      return acc;
-    }, {});
+    const childrenByParent = items.reduce<Record<string, Category[]>>(
+      (acc, item) => {
+        if (!item.parent_id) return acc;
+        acc[item.parent_id] = [...(acc[item.parent_id] ?? []), item];
+        return acc;
+      },
+      {},
+    );
 
-    const renderCategory = (cat: Category, nested = false) => (
-      <div
-        key={cat.id}
-        className={`group flex items-center gap-3 rounded-2xl border border-white/[0.06] bg-white/[0.045] px-3 py-2.5 ${
-          nested ? "ml-5" : ""
-        }`}
-      >
-        <div
-          className="h-2.5 w-2.5 flex-shrink-0 rounded-full"
-          style={{ background: cat.color }}
+    const getCategoryStat = (category: Category) => {
+      const childIds = (childrenByParent[category.id] ?? []).map(
+        (child) => child.id,
+      );
+      return [category.id, ...childIds].reduce<CategoryStat>(
+        (acc, id) => {
+          const stat = categoryStats[id];
+          if (!stat) return acc;
+          return {
+            monthAmount: acc.monthAmount + stat.monthAmount,
+            totalAmount: acc.totalAmount + stat.totalAmount,
+            count: acc.count + stat.count,
+          };
+        },
+        { monthAmount: 0, totalAmount: 0, count: 0 },
+      );
+    };
+
+    const renderEditor = (category: Category) => (
+      <div className="rounded-[24px] border border-white/[0.10] bg-white/[0.065] p-3">
+        <input
+          value={editName}
+          onChange={(event) => setEditName(event.target.value)}
+          placeholder="Category name"
+          className="field-input py-2.5"
         />
-        <span className="flex-1 text-sm text-white">{cat.name}</span>
-        <button
-          onClick={() => handleDelete(cat.id, cat.name)}
-          className="flex h-7 w-7 items-center justify-center rounded-xl opacity-0 transition-all hover:bg-red-500/20 group-hover:opacity-100"
-          aria-label={`Delete ${cat.name}`}
-        >
-          <Trash2 size={11} className="text-red-400" />
-        </button>
+        {category.type === "expense" && (
+          <div className="mt-3">
+            <ParentPicker
+              roots={roots}
+              value={editParentId}
+              onChange={setEditParentId}
+              excludeId={category.id}
+            />
+          </div>
+        )}
+        <div className="mt-3">
+          <ColorPicker value={editColor} onChange={setEditColor} />
+        </div>
+        <div className="mt-3 flex gap-2">
+          <button
+            type="button"
+            onClick={() => handleUpdate(category)}
+            disabled={saving || !editName.trim()}
+            className="primary-action min-h-0 rounded-[14px] px-3 py-2 text-xs"
+          >
+            {saving ? "Saving..." : "Save changes"}
+          </button>
+          <button
+            type="button"
+            onClick={() => setEditingId(null)}
+            className="finance-focus inline-flex items-center gap-1 rounded-[14px] border border-white/[0.10] bg-white/[0.055] px-3 py-2 text-xs font-semibold text-slate-300 hover:bg-white/[0.09]"
+          >
+            <X size={12} />
+            Cancel
+          </button>
+        </div>
       </div>
     );
 
+    const renderCategory = (category: Category, nested = false) => {
+      const stat = getCategoryStat(category);
+      const label = type === "expense" ? "spent" : "received";
+
+      if (editingId === category.id) {
+        return (
+          <div key={category.id} className={nested ? "ml-5" : ""}>
+            {renderEditor(category)}
+          </div>
+        );
+      }
+
+      return (
+        <div
+          key={category.id}
+          className={`group rounded-[22px] border border-white/[0.07] bg-white/[0.045] p-3 transition-colors hover:border-white/[0.13] hover:bg-white/[0.065] ${
+            nested ? "ml-5" : ""
+          }`}
+        >
+          <div className="flex items-center gap-3">
+            <div
+              className="h-3 w-3 flex-shrink-0 rounded-full"
+              style={{ background: category.color }}
+            />
+            <div className="min-w-0 flex-1">
+              <span className="block truncate text-sm font-semibold text-white">
+                {category.name}
+              </span>
+              <span className="text-[11px] text-slate-500">
+                {stat.count} records tracked
+              </span>
+            </div>
+            <button
+              type="button"
+              onClick={() => startEdit(category)}
+              className="icon-button h-8 w-8 opacity-0 group-hover:opacity-100"
+              aria-label={`Edit ${category.name}`}
+            >
+              <Pencil size={12} />
+            </button>
+            <button
+              type="button"
+              onClick={() => handleDelete(category.id, category.name)}
+              className="flex h-8 w-8 items-center justify-center rounded-[14px] opacity-0 transition-all hover:bg-red-500/20 group-hover:opacity-100"
+              aria-label={`Delete ${category.name}`}
+            >
+              <Trash2 size={12} className="text-red-400" />
+            </button>
+          </div>
+          <div className="mt-3 grid grid-cols-2 gap-2">
+            <div className="rounded-[18px] border border-white/[0.06] bg-black/10 px-3 py-2">
+              <p className="text-[10px] uppercase text-slate-600">
+                This month
+              </p>
+              <p className="mt-0.5 truncate text-xs font-bold text-white">
+                {fmt(stat.monthAmount)}
+              </p>
+            </div>
+            <div className="rounded-[18px] border border-white/[0.06] bg-black/10 px-3 py-2">
+              <p className="text-[10px] uppercase text-slate-600">
+                Total {label}
+              </p>
+              <p className="mt-0.5 truncate text-xs font-bold text-slate-300">
+                {fmt(stat.totalAmount)}
+              </p>
+            </div>
+          </div>
+        </div>
+      );
+    };
+
     return (
       <div>
-        <div className="mb-2.5 flex items-center justify-between">
-          <p className="text-xs font-medium text-slate-400">{title}</p>
+        <div className="mb-3 flex items-center justify-between">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+              {title}
+            </p>
+            <p className="mt-0.5 text-[11px] text-slate-600">
+              Add, edit, delete, and track totals.
+            </p>
+          </div>
           <button
+            type="button"
             onClick={() => {
               setAddingFor(type);
+              setEditingId(null);
               setNewName("");
               setNewColor(COLORS[0]);
               setParentId("");
             }}
-            className="finance-focus flex items-center gap-1 rounded-xl px-2 py-1 text-xs font-semibold text-white/75 transition-colors hover:bg-white/[0.08] hover:text-white"
+            className="finance-focus flex items-center gap-1.5 rounded-[16px] border border-white/[0.10] bg-white/[0.065] px-3 py-2 text-xs font-semibold text-white/80 transition-colors hover:bg-white/[0.10] hover:text-white"
           >
-            <Plus size={12} /> Add
+            <Plus size={13} /> Add
           </button>
         </div>
 
-        <div className="space-y-1.5">
-          {roots.map((cat) => (
-            <div key={cat.id} className="space-y-1.5">
-              {renderCategory(cat)}
-              {(childrenByParent[cat.id] ?? []).map((child) =>
+        <div className="space-y-2">
+          {roots.map((category) => (
+            <div key={category.id} className="space-y-2">
+              {renderCategory(category)}
+              {(childrenByParent[category.id] ?? []).map((child) =>
                 renderCategory(child, true),
               )}
             </div>
@@ -139,54 +379,34 @@ export default function CategoriesSettings({
         </div>
 
         {addingFor === type && (
-          <div className="mt-2 space-y-3 rounded-2xl border border-white/[0.08] bg-white/[0.045] p-3">
+          <div className="mt-3 space-y-3 rounded-[24px] border border-white/[0.10] bg-white/[0.06] p-3">
             <input
               value={newName}
-              onChange={(e) => setNewName(e.target.value)}
+              onChange={(event) => setNewName(event.target.value)}
               placeholder="Category name"
-              className="field-input py-2"
+              className="field-input py-2.5"
             />
             {type === "expense" && (
-              <select
+              <ParentPicker
+                roots={roots}
                 value={parentId}
-                onChange={(e) => setParentId(e.target.value)}
-                className="field-input py-2"
-                style={{ colorScheme: "dark" }}
-              >
-                <option value="">Top-level category</option>
-                {roots.map((root) => (
-                  <option key={root.id} value={root.id}>
-                    Subcategory of {root.name}
-                  </option>
-                ))}
-              </select>
+                onChange={setParentId}
+              />
             )}
-            <div className="flex flex-wrap gap-2">
-              {COLORS.map((c) => (
-                <button
-                  key={c}
-                  onClick={() => setNewColor(c)}
-                  className="h-6 w-6 rounded-full transition-transform hover:scale-110"
-                  style={{
-                    background: c,
-                    outline: newColor === c ? "2px solid white" : "none",
-                    outlineOffset: "2px",
-                  }}
-                  aria-label={`Pick ${c}`}
-                />
-              ))}
-            </div>
+            <ColorPicker value={newColor} onChange={setNewColor} />
             <div className="flex gap-2">
               <button
+                type="button"
                 onClick={handleAdd}
                 disabled={saving || !newName.trim()}
-                className="primary-action px-3 py-1.5 text-xs"
+                className="primary-action min-h-0 rounded-[14px] px-3 py-2 text-xs"
               >
-                {saving ? "Saving..." : "Save"}
+                {saving ? "Saving..." : "Save category"}
               </button>
               <button
+                type="button"
                 onClick={() => setAddingFor(null)}
-                className="rounded-xl border border-white/[0.08] bg-white/[0.055] px-3 py-1.5 text-xs text-slate-300 transition-colors hover:bg-white/[0.09]"
+                className="finance-focus rounded-[14px] border border-white/[0.10] bg-white/[0.055] px-3 py-2 text-xs font-semibold text-slate-300 transition-colors hover:bg-white/[0.09]"
               >
                 Cancel
               </button>
@@ -199,8 +419,18 @@ export default function CategoriesSettings({
 
   return (
     <div className="finance-panel p-5">
-      <h3 className="mb-5 text-sm font-semibold text-white">Categories</h3>
-      <div className="space-y-6">
+      <div className="mb-5 flex items-center justify-between gap-3">
+        <div>
+          <h3 className="text-sm font-semibold text-white">Categories</h3>
+          <p className="mt-1 text-xs text-slate-500">
+            Full control over income sources and expense groups.
+          </p>
+        </div>
+        <span className="rounded-full border border-white/[0.10] bg-white/[0.055] px-3 py-1 text-[11px] font-semibold text-slate-400">
+          {categories.length} total
+        </span>
+      </div>
+      <div className="space-y-7">
         <Section title="Income Categories" items={income} type="income" />
         <Section title="Expense Categories" items={expense} type="expense" />
       </div>
