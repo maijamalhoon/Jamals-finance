@@ -13,6 +13,7 @@ import {
   WalletCards,
   X,
 } from "lucide-react";
+import TransferModal from "@/components/accounts/TransferModal";
 import TransactionModal from "@/components/dashboard/TransactionModal";
 
 const NAV = [
@@ -32,12 +33,18 @@ export default function MobileNav() {
 
   const [fabOpen, setFabOpen] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
+  const [transferOpen, setTransferOpen] = useState(false);
   const [txType, setTxType] = useState<"income" | "expense">("income");
 
   function openTx(type: "income" | "expense") {
     setTxType(type);
     setFabOpen(false);
     setModalOpen(true);
+  }
+
+  function openTransfer() {
+    setFabOpen(false);
+    setTransferOpen(true);
   }
 
   function isActive(href: string) {
@@ -66,6 +73,13 @@ export default function MobileNav() {
             >
               <TrendingDown size={16} />
               Add Expense
+            </button>
+            <button
+              onClick={openTransfer}
+              className="primary-action min-w-44 shadow-lg shadow-cyan-950/25"
+            >
+              <ArrowLeftRight size={16} />
+              Transfer Money
             </button>
           </div>
         </>
@@ -119,6 +133,11 @@ export default function MobileNav() {
           setModalOpen(false);
           router.refresh();
         }}
+      />
+      <TransferModal
+        open={transferOpen}
+        onClose={() => setTransferOpen(false)}
+        onSuccess={() => router.refresh()}
       />
     </>
   );
