@@ -23,6 +23,8 @@
 # misc
 .DS_Store
 *.pem
+design of  UI/
+Pic Of UI.jpg
 
 # debug
 npm-debug.log*

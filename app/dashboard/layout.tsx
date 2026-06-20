@@ -2,6 +2,7 @@ import Sidebar from "@/components/layout/Sidebar";
 import Header from "@/components/layout/Header";
 import MobileHeader from "@/components/layout/MobileHeader";
 import MobileNav from "@/components/layout/MobileNav";
+import FloatingActions from "@/components/layout/FloatingActions";
 
 export const dynamic = "force-dynamic";
 
@@ -29,6 +30,7 @@ export default function DashboardLayout({
         </main>
 
         <MobileNav />
+        <FloatingActions />
       </div>
     </div>
   );
