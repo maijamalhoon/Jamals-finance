@@ -15,9 +15,9 @@ import { toast } from "sonner";
 interface Category {
   id: string;
   name: string;
+  type: "income" | "expense";
   color: string;
   parent_id?: string | null;
-  parent?: { name: string } | { name: string }[] | null;
 }
 
 interface Account {
@@ -68,6 +68,7 @@ export default function TransactionModal({
   const [itemName, setItemName] = useState("");
   const [categories, setCategories] = useState<Category[]>([]);
   const [accounts, setAccounts] = useState<Account[]>([]);
+  const [loadingOptions, setLoadingOptions] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -97,28 +98,55 @@ export default function TransactionModal({
     if (!open) return;
 
     async function load() {
-      const [{ data: cats }, { data: accs }] = await Promise.all([
+      setLoadingOptions(true);
+      setError("");
+      const [{ data: cats, error: catsError }, { data: accs, error: accsError }] = await Promise.all([
         supabase
           .from("categories")
-          .select(
-            "id, name, color, parent_id, parent:categories!categories_parent_id_fkey(name)",
-          )
+          .select("id, name, type, color, parent_id")
           .eq("type", type)
           .order("parent_id", { ascending: true, nullsFirst: true })
           .order("name"),
         supabase.from("accounts").select("id, name, type").order("name"),
       ]);
+      setLoadingOptions(false);
 
-      setCategories(cats || []);
-      setAccounts(accs || []);
-      setCategoryId(transaction?.category_id || cats?.[0]?.id || "");
-      setAccountId(transaction?.account_id || accs?.[0]?.id || "");
+      if (catsError || accsError) {
+        setCategories([]);
+        setAccounts([]);
+        setCategoryId("");
+        setAccountId("");
+        setError(catsError?.message || accsError?.message || "Could not load options.");
+        return;
+      }
+
+      const nextCategories = (cats || []) as Category[];
+      const nextAccounts = (accs || []) as Account[];
+      setCategories(nextCategories);
+      setAccounts(nextAccounts);
+      setCategoryId((current) => {
+        const preferred = transaction?.category_id || current;
+        return nextCategories.some((category) => category.id === preferred)
+          ? preferred
+          : nextCategories[0]?.id || "";
+      });
+      setAccountId((current) => {
+        const preferred = transaction?.account_id || current;
+        return nextAccounts.some((account) => account.id === preferred)
+          ? preferred
+          : nextAccounts[0]?.id || "";
+      });
     }
 
     load();
   }, [open, supabase, transaction?.account_id, transaction?.category_id, type]);
 
   async function handleSave() {
+    if (loadingOptions) {
+      setError("Please wait while categories and accounts load.");
+      return;
+    }
+
     if (!amount || !categoryId || !accountId) {
       setError("Please fill in all required fields.");
       return;
@@ -178,25 +206,24 @@ export default function TransactionModal({
   }
 
   const isIncome = type === "income";
-  const btnLabel = loading
-    ? "Saving..."
-    : isEditing
-      ? `Update ${isIncome ? "Income" : "Expense"}`
-      : `Save ${isIncome ? "Income" : "Expense"}`;
-
+  const btnLabel =
+    loading ? "Saving..."
+    : isEditing ? `Update ${isIncome ? "Income" : "Expense"}`
+    : `Save ${isIncome ? "Income" : "Expense"}`;
+  const categoryById = new Map(categories.map((category) => [category.id, category]));
   const parentName = (category: Category) =>
-    Array.isArray(category.parent) ? category.parent[0]?.name : category.parent?.name;
+    category.parent_id ? categoryById.get(category.parent_id)?.name : undefined;
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="finance-glass-panel max-w-lg gap-0 p-0 text-white">
-        <DialogHeader className="border-b border-white/[0.08] p-5">
+      <DialogContent className="finance-glass-panel max-h-[calc(100dvh-1.5rem)] max-w-lg gap-0 overflow-hidden p-0 text-white sm:max-h-[min(760px,calc(100dvh-2rem))]">
+        <DialogHeader className="border-b border-white/[0.08] px-5 py-4">
           <DialogTitle className="text-base font-semibold">
-            {isEditing ? "Edit Transaction" : "Add Transaction"}
+            {isEditing ? "Edit Transaction" : `Add ${isIncome ? "Income" : "Expense"}`}
           </DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-4 p-5">
+        <div className="max-h-[calc(100dvh-6.5rem)] space-y-4 overflow-y-auto px-5 py-4 sm:max-h-[660px]">
           <div className="flex gap-2 rounded-2xl border border-white/[0.08] bg-white/[0.045] p-1">
             {(["income", "expense"] as const).map((nextType) => (
               <button
@@ -237,8 +264,11 @@ export default function TransactionModal({
               className="field-input"
               style={{ colorScheme: "dark" }}
             >
-              {categories.length === 0 && (
-                <option value="">No categories found</option>
+              {loadingOptions && <option value="">Loading categories...</option>}
+              {!loadingOptions && categories.length === 0 && (
+                <option value="">
+                  No {isIncome ? "income" : "expense"} categories found
+                </option>
               )}
               {categories.map((category) => (
                 <option key={category.id} value={category.id}>
@@ -286,7 +316,10 @@ export default function TransactionModal({
               className="field-input"
               style={{ colorScheme: "dark" }}
             >
-              {accounts.length === 0 && <option value="">No accounts found</option>}
+              {loadingOptions && <option value="">Loading accounts...</option>}
+              {!loadingOptions && accounts.length === 0 && (
+                <option value="">No accounts found</option>
+              )}
               {accounts.map((account) => (
                 <option key={account.id} value={account.id}>
                   {account.name} ({account.type})
@@ -347,10 +380,10 @@ export default function TransactionModal({
           <button
             type="button"
             onClick={handleSave}
-            disabled={loading}
+            disabled={loading || loadingOptions}
             className={`w-full py-3 ${isIncome ? "success-action" : "danger-action"}`}
           >
-            {btnLabel}
+            {loadingOptions ? "Loading options..." : btnLabel}
           </button>
         </div>
       </DialogContent>

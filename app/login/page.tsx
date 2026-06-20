@@ -7,6 +7,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import {
   ArrowLeft,
   BarChart3,
+  Check,
   Eye,
   EyeOff,
   LoaderCircle,
@@ -188,186 +189,214 @@ export default function LoginPage() {
   const subtitle =
     step === "otp" ? "Enter the code sent to your inbox."
     : step === "forgot" ? "We will send a secure reset link."
-    : isSignUp ? "Start your personal finance workspace."
+    : isSignUp ? "Set up your Jamal's Finance account."
     : "Sign in to Jamal's Finance.";
 
   return (
-    <main className="chat-auth-shell grid min-h-screen place-items-center px-4 py-8">
-      <div className="w-full max-w-[430px]">
-        <div className="mb-8 flex flex-col items-center text-center">
-          <div className="mb-5 grid h-14 w-14 place-items-center rounded-[22px] bg-slate-950 text-white shadow-[0_18px_50px_rgba(15,23,42,0.18)]">
-            <BarChart3 size={24} />
+    <main className="chat-auth-shell min-h-screen px-4 py-5">
+      <div className="mx-auto flex min-h-[calc(100dvh-2.5rem)] w-full max-w-[440px] flex-col">
+        <div className="flex items-center justify-center gap-2 py-2 text-sm font-semibold text-slate-900">
+          <div className="grid h-8 w-8 place-items-center rounded-xl bg-[#111318] text-cyan-100 shadow-[0_12px_28px_rgba(17,19,24,0.18)]">
+            <BarChart3 size={16} />
           </div>
-          <h1 className="text-[28px] font-semibold tracking-normal text-slate-950">
-            {title}
-          </h1>
-          <p className="mt-2 text-sm leading-6 text-slate-500">{subtitle}</p>
+          Jamal's Finance
         </div>
 
-        <div className="chat-auth-card">
-          {step !== "auth" && (
-            <button
-              type="button"
-              onClick={() => {
-                setStep("auth");
-                setOtp("");
-                resetFeedback();
-              }}
-              className="mb-5 inline-flex items-center gap-2 text-sm font-medium text-slate-600 transition-colors hover:text-slate-950"
-            >
-              <ArrowLeft size={16} />
-              Back
-            </button>
-          )}
-
-          <form onSubmit={handleSubmit} className="space-y-3">
-            {step === "auth" && isSignUp && (
-              <>
-                <input
-                  type="text"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="Full name"
-                  className="chat-auth-input"
-                />
-                <input
-                  type="tel"
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  placeholder="Phone number (optional)"
-                  className="chat-auth-input"
-                />
-              </>
-            )}
-
-            {step !== "otp" && (
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="Email address"
-                className="chat-auth-input"
-              />
-            )}
-
-            {step === "auth" && (
-              <div className="relative">
-                <input
-                  type={showPass ? "text" : "password"}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Password"
-                  className="chat-auth-input pr-12"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPass((value) => !value)}
-                  className="absolute right-3 top-1/2 grid h-8 w-8 -translate-y-1/2 place-items-center rounded-xl text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700"
-                  aria-label={showPass ? "Hide password" : "Show password"}
-                >
-                  {showPass ? <EyeOff size={17} /> : <Eye size={17} />}
-                </button>
-              </div>
-            )}
-
-            {step === "otp" && (
-              <div>
-                <div className="mb-3 rounded-2xl border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-800">
-                  <div className="flex items-center gap-2 font-semibold">
-                    <MailCheck size={16} />
-                    Check your inbox
-                  </div>
-                  <p className="mt-1 text-xs leading-5">{message}</p>
-                </div>
-                <input
-                  type="text"
-                  value={otp}
-                  onChange={(e) =>
-                    setOtp(e.target.value.replace(/\D/g, "").slice(0, 6))
-                  }
-                  placeholder="000000"
-                  maxLength={6}
-                  className="chat-auth-input text-center text-2xl font-semibold tracking-[0.35em]"
-                />
-              </div>
-            )}
-
-            {message && step !== "otp" && (
-              <p className="rounded-2xl border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-800">
-                {message}
-              </p>
-            )}
-
-            {error && (
-              <p className="rounded-2xl border border-rose-200 bg-rose-50 p-3 text-sm text-rose-700">
-                {error}
-              </p>
-            )}
-
-            <button type="submit" disabled={loading} className="chat-auth-button">
-              {loading ?
-                <LoaderCircle className="h-4 w-4 animate-spin" />
-              : null}
-              {step === "forgot" ? "Send reset link"
-              : step === "otp" ? "Verify email"
-              : isSignUp ? "Create account"
-              : "Continue"}
-            </button>
-          </form>
+        <div className="flex flex-1 flex-col justify-center py-8">
+          <div className="mb-7 text-center">
+            <div className="mx-auto mb-5 grid h-14 w-14 place-items-center rounded-[18px] border border-slate-200 bg-white text-slate-950 shadow-[0_18px_46px_rgba(15,23,42,0.10)]">
+              {step === "otp" ? <MailCheck size={25} /> : <BarChart3 size={25} />}
+            </div>
+            <h1 className="text-[29px] font-semibold leading-tight tracking-normal text-slate-950">
+              {title}
+            </h1>
+            <p className="mx-auto mt-2 max-w-[320px] text-sm leading-6 text-slate-500">
+              {subtitle}
+            </p>
+          </div>
 
           {step === "auth" && (
-            <>
-              <div className="my-5 flex items-center gap-3">
-                <div className="h-px flex-1 bg-slate-200" />
-                <span className="text-xs text-slate-400">OR</span>
-                <div className="h-px flex-1 bg-slate-200" />
-              </div>
-
+            <div className="chat-auth-tabs mb-4">
               <button
                 type="button"
-                onClick={handleGoogleSignIn}
-                disabled={loading}
-                className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-900 transition-colors hover:bg-slate-50 disabled:opacity-60"
+                onClick={() => {
+                  setIsSignUp(false);
+                  resetFeedback();
+                }}
+                className={!isSignUp ? "is-active" : ""}
               >
-                <ShieldCheck size={17} />
-                Continue with Google
+                Sign in
               </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setIsSignUp(true);
+                  resetFeedback();
+                }}
+                className={isSignUp ? "is-active" : ""}
+              >
+                Sign up
+              </button>
+            </div>
+          )}
 
-              {!isSignUp && (
+          <div className="chat-auth-card">
+            {step !== "auth" && (
+              <button
+                type="button"
+                onClick={() => {
+                  setStep("auth");
+                  setOtp("");
+                  resetFeedback();
+                }}
+                className="mb-5 inline-flex items-center gap-2 text-sm font-medium text-slate-600 transition-colors hover:text-slate-950"
+              >
+                <ArrowLeft size={16} />
+                Back
+              </button>
+            )}
+
+            <form onSubmit={handleSubmit} className="space-y-3">
+              {step === "auth" && isSignUp && (
+                <>
+                  <input
+                    type="text"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    placeholder="Full name"
+                    className="chat-auth-input"
+                  />
+                  <input
+                    type="tel"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    placeholder="Phone number (optional)"
+                    className="chat-auth-input"
+                  />
+                </>
+              )}
+
+              {step !== "otp" && (
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="Email address"
+                  className="chat-auth-input"
+                />
+              )}
+
+              {step === "auth" && (
+                <div className="relative">
+                  <input
+                    type={showPass ? "text" : "password"}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="Password"
+                    className="chat-auth-input pr-12"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPass((value) => !value)}
+                    className="absolute right-2 top-1/2 grid h-9 w-9 -translate-y-1/2 place-items-center rounded-xl text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700"
+                    aria-label={showPass ? "Hide password" : "Show password"}
+                  >
+                    {showPass ? <EyeOff size={17} /> : <Eye size={17} />}
+                  </button>
+                </div>
+              )}
+
+              {step === "otp" && (
+                <div>
+                  <div className="mb-3 rounded-2xl border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-800">
+                    <div className="flex items-center gap-2 font-semibold">
+                      <MailCheck size={16} />
+                      Check your inbox
+                    </div>
+                    <p className="mt-1 text-xs leading-5">{message}</p>
+                  </div>
+                  <input
+                    type="text"
+                    value={otp}
+                    onChange={(e) =>
+                      setOtp(e.target.value.replace(/\D/g, "").slice(0, 6))
+                    }
+                    placeholder="000000"
+                    maxLength={6}
+                    className="chat-auth-input text-center text-2xl font-semibold tracking-[0.35em]"
+                  />
+                </div>
+              )}
+
+              {message && step !== "otp" && (
+                <p className="rounded-2xl border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-800">
+                  {message}
+                </p>
+              )}
+
+              {error && (
+                <p className="rounded-2xl border border-rose-200 bg-rose-50 p-3 text-sm text-rose-700">
+                  {error}
+                </p>
+              )}
+
+              <button type="submit" disabled={loading} className="chat-auth-button">
+                {loading ?
+                  <LoaderCircle className="h-4 w-4 animate-spin" />
+                : null}
+                {step === "forgot" ? "Send reset link"
+                : step === "otp" ? "Verify email"
+                : "Continue"}
+              </button>
+            </form>
+
+            {step === "auth" && (
+              <>
+                <div className="my-5 flex items-center gap-3">
+                  <div className="h-px flex-1 bg-slate-200" />
+                  <span className="text-xs text-slate-400">OR</span>
+                  <div className="h-px flex-1 bg-slate-200" />
+                </div>
+
                 <button
                   type="button"
-                  onClick={() => {
-                    setStep("forgot");
-                    resetFeedback();
-                  }}
-                  className="mt-5 w-full text-center text-sm font-medium text-slate-600 transition-colors hover:text-slate-950"
+                  onClick={handleGoogleSignIn}
+                  disabled={loading}
+                  className="chat-auth-secondary"
                 >
-                  Forgot password?
+                  <ShieldCheck size={17} />
+                  Continue with Google
                 </button>
+
+                {!isSignUp && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setStep("forgot");
+                      resetFeedback();
+                    }}
+                    className="mt-5 w-full text-center text-sm font-medium text-slate-600 transition-colors hover:text-slate-950"
+                  >
+                    Forgot password?
+                  </button>
+                )}
+              </>
+            )}
+          </div>
+
+          {step === "auth" && isSignUp && (
+            <div className="mx-auto mt-5 grid max-w-[340px] gap-2 text-xs text-slate-500">
+              {["Secure Supabase login", "Private finance workspace"].map(
+                (item) => (
+                  <div key={item} className="flex items-center justify-center gap-2">
+                    <Check size={13} className="text-emerald-500" />
+                    {item}
+                  </div>
+                ),
               )}
-            </>
+            </div>
           )}
         </div>
-
-        {step === "auth" && (
-          <p className="mt-6 text-center text-sm text-slate-600">
-            {isSignUp ? "Already have an account?" : "Do not have an account?"}{" "}
-            <button
-              onClick={() => {
-                setIsSignUp((value) => !value);
-                resetFeedback();
-              }}
-              className="font-semibold text-slate-950 hover:underline"
-            >
-              {isSignUp ? "Sign in" : "Sign up"}
-            </button>
-          </p>
-        )}
-
-        <p className="mt-8 text-center text-xs leading-5 text-slate-400">
-          Protected by Supabase Auth. Built for a private, professional finance
-          workspace.
-        </p>
       </div>
 
       <AnimatePresence>
