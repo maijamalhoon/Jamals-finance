@@ -9,6 +9,8 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
+import { chartMotion } from "@/components/motion/animation-config";
+import ChartFrame from "@/components/ui/chart-frame";
 
 interface ChartData {
   date: string;
@@ -52,58 +54,53 @@ export default function IncomeExpenseChart({ data }: { data: ChartData[] }) {
           </div>
         </div>
       </div>
-      <div className="h-[220px] sm:h-[240px]">
-      <ResponsiveContainer width="100%" height="100%">
-        <AreaChart
-          data={data}
-          margin={{ top: 5, right: 5, left: -20, bottom: 0 }}
-        >
-          <defs>
-            <linearGradient id="incomeGrad" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="#10b981" stopOpacity={0.18} />
-              <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
-            </linearGradient>
-            <linearGradient id="expenseGrad" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="#ef4444" stopOpacity={0.14} />
-              <stop offset="95%" stopColor="#ef4444" stopOpacity={0} />
-            </linearGradient>
-          </defs>
-          <CartesianGrid
-            strokeDasharray="3 3"
-            stroke="rgba(148, 163, 184, 0.12)"
-            vertical={false}
-          />
-          <XAxis
-            dataKey="date"
-            tick={{ fill: "#64748b", fontSize: 10 }}
-            axisLine={false}
-            tickLine={false}
-            interval="preserveStartEnd"
-          />
-          <YAxis
-            tick={{ fill: "#64748b", fontSize: 10 }}
-            axisLine={false}
-            tickLine={false}
-            tickFormatter={(v) => `${v / 1000}k`}
-          />
-          <Tooltip content={<CustomTooltip />} />
-          <Area
-            type="monotone"
-            dataKey="income"
-            stroke="#10b981"
-            strokeWidth={2}
-            fill="url(#incomeGrad)"
-          />
-          <Area
-            type="monotone"
-            dataKey="expenses"
-            stroke="#ef4444"
-            strokeWidth={2}
-            fill="url(#expenseGrad)"
-          />
-        </AreaChart>
-      </ResponsiveContainer>
-      </div>
+      <ChartFrame className="h-[220px] min-h-[220px] min-w-0 overflow-hidden sm:h-[240px]">
+        <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1}>
+          <AreaChart
+            data={data}
+            margin={{ top: 5, right: 5, left: -20, bottom: 0 }}
+          >
+            <CartesianGrid
+              strokeDasharray="3 3"
+              stroke="var(--border)"
+              vertical={false}
+            />
+            <XAxis
+              dataKey="date"
+              tick={{ fill: "var(--text-secondary)", fontSize: 10 }}
+              axisLine={false}
+              tickLine={false}
+              interval="preserveStartEnd"
+            />
+            <YAxis
+              tick={{ fill: "var(--text-secondary)", fontSize: 10 }}
+              axisLine={false}
+              tickLine={false}
+              tickFormatter={(v) => `${v / 1000}k`}
+            />
+            <Tooltip content={<CustomTooltip />} />
+            <Area
+              type="monotone"
+              dataKey="income"
+              stroke="var(--active)"
+              strokeWidth={2}
+              fill="var(--surface-secondary)"
+              isAnimationActive
+              {...chartMotion}
+            />
+            <Area
+              type="monotone"
+              dataKey="expenses"
+              stroke="var(--text-secondary)"
+              strokeWidth={2}
+              fill="var(--muted)"
+              isAnimationActive
+              {...chartMotion}
+              animationBegin={140}
+            />
+          </AreaChart>
+        </ResponsiveContainer>
+      </ChartFrame>
     </div>
   );
 }

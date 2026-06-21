@@ -216,15 +216,15 @@ export default function TransactionModal({
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="finance-glass-panel max-h-[calc(100dvh-1.5rem)] max-w-lg gap-0 overflow-hidden p-0 text-white sm:max-h-[min(760px,calc(100dvh-2rem))]">
-        <DialogHeader className="border-b border-white/[0.08] px-5 py-4">
+      <DialogContent className="finance-panel max-h-[calc(100dvh-1.5rem)] max-w-lg gap-0 overflow-hidden p-0 text-text-primary sm:max-h-[min(760px,calc(100dvh-2rem))]">
+        <DialogHeader className="border-b border-border px-5 py-4">
           <DialogTitle className="text-base font-semibold">
             {isEditing ? "Edit Transaction" : `Add ${isIncome ? "Income" : "Expense"}`}
           </DialogTitle>
         </DialogHeader>
 
         <div className="max-h-[calc(100dvh-6.5rem)] space-y-4 overflow-y-auto px-5 py-4 sm:max-h-[660px]">
-          <div className="flex gap-2 rounded-2xl border border-white/[0.08] bg-white/[0.045] p-1">
+          <div className="flex gap-2 rounded-2xl border border-border bg-surface-secondary p-1">
             {(["income", "expense"] as const).map((nextType) => (
               <button
                 key={nextType}
@@ -235,7 +235,7 @@ export default function TransactionModal({
                     ? nextType === "income"
                       ? "bg-emerald-300 text-slate-950"
                       : "bg-rose-300 text-slate-950"
-                    : "text-slate-500 hover:text-white"
+                    : "text-slate-500 hover:text-text-primary"
                 }`}
               >
                 {nextType === "income" ? "Income" : "Expense"}
@@ -262,7 +262,6 @@ export default function TransactionModal({
               value={categoryId}
               onChange={(event) => setCategoryId(event.target.value)}
               className="field-input"
-              style={{ colorScheme: "dark" }}
             >
               {loadingOptions && <option value="">Loading categories...</option>}
               {!loadingOptions && categories.length === 0 && (
@@ -297,8 +296,8 @@ export default function TransactionModal({
                     onClick={() => setSourceName(source)}
                     className={`finance-focus flex-shrink-0 rounded-full border px-3 py-1.5 text-[11px] font-medium transition-colors ${
                       sourceName === source
-                        ? "border-white bg-white text-[#111318]"
-                        : "border-white/[0.10] bg-white/[0.055] text-slate-400 hover:bg-white/[0.09] hover:text-white"
+                        ? "border-border bg-card text-text-primary"
+                        : "border-border bg-surface-secondary text-slate-400 hover:bg-hover hover:text-text-primary"
                     }`}
                   >
                     {source}
@@ -314,7 +313,6 @@ export default function TransactionModal({
               value={accountId}
               onChange={(event) => setAccountId(event.target.value)}
               className="field-input"
-              style={{ colorScheme: "dark" }}
             >
               {loadingOptions && <option value="">Loading accounts...</option>}
               {!loadingOptions && accounts.length === 0 && (

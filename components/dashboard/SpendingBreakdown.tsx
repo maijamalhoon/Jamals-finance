@@ -1,7 +1,3 @@
-"use client";
-
-import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from "recharts";
-
 interface SpendingData {
   name: string;
   value: number;
@@ -16,6 +12,8 @@ export default function SpendingBreakdown({
   data: SpendingData[];
   total: number;
 }) {
+  const sortedData = [...data].sort((a, b) => b.percentage - a.percentage);
+
   if (data.length === 0) {
     return (
       <div className="finance-panel flex h-full min-h-[260px] flex-col p-5">
@@ -31,71 +29,48 @@ export default function SpendingBreakdown({
   }
 
   return (
-    <div className="finance-panel h-full p-4 sm:p-5">
+    <div className="finance-panel flex h-full min-h-[360px] flex-col p-4 sm:p-5">
       <div className="mb-4">
         <h3 className="text-slate-950 font-semibold text-sm">
           Spending Breakdown
         </h3>
-        <p className="text-slate-500 text-xs mt-1">Top categories this month</p>
+        <p className="text-slate-500 text-xs mt-1">
+          PKR {total.toLocaleString(undefined, { maximumFractionDigits: 0 })} this month
+        </p>
       </div>
-      <div className="flex flex-col items-center gap-4 sm:flex-row">
-        <div
-          className="relative flex-shrink-0"
-          style={{ width: 140, height: 140 }}
-        >
-          <ResponsiveContainer width="100%" height="100%">
-            <PieChart>
-              <Pie
-                data={data}
-                cx="50%"
-                cy="50%"
-                innerRadius={44}
-                outerRadius={64}
-                paddingAngle={2}
-                dataKey="value"
-              >
-                {data.map((_, i) => (
-                  <Cell key={i} fill={data[i].color} />
-                ))}
-              </Pie>
-              <Tooltip
-                contentStyle={{
-                  background: "#ffffff",
-                  border: "1px solid #e5e7eb",
-                  borderRadius: 8,
-                  fontSize: 11,
-                  color: "#101828",
-                }}
-                formatter={(v: any) => [`PKR ${Number(v).toLocaleString()}`]}
-              />
-            </PieChart>
-          </ResponsiveContainer>
-          <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-            <p className="text-slate-500 text-[10px]">Total</p>
-            <p className="text-slate-950 text-xs font-semibold">
-              PKR{" "}
-              {total.toLocaleString(undefined, { maximumFractionDigits: 0 })}
-            </p>
-          </div>
-        </div>
-        <div className="w-full flex-1 space-y-3">
-          {data.map((item, i) => (
-            <div key={i} className="flex items-center justify-between gap-3">
-              <div className="flex min-w-0 items-center gap-2">
-                <div
-                  className="w-2 h-2 rounded-full flex-shrink-0"
+
+      <div className="flex flex-1 flex-col gap-2.5">
+        {sortedData.map((item, i) => (
+          <div
+            key={`${item.name}-${i}`}
+            className="group rounded-[18px] border border-border bg-surface-secondary p-3 transition-all duration-200 hover:-translate-y-0.5 hover:bg-hover"
+          >
+            <div className="mb-2 flex items-center justify-between gap-3">
+              <div className="flex min-w-0 items-center gap-2.5">
+                <span
+                  className="h-2.5 w-2.5 flex-shrink-0 rounded-full border-0 shadow-none"
                   style={{ background: item.color }}
                 />
-                <span className="truncate text-xs text-slate-700">
+                <p className="truncate text-sm font-medium text-slate-950">
                   {item.name}
-                </span>
+                </p>
               </div>
-              <span className="text-slate-500 text-xs">
+              <span className="rounded-full bg-card px-2.5 py-1 text-xs font-semibold text-slate-950">
                 {item.percentage.toFixed(0)}%
               </span>
             </div>
-          ))}
-        </div>
+
+            <div className="h-1.5 overflow-hidden rounded-full bg-card">
+              <div
+                className="motion-progress-fill h-full rounded-full transition-all duration-500"
+                style={{
+                  width: `${Math.max(2, Math.min(item.percentage, 100))}%`,
+                  background: item.color,
+                }}
+              />
+            </div>
+          </div>
+        ))}
       </div>
     </div>
   );

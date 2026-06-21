@@ -39,7 +39,7 @@ export default function CurrencyConverter() {
   return (
     <div className="finance-panel p-5">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-slate-950 font-semibold text-sm">Currency Converter</h3>
+        <h3 className="text-text-primary font-semibold text-sm">Currency Converter</h3>
         <button
           onClick={fetchRate}
           disabled={loading}
@@ -48,22 +48,22 @@ export default function CurrencyConverter() {
         >
           <RefreshCw
             size={12}
-            className={`text-slate-600 ${loading ? "animate-spin" : ""}`}
+            className={`text-text-secondary ${loading ? "animate-spin" : ""}`}
           />
         </button>
       </div>
 
       <div className="flex items-center gap-2">
         <div className="flex-1 finance-panel-soft p-3">
-          <p className="text-slate-500 text-[10px] mb-1">From</p>
-          <p className="text-slate-400 text-xs mb-1.5">
+          <p className="text-text-secondary text-[10px] mb-1">From</p>
+          <p className="text-text-secondary text-xs mb-1.5">
             {fromUSD ? "USD" : "PKR"}
           </p>
           <input
             type="number"
             value={amount}
             onChange={(e) => setAmount(e.target.value)}
-            className="bg-transparent text-slate-950 text-sm font-semibold outline-none w-full"
+            className="w-full bg-input text-sm font-semibold text-text-primary outline-none"
             min="0"
           />
         </div>
@@ -73,23 +73,23 @@ export default function CurrencyConverter() {
           className="finance-control w-8 h-8 flex items-center justify-center flex-shrink-0"
           aria-label="Swap currencies"
         >
-          <ArrowLeftRight size={13} className="text-slate-600" />
+          <ArrowLeftRight size={13} className="text-text-secondary" />
         </button>
 
         <div className="flex-1 finance-panel-soft p-3">
-          <p className="text-slate-500 text-[10px] mb-1">To</p>
-          <p className="text-slate-400 text-xs mb-1.5">
+          <p className="text-text-secondary text-[10px] mb-1">To</p>
+          <p className="text-text-secondary text-xs mb-1.5">
             {fromUSD ? "PKR" : "USD"}
           </p>
-          <p className="text-slate-950 text-sm font-semibold">{converted}</p>
+          <p className="text-text-primary text-sm font-semibold">{converted}</p>
         </div>
       </div>
 
       <div className="flex items-center gap-2 mt-3">
         {loading ?
-          <p className="text-slate-500 text-xs">Fetching rate...</p>
+          <p className="text-text-secondary text-xs">Fetching rate...</p>
         : <>
-            <p className="text-slate-500 text-xs">
+            <p className="text-text-secondary text-xs">
               1 USD = {rate?.toFixed(2)} PKR
             </p>
             <span className="flex items-center gap-1">

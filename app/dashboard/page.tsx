@@ -3,11 +3,10 @@ import StatCard from "@/components/dashboard/StatCard";
 import IncomeExpenseChart from "@/components/dashboard/IncomeExpenseChart";
 import SpendingBreakdown from "@/components/dashboard/SpendingBreakdown";
 import RecentTransactions from "@/components/dashboard/RecentTransactions";
-import AIInsightPanel from "@/components/dashboard/AIInsightPanel";
 import GoalsProgress from "@/components/dashboard/GoalsProgress";
-import CurrencyConverter from "@/components/dashboard/CurrencyConverter";
-import DashboardSignals from "@/components/dashboard/DashboardSignals";
 import TodaysOverview from "@/components/dashboard/TodaysOverview";
+import InvestmentOverviewWidget from "@/components/dashboard/InvestmentOverviewWidget";
+import SpendRecordWidget from "@/components/dashboard/SpendRecordWidget";
 import {
   DashboardMotion,
   DashboardMotionItem,
@@ -16,12 +15,10 @@ import {
   Wallet,
   TrendingUp,
   TrendingDown,
-  BarChart2,
   PieChart,
   CalendarDays,
   Gauge,
   Landmark,
-  HandCoins,
   Target,
 } from "lucide-react";
 
@@ -70,7 +67,10 @@ export default async function DashboardPage() {
       .gte("date", lastFirst)
       .lte("date", lastLast),
     supabase.from("accounts").select("balance"),
-    supabase.from("investments").select("current_price, quantity"),
+    supabase
+      .from("investments")
+      .select("id, name, type, quantity, purchase_price, current_price, purchased_at")
+      .order("created_at", { ascending: false }),
     supabase.from("goals").select("*").order("created_at").limit(3),
     supabase.from("liabilities").select("remaining_amount, status, due_date"),
   ]);
@@ -93,6 +93,12 @@ export default async function DashboardPage() {
     (s, i) => s + Number(i.current_price) * Number(i.quantity),
     0,
   );
+  const totalInvested = (investments ?? []).reduce(
+    (s, i) => s + Number(i.quantity) * Number(i.purchase_price),
+    0,
+  );
+  const totalPnL = investmentsValue - totalInvested;
+  const totalPnLPct = totalInvested > 0 ? (totalPnL / totalInvested) * 100 : 0;
   const payableRemaining = (liabilities ?? []).reduce(
     (s, liability) => s + Number(liability.remaining_amount),
     0,
@@ -103,6 +109,9 @@ export default async function DashboardPage() {
       liability.due_date &&
       liability.due_date < todayStr,
   ).length;
+  void netProfit;
+  void payableRemaining;
+  void overduePayables;
   const lastIncome = (lastTxns ?? [])
     .filter((t) => t.type === "income")
     .reduce((s, t) => s + Number(t.amount), 0);
@@ -158,21 +167,12 @@ export default async function DashboardPage() {
 
   const fmt = (n: number) =>
     `PKR ${n.toLocaleString("en-PK", { maximumFractionDigits: 0 })}`;
-  const usd = (n: number) => `$${(n / 281.2).toFixed(2)} USD`;
   const dayOfMonth = now.getDate();
   const savingsRate = income > 0 ? ((income - expenses) / income) * 100 : 0;
   const dailySpend = expenses / Math.max(dayOfMonth, 1);
   const monthProgress = (dayOfMonth / daysInMonth) * 100;
   const projectedExpenses = dailySpend * daysInMonth;
   const remainingDays = Math.max(daysInMonth - dayOfMonth, 0);
-  const averageIncomePerEntry =
-    txns.filter((t) => t.type === "income").length > 0 ?
-      income / txns.filter((t) => t.type === "income").length
-    : 0;
-  const averageExpensePerEntry =
-    txns.filter((t) => t.type === "expense").length > 0 ?
-      expenses / txns.filter((t) => t.type === "expense").length
-    : 0;
   const liquidityRatio =
     totalBalance + investmentsValue > 0 ?
       (totalBalance / (totalBalance + investmentsValue)) * 100
@@ -194,80 +194,34 @@ export default async function DashboardPage() {
     {
       title: "Total Balance",
       amount: fmt(totalBalance),
-      usd: usd(totalBalance),
       change: 4.35,
       icon: Wallet,
-      iconColor: "text-blue-600",
-      iconBg: "bg-blue-50",
-      detail: `${Math.round(liquidityRatio)}% held as liquid balance`,
+      accentColor: "#3b82f6",
       progress: liquidityRatio,
-      href: "/dashboard/accounts",
     },
     {
-      title: "Total Income",
+      title: "Monthly Income",
       amount: fmt(income),
-      usd: usd(income),
       change: pct(income, lastIncome),
       icon: TrendingUp,
-      iconColor: "text-emerald-600",
-      iconBg: "bg-emerald-50",
-      detail: `${fmt(averageIncomePerEntry)} average income entry`,
+      accentColor: "#22c55e",
       progress: Math.min(100, Math.max(0, savingsRate)),
-      href: "/dashboard/income",
     },
     {
       title: "Total Expenses",
       amount: fmt(expenses),
-      usd: usd(expenses),
       change: pct(expenses, lastExpenses),
       icon: TrendingDown,
-      iconColor: "text-red-600",
-      iconBg: "bg-red-50",
-      detail: `${fmt(averageExpensePerEntry)} average expense entry`,
+      accentColor: "#ef4444",
       progress: monthProgress,
-      href: "/dashboard/expenses",
     },
     {
-      title: "Net Profit",
-      amount: fmt(netProfit),
-      usd: usd(netProfit),
-      change: pct(netProfit, lastIncome - lastExpenses),
-      icon: BarChart2,
-      iconColor: "text-sky-600",
-      iconBg: "bg-sky-50",
-      detail:
-        netProfit >= 0 ?
-          `${Math.round(savingsRate)}% savings efficiency`
-        : "Recovery mode: reduce burn rate",
-      progress: Math.min(100, Math.max(0, savingsRate)),
-      href: "/dashboard/reports",
-    },
-    {
-      title: "Investments Value",
+      title: "Investments",
       amount: fmt(investmentsValue),
-      usd: usd(investmentsValue),
       change: 7.65,
       icon: PieChart,
-      iconColor: "text-amber-600",
-      iconBg: "bg-amber-50",
-      detail: `${Math.round(100 - liquidityRatio)}% of tracked wealth invested`,
+      accentColor: "#f59e0b",
       progress: Math.max(0, 100 - liquidityRatio),
-      href: "/dashboard/investments",
-    },
-    {
-      title: "Payables Due",
-      amount: fmt(payableRemaining),
-      usd: usd(payableRemaining),
-      change: 0,
-      icon: HandCoins,
-      iconColor: "text-orange-600",
-      iconBg: "bg-orange-50",
-      detail:
-        overduePayables > 0 ?
-          `${overduePayables} overdue payable${overduePayables === 1 ? "" : "s"}`
-        : "No overdue payables",
-      progress: payableRemaining > 0 ? 65 : 0,
-      href: "/dashboard/payables",
     },
   ];
 
@@ -307,32 +261,7 @@ export default async function DashboardPage() {
 
   return (
     <DashboardMotion className="space-y-5 pb-8">
-      <DashboardMotionItem>
-      <div className="page-heading min-h-[126px] overflow-hidden">
-        <div>
-          <p className="text-xs font-medium uppercase tracking-[0.18em] text-blue-500">
-            Finance command center
-          </p>
-          <h2 className="mt-2 text-2xl font-semibold tracking-normal text-slate-950 sm:text-3xl">
-            This month's overview
-          </h2>
-          <p className="mt-1 text-sm text-slate-400">
-            Balance, cash flow, spending, and progress in one place.
-          </p>
-        </div>
-        <div className="flex items-center gap-2 text-xs text-slate-400">
-          <span className="h-2 w-2 rounded-full bg-emerald-400" />
-          Updated{" "}
-          {now.toLocaleDateString("en-US", {
-            month: "short",
-            day: "numeric",
-            year: "numeric",
-          })}
-        </div>
-      </div>
-      </DashboardMotionItem>
-
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-6">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
         {stats.map((s) => (
           <DashboardMotionItem key={s.title}>
             <StatCard {...s} />
@@ -356,15 +285,39 @@ export default async function DashboardPage() {
         />
       </DashboardMotionItem>
 
-      <DashboardMotionItem>
-        <DashboardSignals
-          savingsRate={savingsRate}
-          dailySpend={fmt(dailySpend)}
-          dailyExpenseTrend={dailyExpenseTrend}
-          activeDayNumbers={activeDayNumbers}
-          daysInMonth={daysInMonth}
-        />
-      </DashboardMotionItem>
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-[2fr_1fr_1fr] lg:items-stretch">
+        <DashboardMotionItem className="[&>div]:h-full">
+          <IncomeExpenseChart data={chartData} />
+        </DashboardMotionItem>
+        <DashboardMotionItem className="[&>div]:h-full">
+          {(investments ?? []).length > 0 ? (
+            <InvestmentOverviewWidget
+              investments={(investments ?? []) as any}
+              totalPnLPct={totalPnLPct}
+            />
+          ) : (
+            <div className="finance-panel flex h-full min-h-[260px] items-center justify-center p-5 text-center">
+              <div>
+                <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-blue-500">
+                  Investments
+                </p>
+                <h3 className="mt-1 text-base font-semibold text-text-primary">
+                  Portfolio Overview
+                </h3>
+                <p className="mt-3 text-xs leading-5 text-text-secondary">
+                  Add investments to see your portfolio donut.
+                </p>
+              </div>
+            </div>
+          )}
+        </DashboardMotionItem>
+        <DashboardMotionItem className="[&>div]:h-full">
+          <SpendRecordWidget
+            dailySpend={fmt(dailySpend)}
+            dailyExpenseTrend={dailyExpenseTrend}
+          />
+        </DashboardMotionItem>
+      </div>
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
         {intelligenceTiles.map(({ label, value, detail, icon: Icon, tone }) => (
@@ -387,23 +340,15 @@ export default async function DashboardPage() {
         ))}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <DashboardMotionItem className="lg:col-span-2">
-          <IncomeExpenseChart data={chartData} />
-        </DashboardMotionItem>
-        <DashboardMotionItem>
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-3 lg:items-stretch">
+        <DashboardMotionItem className="[&>div]:h-full">
           <SpendingBreakdown data={spendingData} total={expenses} />
         </DashboardMotionItem>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
-        <DashboardMotionItem className="lg:col-span-3">
+        <DashboardMotionItem className="[&>div]:h-full">
           <RecentTransactions transactions={txns.slice(0, 5) as any} />
         </DashboardMotionItem>
-        <DashboardMotionItem className="space-y-4">
-          <AIInsightPanel />
+        <DashboardMotionItem className="[&>div]:h-full">
           <GoalsProgress goals={(goals ?? []) as any} />
-          <CurrencyConverter />
         </DashboardMotionItem>
       </div>
     </DashboardMotion>

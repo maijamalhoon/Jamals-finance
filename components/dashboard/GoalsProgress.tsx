@@ -80,7 +80,7 @@ export default function GoalsProgress({ goals }: { goals: Goal[] }) {
                 </div>
                 <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden">
                   <div
-                    className={`h-full rounded-full ${done ? "bg-emerald-500" : "bg-amber-500"}`}
+                    className={`motion-progress-fill h-full rounded-full ${done ? "bg-emerald-500" : "bg-amber-500"}`}
                     style={{ width: `${pct}%` }}
                   />
                 </div>

@@ -71,7 +71,6 @@ export default function TodaysOverview({
 
   return (
     <section className="finance-panel relative overflow-hidden p-5 sm:p-6">
-      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-blue-200 to-transparent" />
       <div className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
         <div>
           <div className="flex items-start justify-between gap-4">

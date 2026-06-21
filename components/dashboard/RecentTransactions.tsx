@@ -41,17 +41,17 @@ export default function RecentTransactions({
           title="No transactions yet"
           description="Add your first income or expense to see recent activity here."
         />
-      : <div className="divide-y divide-slate-100">
+      : <div className="divide-y divide-border">
           {transactions.map((tx) => {
             const catColor = tx.categories?.color || "#818cf8";
             const catInitial = tx.categories?.name?.charAt(0) || "T";
             return (
               <div
                 key={tx.id}
-                className="grid grid-cols-[auto,1fr] gap-3 py-3 transition-colors hover:bg-slate-50/70 sm:flex sm:items-center"
+                className="motion-table-row -mx-2 grid grid-cols-[auto,1fr] gap-3 rounded-[14px] px-2 py-3 transition-all hover:bg-hover sm:flex sm:items-center"
               >
                 <div
-                  className="w-9 h-9 rounded-lg flex items-center justify-center text-xs font-bold flex-shrink-0 ring-1 ring-slate-200"
+                  className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg border-0 text-xs font-bold shadow-none"
                   style={{ background: `${catColor}22`, color: catColor }}
                 >
                   {catInitial}

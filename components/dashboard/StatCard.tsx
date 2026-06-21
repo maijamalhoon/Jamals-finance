@@ -1,86 +1,64 @@
-import Link from "next/link";
 import { ArrowUpRight, ArrowDownRight, LucideIcon } from "lucide-react";
+import CountedAmount from "@/components/motion/CountedAmount";
 
 interface StatCardProps {
   title: string;
   amount: string;
-  usd: string;
   change: number;
   icon: LucideIcon;
-  iconColor: string;
-  iconBg: string;
-  detail?: string;
-  progress?: number;
-  href?: string;
+  accentColor: string;
+  progress: number;
 }
 
 export default function StatCard({
   title,
   amount,
-  usd,
   change,
   icon: Icon,
-  iconColor,
-  iconBg,
-  detail,
+  accentColor,
   progress,
-  href,
 }: StatCardProps) {
   const positive = change >= 0;
-  const normalizedProgress =
-    typeof progress === "number" ? Math.min(100, Math.max(0, progress)) : null;
-
-  const content = (
-    <div className="finance-panel card-hover widget-link flex min-h-[176px] flex-col justify-between gap-4 p-5">
-      <div className="flex items-center justify-between gap-3">
-        <span className="text-slate-500 text-xs font-medium">{title}</span>
-        <div
-          className={`flex h-10 w-10 items-center justify-center rounded-[18px] ${iconBg} ring-1 ring-slate-200/80`}
-        >
-          <Icon size={16} className={iconColor} />
-        </div>
-      </div>
-      <div>
-        <p className="break-words text-xl font-bold leading-tight tracking-normal text-slate-950">
-          {amount}
-        </p>
-        <div className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1">
-          <span className="text-slate-500 text-[11px]">approx. {usd}</span>
-          <span
-            className={`flex items-center gap-0.5 rounded-full px-2 py-0.5 text-[11px] font-semibold ${positive ? "bg-emerald-50 text-emerald-700" : "bg-red-50 text-red-700"}`}
-          >
-            {positive ?
-              <ArrowUpRight size={11} />
-            : <ArrowDownRight size={11} />}
-            {Math.abs(change)}%
-          </span>
-        </div>
-        {detail && (
-          <p className="mt-3 min-h-8 text-[11px] leading-4 text-slate-500">
-            {detail}
-          </p>
-        )}
-        {normalizedProgress !== null && (
-          <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-slate-100">
-            <div
-              className="h-full rounded-full bg-slate-900"
-              style={{ width: `${normalizedProgress}%` }}
-            />
-          </div>
-        )}
-        <div className="mt-3 flex items-center gap-1 text-[11px] font-semibold text-blue-600">
-          Open detail
-          <ArrowUpRight size={12} />
-        </div>
-      </div>
-    </div>
-  );
-
-  if (!href) return content;
+  const lineWidth = Math.min(100, Math.max(6, progress));
 
   return (
-    <Link href={href} className="block h-full">
-      {content}
-    </Link>
+    <div className="finance-panel card-hover relative flex min-h-[126px] flex-col justify-between overflow-hidden px-5 pb-5 pt-4">
+      <div className="flex items-start justify-between gap-3">
+        <div
+          className="flex h-9 w-9 items-center justify-center rounded-[16px] border-0 shadow-none [&>svg]:stroke-current"
+          style={{
+            backgroundColor: `${accentColor}14`,
+            color: accentColor,
+          }}
+        >
+          <Icon size={16} />
+        </div>
+        <span
+          className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-semibold ${
+            positive ? "bg-emerald-50 text-emerald-700" : "bg-red-50 text-red-700"
+          }`}
+        >
+          {positive ? <ArrowUpRight size={11} /> : <ArrowDownRight size={11} />}
+          {positive ? "+" : "-"}
+          {Math.abs(change)}%
+        </span>
+      </div>
+
+      <div className="pt-3">
+        <p className="text-xs font-medium text-slate-500">{title}</p>
+        <p className="mt-1.5 break-words text-xl font-bold leading-tight tracking-normal text-slate-950">
+          <CountedAmount amount={amount} />
+        </p>
+      </div>
+
+      <div
+        className="absolute inset-x-5 bottom-0 h-[3px] rounded-t-full"
+        style={{ backgroundColor: `${accentColor}24` }}
+      />
+      <div
+        className="motion-progress-fill absolute bottom-0 left-5 h-[3px] rounded-t-full transition-all duration-500"
+        style={{ width: `calc((100% - 2.5rem) * ${lineWidth / 100})`, backgroundColor: accentColor }}
+      />
+    </div>
   );
 }
