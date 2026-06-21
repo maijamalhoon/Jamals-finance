@@ -30,15 +30,16 @@ export default function MobileNav() {
   }
 
   return (
-    <div className="relative z-30 flex h-[70px] flex-shrink-0 items-center justify-around border-t border-slate-200/90 bg-white/92 px-2 shadow-[0_-14px_42px_rgba(15,23,42,0.08)] backdrop-blur-2xl lg:hidden">
+    <div className="relative z-30 flex h-[74px] flex-shrink-0 items-center justify-around border-t border-border bg-surface px-2 shadow-theme lg:hidden">
       {NAV.map(({ label, href, icon: Icon }) => (
         <Link
           key={href}
           href={href}
-          className={`finance-focus flex min-w-14 flex-col items-center gap-1 rounded-2xl px-2 py-1.5 transition-colors ${
+          aria-current={isActive(href) ? "page" : undefined}
+          className={`finance-focus relative flex min-w-14 flex-col items-center gap-1 rounded-[14px] px-2 py-1.5 transition-all hover:-translate-y-px active:translate-y-0 active:scale-[0.99] ${
             isActive(href)
-              ? "bg-blue-50 text-blue-700"
-              : "text-slate-500 hover:text-slate-900"
+              ? "bg-hover text-active"
+              : "text-text-secondary hover:bg-hover hover:text-text-primary"
           }`}
         >
           <Icon size={20} />

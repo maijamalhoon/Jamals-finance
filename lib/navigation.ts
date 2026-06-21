@@ -1,14 +1,12 @@
 import {
   ArrowLeftRight,
   BarChart2,
-  Brain,
   FileText,
   HandCoins,
   LayoutDashboard,
   LucideIcon,
   PiggyBank,
   ReceiptText,
-  Settings,
   Target,
   TrendingDown,
   TrendingUp,
@@ -27,7 +25,7 @@ export const NAV_ITEMS: NavItem[] = [
     label: "Dashboard",
     href: "/dashboard",
     icon: LayoutDashboard,
-    tone: "text-white bg-white/12",
+    tone: "text-text-primary bg-surface-secondary",
   },
   {
     label: "Transactions",
@@ -54,7 +52,7 @@ export const NAV_ITEMS: NavItem[] = [
     tone: "text-amber-300 bg-amber-500/15",
   },
   {
-    label: "Investments",
+    label: "Investment Overview",
     href: "/dashboard/investments",
     icon: BarChart2,
     tone: "text-amber-300 bg-amber-500/15",
@@ -76,18 +74,6 @@ export const NAV_ITEMS: NavItem[] = [
     href: "/dashboard/reports",
     icon: FileText,
     tone: "text-orange-300 bg-orange-500/15",
-  },
-  {
-    label: "AI Insights",
-    href: "/dashboard/ai-insights",
-    icon: Brain,
-    tone: "text-fuchsia-300 bg-fuchsia-500/15",
-  },
-  {
-    label: "Settings",
-    href: "/dashboard/settings",
-    icon: Settings,
-    tone: "text-slate-300 bg-slate-500/15",
   },
 ];
 

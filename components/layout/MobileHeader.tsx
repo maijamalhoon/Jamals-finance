@@ -1,176 +1,113 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import {
-  BarChart3,
-  Bell,
-  CircleDollarSign,
-  Menu,
-  Plus,
-  TrendingDown,
-  TrendingUp,
-  X,
-} from "lucide-react";
+import { BarChart3, Bell, Menu, X } from "lucide-react";
 import { NAV_ITEMS, QUICK_ACTION_ITEMS } from "@/lib/navigation";
-import TransactionModal from "@/components/dashboard/TransactionModal";
+import JamalMenu from "@/components/layout/JamalMenu";
+import {
+  drawerVariants,
+  listContainerVariants,
+  listItemVariants,
+  overlayVariants,
+} from "@/components/motion/animation-config";
+import { useBodyScrollLock } from "@/components/motion/useBodyScrollLock";
 
 export default function MobileHeader() {
   const pathname = usePathname();
-  const router = useRouter();
   const [open, setOpen] = useState(false);
-  const [actionOpen, setActionOpen] = useState(false);
-  const [modalOpen, setModalOpen] = useState(false);
-  const [txType, setTxType] = useState<"income" | "expense">("income");
-  const actionRef = useRef<HTMLDivElement>(null);
+  const [scrolled, setScrolled] = useState(false);
+
+  useBodyScrollLock(open);
 
   useEffect(() => {
     setOpen(false);
-    setActionOpen(false);
   }, [pathname]);
 
   useEffect(() => {
-    document.body.style.overflow = open ? "hidden" : "";
-    return () => {
-      document.body.style.overflow = "";
-    };
-  }, [open]);
+    const scroller = document.querySelector<HTMLElement>(
+      "[data-dashboard-scroll]",
+    );
+    if (!scroller) return;
 
-  useEffect(() => {
-    function handleClick(event: MouseEvent) {
-      if (
-        actionRef.current &&
-        !actionRef.current.contains(event.target as Node)
-      ) {
-        setActionOpen(false);
-      }
-    }
+    const update = () => setScrolled(scroller.scrollTop > 8);
+    update();
+    scroller.addEventListener("scroll", update, { passive: true });
 
-    document.addEventListener("mousedown", handleClick);
-    return () => document.removeEventListener("mousedown", handleClick);
+    return () => scroller.removeEventListener("scroll", update);
   }, []);
-
-  function openTransaction(type: "income" | "expense") {
-    setTxType(type);
-    setActionOpen(false);
-    setModalOpen(true);
-  }
 
   return (
     <>
-      <header className="flex h-[62px] flex-shrink-0 items-center justify-between border-b border-slate-200/90 bg-white/92 px-3 shadow-[0_12px_36px_rgba(15,23,42,0.07)] backdrop-blur-2xl lg:hidden">
+      <header
+        className={`flex h-[64px] flex-shrink-0 items-center justify-between border-b border-border bg-surface px-3 transition-shadow duration-200 lg:hidden ${
+          scrolled ? "shadow-[var(--shadow-soft)]" : "shadow-theme"
+        }`}
+      >
         <div className="flex min-w-0 items-center gap-2">
           <button
             onClick={() => setOpen(true)}
-            className="finance-focus grid h-10 w-10 place-items-center rounded-2xl border border-slate-200 bg-slate-50 text-slate-600"
+            className="finance-focus grid h-10 w-10 place-items-center rounded-[14px] border border-border bg-input text-text-secondary hover:bg-hover"
             aria-label="Open navigation"
           >
             <Menu size={17} />
           </button>
-          <div className="grid h-10 w-10 flex-shrink-0 place-items-center rounded-[18px] bg-blue-600 text-white shadow-lg shadow-blue-100">
+          <div className="grid h-10 w-10 flex-shrink-0 place-items-center rounded-[14px] bg-active text-background shadow-theme">
             <BarChart3 size={16} />
           </div>
-          <span className="truncate text-sm font-semibold text-slate-950">
-            Jamal's Finance
+          <span className="truncate text-sm font-semibold text-text-primary">
+            Finance
           </span>
         </div>
 
         <div className="flex items-center gap-2">
-          <div className="relative" ref={actionRef}>
-            <button
-              onClick={() => setActionOpen((current) => !current)}
-              className="finance-focus grid h-9 w-9 place-items-center rounded-[16px] border border-slate-200 bg-slate-950 text-white shadow-[0_10px_28px_rgba(15,23,42,0.18)]"
-              aria-label="Open quick actions"
-            >
-              <Plus size={17} />
-            </button>
-
-            <AnimatePresence>
-              {actionOpen && (
-                <motion.div
-                  initial={{ opacity: 0, y: -6, scale: 0.98 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, y: -6, scale: 0.98 }}
-                  transition={{ duration: 0.18, ease: [0.16, 1, 0.3, 1] }}
-                  className="finance-glass-panel absolute right-0 top-11 z-50 w-64 overflow-hidden p-2"
-                >
-                  <div className="flex items-center gap-2 px-3 py-2">
-                    <span className="grid h-8 w-8 place-items-center rounded-[15px] bg-blue-50 text-blue-600">
-                      <CircleDollarSign size={15} />
-                    </span>
-                    <div>
-                      <p className="text-sm font-semibold text-slate-950">
-                        Quick entry
-                      </p>
-                      <p className="text-[11px] text-slate-500">
-                        Add a transaction
-                      </p>
-                    </div>
-                  </div>
-                  <div className="mt-1 grid gap-2">
-                    <button
-                      onClick={() => openTransaction("income")}
-                      className="finance-focus flex items-center gap-3 rounded-2xl border border-emerald-200 bg-emerald-50 px-3 py-3 text-left text-sm font-semibold text-emerald-700"
-                    >
-                      <span className="grid h-9 w-9 place-items-center rounded-2xl bg-emerald-300 text-slate-950">
-                        <TrendingUp size={17} />
-                      </span>
-                      Add Income
-                    </button>
-                    <button
-                      onClick={() => openTransaction("expense")}
-                      className="finance-focus flex items-center gap-3 rounded-2xl border border-rose-200 bg-rose-50 px-3 py-3 text-left text-sm font-semibold text-rose-700"
-                    >
-                      <span className="grid h-9 w-9 place-items-center rounded-2xl bg-rose-300 text-slate-950">
-                        <TrendingDown size={17} />
-                      </span>
-                      Add Expense
-                    </button>
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
           <button
             className="finance-focus finance-control relative flex h-9 w-9 items-center justify-center"
             aria-label="Open notifications"
           >
-            <Bell size={14} className="text-slate-600" />
-            <span className="absolute right-1.5 top-1.5 h-1.5 w-1.5 rounded-full bg-emerald-500" />
+            <Bell size={14} className="text-text-secondary" />
+            <span className="absolute right-1.5 top-1.5 h-1.5 w-1.5 rounded-full bg-active" />
           </button>
-          <div className="flex h-9 w-9 items-center justify-center rounded-[16px] bg-slate-950 text-xs font-bold text-white shadow-lg shadow-slate-200">
-            J
-          </div>
         </div>
       </header>
 
-      {open && (
-        <div className="fixed inset-0 z-50 lg:hidden">
-          <button
-            className="absolute inset-0 h-full w-full bg-black/60 backdrop-blur-sm"
-            onClick={() => setOpen(false)}
-            aria-label="Close navigation"
-          />
-          <aside className="absolute left-0 top-0 flex h-full w-[min(88vw,380px)] flex-col border-r border-slate-200 bg-white shadow-2xl">
-            <div className="flex h-14 items-center justify-between border-b border-slate-200 px-4">
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            className="fixed inset-0 z-50 lg:hidden"
+            variants={overlayVariants}
+            initial="initial"
+            animate="animate"
+            exit="exit"
+          >
+            <button
+              className="absolute inset-0 h-full w-full bg-background/80"
+              onClick={() => setOpen(false)}
+              aria-label="Close navigation"
+            />
+            <motion.aside
+              className="motion-drawer-surface absolute left-0 top-0 flex h-full w-[min(88vw,380px)] flex-col border-r border-border bg-sidebar shadow-theme"
+              variants={drawerVariants}
+              initial="initial"
+              animate="animate"
+              exit="exit"
+            >
+            <div className="flex h-14 items-center justify-between border-b border-border px-4">
               <div className="flex min-w-0 items-center gap-2.5">
-                <div className="grid h-10 w-10 flex-shrink-0 place-items-center rounded-[18px] bg-blue-600 text-white shadow-lg shadow-blue-100">
+                <div className="grid h-10 w-10 flex-shrink-0 place-items-center rounded-[14px] bg-active text-background shadow-theme">
                   <BarChart3 size={17} />
                 </div>
                 <div className="min-w-0">
-                  <p className="truncate text-sm font-semibold text-slate-950">
-                    Jamal's Finance
-                  </p>
-                  <p className="truncate text-[11px] text-slate-500">
-                    Fluent One UI workspace
+                  <p className="truncate text-sm font-semibold text-text-primary">
+                    Finance
                   </p>
                 </div>
               </div>
               <button
                 onClick={() => setOpen(false)}
-                className="finance-focus grid h-9 w-9 place-items-center rounded-lg border border-slate-200 bg-slate-50 text-slate-600"
+                className="finance-focus grid h-9 w-9 place-items-center rounded-[12px] border border-border bg-input text-text-secondary hover:bg-hover"
                 aria-label="Close navigation"
               >
                 <X size={17} />
@@ -178,46 +115,62 @@ export default function MobileHeader() {
             </div>
 
             <div className="min-h-0 flex-1 overflow-y-auto px-4 py-4">
-              <p className="mb-2 px-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">
+              <p className="mb-2 px-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-text-secondary">
                 Navigation
               </p>
-              <nav className="space-y-1.5">
+              <motion.nav
+                className="space-y-1.5"
+                variants={listContainerVariants}
+                initial="initial"
+                animate="animate"
+              >
                 {NAV_ITEMS.map(({ label, href, icon: Icon }) => {
                   const active =
                     pathname === href ||
                     (href !== "/dashboard" && pathname.startsWith(href));
                   return (
+                    <motion.div key={href} variants={listItemVariants}>
                     <Link
                       key={href}
                       href={href}
-                      className={`finance-focus flex items-center gap-3 rounded-[22px] border px-3 py-3 text-sm transition-colors ${
+                      aria-current={active ? "page" : undefined}
+                      className={`finance-focus flex items-center gap-3 rounded-[16px] border px-3 py-3 text-sm transition-all hover:-translate-y-px hover:shadow-[var(--shadow-soft)] active:translate-y-0 active:scale-[0.99] ${
                         active
-                          ? "border-blue-100 bg-blue-50 text-blue-700"
-                          : "border-transparent text-slate-500 hover:border-slate-200 hover:bg-slate-50 hover:text-slate-950"
+                          ? "border-border bg-hover text-active"
+                          : "border-transparent text-text-secondary hover:border-border hover:bg-hover hover:text-text-primary"
                       }`}
                     >
                       <span
-                      className={`grid h-8 w-8 place-items-center rounded-2xl ${
-                          active ? "bg-white text-blue-600 shadow-sm" : "bg-slate-100 text-slate-500"
+                        className={`grid h-8 w-8 place-items-center rounded-2xl ${
+                          active
+                            ? "bg-card text-active"
+                            : "bg-surface-secondary text-text-secondary"
                         }`}
                       >
                         <Icon size={16} />
                       </span>
                       <span>{label}</span>
                     </Link>
+                    </motion.div>
                   );
                 })}
-              </nav>
+              </motion.nav>
 
-              <p className="mb-2 mt-5 px-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">
+              <p className="mb-2 mt-5 px-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-text-secondary">
                 Quick Categories
               </p>
-              <div className="grid grid-cols-2 gap-2">
+              <motion.div
+                className="grid grid-cols-2 gap-2"
+                variants={listContainerVariants}
+                initial="initial"
+                animate="animate"
+              >
                 {QUICK_ACTION_ITEMS.map(({ label, href, icon: Icon, tone }) => (
+                  <motion.div key={label} variants={listItemVariants}>
                   <Link
                     key={label}
                     href={href}
-                    className="finance-focus flex items-center gap-2 rounded-[22px] border border-slate-200 bg-slate-50 px-3 py-3 text-sm text-slate-700"
+                    className="finance-focus flex items-center gap-2 rounded-[16px] border border-border bg-surface-secondary px-3 py-3 text-sm text-text-primary transition-all hover:-translate-y-px hover:bg-hover"
                   >
                     <span
                       className={`grid h-8 w-8 flex-shrink-0 place-items-center rounded-2xl ${tone}`}
@@ -226,21 +179,18 @@ export default function MobileHeader() {
                     </span>
                     <span className="truncate">{label}</span>
                   </Link>
+                  </motion.div>
                 ))}
-              </div>
+              </motion.div>
             </div>
-          </aside>
-        </div>
-      )}
-      <TransactionModal
-        open={modalOpen}
-        defaultType={txType}
-        onClose={() => setModalOpen(false)}
-        onSuccess={() => {
-          setModalOpen(false);
-          router.refresh();
-        }}
-      />
+
+            <div className="relative border-t border-border p-4">
+              <JamalMenu align="left" placement="top" />
+            </div>
+            </motion.aside>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </>
   );
 }
