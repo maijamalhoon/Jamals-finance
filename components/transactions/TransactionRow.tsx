@@ -48,9 +48,9 @@ export default function TransactionRow({ tx }: { tx: Transaction }) {
 
   return (
     <>
-      <div className="group grid grid-cols-[auto,1fr] gap-3 border-b border-white/[0.06] py-3.5 last:border-0 md:flex md:items-center">
+      <div className="group grid grid-cols-[auto,1fr] gap-3 border-b border-slate-100 py-3.5 last:border-0 md:flex md:items-center">
         <div
-          className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg text-xs font-bold ring-1 ring-white/[0.06]"
+          className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg text-xs font-bold ring-1 ring-slate-200"
           style={{ background: `${catColor}22`, color: catColor }}
         >
           {catInitial}
@@ -59,7 +59,7 @@ export default function TransactionRow({ tx }: { tx: Transaction }) {
         <div className="min-w-0 md:flex-1">
           <div className="flex items-start justify-between gap-3 md:block">
             <div className="min-w-0">
-              <p className="truncate text-sm font-medium text-white">
+              <p className="truncate text-sm font-medium text-slate-950">
                 {tx.note || tx.categories?.name || "Transaction"}
               </p>
               <p className="mt-0.5 truncate text-xs text-slate-500">
@@ -73,7 +73,7 @@ export default function TransactionRow({ tx }: { tx: Transaction }) {
             </div>
             <p
               className={`shrink-0 text-right text-sm font-semibold md:hidden ${
-                isIncome ? "text-green-300" : "text-red-300"
+                isIncome ? "text-emerald-600" : "text-red-600"
               }`}
             >
               {isIncome ? "+" : "-"} PKR {Number(tx.amount).toLocaleString()}
@@ -84,14 +84,14 @@ export default function TransactionRow({ tx }: { tx: Transaction }) {
             <span
               className={`inline-flex items-center gap-1 rounded-md px-2 py-1 text-[11px] font-medium ${
                 isIncome
-                  ? "bg-green-500/10 text-green-300"
-                  : "bg-red-500/10 text-red-300"
+                  ? "bg-emerald-50 text-emerald-700"
+                  : "bg-red-50 text-red-700"
               }`}
             >
               <TypeIcon size={12} />
               {isIncome ? "Income" : "Expense"}
             </span>
-            <span className="rounded-md bg-white/[0.045] px-2 py-1 text-[11px] text-slate-400">
+            <span className="rounded-md bg-slate-100 px-2 py-1 text-[11px] text-slate-600">
               {isIncome && tx.source_name ? tx.source_name : categoryLabel}
             </span>
             <span className="text-[11px] text-slate-500">
@@ -104,15 +104,15 @@ export default function TransactionRow({ tx }: { tx: Transaction }) {
           </div>
         </div>
 
-        <p className="hidden w-32 truncate text-xs text-slate-400 md:block">
+        <p className="hidden w-32 truncate text-xs text-slate-600 md:block">
           {isIncome && tx.source_name ? tx.source_name : categoryLabel}
         </p>
 
         <span
           className={`hidden w-20 flex-shrink-0 items-center justify-center gap-1 rounded-md px-2.5 py-1 text-xs font-medium md:inline-flex ${
             isIncome
-              ? "bg-green-500/10 text-green-300"
-              : "bg-red-500/10 text-red-300"
+              ? "bg-emerald-50 text-emerald-700"
+              : "bg-red-50 text-red-700"
           }`}
         >
           <TypeIcon size={12} />
@@ -121,7 +121,7 @@ export default function TransactionRow({ tx }: { tx: Transaction }) {
 
         <p
           className={`hidden w-32 flex-shrink-0 text-right text-sm font-semibold md:block ${
-            isIncome ? "text-green-300" : "text-red-300"
+            isIncome ? "text-emerald-600" : "text-red-600"
           }`}
         >
           {isIncome ? "+" : "-"} PKR {Number(tx.amount).toLocaleString()}
@@ -146,7 +146,7 @@ export default function TransactionRow({ tx }: { tx: Transaction }) {
           <button
             onClick={handleDelete}
             disabled={deleting}
-            className="icon-button hover:border-red-400/20 hover:bg-red-500/10 hover:text-red-300"
+            className="icon-button hover:border-red-200 hover:bg-red-50 hover:text-red-600"
             aria-label="Delete transaction"
           >
             <Trash2 size={12} />

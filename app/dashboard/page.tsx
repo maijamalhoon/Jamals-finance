@@ -9,6 +9,10 @@ import CurrencyConverter from "@/components/dashboard/CurrencyConverter";
 import DashboardSignals from "@/components/dashboard/DashboardSignals";
 import TodaysOverview from "@/components/dashboard/TodaysOverview";
 import {
+  DashboardMotion,
+  DashboardMotionItem,
+} from "@/components/dashboard/DashboardMotion";
+import {
   Wallet,
   TrendingUp,
   TrendingDown,
@@ -193,8 +197,8 @@ export default async function DashboardPage() {
       usd: usd(totalBalance),
       change: 4.35,
       icon: Wallet,
-      iconColor: "text-indigo-300",
-      iconBg: "bg-indigo-500/15",
+      iconColor: "text-blue-600",
+      iconBg: "bg-blue-50",
       detail: `${Math.round(liquidityRatio)}% held as liquid balance`,
       progress: liquidityRatio,
       href: "/dashboard/accounts",
@@ -205,8 +209,8 @@ export default async function DashboardPage() {
       usd: usd(income),
       change: pct(income, lastIncome),
       icon: TrendingUp,
-      iconColor: "text-green-300",
-      iconBg: "bg-green-500/15",
+      iconColor: "text-emerald-600",
+      iconBg: "bg-emerald-50",
       detail: `${fmt(averageIncomePerEntry)} average income entry`,
       progress: Math.min(100, Math.max(0, savingsRate)),
       href: "/dashboard/income",
@@ -217,8 +221,8 @@ export default async function DashboardPage() {
       usd: usd(expenses),
       change: pct(expenses, lastExpenses),
       icon: TrendingDown,
-      iconColor: "text-red-300",
-      iconBg: "bg-red-500/15",
+      iconColor: "text-red-600",
+      iconBg: "bg-red-50",
       detail: `${fmt(averageExpensePerEntry)} average expense entry`,
       progress: monthProgress,
       href: "/dashboard/expenses",
@@ -229,8 +233,8 @@ export default async function DashboardPage() {
       usd: usd(netProfit),
       change: pct(netProfit, lastIncome - lastExpenses),
       icon: BarChart2,
-      iconColor: "text-sky-200",
-      iconBg: "bg-sky-400/15",
+      iconColor: "text-sky-600",
+      iconBg: "bg-sky-50",
       detail:
         netProfit >= 0 ?
           `${Math.round(savingsRate)}% savings efficiency`
@@ -244,8 +248,8 @@ export default async function DashboardPage() {
       usd: usd(investmentsValue),
       change: 7.65,
       icon: PieChart,
-      iconColor: "text-amber-300",
-      iconBg: "bg-amber-500/15",
+      iconColor: "text-amber-600",
+      iconBg: "bg-amber-50",
       detail: `${Math.round(100 - liquidityRatio)}% of tracked wealth invested`,
       progress: Math.max(0, 100 - liquidityRatio),
       href: "/dashboard/investments",
@@ -256,8 +260,8 @@ export default async function DashboardPage() {
       usd: usd(payableRemaining),
       change: 0,
       icon: HandCoins,
-      iconColor: "text-amber-300",
-      iconBg: "bg-amber-500/15",
+      iconColor: "text-orange-600",
+      iconBg: "bg-orange-50",
       detail:
         overduePayables > 0 ?
           `${overduePayables} overdue payable${overduePayables === 1 ? "" : "s"}`
@@ -273,14 +277,14 @@ export default async function DashboardPage() {
       value: `${dayOfMonth}/${daysInMonth} days`,
       detail: `${remainingDays} days left in this cycle`,
       icon: CalendarDays,
-      tone: "text-sky-200 bg-sky-300/10",
+      tone: "text-sky-600 bg-sky-50",
     },
     {
       label: "Spend Forecast",
       value: fmt(projectedExpenses),
       detail: monthlyBurnStatus,
       icon: Gauge,
-      tone: "text-amber-200 bg-amber-300/10",
+      tone: "text-amber-600 bg-amber-50",
     },
     {
       label: "Savings Efficiency",
@@ -290,25 +294,26 @@ export default async function DashboardPage() {
         : savingsRate >= 0 ? "Healthy, but can improve"
         : "Expense pressure detected",
       icon: Target,
-      tone: "text-emerald-200 bg-emerald-300/10",
+      tone: "text-emerald-600 bg-emerald-50",
     },
     {
       label: "Capital Mix",
       value: `${Math.round(liquidityRatio)}% liquid`,
       detail: `${fmt(totalBalance + investmentsValue)} tracked capital`,
       icon: Landmark,
-      tone: "text-violet-200 bg-violet-300/10",
+      tone: "text-violet-600 bg-violet-50",
     },
   ];
 
   return (
-    <div className="space-y-5 pb-8">
-      <div className="page-heading">
+    <DashboardMotion className="space-y-5 pb-8">
+      <DashboardMotionItem>
+      <div className="page-heading min-h-[126px] overflow-hidden">
         <div>
-          <p className="text-xs font-medium uppercase tracking-[0.18em] text-white/55">
+          <p className="text-xs font-medium uppercase tracking-[0.18em] text-blue-500">
             Finance command center
           </p>
-          <h2 className="mt-2 text-2xl font-semibold tracking-normal text-white sm:text-3xl">
+          <h2 className="mt-2 text-2xl font-semibold tracking-normal text-slate-950 sm:text-3xl">
             This month's overview
           </h2>
           <p className="mt-1 text-sm text-slate-400">
@@ -316,7 +321,7 @@ export default async function DashboardPage() {
           </p>
         </div>
         <div className="flex items-center gap-2 text-xs text-slate-400">
-          <span className="h-2 w-2 rounded-full bg-green-300" />
+          <span className="h-2 w-2 rounded-full bg-emerald-400" />
           Updated{" "}
           {now.toLocaleDateString("en-US", {
             month: "short",
@@ -325,43 +330,52 @@ export default async function DashboardPage() {
           })}
         </div>
       </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3">
-        {stats.map((s, i) => (
-          <StatCard key={i} {...s} />
+      </DashboardMotionItem>
+
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-6">
+        {stats.map((s) => (
+          <DashboardMotionItem key={s.title}>
+            <StatCard {...s} />
+          </DashboardMotionItem>
         ))}
       </div>
 
-      <TodaysOverview
-        income={fmt(todayTotals.income)}
-        expenses={fmt(todayTotals.expenses)}
-        net={fmt(todayTotals.income - todayTotals.expenses)}
-        netPositive={todayTotals.income - todayTotals.expenses >= 0}
-        transactionCount={todayTransactions.length}
-        avgDailySpend={fmt(dailySpend)}
-        topCategory={topCategory}
-        savingsRate={savingsRate}
-        activeDays={activeDayNumbers.length}
-        projectedExpenses={fmt(projectedExpenses)}
-        remainingDays={remainingDays}
-      />
+      <DashboardMotionItem>
+        <TodaysOverview
+          income={fmt(todayTotals.income)}
+          expenses={fmt(todayTotals.expenses)}
+          net={fmt(todayTotals.income - todayTotals.expenses)}
+          netPositive={todayTotals.income - todayTotals.expenses >= 0}
+          transactionCount={todayTransactions.length}
+          avgDailySpend={fmt(dailySpend)}
+          topCategory={topCategory}
+          savingsRate={savingsRate}
+          activeDays={activeDayNumbers.length}
+          projectedExpenses={fmt(projectedExpenses)}
+          remainingDays={remainingDays}
+        />
+      </DashboardMotionItem>
 
-      <DashboardSignals
-        savingsRate={savingsRate}
-        dailySpend={fmt(dailySpend)}
-        dailyExpenseTrend={dailyExpenseTrend}
-        activeDayNumbers={activeDayNumbers}
-        daysInMonth={daysInMonth}
-      />
+      <DashboardMotionItem>
+        <DashboardSignals
+          savingsRate={savingsRate}
+          dailySpend={fmt(dailySpend)}
+          dailyExpenseTrend={dailyExpenseTrend}
+          activeDayNumbers={activeDayNumbers}
+          daysInMonth={daysInMonth}
+        />
+      </DashboardMotionItem>
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
         {intelligenceTiles.map(({ label, value, detail, icon: Icon, tone }) => (
-          <div key={label} className="finance-panel-soft widget-link p-4">
+          <DashboardMotionItem key={label}>
+          <div className="finance-panel-soft widget-link h-full p-4">
             <div className="flex items-start justify-between gap-3">
               <div>
                 <p className="text-[11px] font-medium text-slate-500">
                   {label}
                 </p>
-                <p className="mt-2 text-lg font-bold text-white">{value}</p>
+                <p className="mt-2 text-lg font-bold text-slate-950">{value}</p>
               </div>
               <div className={`grid h-10 w-10 place-items-center rounded-3xl ${tone}`}>
                 <Icon size={17} />
@@ -369,26 +383,29 @@ export default async function DashboardPage() {
             </div>
             <p className="mt-3 text-xs leading-5 text-slate-500">{detail}</p>
           </div>
+          </DashboardMotionItem>
         ))}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <div className="lg:col-span-2">
+        <DashboardMotionItem className="lg:col-span-2">
           <IncomeExpenseChart data={chartData} />
-        </div>
-        <SpendingBreakdown data={spendingData} total={expenses} />
+        </DashboardMotionItem>
+        <DashboardMotionItem>
+          <SpendingBreakdown data={spendingData} total={expenses} />
+        </DashboardMotionItem>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
-        <div className="lg:col-span-3">
+        <DashboardMotionItem className="lg:col-span-3">
           <RecentTransactions transactions={txns.slice(0, 5) as any} />
-        </div>
-        <div className="space-y-4">
+        </DashboardMotionItem>
+        <DashboardMotionItem className="space-y-4">
           <AIInsightPanel />
           <GoalsProgress goals={(goals ?? []) as any} />
           <CurrencyConverter />
-        </div>
+        </DashboardMotionItem>
       </div>
-    </div>
+    </DashboardMotion>
   );
 }

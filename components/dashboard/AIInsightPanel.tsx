@@ -25,15 +25,15 @@ interface AIData {
 const ICON_MAP = {
   positive: {
     icon: TrendingUp,
-    color: "text-green-400",
-    border: "border-green-400",
+    color: "text-emerald-600",
+    border: "border-emerald-500",
   },
   warning: {
     icon: AlertTriangle,
-    color: "text-yellow-400",
-    border: "border-yellow-400",
+    color: "text-amber-600",
+    border: "border-amber-500",
   },
-  tip: { icon: Lightbulb, color: "text-blue-400", border: "border-blue-400" },
+  tip: { icon: Lightbulb, color: "text-blue-600", border: "border-blue-500" },
 };
 
 export default function AIInsightPanel() {
@@ -55,19 +55,19 @@ export default function AIInsightPanel() {
   const InsightIcon = cfg?.icon;
 
   const scoreColor =
-    !data ? "text-slate-400"
-    : data.healthScore >= 80 ? "text-green-400"
-    : data.healthScore >= 60 ? "text-yellow-400"
-    : "text-red-400";
+    !data ? "text-slate-500"
+    : data.healthScore >= 80 ? "text-emerald-600"
+    : data.healthScore >= 60 ? "text-amber-600"
+    : "text-red-600";
 
   return (
     <div className="finance-panel p-5">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2.5">
-          <div className="flex h-8 w-8 items-center justify-center rounded-[15px] bg-white/[0.08] ring-1 ring-white/[0.10]">
-            <Brain size={15} className="text-white/80" />
+          <div className="flex h-8 w-8 items-center justify-center rounded-[15px] bg-blue-50 ring-1 ring-blue-100">
+            <Brain size={15} className="text-blue-600" />
           </div>
-          <h3 className="text-white font-semibold text-sm">AI Insight</h3>
+          <h3 className="text-slate-950 font-semibold text-sm">AI Insight</h3>
         </div>
         {data && (
           <div className="flex items-center gap-1">
@@ -81,13 +81,13 @@ export default function AIInsightPanel() {
 
       {loading ?
         <div className="space-y-2 animate-pulse mb-4">
-          <div className="h-3 w-full rounded bg-white/[0.06]" />
-          <div className="h-3 w-3/4 rounded bg-white/[0.06]" />
-          <div className="h-3 w-5/6 rounded bg-white/[0.06]" />
+          <div className="h-3 w-full rounded bg-slate-100" />
+          <div className="h-3 w-3/4 rounded bg-slate-100" />
+          <div className="h-3 w-5/6 rounded bg-slate-100" />
         </div>
       : topInsight && InsightIcon && cfg ?
         <div
-          className={`border-l-2 ${cfg.border} bg-white/[0.035] px-3.5 py-3 mb-4`}
+          className={`border-l-2 ${cfg.border} bg-slate-50 px-3.5 py-3 mb-4`}
         >
           <div className="flex items-center gap-1.5 mb-1">
             <InsightIcon size={12} className={`${cfg.color} flex-shrink-0`} />
@@ -95,12 +95,12 @@ export default function AIInsightPanel() {
               {topInsight.title}
             </p>
           </div>
-          <p className="text-xs leading-relaxed text-slate-300">
+          <p className="text-xs leading-relaxed text-slate-700">
             {topInsight.message}
           </p>
         </div>
-      : <div className="border-l-2 border-slate-600 bg-white/[0.035] px-3.5 py-3 mb-4">
-          <p className="text-xs leading-relaxed text-slate-400">
+      : <div className="border-l-2 border-slate-300 bg-slate-50 px-3.5 py-3 mb-4">
+          <p className="text-xs leading-relaxed text-slate-600">
             Add transactions to get personalized AI insights about your
             finances.
           </p>

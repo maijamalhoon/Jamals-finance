@@ -87,14 +87,14 @@ export default function Header() {
 
   return (
     <>
-      <div className="relative z-40 flex h-[68px] flex-shrink-0 items-center justify-between border-b border-white/[0.10] bg-[#171a21]/86 px-6 shadow-[0_14px_44px_rgba(0,0,0,0.20)] backdrop-blur-2xl">
+      <div className="relative z-40 flex h-[68px] flex-shrink-0 items-center justify-between border-b border-slate-200/90 bg-white/88 px-6 shadow-[0_14px_44px_rgba(15,23,42,0.06)] backdrop-blur-2xl">
         <div>
           <div className="flex items-center gap-2">
-            <h1 className="text-base font-semibold text-white">
+            <h1 className="text-base font-semibold text-slate-950">
               {getGreeting()}, Jamal
             </h1>
           </div>
-          <p className="text-xs text-slate-400">Command center is ready</p>
+          <p className="text-xs text-slate-500">Command center is ready</p>
         </div>
 
         <div
@@ -107,7 +107,7 @@ export default function Header() {
               setBellOpen(false);
               setProfileOpen(false);
             }}
-            className="finance-focus grid h-12 w-12 place-items-center rounded-[22px] border border-white/[0.14] bg-white text-[#111318] shadow-[0_16px_42px_rgba(0,0,0,0.28)] transition duration-200 ease-out hover:bg-slate-100"
+            className="finance-focus grid h-12 w-12 place-items-center rounded-[20px] border border-slate-200 bg-slate-950 text-white shadow-[0_16px_38px_rgba(15,23,42,0.18)] transition duration-200 ease-out hover:bg-slate-800"
             aria-label="Open quick actions"
           >
             <Plus size={21} strokeWidth={2.4} />
@@ -123,11 +123,11 @@ export default function Header() {
                 className="finance-glass-panel absolute left-1/2 top-14 z-[120] w-72 -translate-x-1/2 overflow-hidden p-2"
               >
                 <div className="flex items-center gap-2 px-3 py-2">
-                  <span className="grid h-8 w-8 place-items-center rounded-[15px] bg-white/[0.08] text-white/80">
+                  <span className="grid h-8 w-8 place-items-center rounded-[15px] bg-blue-50 text-blue-600">
                     <CircleDollarSign size={15} />
                   </span>
                   <div>
-                    <p className="text-sm font-semibold text-white">
+                    <p className="text-sm font-semibold text-slate-950">
                       Quick entry
                     </p>
                     <p className="text-[11px] text-slate-500">
@@ -138,7 +138,7 @@ export default function Header() {
                 <div className="mt-1 grid gap-2">
                   <button
                     onClick={() => openTransaction("income")}
-                    className="finance-focus flex items-center gap-3 rounded-2xl border border-emerald-300/20 bg-emerald-400/12 px-3 py-3 text-left text-sm font-semibold text-emerald-100 transition duration-200 ease-out hover:bg-emerald-400/18"
+                    className="finance-focus flex items-center gap-3 rounded-2xl border border-emerald-200 bg-emerald-50 px-3 py-3 text-left text-sm font-semibold text-emerald-700 transition duration-200 ease-out hover:bg-emerald-100"
                   >
                     <span className="grid h-9 w-9 place-items-center rounded-2xl bg-emerald-300 text-slate-950">
                       <TrendingUp size={17} />
@@ -147,7 +147,7 @@ export default function Header() {
                   </button>
                   <button
                     onClick={() => openTransaction("expense")}
-                    className="finance-focus flex items-center gap-3 rounded-2xl border border-rose-300/20 bg-rose-400/12 px-3 py-3 text-left text-sm font-semibold text-rose-100 transition duration-200 ease-out hover:bg-rose-400/18"
+                    className="finance-focus flex items-center gap-3 rounded-2xl border border-rose-200 bg-rose-50 px-3 py-3 text-left text-sm font-semibold text-rose-700 transition duration-200 ease-out hover:bg-rose-100"
                   >
                     <span className="grid h-9 w-9 place-items-center rounded-2xl bg-rose-300 text-slate-950">
                       <TrendingDown size={17} />
@@ -156,7 +156,7 @@ export default function Header() {
                   </button>
                   <button
                     onClick={openTransfer}
-                    className="finance-focus flex items-center gap-3 rounded-2xl border border-cyan-300/20 bg-cyan-400/12 px-3 py-3 text-left text-sm font-semibold text-cyan-100 transition duration-200 ease-out hover:bg-cyan-400/18"
+                    className="finance-focus flex items-center gap-3 rounded-2xl border border-sky-200 bg-sky-50 px-3 py-3 text-left text-sm font-semibold text-sky-700 transition duration-200 ease-out hover:bg-sky-100"
                   >
                     <span className="grid h-9 w-9 place-items-center rounded-2xl bg-cyan-300 text-slate-950">
                       <ArrowLeftRight size={17} />
@@ -179,11 +179,11 @@ export default function Header() {
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search transactions..."
-              className="w-full bg-transparent text-xs text-slate-200 outline-none placeholder-slate-500"
+              className="w-full bg-transparent text-xs text-slate-900 outline-none placeholder-slate-400"
             />
           </form>
 
-          <div className="finance-control flex items-center gap-2 px-3 py-2 text-xs text-slate-300">
+          <div className="finance-control flex items-center gap-2 px-3 py-2 text-xs text-slate-600">
             {new Date().toLocaleDateString("en-US", {
               month: "short",
               day: "numeric",
@@ -201,8 +201,8 @@ export default function Header() {
               className="finance-control finance-focus relative flex h-9 w-9 items-center justify-center"
               aria-label="Open notifications"
             >
-              <Bell size={15} className="text-slate-300" />
-              <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full border-2 border-[#171a21] bg-emerald-300" />
+              <Bell size={15} className="text-slate-600" />
+              <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full border-2 border-white bg-emerald-400" />
             </button>
 
             {bellOpen && (
@@ -212,14 +212,14 @@ export default function Header() {
                 transition={{ duration: 0.18, ease: [0.16, 1, 0.3, 1] }}
                 className="finance-panel absolute right-0 top-11 z-[120] w-72 overflow-hidden"
               >
-                <div className="border-b border-white/[0.08] p-4">
-                  <p className="text-sm font-semibold text-white">
+                <div className="border-b border-slate-200 p-4">
+                  <p className="text-sm font-semibold text-slate-950">
                     Notifications
                   </p>
                 </div>
                 <div className="p-4 py-8 text-center">
-                  <Bell size={24} className="mx-auto mb-2 text-slate-600" />
-                  <p className="text-sm text-slate-400">No new notifications</p>
+                  <Bell size={24} className="mx-auto mb-2 text-slate-400" />
+                  <p className="text-sm text-slate-600">No new notifications</p>
                   <p className="mt-1 text-xs text-slate-600">
                     You're all caught up
                   </p>
@@ -234,7 +234,7 @@ export default function Header() {
                 setProfileOpen((p) => !p);
                 setBellOpen(false);
               }}
-              className="finance-focus flex h-10 w-10 items-center justify-center rounded-[18px] bg-white text-sm font-bold text-[#111318] shadow-lg shadow-black/20 transition hover:bg-slate-100"
+              className="finance-focus flex h-10 w-10 items-center justify-center rounded-[18px] bg-slate-950 text-sm font-bold text-white shadow-lg shadow-slate-200 transition hover:bg-slate-800"
               aria-label="Open profile menu"
             >
               J
@@ -242,13 +242,13 @@ export default function Header() {
 
             {profileOpen && (
               <div className="finance-panel absolute right-0 top-11 z-[120] w-52 overflow-hidden">
-                <div className="border-b border-white/[0.08] p-4">
+                <div className="border-b border-slate-200 p-4">
                   <div className="flex items-center gap-3">
-                    <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-[16px] bg-white text-sm font-bold text-[#111318]">
+                    <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-[16px] bg-slate-950 text-sm font-bold text-white">
                       J
                     </div>
                     <div className="min-w-0">
-                      <p className="text-sm font-medium text-white">Jamal</p>
+                      <p className="text-sm font-medium text-slate-950">Jamal</p>
                       <p className="truncate text-xs text-slate-500">
                         jamal@example.com
                       </p>
@@ -262,7 +262,7 @@ export default function Header() {
                       router.push("/dashboard/settings");
                       setProfileOpen(false);
                     }}
-                    className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-slate-400 transition-colors hover:bg-white/[0.06] hover:text-white"
+                    className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-slate-600 transition-colors hover:bg-slate-50 hover:text-slate-950"
                   >
                     <Settings size={15} />
                     Settings

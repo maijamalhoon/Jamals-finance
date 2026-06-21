@@ -3,6 +3,7 @@ import TransactionRow from "@/components/transactions/TransactionRow";
 import AddExpenseButton from "@/components/expenses/AddExpenseButton";
 import EmptyState from "@/components/ui/empty-state";
 import { TrendingDown } from "lucide-react";
+import { loadTransactions } from "@/lib/transactions";
 
 export const dynamic = "force-dynamic";
 
@@ -15,11 +16,7 @@ export default async function ExpensesPage() {
     .split("T")[0];
   const firstDayYear = `${now.getFullYear()}-01-01`;
 
-  const { data: raw } = await supabase
-    .from("transactions")
-    .select("*, categories(name, color, parent:categories!categories_parent_id_fkey(name)), accounts(name)")
-    .eq("type", "expense")
-    .order("date", { ascending: false });
+  const raw = await loadTransactions(supabase, { type: "expense" });
 
   const expenses = raw ?? [];
   const thisMonthEntries = expenses.filter((t) => t.date >= firstDayMonth);
@@ -71,7 +68,7 @@ export default async function ExpensesPage() {
       </div>
 
       <div className="finance-panel p-5">
-        <h3 className="mb-4 text-sm font-medium text-white">
+        <h3 className="mb-4 text-sm font-medium text-slate-950">
           Expenses by Account
         </h3>
         <div className="grid gap-2 md:grid-cols-2 xl:grid-cols-4">
@@ -84,10 +81,10 @@ export default async function ExpensesPage() {
           ).map(([account, amount]) => (
             <div
               key={account}
-              className="rounded-2xl border border-white/[0.08] bg-white/[0.045] p-3"
+              className="rounded-2xl border border-slate-200 bg-slate-50 p-3"
             >
               <p className="truncate text-xs text-slate-500">{account}</p>
-              <p className="mt-1 text-sm font-bold text-rose-200">
+              <p className="mt-1 text-sm font-bold text-rose-600">
                 {fmt(amount)}
               </p>
             </div>
@@ -98,7 +95,7 @@ export default async function ExpensesPage() {
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
         <div className="summary-card">
           <p className="mb-1.5 text-xs text-slate-500">This Month</p>
-          <p className="text-xl font-bold text-white">{fmt(thisMonth)}</p>
+          <p className="text-xl font-bold text-slate-950">{fmt(thisMonth)}</p>
           <p className="mt-0.5 text-xs text-slate-600">
             Approx. ${(thisMonth / 281.2).toFixed(2)} USD
           </p>
@@ -106,15 +103,15 @@ export default async function ExpensesPage() {
 
         <div className="summary-card">
           <p className="mb-1.5 text-xs text-slate-500">This Year</p>
-          <p className="text-xl font-bold text-white">{fmt(thisYear)}</p>
+          <p className="text-xl font-bold text-slate-950">{fmt(thisYear)}</p>
           <p className="mt-0.5 text-xs text-slate-600">
             Approx. ${(thisYear / 281.2).toFixed(2)} USD
           </p>
         </div>
 
-        <div className="summary-card border-red-500/20 bg-red-500/5">
+        <div className="summary-card border-red-200 bg-red-50">
           <p className="mb-1.5 text-xs text-slate-500">Highest Month Ever</p>
-          <p className="text-xl font-bold text-red-400">
+          <p className="text-xl font-bold text-red-600">
             {fmt(highestMonth)}
           </p>
           <p className="mt-0.5 text-xs text-slate-600">
@@ -125,7 +122,7 @@ export default async function ExpensesPage() {
 
       {categories.length > 0 && (
         <div className="finance-panel p-5">
-          <h3 className="mb-4 text-sm font-medium text-white">
+          <h3 className="mb-4 text-sm font-medium text-slate-950">
             This Month by Category
           </h3>
           <div className="space-y-4">
@@ -137,7 +134,7 @@ export default async function ExpensesPage() {
                       className="h-2 w-2 flex-shrink-0 rounded-full"
                       style={{ background: category.color }}
                     />
-                    <span className="truncate text-sm text-slate-300">
+                    <span className="truncate text-sm text-slate-700">
                       {category.name}
                     </span>
                     <span className="text-xs text-slate-600">
@@ -145,11 +142,11 @@ export default async function ExpensesPage() {
                       {category.count === 1 ? "entry" : "entries"}
                     </span>
                   </div>
-                  <span className="text-sm font-semibold text-red-400">
+                  <span className="text-sm font-semibold text-red-600">
                     {fmt(category.amount)}
                   </span>
                 </div>
-                <div className="h-1.5 overflow-hidden rounded-full bg-white/[0.06]">
+                <div className="h-1.5 overflow-hidden rounded-full bg-slate-100">
                   <div
                     className="h-full rounded-full transition-all"
                     style={{
@@ -166,7 +163,7 @@ export default async function ExpensesPage() {
 
       <div className="finance-panel p-4 sm:p-5">
         <div className="mb-4 flex items-center justify-between">
-          <h3 className="text-sm font-medium text-white">All Expenses</h3>
+          <h3 className="text-sm font-medium text-slate-950">All Expenses</h3>
           <span className="text-xs text-slate-500">
             {expenses.length} entries
           </span>

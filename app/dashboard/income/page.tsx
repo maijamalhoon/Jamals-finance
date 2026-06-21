@@ -3,6 +3,7 @@ import TransactionRow from "@/components/transactions/TransactionRow";
 import AddIncomeButton from "@/components/income/AddIncomeButton";
 import EmptyState from "@/components/ui/empty-state";
 import { TrendingUp } from "lucide-react";
+import { loadTransactions } from "@/lib/transactions";
 
 export const dynamic = "force-dynamic";
 
@@ -15,11 +16,7 @@ export default async function IncomePage() {
     .split("T")[0];
   const firstDayYear = `${now.getFullYear()}-01-01`;
 
-  const { data: raw } = await supabase
-    .from("transactions")
-    .select("*, categories(name, color, parent:categories!categories_parent_id_fkey(name)), accounts(name)")
-    .eq("type", "income")
-    .order("date", { ascending: false });
+  const raw = await loadTransactions(supabase, { type: "income" });
 
   const income = raw ?? [];
   const thisMonthEntries = income.filter((t) => t.date >= firstDayMonth);
@@ -70,7 +67,7 @@ export default async function IncomePage() {
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
         <div className="summary-card">
           <p className="mb-1.5 text-xs text-slate-500">This Month</p>
-          <p className="text-xl font-bold text-white">{fmt(thisMonth)}</p>
+          <p className="text-xl font-bold text-slate-950">{fmt(thisMonth)}</p>
           <p className="mt-0.5 text-xs text-slate-600">
             Approx. ${(thisMonth / 281.2).toFixed(2)} USD
           </p>
@@ -78,15 +75,15 @@ export default async function IncomePage() {
 
         <div className="summary-card">
           <p className="mb-1.5 text-xs text-slate-500">This Year</p>
-          <p className="text-xl font-bold text-white">{fmt(thisYear)}</p>
+          <p className="text-xl font-bold text-slate-950">{fmt(thisYear)}</p>
           <p className="mt-0.5 text-xs text-slate-600">
             Approx. ${(thisYear / 281.2).toFixed(2)} USD
           </p>
         </div>
 
-        <div className="summary-card border-green-500/20 bg-green-500/5">
+        <div className="summary-card border-emerald-200 bg-emerald-50">
           <p className="mb-1.5 text-xs text-slate-500">Best Month Ever</p>
-          <p className="text-xl font-bold text-green-400">{fmt(bestMonth)}</p>
+          <p className="text-xl font-bold text-emerald-600">{fmt(bestMonth)}</p>
           <p className="mt-0.5 text-xs text-slate-600">
             Your highest earning month
           </p>
@@ -94,7 +91,7 @@ export default async function IncomePage() {
       </div>
 
       <div className="finance-panel p-5">
-        <h3 className="mb-4 text-sm font-medium text-white">
+        <h3 className="mb-4 text-sm font-medium text-slate-950">
           Income by Account
         </h3>
         <div className="grid gap-2 md:grid-cols-2 xl:grid-cols-4">
@@ -107,10 +104,10 @@ export default async function IncomePage() {
           ).map(([account, amount]) => (
             <div
               key={account}
-              className="rounded-2xl border border-white/[0.08] bg-white/[0.045] p-3"
+              className="rounded-2xl border border-slate-200 bg-slate-50 p-3"
             >
               <p className="truncate text-xs text-slate-500">{account}</p>
-              <p className="mt-1 text-sm font-bold text-emerald-200">
+              <p className="mt-1 text-sm font-bold text-emerald-600">
                 {fmt(amount)}
               </p>
             </div>
@@ -120,7 +117,7 @@ export default async function IncomePage() {
 
       {sources.length > 0 && (
         <div className="finance-panel p-5">
-          <h3 className="mb-4 text-sm font-medium text-white">
+          <h3 className="mb-4 text-sm font-medium text-slate-950">
             This Month by Source
           </h3>
           <div className="space-y-4">
@@ -132,7 +129,7 @@ export default async function IncomePage() {
                       className="h-2 w-2 flex-shrink-0 rounded-full"
                       style={{ background: source.color }}
                     />
-                    <span className="truncate text-sm text-slate-300">
+                    <span className="truncate text-sm text-slate-700">
                       {source.name}
                     </span>
                     <span className="text-xs text-slate-600">
@@ -140,11 +137,11 @@ export default async function IncomePage() {
                       {source.count === 1 ? "entry" : "entries"}
                     </span>
                   </div>
-                  <span className="text-sm font-semibold text-green-400">
+                  <span className="text-sm font-semibold text-emerald-600">
                     {fmt(source.amount)}
                   </span>
                 </div>
-                <div className="h-1.5 overflow-hidden rounded-full bg-white/[0.06]">
+                <div className="h-1.5 overflow-hidden rounded-full bg-slate-100">
                   <div
                     className="h-full rounded-full transition-all"
                     style={{
@@ -161,7 +158,7 @@ export default async function IncomePage() {
 
       <div className="finance-panel p-4 sm:p-5">
         <div className="mb-4 flex items-center justify-between">
-          <h3 className="text-sm font-medium text-white">All Income</h3>
+          <h3 className="text-sm font-medium text-slate-950">All Income</h3>
           <span className="text-xs text-slate-500">
             {income.length} entries
           </span>

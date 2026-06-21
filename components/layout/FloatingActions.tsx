@@ -24,35 +24,35 @@ const actions = [
     key: "income",
     label: "Add Income",
     icon: TrendingUp,
-    tone: "border-emerald-300/25 bg-emerald-400/16 text-emerald-100 shadow-emerald-950/25",
+    tone: "border-emerald-200 bg-emerald-50 text-emerald-700 shadow-emerald-100/60",
     iconTone: "bg-emerald-300 text-slate-950",
   },
   {
     key: "expense",
     label: "Add Expense",
     icon: TrendingDown,
-    tone: "border-rose-300/25 bg-rose-400/16 text-rose-100 shadow-rose-950/25",
+    tone: "border-rose-200 bg-rose-50 text-rose-700 shadow-rose-100/60",
     iconTone: "bg-rose-300 text-slate-950",
   },
   {
     key: "goal",
     label: "Add Goal",
     icon: Target,
-    tone: "border-lime-300/25 bg-lime-400/16 text-lime-100 shadow-lime-950/25",
+    tone: "border-lime-200 bg-lime-50 text-lime-700 shadow-lime-100/60",
     iconTone: "bg-lime-300 text-slate-950",
   },
   {
     key: "transfer",
     label: "Transfer Money",
     icon: ArrowLeftRight,
-    tone: "border-cyan-300/25 bg-cyan-400/16 text-cyan-100 shadow-cyan-950/25",
+    tone: "border-sky-200 bg-sky-50 text-sky-700 shadow-sky-100/60",
     iconTone: "bg-cyan-300 text-slate-950",
   },
   {
     key: "investment",
     label: "Add Investment",
     icon: BarChart2,
-    tone: "border-amber-300/25 bg-amber-400/16 text-amber-100 shadow-amber-950/25",
+    tone: "border-amber-200 bg-amber-50 text-amber-700 shadow-amber-100/60",
     iconTone: "bg-amber-300 text-slate-950",
   },
 ] satisfies Array<{
@@ -122,7 +122,7 @@ export default function FloatingActions() {
                 className="finance-glass-panel w-[min(88vw,320px)] p-2"
               >
                 <div className="px-3 py-2.5">
-                  <p className="text-sm font-semibold text-white">
+                  <p className="text-sm font-semibold text-slate-950">
                     Quick actions
                   </p>
                   <p className="text-[11px] text-slate-500">
@@ -144,7 +144,7 @@ export default function FloatingActions() {
                         stiffness: 320,
                         damping: 26,
                       }}
-                      className={`finance-focus flex items-center justify-between rounded-[20px] border px-3 py-3 text-left text-sm font-semibold shadow-lg transition-all hover:-translate-x-1 hover:bg-white/[0.12] ${action.tone}`}
+                      className={`finance-focus flex items-center justify-between rounded-[20px] border px-3 py-3 text-left text-sm font-semibold shadow-lg transition-all hover:-translate-x-1 hover:bg-white ${action.tone}`}
                     >
                       <span>{action.label}</span>
                       <span
@@ -165,7 +165,7 @@ export default function FloatingActions() {
           whileHover={{ scale: 1.06 }}
           whileTap={{ scale: 0.94 }}
           onClick={() => setOpen((current) => !current)}
-          className="finance-focus relative grid h-[60px] w-[60px] place-items-center overflow-hidden rounded-[24px] bg-white text-[#111318] shadow-[0_18px_48px_rgba(0,0,0,0.34)] ring-1 ring-white/20 transition hover:bg-slate-100"
+          className="finance-focus relative grid h-[60px] w-[60px] place-items-center overflow-hidden rounded-[22px] bg-blue-600 text-white shadow-[0_18px_42px_rgba(37,99,235,0.28)] ring-1 ring-blue-200 transition hover:bg-blue-700"
           aria-label={open ? "Close quick actions" : "Open quick actions"}
         >
           <motion.span

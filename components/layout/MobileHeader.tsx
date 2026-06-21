@@ -60,19 +60,19 @@ export default function MobileHeader() {
 
   return (
     <>
-      <header className="flex h-[62px] flex-shrink-0 items-center justify-between border-b border-white/[0.10] bg-[#171a21]/90 px-3 shadow-[0_12px_36px_rgba(0,0,0,0.22)] backdrop-blur-2xl lg:hidden">
+      <header className="flex h-[62px] flex-shrink-0 items-center justify-between border-b border-slate-200/90 bg-white/92 px-3 shadow-[0_12px_36px_rgba(15,23,42,0.07)] backdrop-blur-2xl lg:hidden">
         <div className="flex min-w-0 items-center gap-2">
           <button
             onClick={() => setOpen(true)}
-            className="finance-focus grid h-10 w-10 place-items-center rounded-2xl border border-white/[0.08] bg-white/[0.065] text-slate-300"
+            className="finance-focus grid h-10 w-10 place-items-center rounded-2xl border border-slate-200 bg-slate-50 text-slate-600"
             aria-label="Open navigation"
           >
             <Menu size={17} />
           </button>
-          <div className="grid h-10 w-10 flex-shrink-0 place-items-center rounded-[18px] bg-white text-[#111318] shadow-lg shadow-black/20">
+          <div className="grid h-10 w-10 flex-shrink-0 place-items-center rounded-[18px] bg-blue-600 text-white shadow-lg shadow-blue-100">
             <BarChart3 size={16} />
           </div>
-          <span className="truncate text-sm font-semibold text-white">
+          <span className="truncate text-sm font-semibold text-slate-950">
             Jamal's Finance
           </span>
         </div>
@@ -81,7 +81,7 @@ export default function MobileHeader() {
           <div className="relative" ref={actionRef}>
             <button
               onClick={() => setActionOpen((current) => !current)}
-              className="finance-focus grid h-9 w-9 place-items-center rounded-[16px] border border-white/[0.12] bg-white text-[#111318] shadow-[0_10px_28px_rgba(0,0,0,0.22)]"
+              className="finance-focus grid h-9 w-9 place-items-center rounded-[16px] border border-slate-200 bg-slate-950 text-white shadow-[0_10px_28px_rgba(15,23,42,0.18)]"
               aria-label="Open quick actions"
             >
               <Plus size={17} />
@@ -97,11 +97,11 @@ export default function MobileHeader() {
                   className="finance-glass-panel absolute right-0 top-11 z-50 w-64 overflow-hidden p-2"
                 >
                   <div className="flex items-center gap-2 px-3 py-2">
-                    <span className="grid h-8 w-8 place-items-center rounded-[15px] bg-white/[0.08] text-white/80">
+                    <span className="grid h-8 w-8 place-items-center rounded-[15px] bg-blue-50 text-blue-600">
                       <CircleDollarSign size={15} />
                     </span>
                     <div>
-                      <p className="text-sm font-semibold text-white">
+                      <p className="text-sm font-semibold text-slate-950">
                         Quick entry
                       </p>
                       <p className="text-[11px] text-slate-500">
@@ -112,7 +112,7 @@ export default function MobileHeader() {
                   <div className="mt-1 grid gap-2">
                     <button
                       onClick={() => openTransaction("income")}
-                      className="finance-focus flex items-center gap-3 rounded-2xl border border-emerald-300/20 bg-emerald-400/12 px-3 py-3 text-left text-sm font-semibold text-emerald-100"
+                      className="finance-focus flex items-center gap-3 rounded-2xl border border-emerald-200 bg-emerald-50 px-3 py-3 text-left text-sm font-semibold text-emerald-700"
                     >
                       <span className="grid h-9 w-9 place-items-center rounded-2xl bg-emerald-300 text-slate-950">
                         <TrendingUp size={17} />
@@ -121,7 +121,7 @@ export default function MobileHeader() {
                     </button>
                     <button
                       onClick={() => openTransaction("expense")}
-                      className="finance-focus flex items-center gap-3 rounded-2xl border border-rose-300/20 bg-rose-400/12 px-3 py-3 text-left text-sm font-semibold text-rose-100"
+                      className="finance-focus flex items-center gap-3 rounded-2xl border border-rose-200 bg-rose-50 px-3 py-3 text-left text-sm font-semibold text-rose-700"
                     >
                       <span className="grid h-9 w-9 place-items-center rounded-2xl bg-rose-300 text-slate-950">
                         <TrendingDown size={17} />
@@ -137,10 +137,10 @@ export default function MobileHeader() {
             className="finance-focus finance-control relative flex h-9 w-9 items-center justify-center"
             aria-label="Open notifications"
           >
-            <Bell size={14} className="text-slate-300" />
-            <span className="absolute right-1.5 top-1.5 h-1.5 w-1.5 rounded-full bg-emerald-300" />
+            <Bell size={14} className="text-slate-600" />
+            <span className="absolute right-1.5 top-1.5 h-1.5 w-1.5 rounded-full bg-emerald-500" />
           </button>
-          <div className="flex h-9 w-9 items-center justify-center rounded-[16px] bg-white text-xs font-bold text-[#111318] shadow-lg shadow-black/20">
+          <div className="flex h-9 w-9 items-center justify-center rounded-[16px] bg-slate-950 text-xs font-bold text-white shadow-lg shadow-slate-200">
             J
           </div>
         </div>
@@ -153,14 +153,14 @@ export default function MobileHeader() {
             onClick={() => setOpen(false)}
             aria-label="Close navigation"
           />
-          <aside className="absolute left-0 top-0 flex h-full w-[min(88vw,380px)] flex-col border-r border-white/[0.1] bg-[#171a21] shadow-2xl">
-            <div className="flex h-14 items-center justify-between border-b border-white/[0.08] px-4">
+          <aside className="absolute left-0 top-0 flex h-full w-[min(88vw,380px)] flex-col border-r border-slate-200 bg-white shadow-2xl">
+            <div className="flex h-14 items-center justify-between border-b border-slate-200 px-4">
               <div className="flex min-w-0 items-center gap-2.5">
-                <div className="grid h-10 w-10 flex-shrink-0 place-items-center rounded-[18px] bg-white text-[#111318] shadow-lg shadow-black/20">
+                <div className="grid h-10 w-10 flex-shrink-0 place-items-center rounded-[18px] bg-blue-600 text-white shadow-lg shadow-blue-100">
                   <BarChart3 size={17} />
                 </div>
                 <div className="min-w-0">
-                  <p className="truncate text-sm font-semibold text-white">
+                  <p className="truncate text-sm font-semibold text-slate-950">
                     Jamal's Finance
                   </p>
                   <p className="truncate text-[11px] text-slate-500">
@@ -170,7 +170,7 @@ export default function MobileHeader() {
               </div>
               <button
                 onClick={() => setOpen(false)}
-                className="finance-focus grid h-9 w-9 place-items-center rounded-lg border border-white/[0.08] bg-white/[0.055] text-slate-300"
+                className="finance-focus grid h-9 w-9 place-items-center rounded-lg border border-slate-200 bg-slate-50 text-slate-600"
                 aria-label="Close navigation"
               >
                 <X size={17} />
@@ -182,7 +182,7 @@ export default function MobileHeader() {
                 Navigation
               </p>
               <nav className="space-y-1.5">
-                {NAV_ITEMS.map(({ label, href, icon: Icon, tone }) => {
+                {NAV_ITEMS.map(({ label, href, icon: Icon }) => {
                   const active =
                     pathname === href ||
                     (href !== "/dashboard" && pathname.startsWith(href));
@@ -192,13 +192,13 @@ export default function MobileHeader() {
                       href={href}
                       className={`finance-focus flex items-center gap-3 rounded-[22px] border px-3 py-3 text-sm transition-colors ${
                         active
-                          ? "border-white/[0.16] bg-white/[0.10] text-white"
-                          : "border-transparent text-slate-400 hover:border-white/[0.08] hover:bg-white/[0.045] hover:text-white"
+                          ? "border-blue-100 bg-blue-50 text-blue-700"
+                          : "border-transparent text-slate-500 hover:border-slate-200 hover:bg-slate-50 hover:text-slate-950"
                       }`}
                     >
                       <span
                       className={`grid h-8 w-8 place-items-center rounded-2xl ${
-                          active ? tone : "bg-white/[0.045] text-slate-500"
+                          active ? "bg-white text-blue-600 shadow-sm" : "bg-slate-100 text-slate-500"
                         }`}
                       >
                         <Icon size={16} />
@@ -217,7 +217,7 @@ export default function MobileHeader() {
                   <Link
                     key={label}
                     href={href}
-                    className="finance-focus flex items-center gap-2 rounded-[22px] border border-white/[0.08] bg-white/[0.055] px-3 py-3 text-sm text-slate-300"
+                    className="finance-focus flex items-center gap-2 rounded-[22px] border border-slate-200 bg-slate-50 px-3 py-3 text-sm text-slate-700"
                   >
                     <span
                       className={`grid h-8 w-8 flex-shrink-0 place-items-center rounded-2xl ${tone}`}

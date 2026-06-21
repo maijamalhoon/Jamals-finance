@@ -39,7 +39,7 @@ export default function CurrencyConverter() {
   return (
     <div className="finance-panel p-5">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-white font-semibold text-sm">Currency Converter</h3>
+        <h3 className="text-slate-950 font-semibold text-sm">Currency Converter</h3>
         <button
           onClick={fetchRate}
           disabled={loading}
@@ -48,7 +48,7 @@ export default function CurrencyConverter() {
         >
           <RefreshCw
             size={12}
-            className={`text-slate-300 ${loading ? "animate-spin" : ""}`}
+            className={`text-slate-600 ${loading ? "animate-spin" : ""}`}
           />
         </button>
       </div>
@@ -63,7 +63,7 @@ export default function CurrencyConverter() {
             type="number"
             value={amount}
             onChange={(e) => setAmount(e.target.value)}
-            className="bg-transparent text-white text-sm font-semibold outline-none w-full"
+            className="bg-transparent text-slate-950 text-sm font-semibold outline-none w-full"
             min="0"
           />
         </div>
@@ -73,7 +73,7 @@ export default function CurrencyConverter() {
           className="finance-control w-8 h-8 flex items-center justify-center flex-shrink-0"
           aria-label="Swap currencies"
         >
-          <ArrowLeftRight size={13} className="text-slate-300" />
+          <ArrowLeftRight size={13} className="text-slate-600" />
         </button>
 
         <div className="flex-1 finance-panel-soft p-3">
@@ -81,7 +81,7 @@ export default function CurrencyConverter() {
           <p className="text-slate-400 text-xs mb-1.5">
             {fromUSD ? "PKR" : "USD"}
           </p>
-          <p className="text-white text-sm font-semibold">{converted}</p>
+          <p className="text-slate-950 text-sm font-semibold">{converted}</p>
         </div>
       </div>
 
@@ -94,10 +94,10 @@ export default function CurrencyConverter() {
             </p>
             <span className="flex items-center gap-1">
               <span
-                className={`w-1.5 h-1.5 rounded-full ${live ? "bg-green-300" : "bg-amber-300"}`}
+                className={`w-1.5 h-1.5 rounded-full ${live ? "bg-emerald-500" : "bg-amber-500"}`}
               />
               <span
-                className={`text-[10px] ${live ? "text-green-300" : "text-amber-300"}`}
+                className={`text-[10px] ${live ? "text-emerald-600" : "text-amber-600"}`}
               >
                 {live ? "Live" : "Fallback"}
               </span>

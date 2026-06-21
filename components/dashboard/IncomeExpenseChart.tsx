@@ -20,11 +20,11 @@ function CustomTooltip({ active, payload, label }: any) {
   if (!active || !payload?.length) return null;
   return (
     <div className="finance-panel p-3 text-xs shadow-xl">
-      <p className="text-slate-400 mb-2">{label}</p>
-      <p className="text-green-300">
+      <p className="text-slate-500 mb-2">{label}</p>
+      <p className="text-emerald-600">
         Income: PKR {payload[0]?.value?.toLocaleString()}
       </p>
-      <p className="text-red-300 mt-1">
+      <p className="text-red-600 mt-1">
         Expenses: PKR {payload[1]?.value?.toLocaleString()}
       </p>
     </div>
@@ -36,19 +36,19 @@ export default function IncomeExpenseChart({ data }: { data: ChartData[] }) {
     <div className="finance-panel h-full p-4 sm:p-5">
       <div className="flex flex-wrap items-center justify-between gap-3 mb-5">
         <div>
-          <h3 className="text-white font-semibold text-sm">
+          <h3 className="text-slate-950 font-semibold text-sm">
             Income vs Expenses
           </h3>
           <p className="text-slate-500 text-xs mt-1">Daily flow this month</p>
         </div>
-        <div className="flex items-center gap-4 rounded-lg bg-white/[0.04] px-3 py-2">
+        <div className="flex items-center gap-4 rounded-lg bg-slate-50 px-3 py-2">
           <div className="flex items-center gap-1.5">
-            <div className="w-2 h-2 rounded-full bg-green-300" />
-            <span className="text-slate-400 text-xs">Income</span>
+            <div className="w-2 h-2 rounded-full bg-emerald-500" />
+            <span className="text-slate-500 text-xs">Income</span>
           </div>
           <div className="flex items-center gap-1.5">
-            <div className="w-2 h-2 rounded-full bg-red-300" />
-            <span className="text-slate-400 text-xs">Expenses</span>
+            <div className="w-2 h-2 rounded-full bg-red-500" />
+            <span className="text-slate-500 text-xs">Expenses</span>
           </div>
         </div>
       </div>
@@ -60,12 +60,12 @@ export default function IncomeExpenseChart({ data }: { data: ChartData[] }) {
         >
           <defs>
             <linearGradient id="incomeGrad" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="#86efac" stopOpacity={0.28} />
-              <stop offset="95%" stopColor="#86efac" stopOpacity={0} />
+              <stop offset="5%" stopColor="#10b981" stopOpacity={0.18} />
+              <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
             </linearGradient>
             <linearGradient id="expenseGrad" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="#fca5a5" stopOpacity={0.26} />
-              <stop offset="95%" stopColor="#fca5a5" stopOpacity={0} />
+              <stop offset="5%" stopColor="#ef4444" stopOpacity={0.14} />
+              <stop offset="95%" stopColor="#ef4444" stopOpacity={0} />
             </linearGradient>
           </defs>
           <CartesianGrid
@@ -90,14 +90,14 @@ export default function IncomeExpenseChart({ data }: { data: ChartData[] }) {
           <Area
             type="monotone"
             dataKey="income"
-            stroke="#86efac"
+            stroke="#10b981"
             strokeWidth={2}
             fill="url(#incomeGrad)"
           />
           <Area
             type="monotone"
             dataKey="expenses"
-            stroke="#fca5a5"
+            stroke="#ef4444"
             strokeWidth={2}
             fill="url(#expenseGrad)"
           />

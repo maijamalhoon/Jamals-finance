@@ -4,6 +4,7 @@ import TransactionFilters from "@/components/transactions/TransactionFilters";
 import TransactionRow from "@/components/transactions/TransactionRow";
 import EmptyState from "@/components/ui/empty-state";
 import { ArrowLeftRight } from "lucide-react";
+import { loadTransactions } from "@/lib/transactions";
 
 export const dynamic = "force-dynamic";
 
@@ -45,25 +46,20 @@ export default async function TransactionsPage({
   const minAmount = min ? Number(min) : null;
   const maxAmount = max ? Number(max) : null;
 
-  let query = supabase
-    .from("transactions")
-    .select("*, categories(name, color, parent:categories!categories_parent_id_fkey(name)), accounts(name)")
-    .order("date", { ascending: false });
-
-  if (type && type !== "all") query = query.eq("type", type);
-  if (from) query = query.gte("date", from);
-  if (to) query = query.lte("date", to);
-  if (category && category !== "all") query = query.eq("category_id", category);
-  if (account && account !== "all") query = query.eq("account_id", account);
-  if (Number.isFinite(minAmount)) query = query.gte("amount", minAmount);
-  if (Number.isFinite(maxAmount)) query = query.lte("amount", maxAmount);
-
-  const [{ data: raw }, { data: categories }, { data: accounts }] =
+  const [raw, { data: categories }, { data: accounts }] =
     await Promise.all([
-      query,
+      loadTransactions(supabase, {
+        type: type === "income" || type === "expense" ? type : undefined,
+        from,
+        to,
+        category,
+        account,
+        minAmount,
+        maxAmount,
+      }),
       supabase
         .from("categories")
-        .select("id, name, type, parent:categories!categories_parent_id_fkey(name)")
+        .select("id, name, type, parent_id")
         .order("type")
         .order("name"),
       supabase.from("accounts").select("id, name").order("name"),

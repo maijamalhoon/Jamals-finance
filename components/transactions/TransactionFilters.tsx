@@ -90,15 +90,15 @@ export default function TransactionFilters({
   return (
     <div className="mb-5 space-y-3">
       <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-        <div className="grid grid-cols-3 gap-1 rounded-lg border border-white/[0.08] bg-white/[0.045] p-1 sm:flex">
+        <div className="grid grid-cols-3 gap-1 rounded-lg border border-slate-200 bg-slate-50 p-1 sm:flex">
           {TABS.map((tab) => (
             <button
               key={tab.value}
               onClick={() => updateParams({ type: tab.value })}
               className={`finance-focus rounded-md px-4 py-2 text-sm font-medium transition-colors ${
                 activeType === tab.value
-                  ? "bg-white text-[#111318] shadow-[0_8px_22px_rgba(0,0,0,0.18)]"
-                  : "text-slate-500 hover:text-white"
+                  ? "bg-white text-slate-950 shadow-[0_8px_22px_rgba(15,23,42,0.08)]"
+                  : "text-slate-500 hover:text-slate-950"
               }`}
             >
               {tab.label}
@@ -112,12 +112,12 @@ export default function TransactionFilters({
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search transactions..."
-            className="w-full bg-transparent text-sm text-slate-300 placeholder-slate-600 outline-none"
+            className="w-full bg-transparent text-sm text-slate-900 placeholder-slate-400 outline-none"
           />
           {search && (
             <button
               onClick={() => setSearch("")}
-              className="text-slate-500 transition-colors hover:text-slate-300"
+              className="text-slate-500 transition-colors hover:text-slate-900"
               aria-label="Clear search"
             >
               <X size={13} />
@@ -149,8 +149,7 @@ export default function TransactionFilters({
         <select
           value={activeCategory}
           onChange={(e) => updateParams({ category: e.target.value })}
-          className="finance-control finance-focus min-h-10 px-3 py-2 text-xs text-white outline-none"
-          style={{ colorScheme: "dark" }}
+          className="finance-control finance-focus min-h-10 px-3 py-2 text-xs text-slate-900 outline-none"
           aria-label="Filter by category"
         >
           <option value="all">All categories</option>
@@ -166,8 +165,7 @@ export default function TransactionFilters({
         <select
           value={activeAccount}
           onChange={(e) => updateParams({ account: e.target.value })}
-          className="finance-control finance-focus min-h-10 px-3 py-2 text-xs text-white outline-none"
-          style={{ colorScheme: "dark" }}
+          className="finance-control finance-focus min-h-10 px-3 py-2 text-xs text-slate-900 outline-none"
           aria-label="Filter by account"
         >
           <option value="all">All accounts</option>
@@ -183,33 +181,33 @@ export default function TransactionFilters({
           value={activeMin}
           onChange={(e) => updateParams({ min: e.target.value })}
           placeholder="Min amount"
-          className="finance-control finance-focus min-h-10 px-3 py-2 text-xs text-white outline-none placeholder-slate-600"
+          className="finance-control finance-focus min-h-10 px-3 py-2 text-xs text-slate-900 outline-none placeholder-slate-400"
         />
         <input
           type="number"
           value={activeMax}
           onChange={(e) => updateParams({ max: e.target.value })}
           placeholder="Max amount"
-          className="finance-control finance-focus min-h-10 px-3 py-2 text-xs text-white outline-none placeholder-slate-600"
+          className="finance-control finance-focus min-h-10 px-3 py-2 text-xs text-slate-900 outline-none placeholder-slate-400"
         />
 
         <input
           value={source}
           onChange={(e) => setSource(e.target.value)}
           placeholder="Income source"
-          className="finance-control finance-focus min-h-10 px-3 py-2 text-xs text-white outline-none placeholder-slate-600"
+          className="finance-control finance-focus min-h-10 px-3 py-2 text-xs text-slate-900 outline-none placeholder-slate-400"
         />
         <input
           value={person}
           onChange={(e) => setPerson(e.target.value)}
           placeholder="Person name"
-          className="finance-control finance-focus min-h-10 px-3 py-2 text-xs text-white outline-none placeholder-slate-600"
+          className="finance-control finance-focus min-h-10 px-3 py-2 text-xs text-slate-900 outline-none placeholder-slate-400"
         />
         <input
           value={item}
           onChange={(e) => setItem(e.target.value)}
           placeholder="Item name"
-          className="finance-control finance-focus min-h-10 px-3 py-2 text-xs text-white outline-none placeholder-slate-600"
+          className="finance-control finance-focus min-h-10 px-3 py-2 text-xs text-slate-900 outline-none placeholder-slate-400"
         />
 
         {hasFilters && (

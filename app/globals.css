@@ -41,25 +41,25 @@
 }
 
 :root {
-  color-scheme: dark;
-  --background: #0f1115;
-  --foreground: #f8fafc;
-  --card: #171a20;
-  --card-foreground: #f8fafc;
-  --popover: #191c23;
-  --popover-foreground: #f8fafc;
-  --primary: #76e4f7;
-  --primary-foreground: #071014;
-  --secondary: #242832;
-  --secondary-foreground: #f8fafc;
-  --muted: #272b34;
-  --muted-foreground: #98a2b3;
-  --accent: #d7c5ff;
-  --accent-foreground: #151021;
-  --destructive: #ff6b8a;
-  --border: rgb(255 255 255 / 10%);
-  --input: rgb(255 255 255 / 12%);
-  --ring: rgb(118 228 247 / 55%);
+  color-scheme: light;
+  --background: #f5f7fb;
+  --foreground: #101828;
+  --card: #ffffff;
+  --card-foreground: #101828;
+  --popover: #ffffff;
+  --popover-foreground: #101828;
+  --primary: #2563eb;
+  --primary-foreground: #ffffff;
+  --secondary: #eef2f7;
+  --secondary-foreground: #1f2937;
+  --muted: #f1f5f9;
+  --muted-foreground: #667085;
+  --accent: #e0f2fe;
+  --accent-foreground: #075985;
+  --destructive: #ef4444;
+  --border: #e5e7eb;
+  --input: #d8dee8;
+  --ring: rgb(37 99 235 / 35%);
   --chart-1: #77e6b6;
   --chart-2: #ff8fa3;
   --chart-3: #76e4f7;
@@ -74,7 +74,7 @@
 
   html {
     @apply font-sans;
-    background: #0f1115;
+    background: #f5f7fb;
     scroll-behavior: smooth;
   }
 
@@ -83,23 +83,23 @@
     min-height: 100dvh;
     overflow-x: hidden;
     background:
-      linear-gradient(180deg, rgba(255, 255, 255, 0.055), transparent 18rem),
-      linear-gradient(135deg, #0d1118 0%, #181b24 46%, #10141b 100%);
+      linear-gradient(180deg, #ffffff 0%, transparent 18rem),
+      linear-gradient(135deg, #f8fafc 0%, #eef3f8 46%, #f7f9fc 100%);
     text-rendering: geometricPrecision;
   }
 
   ::selection {
-    background: rgb(118 228 247 / 30%);
-    color: #ffffff;
+    background: rgb(37 99 235 / 16%);
+    color: #101828;
   }
 }
 
 @layer components {
   .finance-panel {
-    @apply rounded-[28px] border border-white/[0.11] bg-[#171b23]/88 shadow-[0_22px_70px_rgba(0,0,0,0.30)] backdrop-blur-2xl;
+    @apply rounded-[24px] border border-slate-200/90 bg-white shadow-[0_18px_50px_rgba(15,23,42,0.08)] backdrop-blur-2xl;
     box-shadow:
-      inset 0 1px 0 rgb(255 255 255 / 6%),
-      0 22px 70px rgb(0 0 0 / 30%);
+      inset 0 1px 0 rgb(255 255 255 / 90%),
+      0 18px 50px rgb(15 23 42 / 8%);
     transition:
       border-color 0.18s ease-out,
       background-color 0.18s ease-out,
@@ -108,10 +108,10 @@
   }
 
   .finance-panel-soft {
-    @apply rounded-[24px] border border-white/[0.09] bg-white/[0.065] shadow-[0_16px_46px_rgba(0,0,0,0.18)] backdrop-blur-2xl;
+    @apply rounded-[20px] border border-slate-200/80 bg-slate-50/80 shadow-[0_12px_34px_rgba(15,23,42,0.06)] backdrop-blur-2xl;
     box-shadow:
-      inset 0 1px 0 rgb(255 255 255 / 5%),
-      0 16px 46px rgb(0 0 0 / 18%);
+      inset 0 1px 0 rgb(255 255 255 / 90%),
+      0 12px 34px rgb(15 23 42 / 6%);
     transition:
       border-color 0.18s ease-out,
       background-color 0.18s ease-out,
@@ -119,33 +119,33 @@
   }
 
   .finance-glass-panel {
-    @apply rounded-[30px] border border-white/[0.14] bg-[#171b23]/92 shadow-[0_28px_90px_rgba(0,0,0,0.44)] backdrop-blur-2xl;
+    @apply rounded-[24px] border border-slate-200/90 bg-white/95 shadow-[0_26px_70px_rgba(15,23,42,0.15)] backdrop-blur-2xl;
     box-shadow:
-      inset 0 1px 0 rgb(255 255 255 / 7%),
-      0 28px 90px rgb(0 0 0 / 44%);
+      inset 0 1px 0 rgb(255 255 255 / 90%),
+      0 26px 70px rgb(15 23 42 / 15%);
   }
 
   .finance-control {
-    @apply rounded-[20px] border border-white/[0.11] bg-white/[0.075] shadow-[inset_0_1px_0_rgba(255,255,255,0.055)] transition-all duration-200 ease-out hover:border-white/[0.18] hover:bg-white/[0.105];
+    @apply rounded-[18px] border border-slate-200 bg-slate-50 shadow-[inset_0_1px_0_rgba(255,255,255,0.9)] transition-all duration-200 ease-out hover:border-slate-300 hover:bg-white;
   }
 
   .finance-focus {
-    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-200/55 focus-visible:ring-offset-0;
+    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-300/70 focus-visible:ring-offset-0;
   }
 
   .page-heading {
-    @apply flex flex-col gap-3 rounded-[28px] border border-white/[0.10] bg-[#1b1f27]/82 p-4 shadow-[0_18px_56px_rgba(0,0,0,0.24)] backdrop-blur-2xl sm:flex-row sm:items-end sm:justify-between sm:p-5;
+    @apply flex flex-col gap-3 rounded-[24px] border border-slate-200/90 bg-white p-4 shadow-[0_18px_50px_rgba(15,23,42,0.07)] backdrop-blur-2xl sm:flex-row sm:items-end sm:justify-between sm:p-5;
     box-shadow:
-      inset 0 1px 0 rgb(255 255 255 / 6%),
-      0 18px 56px rgb(0 0 0 / 24%);
+      inset 0 1px 0 rgb(255 255 255 / 90%),
+      0 18px 50px rgb(15 23 42 / 7%);
   }
 
   .page-title {
-    @apply text-2xl font-semibold tracking-normal text-white sm:text-3xl;
+    @apply text-2xl font-semibold tracking-normal text-slate-950 sm:text-3xl;
   }
 
   .page-subtitle {
-    @apply mt-1 text-sm leading-6 text-slate-400;
+    @apply mt-1 text-sm leading-6 text-slate-500;
   }
 
   .summary-card {
@@ -160,11 +160,11 @@
   }
 
   .icon-button {
-    @apply flex h-9 w-9 items-center justify-center rounded-[15px] border border-white/[0.10] bg-white/[0.07] text-slate-300 transition-colors hover:border-white/[0.18] hover:bg-white/[0.12] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-200/55 focus-visible:ring-offset-0 disabled:cursor-not-allowed disabled:opacity-50;
+    @apply flex h-9 w-9 items-center justify-center rounded-[15px] border border-slate-200 bg-slate-50 text-slate-500 transition-colors hover:border-slate-300 hover:bg-white hover:text-slate-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-300/70 focus-visible:ring-offset-0 disabled:cursor-not-allowed disabled:opacity-50;
   }
 
   .primary-action {
-    @apply inline-flex min-h-11 items-center justify-center gap-2 rounded-[18px] border border-white/[0.10] bg-white px-4 py-2.5 text-sm font-semibold text-[#121417] shadow-[0_14px_34px_rgba(0,0,0,0.24)] transition-all duration-200 ease-out hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-200/55 focus-visible:ring-offset-0 disabled:opacity-50;
+    @apply inline-flex min-h-11 items-center justify-center gap-2 rounded-[18px] border border-blue-600 bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white shadow-[0_14px_34px_rgba(37,99,235,0.22)] transition-all duration-200 ease-out hover:bg-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-300/70 focus-visible:ring-offset-0 disabled:opacity-50;
   }
 
   .danger-action {
@@ -176,15 +176,15 @@
   }
 
   .field-label {
-    @apply mb-1.5 block text-xs font-medium text-slate-300;
+    @apply mb-1.5 block text-xs font-medium text-slate-700;
   }
 
   .field-input {
-    @apply w-full rounded-[20px] border border-white/[0.11] bg-white/[0.075] px-4 py-3 text-sm text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] outline-none placeholder-slate-500 transition-all duration-200 ease-out hover:border-white/[0.18] hover:bg-white/[0.105] focus:border-cyan-200;
+    @apply w-full rounded-[18px] border border-slate-200 bg-white px-4 py-3 text-sm text-slate-950 shadow-[inset_0_1px_0_rgba(255,255,255,0.9)] outline-none placeholder-slate-400 transition-all duration-200 ease-out hover:border-slate-300 focus:border-blue-400;
   }
 
   .widget-link {
-    @apply cursor-pointer hover:-translate-y-0.5 hover:border-cyan-100/24 hover:bg-white/[0.085] hover:shadow-[0_26px_72px_rgba(0,0,0,0.34)];
+    @apply cursor-pointer hover:-translate-y-0.5 hover:border-blue-200 hover:bg-white hover:shadow-[0_24px_64px_rgba(15,23,42,0.12)];
   }
 
   .desktop-list-header {
@@ -192,7 +192,7 @@
   }
 
   .finance-skeleton {
-    @apply rounded-[26px] border border-white/[0.09] bg-white/[0.06];
+    @apply rounded-[22px] border border-slate-200 bg-slate-100;
     background-image: linear-gradient(
       90deg,
       rgba(255, 255, 255, 0.025),
@@ -299,12 +299,12 @@ select {
 }
 
 select option {
-  background: #171b23;
-  color: #f8fafc;
+  background: #ffffff;
+  color: #101828;
 }
 
 input[type="date"]::-webkit-calendar-picker-indicator {
-  filter: invert(1) opacity(0.65);
+  filter: none;
 }
 
 .card-hover {
@@ -316,7 +316,7 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 
 .card-hover:hover {
   transform: translateY(-2px);
-  box-shadow: 0 28px 80px rgb(0 0 0 / 34%);
+  box-shadow: 0 28px 80px rgb(15 23 42 / 12%);
 }
 
 a,
@@ -339,7 +339,7 @@ button:active {
 input:focus,
 select:focus,
 textarea:focus {
-  box-shadow: 0 0 0 4px rgb(118 228 247 / 14%);
+  box-shadow: 0 0 0 4px rgb(37 99 235 / 12%);
 }
 
 @keyframes fadeIn {

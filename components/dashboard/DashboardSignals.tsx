@@ -76,7 +76,7 @@ function Donut({ value }: { value: number }) {
           cy="56"
           r={radius}
           fill="none"
-          stroke="rgba(255,255,255,0.07)"
+          stroke="#e5e7eb"
           strokeWidth="12"
         />
         <motion.circle
@@ -84,7 +84,7 @@ function Donut({ value }: { value: number }) {
           cy="56"
           r={radius}
           fill="none"
-          stroke={positive ? "#86efac" : "#fda4af"}
+          stroke={positive ? "#10b981" : "#ef4444"}
           strokeDasharray={circumference}
           initial={{ strokeDashoffset: circumference }}
           animate={{ strokeDashoffset: offset }}
@@ -95,7 +95,7 @@ function Donut({ value }: { value: number }) {
       </svg>
       <div className="absolute inset-0 grid place-items-center text-center">
         <div>
-          <p className="text-2xl font-bold text-white">{Math.round(value)}%</p>
+          <p className="text-2xl font-bold text-slate-950">{Math.round(value)}%</p>
           <p className="text-[10px] font-medium text-slate-500">saved</p>
         </div>
       </div>
@@ -121,12 +121,12 @@ export default function DashboardSignals({
 
   return (
     <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-      <div className="finance-panel card-hover flex min-h-[190px] items-center justify-between gap-5 p-5 hover:border-white/[0.14]">
+      <div className="finance-panel card-hover flex min-h-[190px] items-center justify-between gap-5 p-5 hover:border-blue-200">
         <div>
-          <div className="grid h-10 w-10 place-items-center rounded-3xl bg-emerald-300/15 text-emerald-200 ring-1 ring-emerald-200/15">
+          <div className="grid h-10 w-10 place-items-center rounded-[18px] bg-emerald-50 text-emerald-600 ring-1 ring-emerald-100">
             <Activity size={17} />
           </div>
-          <p className="mt-4 text-sm font-semibold text-white">Savings Rate</p>
+          <p className="mt-4 text-sm font-semibold text-slate-950">Savings Rate</p>
           <p className="mt-1 max-w-[13rem] text-xs leading-5 text-slate-500">
             {savingsPositive ? "Income retained this month" : "Overspent this month"}
           </p>
@@ -134,33 +134,33 @@ export default function DashboardSignals({
         <Donut value={savingsRate} />
       </div>
 
-      <div className="finance-panel card-hover min-h-[190px] p-5 hover:border-white/[0.14]">
+      <div className="finance-panel card-hover min-h-[190px] p-5 hover:border-blue-200">
         <div className="flex items-start justify-between gap-4">
           <div>
-            <p className="text-sm font-semibold text-white">Daily Spend</p>
+            <p className="text-sm font-semibold text-slate-950">Daily Spend</p>
             <p className="mt-1 text-xs text-slate-500">
               Month-to-date wave graph
             </p>
           </div>
-          <div className="grid h-10 w-10 place-items-center rounded-3xl bg-amber-300/15 text-amber-200 ring-1 ring-amber-200/15">
+          <div className="grid h-10 w-10 place-items-center rounded-[18px] bg-amber-50 text-amber-600 ring-1 ring-amber-100">
             <Flame size={17} />
           </div>
         </div>
         <div className="mt-4">
-          <p className="text-2xl font-bold text-white">{dailySpend}</p>
+          <p className="text-2xl font-bold text-slate-950">{dailySpend}</p>
           <Sparkline values={dailyExpenseTrend} />
         </div>
       </div>
 
-      <div className="finance-panel card-hover min-h-[190px] p-5 hover:border-white/[0.14]">
+      <div className="finance-panel card-hover min-h-[190px] p-5 hover:border-blue-200">
         <div className="flex items-start justify-between gap-4">
           <div>
-            <p className="text-sm font-semibold text-white">Active Days</p>
+            <p className="text-sm font-semibold text-slate-950">Active Days</p>
             <p className="mt-1 text-xs text-slate-500">
               {activeDayNumbers.length}/{daysInMonth} days with activity
             </p>
           </div>
-          <div className="grid h-10 w-10 place-items-center rounded-[18px] bg-white/[0.08] text-white ring-1 ring-white/[0.10]">
+          <div className="grid h-10 w-10 place-items-center rounded-[18px] bg-blue-50 text-blue-600 ring-1 ring-blue-100">
             <CalendarCheck size={17} />
           </div>
         </div>
@@ -181,8 +181,8 @@ export default function DashboardSignals({
                 }}
                 className={`aspect-square rounded-[9px] ${
                   active ?
-                    "bg-white shadow-[0_0_18px_rgba(255,255,255,0.22)]"
-                  : "bg-white/[0.055]"
+                    "bg-blue-600 shadow-[0_0_18px_rgba(37,99,235,0.22)]"
+                  : "bg-slate-100"
                 }`}
               />
             );

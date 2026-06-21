@@ -33,21 +33,21 @@ export default function StatCard({
   const content = (
     <div className="finance-panel card-hover widget-link flex min-h-[176px] flex-col justify-between gap-4 p-5">
       <div className="flex items-center justify-between gap-3">
-        <span className="text-slate-400 text-xs font-medium">{title}</span>
+        <span className="text-slate-500 text-xs font-medium">{title}</span>
         <div
-          className={`flex h-10 w-10 items-center justify-center rounded-[18px] ${iconBg} ring-1 ring-white/[0.08]`}
+          className={`flex h-10 w-10 items-center justify-center rounded-[18px] ${iconBg} ring-1 ring-slate-200/80`}
         >
           <Icon size={16} className={iconColor} />
         </div>
       </div>
       <div>
-        <p className="break-words text-xl font-bold leading-tight tracking-normal text-white">
+        <p className="break-words text-xl font-bold leading-tight tracking-normal text-slate-950">
           {amount}
         </p>
         <div className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1">
           <span className="text-slate-500 text-[11px]">approx. {usd}</span>
           <span
-            className={`flex items-center gap-0.5 rounded-full px-2 py-0.5 text-[11px] font-semibold ${positive ? "bg-green-500/10 text-green-300" : "bg-red-500/10 text-red-300"}`}
+            className={`flex items-center gap-0.5 rounded-full px-2 py-0.5 text-[11px] font-semibold ${positive ? "bg-emerald-50 text-emerald-700" : "bg-red-50 text-red-700"}`}
           >
             {positive ?
               <ArrowUpRight size={11} />
@@ -61,14 +61,14 @@ export default function StatCard({
           </p>
         )}
         {normalizedProgress !== null && (
-          <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-white/[0.07]">
+          <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-slate-100">
             <div
-              className="h-full rounded-full bg-white"
+              className="h-full rounded-full bg-slate-900"
               style={{ width: `${normalizedProgress}%` }}
             />
           </div>
         )}
-        <div className="mt-3 flex items-center gap-1 text-[11px] font-semibold text-white/72">
+        <div className="mt-3 flex items-center gap-1 text-[11px] font-semibold text-blue-600">
           Open detail
           <ArrowUpRight size={12} />
         </div>

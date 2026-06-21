@@ -19,7 +19,7 @@ export default function SpendingBreakdown({
   if (data.length === 0) {
     return (
       <div className="finance-panel flex h-full min-h-[260px] flex-col p-5">
-        <h3 className="text-white font-semibold text-sm mb-1">
+        <h3 className="text-slate-950 font-semibold text-sm mb-1">
           Spending Breakdown
         </h3>
         <p className="text-slate-500 text-xs">Top categories this month</p>
@@ -33,7 +33,7 @@ export default function SpendingBreakdown({
   return (
     <div className="finance-panel h-full p-4 sm:p-5">
       <div className="mb-4">
-        <h3 className="text-white font-semibold text-sm">
+        <h3 className="text-slate-950 font-semibold text-sm">
           Spending Breakdown
         </h3>
         <p className="text-slate-500 text-xs mt-1">Top categories this month</p>
@@ -60,11 +60,11 @@ export default function SpendingBreakdown({
               </Pie>
               <Tooltip
                 contentStyle={{
-                  background: "#111827",
-                  border: "1px solid rgba(255,255,255,0.10)",
+                  background: "#ffffff",
+                  border: "1px solid #e5e7eb",
                   borderRadius: 8,
                   fontSize: 11,
-                  color: "#e2e8f0",
+                  color: "#101828",
                 }}
                 formatter={(v: any) => [`PKR ${Number(v).toLocaleString()}`]}
               />
@@ -72,7 +72,7 @@ export default function SpendingBreakdown({
           </ResponsiveContainer>
           <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
             <p className="text-slate-500 text-[10px]">Total</p>
-            <p className="text-white text-xs font-semibold">
+            <p className="text-slate-950 text-xs font-semibold">
               PKR{" "}
               {total.toLocaleString(undefined, { maximumFractionDigits: 0 })}
             </p>
@@ -86,7 +86,7 @@ export default function SpendingBreakdown({
                   className="w-2 h-2 rounded-full flex-shrink-0"
                   style={{ background: item.color }}
                 />
-                <span className="truncate text-xs text-slate-300">
+                <span className="truncate text-xs text-slate-700">
                   {item.name}
                 </span>
               </div>

@@ -44,47 +44,47 @@ export default function TodaysOverview({
     : "No expense category needs attention today.";
 
   const tiles = [
-    { label: "Income", value: income, tone: "text-emerald-300" },
-    { label: "Expenses", value: expenses, tone: "text-rose-300" },
+    { label: "Income", value: income, tone: "text-emerald-600" },
+    { label: "Expenses", value: expenses, tone: "text-rose-600" },
     {
       label: "Net Today",
       value: net,
-      tone: netPositive ? "text-emerald-300" : "text-rose-300",
+      tone: netPositive ? "text-emerald-600" : "text-rose-600",
     },
     {
       label: "Entries",
       value: String(transactionCount),
-      tone: "text-sky-200",
+      tone: "text-sky-600",
     },
   ];
 
   const diagnostics = [
-    { label: "Active days", value: String(activeDays), tone: "text-white" },
-    { label: "Forecast", value: projectedExpenses, tone: "text-white" },
-    { label: "Days left", value: String(remainingDays), tone: "text-white" },
+    { label: "Active days", value: String(activeDays), tone: "text-slate-950" },
+    { label: "Forecast", value: projectedExpenses, tone: "text-slate-950" },
+    { label: "Days left", value: String(remainingDays), tone: "text-slate-950" },
     {
       label: "AI confidence",
       value: savingsRate >= 0 ? "Stable" : "Watch",
-      tone: "text-white",
+      tone: "text-slate-950",
     },
   ];
 
   return (
     <section className="finance-panel relative overflow-hidden p-5 sm:p-6">
-      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/25 to-transparent" />
+      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-blue-200 to-transparent" />
       <div className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
         <div>
           <div className="flex items-start justify-between gap-4">
             <div>
-              <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-white/55">
+              <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-blue-500">
                 <Sparkles size={14} />
                 Today's Overview
               </div>
-              <h3 className="mt-2 text-2xl font-bold tracking-normal text-white">
+              <h3 className="mt-2 text-2xl font-bold tracking-normal text-slate-950">
                 Live financial pulse
               </h3>
             </div>
-            <div className="grid h-11 w-11 flex-shrink-0 place-items-center rounded-[18px] bg-white/[0.08] text-white ring-1 ring-white/[0.10]">
+            <div className="grid h-11 w-11 flex-shrink-0 place-items-center rounded-[18px] bg-blue-50 text-blue-600 ring-1 ring-blue-100">
               <Activity size={19} />
             </div>
           </div>
@@ -94,7 +94,7 @@ export default function TodaysOverview({
             {tiles.map((tile) => (
               <div
                 key={tile.label}
-                className="rounded-3xl border border-white/[0.08] bg-white/[0.045] p-4"
+                className="rounded-[20px] border border-slate-200 bg-slate-50/80 p-4"
               >
                 <p className="text-[11px] font-medium text-slate-500">
                   {tile.label}
@@ -111,7 +111,7 @@ export default function TodaysOverview({
             {diagnostics.map((diag) => (
               <div
                 key={diag.label}
-                className="rounded-3xl border border-white/[0.08] bg-white/[0.045] p-4"
+                className="rounded-[20px] border border-slate-200 bg-slate-50/80 p-4"
               >
                 <p className="text-[11px] font-medium text-slate-500">
                   {diag.label}
@@ -125,30 +125,30 @@ export default function TodaysOverview({
         </div>
 
         <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-1">
-          <div className="rounded-3xl border border-white/[0.08] bg-white/[0.045] p-4">
-            <div className="flex items-center gap-2 text-sm font-semibold text-white">
-              <BrainCircuit size={16} className="text-violet-200" />
+          <div className="rounded-[20px] border border-slate-200 bg-slate-50/80 p-4">
+            <div className="flex items-center gap-2 text-sm font-semibold text-slate-950">
+              <BrainCircuit size={16} className="text-violet-600" />
               AI engine insight
             </div>
-            <p className="mt-3 text-sm leading-6 text-slate-300">
+            <p className="mt-3 text-sm leading-6 text-slate-700">
               {engineStatus}
             </p>
             <p className="mt-2 text-xs text-slate-500">{focus}</p>
           </div>
 
-          <div className="rounded-3xl border border-white/[0.08] bg-white/[0.045] p-4">
-            <div className="flex items-center gap-2 text-sm font-semibold text-white">
-              <ShieldCheck size={16} className="text-emerald-200" />
+          <div className="rounded-[20px] border border-slate-200 bg-slate-50/80 p-4">
+            <div className="flex items-center gap-2 text-sm font-semibold text-slate-950">
+              <ShieldCheck size={16} className="text-emerald-600" />
               Command center check
             </div>
             <div className="mt-3 flex items-end justify-between gap-4">
               <div>
                 <p className="text-xs text-slate-500">Average daily spend</p>
-                <p className="mt-1 text-lg font-bold text-white">
+                <p className="mt-1 text-lg font-bold text-slate-950">
                   {avgDailySpend}
                 </p>
               </div>
-              <div className="grid h-11 w-11 place-items-center rounded-3xl bg-emerald-300/15 text-emerald-200">
+              <div className="grid h-11 w-11 place-items-center rounded-[18px] bg-emerald-50 text-emerald-600">
                 <Wallet size={18} />
               </div>
             </div>
