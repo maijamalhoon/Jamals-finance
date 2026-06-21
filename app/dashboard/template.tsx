@@ -1,7 +1,9 @@
+import PageTransition from "@/components/motion/PageTransition";
+
 export default function DashboardTemplate({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  return <div className="page-enter">{children}</div>;
+  return <PageTransition>{children}</PageTransition>;
 }

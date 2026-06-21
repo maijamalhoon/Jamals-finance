@@ -46,7 +46,7 @@ export default function ResetPasswordPage() {
     <main className="chat-auth-shell grid min-h-screen place-items-center px-4 py-8">
       <div className="w-full max-w-md">
         <div className="mb-8 flex flex-col items-center text-center">
-          <div className="mb-5 grid h-14 w-14 place-items-center rounded-[22px] bg-slate-950 text-white shadow-[0_18px_50px_rgba(15,23,42,0.18)]">
+          <div className="mb-5 grid h-14 w-14 place-items-center rounded-[22px] bg-slate-950 text-text-primary shadow-[0_18px_50px_rgba(15,23,42,0.18)]">
             <BarChart3 size={24} />
           </div>
           <h1 className="text-[28px] font-semibold text-slate-950">

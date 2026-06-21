@@ -204,7 +204,7 @@ export default function LoginPage() {
 
         <div className="flex flex-1 flex-col justify-center py-8">
           <div className="mb-7 text-center">
-            <div className="mx-auto mb-5 grid h-14 w-14 place-items-center rounded-[18px] border border-slate-200 bg-white text-slate-950 shadow-[0_18px_46px_rgba(15,23,42,0.10)]">
+            <div className="mx-auto mb-5 grid h-14 w-14 place-items-center rounded-[18px] border border-slate-200 bg-card text-slate-950 shadow-[0_18px_46px_rgba(15,23,42,0.10)]">
               {step === "otp" ? <MailCheck size={25} /> : <BarChart3 size={25} />}
             </div>
             <h1 className="text-[29px] font-semibold leading-tight tracking-normal text-slate-950">
@@ -406,14 +406,14 @@ export default function LoginPage() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.18 }}
-            className="fixed inset-0 z-50 grid place-items-center bg-white/72 px-4 backdrop-blur-xl"
+            className="fixed inset-0 z-50 grid place-items-center bg-background px-4"
           >
             <motion.div
               initial={{ opacity: 0, y: 10, scale: 0.98 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 8, scale: 0.98 }}
               transition={{ duration: 0.18 }}
-              className="w-full max-w-xs rounded-[28px] border border-slate-200 bg-white p-7 text-center shadow-[0_24px_80px_rgba(15,23,42,0.16)]"
+              className="w-full max-w-xs rounded-[28px] border border-slate-200 bg-card p-7 text-center shadow-[0_24px_80px_rgba(15,23,42,0.16)]"
             >
               <LoaderCircle className="mx-auto h-9 w-9 animate-spin text-slate-950" />
               <p className="mt-5 text-base font-semibold text-slate-950">

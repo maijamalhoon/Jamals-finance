@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "sonner";
+import MotionProvider from "@/components/motion/MotionProvider";
 
 const geistSans = Geist({
   subsets: ["latin"],
@@ -22,7 +23,10 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   maximumScale: 5,
-  themeColor: "#070a0e",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#f7f9fc" },
+    { media: "(prefers-color-scheme: dark)", color: "#090c11" },
+  ],
 };
 
 export default function RootLayout({
@@ -31,19 +35,38 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={`${geistSans.variable} ${geistMono.variable}`}>
-      <body className="bg-background text-foreground antialiased">
-        {children}
-        <Toaster
-          position="top-right"
-          toastOptions={{
-            style: {
-              background: "#101820",
-              border: "1px solid rgba(255,255,255,0.10)",
-              color: "#fff",
-            },
+    <html
+      lang="en"
+      className={`${geistSans.variable} ${geistMono.variable}`}
+      suppressHydrationWarning
+    >
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+try {
+  var savedTheme = localStorage.getItem("jamal-theme");
+  var prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+  var shouldUseDark = (savedTheme && savedTheme === "dark") || (!savedTheme && prefersDark);
+  document.documentElement.classList.toggle("dark", shouldUseDark);
+  document.documentElement.style.colorScheme = shouldUseDark ? "dark" : "light";
+} catch (_) {}
+            `,
           }}
         />
+      </head>
+      <body className="bg-background text-foreground antialiased">
+        <MotionProvider>
+          {children}
+          <Toaster
+            position="top-right"
+            toastOptions={{
+              classNames: {
+                toast: "theme-toast",
+              },
+            }}
+          />
+        </MotionProvider>
       </body>
     </html>
   );

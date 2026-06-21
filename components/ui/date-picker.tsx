@@ -116,23 +116,23 @@ export default function DatePicker({
         onClick={() => setOpen((current) => !current)}
         className={cn(
           "field-input finance-focus flex cursor-pointer items-center justify-between gap-3 pr-3 text-left",
-          !value && "text-slate-500",
+          !value && "text-text-secondary",
           disabled && "cursor-not-allowed opacity-50",
         )}
         aria-haspopup="dialog"
         aria-expanded={open}
       >
         <span>{value ? displayDate(value) : placeholder}</span>
-        <CalendarDays size={16} className="text-slate-400" aria-hidden="true" />
+        <CalendarDays size={16} className="text-text-secondary" aria-hidden="true" />
       </button>
 
       {open && !disabled && (
         <div
-          className="finance-date-popover absolute left-0 top-[calc(100%+10px)] z-[160] w-[320px] overflow-hidden rounded-[28px] border border-white/[0.13] bg-[#171b23]/95 p-3 text-white shadow-[0_28px_90px_rgba(0,0,0,0.46)] backdrop-blur-2xl"
+          className="finance-date-popover absolute left-0 top-[calc(100%+10px)] z-[160] w-[320px] overflow-hidden rounded-[28px] border border-border bg-card p-3 text-text-primary shadow-theme"
           role="dialog"
           aria-label="Choose date"
         >
-          <div className="mb-3 flex items-center justify-between rounded-[22px] border border-white/[0.08] bg-white/[0.055] px-2 py-2">
+          <div className="mb-3 flex items-center justify-between rounded-[22px] border border-border bg-muted px-2 py-2">
             <button
               type="button"
               onClick={() => moveMonth(-1)}
@@ -142,13 +142,13 @@ export default function DatePicker({
               <ChevronLeft size={16} />
             </button>
             <div className="text-center">
-              <p className="text-sm font-semibold text-white">
+              <p className="text-sm font-semibold text-text-primary">
                 {viewDate.toLocaleDateString("en-US", {
                   month: "long",
                   year: "numeric",
                 })}
               </p>
-              <p className="text-[11px] text-slate-500">Pick transaction date</p>
+              <p className="text-[11px] text-text-secondary">Pick transaction date</p>
             </div>
             <button
               type="button"
@@ -164,7 +164,7 @@ export default function DatePicker({
             {WEEKDAYS.map((weekday, index) => (
               <div
                 key={`${weekday}-${index}`}
-                className="grid h-8 place-items-center text-[11px] font-semibold text-slate-500"
+                className="grid h-8 place-items-center text-[11px] font-semibold text-text-secondary"
               >
                 {weekday}
               </div>
@@ -186,11 +186,11 @@ export default function DatePicker({
                   }}
                   className={cn(
                     "finance-focus grid h-10 place-items-center rounded-[16px] text-sm font-medium transition-all",
-                    outside && "text-slate-700",
-                    !outside && "text-slate-300 hover:bg-white/[0.08] hover:text-white",
-                    current && "ring-1 ring-cyan-200/45",
+                    outside && "text-text-secondary",
+                    !outside && "text-text-primary hover:bg-hover",
+                    current && "ring-1 ring-border",
                     selected &&
-                      "bg-white text-[#101318] shadow-[0_12px_28px_rgba(0,0,0,0.26)] hover:bg-white hover:text-[#101318]",
+                      "bg-active text-background hover:bg-active hover:text-background",
                     unavailable && "cursor-not-allowed opacity-30",
                   )}
                 >
@@ -208,14 +208,14 @@ export default function DatePicker({
                 setViewDate(today);
                 setOpen(false);
               }}
-              className="finance-focus flex-1 rounded-[18px] border border-white/[0.10] bg-white/[0.07] px-3 py-2 text-xs font-semibold text-white transition-colors hover:bg-white/[0.11]"
+              className="finance-focus flex-1 rounded-[18px] border border-border bg-muted px-3 py-2 text-xs font-semibold text-text-primary transition-colors hover:bg-hover"
             >
               Today
             </button>
             <button
               type="button"
               onClick={() => setOpen(false)}
-              className="finance-focus flex-1 rounded-[18px] border border-white/[0.10] bg-white text-[#101318] px-3 py-2 text-xs font-semibold transition-colors hover:bg-slate-100"
+              className="finance-focus flex-1 rounded-[18px] border border-active bg-active px-3 py-2 text-xs font-semibold text-background transition-colors hover:bg-active"
             >
               Done
             </button>
