@@ -48,7 +48,7 @@ export default function TransactionRow({ tx }: { tx: Transaction }) {
 
   return (
     <>
-      <div className="group grid grid-cols-[auto,1fr] gap-3 border-b border-slate-100 py-3.5 last:border-0 md:flex md:items-center">
+      <div className="motion-table-row group grid grid-cols-[auto,1fr] gap-3 rounded-[14px] border-b border-slate-100 py-3.5 transition-all duration-200 hover:bg-hover last:border-0 md:flex md:items-center">
         <div
           className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg text-xs font-bold ring-1 ring-slate-200"
           style={{ background: `${catColor}22`, color: catColor }}

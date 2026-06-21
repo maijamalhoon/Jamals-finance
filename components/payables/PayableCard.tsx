@@ -92,14 +92,14 @@ export default function PayableCard({
                 {meta.label}
               </span>
               {payable.due_date && (
-                <span className="inline-flex items-center gap-1 rounded-full bg-white/[0.045] px-2.5 py-1 text-xs text-slate-400">
+                <span className="inline-flex items-center gap-1 rounded-full bg-surface-secondary px-2.5 py-1 text-xs text-slate-400">
                   <CalendarClock size={12} />
                   Due {new Date(payable.due_date).toLocaleDateString()}
                 </span>
               )}
             </div>
 
-            <h3 className="mt-3 break-words text-lg font-bold text-white">
+            <h3 className="mt-3 break-words text-lg font-bold text-text-primary">
               {payable.person_name}
             </h3>
             <p className="mt-1 text-sm leading-6 text-slate-400">
@@ -107,20 +107,20 @@ export default function PayableCard({
               {payable.item_name ? ` - ${payable.item_name}` : ""}
             </p>
             {payable.notes && (
-              <p className="mt-2 rounded-2xl border border-white/[0.06] bg-white/[0.035] p-3 text-xs leading-5 text-slate-500">
+              <p className="mt-2 rounded-2xl border border-border bg-surface-secondary p-3 text-xs leading-5 text-slate-500">
                 {payable.notes}
               </p>
             )}
           </div>
 
           <div className="grid min-w-0 grid-cols-2 gap-2 sm:min-w-[360px]">
-            <div className="rounded-2xl border border-white/[0.08] bg-white/[0.045] p-3">
+            <div className="rounded-2xl border border-border bg-surface-secondary p-3">
               <p className="text-[11px] text-slate-500">Actual Value</p>
-              <p className="mt-1 break-words text-sm font-bold text-white">
+              <p className="mt-1 break-words text-sm font-bold text-text-primary">
                 {formatPKR(total)}
               </p>
             </div>
-            <div className="rounded-2xl border border-white/[0.08] bg-white/[0.045] p-3">
+            <div className="rounded-2xl border border-border bg-surface-secondary p-3">
               <p className="text-[11px] text-slate-500">Remaining</p>
               <p className="mt-1 break-words text-sm font-bold text-amber-200">
                 {formatPKR(remaining)}
@@ -136,9 +136,9 @@ export default function PayableCard({
               {Math.round(progress)}%
             </span>
           </div>
-          <div className="h-2 overflow-hidden rounded-full bg-white/[0.06]">
+          <div className="h-2 overflow-hidden rounded-full bg-surface-secondary">
             <div
-              className="h-full rounded-full bg-white transition-all"
+              className="motion-progress-fill h-full rounded-full bg-card transition-all"
               style={{ width: `${progress}%` }}
             />
           </div>
@@ -156,7 +156,7 @@ export default function PayableCard({
             </button>
             <button
               onClick={() => setEditOpen(true)}
-              className="primary-action bg-white/[0.08] px-3 py-2 text-xs text-white shadow-none hover:bg-white/[0.12]"
+              className="primary-action bg-surface-secondary px-3 py-2 text-xs text-text-primary shadow-none hover:bg-hover"
             >
               <Pencil size={14} />
               Edit
@@ -175,14 +175,14 @@ export default function PayableCard({
           </p>
         </div>
 
-        <div className="mt-5 border-t border-white/[0.08] pt-4">
+        <div className="mt-5 border-t border-border pt-4">
           <div className="mb-3 flex items-center gap-2">
-            <ReceiptText size={14} className="text-white/75" />
-            <p className="text-sm font-semibold text-white">Payment History</p>
+            <ReceiptText size={14} className="text-text-secondary" />
+            <p className="text-sm font-semibold text-text-primary">Payment History</p>
           </div>
 
           {payments.length === 0 ? (
-            <p className="rounded-2xl border border-white/[0.06] bg-white/[0.035] p-3 text-xs text-slate-500">
+            <p className="rounded-2xl border border-border bg-surface-secondary p-3 text-xs text-slate-500">
               No payments recorded yet.
             </p>
           ) : (
@@ -190,10 +190,10 @@ export default function PayableCard({
               {payments.map((payment) => (
                 <div
                   key={payment.id}
-                  className="flex flex-col gap-2 rounded-2xl border border-white/[0.06] bg-white/[0.035] p-3 sm:flex-row sm:items-center sm:justify-between"
+                  className="flex flex-col gap-2 rounded-2xl border border-border bg-surface-secondary p-3 sm:flex-row sm:items-center sm:justify-between"
                 >
                   <div>
-                    <p className="text-sm font-semibold text-white">
+                    <p className="text-sm font-semibold text-text-primary">
                       {formatPKR(payment.amount)}
                     </p>
                     <p className="mt-0.5 text-xs text-slate-500">

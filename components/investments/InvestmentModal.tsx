@@ -121,8 +121,8 @@ export default function InvestmentModal({
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="finance-glass-panel max-w-md gap-0 p-0 text-white">
-        <DialogHeader className="border-b border-white/[0.08] p-5">
+      <DialogContent className="finance-panel max-w-md gap-0 p-0 text-text-primary">
+        <DialogHeader className="border-b border-border p-5">
           <DialogTitle className="text-base font-semibold">
             {isEditing ? "Edit Investment" : "Add Investment"}
           </DialogTitle>
@@ -151,8 +151,8 @@ export default function InvestmentModal({
                   onClick={() => setType(item.value)}
                   className={`finance-focus rounded-[18px] border px-3 py-2.5 text-sm font-semibold transition-colors ${
                     type === item.value
-                      ? "border-white bg-white text-[#111318]"
-                      : "border-white/[0.10] bg-white/[0.055] text-slate-400 hover:bg-white/[0.09] hover:text-white"
+                      ? "border-border bg-card text-text-primary"
+                      : "border-border bg-surface-secondary text-slate-400 hover:bg-hover hover:text-text-primary"
                   }`}
                 >
                   {item.label}

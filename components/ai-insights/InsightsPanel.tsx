@@ -82,12 +82,12 @@ function HealthMeter({ score, label }: { score: number; label: string }) {
           />
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-center">
-          <p className="text-white text-3xl font-bold">{score}</p>
+          <p className="text-text-primary text-3xl font-bold">{score}</p>
           <p className="text-xs text-slate-500">/ 100</p>
         </div>
       </div>
 
-      <p className="text-white font-semibold mt-4 text-sm">{label}</p>
+      <p className="text-text-primary font-semibold mt-4 text-sm">{label}</p>
     </div>
   );
 }
@@ -124,8 +124,8 @@ export default function InsightsPanel() {
       )}
       {loading && (
         <div className="finance-panel flex flex-col items-center gap-3 p-6">
-          <div className="h-36 w-36 animate-pulse rounded-full bg-white/[0.06]" />
-          <div className="h-4 w-24 animate-pulse rounded bg-white/[0.06]" />
+          <div className="h-36 w-36 animate-pulse rounded-full bg-surface-secondary" />
+          <div className="h-4 w-24 animate-pulse rounded bg-surface-secondary" />
         </div>
       )}
 
@@ -133,10 +133,10 @@ export default function InsightsPanel() {
       <div className="finance-panel p-5">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2.5">
-            <div className="flex h-8 w-8 items-center justify-center rounded-[15px] bg-white/[0.08]">
-              <Brain size={15} className="text-white/80" />
+            <div className="flex h-8 w-8 items-center justify-center rounded-[15px] bg-surface-secondary">
+              <Brain size={15} className="text-text-secondary" />
             </div>
-            <h3 className="text-white font-medium text-sm">AI Insights</h3>
+            <h3 className="text-text-primary font-medium text-sm">AI Insights</h3>
           </div>
           <button
             onClick={load}
@@ -156,7 +156,7 @@ export default function InsightsPanel() {
             {[1, 2, 3, 4].map((i) => (
               <div
                 key={i}
-                className="h-16 animate-pulse rounded-2xl bg-white/[0.06]"
+                className="h-16 animate-pulse rounded-2xl bg-surface-secondary"
               />
             ))}
           </div>
@@ -165,7 +165,7 @@ export default function InsightsPanel() {
             <p className="text-red-400 text-sm">{error}</p>
             <button
               onClick={load}
-              className="mt-3 text-xs text-white/70 hover:text-white"
+              className="mt-3 text-xs text-text-secondary hover:text-text-primary"
             >
               Try again
             </button>

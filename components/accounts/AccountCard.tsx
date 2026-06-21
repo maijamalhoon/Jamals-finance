@@ -30,7 +30,7 @@ export default function AccountCard({
 
   return (
     <>
-      <div className="finance-panel card-hover group relative p-5 hover:border-white/[0.14]">
+      <div className="finance-panel card-hover group relative p-5 hover:border-border">
         <div className="absolute right-4 top-4 flex gap-1 opacity-100 transition-opacity sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100">
           <button
             onClick={() => setEditOpen(true)}
@@ -55,7 +55,7 @@ export default function AccountCard({
           <Icon size={19} />
         </div>
 
-        <p className="mb-2 break-words pr-16 text-base font-semibold text-white">
+        <p className="mb-2 break-words pr-16 text-base font-semibold text-text-primary">
           {account.name}
         </p>
 
@@ -65,9 +65,9 @@ export default function AccountCard({
           {cfg.label}
         </span>
 
-        <div className="mt-4 border-t border-white/[0.08] pt-4">
+        <div className="mt-4 border-t border-border pt-4">
           <p className="mb-1 text-xs text-slate-500">Balance</p>
-          <p className="break-words text-xl font-bold text-white">
+          <p className="break-words text-xl font-bold text-text-primary">
             {formatPKR(account.balance)}
           </p>
           <p className="mt-0.5 text-xs text-slate-600">

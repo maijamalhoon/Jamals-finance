@@ -105,8 +105,8 @@ export default function PayableModal({ open, onClose, payable }: Props) {
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="finance-glass-panel max-w-lg gap-0 p-0 text-white">
-        <DialogHeader className="border-b border-white/[0.08] p-5">
+      <DialogContent className="finance-panel max-w-lg gap-0 p-0 text-text-primary">
+        <DialogHeader className="border-b border-border p-5">
           <DialogTitle className="text-base font-semibold">
             {isEditing ? "Edit Payable" : "Add Payable"}
           </DialogTitle>
@@ -148,7 +148,7 @@ export default function PayableModal({ open, onClose, payable }: Props) {
                   key={label}
                   type="button"
                   onClick={() => setReason(label)}
-                  className="finance-focus inline-flex items-center gap-1.5 rounded-xl border border-white/[0.08] bg-white/[0.045] px-2.5 py-1.5 text-xs text-slate-300 hover:bg-white/[0.08]"
+                  className="finance-focus inline-flex items-center gap-1.5 rounded-xl border border-border bg-surface-secondary px-2.5 py-1.5 text-xs text-slate-300 hover:bg-hover"
                 >
                   <Icon size={12} />
                   {label}

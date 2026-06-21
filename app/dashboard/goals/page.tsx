@@ -41,12 +41,12 @@ export default async function GoalsPage() {
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
           <div className="summary-card">
             <p className="mb-1.5 text-xs text-slate-500">Total Target</p>
-            <p className="text-xl font-bold text-white">{fmt(totalTarget)}</p>
+            <p className="text-xl font-bold text-text-primary">{fmt(totalTarget)}</p>
           </div>
 
           <div className="summary-card">
             <p className="mb-1.5 text-xs text-slate-500">Total Saved</p>
-            <p className="text-xl font-bold text-white">{fmt(totalSaved)}</p>
+            <p className="text-xl font-bold text-text-primary">{fmt(totalSaved)}</p>
           </div>
 
           <div className="summary-card">
@@ -54,9 +54,9 @@ export default async function GoalsPage() {
             <p className="text-xl font-bold text-amber-300">
               {overallPct.toFixed(1)}%
             </p>
-            <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-white/[0.06]">
+            <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-surface-secondary">
               <div
-                className="h-full rounded-full bg-amber-300"
+                className="motion-progress-fill h-full rounded-full bg-amber-300"
                 style={{ width: `${Math.min(overallPct, 100)}%` }}
               />
             </div>

@@ -136,7 +136,7 @@ export default function CategoriesSettings({
             }}
             aria-label={`Pick ${color}`}
           >
-            {value === color && <Check size={12} className="text-white" />}
+            {value === color && <Check size={12} className="text-text-primary" />}
           </button>
         ))}
       </div>
@@ -166,8 +166,8 @@ export default function CategoriesSettings({
             onClick={() => onChange("")}
             className={`finance-focus rounded-full border px-3 py-1.5 text-[11px] font-semibold transition-colors ${
               !value
-                ? "border-white bg-white text-[#111318]"
-                : "border-white/[0.10] bg-white/[0.055] text-slate-400 hover:bg-white/[0.09] hover:text-white"
+                ? "border-border bg-card text-text-primary"
+                : "border-border bg-surface-secondary text-slate-400 hover:bg-hover hover:text-text-primary"
             }`}
           >
             Top level
@@ -179,8 +179,8 @@ export default function CategoriesSettings({
               onClick={() => onChange(root.id)}
               className={`finance-focus rounded-full border px-3 py-1.5 text-[11px] font-semibold transition-colors ${
                 value === root.id
-                  ? "border-white bg-white text-[#111318]"
-                  : "border-white/[0.10] bg-white/[0.055] text-slate-400 hover:bg-white/[0.09] hover:text-white"
+                  ? "border-border bg-card text-text-primary"
+                  : "border-border bg-surface-secondary text-slate-400 hover:bg-hover hover:text-text-primary"
               }`}
             >
               {root.name}
@@ -229,7 +229,7 @@ export default function CategoriesSettings({
     };
 
     const renderEditor = (category: Category) => (
-      <div className="rounded-[24px] border border-white/[0.10] bg-white/[0.065] p-3">
+      <div className="rounded-[24px] border border-border bg-surface-secondary p-3">
         <input
           value={editName}
           onChange={(event) => setEditName(event.target.value)}
@@ -261,7 +261,7 @@ export default function CategoriesSettings({
           <button
             type="button"
             onClick={() => setEditingId(null)}
-            className="finance-focus inline-flex items-center gap-1 rounded-[14px] border border-white/[0.10] bg-white/[0.055] px-3 py-2 text-xs font-semibold text-slate-300 hover:bg-white/[0.09]"
+            className="finance-focus inline-flex items-center gap-1 rounded-[14px] border border-border bg-surface-secondary px-3 py-2 text-xs font-semibold text-slate-300 hover:bg-hover"
           >
             <X size={12} />
             Cancel
@@ -285,7 +285,7 @@ export default function CategoriesSettings({
       return (
         <div
           key={category.id}
-          className={`group rounded-[22px] border border-white/[0.07] bg-white/[0.045] p-3 transition-colors hover:border-white/[0.13] hover:bg-white/[0.065] ${
+          className={`group rounded-[22px] border border-border bg-surface-secondary p-3 transition-colors hover:border-border hover:bg-hover/[0.065] ${
             nested ? "ml-5" : ""
           }`}
         >
@@ -295,7 +295,7 @@ export default function CategoriesSettings({
               style={{ background: category.color }}
             />
             <div className="min-w-0 flex-1">
-              <span className="block truncate text-sm font-semibold text-white">
+              <span className="block truncate text-sm font-semibold text-text-primary">
                 {category.name}
               </span>
               <span className="text-[11px] text-slate-500">
@@ -320,15 +320,15 @@ export default function CategoriesSettings({
             </button>
           </div>
           <div className="mt-3 grid grid-cols-2 gap-2">
-            <div className="rounded-[18px] border border-white/[0.06] bg-black/10 px-3 py-2">
+            <div className="rounded-[18px] border border-border bg-black/10 px-3 py-2">
               <p className="text-[10px] uppercase text-slate-600">
                 This month
               </p>
-              <p className="mt-0.5 truncate text-xs font-bold text-white">
+              <p className="mt-0.5 truncate text-xs font-bold text-text-primary">
                 {fmt(stat.monthAmount)}
               </p>
             </div>
-            <div className="rounded-[18px] border border-white/[0.06] bg-black/10 px-3 py-2">
+            <div className="rounded-[18px] border border-border bg-black/10 px-3 py-2">
               <p className="text-[10px] uppercase text-slate-600">
                 Total {label}
               </p>
@@ -361,7 +361,7 @@ export default function CategoriesSettings({
               setNewColor(COLORS[0]);
               setParentId("");
             }}
-            className="finance-focus flex items-center gap-1.5 rounded-[16px] border border-white/[0.10] bg-white/[0.065] px-3 py-2 text-xs font-semibold text-white/80 transition-colors hover:bg-white/[0.10] hover:text-white"
+            className="finance-focus flex items-center gap-1.5 rounded-[16px] border border-border bg-surface-secondary px-3 py-2 text-xs font-semibold text-text-secondary transition-colors hover:bg-hover hover:text-text-primary"
           >
             <Plus size={13} /> Add
           </button>
@@ -379,7 +379,7 @@ export default function CategoriesSettings({
         </div>
 
         {addingFor === type && (
-          <div className="mt-3 space-y-3 rounded-[24px] border border-white/[0.10] bg-white/[0.06] p-3">
+          <div className="mt-3 space-y-3 rounded-[24px] border border-border bg-surface-secondary p-3">
             <input
               value={newName}
               onChange={(event) => setNewName(event.target.value)}
@@ -406,7 +406,7 @@ export default function CategoriesSettings({
               <button
                 type="button"
                 onClick={() => setAddingFor(null)}
-                className="finance-focus rounded-[14px] border border-white/[0.10] bg-white/[0.055] px-3 py-2 text-xs font-semibold text-slate-300 transition-colors hover:bg-white/[0.09]"
+                className="finance-focus rounded-[14px] border border-border bg-surface-secondary px-3 py-2 text-xs font-semibold text-slate-300 transition-colors hover:bg-hover"
               >
                 Cancel
               </button>
@@ -421,12 +421,12 @@ export default function CategoriesSettings({
     <div className="finance-panel p-5">
       <div className="mb-5 flex items-center justify-between gap-3">
         <div>
-          <h3 className="text-sm font-semibold text-white">Categories</h3>
+          <h3 className="text-sm font-semibold text-text-primary">Categories</h3>
           <p className="mt-1 text-xs text-slate-500">
             Full control over income sources and expense groups.
           </p>
         </div>
-        <span className="rounded-full border border-white/[0.10] bg-white/[0.055] px-3 py-1 text-[11px] font-semibold text-slate-400">
+        <span className="rounded-full border border-border bg-surface-secondary px-3 py-1 text-[11px] font-semibold text-slate-400">
           {categories.length} total
         </span>
       </div>

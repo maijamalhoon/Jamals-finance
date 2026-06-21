@@ -46,7 +46,7 @@ export default function ProfileSettings({ email }: { email: string }) {
 
   return (
     <div className="finance-panel p-5">
-      <h3 className="mb-4 text-sm font-semibold text-white">Profile</h3>
+      <h3 className="mb-4 text-sm font-semibold text-text-primary">Profile</h3>
 
       <div className="space-y-4">
         <div>
@@ -58,7 +58,7 @@ export default function ProfileSettings({ email }: { email: string }) {
           />
         </div>
 
-        <div className="border-t border-white/[0.08] pt-4">
+        <div className="border-t border-border pt-4">
           <p className="mb-3 text-xs font-medium text-slate-400">
             Change Password
           </p>

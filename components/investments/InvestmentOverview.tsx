@@ -1,0 +1,387 @@
+"use client";
+
+import { useEffect, useMemo, useState } from "react";
+import CountUp from "react-countup";
+import { motion } from "framer-motion";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import {
+  ArrowDownRight,
+  ArrowRight,
+  ArrowUpRight,
+  Brain,
+  Pencil,
+  Sparkles,
+  Trash2,
+  TrendingUp,
+  WalletCards,
+} from "lucide-react";
+import { createClient } from "@/lib/supabase/client";
+import InvestmentModal, { ExistingInvestment } from "./InvestmentModal";
+
+const TYPE_META: Record<string, { label: string; color: string }> = {
+  crypto: { label: "Crypto", color: "#f59e0b" },
+  stocks: { label: "Stocks", color: "#3b82f6" },
+  savings: { label: "Savings", color: "#22c55e" },
+  real_estate: { label: "Real Estate", color: "#a855f7" },
+  other: { label: "Other", color: "#64748b" },
+};
+
+const ringTrack = "color-mix(in srgb, var(--border), transparent 12%)";
+const profitColor = "#16a34a";
+const lossColor = "#dc2626";
+
+interface Insight {
+  type: "positive" | "warning" | "tip";
+  title: string;
+  message: string;
+}
+
+function formatCurrency(value: number) {
+  return `PKR ${value.toLocaleString("en-PK", { maximumFractionDigits: 0 })}`;
+}
+
+function shortCurrency(value: number) {
+  if (Math.abs(value) >= 1_000_000) {
+    return `PKR ${(value / 1_000_000).toFixed(1)}M`;
+  }
+  if (Math.abs(value) >= 1_000) {
+    return `PKR ${(value / 1_000).toFixed(0)}K`;
+  }
+  return formatCurrency(value);
+}
+
+function InvestmentDonut({
+  investment,
+  index,
+}: {
+  investment: ExistingInvestment;
+  index: number;
+}) {
+  const router = useRouter();
+  const supabase = createClient();
+  const [editOpen, setEditOpen] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+
+  const quantity = Number(investment.quantity);
+  const invested = quantity * Number(investment.purchase_price);
+  const currentValue = quantity * Number(investment.current_price);
+  const pnl = currentValue - invested;
+  const pct = invested > 0 ? (pnl / invested) * 100 : 0;
+  const isProfit = pnl >= 0;
+  const color = isProfit ? profitColor : lossColor;
+  const accent = TYPE_META[investment.type]?.color ?? TYPE_META.other.color;
+  const wedge = Math.max(12, Math.min(92, Math.abs(pct)));
+
+  async function handleDelete() {
+    if (!confirm(`Delete "${investment.name}"? This cannot be undone.`)) return;
+    setDeleting(true);
+    await supabase.from("investments").delete().eq("id", investment.id);
+    router.refresh();
+  }
+
+  return (
+    <>
+      <motion.div
+        initial={{ opacity: 0, y: 18, scale: 0.96 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        transition={{ duration: 0.42, delay: index * 0.04, ease: [0.16, 1, 0.3, 1] }}
+        whileHover={{ y: -6, scale: 1.025 }}
+        className="group relative flex min-h-[244px] flex-col items-center justify-center rounded-[28px] border border-white/70 bg-white/78 p-5 text-center shadow-[0_20px_52px_rgba(15,23,42,0.10)] backdrop-blur-2xl dark:border-white/10 dark:bg-white/[0.055]"
+      >
+        <div className="absolute right-4 top-4 flex gap-1 opacity-100 transition-opacity sm:opacity-0 sm:group-hover:opacity-100">
+          <button
+            onClick={() => setEditOpen(true)}
+            className="icon-button h-8 w-8"
+            aria-label="Edit investment"
+          >
+            <Pencil size={12} />
+          </button>
+          <button
+            onClick={handleDelete}
+            disabled={deleting}
+            className="icon-button h-8 w-8"
+            aria-label="Delete investment"
+          >
+            <Trash2 size={12} />
+          </button>
+        </div>
+
+        <div
+          className="relative grid h-40 w-40 place-items-center rounded-full p-3 shadow-[inset_0_1px_10px_rgba(255,255,255,0.75),0_16px_40px_rgba(15,23,42,0.10)]"
+          style={{
+            background: `conic-gradient(${color} 0deg ${wedge * 3.6}deg, ${accent} ${wedge * 3.6}deg ${(wedge + 18) * 3.6}deg, ${ringTrack} ${(wedge + 18) * 3.6}deg 360deg)`,
+          }}
+        >
+          <div className="grid h-full w-full place-items-center rounded-full border border-white/80 bg-card/95 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.9)]">
+            <div className="min-w-0">
+              <p className="truncate text-sm font-semibold text-text-primary">
+                {investment.name}
+              </p>
+              <p className="mt-1 text-[11px] font-medium text-text-secondary">
+                {shortCurrency(currentValue)}
+              </p>
+              <div
+                className="mt-2 flex items-center justify-center gap-1 text-sm font-bold"
+                style={{ color }}
+              >
+                {isProfit ? <ArrowUpRight size={14} /> : <ArrowDownRight size={14} />}
+                <span>
+                  {isProfit ? "+" : "-"}
+                  <CountUp end={Math.abs(pct)} duration={1.1} decimals={1} />%
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-4 flex w-full items-center justify-between gap-3 rounded-[18px] border border-border bg-surface-secondary px-3 py-2">
+          <span className="truncate text-xs text-text-secondary">
+            {TYPE_META[investment.type]?.label ?? "Other"}
+          </span>
+          <span className="text-xs font-semibold" style={{ color }}>
+            {isProfit ? "+" : "-"}
+            {shortCurrency(Math.abs(pnl)).replace("PKR ", "")}
+          </span>
+        </div>
+      </motion.div>
+
+      <InvestmentModal
+        open={editOpen}
+        investment={investment}
+        onClose={() => setEditOpen(false)}
+        onSuccess={() => {
+          setEditOpen(false);
+          router.refresh();
+        }}
+      />
+    </>
+  );
+}
+
+function PortfolioSummary({
+  totalInvested,
+  totalValue,
+  totalPnL,
+  totalPnLPct,
+  count,
+}: {
+  totalInvested: number;
+  totalValue: number;
+  totalPnL: number;
+  totalPnLPct: number;
+  count: number;
+}) {
+  const isProfit = totalPnL >= 0;
+  const color = isProfit ? profitColor : lossColor;
+  const wedge = Math.max(8, Math.min(92, Math.abs(totalPnLPct)));
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 16 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.48, ease: [0.16, 1, 0.3, 1] }}
+      className="overflow-hidden rounded-[30px] border border-white/70 bg-white/80 p-5 shadow-[0_24px_70px_rgba(15,23,42,0.10)] backdrop-blur-2xl dark:border-white/10 dark:bg-white/[0.055]"
+    >
+      <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+        <div>
+          <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.22em] text-blue-500">
+            <Sparkles size={13} />
+            Investment Overview
+          </div>
+          <h2 className="mt-2 text-2xl font-semibold tracking-normal text-text-primary sm:text-3xl">
+            Portfolio Overview
+          </h2>
+          <p className="mt-1 text-sm text-text-secondary">
+            {count} holding{count === 1 ? "" : "s"} tracked with live value and profit signals.
+          </p>
+        </div>
+
+        <div className="grid gap-3 sm:grid-cols-3 lg:min-w-[560px]">
+          <div className="rounded-[22px] border border-border bg-surface-secondary p-4">
+            <p className="text-[11px] font-medium text-text-secondary">Total invested</p>
+            <p className="mt-2 text-lg font-bold text-text-primary">
+              {formatCurrency(totalInvested)}
+            </p>
+          </div>
+          <div className="rounded-[22px] border border-border bg-surface-secondary p-4">
+            <p className="text-[11px] font-medium text-text-secondary">Current value</p>
+            <p className="mt-2 text-lg font-bold text-text-primary">
+              {formatCurrency(totalValue)}
+            </p>
+          </div>
+          <div className="rounded-[22px] border border-border bg-surface-secondary p-4">
+            <p className="text-[11px] font-medium text-text-secondary">Total profit/loss</p>
+            <p className="mt-2 flex items-center gap-1 text-lg font-bold" style={{ color }}>
+              {isProfit ? <ArrowUpRight size={18} /> : <ArrowDownRight size={18} />}
+              {isProfit ? "+" : "-"}
+              {formatCurrency(Math.abs(totalPnL))}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div className="mt-5 flex flex-col gap-5 border-t border-border pt-5 lg:flex-row lg:items-center">
+        <div
+          className="relative mx-auto grid h-36 w-36 flex-shrink-0 place-items-center rounded-full p-3 lg:mx-0"
+          style={{
+            background: `conic-gradient(${color} 0deg ${wedge * 3.6}deg, #3b82f6 ${wedge * 3.6}deg ${(wedge + 22) * 3.6}deg, ${ringTrack} ${(wedge + 22) * 3.6}deg 360deg)`,
+          }}
+        >
+          <div className="grid h-full w-full place-items-center rounded-full bg-card">
+            <div className="text-center">
+              <p className="text-2xl font-bold" style={{ color }}>
+                {isProfit ? "+" : "-"}
+                <CountUp end={Math.abs(totalPnLPct)} duration={1.25} decimals={1} />%
+              </p>
+              <p className="text-[11px] text-text-secondary">overall</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="grid flex-1 gap-3 sm:grid-cols-2">
+          <div className="rounded-[22px] border border-border bg-card/65 p-4">
+            <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-[18px] bg-surface-secondary text-blue-500">
+              <WalletCards size={18} />
+            </div>
+            <p className="text-sm font-semibold text-text-primary">Portfolio value</p>
+            <p className="mt-1 text-xs leading-5 text-text-secondary">
+              Current value is {formatCurrency(totalValue)} against {formatCurrency(totalInvested)} invested.
+            </p>
+          </div>
+          <div className="rounded-[22px] border border-border bg-card/65 p-4">
+            <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-[18px] bg-surface-secondary text-blue-500">
+              <TrendingUp size={18} />
+            </div>
+            <p className="text-sm font-semibold text-text-primary">Momentum</p>
+            <p className="mt-1 text-xs leading-5 text-text-secondary">
+              {isProfit
+                ? "Portfolio is currently in profit. Keep checking concentrated positions."
+                : "Portfolio is below cost basis. Review entries before adding more exposure."}
+            </p>
+          </div>
+        </div>
+      </div>
+    </motion.div>
+  );
+}
+
+function EmbeddedInsightCard({ investments }: { investments: ExistingInvestment[] }) {
+  const [insight, setInsight] = useState<Insight | null>(null);
+  const [loading, setLoading] = useState(true);
+  const cryptoValue = useMemo(
+    () =>
+      investments
+        .filter((investment) => investment.type === "crypto")
+        .reduce(
+          (sum, investment) =>
+            sum + Number(investment.quantity) * Number(investment.current_price),
+          0,
+        ),
+    [investments],
+  );
+  const totalValue = useMemo(
+    () =>
+      investments.reduce(
+        (sum, investment) =>
+          sum + Number(investment.quantity) * Number(investment.current_price),
+        0,
+      ),
+    [investments],
+  );
+  const cryptoPct = totalValue > 0 ? (cryptoValue / totalValue) * 100 : 0;
+  const fallbackSuggestion =
+    cryptoPct > 45
+      ? "Your crypto allocation is high risk. Consider balancing with steadier holdings."
+      : "Your allocation looks balanced. Keep monitoring profit concentration by asset type.";
+
+  useEffect(() => {
+    fetch("/api/ai-insights")
+      .then((response) => response.json())
+      .then((json) => {
+        if (!json.error && json.insights?.[0]) setInsight(json.insights[0]);
+      })
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, []);
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 18 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.42, delay: 0.08, ease: [0.16, 1, 0.3, 1] }}
+      className="space-y-4"
+    >
+      <div className="rounded-[28px] border border-white/70 bg-white/80 p-5 shadow-[0_20px_52px_rgba(15,23,42,0.10)] backdrop-blur-2xl dark:border-white/10 dark:bg-white/[0.055]">
+        <div className="mb-3 flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2.5">
+            <div className="grid h-9 w-9 place-items-center rounded-[18px] bg-surface-secondary text-blue-500">
+              <Brain size={16} />
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-text-primary">AI Insights</p>
+              <p className="text-[11px] text-text-secondary">Portfolio suggestion</p>
+            </div>
+          </div>
+          <ArrowRight size={15} className="text-text-secondary" />
+        </div>
+        <p className="text-sm leading-6 text-text-primary">
+          {loading
+            ? "Reading your latest portfolio and cash-flow signals..."
+            : insight?.message ?? fallbackSuggestion}
+        </p>
+        {insight?.title && (
+          <p className="mt-2 text-xs font-semibold text-blue-500">
+            {insight.title}
+          </p>
+        )}
+        <Link
+          href="/dashboard/ai-insights"
+          className="mt-4 inline-flex min-h-9 items-center justify-center gap-2 rounded-[16px] border border-border bg-surface-secondary px-3 text-xs font-semibold text-text-primary transition-colors hover:bg-hover"
+        >
+          View more
+          <ArrowRight size={12} />
+        </Link>
+      </div>
+    </motion.div>
+  );
+}
+
+export default function InvestmentOverview({
+  investments,
+  totalInvested,
+  totalValue,
+  totalPnL,
+  totalPnLPct,
+}: {
+  investments: ExistingInvestment[];
+  totalInvested: number;
+  totalValue: number;
+  totalPnL: number;
+  totalPnLPct: number;
+}) {
+  return (
+    <div className="space-y-5">
+      <PortfolioSummary
+        totalInvested={totalInvested}
+        totalValue={totalValue}
+        totalPnL={totalPnL}
+        totalPnLPct={totalPnLPct}
+        count={investments.length}
+      />
+
+      <div className="grid grid-cols-1 gap-4 xl:grid-cols-[1fr_320px]">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 2xl:grid-cols-3">
+          {investments.map((investment, index) => (
+            <InvestmentDonut
+              key={investment.id}
+              investment={investment}
+              index={index}
+            />
+          ))}
+        </div>
+        <EmbeddedInsightCard investments={investments} />
+      </div>
+    </div>
+  );
+}

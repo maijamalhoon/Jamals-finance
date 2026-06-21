@@ -9,6 +9,8 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
+import { chartMotion } from "@/components/motion/animation-config";
+import ChartFrame from "@/components/ui/chart-frame";
 
 interface Props {
   data: { month: string; income: number; expenses: number }[];
@@ -50,48 +52,55 @@ function CustomTooltip({
 export default function MonthlyChart({ data }: Props) {
   return (
     <div className="finance-panel p-4 sm:p-5">
-      <h3 className="mb-5 text-sm font-semibold text-white">
+      <h3 className="mb-5 text-sm font-semibold text-text-primary">
         Monthly Overview (Last 6 Months)
       </h3>
-      <ResponsiveContainer width="100%" height={260}>
-        <BarChart
-          data={data}
-          margin={{ top: 5, right: 5, left: -20, bottom: 0 }}
-        >
-          <CartesianGrid
-            strokeDasharray="3 3"
-            stroke="rgba(148, 163, 184, 0.12)"
-            vertical={false}
-          />
-          <XAxis
-            dataKey="month"
-            tick={{ fill: "#64748b", fontSize: 11 }}
-            axisLine={false}
-            tickLine={false}
-          />
-          <YAxis
-            tick={{ fill: "#64748b", fontSize: 11 }}
-            axisLine={false}
-            tickLine={false}
-            tickFormatter={(v) => `${v / 1000}k`}
-          />
-          <Tooltip content={<CustomTooltip />} />
-          <Bar
-            dataKey="income"
-            name="Income"
-            fill="#86efac"
-            radius={[4, 4, 0, 0]}
-            maxBarSize={32}
-          />
-          <Bar
-            dataKey="expenses"
-            name="Expenses"
-            fill="#fca5a5"
-            radius={[4, 4, 0, 0]}
-            maxBarSize={32}
-          />
-        </BarChart>
-      </ResponsiveContainer>
+      <ChartFrame className="h-[260px] min-h-[260px] min-w-0 overflow-hidden">
+        <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1}>
+          <BarChart
+            data={data}
+            margin={{ top: 5, right: 5, left: -20, bottom: 0 }}
+          >
+            <CartesianGrid
+              strokeDasharray="3 3"
+              stroke="var(--border)"
+              vertical={false}
+            />
+            <XAxis
+              dataKey="month"
+              tick={{ fill: "var(--text-secondary)", fontSize: 11 }}
+              axisLine={false}
+              tickLine={false}
+            />
+            <YAxis
+              tick={{ fill: "var(--text-secondary)", fontSize: 11 }}
+              axisLine={false}
+              tickLine={false}
+              tickFormatter={(v) => `${v / 1000}k`}
+            />
+            <Tooltip content={<CustomTooltip />} />
+            <Bar
+              dataKey="income"
+              name="Income"
+              fill="var(--active)"
+              radius={[4, 4, 0, 0]}
+              maxBarSize={32}
+              isAnimationActive
+              {...chartMotion}
+            />
+            <Bar
+              dataKey="expenses"
+              name="Expenses"
+              fill="var(--text-secondary)"
+              radius={[4, 4, 0, 0]}
+              maxBarSize={32}
+              isAnimationActive
+              {...chartMotion}
+              animationBegin={140}
+            />
+          </BarChart>
+        </ResponsiveContainer>
+      </ChartFrame>
     </div>
   );
 }

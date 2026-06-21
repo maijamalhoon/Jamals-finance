@@ -97,8 +97,8 @@ export default function GoalModal({ open, onClose, onSuccess, goal }: Props) {
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="finance-glass-panel max-w-sm gap-0 p-0 text-white">
-        <DialogHeader className="border-b border-white/[0.08] p-5">
+      <DialogContent className="finance-panel max-w-sm gap-0 p-0 text-text-primary">
+        <DialogHeader className="border-b border-border p-5">
           <DialogTitle className="text-base font-semibold">
             {isEditing ? "Edit Goal" : "New Goal"}
           </DialogTitle>
@@ -117,7 +117,7 @@ export default function GoalModal({ open, onClose, onSuccess, goal }: Props) {
                   className={`flex flex-col items-center gap-1 p-2 rounded-xl border transition-all ${
                     icon === value ?
                       "border-cyan-300/35 bg-cyan-300/14 text-cyan-100"
-                    : "border-white/[0.08] bg-white/[0.045] text-slate-500 hover:border-white/[0.16] hover:text-white"
+                    : "border-border bg-surface-secondary text-slate-500 hover:border-border hover:text-text-primary"
                   }`}
                 >
                   <Icon size={16} />

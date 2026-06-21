@@ -8,7 +8,7 @@ interface CategoryData {
 export default function CategoryBreakdown({ data }: { data: CategoryData[] }) {
   return (
     <div className="finance-panel p-4 sm:p-5">
-      <h3 className="mb-4 text-sm font-semibold text-white">
+      <h3 className="mb-4 text-sm font-semibold text-text-primary">
         Top Expense Categories
       </h3>
 
@@ -30,7 +30,7 @@ export default function CategoryBreakdown({ data }: { data: CategoryData[] }) {
                   </span>
                 </div>
                 <div className="shrink-0 text-right">
-                  <span className="text-sm font-medium text-white">
+                  <span className="text-sm font-medium text-text-primary">
                     PKR{" "}
                     {cat.amount.toLocaleString(undefined, {
                       maximumFractionDigits: 0,
@@ -41,9 +41,9 @@ export default function CategoryBreakdown({ data }: { data: CategoryData[] }) {
                   </span>
                 </div>
               </div>
-              <div className="h-1.5 overflow-hidden rounded-full bg-white/[0.08]">
+              <div className="h-1.5 overflow-hidden rounded-full bg-surface-secondary">
                 <div
-                  className="h-full rounded-full transition-all"
+                  className="motion-progress-fill h-full rounded-full transition-all"
                   style={{ width: `${cat.pct}%`, background: cat.color }}
                 />
               </div>

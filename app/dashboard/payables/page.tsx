@@ -105,7 +105,7 @@ export default async function PayablesPage({
       <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
         <div className="summary-card">
           <p className="text-xs text-slate-500">Total Value</p>
-          <p className="mt-2 text-xl font-bold text-white">
+          <p className="mt-2 text-xl font-bold text-text-primary">
             {formatPKR(totals.total)}
           </p>
         </div>
@@ -125,7 +125,7 @@ export default async function PayablesPage({
 
       <div className="finance-panel p-4">
         <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
-          <div className="grid grid-cols-2 gap-1 rounded-2xl border border-white/[0.08] bg-white/[0.045] p-1 sm:flex">
+          <div className="grid grid-cols-2 gap-1 rounded-2xl border border-border bg-surface-secondary p-1 sm:flex">
             {STATUS_TABS.map((tab) => {
               const active = status === tab.value || (!status && tab.value === "all");
               const count =
@@ -136,8 +136,8 @@ export default async function PayablesPage({
                   href={paramsFor(tab.value)}
                   className={`finance-focus rounded-xl px-3 py-2 text-center text-xs font-semibold transition-colors ${
                     active ?
-                      "bg-white text-[#111318] shadow-[0_8px_22px_rgba(0,0,0,0.18)]"
-                    : "text-slate-400 hover:bg-white/[0.06] hover:text-white"
+                      "bg-card text-text-primary shadow-[0_8px_22px_rgba(0,0,0,0.18)]"
+                    : "text-slate-400 hover:bg-hover hover:text-text-primary"
                   }`}
                 >
                   {tab.label} <span className="opacity-70">({count})</span>
@@ -153,7 +153,7 @@ export default async function PayablesPage({
               name="search"
               defaultValue={search}
               placeholder="Search person, item, reason, or notes..."
-              className="w-full bg-transparent text-sm text-white outline-none placeholder-slate-600"
+              className="w-full bg-transparent text-sm text-text-primary outline-none placeholder-slate-600"
             />
           </form>
         </div>

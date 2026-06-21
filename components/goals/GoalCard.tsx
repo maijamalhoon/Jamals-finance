@@ -45,7 +45,7 @@ export default function GoalCard({ goal }: { goal: ExistingGoal }) {
   return (
     <>
       <div
-        className={`finance-panel card-hover group relative p-5 hover:border-white/[0.14] ${
+        className={`finance-panel card-hover group relative p-5 hover:border-border ${
           done ? "border-green-500/30 bg-green-500/5" : ""
         }`}
       >
@@ -78,7 +78,7 @@ export default function GoalCard({ goal }: { goal: ExistingGoal }) {
             : <GoalIcon size={18} className="text-indigo-300" />}
           </div>
           <div className="min-w-0">
-            <p className="truncate text-sm font-semibold text-white">
+            <p className="truncate text-sm font-semibold text-text-primary">
               {goal.name}
             </p>
             <p
@@ -107,16 +107,16 @@ export default function GoalCard({ goal }: { goal: ExistingGoal }) {
           </p>
         : <p className="mb-3 text-xs text-slate-600">No deadline</p>}
 
-        <div className="mb-4 h-1.5 overflow-hidden rounded-full bg-white/[0.08]">
+        <div className="mb-4 h-1.5 overflow-hidden rounded-full bg-surface-secondary">
           <div
-            className={`h-full rounded-full transition-all duration-500 ${done ? "bg-green-300" : "bg-amber-300"}`}
+            className={`motion-progress-fill h-full rounded-full transition-all duration-500 ${done ? "bg-green-300" : "bg-amber-300"}`}
             style={{ width: `${pct}%` }}
           />
         </div>
 
-        <div className="flex items-end justify-between gap-3 border-t border-white/[0.08] pt-3">
+        <div className="flex items-end justify-between gap-3 border-t border-border pt-3">
           <div className="min-w-0">
-            <p className="break-words text-sm font-bold text-white">
+            <p className="break-words text-sm font-bold text-text-primary">
               {fmt(current)}
             </p>
             <p className="mt-0.5 break-words text-xs text-slate-500">

@@ -163,7 +163,7 @@ export default async function ReportsPage() {
             },
           ].map((s) => (
             <div key={s.label}>
-              <p className="text-2xl font-bold text-white">{s.value}</p>
+              <p className="text-2xl font-bold text-text-primary">{s.value}</p>
               <p className="mt-1 text-xs text-slate-500">{s.label}</p>
             </div>
           ))}

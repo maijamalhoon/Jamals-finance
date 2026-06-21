@@ -84,7 +84,7 @@ export default function InvestmentCard({ inv }: { inv: ExistingInvestment }) {
 
   return (
     <>
-      <div className="finance-panel card-hover group relative p-5 hover:border-white/[0.14]">
+      <div className="finance-panel card-hover group relative p-5 hover:border-border">
         <div className="absolute right-4 top-4 flex gap-1 opacity-100 transition-opacity sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100">
           <button
             onClick={() => setEditOpen(true)}
@@ -110,7 +110,7 @@ export default function InvestmentCard({ inv }: { inv: ExistingInvestment }) {
             <Icon size={18} className={cfg.color} />
           </div>
           <div className="min-w-0">
-            <p className="truncate text-sm font-semibold text-white">
+            <p className="truncate text-sm font-semibold text-text-primary">
               {inv.name}
             </p>
             <p className={`text-xs ${cfg.color}`}>{cfg.label}</p>
@@ -125,24 +125,24 @@ export default function InvestmentCard({ inv }: { inv: ExistingInvestment }) {
         </p>
 
         <div className="mb-4 grid grid-cols-2 gap-2">
-          <div className="rounded-lg bg-white/[0.045] p-2.5">
+          <div className="rounded-lg bg-surface-secondary p-2.5">
             <p className="mb-0.5 text-[10px] text-slate-500">Buy Price</p>
-            <p className="break-words text-xs font-medium text-white">
+            <p className="break-words text-xs font-medium text-text-primary">
               PKR {fmt(buyPrice)}
             </p>
           </div>
-          <div className="rounded-lg bg-white/[0.045] p-2.5">
+          <div className="rounded-lg bg-surface-secondary p-2.5">
             <p className="mb-0.5 text-[10px] text-slate-500">Current Price</p>
-            <p className="break-words text-xs font-medium text-white">
+            <p className="break-words text-xs font-medium text-text-primary">
               PKR {fmt(curPrice)}
             </p>
           </div>
         </div>
 
-        <div className="space-y-2 border-t border-white/[0.08] pt-3">
+        <div className="space-y-2 border-t border-border pt-3">
           <div className="flex items-center justify-between gap-3">
             <p className="text-xs text-slate-500">Current Value</p>
-            <p className="break-words text-right text-sm font-bold text-white">
+            <p className="break-words text-right text-sm font-bold text-text-primary">
               PKR {fmt(currentValue)}
             </p>
           </div>

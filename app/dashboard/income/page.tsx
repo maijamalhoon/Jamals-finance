@@ -143,7 +143,7 @@ export default async function IncomePage() {
                 </div>
                 <div className="h-1.5 overflow-hidden rounded-full bg-slate-100">
                   <div
-                    className="h-full rounded-full transition-all"
+                    className="motion-progress-fill h-full rounded-full transition-all"
                     style={{
                       width: `${thisMonth > 0 ? (source.amount / thisMonth) * 100 : 0}%`,
                       background: source.color,

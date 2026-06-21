@@ -90,15 +90,15 @@ export default function TransactionFilters({
   return (
     <div className="mb-5 space-y-3">
       <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-        <div className="grid grid-cols-3 gap-1 rounded-lg border border-slate-200 bg-slate-50 p-1 sm:flex">
+        <div className="grid grid-cols-3 gap-1 rounded-lg border border-border bg-surface-secondary p-1 sm:flex">
           {TABS.map((tab) => (
             <button
               key={tab.value}
               onClick={() => updateParams({ type: tab.value })}
               className={`finance-focus rounded-md px-4 py-2 text-sm font-medium transition-colors ${
                 activeType === tab.value
-                  ? "bg-white text-slate-950 shadow-[0_8px_22px_rgba(15,23,42,0.08)]"
-                  : "text-slate-500 hover:text-slate-950"
+                  ? "bg-card text-text-primary shadow-theme"
+                  : "text-text-secondary hover:text-text-primary"
               }`}
             >
               {tab.label}
@@ -107,17 +107,17 @@ export default function TransactionFilters({
         </div>
 
         <div className="finance-control finance-focus flex w-full items-center gap-2 px-3 py-2 lg:w-72">
-          <Search size={14} className="flex-shrink-0 text-slate-500" />
+          <Search size={14} className="flex-shrink-0 text-text-secondary" />
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search transactions..."
-            className="w-full bg-transparent text-sm text-slate-900 placeholder-slate-400 outline-none"
+            className="w-full bg-input text-sm text-text-primary placeholder:text-text-secondary outline-none"
           />
           {search && (
             <button
               onClick={() => setSearch("")}
-              className="text-slate-500 transition-colors hover:text-slate-900"
+              className="text-text-secondary transition-colors hover:text-text-primary"
               aria-label="Clear search"
             >
               <X size={13} />
@@ -128,7 +128,7 @@ export default function TransactionFilters({
 
       <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
         <div className="flex items-center gap-2">
-          <label className="w-10 text-xs text-slate-500 sm:w-auto">From</label>
+          <label className="w-10 text-xs text-text-secondary sm:w-auto">From</label>
           <DatePicker
             value={activeFrom}
             onChange={(value) => updateParams({ from: value })}
@@ -137,7 +137,7 @@ export default function TransactionFilters({
           />
         </div>
         <div className="flex items-center gap-2">
-          <label className="w-10 text-xs text-slate-500 sm:w-auto">To</label>
+          <label className="w-10 text-xs text-text-secondary sm:w-auto">To</label>
           <DatePicker
             value={activeTo}
             onChange={(value) => updateParams({ to: value })}
@@ -149,7 +149,7 @@ export default function TransactionFilters({
         <select
           value={activeCategory}
           onChange={(e) => updateParams({ category: e.target.value })}
-          className="finance-control finance-focus min-h-10 px-3 py-2 text-xs text-slate-900 outline-none"
+          className="finance-control finance-focus min-h-10 px-3 py-2 text-xs text-text-primary outline-none"
           aria-label="Filter by category"
         >
           <option value="all">All categories</option>
@@ -165,7 +165,7 @@ export default function TransactionFilters({
         <select
           value={activeAccount}
           onChange={(e) => updateParams({ account: e.target.value })}
-          className="finance-control finance-focus min-h-10 px-3 py-2 text-xs text-slate-900 outline-none"
+          className="finance-control finance-focus min-h-10 px-3 py-2 text-xs text-text-primary outline-none"
           aria-label="Filter by account"
         >
           <option value="all">All accounts</option>
@@ -181,39 +181,39 @@ export default function TransactionFilters({
           value={activeMin}
           onChange={(e) => updateParams({ min: e.target.value })}
           placeholder="Min amount"
-          className="finance-control finance-focus min-h-10 px-3 py-2 text-xs text-slate-900 outline-none placeholder-slate-400"
+          className="finance-control finance-focus min-h-10 px-3 py-2 text-xs text-text-primary outline-none placeholder:text-text-secondary"
         />
         <input
           type="number"
           value={activeMax}
           onChange={(e) => updateParams({ max: e.target.value })}
           placeholder="Max amount"
-          className="finance-control finance-focus min-h-10 px-3 py-2 text-xs text-slate-900 outline-none placeholder-slate-400"
+          className="finance-control finance-focus min-h-10 px-3 py-2 text-xs text-text-primary outline-none placeholder:text-text-secondary"
         />
 
         <input
           value={source}
           onChange={(e) => setSource(e.target.value)}
           placeholder="Income source"
-          className="finance-control finance-focus min-h-10 px-3 py-2 text-xs text-slate-900 outline-none placeholder-slate-400"
+          className="finance-control finance-focus min-h-10 px-3 py-2 text-xs text-text-primary outline-none placeholder:text-text-secondary"
         />
         <input
           value={person}
           onChange={(e) => setPerson(e.target.value)}
           placeholder="Person name"
-          className="finance-control finance-focus min-h-10 px-3 py-2 text-xs text-slate-900 outline-none placeholder-slate-400"
+          className="finance-control finance-focus min-h-10 px-3 py-2 text-xs text-text-primary outline-none placeholder:text-text-secondary"
         />
         <input
           value={item}
           onChange={(e) => setItem(e.target.value)}
           placeholder="Item name"
-          className="finance-control finance-focus min-h-10 px-3 py-2 text-xs text-slate-900 outline-none placeholder-slate-400"
+          className="finance-control finance-focus min-h-10 px-3 py-2 text-xs text-text-primary outline-none placeholder:text-text-secondary"
         />
 
         {hasFilters && (
           <button
             onClick={clearFilters}
-            className="finance-focus flex min-h-10 items-center justify-center gap-1.5 rounded-lg px-2 text-xs text-slate-500 transition-colors hover:text-red-400 sm:min-h-0"
+            className="finance-focus flex min-h-10 items-center justify-center gap-1.5 rounded-lg px-2 text-xs text-text-secondary transition-colors hover:text-text-primary sm:min-h-0"
           >
             <X size={12} />
             Clear filters

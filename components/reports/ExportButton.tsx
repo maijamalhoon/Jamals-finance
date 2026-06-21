@@ -49,7 +49,7 @@ export default function ExportButton() {
     <button
       onClick={handleExport}
       disabled={loading}
-      className="finance-control finance-focus flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-white disabled:opacity-50"
+      className="finance-control finance-focus flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-text-primary disabled:opacity-50"
     >
       <Download size={15} />
       {loading ? "Exporting..." : "Export CSV"}

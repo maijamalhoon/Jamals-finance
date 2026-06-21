@@ -151,16 +151,16 @@ export default function PaymentModal({ open, onClose, payable, accounts }: Props
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="finance-glass-panel max-w-md gap-0 p-0 text-white">
-        <DialogHeader className="border-b border-white/[0.08] p-5">
+      <DialogContent className="finance-panel max-w-md gap-0 p-0 text-text-primary">
+        <DialogHeader className="border-b border-border p-5">
           <DialogTitle className="text-base font-semibold">
             Record Payment
           </DialogTitle>
         </DialogHeader>
 
         <div className="space-y-4 p-5">
-          <div className="rounded-2xl border border-white/[0.08] bg-white/[0.045] p-3">
-            <p className="text-sm font-semibold text-white">{payable.person_name}</p>
+          <div className="rounded-2xl border border-border bg-surface-secondary p-3">
+            <p className="text-sm font-semibold text-text-primary">{payable.person_name}</p>
             <p className="mt-1 text-xs text-slate-400">{payable.reason}</p>
             <p className="mt-2 text-xs text-slate-500">
               Remaining:{" "}
@@ -191,8 +191,8 @@ export default function PaymentModal({ open, onClose, payable, accounts }: Props
                   onClick={() => setAccountId(account.id)}
                   className={`finance-focus rounded-[18px] border px-3 py-2.5 text-left transition-colors ${
                     accountId === account.id
-                      ? "border-white bg-white text-[#111318]"
-                      : "border-white/[0.10] bg-white/[0.055] text-slate-400 hover:bg-white/[0.09] hover:text-white"
+                      ? "border-border bg-card text-text-primary"
+                      : "border-border bg-surface-secondary text-slate-400 hover:bg-hover hover:text-text-primary"
                   }`}
                 >
                   <span className="block truncate text-sm font-semibold">

@@ -148,7 +148,7 @@ export default async function ExpensesPage() {
                 </div>
                 <div className="h-1.5 overflow-hidden rounded-full bg-slate-100">
                   <div
-                    className="h-full rounded-full transition-all"
+                    className="motion-progress-fill h-full rounded-full transition-all"
                     style={{
                       width: `${thisMonth > 0 ? (category.amount / thisMonth) * 100 : 0}%`,
                       background: category.color,

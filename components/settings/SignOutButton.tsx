@@ -15,7 +15,7 @@ export default function SignOutButton() {
 
   return (
     <div className="finance-panel p-5">
-      <h3 className="mb-1 text-sm font-semibold text-white">Account</h3>
+      <h3 className="mb-1 text-sm font-semibold text-text-primary">Account</h3>
       <p className="mb-4 text-xs text-slate-500">
         Sign out of Jamal's Finance on this device
       </p>

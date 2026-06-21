@@ -47,8 +47,8 @@ function AccountChoice({
       onClick={onSelect}
       className={`finance-focus rounded-[20px] border px-3 py-3 text-left transition-colors ${
         active
-          ? "border-white bg-white text-[#111318]"
-          : "border-white/[0.10] bg-white/[0.055] text-slate-400 hover:bg-white/[0.09] hover:text-white"
+          ? "border-border bg-card text-text-primary"
+          : "border-border bg-surface-secondary text-slate-400 hover:bg-hover hover:text-text-primary"
       }`}
     >
       <span className="block truncate text-sm font-semibold">
@@ -163,8 +163,8 @@ export default function TransferModal({ open, onClose, onSuccess }: Props) {
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="finance-glass-panel max-w-2xl gap-0 p-0 text-white">
-        <DialogHeader className="border-b border-white/[0.08] p-5">
+      <DialogContent className="finance-panel max-w-2xl gap-0 p-0 text-text-primary">
+        <DialogHeader className="border-b border-border p-5">
           <DialogTitle className="flex items-center gap-2 text-base font-semibold">
             <ArrowLeftRight size={18} />
             Account Transfer
@@ -199,7 +199,7 @@ export default function TransferModal({ open, onClose, onSuccess }: Props) {
                 </div>
 
                 <div className="hidden h-full items-center justify-center lg:flex">
-                  <div className="grid h-11 w-11 place-items-center rounded-[20px] border border-white/[0.10] bg-white/[0.07] text-white">
+                  <div className="grid h-11 w-11 place-items-center rounded-[20px] border border-border bg-surface-secondary text-text-primary">
                     <ArrowLeftRight size={18} />
                   </div>
                 </div>
