@@ -69,7 +69,9 @@
   --loader: #f1f5f9;
   --skeleton: #e9eef5;
   --shadow: 0 1px 2px rgb(16 24 40 / 0.05);
-  --shadow-soft: 0 8px 20px rgb(16 24 40 / 0.06);
+  --shadow-soft: 0 12px 32px rgb(16 24 40 / 0.08);
+  --shadow-premium: 0 18px 46px rgb(16 24 40 / 0.1);
+  --glow-soft: 0 0 0 1px color-mix(in srgb, var(--active), transparent 88%);
   --motion-ease: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
@@ -90,7 +92,9 @@
   --loader: #18212c;
   --skeleton: #202a36;
   --shadow: 0 1px 2px rgb(0 0 0 / 0.24);
-  --shadow-soft: 0 8px 18px rgb(0 0 0 / 0.18);
+  --shadow-soft: 0 14px 38px rgb(0 0 0 / 0.24);
+  --shadow-premium: 0 22px 58px rgb(0 0 0 / 0.34);
+  --glow-soft: 0 0 0 1px color-mix(in srgb, var(--active), transparent 82%);
   --motion-ease: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
@@ -123,7 +127,8 @@
   .finance-panel {
     @apply rounded-[20px] border;
     border-color: var(--border);
-    background: var(--card);
+    background:
+      linear-gradient(180deg, color-mix(in srgb, var(--card), white 3%), var(--card));
     color: var(--text-primary);
     box-shadow: var(--shadow);
     transition:
@@ -137,7 +142,8 @@
   .finance-panel-soft {
     @apply rounded-[18px] border;
     border-color: var(--border);
-    background: var(--surface-secondary);
+    background:
+      linear-gradient(180deg, color-mix(in srgb, var(--surface-secondary), var(--card) 18%), var(--surface-secondary));
     color: var(--text-primary);
     box-shadow: none;
     transition:
@@ -222,7 +228,7 @@
     @apply inline-flex min-h-11 items-center justify-center gap-2 rounded-[18px] border px-4 py-2.5 text-sm font-semibold transition-all duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-active/40 focus-visible:ring-offset-0 disabled:opacity-50;
     border-color: var(--active);
     background-color: var(--active);
-    color: var(--background);
+    color: color-mix(in srgb, var(--background), white 8%);
     box-shadow: var(--shadow);
   }
 
@@ -287,9 +293,9 @@
 
   .widget-link:hover,
   .card-hover:hover {
-    border-color: var(--border);
+    border-color: color-mix(in srgb, var(--active), var(--border) 74%);
     background-color: var(--hover);
-    box-shadow: var(--shadow-soft);
+    box-shadow: var(--shadow-premium), var(--glow-soft);
   }
 
   .desktop-list-header {
@@ -299,7 +305,7 @@
   }
 
   .finance-skeleton {
-    @apply rounded-[24px] border;
+    @apply rounded-[20px] border;
     border-color: var(--border);
     background-color: var(--skeleton);
     background-image: linear-gradient(
@@ -311,6 +317,28 @@
     background-size: 220% 100%;
     animation: skeletonSweep 1.25s var(--motion-ease) infinite;
     box-shadow: none;
+  }
+
+  .finance-loading-panel {
+    @apply rounded-[20px] border p-4 sm:p-5;
+    border-color: var(--border);
+    background:
+      linear-gradient(180deg, color-mix(in srgb, var(--card), white 3%), var(--card));
+    box-shadow: var(--shadow);
+  }
+
+  .finance-icon-bubble {
+    @apply grid shrink-0 place-items-center rounded-[16px] border transition-all duration-200 ease-out;
+    border-color: color-mix(in srgb, var(--active), var(--border) 76%);
+    background-color: color-mix(in srgb, var(--active), transparent 88%);
+    color: var(--active);
+  }
+
+  .finance-state-pill {
+    @apply inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-semibold;
+    border-color: var(--border);
+    background-color: var(--surface-secondary);
+    color: var(--text-secondary);
   }
 
   .chat-auth-shell {
@@ -479,6 +507,10 @@
   -webkit-tap-highlight-color: transparent;
 }
 
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
 html {
   -webkit-overflow-scrolling: touch;
 }
@@ -524,8 +556,8 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 }
 
 .card-hover:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-soft);
+  transform: translate3d(0, -2px, 0);
+  box-shadow: var(--shadow-premium), var(--glow-soft);
 }
 
 .card-hover:active {
@@ -542,15 +574,15 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   animation: contentReveal 0.32s var(--motion-ease) both;
 }
 
-  .motion-observe {
-    opacity: 0;
-    transform: translate3d(0, 12px, 0);
-    transition:
-      opacity 0.32s var(--motion-ease),
-      transform 0.32s var(--motion-ease);
-    transition-delay: var(--motion-reveal-delay, 0ms);
-    will-change: opacity, transform;
-  }
+.motion-observe {
+  opacity: 0;
+  transform: translate3d(0, 12px, 0);
+  transition:
+    opacity 0.32s var(--motion-ease),
+    transform 0.32s var(--motion-ease);
+  transition-delay: var(--motion-reveal-delay, 0ms);
+  will-change: opacity, transform;
+}
 
 .motion-observe.is-visible {
   opacity: 1;
@@ -572,9 +604,9 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   animation: errorShake 0.34s var(--motion-ease) both;
 }
 
-  .motion-icon,
-  a svg,
-  button svg {
+.motion-icon,
+a svg,
+button svg {
   transition:
     transform 0.18s var(--motion-ease),
     opacity 0.18s var(--motion-ease);
@@ -623,6 +655,11 @@ input:focus,
 select:focus,
 textarea:focus {
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--active), transparent 72%);
+}
+
+:where(a, button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--active), transparent 30%);
+  outline-offset: 3px;
 }
 
 @keyframes fadeIn {

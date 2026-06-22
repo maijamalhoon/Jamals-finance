@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
-import { BarChart3, ChevronRight, Gauge } from "lucide-react";
+import { BarChart3, ChevronRight } from "lucide-react";
 import { NAV_ITEMS } from "@/lib/navigation";
 import JamalMenu from "@/components/layout/JamalMenu";
 

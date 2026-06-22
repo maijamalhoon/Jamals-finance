@@ -23,9 +23,14 @@ export default function StatCard({
 
   return (
     <div className="finance-panel card-hover relative flex min-h-[126px] flex-col justify-between overflow-hidden px-5 pb-5 pt-4">
+      <div
+        aria-hidden
+        className="pointer-events-none absolute -right-10 -top-10 h-28 w-28 rounded-full opacity-15 blur-2xl"
+        style={{ backgroundColor: accentColor }}
+      />
       <div className="flex items-start justify-between gap-3">
         <div
-          className="flex h-9 w-9 items-center justify-center rounded-[16px] border-0 shadow-none [&>svg]:stroke-current"
+          className="finance-icon-bubble h-9 w-9 [&>svg]:stroke-current"
           style={{
             backgroundColor: `${accentColor}14`,
             color: accentColor,
@@ -34,7 +39,7 @@ export default function StatCard({
           <Icon size={16} />
         </div>
         <span
-          className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-semibold ${
+          className={`finance-state-pill ${
             positive ? "bg-emerald-50 text-emerald-700" : "bg-red-50 text-red-700"
           }`}
         >

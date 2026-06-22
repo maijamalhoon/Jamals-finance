@@ -231,14 +231,12 @@ export default async function DashboardPage() {
       value: `${dayOfMonth}/${daysInMonth} days`,
       detail: `${remainingDays} days left in this cycle`,
       icon: CalendarDays,
-      tone: "text-sky-600 bg-sky-50",
     },
     {
       label: "Spend Forecast",
       value: fmt(projectedExpenses),
       detail: monthlyBurnStatus,
       icon: Gauge,
-      tone: "text-amber-600 bg-amber-50",
     },
     {
       label: "Savings Efficiency",
@@ -248,14 +246,12 @@ export default async function DashboardPage() {
         : savingsRate >= 0 ? "Healthy, but can improve"
         : "Expense pressure detected",
       icon: Target,
-      tone: "text-emerald-600 bg-emerald-50",
     },
     {
       label: "Capital Mix",
       value: `${Math.round(liquidityRatio)}% liquid`,
       detail: `${fmt(totalBalance + investmentsValue)} tracked capital`,
       icon: Landmark,
-      tone: "text-violet-600 bg-violet-50",
     },
   ];
 
@@ -320,22 +316,26 @@ export default async function DashboardPage() {
       </div>
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
-        {intelligenceTiles.map(({ label, value, detail, icon: Icon, tone }) => (
+        {intelligenceTiles.map(({ label, value, detail, icon: Icon }) => (
           <DashboardMotionItem key={label}>
-          <div className="finance-panel-soft widget-link h-full p-4">
-            <div className="flex items-start justify-between gap-3">
-              <div>
-                <p className="text-[11px] font-medium text-slate-500">
-                  {label}
-                </p>
-                <p className="mt-2 text-lg font-bold text-slate-950">{value}</p>
+            <div className="finance-panel-soft widget-link card-hover h-full p-4">
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-text-secondary">
+                    {label}
+                  </p>
+                  <p className="mt-2 truncate text-lg font-bold text-text-primary">
+                    {value}
+                  </p>
+                </div>
+                <div className="finance-icon-bubble h-10 w-10">
+                  <Icon size={17} strokeWidth={2.1} />
+                </div>
               </div>
-              <div className={`grid h-10 w-10 place-items-center rounded-3xl ${tone}`}>
-                <Icon size={17} />
-              </div>
+              <p className="mt-3 text-xs leading-5 text-text-secondary">
+                {detail}
+              </p>
             </div>
-            <p className="mt-3 text-xs leading-5 text-slate-500">{detail}</p>
-          </div>
           </DashboardMotionItem>
         ))}
       </div>

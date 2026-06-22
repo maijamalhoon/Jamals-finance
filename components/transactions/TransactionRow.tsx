@@ -3,12 +3,11 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import {
-  ArrowDownLeft,
-  ArrowUpRight,
   Pencil,
   Trash2,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import { getTransactionIconMeta } from "@/lib/transaction-icons";
 import TransactionModal, {
   ExistingTransaction,
 } from "@/components/dashboard/TransactionModal";
@@ -26,9 +25,13 @@ export default function TransactionRow({ tx }: { tx: Transaction }) {
   const [deleting, setDeleting] = useState(false);
 
   const isIncome = tx.type === "income";
-  const catColor = tx.categories?.color || (isIncome ? "#22c55e" : "#f43f5e");
-  const catInitial = tx.categories?.name?.charAt(0) || "T";
-  const TypeIcon = isIncome ? ArrowDownLeft : ArrowUpRight;
+  const iconMeta = getTransactionIconMeta({
+    type: tx.type,
+    note: tx.note,
+    categoryName: tx.categories?.name,
+    parentCategoryName: tx.categories?.parent?.name,
+  });
+  const TypeIcon = iconMeta.icon;
   const categoryLabel =
     tx.categories?.parent?.name ?
       `${tx.categories.parent.name} / ${tx.categories.name}`
@@ -50,10 +53,13 @@ export default function TransactionRow({ tx }: { tx: Transaction }) {
     <>
       <div className="motion-table-row group grid grid-cols-[auto,1fr] gap-3 rounded-[14px] border-b border-slate-100 py-3.5 transition-all duration-200 hover:bg-hover last:border-0 md:flex md:items-center">
         <div
-          className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg text-xs font-bold ring-1 ring-slate-200"
-          style={{ background: `${catColor}22`, color: catColor }}
+          className="finance-icon-bubble h-10 w-10"
+          style={{
+            backgroundColor: `${iconMeta.accent}18`,
+            color: iconMeta.accent,
+          }}
         >
-          {catInitial}
+          <TypeIcon size={17} strokeWidth={2.1} />
         </div>
 
         <div className="min-w-0 md:flex-1">
@@ -82,14 +88,10 @@ export default function TransactionRow({ tx }: { tx: Transaction }) {
 
           <div className="mt-2 flex flex-wrap items-center gap-2 md:hidden">
             <span
-              className={`inline-flex items-center gap-1 rounded-md px-2 py-1 text-[11px] font-medium ${
-                isIncome
-                  ? "bg-emerald-50 text-emerald-700"
-                  : "bg-red-50 text-red-700"
-              }`}
+              className="finance-state-pill px-2 py-1 text-[11px]"
             >
-              <TypeIcon size={12} />
-              {isIncome ? "Income" : "Expense"}
+              <TypeIcon size={12} strokeWidth={2.1} />
+              {iconMeta.label}
             </span>
             <span className="rounded-md bg-slate-100 px-2 py-1 text-[11px] text-slate-600">
               {isIncome && tx.source_name ? tx.source_name : categoryLabel}
@@ -109,14 +111,10 @@ export default function TransactionRow({ tx }: { tx: Transaction }) {
         </p>
 
         <span
-          className={`hidden w-20 flex-shrink-0 items-center justify-center gap-1 rounded-md px-2.5 py-1 text-xs font-medium md:inline-flex ${
-            isIncome
-              ? "bg-emerald-50 text-emerald-700"
-              : "bg-red-50 text-red-700"
-          }`}
+          className="finance-state-pill hidden w-24 flex-shrink-0 justify-center text-xs md:inline-flex"
         >
-          <TypeIcon size={12} />
-          {isIncome ? "Income" : "Expense"}
+          <TypeIcon size={12} strokeWidth={2.1} />
+          {iconMeta.label}
         </span>
 
         <p

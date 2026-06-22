@@ -1,6 +1,7 @@
 import Link from "next/link";
-import { ArrowDownLeft, ArrowUpRight } from "lucide-react";
+import { ArrowLeftRight } from "lucide-react";
 import EmptyState from "@/components/ui/empty-state";
+import { getTransactionIconMeta } from "@/lib/transaction-icons";
 
 interface Transaction {
   id: string;
@@ -8,7 +9,7 @@ interface Transaction {
   amount: number;
   note: string | null;
   date: string;
-  categories: { name: string; color: string } | null;
+  categories: { name: string; color: string; parent?: { name: string } | null } | null;
   accounts: { name: string } | null;
 }
 
@@ -37,24 +38,32 @@ export default function RecentTransactions({
       {transactions.length === 0 ?
         <EmptyState
           compact
-          icon={ArrowDownLeft}
+          icon={ArrowLeftRight}
           title="No transactions yet"
           description="Add your first income or expense to see recent activity here."
         />
       : <div className="divide-y divide-border">
           {transactions.map((tx) => {
-            const catColor = tx.categories?.color || "#818cf8";
-            const catInitial = tx.categories?.name?.charAt(0) || "T";
+            const iconMeta = getTransactionIconMeta({
+              type: tx.type,
+              note: tx.note,
+              categoryName: tx.categories?.name,
+              parentCategoryName: tx.categories?.parent?.name,
+            });
+            const TypeIcon = iconMeta.icon;
             return (
               <div
                 key={tx.id}
-                className="motion-table-row -mx-2 grid grid-cols-[auto,1fr] gap-3 rounded-[14px] px-2 py-3 transition-all hover:bg-hover sm:flex sm:items-center"
+                className="motion-table-row -mx-2 grid grid-cols-[auto,1fr] gap-3 rounded-[14px] px-2 py-3 transition-all hover:bg-hover focus-within:bg-hover sm:flex sm:items-center"
               >
                 <div
-                  className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg border-0 text-xs font-bold shadow-none"
-                  style={{ background: `${catColor}22`, color: catColor }}
+                  className="finance-icon-bubble h-9 w-9"
+                  style={{
+                    backgroundColor: `${iconMeta.accent}18`,
+                    color: iconMeta.accent,
+                  }}
                 >
-                  {catInitial}
+                  <TypeIcon size={16} strokeWidth={2.1} />
                 </div>
 
                 <div className="flex-1 min-w-0">
@@ -67,16 +76,10 @@ export default function RecentTransactions({
                 </div>
 
                 <span
-                  className={`col-start-2 inline-flex w-fit items-center gap-1 rounded-md px-2.5 py-1 text-xs font-medium sm:col-start-auto sm:flex-shrink-0 ${
-                    tx.type === "income" ?
-                      "bg-emerald-50 text-emerald-700"
-                    : "bg-red-50 text-red-700"
-                  }`}
+                  className="finance-state-pill col-start-2 w-fit text-xs sm:col-start-auto sm:flex-shrink-0"
                 >
-                  {tx.type === "income" ?
-                    <ArrowDownLeft size={12} />
-                  : <ArrowUpRight size={12} />}
-                  {tx.type === "income" ? "Income" : "Expense"}
+                  <TypeIcon size={12} strokeWidth={2.1} />
+                  {iconMeta.label}
                 </span>
 
                 <div className="col-span-2 flex items-center justify-between text-left sm:block sm:flex-shrink-0 sm:text-right">

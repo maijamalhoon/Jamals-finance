@@ -10,16 +10,20 @@ import {
   ChevronRight,
   Download,
   Fingerprint,
+  Loader2,
   LockKeyhole,
   LogOut,
   Mail,
   Moon,
+  Palette,
   Plus,
+  Save,
   ShieldCheck,
+  SlidersHorizontal,
   Tags,
+  Trash2,
   UserRound,
   WalletCards,
-  X,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
@@ -37,11 +41,7 @@ import { createClient } from "@/lib/supabase/client";
 
 type CategoryKind = "income" | "expense";
 type ThemeMode = "light" | "dark";
-
-export interface Category {
-  id: string;
-  name: string;
-}
+type DateFormat = "MMM d, yyyy" | "dd MMM yyyy" | "yyyy-MM-dd";
 
 export interface SettingsCategory {
   id: string;
@@ -73,23 +73,10 @@ interface SettingsRowProps {
   onClick?: () => void;
 }
 
-interface SecurityFormState {
-  currentPassword: string;
-  newPassword: string;
-}
-
-const DEFAULT_INCOME_CATEGORIES: Category[] = [
-  { id: "income-salary", name: "Salary" },
-  { id: "income-business", name: "Business" },
-  { id: "income-investments", name: "Investments" },
-];
-
-const DEFAULT_EXPENSE_CATEGORIES: Category[] = [
-  { id: "expense-food", name: "Food" },
-  { id: "expense-transport", name: "Transport" },
-  { id: "expense-bills", name: "Bills" },
-  { id: "expense-shopping", name: "Shopping" },
-];
+const CATEGORY_COLORS: Record<CategoryKind, string> = {
+  income: "#22c55e",
+  expense: "#f59e0b",
+};
 
 function SectionTitle({ children }: { children: ReactNode }) {
   return (
@@ -107,28 +94,22 @@ function IconBubble({
   tone?: "blue" | "green" | "red" | "gray" | "violet";
 }) {
   const tones: Record<string, string> = {
-    blue: "bg-blue-50 text-blue-600",
-    green: "bg-emerald-50 text-emerald-600",
-    red: "bg-red-50 text-red-600",
-    gray: "bg-slate-100 text-slate-500",
-    violet: "bg-violet-50 text-violet-600",
+    blue: "text-blue-600",
+    green: "text-emerald-600",
+    red: "text-red-600",
+    gray: "text-text-secondary",
+    violet: "text-violet-600",
   };
 
   return (
-    <span
-      className={`grid h-11 w-11 shrink-0 place-items-center rounded-full ${tones[tone]}`}
-    >
+    <span className={`finance-icon-bubble h-11 w-11 rounded-full ${tones[tone]}`}>
       {children}
     </span>
   );
 }
 
 function SettingsCard({ children }: { children: ReactNode }) {
-  return (
-    <div className="overflow-hidden rounded-3xl border border-border bg-card shadow-theme">
-      {children}
-    </div>
-  );
+  return <div className="finance-panel overflow-hidden">{children}</div>;
 }
 
 function SettingsRow({
@@ -158,7 +139,7 @@ function SettingsRow({
       <button
         type="button"
         onClick={onClick}
-        className="flex w-full items-center gap-3 px-4 py-4 text-left transition-colors hover:bg-hover sm:px-5"
+        className="flex w-full items-center gap-3 px-4 py-4 text-left transition-colors hover:bg-hover focus-visible:bg-hover sm:px-5"
       >
         {content}
       </button>
@@ -196,9 +177,7 @@ function SoftSwitch({
         onCheckedChange(!checked);
       }}
       className={`relative h-8 w-14 rounded-full border transition-colors ${
-        checked
-          ? "border-active bg-active"
-          : "border-border bg-surface-secondary"
+        checked ? "border-active bg-active" : "border-border bg-surface-secondary"
       }`}
     >
       <span
@@ -210,28 +189,91 @@ function SoftSwitch({
   );
 }
 
-function createCategoryId(kind: CategoryKind, name: string): string {
-  return `${kind}-${name.toLowerCase().replace(/[^a-z0-9]+/g, "-")}-${Date.now()}`;
-}
+function ProfileDialog({
+  email,
+  profileName,
+  onProfileNameChange,
+}: {
+  email: string;
+  profileName: string;
+  onProfileNameChange: (name: string) => void;
+}) {
+  const supabase = createClient();
+  const [open, setOpen] = useState(false);
+  const [draftName, setDraftName] = useState(profileName);
+  const [saving, setSaving] = useState(false);
 
-function mergeCategoryDefaults(
-  defaults: Category[],
-  initialCategories: SettingsCategory[],
-  kind: CategoryKind,
-): Category[] {
-  const initial = initialCategories
-    .filter((category) => category.type === kind)
-    .map<Category>((category) => ({
-      id: category.id,
-      name: category.name,
-    }));
-  const seen = new Set<string>();
-  return [...initial, ...defaults].filter((category) => {
-    const key = category.name.toLowerCase();
-    if (seen.has(key)) return false;
-    seen.add(key);
-    return true;
-  });
+  useEffect(() => {
+    if (open) setDraftName(profileName);
+  }, [open, profileName]);
+
+  async function handleProfileSave(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const name = draftName.trim();
+    if (!name) {
+      toast.error("Enter a display name.");
+      return;
+    }
+
+    setSaving(true);
+    const { error } = await supabase.auth.updateUser({
+      data: { full_name: name, name },
+    });
+    setSaving(false);
+
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+
+    onProfileNameChange(name);
+    toast.success("Profile updated.");
+    setOpen(false);
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <SettingsRow
+        icon={
+          <IconBubble tone="blue">
+            <Mail size={21} />
+          </IconBubble>
+        }
+        title="Account Details"
+        description={email || "Name and profile information"}
+        onClick={() => setOpen(true)}
+      />
+      <DialogContent className="max-h-[88dvh] overflow-y-auto rounded-3xl p-5 sm:max-w-lg">
+        <DialogHeader>
+          <DialogTitle className="text-xl font-bold">Profile Settings</DialogTitle>
+          <DialogDescription>Update the name shown across the app.</DialogDescription>
+        </DialogHeader>
+        <form onSubmit={handleProfileSave} className="space-y-4">
+          <div>
+            <label className="field-label" htmlFor="display-name">
+              Display name
+            </label>
+            <Input
+              id="display-name"
+              value={draftName}
+              onChange={(event) => setDraftName(event.target.value)}
+              placeholder="Your display name"
+            />
+          </div>
+          <div>
+            <label className="field-label" htmlFor="profile-email">
+              Email
+            </label>
+            <Input id="profile-email" value={email} disabled />
+          </div>
+          <Button type="submit" disabled={saving} className="w-full" size="lg">
+            {saving ? <Loader2 className="animate-spin" size={16} /> : <Save size={16} />}
+            {saving ? "Saving..." : "Save Profile"}
+          </Button>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
 }
 
 function SecurityDialog({ email }: { email: string }) {
@@ -239,26 +281,33 @@ function SecurityDialog({ email }: { email: string }) {
   const [open, setOpen] = useState(false);
   const [twoFactorEnabled, setTwoFactorEnabled] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [form, setForm] = useState<SecurityFormState>({
-    currentPassword: "",
-    newPassword: "",
-  });
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+
+  useEffect(() => {
+    const saved = window.localStorage.getItem("jamal-2fa-enabled");
+    setTwoFactorEnabled(saved === "true");
+  }, []);
+
+  function toggleTwoFactor(next: boolean) {
+    setTwoFactorEnabled(next);
+    window.localStorage.setItem("jamal-2fa-enabled", String(next));
+    toast.success(next ? "2FA preference enabled." : "2FA preference disabled.");
+  }
 
   async function handlePasswordSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!form.currentPassword.trim() || !form.newPassword.trim()) {
+    if (!currentPassword.trim() || !newPassword.trim()) {
       toast.error("Enter your current and new password.");
       return;
     }
-    if (form.newPassword.length < 6) {
+    if (newPassword.length < 6) {
       toast.error("New password must be at least 6 characters.");
       return;
     }
 
     setIsSubmitting(true);
-    const { error } = await supabase.auth.updateUser({
-      password: form.newPassword,
-    });
+    const { error } = await supabase.auth.updateUser({ password: newPassword });
     setIsSubmitting(false);
 
     if (error) {
@@ -266,7 +315,8 @@ function SecurityDialog({ email }: { email: string }) {
       return;
     }
 
-    setForm({ currentPassword: "", newPassword: "" });
+    setCurrentPassword("");
+    setNewPassword("");
     toast.success("Password updated successfully.");
   }
 
@@ -279,7 +329,7 @@ function SecurityDialog({ email }: { email: string }) {
           </IconBubble>
         }
         title="Security"
-        description="Password, 2FA"
+        description="Password and local 2FA preference"
         onClick={() => setOpen(true)}
       />
       <DialogContent className="max-h-[88dvh] overflow-y-auto rounded-3xl p-5 sm:max-w-lg">
@@ -303,9 +353,7 @@ function SecurityDialog({ email }: { email: string }) {
                 <ShieldCheck size={20} />
               </IconBubble>
               <div>
-                <p className="text-sm font-bold text-text-primary">
-                  Update Password
-                </p>
+                <p className="text-sm font-bold text-text-primary">Update Password</p>
                 <p className="text-xs text-text-secondary">
                   Your active Supabase session authorizes this change.
                 </p>
@@ -320,13 +368,8 @@ function SecurityDialog({ email }: { email: string }) {
                   id="current-password"
                   type="password"
                   autoComplete="current-password"
-                  value={form.currentPassword}
-                  onChange={(event) =>
-                    setForm((current) => ({
-                      ...current,
-                      currentPassword: event.target.value,
-                    }))
-                  }
+                  value={currentPassword}
+                  onChange={(event) => setCurrentPassword(event.target.value)}
                   placeholder="Enter current password"
                 />
               </div>
@@ -338,22 +381,14 @@ function SecurityDialog({ email }: { email: string }) {
                   id="new-password"
                   type="password"
                   autoComplete="new-password"
-                  value={form.newPassword}
-                  onChange={(event) =>
-                    setForm((current) => ({
-                      ...current,
-                      newPassword: event.target.value,
-                    }))
-                  }
+                  value={newPassword}
+                  onChange={(event) => setNewPassword(event.target.value)}
                   placeholder="Minimum 6 characters"
                 />
               </div>
             </div>
-            <Button
-              type="submit"
-              disabled={isSubmitting}
-              className="mt-4 w-full"
-            >
+            <Button type="submit" disabled={isSubmitting} className="mt-4 w-full" size="lg">
+              {isSubmitting ? <Loader2 className="animate-spin" size={16} /> : <Save size={16} />}
               {isSubmitting ? "Updating..." : "Update Password"}
             </Button>
           </div>
@@ -365,15 +400,15 @@ function SecurityDialog({ email }: { email: string }) {
           </IconBubble>
           <div className="min-w-0 flex-1">
             <p className="text-sm font-bold text-text-primary">
-              Two-Factor Authentication (2FA)
+              Two-Factor Authentication
             </p>
             <p className="text-xs text-text-secondary">
-              HOLD: local toggle only, backend enrollment coming later.
+              Preference saved locally until backend enrollment is added.
             </p>
           </div>
           <SoftSwitch
             checked={twoFactorEnabled}
-            onCheckedChange={setTwoFactorEnabled}
+            onCheckedChange={toggleTwoFactor}
             label="Toggle two-factor authentication"
           />
         </div>
@@ -384,33 +419,29 @@ function SecurityDialog({ email }: { email: string }) {
 
 function CategoriesDialog({
   initialCategories,
+  userId,
 }: {
   initialCategories: SettingsCategory[];
+  userId: string;
 }) {
+  const router = useRouter();
+  const supabase = createClient();
   const [open, setOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<CategoryKind>("income");
-  const [incomeCategories, setIncomeCategories] = useState<Category[]>(() =>
-    mergeCategoryDefaults(
-      DEFAULT_INCOME_CATEGORIES,
-      initialCategories,
-      "income",
-    ),
-  );
-  const [expenseCategories, setExpenseCategories] = useState<Category[]>(() =>
-    mergeCategoryDefaults(
-      DEFAULT_EXPENSE_CATEGORIES,
-      initialCategories,
-      "expense",
-    ),
-  );
+  const [categories, setCategories] = useState<SettingsCategory[]>(initialCategories);
   const [draftName, setDraftName] = useState("");
+  const [savingId, setSavingId] = useState<string | null>(null);
 
-  const activeCategories =
-    activeTab === "income" ? incomeCategories : expenseCategories;
-  const setActiveCategories =
-    activeTab === "income" ? setIncomeCategories : setExpenseCategories;
+  useEffect(() => {
+    setCategories(initialCategories);
+  }, [initialCategories]);
 
-  function addCategory(event: FormEvent<HTMLFormElement>) {
+  const activeCategories = useMemo(
+    () => categories.filter((category) => category.type === activeTab),
+    [activeTab, categories],
+  );
+
+  async function addCategory(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const name = draftName.trim();
     if (!name) return;
@@ -421,19 +452,48 @@ function CategoriesDialog({
       toast.error(`${name} already exists.`);
       return;
     }
-    setActiveCategories((current) => [
-      ...current,
-      { id: createCategoryId(activeTab, name), name },
-    ]);
+
+    setSavingId("new");
+    const { data, error } = await supabase
+      .from("categories")
+      .insert({
+        user_id: userId,
+        name,
+        type: activeTab,
+        color: CATEGORY_COLORS[activeTab],
+      })
+      .select("id, name, type, color")
+      .single();
+    setSavingId(null);
+
+    if (error || !data) {
+      toast.error(error?.message || "Could not add category.");
+      return;
+    }
+
+    setCategories((current) => [...current, data as SettingsCategory]);
     setDraftName("");
     toast.success(`${name} added.`);
+    router.refresh();
   }
 
-  function removeCategory(categoryId: string, categoryName: string) {
-    setActiveCategories((current) =>
-      current.filter((category) => category.id !== categoryId),
-    );
-    toast.success(`${categoryName} removed.`);
+  async function removeCategory(category: SettingsCategory) {
+    if (!confirm(`Delete "${category.name}"? Existing transactions may still use it.`)) {
+      return;
+    }
+
+    setSavingId(category.id);
+    const { error } = await supabase.from("categories").delete().eq("id", category.id);
+    setSavingId(null);
+
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+
+    setCategories((current) => current.filter((item) => item.id !== category.id));
+    toast.success(`${category.name} removed.`);
+    router.refresh();
   }
 
   return (
@@ -452,7 +512,7 @@ function CategoriesDialog({
         <DialogHeader>
           <DialogTitle className="text-xl font-bold">Categories</DialogTitle>
           <DialogDescription>
-            Organize custom labels used across income and expense tracking.
+            Add and remove labels used across income and expense tracking.
           </DialogDescription>
         </DialogHeader>
 
@@ -464,8 +524,8 @@ function CategoriesDialog({
           }}
         >
           <TabsList>
-            <TabsTrigger value="income">Income Categories</TabsTrigger>
-            <TabsTrigger value="expense">Expense Categories</TabsTrigger>
+            <TabsTrigger value="income">Income</TabsTrigger>
+            <TabsTrigger value="expense">Expense</TabsTrigger>
           </TabsList>
           <TabsContent value={activeTab}>
             <motion.div
@@ -477,34 +537,50 @@ function CategoriesDialog({
             >
               <div className="mb-3 flex items-center justify-between">
                 <p className="text-xs font-bold uppercase tracking-[0.14em] text-text-secondary">
-                  {activeTab === "income"
-                    ? "Income Categories"
-                    : "Expense Categories"}
+                  {activeTab === "income" ? "Income Categories" : "Expense Categories"}
                 </p>
-                <span className="rounded-full bg-card px-2.5 py-1 text-[11px] font-semibold text-text-secondary">
-                  {activeCategories.length}
-                </span>
+                <span className="finance-state-pill">{activeCategories.length}</span>
               </div>
 
-              <div className="flex min-h-28 flex-wrap content-start gap-2">
-                {activeCategories.map((category) => (
-                  <Badge
-                    key={category.id}
-                    variant="outline"
-                    className="h-9 gap-2 rounded-full bg-card px-3 text-sm font-semibold"
-                  >
-                    {category.name}
-                    <button
-                      type="button"
-                      onClick={() => removeCategory(category.id, category.name)}
-                      className="grid h-5 w-5 place-items-center rounded-full text-text-secondary hover:bg-hover hover:text-text-primary"
-                      aria-label={`Remove ${category.name}`}
+              {activeCategories.length === 0 ? (
+                <div className="rounded-[22px] border border-dashed border-border bg-card p-5 text-center">
+                  <p className="text-sm font-semibold text-text-primary">
+                    No {activeTab} categories yet
+                  </p>
+                  <p className="mt-1 text-xs text-text-secondary">
+                    Add one below and it will be available in transaction forms.
+                  </p>
+                </div>
+              ) : (
+                <div className="flex min-h-28 flex-wrap content-start gap-2">
+                  {activeCategories.map((category) => (
+                    <Badge
+                      key={category.id}
+                      variant="outline"
+                      className="h-9 gap-2 rounded-full bg-card px-3 text-sm font-semibold"
                     >
-                      <X size={13} />
-                    </button>
-                  </Badge>
-                ))}
-              </div>
+                      <span
+                        className="h-2 w-2 rounded-full"
+                        style={{ backgroundColor: category.color ?? CATEGORY_COLORS[category.type] }}
+                      />
+                      {category.name}
+                      <button
+                        type="button"
+                        onClick={() => removeCategory(category)}
+                        disabled={savingId === category.id}
+                        className="grid h-5 w-5 place-items-center rounded-full text-text-secondary hover:bg-hover hover:text-text-primary disabled:opacity-50"
+                        aria-label={`Remove ${category.name}`}
+                      >
+                        {savingId === category.id ? (
+                          <Loader2 className="animate-spin" size={13} />
+                        ) : (
+                          <Trash2 size={13} />
+                        )}
+                      </button>
+                    </Badge>
+                  ))}
+                </div>
+              )}
             </motion.div>
           </TabsContent>
         </Tabs>
@@ -524,11 +600,120 @@ function CategoriesDialog({
               placeholder={`New ${activeTab} category`}
             />
           </div>
-          <Button type="submit" disabled={!draftName.trim()}>
-            <Plus size={16} />
-            Add
+          <Button type="submit" disabled={!draftName.trim() || savingId === "new"} size="lg">
+            {savingId === "new" ? <Loader2 className="animate-spin" size={16} /> : <Plus size={16} />}
+            {savingId === "new" ? "Adding..." : "Add"}
           </Button>
         </form>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function PreferencesDialog({
+  currency,
+  dateFormat,
+  compactMode,
+  onSave,
+}: {
+  currency: string;
+  dateFormat: DateFormat;
+  compactMode: boolean;
+  onSave: (next: {
+    currency: string;
+    dateFormat: DateFormat;
+    compactMode: boolean;
+  }) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const [draftCurrency, setDraftCurrency] = useState(currency);
+  const [draftDateFormat, setDraftDateFormat] = useState<DateFormat>(dateFormat);
+  const [draftCompact, setDraftCompact] = useState(compactMode);
+
+  useEffect(() => {
+    if (!open) return;
+    setDraftCurrency(currency);
+    setDraftDateFormat(dateFormat);
+    setDraftCompact(compactMode);
+  }, [compactMode, currency, dateFormat, open]);
+
+  function handleSave() {
+    onSave({
+      currency: draftCurrency,
+      dateFormat: draftDateFormat,
+      compactMode: draftCompact,
+    });
+    setOpen(false);
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <SettingsRow
+        icon={
+          <IconBubble tone="green">
+            <SlidersHorizontal size={21} />
+          </IconBubble>
+        }
+        title="Preferences"
+        description={`${currency} currency, ${compactMode ? "compact" : "comfortable"} density`}
+        onClick={() => setOpen(true)}
+      />
+      <DialogContent className="max-h-[88dvh] overflow-y-auto rounded-3xl p-5 sm:max-w-lg">
+        <DialogHeader>
+          <DialogTitle className="text-xl font-bold">Preferences</DialogTitle>
+          <DialogDescription>Control display defaults for this device.</DialogDescription>
+        </DialogHeader>
+
+        <div className="space-y-4">
+          <div>
+            <label className="field-label" htmlFor="currency">
+              Currency
+            </label>
+            <select
+              id="currency"
+              value={draftCurrency}
+              onChange={(event) => setDraftCurrency(event.target.value)}
+              className="field-input"
+            >
+              <option value="PKR">PKR</option>
+              <option value="USD">USD</option>
+              <option value="AED">AED</option>
+              <option value="GBP">GBP</option>
+            </select>
+          </div>
+          <div>
+            <label className="field-label" htmlFor="date-format">
+              Date format
+            </label>
+            <select
+              id="date-format"
+              value={draftDateFormat}
+              onChange={(event) => setDraftDateFormat(event.target.value as DateFormat)}
+              className="field-input"
+            >
+              <option value="MMM d, yyyy">Jun 22, 2026</option>
+              <option value="dd MMM yyyy">22 Jun 2026</option>
+              <option value="yyyy-MM-dd">2026-06-22</option>
+            </select>
+          </div>
+          <div className="flex items-center justify-between gap-3 rounded-3xl border border-border bg-surface-secondary px-4 py-4">
+            <div>
+              <p className="text-sm font-bold text-text-primary">Compact dashboard</p>
+              <p className="text-xs text-text-secondary">
+                Save a denser reading preference for this device.
+              </p>
+            </div>
+            <SoftSwitch
+              checked={draftCompact}
+              onCheckedChange={setDraftCompact}
+              label="Toggle compact dashboard preference"
+            />
+          </div>
+          <Button onClick={handleSave} className="w-full" size="lg">
+            <Save size={16} />
+            Save Preferences
+          </Button>
+        </div>
       </DialogContent>
     </Dialog>
   );
@@ -546,13 +731,28 @@ export default function SettingsOneUI({
   const [themeMode, setThemeMode] = useState<ThemeMode>("light");
   const [pushNotifications, setPushNotifications] = useState(true);
   const [biometricLogin, setBiometricLogin] = useState(false);
+  const [currency, setCurrency] = useState("PKR");
+  const [dateFormat, setDateFormat] = useState<DateFormat>("MMM d, yyyy");
+  const [compactMode, setCompactMode] = useState(false);
   const [isSigningOut, setIsSigningOut] = useState(false);
+  const [profileName, setProfileName] = useState(
+    displayName || email.split("@")[0]?.replace(/[._-]/g, " ") || "Jamal",
+  );
 
   useEffect(() => {
     const savedTheme = window.localStorage.getItem("jamal-theme");
     const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
     setThemeMode(savedTheme === "dark" || (!savedTheme && prefersDark) ? "dark" : "light");
+    setPushNotifications(window.localStorage.getItem("jamal-push-notifications") !== "false");
+    setBiometricLogin(window.localStorage.getItem("jamal-biometric-login") === "true");
+    setCurrency(window.localStorage.getItem("jamal-currency") || "PKR");
+    setDateFormat((window.localStorage.getItem("jamal-date-format") as DateFormat) || "MMM d, yyyy");
+    setCompactMode(window.localStorage.getItem("jamal-compact-dashboard") === "true");
   }, []);
+
+  useEffect(() => {
+    setProfileName(displayName || email.split("@")[0]?.replace(/[._-]/g, " ") || "Jamal");
+  }, [displayName, email]);
 
   useEffect(() => {
     const root = document.documentElement;
@@ -561,6 +761,37 @@ export default function SettingsOneUI({
     root.style.colorScheme = shouldUseDark ? "dark" : "light";
     window.localStorage.setItem("jamal-theme", themeMode);
   }, [themeMode]);
+
+  function handleThemeChange(nextTheme: ThemeMode) {
+    setThemeMode(nextTheme);
+    toast.success(`${nextTheme === "dark" ? "Dark" : "Light"} mode enabled.`);
+  }
+
+  function handlePushChange(next: boolean) {
+    setPushNotifications(next);
+    window.localStorage.setItem("jamal-push-notifications", String(next));
+    toast.success(next ? "Notifications enabled." : "Notifications disabled.");
+  }
+
+  function handleBiometricChange(next: boolean) {
+    setBiometricLogin(next);
+    window.localStorage.setItem("jamal-biometric-login", String(next));
+    toast.success(next ? "Biometric preference enabled." : "Biometric preference disabled.");
+  }
+
+  function handlePreferencesSave(next: {
+    currency: string;
+    dateFormat: DateFormat;
+    compactMode: boolean;
+  }) {
+    setCurrency(next.currency);
+    setDateFormat(next.dateFormat);
+    setCompactMode(next.compactMode);
+    window.localStorage.setItem("jamal-currency", next.currency);
+    window.localStorage.setItem("jamal-date-format", next.dateFormat);
+    window.localStorage.setItem("jamal-compact-dashboard", String(next.compactMode));
+    toast.success("Preferences saved.");
+  }
 
   async function handleSignOut() {
     setIsSigningOut(true);
@@ -578,12 +809,31 @@ export default function SettingsOneUI({
   }
 
   function handleExportData() {
-    const toastId = toast.loading("Preparing mock export...");
-    console.log("Mock export requested", { userId, generatedAt: new Date().toISOString() });
-    window.setTimeout(() => {
-      toast.dismiss(toastId);
-      toast.success("Mock export ready. Download service is stubbed.");
-    }, 650);
+    const payload = {
+      userId,
+      email,
+      generatedAt: new Date().toISOString(),
+      stats,
+      preferences: {
+        currency,
+        dateFormat,
+        compactMode,
+        pushNotifications,
+        biometricLogin,
+        themeMode,
+      },
+      categories,
+    };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], {
+      type: "application/json",
+    });
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `jamals-finance-export-${new Date().toISOString().slice(0, 10)}.json`;
+    link.click();
+    window.URL.revokeObjectURL(url);
+    toast.success("Export downloaded.");
   }
 
   const metricCards = useMemo(
@@ -595,9 +845,6 @@ export default function SettingsOneUI({
     ],
     [stats],
   );
-
-  const profileName =
-    displayName || email.split("@")[0]?.replace(/[._-]/g, " ") || "Jamal";
 
   return (
     <div className="min-h-full rounded-[28px] bg-background px-3 py-4 text-text-primary sm:px-5 lg:px-7">
@@ -612,7 +859,7 @@ export default function SettingsOneUI({
             Settings
           </h2>
           <p className="mt-1 text-sm text-text-secondary">
-            Samsung One UI controls for Jamal&apos;s Finance.
+            Account, theme, preferences, security, and data controls.
           </p>
         </div>
 
@@ -631,23 +878,13 @@ export default function SettingsOneUI({
                   {email || "Active Supabase profile"}
                 </p>
               </div>
-              <button
-                type="button"
-                aria-label={`Edit profile for ${profileName}`}
-                className="rounded-full bg-surface-secondary px-4 py-2 text-sm font-bold text-text-primary hover:bg-hover"
-              >
-                Edit
-              </button>
+              <span className="finance-state-pill hidden sm:inline-flex">Active</span>
             </div>
             <Divider />
-            <SettingsRow
-              icon={
-                <IconBubble tone="blue">
-                  <Mail size={21} />
-                </IconBubble>
-              }
-              title="Account Details"
-              description={email || "Name, email, phone"}
+            <ProfileDialog
+              email={email}
+              profileName={profileName}
+              onProfileNameChange={setProfileName}
             />
             <Divider />
             <SecurityDialog email={email} />
@@ -663,39 +900,29 @@ export default function SettingsOneUI({
                   <Moon size={21} />
                 </IconBubble>
               }
-              title="Light Mode"
-              description={
-                themeMode === "light"
-                  ? "Light theme is active"
-                  : "Dark theme is active"
-              }
+              title="Dark Mode"
+              description={themeMode === "dark" ? "Dark theme is active" : "Light theme is active"}
               right={
                 <SoftSwitch
-                  checked={themeMode === "light"}
-                  onCheckedChange={(checked) =>
-                    setThemeMode(checked ? "light" : "dark")
-                  }
-                  label="Toggle display theme"
+                  checked={themeMode === "dark"}
+                  onCheckedChange={(checked) => handleThemeChange(checked ? "dark" : "light")}
+                  label="Toggle dark mode"
                 />
               }
             />
             <Divider />
             <SettingsRow
               icon={
-                <IconBubble tone="green">
-                  <WalletCards size={21} />
+                <IconBubble tone="violet">
+                  <Palette size={21} />
                 </IconBubble>
               }
-              title="Currency"
-              description="Current: PKR"
-              right={
-                <span className="flex items-center gap-1 text-sm font-bold text-text-secondary">
-                  PKR <ChevronRight size={18} />
-                </span>
-              }
+              title="Theme Balance"
+              description="Uses app-wide token colors, borders, and shadows"
+              right={<span className="finance-state-pill">Synced</span>}
             />
             <Divider />
-            <CategoriesDialog initialCategories={categories} />
+            <CategoriesDialog initialCategories={categories} userId={userId} />
           </SettingsCard>
         </section>
 
@@ -713,7 +940,7 @@ export default function SettingsOneUI({
               right={
                 <SoftSwitch
                   checked={pushNotifications}
-                  onCheckedChange={setPushNotifications}
+                  onCheckedChange={handlePushChange}
                   label="Toggle push notifications"
                 />
               }
@@ -726,14 +953,37 @@ export default function SettingsOneUI({
                 </IconBubble>
               }
               title="Biometric Login"
-              description="HOLD: local UI toggle only"
+              description="Preference saved on this device"
               right={
                 <SoftSwitch
                   checked={biometricLogin}
-                  onCheckedChange={setBiometricLogin}
+                  onCheckedChange={handleBiometricChange}
                   label="Toggle biometric login"
                 />
               }
+            />
+          </SettingsCard>
+        </section>
+
+        <section>
+          <SectionTitle>Preferences</SectionTitle>
+          <SettingsCard>
+            <PreferencesDialog
+              currency={currency}
+              dateFormat={dateFormat}
+              compactMode={compactMode}
+              onSave={handlePreferencesSave}
+            />
+            <Divider />
+            <SettingsRow
+              icon={
+                <IconBubble tone="green">
+                  <WalletCards size={21} />
+                </IconBubble>
+              }
+              title="Currency"
+              description={`Current display preference: ${currency}`}
+              right={<span className="finance-state-pill">{currency}</span>}
             />
           </SettingsCard>
         </section>
@@ -748,7 +998,7 @@ export default function SettingsOneUI({
                 </IconBubble>
               }
               title="Export Data"
-              description="Download CSV or PDF report"
+              description="Download account settings snapshot"
               onClick={handleExportData}
               right={
                 <span className="flex items-center gap-2 text-active">
@@ -764,13 +1014,8 @@ export default function SettingsOneUI({
           <SectionTitle>Account Stats</SectionTitle>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
             {metricCards.map((metric) => (
-              <div
-                key={metric.label}
-                className="rounded-3xl border border-border bg-card px-3 py-4 text-center shadow-theme"
-              >
-                <p className="text-2xl font-black text-active">
-                  {metric.value}
-                </p>
+              <div key={metric.label} className="summary-card text-center">
+                <p className="text-2xl font-black text-active">{metric.value}</p>
                 <p className="mt-1 text-xs font-semibold text-text-secondary">
                   {metric.label}
                 </p>
@@ -786,7 +1031,10 @@ export default function SettingsOneUI({
           className="flex w-full items-center justify-center gap-2 rounded-3xl border border-border bg-surface-secondary px-4 py-4 text-sm font-bold text-red-600 hover:bg-hover disabled:opacity-60"
         >
           {isSigningOut ? (
-            "Signing Out..."
+            <>
+              <Loader2 className="animate-spin" size={18} />
+              Signing Out...
+            </>
           ) : (
             <>
               <LogOut size={18} />
@@ -797,7 +1045,7 @@ export default function SettingsOneUI({
 
         <footer className="pb-3 text-center text-xs leading-6 text-text-secondary">
           <p>Jamal&apos;s Finance OS - v2.0.0</p>
-          <p>Samsung One UI 8.5 Design</p>
+          <p>Theme and controls synced for this device</p>
         </footer>
       </motion.div>
     </div>

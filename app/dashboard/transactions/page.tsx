@@ -124,7 +124,7 @@ export default async function TransactionsPage({
           <div className="w-10 flex-shrink-0" />
           <p className="flex-1">Description</p>
           <p className="w-32">Category</p>
-          <p className="w-20 text-center">Type</p>
+          <p className="w-24 text-center">Type</p>
           <p className="w-32 text-right">Amount</p>
           <p className="w-24 text-right">Date</p>
           <div className="w-16 flex-shrink-0" />
