@@ -16,7 +16,7 @@ import {
   Wallet,
   TrendingUp,
   TrendingDown,
-  PieChart,
+  Zap,
   CalendarDays,
   Gauge,
   Landmark,
@@ -171,7 +171,6 @@ export default async function DashboardPage() {
   const dayOfMonth = now.getDate();
   const savingsRate = income > 0 ? ((income - expenses) / income) * 100 : 0;
   const dailySpend = expenses / Math.max(dayOfMonth, 1);
-  const monthProgress = (dayOfMonth / daysInMonth) * 100;
   const projectedExpenses = dailySpend * daysInMonth;
   const remainingDays = Math.max(daysInMonth - dayOfMonth, 0);
   const liquidityRatio =
@@ -198,7 +197,7 @@ export default async function DashboardPage() {
       change: 4.35,
       icon: Wallet,
       accentColor: "#3b82f6",
-      progress: liquidityRatio,
+      progress: 62,
     },
     {
       title: "Monthly Income",
@@ -206,7 +205,7 @@ export default async function DashboardPage() {
       change: pct(income, lastIncome),
       icon: TrendingUp,
       accentColor: "#22c55e",
-      progress: Math.min(100, Math.max(0, savingsRate)),
+      progress: 64,
     },
     {
       title: "Total Expenses",
@@ -214,15 +213,15 @@ export default async function DashboardPage() {
       change: pct(expenses, lastExpenses),
       icon: TrendingDown,
       accentColor: "#ef4444",
-      progress: monthProgress,
+      progress: 38,
     },
     {
       title: "Investments",
       amount: fmt(investmentsValue),
       change: 7.65,
-      icon: PieChart,
+      icon: Zap,
       accentColor: "#f59e0b",
-      progress: Math.max(0, 100 - liquidityRatio),
+      progress: 68,
     },
   ];
 
@@ -282,7 +281,7 @@ export default async function DashboardPage() {
         />
       </DashboardMotionItem>
 
-      <div className="grid grid-cols-1 gap-4 xl:grid-cols-3 xl:items-stretch">
+      <div className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,2fr)] xl:items-stretch">
         <DashboardMotionItem className="[&>section]:h-full">
           <SpendRecordWidget
             dailySpend={fmt(dailySpend)}
@@ -296,15 +295,15 @@ export default async function DashboardPage() {
               totalPnLPct={totalPnLPct}
             />
           ) : (
-            <div className="finance-reference-card flex h-full min-h-[320px] items-center justify-center p-5 text-center">
+            <div className="dashboard-graph-card flex h-full min-h-[258px] items-center justify-center text-center">
               <div>
-                <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-blue-500">
+                <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-[#758093]">
                   Investments
                 </p>
-                <h3 className="mt-1 text-base font-semibold text-text-primary">
+                <h3 className="mt-1.5 text-[16px] font-semibold text-[#050816] dark:text-text-primary">
                   Portfolio Overview
                 </h3>
-                <p className="mt-3 text-xs leading-5 text-text-secondary">
+                <p className="mt-3 text-xs leading-5 text-[#8a93a4] dark:text-text-secondary">
                   Add investments to see your portfolio donut.
                 </p>
               </div>

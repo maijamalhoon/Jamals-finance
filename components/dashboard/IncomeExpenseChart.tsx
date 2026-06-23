@@ -1,14 +1,15 @@
 "use client";
 
 import {
-  AreaChart,
-  Area,
+  LineChart,
+  Line,
   XAxis,
   YAxis,
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
+import { DollarSign } from "lucide-react";
 import { chartMotion } from "@/components/motion/animation-config";
 import ChartFrame from "@/components/ui/chart-frame";
 import ChartCard from "@/components/dashboard/ChartCard";
@@ -52,69 +53,85 @@ function CustomTooltip({
 }
 
 export default function IncomeExpenseChart({ data }: { data: ChartData[] }) {
+  const chartRows = data.map((point, index) => ({
+    ...point,
+    day: index + 1,
+  }));
+  const maxValue = Math.max(
+    1000,
+    ...chartRows.flatMap((point) => [point.income, point.expenses]),
+  );
+
   return (
     <ChartCard
-      eyebrow="Daily Cash Flow"
-      title="Income vs Expenses"
-      description="In and out movement this month"
+      eyebrow="Income vs Expenses"
+      eyebrowIcon={<DollarSign />}
+      title="Daily Cash Flow"
+      legendPlacement="header"
       legend={
-        <div className="flex items-center justify-center gap-4 rounded-[18px] border border-border bg-surface-secondary px-3 py-2">
-          <div className="flex items-center gap-1.5">
-            <div className="h-2 w-2 rounded-full bg-success" />
-            <span className="text-xs font-semibold text-text-secondary">In</span>
+        <div className="flex items-center gap-3 pt-1">
+          <div className="flex items-center gap-2">
+            <span className="h-px w-5 bg-[#19c76f]" />
+            <span className="text-[11px] font-medium text-[#7f8798]">In</span>
           </div>
-          <div className="flex items-center gap-1.5">
-            <div className="h-2 w-2 rounded-full bg-danger" />
-            <span className="text-xs font-semibold text-text-secondary">Out</span>
+          <div className="flex items-center gap-2">
+            <span className="h-px w-5 bg-[#ff3b35]" />
+            <span className="text-[11px] font-medium text-[#7f8798]">Out</span>
           </div>
         </div>
       }
     >
-      <ChartFrame className="h-[220px] min-h-[220px] min-w-0 overflow-hidden">
+      <ChartFrame className="h-[169px] min-h-[169px] min-w-0 overflow-hidden" tone="green">
         <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1}>
-          <AreaChart
-            data={data}
-            margin={{ top: 5, right: 5, left: -20, bottom: 0 }}
+          <LineChart
+            data={chartRows}
+            margin={{ top: 5, right: 4, left: -9, bottom: 0 }}
           >
             <CartesianGrid
-              strokeDasharray="3 3"
-              stroke="var(--border)"
+              strokeDasharray="2 6"
+              stroke="#e8ecf3"
               vertical={false}
             />
             <XAxis
-              dataKey="date"
-              tick={{ fill: "var(--text-secondary)", fontSize: 10 }}
+              dataKey="day"
+              tick={{ fill: "#8a93a4", fontSize: 11 }}
               axisLine={false}
               tickLine={false}
-              interval="preserveStartEnd"
+              interval={1}
+              minTickGap={16}
             />
             <YAxis
-              tick={{ fill: "var(--text-secondary)", fontSize: 10 }}
+              domain={[0, Math.ceil(maxValue / 250) * 250]}
+              tick={{ fill: "#8a93a4", fontSize: 11 }}
               axisLine={false}
               tickLine={false}
-              tickFormatter={(v) => `${v / 1000}k`}
+              width={36}
+              tickFormatter={(value) => String(value)}
             />
             <Tooltip content={<CustomTooltip />} />
-            <Area
+            <Line
               type="monotone"
               dataKey="income"
-              stroke="var(--success)"
-              strokeWidth={2}
-              fill="color-mix(in srgb, var(--success), transparent 90%)"
+              dot={false}
               isAnimationActive
+              stroke="#19c76f"
+              strokeLinecap="round"
+              strokeWidth={2.4}
               {...chartMotion}
             />
-            <Area
+            <Line
               type="monotone"
               dataKey="expenses"
-              stroke="var(--danger)"
-              strokeWidth={2}
-              fill="color-mix(in srgb, var(--danger), transparent 92%)"
+              dot={false}
               isAnimationActive
+              stroke="#ff3b35"
+              strokeDasharray="4 4"
+              strokeLinecap="round"
+              strokeWidth={2.4}
               {...chartMotion}
               animationBegin={140}
             />
-          </AreaChart>
+          </LineChart>
         </ResponsiveContainer>
       </ChartFrame>
     </ChartCard>

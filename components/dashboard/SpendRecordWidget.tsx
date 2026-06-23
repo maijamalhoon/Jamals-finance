@@ -28,34 +28,25 @@ export default function SpendRecordWidget({
   return (
     <ChartCard
       eyebrow="Spend Record"
+      eyebrowIcon={<Activity />}
       title="Month-to-Date"
-      description="Daily expense velocity"
-      action={
-        <div className="finance-status-warning grid h-10 w-10 place-items-center rounded-[16px] border">
-          <Activity size={17} />
-        </div>
-      }
-      legend={
-        <div className="flex items-end justify-between gap-3 rounded-[18px] border border-border bg-surface-secondary p-3">
-          <div>
-            <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-text-secondary">
-              Daily average
-            </p>
-            <p className="mt-1 text-xl font-bold text-warning">{dailySpend}</p>
-          </div>
-          <span className="rounded-full bg-warning/10 px-3 py-1 text-[11px] font-bold text-warning">
-            MTD
-          </span>
-        </div>
-      }
     >
-      <div className="h-[178px]">
-        <ChartFrame className="h-full min-h-[178px] min-w-0 overflow-hidden">
+      <div className="flex min-h-0 flex-1 flex-col">
+        <div className="-mt-1">
+          <p className="text-[24px] font-semibold leading-none text-[#ff9700]">
+            {dailySpend.replace(/^PKR\s+/, "PKR")}
+          </p>
+          <p className="mt-1 text-[13px] leading-none text-[#9aa3b5]">
+            daily average
+          </p>
+        </div>
+
+        <ChartFrame className="mt-auto h-[120px] min-h-[120px] min-w-0 overflow-hidden" tone="orange">
           <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1}>
-            <AreaChart data={data} margin={{ top: 8, right: 6, left: -30, bottom: 0 }}>
+            <AreaChart data={data} margin={{ top: 10, right: 1, left: 1, bottom: 0 }}>
               <defs>
                 <linearGradient id="spendRecordFill" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#f59e0b" stopOpacity={0.24} />
+                  <stop offset="0%" stopColor="#ff9700" stopOpacity={0.18} />
                   <stop offset="100%" stopColor="#f59e0b" stopOpacity={0.02} />
                 </linearGradient>
               </defs>
@@ -75,7 +66,7 @@ export default function SpendRecordWidget({
               <Area
                 type="monotone"
                 dataKey="spend"
-                stroke="#f59e0b"
+                stroke="#ff9700"
                 strokeWidth={3}
                 fill="url(#spendRecordFill)"
                 isAnimationActive

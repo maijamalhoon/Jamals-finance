@@ -20,40 +20,51 @@ export default function MetricCard({
   progress,
 }: MetricCardProps) {
   const positive = change >= 0;
-  const lineWidth = Math.min(100, Math.max(7, progress));
+  const lineWidth = Math.min(100, Math.max(34, progress));
+  const displayAmount = amount.replace(/^PKR\s+/, "PKR");
 
   return (
-    <article className="finance-reference-card card-hover relative flex min-h-[142px] flex-col justify-between overflow-hidden p-5">
+    <article className="card-hover relative flex min-h-[112px] flex-col justify-between overflow-hidden rounded-[18px] border border-[#dfe5ee] bg-white px-[18px] pb-[17px] pt-[18px] text-[#020817] shadow-[0_1px_2px_rgb(15_23_42/0.08),0_8px_18px_rgb(15_23_42/0.08)] dark:border-border dark:bg-card dark:text-text-primary">
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 opacity-85"
+        style={{
+          background: `radial-gradient(circle at 82% 20%, color-mix(in srgb, ${accentColor}, transparent 88%), transparent 24%)`,
+        }}
+      />
       <div className="flex items-start justify-between gap-3">
         <div
-          className="grid h-11 w-11 place-items-center rounded-[18px] border"
+          className="relative grid h-8 w-8 place-items-center rounded-full"
           style={{
-            borderColor: `color-mix(in srgb, ${accentColor}, transparent 68%)`,
-            backgroundColor: `color-mix(in srgb, ${accentColor}, transparent 90%)`,
+            backgroundColor: `color-mix(in srgb, ${accentColor}, transparent 91%)`,
             color: accentColor,
           }}
         >
-          <Icon size={18} strokeWidth={2.2} />
+          <Icon size={16} strokeWidth={2.15} />
         </div>
         <span
-          className={`finance-state-pill ${
-            positive ? "finance-status-success" : "finance-status-danger"
-          }`}
+          className="relative inline-flex items-center gap-1 rounded-full px-2 py-1 text-[11px] font-bold leading-none"
+          style={{
+            backgroundColor: `color-mix(in srgb, ${positive ? "#22c55e" : "#ef4444"}, transparent 90%)`,
+            color: positive ? "#22c55e" : "#ef4444",
+          }}
         >
           {positive ? <ArrowUpRight size={11} /> : <ArrowDownRight size={11} />}
           {positive ? "+" : "-"}
-          {Math.abs(change)}%
+          {Math.abs(change).toFixed(1)}%
         </span>
       </div>
 
-      <div className="pt-5">
-        <p className="text-xs font-semibold text-text-secondary">{title}</p>
-        <p className="mt-2 break-words text-[1.45rem] font-bold leading-tight tracking-normal text-text-primary">
-          <CountedAmount amount={amount} />
+      <div className="relative pt-3">
+        <p className="text-[11px] font-medium leading-none text-[#7f8798] dark:text-text-secondary">
+          {title}
+        </p>
+        <p className="mt-1.5 break-words text-[20px] font-bold leading-none tracking-normal text-[#020817] dark:text-text-primary">
+          <CountedAmount amount={displayAmount} />
         </p>
       </div>
 
-      <div className="absolute inset-x-5 bottom-4 h-1 overflow-hidden rounded-full bg-surface-secondary">
+      <div className="absolute bottom-0 left-[18px] h-[2px] rounded-full bg-transparent" style={{ width: "calc(100% - 36px)" }}>
         <div
           className="motion-progress-fill h-full rounded-full"
           style={{ width: `${lineWidth}%`, backgroundColor: accentColor }}
