@@ -13,9 +13,16 @@ interface Goal {
 
 export default function GoalsProgress({ goals }: { goals: Goal[] }) {
   return (
-    <div className="finance-panel p-5">
+    <div className="finance-reference-card relative p-5 before:absolute before:inset-x-5 before:-bottom-3 before:-z-10 before:h-12 before:rounded-[24px] before:border before:border-border before:bg-card/60 before:shadow-[0_16px_34px_rgb(16_24_40_/_0.06)]">
       <div className="mb-4 flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-text-primary">Goals Progress</h3>
+        <div>
+          <h3 className="text-sm font-semibold text-text-primary">
+            Goals Progress
+          </h3>
+          <p className="mt-1 text-xs text-text-secondary">
+            Savings targets and milestones
+          </p>
+        </div>
         <Link
           href="/dashboard/goals"
           className="finance-focus rounded-[12px] border border-border bg-surface-secondary px-3 py-1.5 text-xs font-semibold text-active transition-all hover:-translate-y-px hover:bg-hover"
@@ -44,7 +51,10 @@ export default function GoalsProgress({ goals }: { goals: Goal[] }) {
             const GoalIcon = entry.icon;
 
             return (
-              <div key={g.id}>
+              <div
+                key={g.id}
+                className="rounded-[20px] border border-border bg-surface-secondary p-3 transition-all hover:-translate-y-0.5 hover:bg-hover"
+              >
                 <div className="mb-2 flex items-center gap-3">
                   <div
                     className={`flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-[12px] border ${

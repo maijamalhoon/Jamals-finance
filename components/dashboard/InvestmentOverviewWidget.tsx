@@ -4,6 +4,7 @@ import CountUp from "react-countup";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { Sparkles } from "lucide-react";
+import ChartCard from "@/components/dashboard/ChartCard";
 
 interface Investment {
   id: string;
@@ -64,50 +65,63 @@ export default function InvestmentOverviewWidget({
     >
       <Link
         href="/dashboard/investments"
-        className="block h-full min-h-[260px] rounded-[24px] border border-white/70 bg-white/85 p-5 shadow-[0_18px_44px_rgba(15,23,42,0.12)] backdrop-blur-xl transition-colors hover:bg-white dark:border-white/10 dark:bg-white/[0.055]"
+        className="block h-full"
       >
-        <div className="mb-4">
-          <div className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.24em] text-blue-500">
-            <Sparkles size={12} />
-            Investments
-          </div>
-          <h3 className="mt-1 text-base font-semibold text-text-primary">
-            Portfolio Overview
-          </h3>
-        </div>
-
-        <div className="flex justify-center">
-          <div
-            className="grid h-[116px] w-[116px] place-items-center rounded-full p-[14px] transition-transform duration-300 hover:scale-105"
-            style={{ background: buildDonut(investments) }}
-          >
-            <div className="grid h-full w-full place-items-center rounded-full bg-card text-center shadow-[inset_0_1px_0_rgba(255,255,255,0.9)]">
-              <div>
-                <p className="text-xl font-bold leading-none" style={{ color: pnlColor }}>
-                  {isProfit ? "+" : "-"}
-                  <CountUp end={Math.abs(totalPnLPct)} duration={1.1} decimals={1} />%
-                </p>
-                <p className="mt-1 text-[10px] font-medium tracking-[0.18em] text-text-secondary">
-                  total gain
-                </p>
+        <ChartCard
+          eyebrow="Portfolio"
+          title="Portfolio Donut"
+          description="Current allocation mix"
+          action={
+            <div className="finance-status-info grid h-10 w-10 place-items-center rounded-[16px] border">
+              <Sparkles size={16} />
+            </div>
+          }
+          legend={
+            <div className="grid grid-cols-3 gap-2">
+              {visibleInvestments.map((investment, index) => (
+                <div
+                  key={investment.id}
+                  className="flex min-w-0 items-center gap-1.5 rounded-full border border-border bg-surface-secondary px-2 py-1.5"
+                >
+                  <span
+                    className="h-2 w-2 flex-shrink-0 rounded-full"
+                    style={{ backgroundColor: colors[index % colors.length] }}
+                  />
+                  <span className="truncate text-[10px] font-semibold text-text-secondary">
+                    {shortName(investment.name)}
+                  </span>
+                </div>
+              ))}
+            </div>
+          }
+        >
+          <div className="flex h-full min-h-[160px] items-center justify-center">
+            <div
+              className="grid h-[138px] w-[138px] place-items-center rounded-full p-[15px] transition-transform duration-300 hover:scale-105"
+              style={{ background: buildDonut(investments) }}
+            >
+              <div className="grid h-full w-full place-items-center rounded-full bg-card text-center shadow-[inset_0_1px_0_rgba(255,255,255,0.82)]">
+                <div>
+                  <p
+                    className="text-2xl font-bold leading-none"
+                    style={{ color: pnlColor }}
+                  >
+                    {isProfit ? "+" : "-"}
+                    <CountUp
+                      end={Math.abs(totalPnLPct)}
+                      duration={1.1}
+                      decimals={1}
+                    />
+                    %
+                  </p>
+                  <p className="mt-1 text-[10px] font-bold uppercase tracking-[0.16em] text-text-secondary">
+                    total gain
+                  </p>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-
-        <div className="mt-5 grid grid-cols-3 gap-2">
-          {visibleInvestments.map((investment, index) => (
-            <div key={investment.id} className="flex min-w-0 items-center gap-1.5">
-              <span
-                className="h-2 w-2 flex-shrink-0 rounded-full"
-                style={{ backgroundColor: colors[index % colors.length] }}
-              />
-              <span className="truncate text-[10px] font-medium text-text-secondary">
-                {shortName(investment.name)}
-              </span>
-            </div>
-          ))}
-        </div>
+        </ChartCard>
       </Link>
     </motion.div>
   );

@@ -11,6 +11,7 @@ import {
 } from "recharts";
 import { chartMotion } from "@/components/motion/animation-config";
 import ChartFrame from "@/components/ui/chart-frame";
+import ChartCard from "@/components/dashboard/ChartCard";
 
 interface ChartData {
   date: string;
@@ -52,26 +53,24 @@ function CustomTooltip({
 
 export default function IncomeExpenseChart({ data }: { data: ChartData[] }) {
   return (
-    <div className="finance-panel h-full p-4 sm:p-5">
-      <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h3 className="text-sm font-semibold text-text-primary">
-            Income vs Expenses
-          </h3>
-          <p className="mt-1 text-xs text-text-secondary">Daily flow this month</p>
-        </div>
-        <div className="flex items-center gap-4 rounded-[14px] border border-border bg-surface-secondary px-3 py-2">
+    <ChartCard
+      eyebrow="Daily Cash Flow"
+      title="Income vs Expenses"
+      description="In and out movement this month"
+      legend={
+        <div className="flex items-center justify-center gap-4 rounded-[18px] border border-border bg-surface-secondary px-3 py-2">
           <div className="flex items-center gap-1.5">
             <div className="h-2 w-2 rounded-full bg-success" />
-            <span className="text-xs text-text-secondary">Income</span>
+            <span className="text-xs font-semibold text-text-secondary">In</span>
           </div>
           <div className="flex items-center gap-1.5">
             <div className="h-2 w-2 rounded-full bg-danger" />
-            <span className="text-xs text-text-secondary">Expenses</span>
+            <span className="text-xs font-semibold text-text-secondary">Out</span>
           </div>
         </div>
-      </div>
-      <ChartFrame className="h-[220px] min-h-[220px] min-w-0 overflow-hidden sm:h-[240px]">
+      }
+    >
+      <ChartFrame className="h-[220px] min-h-[220px] min-w-0 overflow-hidden">
         <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1}>
           <AreaChart
             data={data}
@@ -118,6 +117,6 @@ export default function IncomeExpenseChart({ data }: { data: ChartData[] }) {
           </AreaChart>
         </ResponsiveContainer>
       </ChartFrame>
-    </div>
+    </ChartCard>
   );
 }

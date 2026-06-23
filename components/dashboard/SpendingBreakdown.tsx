@@ -19,7 +19,7 @@ export default function SpendingBreakdown({
 
   if (data.length === 0) {
     return (
-      <div className="finance-panel flex h-full min-h-[260px] flex-col p-5">
+      <div className="finance-reference-card flex h-full min-h-[360px] flex-col p-5">
         <h3 className="mb-1 text-sm font-semibold text-text-primary">
           Spending Breakdown
         </h3>
@@ -37,13 +37,13 @@ export default function SpendingBreakdown({
   }
 
   return (
-    <div className="finance-panel flex h-full min-h-[360px] flex-col p-4 sm:p-5">
-      <div className="mb-4">
+    <div className="finance-reference-card flex h-full min-h-[380px] flex-col p-4 sm:p-5">
+      <div className="mb-5">
         <h3 className="text-sm font-semibold text-text-primary">
           Spending Breakdown
         </h3>
         <p className="mt-1 text-xs text-text-secondary">
-          PKR {total.toLocaleString(undefined, { maximumFractionDigits: 0 })} this month
+          Top categories this month
         </p>
       </div>
 
@@ -63,9 +63,17 @@ export default function SpendingBreakdown({
                   {item.name}
                 </p>
               </div>
-              <span className="rounded-full border border-border bg-card px-2.5 py-1 text-xs font-semibold text-text-primary">
-                {item.percentage.toFixed(0)}%
-              </span>
+              <div className="flex flex-shrink-0 items-center gap-2">
+                <span className="text-xs font-bold text-text-primary">
+                  PKR{" "}
+                  {item.value.toLocaleString(undefined, {
+                    maximumFractionDigits: 0,
+                  })}
+                </span>
+                <span className="rounded-full border border-border bg-card px-2.5 py-1 text-xs font-semibold text-text-primary">
+                  {item.percentage.toFixed(0)}%
+                </span>
+              </div>
             </div>
 
             <div className="h-1.5 overflow-hidden rounded-full bg-card">
@@ -79,6 +87,15 @@ export default function SpendingBreakdown({
             </div>
           </div>
         ))}
+      </div>
+
+      <div className="mt-4 flex items-center justify-between rounded-[18px] border border-border bg-surface-secondary px-3 py-2.5">
+        <span className="text-xs font-semibold text-text-secondary">
+          Total tracked
+        </span>
+        <span className="text-sm font-bold text-text-primary">
+          PKR {total.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+        </span>
       </div>
     </div>
   );

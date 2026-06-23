@@ -1,12 +1,13 @@
 import { createClient } from "@/lib/supabase/server";
-import StatCard from "@/components/dashboard/StatCard";
+import MetricCard from "@/components/dashboard/MetricCard";
 import IncomeExpenseChart from "@/components/dashboard/IncomeExpenseChart";
 import SpendingBreakdown from "@/components/dashboard/SpendingBreakdown";
 import RecentTransactions from "@/components/dashboard/RecentTransactions";
 import GoalsProgress from "@/components/dashboard/GoalsProgress";
-import TodaysOverview from "@/components/dashboard/TodaysOverview";
+import FinancePulseCard from "@/components/dashboard/FinancePulseCard";
 import InvestmentOverviewWidget from "@/components/dashboard/InvestmentOverviewWidget";
 import SpendRecordWidget from "@/components/dashboard/SpendRecordWidget";
+import BottomInsightCard from "@/components/dashboard/BottomInsightCard";
 import {
   DashboardMotion,
   DashboardMotionItem,
@@ -256,17 +257,17 @@ export default async function DashboardPage() {
   ];
 
   return (
-    <DashboardMotion className="space-y-5 pb-8">
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
+    <DashboardMotion className="space-y-6 pb-10">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {stats.map((s) => (
           <DashboardMotionItem key={s.title}>
-            <StatCard {...s} />
+            <MetricCard {...s} />
           </DashboardMotionItem>
         ))}
       </div>
 
       <DashboardMotionItem>
-        <TodaysOverview
+        <FinancePulseCard
           income={fmt(todayTotals.income)}
           expenses={fmt(todayTotals.expenses)}
           net={fmt(todayTotals.income - todayTotals.expenses)}
@@ -281,9 +282,12 @@ export default async function DashboardPage() {
         />
       </DashboardMotionItem>
 
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-[2fr_1fr_1fr] lg:items-stretch">
-        <DashboardMotionItem className="[&>div]:h-full">
-          <IncomeExpenseChart data={chartData} />
+      <div className="grid grid-cols-1 gap-4 xl:grid-cols-3 xl:items-stretch">
+        <DashboardMotionItem className="[&>section]:h-full">
+          <SpendRecordWidget
+            dailySpend={fmt(dailySpend)}
+            dailyExpenseTrend={dailyExpenseTrend}
+          />
         </DashboardMotionItem>
         <DashboardMotionItem className="[&>div]:h-full">
           {(investments ?? []).length > 0 ? (
@@ -292,7 +296,7 @@ export default async function DashboardPage() {
               totalPnLPct={totalPnLPct}
             />
           ) : (
-            <div className="finance-panel flex h-full min-h-[260px] items-center justify-center p-5 text-center">
+            <div className="finance-reference-card flex h-full min-h-[320px] items-center justify-center p-5 text-center">
               <div>
                 <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-blue-500">
                   Investments
@@ -307,37 +311,9 @@ export default async function DashboardPage() {
             </div>
           )}
         </DashboardMotionItem>
-        <DashboardMotionItem className="[&>div]:h-full">
-          <SpendRecordWidget
-            dailySpend={fmt(dailySpend)}
-            dailyExpenseTrend={dailyExpenseTrend}
-          />
+        <DashboardMotionItem className="[&>section]:h-full">
+          <IncomeExpenseChart data={chartData} />
         </DashboardMotionItem>
-      </div>
-
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
-        {intelligenceTiles.map(({ label, value, detail, icon: Icon }) => (
-          <DashboardMotionItem key={label}>
-            <div className="finance-panel-soft widget-link card-hover h-full p-4">
-              <div className="flex items-start justify-between gap-3">
-                <div className="min-w-0">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-text-secondary">
-                    {label}
-                  </p>
-                  <p className="mt-2 truncate text-lg font-bold text-text-primary">
-                    {value}
-                  </p>
-                </div>
-                <div className="finance-icon-bubble h-10 w-10">
-                  <Icon size={17} strokeWidth={2.1} />
-                </div>
-              </div>
-              <p className="mt-3 text-xs leading-5 text-text-secondary">
-                {detail}
-              </p>
-            </div>
-          </DashboardMotionItem>
-        ))}
       </div>
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-3 lg:items-stretch">
@@ -345,11 +321,19 @@ export default async function DashboardPage() {
           <SpendingBreakdown data={spendingData} total={expenses} />
         </DashboardMotionItem>
         <DashboardMotionItem className="[&>div]:h-full">
-          <RecentTransactions transactions={txns.slice(0, 5) as any} />
-        </DashboardMotionItem>
-        <DashboardMotionItem className="[&>div]:h-full">
           <GoalsProgress goals={(goals ?? []) as any} />
         </DashboardMotionItem>
+        <DashboardMotionItem className="[&>div]:h-full">
+          <RecentTransactions transactions={txns.slice(0, 5) as any} />
+        </DashboardMotionItem>
+      </div>
+
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        {intelligenceTiles.map((tile) => (
+          <DashboardMotionItem key={tile.label}>
+            <BottomInsightCard {...tile} />
+          </DashboardMotionItem>
+        ))}
       </div>
     </DashboardMotion>
   );

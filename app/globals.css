@@ -129,6 +129,9 @@
       linear-gradient(180deg, color-mix(in srgb, var(--background), var(--surface-secondary) 32%) 0%, var(--background) 34rem),
       var(--background);
     text-rendering: geometricPrecision;
+    transition:
+      background-color 0.24s var(--motion-ease),
+      color 0.24s var(--motion-ease);
   }
 
   ::selection {
@@ -303,6 +306,39 @@
   .widget-link {
     @apply cursor-pointer hover:-translate-y-px;
     will-change: transform;
+  }
+
+  .finance-reference-card {
+    @apply rounded-[28px] border;
+    border-color: color-mix(in srgb, var(--border), white 18%);
+    background:
+      linear-gradient(180deg, color-mix(in srgb, var(--card), white 8%), var(--card));
+    color: var(--text-primary);
+    box-shadow:
+      0 18px 45px rgb(16 24 40 / 0.08),
+      0 2px 8px rgb(16 24 40 / 0.04);
+    transition:
+      transform 0.2s var(--motion-ease),
+      box-shadow 0.2s var(--motion-ease),
+      border-color 0.2s var(--motion-ease),
+      background-color 0.2s var(--motion-ease);
+    will-change: transform;
+  }
+
+  .dark .finance-reference-card {
+    border-color: color-mix(in srgb, var(--border), white 6%);
+    background:
+      linear-gradient(180deg, color-mix(in srgb, var(--card), white 6%), color-mix(in srgb, var(--card), black 8%));
+    box-shadow:
+      0 22px 58px rgb(0 0 0 / 0.32),
+      inset 0 1px 0 rgb(255 255 255 / 0.04);
+  }
+
+  .finance-reference-card:hover {
+    border-color: color-mix(in srgb, var(--active), var(--border) 70%);
+    box-shadow:
+      0 24px 60px rgb(16 24 40 / 0.11),
+      var(--glow-soft);
   }
 
   .finance-panel-interactive {
