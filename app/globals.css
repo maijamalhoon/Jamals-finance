@@ -8,11 +8,15 @@
   --color-background: var(--background);
   --color-surface: var(--surface);
   --color-surface-secondary: var(--surface-secondary);
+  --color-surface-elevated: var(--surface-elevated);
+  --color-surface-glass: var(--surface-glass);
   --color-card: var(--card);
   --color-sidebar: var(--sidebar);
   --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
   --color-text-primary: var(--text-primary);
   --color-text-secondary: var(--text-secondary);
+  --color-text-tertiary: var(--text-tertiary);
   --color-hover: var(--hover);
   --color-active: var(--active);
   --color-success: var(--success);
@@ -24,6 +28,8 @@
   --color-loader: var(--loader);
   --color-skeleton: var(--skeleton);
   --shadow-theme: var(--shadow);
+  --shadow-soft: var(--shadow-soft);
+  --shadow-premium: var(--shadow-premium);
 
   --color-foreground: var(--text-primary);
   --color-card-foreground: var(--text-primary);
@@ -61,11 +67,15 @@
   --background: #f8fafc;
   --surface: #ffffff;
   --surface-secondary: #f1f5f9;
+  --surface-elevated: #ffffff;
+  --surface-glass: color-mix(in srgb, #ffffff, transparent 8%);
   --card: #ffffff;
   --sidebar: #ffffff;
   --border: #e2e8f0;
+  --border-strong: #cbd5e1;
   --text-primary: #101828;
   --text-secondary: #667085;
+  --text-tertiary: #98a2b3;
   --hover: #f1f5f9;
   --active: #2563eb;
   --success: #168a53;
@@ -80,7 +90,17 @@
   --shadow-soft: 0 12px 32px rgb(16 24 40 / 0.07);
   --shadow-premium: 0 18px 46px rgb(16 24 40 / 0.09);
   --glow-soft: 0 0 0 1px color-mix(in srgb, var(--active), transparent 88%);
+  --focus-ring: 0 0 0 3px color-mix(in srgb, var(--active), transparent 80%);
+  --surface-highlight: inset 0 1px 0 rgb(255 255 255 / 0.68);
+  --oneui-page-gutter: clamp(0.875rem, 1.7vw, 1.75rem);
+  --oneui-card-radius: 1.25rem;
+  --oneui-tile-radius: 1rem;
+  --oneui-control-radius: 0.875rem;
+  --oneui-touch-target: 2.75rem;
   --motion-ease: cubic-bezier(0.16, 1, 0.3, 1);
+  --motion-duration-fast: 160ms;
+  --motion-duration-base: 220ms;
+  --motion-duration-slow: 320ms;
 }
 
 .dark {
@@ -88,11 +108,15 @@
   --background: #0f141b;
   --surface: #151b23;
   --surface-secondary: #1a222d;
+  --surface-elevated: #192231;
+  --surface-glass: color-mix(in srgb, #151b23, transparent 10%);
   --card: #151b23;
   --sidebar: #121820;
   --border: #263241;
+  --border-strong: #344256;
   --text-primary: #f2f5f8;
   --text-secondary: #a3adba;
+  --text-tertiary: #768394;
   --hover: #1d2632;
   --active: #74a7ff;
   --success: #5ee2a0;
@@ -107,7 +131,17 @@
   --shadow-soft: 0 14px 38px rgb(0 0 0 / 0.24);
   --shadow-premium: 0 22px 58px rgb(0 0 0 / 0.34);
   --glow-soft: 0 0 0 1px color-mix(in srgb, var(--active), transparent 82%);
+  --focus-ring: 0 0 0 3px color-mix(in srgb, var(--active), transparent 76%);
+  --surface-highlight: inset 0 1px 0 rgb(255 255 255 / 0.04);
+  --oneui-page-gutter: clamp(0.875rem, 1.7vw, 1.75rem);
+  --oneui-card-radius: 1.25rem;
+  --oneui-tile-radius: 1rem;
+  --oneui-control-radius: 0.875rem;
+  --oneui-touch-target: 2.75rem;
   --motion-ease: cubic-bezier(0.16, 1, 0.3, 1);
+  --motion-duration-fast: 160ms;
+  --motion-duration-base: 220ms;
+  --motion-duration-slow: 320ms;
 }
 
 @layer base {
@@ -171,6 +205,205 @@
     will-change: transform;
   }
 
+  .finance-surface,
+  .finance-surface-soft,
+  .finance-surface-glass {
+    position: relative;
+    border: 1px solid var(--border);
+    color: var(--text-primary);
+    transition:
+      border-color var(--motion-duration-base) var(--motion-ease),
+      background-color var(--motion-duration-base) var(--motion-ease),
+      box-shadow var(--motion-duration-base) var(--motion-ease),
+      transform var(--motion-duration-base) var(--motion-ease);
+  }
+
+  .finance-surface {
+    border-radius: var(--oneui-card-radius);
+    background:
+      linear-gradient(180deg, color-mix(in srgb, var(--surface-elevated), white 4%), var(--card));
+    box-shadow: var(--shadow), var(--surface-highlight);
+  }
+
+  .finance-surface-soft {
+    border-radius: var(--oneui-card-radius);
+    background:
+      linear-gradient(180deg, color-mix(in srgb, var(--surface-secondary), var(--card) 22%), var(--surface-secondary));
+    box-shadow: var(--surface-highlight);
+  }
+
+  .finance-surface-glass {
+    border-color: color-mix(in srgb, var(--border), transparent 16%);
+    border-radius: var(--oneui-card-radius);
+    background: var(--surface-glass);
+    box-shadow: var(--shadow-soft), var(--surface-highlight);
+  }
+
+  @supports ((backdrop-filter: blur(10px)) or (-webkit-backdrop-filter: blur(10px))) {
+    .finance-surface-glass {
+      backdrop-filter: blur(10px) saturate(1.08);
+      -webkit-backdrop-filter: blur(10px) saturate(1.08);
+    }
+  }
+
+  .finance-interactive-tile,
+  .finance-nav-item {
+    position: relative;
+    min-height: var(--oneui-touch-target);
+    border: 1px solid transparent;
+    border-radius: var(--oneui-tile-radius);
+    color: var(--text-secondary);
+    transition:
+      color var(--motion-duration-base) var(--motion-ease),
+      background-color var(--motion-duration-base) var(--motion-ease),
+      border-color var(--motion-duration-base) var(--motion-ease),
+      box-shadow var(--motion-duration-base) var(--motion-ease),
+      transform var(--motion-duration-fast) var(--motion-ease);
+  }
+
+  .finance-interactive-tile:hover,
+  .finance-nav-item:hover {
+    border-color: var(--border);
+    background-color: var(--hover);
+    color: var(--text-primary);
+    box-shadow: var(--shadow-soft);
+    transform: translate3d(0, -1px, 0);
+  }
+
+  .finance-interactive-tile:active,
+  .finance-nav-item:active {
+    transform: translate3d(0, 0, 0) scale(0.99);
+  }
+
+  .finance-interactive-tile:focus-visible,
+  .finance-nav-item:focus-visible {
+    outline: none;
+    border-color: var(--active);
+    box-shadow: var(--focus-ring);
+  }
+
+  .finance-nav-item.is-active,
+  .finance-nav-item[aria-current="page"] {
+    border-color: var(--border);
+    background-color: var(--hover);
+    color: var(--active);
+  }
+
+  .finance-nav-item::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 50%;
+    width: 3px;
+    height: 0;
+    border-radius: 999px;
+    background: var(--active);
+    opacity: 0;
+    transform: translateY(-50%);
+    transition:
+      height var(--motion-duration-base) var(--motion-ease),
+      opacity var(--motion-duration-base) var(--motion-ease);
+  }
+
+  .finance-nav-item.is-active::before,
+  .finance-nav-item[aria-current="page"]::before {
+    height: 1.65rem;
+    opacity: 1;
+  }
+
+  .finance-active-indicator {
+    position: absolute;
+    pointer-events: none;
+    inset-inline-start: 0;
+    top: 50%;
+    width: 3px;
+    height: 1.65rem;
+    border-radius: 999px;
+    background: var(--active);
+    transform: translateY(-50%);
+    transition:
+      transform var(--motion-duration-base) var(--motion-ease),
+      opacity var(--motion-duration-base) var(--motion-ease);
+  }
+
+  .finance-icon-container {
+    display: grid;
+    width: 2.5rem;
+    height: 2.5rem;
+    flex-shrink: 0;
+    place-items: center;
+    border: 1px solid color-mix(in srgb, var(--active), var(--border) 78%);
+    border-radius: var(--oneui-tile-radius);
+    background-color: color-mix(in srgb, var(--active), transparent 90%);
+    color: var(--active);
+    box-shadow: var(--surface-highlight);
+    transition:
+      color var(--motion-duration-base) var(--motion-ease),
+      background-color var(--motion-duration-base) var(--motion-ease),
+      border-color var(--motion-duration-base) var(--motion-ease),
+      transform var(--motion-duration-fast) var(--motion-ease);
+  }
+
+  .finance-icon-container[data-size="sm"] {
+    width: 2rem;
+    height: 2rem;
+    border-radius: 0.8rem;
+  }
+
+  .finance-icon-container[data-size="lg"] {
+    width: 3rem;
+    height: 3rem;
+    border-radius: 1.15rem;
+  }
+
+  .finance-icon-container[data-tone="success"] {
+    border-color: color-mix(in srgb, var(--success), transparent 70%);
+    background-color: color-mix(in srgb, var(--success), transparent 90%);
+    color: var(--success);
+  }
+
+  .finance-icon-container[data-tone="danger"] {
+    border-color: color-mix(in srgb, var(--danger), transparent 70%);
+    background-color: color-mix(in srgb, var(--danger), transparent 90%);
+    color: var(--danger);
+  }
+
+  .finance-icon-container[data-tone="warning"] {
+    border-color: color-mix(in srgb, var(--warning), transparent 70%);
+    background-color: color-mix(in srgb, var(--warning), transparent 88%);
+    color: var(--warning);
+  }
+
+  .finance-icon-container[data-tone="info"] {
+    border-color: color-mix(in srgb, var(--info), transparent 70%);
+    background-color: color-mix(in srgb, var(--info), transparent 90%);
+    color: var(--info);
+  }
+
+  .finance-hover-lift {
+    transition:
+      border-color var(--motion-duration-base) var(--motion-ease),
+      box-shadow var(--motion-duration-base) var(--motion-ease),
+      transform var(--motion-duration-fast) var(--motion-ease);
+  }
+
+  .finance-hover-lift:hover {
+    border-color: color-mix(in srgb, var(--active), var(--border) 72%);
+    box-shadow: var(--shadow-premium), var(--glow-soft);
+    transform: translate3d(0, -2px, 0);
+  }
+
+  .finance-pressable {
+    transform: translateZ(0);
+    transition:
+      transform var(--motion-duration-fast) var(--motion-ease),
+      box-shadow var(--motion-duration-base) var(--motion-ease);
+  }
+
+  .finance-pressable:active {
+    transform: scale(0.985);
+  }
+
   .finance-control {
     @apply rounded-[14px] border transition-all duration-200 ease-out;
     border-color: var(--border);
@@ -189,11 +422,15 @@
   .finance-control:focus-within,
   .finance-control:focus-visible {
     border-color: var(--active);
-    box-shadow: 0 0 0 3px color-mix(in srgb, var(--active), transparent 82%);
+    box-shadow: var(--focus-ring);
   }
 
   .finance-focus {
-    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-active/40 focus-visible:ring-offset-0;
+    @apply focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0;
+  }
+
+  .finance-focus:focus-visible {
+    box-shadow: var(--focus-ring);
   }
 
   .page-heading {
@@ -342,12 +579,11 @@
   }
 
   .dashboard-graph-card {
-    @apply rounded-[20px] border bg-white px-5 pb-4 pt-5;
-    border-color: #dfe5ee;
-    color: #050816;
-    box-shadow:
-      0 1px 2px rgb(15 23 42 / 0.08),
-      0 8px 18px rgb(15 23 42 / 0.08);
+    @apply rounded-[20px] border px-5 pb-4 pt-5;
+    border-color: var(--border);
+    background: var(--surface-elevated);
+    color: var(--text-primary);
+    box-shadow: var(--shadow-soft), var(--surface-highlight);
   }
 
   .dark .dashboard-graph-card {
@@ -592,7 +828,7 @@
   background-color: var(--hover) !important;
 }
 
-:is(.border-slate-200, .border-slate-200\/80, .border-slate-200\/90, .border-slate-300, .border-gray-800\/50, .border-white, .border-white\/\[0\.06\], .border-white\/\[0\.07\], .border-white\/\[0\.08\], .border-white\/\[0\.10\], .border-blue-100, .border-emerald-200, .border-rose-200, .border-red-200, .border-green-200, .border-sky-200, .border-lime-200, .border-amber-200) {
+:is(.border-slate-200, .border-slate-200\/80, .border-slate-200\/90, .border-slate-300, .border-gray-800\/50, .border-white, .border-white\/\[0\.06\], .border-white\/\[0\.07\], .border-white\/\[0\.08\], .border-white\/\[0\.10\], .border-\[\#dfe5ee\], .border-blue-100, .border-emerald-200, .border-rose-200, .border-red-200, .border-green-200, .border-sky-200, .border-lime-200, .border-amber-200) {
   border-color: var(--border) !important;
 }
 
@@ -604,11 +840,11 @@
   --tw-ring-color: var(--border) !important;
 }
 
-:is(.text-white, .text-slate-950, .text-slate-900, .text-slate-800, .text-slate-700, .text-\[\#111318\], .text-\[\#101318\]) {
+:is(.text-white, .text-slate-950, .text-slate-900, .text-slate-800, .text-slate-700, .text-\[\#111318\], .text-\[\#101318\], .text-\[\#050816\], .text-\[\#020817\]) {
   color: var(--text-primary) !important;
 }
 
-:is(.text-white\/70, .text-white\/80, .text-slate-600, .text-slate-500, .text-slate-400, .text-slate-300, .text-muted-foreground) {
+:is(.text-white\/70, .text-white\/80, .text-slate-600, .text-slate-500, .text-slate-400, .text-slate-300, .text-muted-foreground, .text-\[\#758093\], .text-\[\#7f8798\], .text-\[\#8a93a4\], .text-\[\#8d96a8\], .text-\[\#9aa3b5\]) {
   color: var(--text-secondary) !important;
 }
 
@@ -819,6 +1055,28 @@ button svg {
   animation: contentReveal 0.34s var(--motion-ease) both;
 }
 
+.motion-fade-slide {
+  animation: oneuiFadeSlide var(--motion-duration-slow) var(--motion-ease) both;
+}
+
+.motion-card-entry {
+  animation: oneuiCardEntry var(--motion-duration-slow) var(--motion-ease) both;
+  animation-delay: var(--motion-reveal-delay, 0ms);
+}
+
+.motion-scale-in {
+  animation: oneuiScaleIn var(--motion-duration-base) var(--motion-ease) both;
+}
+
+.motion-active-indicator {
+  transform-origin: center;
+  animation: oneuiIndicatorIn var(--motion-duration-base) var(--motion-ease) both;
+}
+
+.motion-counter-ready {
+  animation: oneuiCounterReady var(--motion-duration-base) var(--motion-ease) both;
+}
+
 .motion-drawer-surface {
   transform: translateZ(0);
   contain: layout paint;
@@ -857,11 +1115,11 @@ button:active {
 input:focus,
 select:focus,
 textarea:focus {
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--active), transparent 72%);
+  box-shadow: var(--focus-ring);
 }
 
 :where(a, button, input, select, textarea, [tabindex]):focus-visible {
-  outline: 2px solid color-mix(in srgb, var(--active), transparent 30%);
+  outline: 2px solid color-mix(in srgb, var(--active), transparent 22%);
   outline-offset: 3px;
 }
 
@@ -900,6 +1158,66 @@ textarea:focus {
 
 .page-enter {
   animation: pageEnter 0.24s ease-out both;
+}
+
+@keyframes oneuiFadeSlide {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 10px, 0);
+  }
+
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes oneuiCardEntry {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 12px, 0) scale(0.992);
+  }
+
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+}
+
+@keyframes oneuiScaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.975);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes oneuiIndicatorIn {
+  from {
+    opacity: 0;
+    transform: translateY(-50%) scaleY(0.35);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(-50%) scaleY(1);
+  }
+}
+
+@keyframes oneuiCounterReady {
+  from {
+    opacity: 0.72;
+    transform: translateY(3px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @keyframes skeletonSweep {
@@ -1023,6 +1341,11 @@ textarea:focus {
     .motion-table-row,
     .motion-error-shake,
     .motion-empty,
+    .motion-fade-slide,
+    .motion-card-entry,
+    .motion-scale-in,
+    .motion-active-indicator,
+    .motion-counter-ready,
     .finance-skeleton {
     animation: none !important;
   }
@@ -1032,6 +1355,11 @@ textarea:focus {
     .motion-observe,
     .motion-table-row,
     .motion-empty,
+    .motion-fade-slide,
+    .motion-card-entry,
+    .motion-scale-in,
+    .motion-active-indicator,
+    .motion-counter-ready,
     .motion-error-shake {
     transform: none !important;
     opacity: 1 !important;

@@ -2,23 +2,27 @@
 
 import { Bell, CalendarDays, Search } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { panelVariants } from "@/components/motion/animation-config";
+import { isNavItemActive, NAV_ITEMS } from "@/lib/navigation";
 
-function getGreeting() {
-  const h = new Date().getHours();
-  if (h < 12) return "Good morning";
-  if (h < 17) return "Good afternoon";
-  return "Good evening";
+function getRouteTitle(pathname: string) {
+  const navItem = NAV_ITEMS.find((item) => isNavItemActive(pathname, item.href));
+  if (navItem) return navItem.label;
+  if (pathname.startsWith("/dashboard/settings")) return "Settings";
+  if (pathname.startsWith("/dashboard/ai-insights")) return "AI Insights";
+  return "Dashboard";
 }
 
 export default function Header() {
   const router = useRouter();
+  const pathname = usePathname();
   const [query, setQuery] = useState("");
   const [bellOpen, setBellOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const bellRef = useRef<HTMLDivElement>(null);
+  const routeTitle = getRouteTitle(pathname);
 
   useEffect(() => {
     function handleClick(e: MouseEvent) {
@@ -54,37 +58,39 @@ export default function Header() {
   }
 
   return (
-    <div
-      className={`relative z-40 flex h-[72px] flex-shrink-0 items-center justify-between border-b border-border bg-surface px-6 transition-shadow duration-200 ${
+    <header
+      className={`motion-fade-slide relative z-40 flex h-[76px] flex-shrink-0 items-center justify-between gap-5 border-b border-border bg-surface px-6 transition-shadow duration-200 ${
         scrolled ? "shadow-[var(--shadow-soft)]" : "shadow-theme"
       }`}
     >
-      <div>
-        <h1 className="text-base font-semibold text-text-primary">
-          {getGreeting()}
+      <div className="min-w-0">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-text-secondary">
+          Workspace
+        </p>
+        <h1 className="mt-1 truncate text-lg font-bold leading-none text-text-primary">
+          {routeTitle}
         </h1>
-        <p className="text-xs text-text-secondary">Command center is ready</p>
       </div>
 
-      <div className="flex items-center gap-3">
+      <div className="flex min-w-0 items-center gap-2.5">
         <form
           onSubmit={handleSearch}
           role="search"
           aria-label="Search transactions"
-          className="finance-control finance-focus flex w-72 items-center gap-2 px-3 py-2.5"
+          className="finance-control finance-focus flex h-10 w-72 items-center gap-2 px-3 xl:w-80"
         >
-          <Search size={13} className="flex-shrink-0 text-text-secondary" />
+          <Search size={14} className="flex-shrink-0 text-text-secondary" />
           <input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search transactions..."
             aria-label="Search transactions"
-            className="w-full bg-transparent text-xs text-text-primary outline-none placeholder:text-text-secondary"
+            className="min-w-0 flex-1 bg-transparent text-sm text-text-primary outline-none placeholder:text-text-secondary"
           />
         </form>
 
-        <time className="finance-control flex items-center gap-2 px-3 py-2 text-xs text-text-secondary">
-          <CalendarDays size={13} className="text-text-secondary" />
+        <time className="finance-control hidden h-10 items-center gap-2 px-3 text-xs font-medium text-text-secondary xl:flex">
+          <CalendarDays size={14} className="text-text-secondary" />
           {new Date().toLocaleDateString("en-US", {
             month: "short",
             day: "numeric",
@@ -95,7 +101,7 @@ export default function Header() {
         <div className="relative" ref={bellRef}>
           <button
             onClick={() => setBellOpen((current) => !current)}
-            className="finance-control finance-focus relative flex h-9 w-9 items-center justify-center"
+            className="finance-control finance-focus relative flex h-10 w-10 items-center justify-center"
             aria-label="Open notifications"
             aria-haspopup="dialog"
             aria-expanded={bellOpen}
@@ -113,7 +119,7 @@ export default function Header() {
                 exit="exit"
                 role="dialog"
                 aria-label="Notifications"
-                className="finance-panel absolute right-0 top-11 z-[120] w-72 overflow-hidden"
+                className="finance-surface absolute right-0 top-12 z-[120] w-72 overflow-hidden"
               >
                 <div className="border-b border-border p-4">
                   <p className="text-sm font-semibold text-text-primary">
@@ -133,6 +139,6 @@ export default function Header() {
         </div>
 
       </div>
-    </div>
+    </header>
   );
 }

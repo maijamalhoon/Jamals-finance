@@ -2,12 +2,14 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { motion } from "framer-motion";
 import {
   ArrowLeftRight,
   LayoutDashboard,
   Target,
   WalletCards,
 } from "lucide-react";
+import { isNavItemActive } from "@/lib/navigation";
 
 const NAV = [
   { label: "Home", href: "/dashboard", icon: LayoutDashboard },
@@ -23,29 +25,43 @@ const NAV = [
 export default function MobileNav() {
   const pathname = usePathname();
 
-  function isActive(href: string) {
-    return (
-      pathname === href || (href !== "/dashboard" && pathname.startsWith(href))
-    );
-  }
-
   return (
-    <div className="relative z-30 flex h-[74px] flex-shrink-0 items-center justify-around border-t border-border bg-surface px-2 shadow-theme lg:hidden">
-      {NAV.map(({ label, href, icon: Icon }) => (
-        <Link
-          key={href}
-          href={href}
-          aria-current={isActive(href) ? "page" : undefined}
-          className={`finance-focus relative flex min-w-14 flex-col items-center gap-1 rounded-[14px] px-2 py-1.5 transition-all hover:-translate-y-px active:translate-y-0 active:scale-[0.99] ${
-            isActive(href)
-              ? "bg-hover text-active"
-              : "text-text-secondary hover:bg-hover hover:text-text-primary"
-          }`}
-        >
-          <Icon size={20} />
-          <span className="text-[10px] font-medium">{label}</span>
-        </Link>
-      ))}
-    </div>
+    <nav
+      aria-label="Primary mobile navigation"
+      className="relative z-30 grid h-[76px] flex-shrink-0 grid-cols-4 gap-1 border-t border-border bg-surface px-2 py-2 shadow-theme lg:hidden"
+    >
+      {NAV.map(({ label, href, icon: Icon }) => {
+        const active = isNavItemActive(pathname, href);
+
+        return (
+          <Link
+            key={href}
+            href={href}
+            aria-current={active ? "page" : undefined}
+            className={`finance-focus group relative flex min-w-0 flex-col items-center justify-center gap-1 overflow-hidden rounded-[16px] px-2 py-1.5 transition-all active:scale-[0.99] ${
+              active
+                ? "text-active"
+                : "text-text-secondary hover:bg-hover hover:text-text-primary"
+            }`}
+          >
+            {active && (
+              <motion.span
+                layoutId="mobile-nav-active-pill"
+                className="pointer-events-none absolute inset-0 rounded-[16px] border border-border bg-hover"
+                transition={{ duration: 0.24, ease: [0.16, 1, 0.3, 1] }}
+              />
+            )}
+            <Icon
+              size={20}
+              strokeWidth={2.15}
+              className="relative z-10 transition-transform duration-200 group-hover:-translate-y-0.5"
+            />
+            <span className="relative z-10 truncate text-[10px] font-semibold leading-none">
+              {label}
+            </span>
+          </Link>
+        );
+      })}
+    </nav>
   );
 }

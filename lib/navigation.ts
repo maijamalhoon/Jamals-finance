@@ -103,3 +103,7 @@ export const QUICK_ACTION_ITEMS = [
     tone: "text-orange-300 bg-orange-500/15",
   },
 ];
+
+export function isNavItemActive(pathname: string, href: string) {
+  return pathname === href || (href !== "/dashboard" && pathname.startsWith(href));
+}

@@ -87,9 +87,10 @@ export default function JamalMenu({
       <button
         type="button"
         onClick={() => setOpen((current) => !current)}
-        className="finance-focus flex w-full items-center gap-3 rounded-[16px] border border-border bg-card px-3 py-2.5 text-left shadow-theme transition-all hover:-translate-y-px hover:bg-hover"
+        className="finance-focus finance-interactive-tile flex w-full items-center gap-3 border-border bg-card px-3 py-2.5 text-left shadow-theme"
         aria-expanded={open}
         aria-haspopup="menu"
+        aria-label="Open profile menu"
       >
         <Avatar className="size-10">
           {avatarUrl && <AvatarImage src={avatarUrl} alt={displayName} />}
@@ -111,7 +112,7 @@ export default function JamalMenu({
             initial="initial"
             animate="animate"
             exit="exit"
-            className={`finance-panel absolute z-[130] w-56 overflow-hidden p-2 ${
+            className={`finance-surface absolute z-[130] w-56 overflow-hidden p-2 ${
               align === "right" ? "right-0" : "left-0"
             } ${
               placement === "top"
@@ -126,7 +127,7 @@ export default function JamalMenu({
                 router.push("/dashboard/settings");
                 setOpen(false);
               }}
-              className="finance-focus flex w-full items-center gap-3 rounded-[12px] px-3 py-2.5 text-left text-sm font-medium text-text-secondary transition-all hover:bg-hover hover:text-text-primary"
+              className="finance-focus finance-interactive-tile flex w-full items-center gap-3 px-3 py-2 text-left text-sm font-semibold"
               role="menuitem"
             >
               <Settings size={15} />
@@ -135,7 +136,7 @@ export default function JamalMenu({
             <button
               type="button"
               onClick={toggleTheme}
-              className="finance-focus flex w-full items-center gap-3 rounded-[12px] px-3 py-2.5 text-left text-sm font-medium text-text-secondary transition-all hover:bg-hover hover:text-text-primary"
+              className="finance-focus finance-interactive-tile flex w-full items-center gap-3 px-3 py-2 text-left text-sm font-semibold"
               role="menuitem"
             >
               {isDark ? <Sun size={15} /> : <Moon size={15} />}
@@ -144,7 +145,7 @@ export default function JamalMenu({
             <button
               type="button"
               onClick={handleSignOut}
-              className="finance-focus flex w-full items-center gap-3 rounded-[12px] px-3 py-2.5 text-left text-sm font-medium text-text-secondary transition-all hover:bg-hover hover:text-text-primary"
+              className="finance-focus finance-interactive-tile flex w-full items-center gap-3 px-3 py-2 text-left text-sm font-semibold"
               role="menuitem"
             >
               <LogOut size={15} />
