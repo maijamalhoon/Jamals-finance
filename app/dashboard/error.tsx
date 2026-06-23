@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect } from "react";
 import { AlertCircle, RefreshCw } from "lucide-react";
 
 export default function DashboardError({
@@ -10,26 +9,29 @@ export default function DashboardError({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
-  useEffect(() => {
-    console.error(error);
-  }, [error]);
-
   return (
-    <div className="motion-error-shake flex flex-col items-center justify-center h-64 gap-4">
-      <div className="w-12 h-12 rounded-2xl bg-red-500/10 flex items-center justify-center">
-        <AlertCircle size={24} className="text-red-400" />
-      </div>
-      <div className="text-center">
-        <p className="text-text-primary font-medium text-sm">Something went wrong</p>
-        <p className="mt-1 text-xs text-slate-500">{error.message}</p>
-      </div>
-      <button
-        onClick={reset}
-        className="primary-action"
+    <div className="motion-error-shake flex min-h-[360px] items-center justify-center px-4">
+      <div
+        role="alert"
+        aria-live="assertive"
+        className="finance-panel flex w-full max-w-md flex-col items-center gap-4 p-6 text-center"
       >
-        <RefreshCw size={14} />
-        Try again
-      </button>
+        <div className="finance-status-danger flex h-12 w-12 items-center justify-center rounded-[18px] border">
+          <AlertCircle size={23} />
+        </div>
+        <div>
+          <p className="text-sm font-semibold text-text-primary">
+            Dashboard could not load
+          </p>
+          <p className="mt-1 text-xs leading-5 text-text-secondary">
+            {error.message || "Refresh the workspace and try again."}
+          </p>
+        </div>
+        <button onClick={reset} className="primary-action">
+          <RefreshCw size={14} />
+          Try again
+        </button>
+      </div>
     </div>
   );
 }

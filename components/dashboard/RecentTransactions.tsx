@@ -20,16 +20,16 @@ export default function RecentTransactions({
 }) {
   return (
     <div className="finance-panel p-4 sm:p-5">
-      <div className="flex items-center justify-between gap-3 mb-4">
+      <div className="mb-4 flex items-center justify-between gap-3">
         <div>
-          <h3 className="text-slate-950 font-semibold text-sm">
+          <h3 className="text-sm font-semibold text-text-primary">
             Recent Transactions
           </h3>
-          <p className="text-slate-500 text-xs mt-1">Latest activity</p>
+          <p className="mt-1 text-xs text-text-secondary">Latest activity</p>
         </div>
         <Link
           href="/dashboard/transactions"
-          className="text-blue-600 text-xs border border-blue-100 rounded-lg px-3 py-1.5 hover:bg-blue-50 transition-colors"
+          className="finance-focus rounded-[12px] border border-border bg-surface-secondary px-3 py-1.5 text-xs font-semibold text-active transition-all hover:-translate-y-px hover:bg-hover"
         >
           View All
         </Link>
@@ -66,11 +66,11 @@ export default function RecentTransactions({
                   <TypeIcon size={16} strokeWidth={2.1} />
                 </div>
 
-                <div className="flex-1 min-w-0">
-                  <p className="text-slate-950 text-sm font-medium truncate">
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-medium text-text-primary">
                     {tx.note || tx.categories?.name || "Transaction"}
                   </p>
-                  <p className="text-slate-500 text-xs">
+                  <p className="text-xs text-text-secondary">
                     {tx.accounts?.name || "No account"}
                   </p>
                 </div>
@@ -89,7 +89,7 @@ export default function RecentTransactions({
                     {tx.type === "income" ? "+" : "-"} PKR{" "}
                     {Number(tx.amount).toLocaleString()}
                   </p>
-                  <p className="text-slate-600 text-xs">
+                  <p className="text-xs text-text-secondary">
                     {new Date(tx.date).toLocaleDateString("en-US", {
                       month: "short",
                       day: "numeric",

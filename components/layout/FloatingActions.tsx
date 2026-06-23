@@ -127,13 +127,15 @@ export default function FloatingActions() {
                 initial="initial"
                 animate="animate"
                 exit="exit"
+                role="group"
+                aria-label="Quick finance actions"
                 className="finance-panel w-[min(88vw,320px)] p-2"
               >
                 <div className="px-3 py-2.5">
-                  <p className="text-sm font-semibold text-slate-950">
+                  <p className="text-sm font-semibold text-text-primary">
                     Quick actions
                   </p>
-                  <p className="text-[11px] text-slate-500">
+                  <p className="text-[11px] text-text-secondary">
                     Add money movement, goals, and assets
                   </p>
                 </div>
@@ -151,7 +153,7 @@ export default function FloatingActions() {
                       onClick={() => handleAction(action.key)}
                       variants={listItemVariants}
                       custom={index}
-                      className={`finance-focus flex items-center justify-between rounded-[16px] border px-3 py-3 text-left text-sm font-semibold transition-all hover:bg-hover active:scale-[0.99] ${action.tone}`}
+                      className={`finance-focus flex items-center justify-between rounded-[16px] border px-3 py-3 text-left text-sm font-semibold transition-all hover:-translate-y-px hover:bg-hover active:scale-[0.99] ${action.tone}`}
                     >
                       <span>{action.label}</span>
                       <span
@@ -173,6 +175,8 @@ export default function FloatingActions() {
           onClick={() => setOpen((current) => !current)}
           className="finance-focus relative grid h-[60px] w-[60px] place-items-center overflow-hidden rounded-[18px] bg-active text-background shadow-theme ring-1 ring-border transition hover:brightness-95"
           aria-label={open ? "Close quick actions" : "Open quick actions"}
+          aria-haspopup="dialog"
+          aria-expanded={open}
         >
           <motion.span
             animate={{ rotate: open ? 45 : 0 }}

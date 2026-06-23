@@ -1,6 +1,6 @@
 "use client";
 
-import { Bell, ChevronDown, Search } from "lucide-react";
+import { Bell, CalendarDays, Search } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
@@ -69,6 +69,8 @@ export default function Header() {
       <div className="flex items-center gap-3">
         <form
           onSubmit={handleSearch}
+          role="search"
+          aria-label="Search transactions"
           className="finance-control finance-focus flex w-72 items-center gap-2 px-3 py-2.5"
         >
           <Search size={13} className="flex-shrink-0 text-text-secondary" />
@@ -76,24 +78,27 @@ export default function Header() {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search transactions..."
+            aria-label="Search transactions"
             className="w-full bg-transparent text-xs text-text-primary outline-none placeholder:text-text-secondary"
           />
         </form>
 
-        <div className="finance-control flex items-center gap-2 px-3 py-2 text-xs text-text-secondary">
+        <time className="finance-control flex items-center gap-2 px-3 py-2 text-xs text-text-secondary">
+          <CalendarDays size={13} className="text-text-secondary" />
           {new Date().toLocaleDateString("en-US", {
             month: "short",
             day: "numeric",
             year: "numeric",
           })}
-          <ChevronDown size={12} className="text-text-secondary" />
-        </div>
+        </time>
 
         <div className="relative" ref={bellRef}>
           <button
             onClick={() => setBellOpen((current) => !current)}
             className="finance-control finance-focus relative flex h-9 w-9 items-center justify-center"
             aria-label="Open notifications"
+            aria-haspopup="dialog"
+            aria-expanded={bellOpen}
           >
             <Bell size={15} className="text-text-secondary" />
             <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full border-2 border-card bg-active" />
@@ -106,6 +111,8 @@ export default function Header() {
                 initial="initial"
                 animate="animate"
                 exit="exit"
+                role="dialog"
+                aria-label="Notifications"
                 className="finance-panel absolute right-0 top-11 z-[120] w-72 overflow-hidden"
               >
                 <div className="border-b border-border p-4">

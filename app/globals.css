@@ -15,6 +15,10 @@
   --color-text-secondary: var(--text-secondary);
   --color-hover: var(--hover);
   --color-active: var(--active);
+  --color-success: var(--success);
+  --color-danger: var(--danger);
+  --color-warning: var(--warning);
+  --color-info: var(--info);
   --color-muted: var(--muted);
   --color-input: var(--input);
   --color-loader: var(--loader);
@@ -64,13 +68,17 @@
   --text-secondary: #667085;
   --hover: #f1f5f9;
   --active: #2563eb;
+  --success: #168a53;
+  --danger: #dc2626;
+  --warning: #b76a00;
+  --info: #0284c7;
   --muted: #f8fafc;
   --input: #ffffff;
   --loader: #f1f5f9;
   --skeleton: #e9eef5;
   --shadow: 0 1px 2px rgb(16 24 40 / 0.05);
-  --shadow-soft: 0 12px 32px rgb(16 24 40 / 0.08);
-  --shadow-premium: 0 18px 46px rgb(16 24 40 / 0.1);
+  --shadow-soft: 0 12px 32px rgb(16 24 40 / 0.07);
+  --shadow-premium: 0 18px 46px rgb(16 24 40 / 0.09);
   --glow-soft: 0 0 0 1px color-mix(in srgb, var(--active), transparent 88%);
   --motion-ease: cubic-bezier(0.16, 1, 0.3, 1);
 }
@@ -87,6 +95,10 @@
   --text-secondary: #a3adba;
   --hover: #1d2632;
   --active: #74a7ff;
+  --success: #5ee2a0;
+  --danger: #ff8a8a;
+  --warning: #f6c76d;
+  --info: #67d5ff;
   --muted: #111820;
   --input: #121a24;
   --loader: #18212c;
@@ -113,7 +125,9 @@
     @apply bg-background text-text-primary;
     min-height: 100dvh;
     overflow-x: hidden;
-    background: var(--background);
+    background:
+      linear-gradient(180deg, color-mix(in srgb, var(--background), var(--surface-secondary) 32%) 0%, var(--background) 34rem),
+      var(--background);
     text-rendering: geometricPrecision;
   }
 
@@ -128,7 +142,7 @@
     @apply rounded-[20px] border;
     border-color: var(--border);
     background:
-      linear-gradient(180deg, color-mix(in srgb, var(--card), white 3%), var(--card));
+      linear-gradient(180deg, color-mix(in srgb, var(--card), var(--surface-secondary) 8%), var(--card));
     color: var(--text-primary);
     box-shadow: var(--shadow);
     transition:
@@ -291,6 +305,21 @@
     will-change: transform;
   }
 
+  .finance-panel-interactive {
+    @apply cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-active/40 focus-visible:ring-offset-0;
+  }
+
+  .finance-panel-interactive:hover {
+    border-color: color-mix(in srgb, var(--active), var(--border) 72%);
+    background: linear-gradient(180deg, color-mix(in srgb, var(--card), var(--hover) 46%), var(--card));
+    box-shadow: var(--shadow-premium), var(--glow-soft);
+    transform: translate3d(0, -2px, 0);
+  }
+
+  .finance-panel-interactive:active {
+    transform: translateY(0) scale(0.995);
+  }
+
   .widget-link:hover,
   .card-hover:hover {
     border-color: color-mix(in srgb, var(--active), var(--border) 74%);
@@ -334,6 +363,30 @@
     color: var(--active);
   }
 
+  .finance-status-success {
+    border-color: color-mix(in srgb, var(--success), transparent 72%);
+    background-color: color-mix(in srgb, var(--success), transparent 90%);
+    color: var(--success);
+  }
+
+  .finance-status-danger {
+    border-color: color-mix(in srgb, var(--danger), transparent 72%);
+    background-color: color-mix(in srgb, var(--danger), transparent 90%);
+    color: var(--danger);
+  }
+
+  .finance-status-warning {
+    border-color: color-mix(in srgb, var(--warning), transparent 72%);
+    background-color: color-mix(in srgb, var(--warning), transparent 90%);
+    color: var(--warning);
+  }
+
+  .finance-status-info {
+    border-color: color-mix(in srgb, var(--info), transparent 72%);
+    background-color: color-mix(in srgb, var(--info), transparent 90%);
+    color: var(--info);
+  }
+
   .finance-state-pill {
     @apply inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-semibold;
     border-color: var(--border);
@@ -370,6 +423,8 @@
 
   .chat-auth-button:hover {
     background-color: var(--active);
+    box-shadow: var(--shadow-soft);
+    transform: translateY(-1px);
   }
 
   .chat-auth-secondary {
@@ -381,6 +436,8 @@
 
   .chat-auth-secondary:hover {
     background-color: var(--hover);
+    box-shadow: var(--shadow-soft);
+    transform: translateY(-1px);
   }
 
   .chat-auth-tabs {
@@ -453,8 +510,20 @@
   color: var(--text-secondary) !important;
 }
 
-:is(.text-blue-500, .text-blue-600, .text-blue-700, .text-emerald-200, .text-emerald-300, .text-emerald-400, .text-emerald-500, .text-emerald-600, .text-emerald-700, .text-emerald-800, .text-green-300, .text-green-400, .text-green-500, .text-green-600, .text-green-700, .text-green-800, .text-red-300, .text-red-400, .text-red-500, .text-red-600, .text-red-700, .text-red-800, .text-rose-200, .text-rose-300, .text-rose-400, .text-rose-700, .text-sky-300, .text-sky-600, .text-sky-700, .text-lime-300, .text-lime-700, .text-amber-300, .text-amber-400, .text-amber-500, .text-amber-600, .text-amber-700, .text-yellow-400, .text-orange-300, .text-orange-400, .text-fuchsia-300, .text-violet-300, .text-violet-600, .text-indigo-300, .text-indigo-600, .text-pink-300, .text-cyan-100, .text-cyan-300, .text-cyan-600) {
+:is(.text-blue-500, .text-blue-600, .text-blue-700, .text-sky-300, .text-sky-600, .text-sky-700, .text-cyan-100, .text-cyan-300, .text-cyan-600, .text-indigo-300, .text-indigo-600, .text-violet-300, .text-violet-600, .text-fuchsia-300, .text-pink-300) {
   color: var(--active) !important;
+}
+
+:is(.text-emerald-200, .text-emerald-300, .text-emerald-400, .text-emerald-500, .text-emerald-600, .text-emerald-700, .text-emerald-800, .text-green-300, .text-green-400, .text-green-500, .text-green-600, .text-green-700, .text-green-800, .text-lime-300, .text-lime-700) {
+  color: var(--success) !important;
+}
+
+:is(.text-red-300, .text-red-400, .text-red-500, .text-red-600, .text-red-700, .text-red-800, .text-rose-200, .text-rose-300, .text-rose-400, .text-rose-700) {
+  color: var(--danger) !important;
+}
+
+:is(.text-amber-300, .text-amber-400, .text-amber-500, .text-amber-600, .text-amber-700, .text-yellow-400, .text-orange-300, .text-orange-400) {
+  color: var(--warning) !important;
 }
 
 :is(.bg-blue-600, .bg-blue-700, .bg-slate-950, .bg-\[\#111318\], .bg-primary) {
@@ -466,12 +535,40 @@
   background-color: var(--active) !important;
 }
 
-:is(.bg-blue-500\/10, .bg-blue-500\/15, .bg-blue-600\/10, .bg-emerald-300\/\[0\.055\], .bg-emerald-400\/16, .bg-emerald-500\/10, .bg-emerald-500\/15, .bg-green-500\/5, .bg-green-500\/10, .bg-green-500\/15, .bg-red-500\/5, .bg-red-500\/10, .bg-rose-300\/\[0\.055\], .bg-rose-400\/16, .bg-rose-500\/15, .bg-amber-300\/\[0\.08\], .bg-amber-400\/12, .bg-amber-500\/15, .bg-yellow-500\/10, .bg-sky-400\/12, .bg-sky-500\/15, .bg-lime-500\/15, .bg-orange-500\/15, .bg-fuchsia-500\/15, .bg-violet-500\/15, .bg-indigo-500\/15, .bg-pink-500\/15, .bg-cyan-500\/15, .bg-slate-500\/15) {
+:is(.bg-blue-500\/10, .bg-blue-500\/15, .bg-blue-600\/10, .bg-sky-400\/12, .bg-sky-500\/15, .bg-fuchsia-500\/15, .bg-violet-500\/15, .bg-indigo-500\/15, .bg-pink-500\/15, .bg-cyan-500\/15) {
+  background-color: color-mix(in srgb, var(--active), transparent 90%) !important;
+}
+
+:is(.bg-emerald-300\/\[0\.055\], .bg-emerald-400\/16, .bg-emerald-500\/10, .bg-emerald-500\/15, .bg-green-500\/5, .bg-green-500\/10, .bg-green-500\/15, .bg-lime-500\/15) {
+  background-color: color-mix(in srgb, var(--success), transparent 90%) !important;
+}
+
+:is(.bg-red-500\/5, .bg-red-500\/10, .bg-rose-300\/\[0\.055\], .bg-rose-400\/16, .bg-rose-500\/15) {
+  background-color: color-mix(in srgb, var(--danger), transparent 90%) !important;
+}
+
+:is(.bg-amber-300\/\[0\.08\], .bg-amber-400\/12, .bg-amber-500\/15, .bg-yellow-500\/10, .bg-orange-500\/15) {
+  background-color: color-mix(in srgb, var(--warning), transparent 88%) !important;
+}
+
+:is(.bg-slate-500\/15) {
   background-color: var(--surface-secondary) !important;
 }
 
-:is(.border-blue-500, .border-emerald-500, .border-amber-500, .border-green-500\/20, .border-red-500\/20, .border-green-500\/20, .border-blue-500\/20, .border-yellow-500\/20, .border-emerald-300\/10, .border-rose-300\/10, .border-red-400\/15, .border-amber-300\/15, .border-rose-300\/25, .border-emerald-300\/25) {
-  border-color: var(--border) !important;
+:is(.border-blue-500, .border-blue-500\/20) {
+  border-color: color-mix(in srgb, var(--active), transparent 68%) !important;
+}
+
+:is(.border-emerald-500, .border-green-500\/20, .border-emerald-300\/10, .border-emerald-300\/25) {
+  border-color: color-mix(in srgb, var(--success), transparent 68%) !important;
+}
+
+:is(.border-red-500\/20, .border-rose-300\/10, .border-red-400\/15, .border-rose-300\/25) {
+  border-color: color-mix(in srgb, var(--danger), transparent 68%) !important;
+}
+
+:is(.border-amber-500, .border-yellow-500\/20, .border-amber-300\/15) {
+  border-color: color-mix(in srgb, var(--warning), transparent 66%) !important;
 }
 
 :is(.shadow-lg, .shadow-sm, .shadow-md, .shadow-2xl, .shadow-slate-100, .shadow-slate-200, .shadow-blue-100, [class*="shadow-["]) {

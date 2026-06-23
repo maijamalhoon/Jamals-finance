@@ -1,3 +1,6 @@
+import { PieChart } from "lucide-react";
+import EmptyState from "@/components/ui/empty-state";
+
 interface SpendingData {
   name: string;
   value: number;
@@ -17,12 +20,17 @@ export default function SpendingBreakdown({
   if (data.length === 0) {
     return (
       <div className="finance-panel flex h-full min-h-[260px] flex-col p-5">
-        <h3 className="text-slate-950 font-semibold text-sm mb-1">
+        <h3 className="mb-1 text-sm font-semibold text-text-primary">
           Spending Breakdown
         </h3>
-        <p className="text-slate-500 text-xs">Top categories this month</p>
-        <div className="flex-1 flex items-center justify-center">
-          <p className="text-slate-500 text-sm">No expenses this month</p>
+        <p className="text-xs text-text-secondary">Top categories this month</p>
+        <div className="flex flex-1 items-center justify-center">
+          <EmptyState
+            compact
+            icon={PieChart}
+            title="No expenses this month"
+            description="Expense categories will appear here once you add spending."
+          />
         </div>
       </div>
     );
@@ -31,10 +39,10 @@ export default function SpendingBreakdown({
   return (
     <div className="finance-panel flex h-full min-h-[360px] flex-col p-4 sm:p-5">
       <div className="mb-4">
-        <h3 className="text-slate-950 font-semibold text-sm">
+        <h3 className="text-sm font-semibold text-text-primary">
           Spending Breakdown
         </h3>
-        <p className="text-slate-500 text-xs mt-1">
+        <p className="mt-1 text-xs text-text-secondary">
           PKR {total.toLocaleString(undefined, { maximumFractionDigits: 0 })} this month
         </p>
       </div>
@@ -43,7 +51,7 @@ export default function SpendingBreakdown({
         {sortedData.map((item, i) => (
           <div
             key={`${item.name}-${i}`}
-            className="group rounded-[18px] border border-border bg-surface-secondary p-3 transition-all duration-200 hover:-translate-y-0.5 hover:bg-hover"
+            className="group rounded-[18px] border border-border bg-surface-secondary p-3 transition-all duration-200 hover:-translate-y-0.5 hover:bg-hover hover:shadow-[var(--shadow-soft)]"
           >
             <div className="mb-2 flex items-center justify-between gap-3">
               <div className="flex min-w-0 items-center gap-2.5">
@@ -51,11 +59,11 @@ export default function SpendingBreakdown({
                   className="h-2.5 w-2.5 flex-shrink-0 rounded-full border-0 shadow-none"
                   style={{ background: item.color }}
                 />
-                <p className="truncate text-sm font-medium text-slate-950">
+                <p className="truncate text-sm font-medium text-text-primary">
                   {item.name}
                 </p>
               </div>
-              <span className="rounded-full bg-card px-2.5 py-1 text-xs font-semibold text-slate-950">
+              <span className="rounded-full border border-border bg-card px-2.5 py-1 text-xs font-semibold text-text-primary">
                 {item.percentage.toFixed(0)}%
               </span>
             </div>

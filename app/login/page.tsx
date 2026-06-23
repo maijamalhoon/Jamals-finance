@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
@@ -19,7 +19,7 @@ type Step = "auth" | "otp" | "forgot";
 type LoadingMode = "syncing" | "creating" | "verifying" | "sending" | null;
 
 export default function LoginPage() {
-  const supabase = createClient();
+  const supabase = useMemo(() => createClient(), []);
   const router = useRouter();
 
   const [isSignUp, setIsSignUp] = useState(false);
@@ -195,8 +195,8 @@ export default function LoginPage() {
   return (
     <main className="chat-auth-shell min-h-screen px-4 py-5">
       <div className="mx-auto flex min-h-[calc(100dvh-2.5rem)] w-full max-w-[440px] flex-col">
-        <div className="flex items-center justify-center gap-2 py-2 text-sm font-semibold text-slate-900">
-          <div className="grid h-8 w-8 place-items-center rounded-xl bg-[#111318] text-cyan-100 shadow-[0_12px_28px_rgba(17,19,24,0.18)]">
+        <div className="flex items-center justify-center gap-2 py-2 text-sm font-semibold text-text-primary">
+          <div className="grid h-8 w-8 place-items-center rounded-xl bg-active text-background shadow-theme">
             <BarChart3 size={16} />
           </div>
           Jamal's Finance
@@ -204,13 +204,13 @@ export default function LoginPage() {
 
         <div className="flex flex-1 flex-col justify-center py-8">
           <div className="mb-7 text-center">
-            <div className="mx-auto mb-5 grid h-14 w-14 place-items-center rounded-[18px] border border-slate-200 bg-card text-slate-950 shadow-[0_18px_46px_rgba(15,23,42,0.10)]">
+            <div className="finance-icon-bubble mx-auto mb-5 h-14 w-14 rounded-[18px]">
               {step === "otp" ? <MailCheck size={25} /> : <BarChart3 size={25} />}
             </div>
-            <h1 className="text-[29px] font-semibold leading-tight tracking-normal text-slate-950">
+            <h1 className="text-[29px] font-semibold leading-tight tracking-normal text-text-primary">
               {title}
             </h1>
-            <p className="mx-auto mt-2 max-w-[320px] text-sm leading-6 text-slate-500">
+            <p className="mx-auto mt-2 max-w-[320px] text-sm leading-6 text-text-secondary">
               {subtitle}
             </p>
           </div>
@@ -249,56 +249,82 @@ export default function LoginPage() {
                   setOtp("");
                   resetFeedback();
                 }}
-                className="mb-5 inline-flex items-center gap-2 text-sm font-medium text-slate-600 transition-colors hover:text-slate-950"
+                className="finance-focus mb-5 inline-flex items-center gap-2 rounded-[12px] px-1 py-1 text-sm font-medium text-text-secondary transition-colors hover:text-text-primary"
               >
                 <ArrowLeft size={16} />
                 Back
               </button>
             )}
 
-            <form onSubmit={handleSubmit} className="space-y-3">
+            <form
+              onSubmit={handleSubmit}
+              className="space-y-3"
+              aria-busy={loading}
+            >
               {step === "auth" && isSignUp && (
                 <>
+                  <label className="sr-only" htmlFor="full-name">
+                    Full name
+                  </label>
                   <input
+                    id="full-name"
                     type="text"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     placeholder="Full name"
+                    autoComplete="name"
                     className="chat-auth-input"
                   />
+                  <label className="sr-only" htmlFor="phone">
+                    Phone number
+                  </label>
                   <input
+                    id="phone"
                     type="tel"
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
                     placeholder="Phone number (optional)"
+                    autoComplete="tel"
                     className="chat-auth-input"
                   />
                 </>
               )}
 
               {step !== "otp" && (
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="Email address"
-                  className="chat-auth-input"
-                />
+                <>
+                  <label className="sr-only" htmlFor="email">
+                    Email address
+                  </label>
+                  <input
+                    id="email"
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="Email address"
+                    autoComplete="email"
+                    className="chat-auth-input"
+                  />
+                </>
               )}
 
               {step === "auth" && (
                 <div className="relative">
+                  <label className="sr-only" htmlFor="password">
+                    Password
+                  </label>
                   <input
+                    id="password"
                     type={showPass ? "text" : "password"}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="Password"
+                    autoComplete={isSignUp ? "new-password" : "current-password"}
                     className="chat-auth-input pr-12"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPass((value) => !value)}
-                    className="absolute right-2 top-1/2 grid h-9 w-9 -translate-y-1/2 place-items-center rounded-xl text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700"
+                    className="finance-focus absolute right-2 top-1/2 grid h-9 w-9 -translate-y-1/2 place-items-center rounded-xl text-text-secondary transition-colors hover:bg-hover hover:text-text-primary"
                     aria-label={showPass ? "Hide password" : "Show password"}
                   >
                     {showPass ? <EyeOff size={17} /> : <Eye size={17} />}
@@ -308,15 +334,20 @@ export default function LoginPage() {
 
               {step === "otp" && (
                 <div>
-                  <div className="mb-3 rounded-2xl border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-800">
+                  <div className="finance-status-success mb-3 rounded-2xl border p-3 text-sm">
                     <div className="flex items-center gap-2 font-semibold">
                       <MailCheck size={16} />
                       Check your inbox
                     </div>
                     <p className="mt-1 text-xs leading-5">{message}</p>
                   </div>
+                  <label className="sr-only" htmlFor="otp">
+                    Verification code
+                  </label>
                   <input
+                    id="otp"
                     type="text"
+                    inputMode="numeric"
                     value={otp}
                     onChange={(e) =>
                       setOtp(e.target.value.replace(/\D/g, "").slice(0, 6))
@@ -329,13 +360,19 @@ export default function LoginPage() {
               )}
 
               {message && step !== "otp" && (
-                <p className="rounded-2xl border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-800">
+                <p
+                  aria-live="polite"
+                  className="finance-status-success rounded-2xl border p-3 text-sm"
+                >
                   {message}
                 </p>
               )}
 
               {error && (
-                <p className="rounded-2xl border border-rose-200 bg-rose-50 p-3 text-sm text-rose-700">
+                <p
+                  role="alert"
+                  className="finance-status-danger rounded-2xl border p-3 text-sm"
+                >
                   {error}
                 </p>
               )}
@@ -353,9 +390,9 @@ export default function LoginPage() {
             {step === "auth" && (
               <>
                 <div className="my-5 flex items-center gap-3">
-                  <div className="h-px flex-1 bg-slate-200" />
-                  <span className="text-xs text-slate-400">OR</span>
-                  <div className="h-px flex-1 bg-slate-200" />
+                  <div className="h-px flex-1 bg-border" />
+                  <span className="text-xs text-text-secondary">OR</span>
+                  <div className="h-px flex-1 bg-border" />
                 </div>
 
                 <button
@@ -375,7 +412,7 @@ export default function LoginPage() {
                       setStep("forgot");
                       resetFeedback();
                     }}
-                    className="mt-5 w-full text-center text-sm font-medium text-slate-600 transition-colors hover:text-slate-950"
+                    className="finance-focus mt-5 w-full rounded-[14px] py-2 text-center text-sm font-medium text-text-secondary transition-colors hover:bg-hover hover:text-text-primary"
                   >
                     Forgot password?
                   </button>
@@ -385,11 +422,11 @@ export default function LoginPage() {
           </div>
 
           {step === "auth" && isSignUp && (
-            <div className="mx-auto mt-5 grid max-w-[340px] gap-2 text-xs text-slate-500">
+            <div className="mx-auto mt-5 grid max-w-[340px] gap-2 text-xs text-text-secondary">
               {["Secure Supabase login", "Private finance workspace"].map(
                 (item) => (
                   <div key={item} className="flex items-center justify-center gap-2">
-                    <Check size={13} className="text-emerald-500" />
+                    <Check size={13} className="text-success" />
                     {item}
                   </div>
                 ),
@@ -413,16 +450,16 @@ export default function LoginPage() {
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 8, scale: 0.98 }}
               transition={{ duration: 0.18 }}
-              className="w-full max-w-xs rounded-[28px] border border-slate-200 bg-card p-7 text-center shadow-[0_24px_80px_rgba(15,23,42,0.16)]"
+              className="finance-panel w-full max-w-xs p-7 text-center"
             >
-              <LoaderCircle className="mx-auto h-9 w-9 animate-spin text-slate-950" />
-              <p className="mt-5 text-base font-semibold text-slate-950">
+              <LoaderCircle className="mx-auto h-9 w-9 animate-spin text-active" />
+              <p className="mt-5 text-base font-semibold text-text-primary">
                 {loadingMode === "creating" ? "Creating your account"
                 : loadingMode === "sending" ? "Sending secure link"
                 : loadingMode === "verifying" ? "Verifying code"
                 : "Signing you in"}
               </p>
-              <p className="mt-2 text-sm text-slate-500">
+              <p className="mt-2 text-sm text-text-secondary">
                 Please wait a moment.
               </p>
             </motion.div>

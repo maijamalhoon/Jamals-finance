@@ -25,7 +25,7 @@ export default function StatCard({
     <div className="finance-panel card-hover relative flex min-h-[126px] flex-col justify-between overflow-hidden px-5 pb-5 pt-4">
       <div
         aria-hidden
-        className="pointer-events-none absolute -right-10 -top-10 h-28 w-28 rounded-full opacity-15 blur-2xl"
+        className="pointer-events-none absolute inset-x-5 top-0 h-px opacity-80"
         style={{ backgroundColor: accentColor }}
       />
       <div className="flex items-start justify-between gap-3">
@@ -40,7 +40,7 @@ export default function StatCard({
         </div>
         <span
           className={`finance-state-pill ${
-            positive ? "bg-emerald-50 text-emerald-700" : "bg-red-50 text-red-700"
+            positive ? "finance-status-success" : "finance-status-danger"
           }`}
         >
           {positive ? <ArrowUpRight size={11} /> : <ArrowDownRight size={11} />}
@@ -50,8 +50,8 @@ export default function StatCard({
       </div>
 
       <div className="pt-3">
-        <p className="text-xs font-medium text-slate-500">{title}</p>
-        <p className="mt-1.5 break-words text-xl font-bold leading-tight tracking-normal text-slate-950">
+        <p className="text-xs font-medium text-text-secondary">{title}</p>
+        <p className="mt-1.5 break-words text-xl font-bold leading-tight tracking-normal text-text-primary">
           <CountedAmount amount={amount} />
         </p>
       </div>

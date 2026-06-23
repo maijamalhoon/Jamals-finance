@@ -18,16 +18,33 @@ interface ChartData {
   expenses: number;
 }
 
-function CustomTooltip({ active, payload, label }: any) {
+type ChartTooltipPayload = Array<{
+  value?: number;
+  dataKey?: "income" | "expenses";
+}>;
+
+function CustomTooltip({
+  active,
+  payload,
+  label,
+}: {
+  active?: boolean;
+  payload?: ChartTooltipPayload;
+  label?: string;
+}) {
   if (!active || !payload?.length) return null;
+  const income = payload.find((item) => item.dataKey === "income")?.value ?? 0;
+  const expenses =
+    payload.find((item) => item.dataKey === "expenses")?.value ?? 0;
+
   return (
-    <div className="finance-panel p-3 text-xs shadow-xl">
-      <p className="text-slate-500 mb-2">{label}</p>
-      <p className="text-emerald-600">
-        Income: PKR {payload[0]?.value?.toLocaleString()}
+    <div className="finance-panel p-3 text-xs shadow-[var(--shadow-soft)]">
+      <p className="mb-2 font-medium text-text-secondary">{label}</p>
+      <p className="text-success">
+        Income: PKR {income.toLocaleString()}
       </p>
-      <p className="text-red-600 mt-1">
-        Expenses: PKR {payload[1]?.value?.toLocaleString()}
+      <p className="mt-1 text-danger">
+        Expenses: PKR {expenses.toLocaleString()}
       </p>
     </div>
   );
@@ -36,21 +53,21 @@ function CustomTooltip({ active, payload, label }: any) {
 export default function IncomeExpenseChart({ data }: { data: ChartData[] }) {
   return (
     <div className="finance-panel h-full p-4 sm:p-5">
-      <div className="flex flex-wrap items-center justify-between gap-3 mb-5">
+      <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h3 className="text-slate-950 font-semibold text-sm">
+          <h3 className="text-sm font-semibold text-text-primary">
             Income vs Expenses
           </h3>
-          <p className="text-slate-500 text-xs mt-1">Daily flow this month</p>
+          <p className="mt-1 text-xs text-text-secondary">Daily flow this month</p>
         </div>
-        <div className="flex items-center gap-4 rounded-lg bg-slate-50 px-3 py-2">
+        <div className="flex items-center gap-4 rounded-[14px] border border-border bg-surface-secondary px-3 py-2">
           <div className="flex items-center gap-1.5">
-            <div className="w-2 h-2 rounded-full bg-emerald-500" />
-            <span className="text-slate-500 text-xs">Income</span>
+            <div className="h-2 w-2 rounded-full bg-success" />
+            <span className="text-xs text-text-secondary">Income</span>
           </div>
           <div className="flex items-center gap-1.5">
-            <div className="w-2 h-2 rounded-full bg-red-500" />
-            <span className="text-slate-500 text-xs">Expenses</span>
+            <div className="h-2 w-2 rounded-full bg-danger" />
+            <span className="text-xs text-text-secondary">Expenses</span>
           </div>
         </div>
       </div>
@@ -82,18 +99,18 @@ export default function IncomeExpenseChart({ data }: { data: ChartData[] }) {
             <Area
               type="monotone"
               dataKey="income"
-              stroke="var(--active)"
+              stroke="var(--success)"
               strokeWidth={2}
-              fill="var(--surface-secondary)"
+              fill="color-mix(in srgb, var(--success), transparent 90%)"
               isAnimationActive
               {...chartMotion}
             />
             <Area
               type="monotone"
               dataKey="expenses"
-              stroke="var(--text-secondary)"
+              stroke="var(--danger)"
               strokeWidth={2}
-              fill="var(--muted)"
+              fill="color-mix(in srgb, var(--danger), transparent 92%)"
               isAnimationActive
               {...chartMotion}
               animationBegin={140}

@@ -19,10 +19,10 @@ export default function EmptyState({
         compact ? "py-7" : "py-14 sm:py-16"
       }`}
     >
-      <div className="mb-3 grid h-12 w-12 place-items-center rounded-[18px] border border-border bg-muted text-muted-foreground shadow-theme">
+      <div className="finance-icon-bubble mb-3 h-12 w-12">
         <Icon size={18} />
       </div>
-      <p className="text-sm font-semibold text-foreground">{title}</p>
+      <p className="text-sm font-semibold text-text-primary">{title}</p>
       <p className="mt-1 max-w-xs text-xs leading-5 text-muted-foreground">
         {description}
       </p>

@@ -46,39 +46,44 @@ export default function ResetPasswordPage() {
     <main className="chat-auth-shell grid min-h-screen place-items-center px-4 py-8">
       <div className="w-full max-w-md">
         <div className="mb-8 flex flex-col items-center text-center">
-          <div className="mb-5 grid h-14 w-14 place-items-center rounded-[22px] bg-slate-950 text-text-primary shadow-[0_18px_50px_rgba(15,23,42,0.18)]">
+          <div className="finance-icon-bubble mb-5 h-14 w-14 rounded-[22px]">
             <BarChart3 size={24} />
           </div>
-          <h1 className="text-[28px] font-semibold text-slate-950">
+          <h1 className="text-[28px] font-semibold text-text-primary">
             Set new password
           </h1>
-          <p className="mt-2 text-sm text-slate-500">
+          <p className="mt-2 text-sm text-text-secondary">
             Choose a new password for Jamal's Finance.
           </p>
         </div>
 
         <div className="chat-auth-card">
-          <div className="mb-5 grid h-12 w-12 place-items-center rounded-2xl bg-slate-100 text-slate-950">
+          <div className="finance-status-info mb-5 grid h-12 w-12 place-items-center rounded-2xl border">
             <LockKeyhole size={20} />
           </div>
 
-          <form onSubmit={handleReset} className="mt-5 space-y-4">
+          <form onSubmit={handleReset} className="mt-5 space-y-4" aria-busy={loading}>
             <div>
-              <label className="mb-1.5 block text-sm font-medium text-slate-700">
+              <label
+                htmlFor="new-password"
+                className="mb-1.5 block text-sm font-medium text-text-primary"
+              >
                 New Password
               </label>
               <div className="relative">
                 <input
+                  id="new-password"
                   type={showPassword ? "text" : "password"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Min. 6 characters"
+                  autoComplete="new-password"
                   className="chat-auth-input pr-12"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword((value) => !value)}
-                  className="absolute right-3 top-1/2 grid h-8 w-8 -translate-y-1/2 place-items-center rounded-xl text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700"
+                  className="finance-focus absolute right-3 top-1/2 grid h-8 w-8 -translate-y-1/2 place-items-center rounded-xl text-text-secondary transition-colors hover:bg-hover hover:text-text-primary"
                   aria-label={showPassword ? "Hide password" : "Show password"}
                 >
                   {showPassword ? <EyeOff size={15} /> : <Eye size={15} />}
@@ -87,25 +92,36 @@ export default function ResetPasswordPage() {
             </div>
 
             <div>
-              <label className="mb-1.5 block text-sm font-medium text-slate-700">
+              <label
+                htmlFor="confirm-password"
+                className="mb-1.5 block text-sm font-medium text-text-primary"
+              >
                 Confirm Password
               </label>
               <input
+                id="confirm-password"
                 type={showPassword ? "text" : "password"}
                 value={confirm}
                 onChange={(e) => setConfirm(e.target.value)}
                 placeholder="Repeat password"
+                autoComplete="new-password"
                 className="chat-auth-input"
               />
             </div>
 
             {message && (
-              <p className="rounded-2xl border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-800">
+              <p
+                aria-live="polite"
+                className="finance-status-success rounded-2xl border p-3 text-sm"
+              >
                 {message}
               </p>
             )}
             {error && (
-              <p className="rounded-2xl border border-rose-200 bg-rose-50 p-3 text-sm text-rose-700">
+              <p
+                role="alert"
+                className="finance-status-danger rounded-2xl border p-3 text-sm"
+              >
                 {error}
               </p>
             )}
