@@ -10,76 +10,131 @@ import {
   Target,
   TrendingDown,
   TrendingUp,
+  type LucideIcon,
 } from "lucide-react";
+
 import TransferModal from "@/components/accounts/TransferModal";
 import TransactionModal from "@/components/dashboard/TransactionModal";
 import GoalModal from "@/components/goals/GoalModal";
 import InvestmentModal from "@/components/investments/InvestmentModal";
-import {
-  listContainerVariants,
-  listItemVariants,
-  overlayVariants,
-  panelVariants,
-} from "@/components/motion/animation-config";
 
-type ActionKey = "income" | "expense" | "goal" | "transfer" | "investment";
+type ActionKey = "income" | "expense" | "investment" | "transfer" | "goal";
 
 const actions = [
   {
     key: "income",
     label: "Add Income",
+    hint: "Record money in",
     icon: TrendingUp,
-    tone:
-      "border-emerald-500/15 bg-emerald-500/[0.08] text-emerald-700 hover:border-emerald-500/25 hover:bg-emerald-500/[0.12] dark:text-emerald-200",
+    tone: "text-emerald-600 dark:text-emerald-300",
     iconTone:
-      "border-emerald-500/20 bg-emerald-500/15 text-emerald-700 dark:text-emerald-200",
+      "bg-emerald-500/10 text-emerald-600 ring-emerald-500/15 dark:bg-emerald-400/10 dark:text-emerald-300 dark:ring-emerald-400/15",
   },
   {
     key: "expense",
     label: "Add Expense",
+    hint: "Track spending",
     icon: TrendingDown,
-    tone:
-      "border-rose-500/15 bg-rose-500/[0.08] text-rose-700 hover:border-rose-500/25 hover:bg-rose-500/[0.12] dark:text-rose-200",
+    tone: "text-rose-600 dark:text-rose-300",
     iconTone:
-      "border-rose-500/20 bg-rose-500/15 text-rose-700 dark:text-rose-200",
-  },
-  {
-    key: "goal",
-    label: "Add Goal",
-    icon: Target,
-    tone:
-      "border-violet-500/15 bg-violet-500/[0.08] text-violet-700 hover:border-violet-500/25 hover:bg-violet-500/[0.12] dark:text-violet-200",
-    iconTone:
-      "border-violet-500/20 bg-violet-500/15 text-violet-700 dark:text-violet-200",
-  },
-  {
-    key: "transfer",
-    label: "Transfer Money",
-    icon: ArrowLeftRight,
-    tone:
-      "border-cyan-500/15 bg-cyan-500/[0.08] text-cyan-700 hover:border-cyan-500/25 hover:bg-cyan-500/[0.12] dark:text-cyan-200",
-    iconTone:
-      "border-cyan-500/20 bg-cyan-500/15 text-cyan-700 dark:text-cyan-200",
+      "bg-rose-500/10 text-rose-600 ring-rose-500/15 dark:bg-rose-400/10 dark:text-rose-300 dark:ring-rose-400/15",
   },
   {
     key: "investment",
     label: "Add Investment",
+    hint: "Grow portfolio",
     icon: BarChart2,
-    tone:
-      "border-amber-500/15 bg-amber-500/[0.08] text-amber-700 hover:border-amber-500/25 hover:bg-amber-500/[0.12] dark:text-amber-200",
+    tone: "text-amber-600 dark:text-amber-300",
     iconTone:
-      "border-amber-500/20 bg-amber-500/15 text-amber-700 dark:text-amber-200",
+      "bg-amber-500/10 text-amber-600 ring-amber-500/15 dark:bg-amber-400/10 dark:text-amber-300 dark:ring-amber-400/15",
+  },
+  {
+    key: "transfer",
+    label: "Transfer Money",
+    hint: "Move between accounts",
+    icon: ArrowLeftRight,
+    tone: "text-sky-600 dark:text-sky-300",
+    iconTone:
+      "bg-sky-500/10 text-sky-600 ring-sky-500/15 dark:bg-sky-400/10 dark:text-sky-300 dark:ring-sky-400/15",
+  },
+  {
+    key: "goal",
+    label: "Add Goal",
+    hint: "Plan savings",
+    icon: Target,
+    tone: "text-violet-600 dark:text-violet-300",
+    iconTone:
+      "bg-violet-500/10 text-violet-600 ring-violet-500/15 dark:bg-violet-400/10 dark:text-violet-300 dark:ring-violet-400/15",
   },
 ] satisfies Array<{
   key: ActionKey;
   label: string;
-  icon: React.ElementType;
+  hint: string;
+  icon: LucideIcon;
   tone: string;
   iconTone: string;
 }>;
 
+const menuVariants = {
+  initial: {
+    opacity: 0,
+    y: 12,
+    scale: 0.96,
+    filter: "blur(4px)",
+  },
+  animate: {
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    filter: "blur(0px)",
+    transition: {
+      duration: 0.2,
+      ease: [0.16, 1, 0.3, 1],
+      staggerChildren: 0.035,
+      delayChildren: 0.02,
+    },
+  },
+  exit: {
+    opacity: 0,
+    y: 10,
+    scale: 0.97,
+    filter: "blur(4px)",
+    transition: {
+      duration: 0.16,
+      ease: [0.16, 1, 0.3, 1],
+    },
+  },
+};
+
+const itemVariants = {
+  initial: {
+    opacity: 0,
+    y: 6,
+    x: 6,
+  },
+  animate: {
+    opacity: 1,
+    y: 0,
+    x: 0,
+    transition: {
+      duration: 0.16,
+      ease: [0.16, 1, 0.3, 1],
+    },
+  },
+  exit: {
+    opacity: 0,
+    y: 4,
+    x: 4,
+    transition: {
+      duration: 0.12,
+      ease: [0.16, 1, 0.3, 1],
+    },
+  },
+};
+
 export default function FloatingActions() {
   const router = useRouter();
+
   const [open, setOpen] = useState(false);
   const [transactionOpen, setTransactionOpen] = useState(false);
   const [transferOpen, setTransferOpen] = useState(false);
@@ -96,8 +151,8 @@ export default function FloatingActions() {
       return;
     }
 
-    if (key === "goal") {
-      setGoalOpen(true);
+    if (key === "investment") {
+      setInvestmentOpen(true);
       return;
     }
 
@@ -106,7 +161,7 @@ export default function FloatingActions() {
       return;
     }
 
-    setInvestmentOpen(true);
+    setGoalOpen(true);
   }
 
   function refreshAfterSuccess() {
@@ -123,54 +178,88 @@ export default function FloatingActions() {
                 type="button"
                 aria-label="Close quick actions"
                 onClick={() => setOpen(false)}
-                variants={overlayVariants}
-                initial="initial"
-                animate="animate"
-                exit="exit"
-                className="fixed inset-0 -z-10 cursor-default bg-background/80 lg:bg-transparent"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="fixed inset-0 -z-10 cursor-default bg-background/40 backdrop-blur-[1px] lg:bg-transparent lg:backdrop-blur-0"
               />
 
               <motion.div
-                variants={panelVariants}
+                role="group"
+                aria-label="Quick finance actions"
+                variants={menuVariants}
                 initial="initial"
                 animate="animate"
                 exit="exit"
-                role="group"
-                aria-label="Quick finance actions"
-                className="finance-panel w-[min(88vw,292px)] p-2"
+                className={[
+                  "w-[236px] origin-bottom-right overflow-hidden rounded-[22px]",
+                  "border border-border/80 bg-card/96 p-2.5 text-card-foreground",
+                  "shadow-[0_20px_55px_rgba(15,23,42,0.14)] backdrop-blur-xl",
+                  "dark:border-white/10 dark:bg-card/92 dark:shadow-[0_20px_55px_rgba(0,0,0,0.32)]",
+                ].join(" ")}
               >
-                <div className="px-2.5 pb-2 pt-1">
-                  <p className="text-[13px] font-semibold text-text-primary">
+                <div className="mb-2 flex items-center justify-between px-2 pt-1">
+                  <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-muted-foreground">
                     Quick actions
                   </p>
+
+                  <span className="h-1.5 w-1.5 rounded-full bg-active shadow-[0_0_0_4px_color-mix(in_srgb,var(--active),transparent_84%)]" />
                 </div>
-                <motion.div
-                  className="grid gap-1.5"
-                  variants={listContainerVariants}
-                  initial="initial"
-                  animate="animate"
-                  exit="exit"
-                >
-                  {actions.map((action, index) => (
-                    <motion.button
-                      key={action.key}
-                      type="button"
-                      onClick={() => handleAction(action.key)}
-                      variants={listItemVariants}
-                      custom={index}
-                      className={`finance-focus group flex min-h-11 items-center gap-2.5 rounded-[14px] border px-2.5 py-2 text-left text-sm font-semibold shadow-none transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[var(--shadow-soft)] active:translate-y-0 active:scale-[0.985] ${action.tone}`}
-                    >
-                      <span
-                        className={`grid h-8 w-8 flex-shrink-0 place-items-center rounded-[12px] border transition-transform duration-200 group-hover:scale-105 ${action.iconTone}`}
+
+                <div className="space-y-1.5">
+                  {actions.map((action) => {
+                    const Icon = action.icon;
+
+                    return (
+                      <motion.button
+                        key={action.key}
+                        type="button"
+                        variants={itemVariants}
+                        whileHover={{
+                          x: -2,
+                          y: -1,
+                        }}
+                        whileTap={{
+                          scale: 0.985,
+                        }}
+                        onClick={() => handleAction(action.key)}
+                        className={[
+                          "finance-focus group flex w-full items-center gap-3 rounded-[16px] px-2.5 py-2.5 text-left",
+                          "border border-transparent bg-transparent transition-all duration-200",
+                          "hover:border-border hover:bg-muted/55 hover:shadow-[var(--shadow-soft)]",
+                          "active:bg-muted/70 dark:hover:border-white/10 dark:hover:bg-white/[0.045]",
+                        ].join(" ")}
                       >
-                        <action.icon size={17} />
-                      </span>
-                      <span className="min-w-0 flex-1 truncate">
-                        {action.label}
-                      </span>
-                    </motion.button>
-                  ))}
-                </motion.div>
+                        <span
+                          className={[
+                            "grid h-9 w-9 shrink-0 place-items-center rounded-[13px] ring-1 transition-transform duration-200 group-hover:scale-[1.04]",
+                            action.iconTone,
+                          ].join(" ")}
+                        >
+                          <Icon size={17} strokeWidth={2.35} />
+                        </span>
+
+                        <span className="min-w-0 flex-1">
+                          <span className="block whitespace-nowrap text-[13px] font-bold leading-4 tracking-[-0.01em] text-foreground">
+                            {action.label}
+                          </span>
+                          <span className="mt-0.5 block whitespace-nowrap text-[11px] font-medium leading-3 text-muted-foreground">
+                            {action.hint}
+                          </span>
+                        </span>
+
+                        <span
+                          className={[
+                            "h-1.5 w-1.5 shrink-0 rounded-full opacity-70 transition-all duration-200 group-hover:scale-125 group-hover:opacity-100",
+                            action.tone,
+                          ].join(" ")}
+                        >
+                          <span className="block h-full w-full rounded-full bg-current" />
+                        </span>
+                      </motion.button>
+                    );
+                  })}
+                </div>
               </motion.div>
             </>
           )}
@@ -178,24 +267,49 @@ export default function FloatingActions() {
 
         <motion.button
           type="button"
-          whileHover={{ y: -2, scale: 1.045 }}
-          whileTap={{ scale: 0.94 }}
-          transition={{ type: "spring", stiffness: 360, damping: 22 }}
-          onClick={() => setOpen((current) => !current)}
-          className={`finance-focus relative grid h-[58px] w-[58px] place-items-center overflow-hidden rounded-[20px] bg-active text-background shadow-[0_18px_38px_color-mix(in_srgb,var(--active),transparent_70%)] ring-1 ring-active/25 transition-all duration-200 hover:shadow-[0_20px_44px_color-mix(in_srgb,var(--active),transparent_62%)] ${
-            open ? "brightness-105" : "hover:brightness-105"
-          }`}
           aria-label={open ? "Close quick actions" : "Open quick actions"}
           aria-haspopup="dialog"
           aria-expanded={open}
+          onClick={() => setOpen((current) => !current)}
+          whileHover={{
+            y: -2,
+            scale: 1.035,
+          }}
+          whileTap={{
+            scale: 0.94,
+          }}
+          transition={{
+            type: "spring",
+            stiffness: 360,
+            damping: 22,
+          }}
+          className={[
+            "finance-focus relative grid h-[58px] w-[58px] place-items-center overflow-hidden rounded-[21px]",
+            "bg-active text-background ring-1 ring-active/25",
+            "shadow-[0_18px_42px_color-mix(in_srgb,var(--active),transparent_68%)]",
+            "transition-[filter,box-shadow] duration-200 hover:brightness-105",
+            "dark:shadow-[0_18px_42px_color-mix(in_srgb,var(--active),transparent_78%)]",
+          ].join(" ")}
         >
-          <span className="absolute inset-0 bg-[radial-gradient(circle_at_35%_25%,rgba(255,255,255,0.32),transparent_34%)]" />
+          <span className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_34%_24%,rgba(255,255,255,0.34),transparent_34%)]" />
+          <span className="pointer-events-none absolute inset-x-2 top-1 h-5 rounded-full bg-white/12 blur-md" />
+
           <motion.span
-            animate={{ rotate: open ? 45 : 0 }}
-            transition={{ type: "spring", stiffness: 300, damping: 20 }}
-            className="relative z-10"
+            animate={{
+              rotate: open ? 45 : 0,
+              scale: open ? 0.96 : 1,
+            }}
+            transition={{
+              type: "spring",
+              stiffness: 340,
+              damping: 22,
+            }}
+            className={[
+              "relative z-10 grid h-8 w-8 place-items-center rounded-full",
+              "bg-white/12 text-background ring-1 ring-white/15 backdrop-blur-sm",
+            ].join(" ")}
           >
-            <Plus size={25} strokeWidth={2.45} />
+            <Plus size={25} strokeWidth={2.55} />
           </motion.span>
         </motion.button>
       </div>
@@ -209,16 +323,19 @@ export default function FloatingActions() {
           refreshAfterSuccess();
         }}
       />
+
       <TransferModal
         open={transferOpen}
         onClose={() => setTransferOpen(false)}
         onSuccess={refreshAfterSuccess}
       />
+
       <GoalModal
         open={goalOpen}
         onClose={() => setGoalOpen(false)}
         onSuccess={refreshAfterSuccess}
       />
+
       <InvestmentModal
         open={investmentOpen}
         onClose={() => setInvestmentOpen(false)}
