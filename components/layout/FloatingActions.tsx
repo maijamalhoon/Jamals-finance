@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, motion, type Variants } from "framer-motion";
 import {
   ArrowLeftRight,
   BarChart2,
@@ -75,7 +75,9 @@ const actions = [
   iconTone: string;
 }>;
 
-const menuVariants = {
+const motionEase = [0.16, 1, 0.3, 1] as const;
+
+const menuVariants: Variants = {
   initial: {
     opacity: 0,
     y: 12,
@@ -89,7 +91,7 @@ const menuVariants = {
     filter: "blur(0px)",
     transition: {
       duration: 0.2,
-      ease: [0.16, 1, 0.3, 1],
+      ease: motionEase,
       staggerChildren: 0.035,
       delayChildren: 0.02,
     },
@@ -101,12 +103,12 @@ const menuVariants = {
     filter: "blur(4px)",
     transition: {
       duration: 0.16,
-      ease: [0.16, 1, 0.3, 1],
+      ease: motionEase,
     },
   },
 };
 
-const itemVariants = {
+const itemVariants: Variants = {
   initial: {
     opacity: 0,
     y: 6,
@@ -118,7 +120,7 @@ const itemVariants = {
     x: 0,
     transition: {
       duration: 0.16,
-      ease: [0.16, 1, 0.3, 1],
+      ease: motionEase,
     },
   },
   exit: {
@@ -127,7 +129,7 @@ const itemVariants = {
     x: 4,
     transition: {
       duration: 0.12,
-      ease: [0.16, 1, 0.3, 1],
+      ease: motionEase,
     },
   },
 };
