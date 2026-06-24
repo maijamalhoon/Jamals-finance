@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Zap } from "lucide-react";
+import { ArrowRight, Zap } from "lucide-react";
 import {
   Cell,
   Pie,
@@ -76,11 +76,21 @@ export default function InvestmentOverviewWidget({
     .join("-");
 
   return (
-    <Link href="/dashboard/investments" className="block h-full">
+    <Link
+      href="/dashboard/investments"
+      className="finance-focus group/investment-widget block h-full rounded-[21px]"
+      aria-label="Open Investment Overview"
+    >
       <ChartCard
         eyebrow="Investments"
         eyebrowIcon={<Zap />}
         title="Portfolio Overview"
+        action={
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-surface-secondary px-2.5 py-1 text-[10px] font-semibold text-text-secondary transition-all group-hover/investment-widget:border-active/35 group-hover/investment-widget:text-active">
+            View all
+            <ArrowRight size={11} />
+          </span>
+        }
         legend={
           <div className="grid grid-cols-3 gap-2">
             {visibleInvestments.map((investment) => (

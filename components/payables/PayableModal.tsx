@@ -5,13 +5,16 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
 import DatePicker from "@/components/ui/date-picker";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+  FinanceModalBody,
+  FinanceModalFooter,
+  FinanceModalHeader,
+  financeErrorClass,
+  financeModalContentClass,
+} from "@/components/ui/finance-modal";
 import { PAYABLE_QUICK_REASONS } from "@/lib/finance-options";
+import { HandCoins } from "lucide-react";
 
 export interface ExistingPayable {
   id: string;
@@ -104,15 +107,16 @@ export default function PayableModal({ open, onClose, payable }: Props) {
   }
 
   return (
-    <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="finance-panel max-w-lg gap-0 p-0 text-text-primary">
-        <DialogHeader className="border-b border-border p-5">
-          <DialogTitle className="text-base font-semibold">
-            {isEditing ? "Edit Payable" : "Add Payable"}
-          </DialogTitle>
-        </DialogHeader>
+    <Dialog open={open} onOpenChange={(nextOpen) => !nextOpen && onClose()}>
+      <DialogContent className={`${financeModalContentClass} sm:max-w-lg`}>
+        <FinanceModalHeader
+          title={isEditing ? "Edit Payable" : "Add Payable"}
+          description="Save payable person, amount, reason, due date, and notes."
+          icon={HandCoins}
+          tone="warning"
+        />
 
-        <div className="space-y-4 p-5">
+        <FinanceModalBody>
           <div className="grid gap-3 sm:grid-cols-2">
             <div>
               <label className="field-label">Person Name</label>
@@ -148,7 +152,7 @@ export default function PayableModal({ open, onClose, payable }: Props) {
                   key={label}
                   type="button"
                   onClick={() => setReason(label)}
-                  className="finance-focus inline-flex items-center gap-1.5 rounded-xl border border-border bg-surface-secondary px-2.5 py-1.5 text-xs text-slate-300 hover:bg-hover"
+                  className="finance-focus inline-flex items-center gap-1.5 rounded-xl border border-border bg-surface-secondary px-2.5 py-1.5 text-xs text-text-secondary hover:bg-hover hover:text-text-primary"
                 >
                   <Icon size={12} />
                   {label}
@@ -189,11 +193,13 @@ export default function PayableModal({ open, onClose, payable }: Props) {
           </div>
 
           {error && (
-            <p className="rounded-xl bg-red-500/10 p-3 text-xs text-red-300">
+            <p className={financeErrorClass}>
               {error}
             </p>
           )}
+        </FinanceModalBody>
 
+        <FinanceModalFooter className="grid-cols-1">
           <button
             onClick={handleSave}
             disabled={loading}
@@ -201,7 +207,7 @@ export default function PayableModal({ open, onClose, payable }: Props) {
           >
             {loading ? "Saving..." : isEditing ? "Update Payable" : "Save Payable"}
           </button>
-        </div>
+        </FinanceModalFooter>
       </DialogContent>
     </Dialog>
   );

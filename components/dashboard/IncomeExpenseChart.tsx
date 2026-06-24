@@ -11,6 +11,7 @@ import {
 } from "recharts";
 import { DollarSign } from "lucide-react";
 import { chartMotion } from "@/components/motion/animation-config";
+import { useCurrency } from "@/components/currency/CurrencyProvider";
 import ChartFrame from "@/components/ui/chart-frame";
 import ChartCard from "@/components/dashboard/ChartCard";
 
@@ -34,6 +35,8 @@ function CustomTooltip({
   payload?: ChartTooltipPayload;
   label?: string;
 }) {
+  const { formatCurrency } = useCurrency();
+
   if (!active || !payload?.length) return null;
   const income = payload.find((item) => item.dataKey === "income")?.value ?? 0;
   const expenses =
@@ -43,10 +46,10 @@ function CustomTooltip({
     <div className="rounded-[16px] border border-border bg-card/95 p-3 text-xs shadow-[var(--shadow-soft)] backdrop-blur-md">
       <p className="mb-2 font-semibold text-text-secondary">{label}</p>
       <p className="font-medium text-success">
-        Income: PKR {income.toLocaleString()}
+        Income: {formatCurrency(income)}
       </p>
       <p className="mt-1 font-medium text-danger">
-        Expenses: PKR {expenses.toLocaleString()}
+        Expenses: {formatCurrency(expenses)}
       </p>
     </div>
   );
@@ -159,7 +162,6 @@ export default function IncomeExpenseChart({ data }: { data: ChartData[] }) {
                 strokeLinecap="round"
                 strokeWidth={2.25}
                 {...chartMotion}
-                animationBegin={140}
               />
             </LineChart>
           )}

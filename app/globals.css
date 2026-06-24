@@ -82,6 +82,7 @@
   --danger: #dc2626;
   --warning: #b76a00;
   --info: #0284c7;
+  --investment: #7c3aed;
   --muted: #f8fafc;
   --input: #ffffff;
   --loader: #f1f5f9;
@@ -123,6 +124,7 @@
   --danger: #ff8a8a;
   --warning: #f6c76d;
   --info: #67d5ff;
+  --investment: #c4b5fd;
   --muted: #111820;
   --input: #121a24;
   --loader: #18212c;
@@ -376,6 +378,12 @@
     color: var(--warning);
   }
 
+  .finance-icon-container[data-tone="investment"] {
+    border-color: color-mix(in srgb, var(--investment), transparent 70%);
+    background-color: color-mix(in srgb, var(--investment), transparent 90%);
+    color: var(--investment);
+  }
+
   .finance-icon-container[data-tone="info"] {
     border-color: color-mix(in srgb, var(--info), transparent 70%);
     background-color: color-mix(in srgb, var(--info), transparent 90%);
@@ -563,6 +571,13 @@
     box-shadow: var(--shadow);
   }
 
+  .page-heading.finance-surface-glass {
+    border-color: color-mix(in srgb, var(--border), transparent 18%);
+    background:
+      linear-gradient(135deg, color-mix(in srgb, var(--card), var(--active) 5%), var(--surface-glass));
+    box-shadow: var(--shadow-premium), var(--surface-highlight);
+  }
+
   .page-title {
     @apply text-2xl font-semibold tracking-normal sm:text-3xl;
     color: var(--text-primary);
@@ -619,32 +634,68 @@
   }
 
   .danger-action,
-  .success-action {
+  .success-action,
+  .investment-action,
+  .warning-action {
     @apply inline-flex min-h-11 items-center justify-center gap-2 rounded-[18px] border px-4 py-2.5 text-sm font-semibold transition-all duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-active/40 focus-visible:ring-offset-0 disabled:opacity-50;
     border-color: var(--border);
     background-color: var(--surface-secondary);
     color: var(--text-primary);
   }
 
+  .summary-card:hover {
+    border-color: color-mix(in srgb, var(--active), var(--border) 78%);
+  }
+
   .danger-action:hover,
-  .success-action:hover {
+  .success-action:hover,
+  .investment-action:hover,
+  .warning-action:hover {
     background-color: var(--hover);
     box-shadow: var(--shadow-soft);
     transform: translateY(-1px) scale(1.01);
   }
 
   .danger-action:active,
-  .success-action:active {
+  .success-action:active,
+  .investment-action:active,
+  .warning-action:active {
     transform: translateY(0) scale(0.985);
   }
 
+  .success-action svg {
+    color: var(--success);
+  }
+
+  .danger-action svg {
+    color: var(--danger);
+  }
+
+  .investment-action svg {
+    color: var(--investment);
+  }
+
+  .warning-action svg {
+    color: var(--warning);
+  }
+
+  .finance-investment-quick-icon {
+    background-color: color-mix(in srgb, var(--investment), transparent 90%);
+    color: var(--investment);
+    --tw-ring-color: color-mix(in srgb, var(--investment), transparent 82%);
+  }
+
+  .finance-investment-quick-dot {
+    color: var(--investment);
+  }
+
   .field-label {
-    @apply mb-1.5 block text-xs font-medium;
+    @apply mb-1.5 block text-xs font-semibold;
     color: var(--text-primary);
   }
 
   .field-input {
-    @apply w-full rounded-[18px] border px-4 py-3 text-sm outline-none transition-all duration-200 ease-out;
+    @apply min-h-12 w-full rounded-[16px] border px-4 py-3 text-sm outline-none transition-all duration-200 ease-out;
     border-color: var(--border);
     background-color: var(--input);
     color: var(--text-primary);
@@ -657,9 +708,9 @@
 
   .field-input:hover,
   .field-input:focus {
-    border-color: var(--active);
+    border-color: color-mix(in srgb, var(--active), var(--border) 55%);
     background-color: var(--surface);
-    box-shadow: 0 0 0 3px color-mix(in srgb, var(--active), transparent 84%);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--active), transparent 86%);
   }
 
   .widget-link {
@@ -762,8 +813,7 @@
     opacity: 1;
     transform: scaleX(var(--progress-scale, 0));
     transform-origin: left center;
-    animation: dashboardProgressDraw 1.05s var(--motion-ease) both;
-    animation-delay: var(--progress-delay, 0ms);
+    transition: transform var(--progress-duration, 820ms) var(--motion-ease);
     will-change: transform;
   }
 
@@ -789,6 +839,20 @@
       box-shadow 0.2s var(--motion-ease),
       background-color 0.2s var(--motion-ease);
     will-change: transform;
+  }
+
+  .group\/investment-widget:hover .dashboard-graph-card,
+  .group\/investment-widget:focus-visible .dashboard-graph-card {
+    border-color: color-mix(in srgb, var(--investment), var(--border) 58%);
+    box-shadow:
+      0 20px 46px rgb(16 24 40 / 0.11),
+      0 4px 12px rgb(16 24 40 / 0.05),
+      var(--surface-highlight);
+    transform: translate3d(0, -3px, 0);
+  }
+
+  .group\/investment-widget:active .dashboard-graph-card {
+    transform: translate3d(0, -1px, 0) scale(0.992);
   }
 
   .dark .dashboard-graph-card {

@@ -10,6 +10,7 @@ import {
   YAxis,
 } from "recharts";
 import { chartMotion } from "@/components/motion/animation-config";
+import { useCurrency } from "@/components/currency/CurrencyProvider";
 import ChartFrame from "@/components/ui/chart-frame";
 
 interface Props {
@@ -29,6 +30,8 @@ function CustomTooltip({
   payload?: TooltipPayload[];
   label?: string;
 }) {
+  const { formatCurrency } = useCurrency();
+
   if (!active || !payload?.length) return null;
 
   const income = Number(payload[0]?.value ?? 0);
@@ -38,12 +41,12 @@ function CustomTooltip({
   return (
     <div className="finance-panel p-3 text-xs shadow-xl">
       <p className="mb-2 font-medium text-slate-400">{label}</p>
-      <p className="text-green-300">Income: PKR {income.toLocaleString()}</p>
+      <p className="text-green-300">Income: {formatCurrency(income)}</p>
       <p className="mt-1 text-red-300">
-        Expenses: PKR {expenses.toLocaleString()}
+        Expenses: {formatCurrency(expenses)}
       </p>
       <p className={`mt-1 ${net >= 0 ? "text-sky-300" : "text-orange-300"}`}>
-        Net: PKR {net.toLocaleString()}
+        Net: {formatCurrency(net)}
       </p>
     </div>
   );

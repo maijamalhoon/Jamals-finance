@@ -6,7 +6,7 @@ export const motionDurations = {
   fast: 0.16,
   base: 0.24,
   page: 0.28,
-  chart: 1150,
+  chart: 850,
 } as const;
 
 export const viewportReveal = {
@@ -154,7 +154,7 @@ export const pressableMotion = {
 } as const;
 
 export const chartMotion = {
-  animationBegin: 140,
+  animationBegin: 0,
   animationDuration: motionDurations.chart,
   animationEasing: "ease-out" as const,
 };

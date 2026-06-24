@@ -2,13 +2,14 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import AddPayableButton from "@/components/payables/AddPayableButton";
 import PayableCard, { Payable } from "@/components/payables/PayableCard";
+import CountedAmount from "@/components/motion/CountedAmount";
 import EmptyState from "@/components/ui/empty-state";
 import {
   formatPKR,
   getPayableStatus,
   PAYABLE_STATUS_META,
 } from "@/lib/finance-options";
-import { HandCoins, Search } from "lucide-react";
+import { Banknote, CheckCircle2, Clock3, HandCoins, Search, WalletCards } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -89,43 +90,72 @@ export default async function PayablesPage({
     return query ? `/dashboard/payables?${query}` : "/dashboard/payables";
   };
 
+  const statCards = [
+    {
+      label: "Total Value",
+      value: totals.total,
+      icon: WalletCards,
+      tone: "info" as const,
+      valueClassName: "text-text-primary",
+    },
+    {
+      label: "Already Paid",
+      value: totals.paid,
+      icon: CheckCircle2,
+      tone: "success" as const,
+      valueClassName: "text-success",
+    },
+    {
+      label: "Still Remaining",
+      value: totals.remaining,
+      icon: Clock3,
+      tone: "warning" as const,
+      valueClassName: "text-warning",
+    },
+  ];
+
   return (
     <div className="space-y-5 pb-8">
-      <div className="page-heading">
-        <div>
-          <h2 className="page-title">Payables</h2>
-          <p className="page-subtitle">
-            Track borrowed money, borrowed items, return deadlines, and complete
-            payment history.
-          </p>
+      <div className="page-heading finance-surface-glass overflow-hidden">
+        <div className="flex min-w-0 gap-3">
+          <span className="finance-icon-container mt-0.5" data-size="lg" data-tone="warning">
+            <HandCoins size={20} />
+          </span>
+          <div className="min-w-0">
+            <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-warning">
+              <Banknote size={14} />
+              Money Tools
+            </div>
+            <h2 className="page-title mt-2">Payables</h2>
+            <p className="page-subtitle">
+              Track borrowed money, items, return deadlines, and repayment history.
+            </p>
+          </div>
         </div>
         <AddPayableButton />
       </div>
 
       <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
-        <div className="summary-card">
-          <p className="text-xs text-slate-500">Total Value</p>
-          <p className="mt-2 text-xl font-bold text-text-primary">
-            {formatPKR(totals.total)}
-          </p>
-        </div>
-        <div className="summary-card border-emerald-300/12 bg-emerald-300/[0.055]">
-          <p className="text-xs text-slate-500">Already Paid</p>
-          <p className="mt-2 text-xl font-bold text-emerald-200">
-            {formatPKR(totals.paid)}
-          </p>
-        </div>
-        <div className="summary-card border-amber-300/12 bg-amber-300/[0.055]">
-          <p className="text-xs text-slate-500">Still Remaining</p>
-          <p className="mt-2 text-xl font-bold text-amber-200">
-            {formatPKR(totals.remaining)}
-          </p>
-        </div>
+        {statCards.map(({ label, value, icon: Icon, tone, valueClassName }) => (
+          <div key={label} className="summary-card finance-hover-lift min-h-[118px]">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <p className="text-xs font-semibold text-text-secondary">{label}</p>
+                <p className={`mt-2 text-xl font-bold ${valueClassName}`}>
+                  <CountedAmount amount={formatPKR(value)} />
+                </p>
+              </div>
+              <span className="finance-icon-container" data-size="sm" data-tone={tone}>
+                <Icon size={16} />
+              </span>
+            </div>
+          </div>
+        ))}
       </div>
 
-      <div className="finance-panel p-4">
+      <div className="finance-panel p-3 sm:p-4">
         <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
-          <div className="grid grid-cols-2 gap-1 rounded-2xl border border-border bg-surface-secondary p-1 sm:flex">
+          <div className="flex gap-1 overflow-x-auto rounded-[18px] border border-border bg-surface-secondary p-1">
             {STATUS_TABS.map((tab) => {
               const active = status === tab.value || (!status && tab.value === "all");
               const count =
@@ -134,10 +164,10 @@ export default async function PayablesPage({
                 <Link
                   key={tab.value}
                   href={paramsFor(tab.value)}
-                  className={`finance-focus rounded-xl px-3 py-2 text-center text-xs font-semibold transition-colors ${
+                  className={`finance-focus min-w-max rounded-[14px] px-3 py-2 text-center text-xs font-semibold transition-all ${
                     active ?
-                      "bg-card text-text-primary shadow-[0_8px_22px_rgba(0,0,0,0.18)]"
-                    : "text-slate-400 hover:bg-hover hover:text-text-primary"
+                      "bg-card text-text-primary shadow-[0_8px_22px_rgba(15,23,42,0.08)] dark:shadow-[0_8px_22px_rgba(0,0,0,0.18)]"
+                    : "text-text-secondary hover:bg-hover hover:text-text-primary"
                   }`}
                 >
                   {tab.label} <span className="opacity-70">({count})</span>

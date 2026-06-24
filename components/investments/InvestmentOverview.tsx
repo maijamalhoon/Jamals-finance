@@ -1,8 +1,9 @@
 "use client";
 
+import type { ReactNode } from "react";
 import { useEffect, useMemo, useState } from "react";
 import CountUp from "react-countup";
-import { motion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -17,6 +18,7 @@ import {
   WalletCards,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import { useCurrency } from "@/components/currency/CurrencyProvider";
 import InvestmentModal, { ExistingInvestment } from "./InvestmentModal";
 
 const TYPE_META: Record<string, { label: string; color: string }> = {
@@ -51,6 +53,115 @@ function shortCurrency(value: number) {
   return formatCurrency(value);
 }
 
+function AnimatedCurrency({
+  value,
+  compact = false,
+}: {
+  value: number;
+  compact?: boolean;
+}) {
+  const absValue = Math.abs(value);
+  const { formatCurrency } = useCurrency();
+
+  if (compact && absValue >= 1_000_000) {
+    return <>{formatCurrency(value, { compact: true })}</>;
+  }
+
+  if (compact && absValue >= 1_000) {
+    return <>{formatCurrency(value, { compact: true })}</>;
+  }
+
+  return (
+    <>
+      {formatCurrency(value)}
+    </>
+  );
+}
+
+function ProgressRing({
+  size = 160,
+  stroke = 10,
+  progress,
+  color,
+  accent,
+  children,
+}: {
+  size?: number;
+  stroke?: number;
+  progress: number;
+  color: string;
+  accent: string;
+  children: ReactNode;
+}) {
+  const reduceMotion = useReducedMotion();
+  const radius = (size - stroke) / 2;
+  const circumference = 2 * Math.PI * radius;
+  const normalizedProgress = Math.max(0.08, Math.min(0.94, progress));
+
+  return (
+    <div
+      className="relative grid place-items-center rounded-full"
+      style={{ width: size, height: size }}
+    >
+      <svg
+        aria-hidden="true"
+        className="absolute inset-0 -rotate-90 overflow-visible"
+        width={size}
+        height={size}
+        viewBox={`0 0 ${size} ${size}`}
+      >
+        <circle
+          cx={size / 2}
+          cy={size / 2}
+          r={radius}
+          fill="none"
+          stroke={ringTrack}
+          strokeWidth={stroke}
+        />
+        <motion.circle
+          cx={size / 2}
+          cy={size / 2}
+          r={radius}
+          fill="none"
+          stroke={accent}
+          strokeWidth={Math.max(3, stroke - 5)}
+          strokeLinecap="round"
+          strokeDasharray={circumference}
+          initial={{ strokeDashoffset: circumference }}
+          animate={{
+            strokeDashoffset: reduceMotion
+              ? circumference * 0.72
+              : circumference * 0.72,
+          }}
+          transition={{ duration: reduceMotion ? 0 : 0.75, delay: 0.12 }}
+          opacity={0.35}
+        />
+        <motion.circle
+          cx={size / 2}
+          cy={size / 2}
+          r={radius}
+          fill="none"
+          stroke={color}
+          strokeWidth={stroke}
+          strokeLinecap="round"
+          strokeDasharray={circumference}
+          initial={{ strokeDashoffset: circumference }}
+          animate={{
+            strokeDashoffset: circumference * (1 - normalizedProgress),
+          }}
+          transition={{
+            duration: reduceMotion ? 0 : 1.05,
+            ease: [0.16, 1, 0.3, 1],
+          }}
+        />
+      </svg>
+      <div className="grid h-[calc(100%-28px)] w-[calc(100%-28px)] place-items-center rounded-full border border-white/65 bg-card/95 p-4 text-center shadow-[inset_0_1px_0_rgba(255,255,255,0.72)] dark:border-white/10 dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]">
+        {children}
+      </div>
+    </div>
+  );
+}
+
 function InvestmentDonut({
   investment,
   index,
@@ -71,7 +182,7 @@ function InvestmentDonut({
   const isProfit = pnl >= 0;
   const color = isProfit ? profitColor : lossColor;
   const accent = TYPE_META[investment.type]?.color ?? TYPE_META.other.color;
-  const wedge = Math.max(12, Math.min(92, Math.abs(pct)));
+  const ringProgress = Math.max(0.14, Math.min(0.92, Math.abs(pct) / 100));
 
   async function handleDelete() {
     if (!confirm(`Delete "${investment.name}"? This cannot be undone.`)) return;
@@ -86,8 +197,8 @@ function InvestmentDonut({
         initial={{ opacity: 0, y: 18, scale: 0.96 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
         transition={{ duration: 0.42, delay: index * 0.04, ease: [0.16, 1, 0.3, 1] }}
-        whileHover={{ y: -6, scale: 1.025 }}
-        className="group relative flex min-h-[244px] flex-col items-center justify-center rounded-[28px] border border-white/70 bg-white/78 p-5 text-center shadow-[0_20px_52px_rgba(15,23,42,0.10)] backdrop-blur-2xl dark:border-white/10 dark:bg-white/[0.055]"
+        whileHover={{ y: -5 }}
+        className="group relative flex min-h-[286px] flex-col rounded-[24px] border border-white/70 bg-white/78 p-5 shadow-[0_20px_52px_rgba(15,23,42,0.10)] backdrop-blur-2xl transition-colors hover:border-blue-300/35 dark:border-white/10 dark:bg-white/[0.055]"
       >
         <div className="absolute right-4 top-4 flex gap-1 opacity-100 transition-opacity sm:opacity-0 sm:group-hover:opacity-100">
           <button
@@ -107,13 +218,14 @@ function InvestmentDonut({
           </button>
         </div>
 
-        <div
-          className="relative grid h-40 w-40 place-items-center rounded-full p-3 shadow-[inset_0_1px_10px_rgba(255,255,255,0.75),0_16px_40px_rgba(15,23,42,0.10)]"
-          style={{
-            background: `conic-gradient(${color} 0deg ${wedge * 3.6}deg, ${accent} ${wedge * 3.6}deg ${(wedge + 18) * 3.6}deg, ${ringTrack} ${(wedge + 18) * 3.6}deg 360deg)`,
-          }}
-        >
-          <div className="grid h-full w-full place-items-center rounded-full border border-white/80 bg-card/95 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.9)]">
+        <div className="flex flex-1 flex-col items-center justify-center text-center">
+          <ProgressRing
+            progress={ringProgress}
+            color={color}
+            accent={accent}
+            size={150}
+            stroke={10}
+          >
             <div className="min-w-0">
               <p className="truncate text-sm font-semibold text-text-primary">
                 {investment.name}
@@ -132,17 +244,41 @@ function InvestmentDonut({
                 </span>
               </div>
             </div>
-          </div>
+          </ProgressRing>
         </div>
 
-        <div className="mt-4 flex w-full items-center justify-between gap-3 rounded-[18px] border border-border bg-surface-secondary px-3 py-2">
-          <span className="truncate text-xs text-text-secondary">
-            {TYPE_META[investment.type]?.label ?? "Other"}
-          </span>
-          <span className="text-xs font-semibold" style={{ color }}>
-            {isProfit ? "+" : "-"}
-            {shortCurrency(Math.abs(pnl)).replace("PKR ", "")}
-          </span>
+        <div className="mt-4 w-full space-y-3">
+          <div className="flex items-center justify-between gap-3">
+            <span
+              className="inline-flex max-w-[58%] items-center gap-1.5 truncate rounded-full border px-2.5 py-1 text-xs font-semibold"
+              style={{
+                borderColor: `${accent}33`,
+                backgroundColor: `${accent}14`,
+                color: accent,
+              }}
+            >
+              {TYPE_META[investment.type]?.label ?? "Other"}
+            </span>
+            <span className="truncate text-xs font-semibold" style={{ color }}>
+              {isProfit ? "+" : "-"}
+              {shortCurrency(Math.abs(pnl)).replace("PKR ", "")}
+            </span>
+          </div>
+
+          <div className="grid grid-cols-2 gap-2">
+            <div className="rounded-[16px] border border-border bg-surface-secondary p-3">
+              <p className="text-[11px] text-text-secondary">Invested</p>
+              <p className="mt-1 truncate text-xs font-bold text-text-primary">
+                {shortCurrency(invested)}
+              </p>
+            </div>
+            <div className="rounded-[16px] border border-border bg-surface-secondary p-3">
+              <p className="text-[11px] text-text-secondary">Current</p>
+              <p className="mt-1 truncate text-xs font-bold text-text-primary">
+                {shortCurrency(currentValue)}
+              </p>
+            </div>
+          </div>
         </div>
       </motion.div>
 
@@ -174,14 +310,14 @@ function PortfolioSummary({
 }) {
   const isProfit = totalPnL >= 0;
   const color = isProfit ? profitColor : lossColor;
-  const wedge = Math.max(8, Math.min(92, Math.abs(totalPnLPct)));
+  const ringProgress = Math.max(0.1, Math.min(0.92, Math.abs(totalPnLPct) / 100));
 
   return (
     <motion.div
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.48, ease: [0.16, 1, 0.3, 1] }}
-      className="overflow-hidden rounded-[30px] border border-white/70 bg-white/80 p-5 shadow-[0_24px_70px_rgba(15,23,42,0.10)] backdrop-blur-2xl dark:border-white/10 dark:bg-white/[0.055]"
+      className="overflow-hidden rounded-[26px] border border-white/70 bg-white/80 p-5 shadow-[0_24px_70px_rgba(15,23,42,0.10)] backdrop-blur-2xl dark:border-white/10 dark:bg-white/[0.055]"
     >
       <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
         <div>
@@ -201,13 +337,13 @@ function PortfolioSummary({
           <div className="rounded-[22px] border border-border bg-surface-secondary p-4">
             <p className="text-[11px] font-medium text-text-secondary">Total invested</p>
             <p className="mt-2 text-lg font-bold text-text-primary">
-              {formatCurrency(totalInvested)}
+              <AnimatedCurrency value={totalInvested} />
             </p>
           </div>
           <div className="rounded-[22px] border border-border bg-surface-secondary p-4">
             <p className="text-[11px] font-medium text-text-secondary">Current value</p>
             <p className="mt-2 text-lg font-bold text-text-primary">
-              {formatCurrency(totalValue)}
+              <AnimatedCurrency value={totalValue} />
             </p>
           </div>
           <div className="rounded-[22px] border border-border bg-surface-secondary p-4">
@@ -215,20 +351,21 @@ function PortfolioSummary({
             <p className="mt-2 flex items-center gap-1 text-lg font-bold" style={{ color }}>
               {isProfit ? <ArrowUpRight size={18} /> : <ArrowDownRight size={18} />}
               {isProfit ? "+" : "-"}
-              {formatCurrency(Math.abs(totalPnL))}
+              <AnimatedCurrency value={Math.abs(totalPnL)} />
             </p>
           </div>
         </div>
       </div>
 
       <div className="mt-5 flex flex-col gap-5 border-t border-border pt-5 lg:flex-row lg:items-center">
-        <div
-          className="relative mx-auto grid h-36 w-36 flex-shrink-0 place-items-center rounded-full p-3 lg:mx-0"
-          style={{
-            background: `conic-gradient(${color} 0deg ${wedge * 3.6}deg, #3b82f6 ${wedge * 3.6}deg ${(wedge + 22) * 3.6}deg, ${ringTrack} ${(wedge + 22) * 3.6}deg 360deg)`,
-          }}
-        >
-          <div className="grid h-full w-full place-items-center rounded-full bg-card">
+        <div className="mx-auto flex-shrink-0 lg:mx-0">
+          <ProgressRing
+            progress={ringProgress}
+            color={color}
+            accent="#3b82f6"
+            size={144}
+            stroke={11}
+          >
             <div className="text-center">
               <p className="text-2xl font-bold" style={{ color }}>
                 {isProfit ? "+" : "-"}
@@ -236,7 +373,7 @@ function PortfolioSummary({
               </p>
               <p className="text-[11px] text-text-secondary">overall</p>
             </div>
-          </div>
+          </ProgressRing>
         </div>
 
         <div className="grid flex-1 gap-3 sm:grid-cols-2">

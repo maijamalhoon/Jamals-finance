@@ -44,9 +44,8 @@ const actions = [
     label: "Add Investment",
     hint: "Grow portfolio",
     icon: BarChart2,
-    tone: "text-amber-600 dark:text-amber-300",
-    iconTone:
-      "bg-amber-500/10 text-amber-600 ring-amber-500/15 dark:bg-amber-400/10 dark:text-amber-300 dark:ring-amber-400/15",
+    tone: "finance-investment-quick-dot",
+    iconTone: "finance-investment-quick-icon",
   },
   {
     key: "transfer",
@@ -62,9 +61,9 @@ const actions = [
     label: "Add Goal",
     hint: "Plan savings",
     icon: Target,
-    tone: "text-violet-600 dark:text-violet-300",
+    tone: "text-amber-600 dark:text-amber-300",
     iconTone:
-      "bg-violet-500/10 text-violet-600 ring-violet-500/15 dark:bg-violet-400/10 dark:text-violet-300 dark:ring-violet-400/15",
+      "bg-amber-500/10 text-amber-600 ring-amber-500/15 dark:bg-amber-400/10 dark:text-amber-300 dark:ring-amber-400/15",
   },
 ] satisfies Array<{
   key: ActionKey;

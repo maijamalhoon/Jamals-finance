@@ -15,6 +15,7 @@ import {
   TrendingUp,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import { useCurrency } from "@/components/currency/CurrencyProvider";
 import InvestmentModal, { ExistingInvestment } from "./InvestmentModal";
 
 const CONFIG: Record<
@@ -56,6 +57,7 @@ const CONFIG: Record<
 export default function InvestmentCard({ inv }: { inv: ExistingInvestment }) {
   const router = useRouter();
   const supabase = createClient();
+  const { formatCurrency } = useCurrency();
 
   const [editOpen, setEditOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -78,9 +80,6 @@ export default function InvestmentCard({ inv }: { inv: ExistingInvestment }) {
     await supabase.from("investments").delete().eq("id", inv.id);
     router.refresh();
   }
-
-  const fmt = (n: number) =>
-    n.toLocaleString(undefined, { maximumFractionDigits: 0 });
 
   return (
     <>
@@ -128,13 +127,13 @@ export default function InvestmentCard({ inv }: { inv: ExistingInvestment }) {
           <div className="rounded-lg bg-surface-secondary p-2.5">
             <p className="mb-0.5 text-[10px] text-slate-500">Buy Price</p>
             <p className="break-words text-xs font-medium text-text-primary">
-              PKR {fmt(buyPrice)}
+              {formatCurrency(buyPrice)}
             </p>
           </div>
           <div className="rounded-lg bg-surface-secondary p-2.5">
             <p className="mb-0.5 text-[10px] text-slate-500">Current Price</p>
             <p className="break-words text-xs font-medium text-text-primary">
-              PKR {fmt(curPrice)}
+              {formatCurrency(curPrice)}
             </p>
           </div>
         </div>
@@ -143,7 +142,7 @@ export default function InvestmentCard({ inv }: { inv: ExistingInvestment }) {
           <div className="flex items-center justify-between gap-3">
             <p className="text-xs text-slate-500">Current Value</p>
             <p className="break-words text-right text-sm font-bold text-text-primary">
-              PKR {fmt(currentValue)}
+              {formatCurrency(currentValue)}
             </p>
           </div>
           <div className="flex items-center justify-between gap-3">
@@ -155,7 +154,7 @@ export default function InvestmentCard({ inv }: { inv: ExistingInvestment }) {
             >
               {isProfit ? <ArrowUpRight size={13} /> : <ArrowDownRight size={13} />}
               <span className="truncate text-sm font-semibold">
-                PKR {fmt(Math.abs(pnl))}
+                {formatCurrency(Math.abs(pnl))}
               </span>
               <span className="text-xs opacity-80">
                 ({Math.abs(pnlPct).toFixed(1)}%)

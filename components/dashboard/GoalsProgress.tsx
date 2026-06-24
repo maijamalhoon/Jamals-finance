@@ -11,6 +11,9 @@ import Link from "next/link";
 import { CheckCircle2, Target } from "lucide-react";
 
 import { GOAL_ICONS } from "@/components/goals/goal-icons";
+import { getGoalCategoryStyle } from "@/components/goals/goal-styles";
+import { useDashboardAnimationReady } from "@/components/motion/useDashboardAnimationReady";
+import { useCurrency } from "@/components/currency/CurrencyProvider";
 import EmptyState from "@/components/ui/empty-state";
 
 interface Goal {
@@ -22,21 +25,6 @@ interface Goal {
 }
 
 const DEFAULT_VISIBLE_GOALS = 4;
-
-const GOAL_COLORS = [
-  "#f59e0b", // amber
-  "#22c55e", // green
-  "#ec4899", // pink
-  "#8b5cf6", // violet
-  "#3b82f6", // blue
-  "#06b6d4", // cyan
-  "#ef4444", // red
-  "#14b8a6", // teal
-  "#f97316", // orange
-  "#84cc16", // lime
-  "#a855f7", // purple
-  "#0ea5e9", // sky
-] as const;
 
 function useReducedMotion() {
   const [reduced, setReduced] = useState(false);
@@ -102,16 +90,10 @@ function AnimatedCurrency({
   value: number;
   delay?: number;
 }) {
-  const animatedValue = useAnimatedNumber(value, delay, 950);
+  const animatedValue = useAnimatedNumber(value, delay, 820);
+  const { formatCurrency } = useCurrency();
 
-  return (
-    <>
-      PKR{" "}
-      {Math.round(animatedValue).toLocaleString("en-PK", {
-        maximumFractionDigits: 0,
-      })}
-    </>
-  );
+  return <>{formatCurrency(animatedValue)}</>;
 }
 
 function AnimatedPercent({
@@ -121,30 +103,9 @@ function AnimatedPercent({
   value: number;
   delay?: number;
 }) {
-  const animatedValue = useAnimatedNumber(value, delay, 900);
+  const animatedValue = useAnimatedNumber(value, delay, 780);
 
   return <>{Math.round(animatedValue)}%</>;
-}
-
-function getGoalColor(goal: Goal, index: number) {
-  const text = `${goal.name} ${goal.icon ?? ""}`.toLowerCase();
-
-  if (text.includes("home") || text.includes("house")) return "#f59e0b";
-  if (
-    text.includes("car") ||
-    text.includes("toyota") ||
-    text.includes("suzuki") ||
-    text.includes("vehicle")
-  ) {
-    return index % 2 === 0 ? "#ec4899" : "#22c55e";
-  }
-  if (text.includes("phone") || text.includes("samsung")) return "#8b5cf6";
-  if (text.includes("travel") || text.includes("dubai")) return "#3b82f6";
-  if (text.includes("saving") || text.includes("savings")) return "#14b8a6";
-  if (text.includes("education") || text.includes("study")) return "#a855f7";
-  if (text.includes("emergency") || text.includes("health")) return "#ef4444";
-
-  return GOAL_COLORS[index % GOAL_COLORS.length];
 }
 
 function getGoalProgress(goal: Goal) {
@@ -168,9 +129,13 @@ function getGoalProgress(goal: Goal) {
 function GoalRow({
   goal,
   index,
+  animationReady,
+  reduceMotion,
 }: {
   goal: Goal;
   index: number;
+  animationReady: boolean;
+  reduceMotion: boolean;
 }) {
   const { current, target, percentage, done } = getGoalProgress(goal);
 
@@ -179,17 +144,19 @@ function GoalRow({
     GOAL_ICONS[GOAL_ICONS.length - 1];
 
   const GoalIcon = done ? CheckCircle2 : entry.icon;
-  const accent = done ? "var(--success)" : getGoalColor(goal, index);
+  const accent = done ? "var(--success)" : getGoalCategoryStyle(goal).accent;
 
-  const delay = index * 90 + 120;
+  const delay = 0;
   const progressScale =
-    percentage > 0 ? Math.max(2, Math.min(percentage, 100)) / 100 : 0;
+    animationReady && percentage > 0 ?
+      Math.max(2, Math.min(percentage, 100)) / 100
+    : 0;
 
   const rowStyle = {
     "--motion-reveal-delay": `${index * 65}ms`,
     "--goal-accent": accent,
     "--progress-accent": accent,
-    "--progress-delay": `${delay}ms`,
+    "--progress-duration": reduceMotion ? "0ms" : "820ms",
     "--progress-scale": progressScale,
   } as CSSProperties;
 
@@ -243,6 +210,7 @@ export default function GoalsProgress({
   goals: Goal[];
   maxVisible?: number;
 }) {
+  const { ready: animationReady, reduceMotion } = useDashboardAnimationReady();
   const visibleGoals = useMemo(() => {
     return goals.slice(0, maxVisible);
   }, [goals, maxVisible]);
@@ -270,6 +238,8 @@ export default function GoalsProgress({
             key={goal.id}
             goal={goal}
             index={index}
+            animationReady={animationReady}
+            reduceMotion={reduceMotion}
           />
         ))}
       </div>

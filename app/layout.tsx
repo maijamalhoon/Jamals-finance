@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "sonner";
 import MotionProvider from "@/components/motion/MotionProvider";
+import { CurrencyProvider } from "@/components/currency/CurrencyProvider";
 
 const geistSans = Geist({
   subsets: ["latin"],
@@ -57,15 +58,17 @@ try {
       </head>
       <body className="bg-background text-foreground antialiased">
         <MotionProvider>
-          {children}
-          <Toaster
-            position="top-right"
-            toastOptions={{
-              classNames: {
-                toast: "theme-toast",
-              },
-            }}
-          />
+          <CurrencyProvider>
+            {children}
+            <Toaster
+              position="top-right"
+              toastOptions={{
+                classNames: {
+                  toast: "theme-toast",
+                },
+              }}
+            />
+          </CurrencyProvider>
         </MotionProvider>
       </body>
     </html>

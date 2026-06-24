@@ -1,11 +1,18 @@
 "use client";
 
+import type { CSSProperties } from "react";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { CheckCircle2, Pencil, Trash2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import GoalModal, { ExistingGoal } from "./GoalModal";
 import { GOAL_ICONS } from "./goal-icons";
+import { getGoalCategoryStyle } from "./goal-styles";
+import {
+  useAnimatedGoalValue,
+  useProgressReveal,
+  useReducedMotion,
+} from "./use-animated-goal-value";
 
 export default function GoalCard({ goal }: { goal: ExistingGoal }) {
   const router = useRouter();
@@ -14,16 +21,24 @@ export default function GoalCard({ goal }: { goal: ExistingGoal }) {
   const [editOpen, setEditOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [now] = useState(() => Date.now());
+  const reduceMotion = useReducedMotion();
+  const progressReady = useProgressReveal(reduceMotion);
 
   const current = Number(goal.current_amount);
   const target = Number(goal.target_amount);
-  const pct = target > 0 ? Math.min((current / target) * 100, 100) : 0;
-  const done = target > 0 && current >= target;
+  const safeCurrent = Number.isFinite(current) ? Math.max(current, 0) : 0;
+  const safeTarget = Number.isFinite(target) ? Math.max(target, 0) : 0;
+  const pct =
+    safeTarget > 0 ? Math.min((safeCurrent / safeTarget) * 100, 100) : 0;
+  const done = safeTarget > 0 && safeCurrent >= safeTarget;
+  const animatedPct = useAnimatedGoalValue(pct, 80, 760);
+  const categoryStyle = getGoalCategoryStyle(goal);
+  const accent = done ? "var(--success)" : categoryStyle.accent;
 
   const iconEntry =
     GOAL_ICONS.find((i) => i.value === goal.icon) ||
     GOAL_ICONS[GOAL_ICONS.length - 1];
-  const GoalIcon = iconEntry.icon;
+  const GoalIcon = done ? CheckCircle2 : iconEntry.icon;
 
   let daysLeft: number | null = null;
   if (goal.deadline) {
@@ -42,14 +57,27 @@ export default function GoalCard({ goal }: { goal: ExistingGoal }) {
   const fmt = (n: number) =>
     `PKR ${n.toLocaleString(undefined, { maximumFractionDigits: 0 })}`;
 
+  const cardStyle = {
+    "--goal-accent": accent,
+    "--progress-accent": accent,
+    "--progress-duration": reduceMotion ? "0ms" : "820ms",
+    "--progress-scale": progressReady ? pct / 100 : 0,
+  } as CSSProperties;
+
+  const statusText =
+    done
+      ? "Completed"
+      : categoryStyle.category === "other"
+        ? iconEntry.label
+        : categoryStyle.label;
+
   return (
     <>
       <div
-        className={`finance-panel card-hover group relative p-5 hover:border-border ${
-          done ? "border-green-500/30 bg-green-500/5" : ""
-        }`}
+        className="finance-reference-card card-hover group relative flex h-full min-h-[270px] flex-col overflow-hidden p-4 sm:p-5"
+        style={cardStyle}
       >
-        <div className="absolute right-4 top-4 flex gap-1 opacity-100 transition-opacity sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100">
+        <div className="absolute right-3 top-3 flex gap-1 opacity-100 transition-opacity sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100">
           <button
             onClick={() => setEditOpen(true)}
             className="icon-button"
@@ -67,71 +95,70 @@ export default function GoalCard({ goal }: { goal: ExistingGoal }) {
           </button>
         </div>
 
-        <div className="mb-4 flex items-center gap-3 pr-16">
-          <div
-            className={`flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg ${
-              done ? "bg-green-500/15" : "bg-indigo-500/15"
-            }`}
+        <div className="mb-4 flex min-w-0 items-start gap-3 pr-16">
+          <span
+            className="grid h-11 w-11 shrink-0 place-items-center rounded-full border"
+            style={{
+              color: accent,
+              borderColor: `color-mix(in srgb, ${accent}, transparent 76%)`,
+              backgroundColor: `color-mix(in srgb, ${accent}, transparent 92%)`,
+            }}
           >
-            {done ?
-              <CheckCircle2 size={18} className="text-green-400" />
-            : <GoalIcon size={18} className="text-indigo-300" />}
-          </div>
+            <GoalIcon size={18} strokeWidth={2.15} />
+          </span>
           <div className="min-w-0">
-            <p className="truncate text-sm font-semibold text-text-primary">
+            <p className="truncate text-[15px] font-semibold leading-6 text-text-primary">
               {goal.name}
             </p>
-            <p
-              className={`text-xs font-medium ${
-                done ? "text-green-400" : "text-indigo-300"
-              }`}
-            >
-              {done ? "Completed" : iconEntry.label}
+            <p className="text-xs font-semibold leading-5 text-[var(--goal-accent)]">
+              {statusText}
             </p>
           </div>
         </div>
 
-        {done ?
-          <p className="mb-3 text-xs font-medium text-green-400">
-            Goal reached
-          </p>
-        : daysLeft !== null ?
+        <div className="mb-4 flex items-center justify-between gap-3">
           <p
-            className={`mb-3 text-xs ${daysLeft < 30 ? "text-red-400" : "text-slate-500"}`}
+            className={`min-w-0 truncate text-xs font-medium ${
+              done || daysLeft === null || daysLeft >= 30
+                ? "text-text-secondary"
+                : "text-danger"
+            }`}
           >
-            {daysLeft > 0 ?
-              `${daysLeft} days left`
-            : daysLeft === 0 ?
-              "Due today"
-            : "Overdue"}
+            {done
+              ? "Goal reached"
+              : daysLeft !== null
+                ? daysLeft > 0
+                  ? `${daysLeft} days left`
+                  : daysLeft === 0
+                    ? "Due today"
+                    : "Overdue"
+                : "No deadline"}
           </p>
-        : <p className="mb-3 text-xs text-slate-600">No deadline</p>}
-
-        <div className="mb-4 h-1.5 overflow-hidden rounded-full bg-surface-secondary">
-          <div
-            className={`motion-progress-fill h-full rounded-full transition-all duration-500 ${done ? "bg-green-300" : "bg-amber-300"}`}
-            style={{ width: `${pct}%` }}
-          />
+          <span className="shrink-0 text-sm font-bold leading-5 text-[var(--goal-accent)]">
+            {Math.round(animatedPct)}%
+          </span>
         </div>
 
-        <div className="flex items-end justify-between gap-3 border-t border-border pt-3">
+        <div className="dashboard-progress-track">
+          <div className="dashboard-progress-fill" />
+        </div>
+
+        <div className="mt-auto flex items-end justify-between gap-3 border-t border-border pt-4">
           <div className="min-w-0">
             <p className="break-words text-sm font-bold text-text-primary">
-              {fmt(current)}
+              {fmt(safeCurrent)}
             </p>
-            <p className="mt-0.5 break-words text-xs text-slate-500">
-              of {fmt(target)}
+            <p className="mt-0.5 break-words text-xs text-text-secondary">
+              of {fmt(safeTarget)}
             </p>
           </div>
           <div className="min-w-[76px] text-right">
-            <p
-              className={`text-sm font-bold ${done ? "text-green-400" : "text-amber-300"}`}
-            >
-              {pct.toFixed(0)}%
+            <p className="text-sm font-bold text-[var(--goal-accent)]">
+              {fmt(Math.max(safeTarget - safeCurrent, 0))}
             </p>
             {!done && (
-              <p className="break-words text-xs text-slate-600">
-                {fmt(Math.max(target - current, 0))} to go
+              <p className="break-words text-xs text-text-secondary">
+                to go
               </p>
             )}
           </div>

@@ -28,8 +28,6 @@ export default function ChartFrame({
     if (!frame) return;
 
     let raf = 0;
-    let revealTimeout: number | undefined;
-
     const measure = () => {
       window.cancelAnimationFrame(raf);
       raf = window.requestAnimationFrame(() => {
@@ -41,10 +39,6 @@ export default function ChartFrame({
         const canRender = nextSize.width > 1 && nextSize.height > 1;
 
         if (!canRender) {
-          if (revealTimeout) {
-            window.clearTimeout(revealTimeout);
-            revealTimeout = undefined;
-          }
           setSize(null);
           setReady(false);
           return;
@@ -55,10 +49,7 @@ export default function ChartFrame({
             current
           : nextSize,
         );
-
-        revealTimeout ??= window.setTimeout(() => {
-          setReady(true);
-        }, 420);
+        setReady(true);
       });
     };
 
@@ -69,7 +60,6 @@ export default function ChartFrame({
 
     return () => {
       window.cancelAnimationFrame(raf);
-      if (revealTimeout) window.clearTimeout(revealTimeout);
       observer.disconnect();
     };
   }, []);

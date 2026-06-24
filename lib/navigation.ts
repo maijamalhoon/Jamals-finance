@@ -1,11 +1,8 @@
 import {
   ArrowRightLeft,
   BarChart3,
-  HandCoins,
   LayoutDashboard,
   LucideIcon,
-  Target,
-  TrendingUp,
   WalletCards,
 } from "lucide-react";
 
@@ -30,28 +27,10 @@ export const NAV_ITEMS: NavItem[] = [
     tone: "text-violet-300 bg-violet-500/15",
   },
   {
-    label: "Payables",
-    href: "/dashboard/payables",
-    icon: HandCoins,
-    tone: "text-amber-300 bg-amber-500/15",
-  },
-  {
-    label: "Investment Overview",
-    href: "/dashboard/investments",
-    icon: TrendingUp,
-    tone: "text-amber-300 bg-amber-500/15",
-  },
-  {
     label: "Accounts",
     href: "/dashboard/accounts",
     icon: WalletCards,
     tone: "text-sky-300 bg-sky-500/15",
-  },
-  {
-    label: "Goals",
-    href: "/dashboard/goals",
-    icon: Target,
-    tone: "text-lime-300 bg-lime-500/15",
   },
   {
     label: "Analytics",
@@ -62,5 +41,17 @@ export const NAV_ITEMS: NavItem[] = [
 ];
 
 export function isNavItemActive(pathname: string, href: string) {
+  if (href === "/dashboard") {
+    return (
+      pathname === "/dashboard" ||
+      pathname.startsWith("/dashboard/investments") ||
+      pathname.startsWith("/dashboard/goals")
+    );
+  }
+
+  if (href === "/dashboard/settings") {
+    return pathname === href || pathname.startsWith("/dashboard/payables");
+  }
+
   return pathname === href || (href !== "/dashboard" && pathname.startsWith(href));
 }

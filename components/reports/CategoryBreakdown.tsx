@@ -31,10 +31,9 @@ export default function CategoryBreakdown({ data }: { data: CategoryData[] }) {
                 </div>
                 <div className="shrink-0 text-right">
                   <span className="text-sm font-medium text-text-primary">
-                    PKR{" "}
-                    {cat.amount.toLocaleString(undefined, {
+                    {`PKR ${cat.amount.toLocaleString(undefined, {
                       maximumFractionDigits: 0,
-                    })}
+                    })}`}
                   </span>
                   <span className="ml-2 text-xs text-slate-500">
                     {cat.pct.toFixed(0)}%

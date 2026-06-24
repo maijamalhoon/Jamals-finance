@@ -3,6 +3,7 @@
 import CountUp from "react-countup";
 import { useReducedMotion } from "framer-motion";
 import { useHasMounted } from "@/components/motion/useHasMounted";
+import { useCurrency } from "@/components/currency/CurrencyProvider";
 
 function splitAmount(amount: string) {
   const cleaned = String(amount ?? "").trim();
@@ -28,30 +29,42 @@ export default function CountedAmount({
 }) {
   const mounted = useHasMounted();
   const reduceMotion = useReducedMotion();
+  const { formatCurrency } = useCurrency();
   const parsedAmount = splitAmount(amount);
+  const isMoneyAmount = /^([+-]?\s*)?PKR\s*/.test(String(amount ?? "").trim());
+  const sign =
+    parsedAmount?.prefix.includes("-") ? "-"
+    : parsedAmount?.prefix.includes("+") ? "+"
+    : Number(parsedAmount?.value) < 0 ? "-"
+    : "";
+  const displayAmount =
+    parsedAmount && isMoneyAmount ?
+      `${sign}${formatCurrency(Math.abs(parsedAmount.value))}`
+    : amount;
+  const parsedDisplayAmount = splitAmount(displayAmount);
 
   if (
     !mounted ||
     reduceMotion ||
-    !parsedAmount ||
-    !Number.isFinite(parsedAmount.value)
+    !parsedDisplayAmount ||
+    !Number.isFinite(parsedDisplayAmount.value)
   ) {
-    return amount;
+    return displayAmount;
   }
 
   return (
     <span className="motion-counter-ready">
-      {parsedAmount.prefix}
+      {parsedDisplayAmount.prefix}
       <CountUp
-        key={amount}
+        key={displayAmount}
         start={0}
-        end={parsedAmount.value}
+        end={parsedDisplayAmount.value}
         duration={duration}
-        decimals={parsedAmount.decimals}
+        decimals={parsedDisplayAmount.decimals}
         separator=","
         redraw
       />
-      {parsedAmount.suffix}
+      {parsedDisplayAmount.suffix}
     </span>
   );
 }

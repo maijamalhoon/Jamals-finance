@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import GoalCard from "@/components/goals/GoalCard";
 import AddGoalButton from "@/components/goals/AddGoalButton";
+import GoalSummaryStats from "@/components/goals/GoalSummaryStats";
 import EmptyState from "@/components/ui/empty-state";
 import { Target } from "lucide-react";
 
@@ -22,50 +23,38 @@ export default async function GoalsPage() {
   const totalSaved = list.reduce((s, g) => s + Number(g.current_amount), 0);
   const overallPct = totalTarget > 0 ? (totalSaved / totalTarget) * 100 : 0;
 
-  const fmt = (n: number) =>
-    `PKR ${n.toLocaleString(undefined, { maximumFractionDigits: 0 })}`;
-
   return (
-    <div className="space-y-5">
-      <div className="page-heading">
-        <div>
-          <h2 className="page-title">Goals</h2>
-          <p className="page-subtitle">
-            {completed.length} of {list.length} completed
-          </p>
+    <div className="space-y-4 sm:space-y-5">
+      <section className="finance-reference-card motion-card-entry overflow-hidden p-4 sm:p-5">
+        <div className="flex min-w-0 flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="min-w-0">
+            <div className="dashboard-list-card-kicker">
+              <span className="dashboard-list-card-kicker-icon">
+                <Target />
+              </span>
+              <span className="truncate">Savings Targets</span>
+            </div>
+            <h2 className="page-title">Goals Progress</h2>
+            <p className="page-subtitle">
+              {completed.length} of {list.length} completed
+            </p>
+          </div>
+          <AddGoalButton />
         </div>
-        <AddGoalButton />
-      </div>
+      </section>
 
       {list.length > 0 && (
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-          <div className="summary-card">
-            <p className="mb-1.5 text-xs text-slate-500">Total Target</p>
-            <p className="text-xl font-bold text-text-primary">{fmt(totalTarget)}</p>
-          </div>
-
-          <div className="summary-card">
-            <p className="mb-1.5 text-xs text-slate-500">Total Saved</p>
-            <p className="text-xl font-bold text-text-primary">{fmt(totalSaved)}</p>
-          </div>
-
-          <div className="summary-card">
-            <p className="mb-1.5 text-xs text-slate-500">Overall Progress</p>
-            <p className="text-xl font-bold text-amber-300">
-              {overallPct.toFixed(1)}%
-            </p>
-            <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-surface-secondary">
-              <div
-                className="motion-progress-fill h-full rounded-full bg-amber-300"
-                style={{ width: `${Math.min(overallPct, 100)}%` }}
-              />
-            </div>
-          </div>
-        </div>
+        <GoalSummaryStats
+          totalTarget={totalTarget}
+          totalSaved={totalSaved}
+          completedCount={completed.length}
+          totalCount={list.length}
+          overallPct={overallPct}
+        />
       )}
 
       {list.length === 0 ? (
-        <div className="finance-panel px-5">
+        <div className="finance-reference-card min-h-[280px] px-5">
           <EmptyState
             icon={Target}
             title="No goals yet"
@@ -73,7 +62,7 @@ export default async function GoalsPage() {
           />
         </div>
       ) : (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        <div className="grid auto-rows-fr grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
           {list.map((g) => (
             <GoalCard key={g.id} goal={g as any} />
           ))}

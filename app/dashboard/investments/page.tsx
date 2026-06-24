@@ -2,7 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import AddInvestmentButton from "@/components/investments/AddInvestmentButton";
 import InvestmentOverview from "@/components/investments/InvestmentOverview";
 import EmptyState from "@/components/ui/empty-state";
-import { BarChart2, Sparkles } from "lucide-react";
+import { BarChart2, Sparkles, TrendingUp } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -28,16 +28,21 @@ export default async function InvestmentsPage() {
 
   return (
     <div className="space-y-5">
-      <div className="page-heading">
-        <div>
-          <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-blue-500">
-            <Sparkles size={14} />
-            Investments
+      <div className="page-heading finance-surface-glass overflow-hidden">
+        <div className="flex min-w-0 gap-3">
+          <span className="finance-icon-container mt-0.5" data-size="lg" data-tone="investment">
+            <TrendingUp size={20} />
+          </span>
+          <div className="min-w-0">
+            <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-blue-500">
+              <Sparkles size={14} />
+              Investments
+            </div>
+            <h2 className="page-title mt-2">Investment Overview</h2>
+            <p className="page-subtitle">
+              Portfolio value, profit/loss momentum, allocation signals, and compact AI guidance.
+            </p>
           </div>
-          <h2 className="page-title mt-2">Investment Overview</h2>
-          <p className="page-subtitle">
-            Portfolio wedges, value tracking, and compact AI guidance.
-          </p>
         </div>
         <AddInvestmentButton />
       </div>

@@ -4,11 +4,13 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   CalendarClock,
+  ChevronDown,
   CircleDollarSign,
   Pencil,
   ReceiptText,
   Trash2,
 } from "lucide-react";
+import CountedAmount from "@/components/motion/CountedAmount";
 import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
 import {
@@ -41,6 +43,22 @@ export interface Payable extends ExistingPayable {
   liability_payments?: Payment[];
 }
 
+const STATUS_BADGE_CLASS: Record<string, string> = {
+  pending:
+    "border-amber-400/25 bg-amber-500/10 text-amber-700 dark:text-amber-200",
+  partial: "border-sky-400/25 bg-sky-500/10 text-sky-700 dark:text-sky-200",
+  overdue: "border-rose-400/25 bg-rose-500/10 text-rose-700 dark:text-rose-200",
+  completed:
+    "border-emerald-400/25 bg-emerald-500/10 text-emerald-700 dark:text-emerald-200",
+};
+
+const STATUS_PROGRESS_COLOR: Record<string, string> = {
+  pending: "var(--warning)",
+  partial: "var(--info)",
+  overdue: "var(--danger)",
+  completed: "var(--success)",
+};
+
 export default function PayableCard({
   payable,
   accounts,
@@ -52,6 +70,7 @@ export default function PayableCard({
   const router = useRouter();
   const [editOpen, setEditOpen] = useState(false);
   const [paymentOpen, setPaymentOpen] = useState(false);
+  const [historyOpen, setHistoryOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
   const displayStatus = getPayableStatus(payable);
@@ -61,6 +80,9 @@ export default function PayableCard({
   const remaining = Number(payable.remaining_amount ?? 0);
   const progress = total > 0 ? Math.min(100, (paid / total) * 100) : 0;
   const payments = payable.liability_payments ?? [];
+  const statusClass = STATUS_BADGE_CLASS[displayStatus] ?? STATUS_BADGE_CLASS.pending;
+  const progressColor =
+    STATUS_PROGRESS_COLOR[displayStatus] ?? STATUS_PROGRESS_COLOR.pending;
 
   async function handleDelete() {
     if (!confirm(`Delete payable for ${payable.person_name}?`)) return;
@@ -82,65 +104,70 @@ export default function PayableCard({
 
   return (
     <>
-      <article className="finance-panel p-4 sm:p-5">
+      <article className="finance-panel finance-hover-lift overflow-hidden p-4 sm:p-5">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-2">
               <span
-                className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold ring-1 ${meta.className}`}
+                className={`inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-semibold ${statusClass}`}
               >
                 {meta.label}
               </span>
               {payable.due_date && (
-                <span className="inline-flex items-center gap-1 rounded-full bg-surface-secondary px-2.5 py-1 text-xs text-slate-400">
+                <span className="inline-flex items-center gap-1 rounded-full border border-border bg-surface-secondary px-2.5 py-1 text-xs text-text-secondary">
                   <CalendarClock size={12} />
                   Due {new Date(payable.due_date).toLocaleDateString()}
                 </span>
               )}
             </div>
 
-            <h3 className="mt-3 break-words text-lg font-bold text-text-primary">
+            <h3 className="mt-3 break-words text-lg font-bold text-text-primary sm:text-xl">
               {payable.person_name}
             </h3>
-            <p className="mt-1 text-sm leading-6 text-slate-400">
+            <p className="mt-1 text-sm leading-6 text-text-secondary">
               {payable.reason}
               {payable.item_name ? ` - ${payable.item_name}` : ""}
             </p>
+            <p className="mt-2 text-sm font-semibold text-text-primary">
+              Paid <span className="text-success"><CountedAmount amount={formatPKR(paid)} /></span>
+            </p>
             {payable.notes && (
-              <p className="mt-2 rounded-2xl border border-border bg-surface-secondary p-3 text-xs leading-5 text-slate-500">
+              <p className="mt-3 rounded-2xl border border-border bg-surface-secondary p-3 text-xs leading-5 text-text-secondary">
                 {payable.notes}
               </p>
             )}
           </div>
 
-          <div className="grid min-w-0 grid-cols-2 gap-2 sm:min-w-[360px]">
+          <div className="grid min-w-0 grid-cols-2 gap-2 lg:min-w-[360px]">
             <div className="rounded-2xl border border-border bg-surface-secondary p-3">
-              <p className="text-[11px] text-slate-500">Actual Value</p>
+              <p className="text-[11px] font-medium text-text-secondary">Actual Value</p>
               <p className="mt-1 break-words text-sm font-bold text-text-primary">
-                {formatPKR(total)}
+                <CountedAmount amount={formatPKR(total)} />
               </p>
             </div>
             <div className="rounded-2xl border border-border bg-surface-secondary p-3">
-              <p className="text-[11px] text-slate-500">Remaining</p>
-              <p className="mt-1 break-words text-sm font-bold text-amber-200">
-                {formatPKR(remaining)}
+              <p className="text-[11px] font-medium text-text-secondary">Remaining</p>
+              <p className="mt-1 break-words text-sm font-bold text-warning">
+                <CountedAmount amount={formatPKR(remaining)} />
               </p>
             </div>
-          </div>
-        </div>
-
-        <div className="mt-4">
-          <div className="mb-2 flex items-center justify-between text-xs">
-            <span className="text-slate-500">Paid {formatPKR(paid)}</span>
-            <span className="font-semibold text-slate-300">
-              {Math.round(progress)}%
-            </span>
-          </div>
-          <div className="h-2 overflow-hidden rounded-full bg-surface-secondary">
-            <div
-              className="motion-progress-fill h-full rounded-full bg-card transition-all"
-              style={{ width: `${progress}%` }}
-            />
+            <div className="col-span-2 rounded-2xl border border-border bg-card/70 p-3">
+              <div className="mb-2 flex items-center justify-between text-xs">
+                <span className="text-text-secondary">Progress</span>
+                <span className="font-semibold text-text-primary">
+                  <CountedAmount amount={`${Math.round(progress)}%`} />
+                </span>
+              </div>
+              <div className="h-2 overflow-hidden rounded-full bg-surface-secondary">
+                <div
+                  className="motion-progress-fill h-full rounded-full transition-all"
+                  style={{
+                    width: `${progress}%`,
+                    backgroundColor: progressColor,
+                  }}
+                />
+              </div>
+            </div>
           </div>
         </div>
 
@@ -149,14 +176,14 @@ export default function PayableCard({
             <button
               onClick={() => setPaymentOpen(true)}
               disabled={remaining <= 0 || !accounts.length}
-              className="success-action px-3 py-2 text-xs"
+              className="success-action min-h-10 rounded-full px-3 py-2 text-xs"
             >
               <CircleDollarSign size={14} />
               Record Payment
             </button>
             <button
               onClick={() => setEditOpen(true)}
-              className="primary-action bg-surface-secondary px-3 py-2 text-xs text-text-primary shadow-none hover:bg-hover"
+              className="primary-action min-h-10 rounded-full bg-surface-secondary px-3 py-2 text-xs text-text-primary shadow-none hover:bg-hover"
             >
               <Pencil size={14} />
               Edit
@@ -164,50 +191,69 @@ export default function PayableCard({
             <button
               onClick={handleDelete}
               disabled={deleting}
-              className="danger-action px-3 py-2 text-xs"
+              className="danger-action min-h-10 rounded-full px-3 py-2 text-xs hover:border-rose-400/35 hover:bg-rose-500/10"
             >
               <Trash2 size={14} />
               Delete
             </button>
           </div>
-          <p className="text-xs text-slate-500">
+          <p className="text-xs text-text-secondary">
             Added {new Date(payable.created_at).toLocaleDateString()}
           </p>
         </div>
 
-        <div className="mt-5 border-t border-border pt-4">
-          <div className="mb-3 flex items-center gap-2">
-            <ReceiptText size={14} className="text-text-secondary" />
-            <p className="text-sm font-semibold text-text-primary">Payment History</p>
-          </div>
+        <div className="mt-5 border-t border-border pt-3">
+          <button
+            type="button"
+            onClick={() => setHistoryOpen((open) => !open)}
+            className="finance-focus flex w-full items-center justify-between gap-3 rounded-2xl px-1 py-2 text-left transition-colors hover:bg-hover sm:px-2"
+          >
+            <span className="flex min-w-0 items-center gap-2">
+              <ReceiptText size={14} className="text-text-secondary" />
+              <span className="text-sm font-semibold text-text-primary">
+                Payment History
+              </span>
+              <span className="rounded-full bg-surface-secondary px-2 py-0.5 text-[11px] text-text-secondary">
+                {payments.length}
+              </span>
+            </span>
+            <ChevronDown
+              size={16}
+              className={`text-text-secondary transition-transform ${historyOpen ? "rotate-180" : ""}`}
+            />
+          </button>
 
-          {payments.length === 0 ? (
-            <p className="rounded-2xl border border-border bg-surface-secondary p-3 text-xs text-slate-500">
-              No payments recorded yet.
-            </p>
-          ) : (
-            <div className="space-y-2">
-              {payments.map((payment) => (
-                <div
-                  key={payment.id}
-                  className="flex flex-col gap-2 rounded-2xl border border-border bg-surface-secondary p-3 sm:flex-row sm:items-center sm:justify-between"
-                >
-                  <div>
-                    <p className="text-sm font-semibold text-text-primary">
-                      {formatPKR(payment.amount)}
-                    </p>
-                    <p className="mt-0.5 text-xs text-slate-500">
-                      {payment.accounts?.name ?? "Account removed"} -{" "}
-                      {new Date(payment.paid_at).toLocaleDateString()}
-                    </p>
-                  </div>
-                  {payment.note && (
-                    <p className="max-w-md text-xs leading-5 text-slate-400">
-                      {payment.note}
-                    </p>
-                  )}
+          {historyOpen && (
+            <div className="mt-2">
+              {payments.length === 0 ? (
+                <p className="rounded-2xl border border-dashed border-border bg-surface-secondary/70 p-3 text-xs text-text-secondary">
+                  No payments recorded yet.
+                </p>
+              ) : (
+                <div className="space-y-2">
+                  {payments.map((payment) => (
+                    <div
+                      key={payment.id}
+                      className="flex flex-col gap-2 rounded-2xl border border-border bg-surface-secondary p-3 sm:flex-row sm:items-center sm:justify-between"
+                    >
+                      <div>
+                        <p className="text-sm font-semibold text-text-primary">
+                          {formatPKR(payment.amount)}
+                        </p>
+                        <p className="mt-0.5 text-xs text-text-secondary">
+                          {payment.accounts?.name ?? "Account removed"} -{" "}
+                          {new Date(payment.paid_at).toLocaleDateString()}
+                        </p>
+                      </div>
+                      {payment.note && (
+                        <p className="max-w-md text-xs leading-5 text-text-secondary">
+                          {payment.note}
+                        </p>
+                      )}
+                    </div>
+                  ))}
                 </div>
-              ))}
+              )}
             </div>
           )}
         </div>

@@ -6,7 +6,6 @@ import { motion } from "framer-motion";
 import {
   ArrowLeftRight,
   LayoutDashboard,
-  Target,
   WalletCards,
 } from "lucide-react";
 import { isNavItemActive } from "@/lib/navigation";
@@ -19,7 +18,6 @@ const NAV = [
     icon: ArrowLeftRight,
   },
   { label: "Accounts", href: "/dashboard/accounts", icon: WalletCards },
-  { label: "Goals", href: "/dashboard/goals", icon: Target },
 ];
 
 export default function MobileNav() {
@@ -28,7 +26,7 @@ export default function MobileNav() {
   return (
     <nav
       aria-label="Primary mobile navigation"
-      className="relative z-30 grid h-[76px] flex-shrink-0 grid-cols-4 gap-1 border-t border-border bg-surface px-2 py-2 shadow-theme lg:hidden"
+      className="relative z-30 grid h-[76px] flex-shrink-0 grid-cols-3 gap-1 border-t border-border bg-surface px-2 py-2 shadow-theme lg:hidden"
     >
       {NAV.map(({ label, href, icon: Icon }) => {
         const active = isNavItemActive(pathname, href);

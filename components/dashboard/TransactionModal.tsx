@@ -1,15 +1,19 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { TrendingDown, TrendingUp } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import DatePicker from "@/components/ui/date-picker";
+import AccountSelect from "@/components/accounts/AccountSelect";
+import {
+  FinanceModalBody,
+  FinanceModalFooter,
+  FinanceModalHeader,
+  financeCancelButtonClass,
+  financeErrorClass,
+  financeModalContentClass,
+} from "@/components/ui/finance-modal";
 import { toast } from "sonner";
 
 interface Category {
@@ -24,6 +28,7 @@ interface Account {
   id: string;
   name: string;
   type: string;
+  balance: number;
 }
 
 export interface ExistingTransaction {
@@ -107,7 +112,7 @@ export default function TransactionModal({
           .eq("type", type)
           .order("parent_id", { ascending: true, nullsFirst: true })
           .order("name"),
-        supabase.from("accounts").select("id, name, type").order("name"),
+        supabase.from("accounts").select("id, name, type, balance").order("name"),
       ]);
       setLoadingOptions(false);
 
@@ -216,16 +221,17 @@ export default function TransactionModal({
   const typeLocked = !isEditing;
 
   return (
-    <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="finance-panel max-h-[calc(100dvh-1.5rem)] max-w-md gap-0 overflow-hidden p-0 text-text-primary">
-        <DialogHeader className="border-b border-border px-5 py-4">
-          <DialogTitle className="flex items-center justify-between gap-3 text-base font-semibold">
-            <span>
-              {isEditing ? "Edit Transaction" : `Add ${isIncome ? "Income" : "Expense"}`}
-            </span>
-            {typeLocked && (
+    <Dialog open={open} onOpenChange={(nextOpen) => !nextOpen && onClose()}>
+      <DialogContent className={financeModalContentClass}>
+        <FinanceModalHeader
+          title={isEditing ? "Edit Transaction" : `Add ${isIncome ? "Income" : "Expense"}`}
+          description="Enter amount, account, category, date, and an optional note."
+          icon={isIncome ? TrendingUp : TrendingDown}
+          tone={isIncome ? "success" : "danger"}
+          badge={
+            typeLocked ? (
               <span
-                className={`rounded-full border px-2.5 py-1 text-[11px] font-semibold ${
+                className={`shrink-0 rounded-full border px-2.5 py-1 text-[11px] font-semibold ${
                   isIncome
                     ? "border-emerald-500/20 bg-emerald-500/10 text-emerald-700 dark:text-emerald-200"
                     : "border-rose-500/20 bg-rose-500/10 text-rose-700 dark:text-rose-200"
@@ -233,14 +239,11 @@ export default function TransactionModal({
               >
                 {isIncome ? "Income only" : "Expense only"}
               </span>
-            )}
-          </DialogTitle>
-          <DialogDescription className="sr-only">
-            Enter amount, account, category, date, and an optional note.
-          </DialogDescription>
-        </DialogHeader>
+            ) : null
+          }
+        />
 
-        <div className="max-h-[calc(100dvh-9rem)] space-y-3.5 overflow-y-auto px-5 py-4">
+        <FinanceModalBody>
           {!typeLocked && (
             <div className="flex gap-1.5 rounded-[16px] border border-border bg-surface-secondary p-1">
               {(["income", "expense"] as const).map((nextType) => (
@@ -275,21 +278,13 @@ export default function TransactionModal({
 
           <div>
             <label className="field-label">Account</label>
-            <select
+            <AccountSelect
               value={accountId}
-              onChange={(event) => setAccountId(event.target.value)}
-              className="field-input"
-            >
-              {loadingOptions && <option value="">Loading accounts...</option>}
-              {!loadingOptions && accounts.length === 0 && (
-                <option value="">No accounts found</option>
-              )}
-              {accounts.map((account) => (
-                <option key={account.id} value={account.id}>
-                  {account.name} ({account.type})
-                </option>
-              ))}
-            </select>
+              onValueChange={setAccountId}
+              accounts={accounts}
+              loading={loadingOptions}
+              placeholder="Select account"
+            />
           </div>
 
           <div>
@@ -338,18 +333,18 @@ export default function TransactionModal({
           </div>
 
           {error && (
-            <p className="rounded-xl bg-red-500/10 p-3 text-xs text-red-400">
+            <p className={financeErrorClass}>
               {error}
             </p>
           )}
-        </div>
+        </FinanceModalBody>
 
-        <div className="grid grid-cols-2 gap-2 border-t border-border p-4">
+        <FinanceModalFooter>
           <button
             type="button"
             onClick={onClose}
             disabled={loading}
-            className="finance-focus inline-flex min-h-11 items-center justify-center rounded-[16px] border border-border bg-surface-secondary px-4 py-2.5 text-sm font-semibold text-text-primary transition-all hover:bg-hover active:scale-[0.985] disabled:opacity-50"
+            className={financeCancelButtonClass}
           >
             Cancel
           </button>
@@ -361,7 +356,7 @@ export default function TransactionModal({
           >
             {loadingOptions ? "Loading..." : btnLabel}
           </button>
-        </div>
+        </FinanceModalFooter>
       </DialogContent>
     </Dialog>
   );

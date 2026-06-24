@@ -1,6 +1,7 @@
 "use client";
 import type { FormEvent, ReactNode } from "react";
 import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import {
@@ -9,6 +10,7 @@ import {
   ChevronRight,
   Download,
   Fingerprint,
+  HandCoins,
   Loader2,
   LockKeyhole,
   LogOut,
@@ -35,11 +37,16 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  dispatchCurrencyChange,
+  useCurrency,
+} from "@/components/currency/CurrencyProvider";
 import { createClient } from "@/lib/supabase/client";
 
 type CategoryKind = "income" | "expense";
 type ThemeMode = "light" | "dark";
 type DateFormat = "MMM d, yyyy" | "dd MMM yyyy" | "yyyy-MM-dd";
+type CurrencyCode = "PKR" | "USD";
 
 export interface SettingsCategory {
   id: string;
@@ -645,17 +652,18 @@ function PreferencesDialog({
   compactMode,
   onSave,
 }: {
-  currency: string;
+  currency: CurrencyCode;
   dateFormat: DateFormat;
   compactMode: boolean;
   onSave: (next: {
-    currency: string;
+    currency: CurrencyCode;
     dateFormat: DateFormat;
     compactMode: boolean;
   }) => void;
 }) {
+  const { live, rate } = useCurrency();
   const [open, setOpen] = useState(false);
-  const [draftCurrency, setDraftCurrency] = useState(currency);
+  const [draftCurrency, setDraftCurrency] = useState<CurrencyCode>(currency);
   const [draftDateFormat, setDraftDateFormat] =
     useState<DateFormat>(dateFormat);
   const [draftCompact, setDraftCompact] = useState(compactMode);
@@ -704,14 +712,19 @@ function PreferencesDialog({
             <select
               id="currency"
               value={draftCurrency}
-              onChange={(event) => setDraftCurrency(event.target.value)}
+              onChange={(event) =>
+                setDraftCurrency(event.target.value as CurrencyCode)
+              }
               className="field-input"
             >
               <option value="PKR">PKR</option>
               <option value="USD">USD</option>
-              <option value="AED">AED</option>
-              <option value="GBP">GBP</option>
             </select>
+            <p className="mt-2 text-xs text-text-secondary">
+              {live ?
+                `Live rate: 1 USD = ${rate.toFixed(2)} PKR`
+              : `Fallback rate: 1 USD = ${rate.toFixed(2)} PKR`}
+            </p>
           </div>
           <div>
             <label className="field-label" htmlFor="date-format">
@@ -767,7 +780,7 @@ export default function SettingsOneUI({
   const [themeMode, setThemeMode] = useState<ThemeMode>("light");
   const [pushNotifications, setPushNotifications] = useState(true);
   const [biometricLogin, setBiometricLogin] = useState(false);
-  const [currency, setCurrency] = useState("PKR");
+  const [currency, setCurrency] = useState<CurrencyCode>("PKR");
   const [dateFormat, setDateFormat] = useState<DateFormat>("MMM d, yyyy");
   const [compactMode, setCompactMode] = useState(false);
   const [isSigningOut, setIsSigningOut] = useState(false);
@@ -789,7 +802,8 @@ export default function SettingsOneUI({
     setBiometricLogin(
       window.localStorage.getItem("jamal-biometric-login") === "true",
     );
-    setCurrency(window.localStorage.getItem("jamal-currency") || "PKR");
+    const savedCurrency = window.localStorage.getItem("jamal-currency");
+    setCurrency(savedCurrency === "USD" ? "USD" : "PKR");
     setDateFormat(
       (window.localStorage.getItem("jamal-date-format") as DateFormat) ||
         "MMM d, yyyy",
@@ -833,7 +847,7 @@ export default function SettingsOneUI({
   }
 
   function handlePreferencesSave(next: {
-    currency: string;
+    currency: CurrencyCode;
     dateFormat: DateFormat;
     compactMode: boolean;
   }) {
@@ -846,6 +860,7 @@ export default function SettingsOneUI({
       "jamal-compact-dashboard",
       String(next.compactMode),
     );
+    dispatchCurrencyChange(next.currency);
     toast.success("Preferences saved.");
   }
 
@@ -1049,6 +1064,29 @@ export default function SettingsOneUI({
               description={`Current display preference: ${currency}`}
               right={<span className="finance-state-pill">{currency}</span>}
             />
+          </SettingsCard>
+        </section>
+
+        <section>
+          <SectionTitle>Money Tools</SectionTitle>
+          <SettingsCard>
+            <Link
+              href="/dashboard/payables"
+              className="finance-focus flex w-full items-center gap-3 px-4 py-4 text-left transition-colors hover:bg-hover focus-visible:bg-hover sm:px-5"
+            >
+              <IconBubble tone="green">
+                <HandCoins size={21} />
+              </IconBubble>
+              <span className="min-w-0 flex-1">
+                <span className="block text-[15px] font-semibold leading-5 text-text-primary">
+                  Payables
+                </span>
+                <span className="mt-0.5 block text-xs leading-5 text-text-secondary">
+                  Track money, items, return deadlines, and repayment history
+                </span>
+              </span>
+              <ChevronRight size={18} className="text-text-secondary" />
+            </Link>
           </SettingsCard>
         </section>
 

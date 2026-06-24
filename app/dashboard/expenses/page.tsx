@@ -96,17 +96,11 @@ export default async function ExpensesPage() {
         <div className="summary-card">
           <p className="mb-1.5 text-xs text-slate-500">This Month</p>
           <p className="text-xl font-bold text-slate-950">{fmt(thisMonth)}</p>
-          <p className="mt-0.5 text-xs text-slate-600">
-            Approx. ${(thisMonth / 281.2).toFixed(2)} USD
-          </p>
         </div>
 
         <div className="summary-card">
           <p className="mb-1.5 text-xs text-slate-500">This Year</p>
           <p className="text-xl font-bold text-slate-950">{fmt(thisYear)}</p>
-          <p className="mt-0.5 text-xs text-slate-600">
-            Approx. ${(thisYear / 281.2).toFixed(2)} USD
-          </p>
         </div>
 
         <div className="summary-card border-red-200 bg-red-50">

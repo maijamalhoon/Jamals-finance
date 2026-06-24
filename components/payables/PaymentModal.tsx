@@ -5,13 +5,16 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
 import DatePicker from "@/components/ui/date-picker";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+  FinanceModalBody,
+  FinanceModalFooter,
+  FinanceModalHeader,
+  financeErrorClass,
+  financeModalContentClass,
+} from "@/components/ui/finance-modal";
 import { formatPKR } from "@/lib/finance-options";
+import { CircleDollarSign } from "lucide-react";
 
 interface Account {
   id: string;
@@ -150,21 +153,22 @@ export default function PaymentModal({ open, onClose, payable, accounts }: Props
   }
 
   return (
-    <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="finance-panel max-w-md gap-0 p-0 text-text-primary">
-        <DialogHeader className="border-b border-border p-5">
-          <DialogTitle className="text-base font-semibold">
-            Record Payment
-          </DialogTitle>
-        </DialogHeader>
+    <Dialog open={open} onOpenChange={(nextOpen) => !nextOpen && onClose()}>
+      <DialogContent className={`${financeModalContentClass} sm:max-w-md`}>
+        <FinanceModalHeader
+          title="Record Payment"
+          description="Record a repayment against this payable."
+          icon={CircleDollarSign}
+          tone="success"
+        />
 
-        <div className="space-y-4 p-5">
+        <FinanceModalBody>
           <div className="rounded-2xl border border-border bg-surface-secondary p-3">
             <p className="text-sm font-semibold text-text-primary">{payable.person_name}</p>
-            <p className="mt-1 text-xs text-slate-400">{payable.reason}</p>
-            <p className="mt-2 text-xs text-slate-500">
+            <p className="mt-1 text-xs text-text-secondary">{payable.reason}</p>
+            <p className="mt-2 text-xs text-text-secondary">
               Remaining:{" "}
-              <span className="font-semibold text-amber-200">
+              <span className="font-semibold text-warning">
                 {formatPKR(payable.remaining_amount)}
               </span>
             </p>
@@ -192,7 +196,7 @@ export default function PaymentModal({ open, onClose, payable, accounts }: Props
                   className={`finance-focus rounded-[18px] border px-3 py-2.5 text-left transition-colors ${
                     accountId === account.id
                       ? "border-border bg-card text-text-primary"
-                      : "border-border bg-surface-secondary text-slate-400 hover:bg-hover hover:text-text-primary"
+                      : "border-border bg-surface-secondary text-text-secondary hover:bg-hover hover:text-text-primary"
                   }`}
                 >
                   <span className="block truncate text-sm font-semibold">
@@ -230,11 +234,13 @@ export default function PaymentModal({ open, onClose, payable, accounts }: Props
           </div>
 
           {error && (
-            <p className="rounded-xl bg-red-500/10 p-3 text-xs text-red-300">
+            <p className={financeErrorClass}>
               {error}
             </p>
           )}
+        </FinanceModalBody>
 
+        <FinanceModalFooter className="grid-cols-1">
           <button
             onClick={handleSave}
             disabled={loading || !accounts.length}
@@ -242,7 +248,7 @@ export default function PaymentModal({ open, onClose, payable, accounts }: Props
           >
             {loading ? "Recording..." : "Record Payment"}
           </button>
-        </div>
+        </FinanceModalFooter>
       </DialogContent>
     </Dialog>
   );

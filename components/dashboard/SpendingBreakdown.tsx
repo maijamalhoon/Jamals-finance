@@ -1,7 +1,10 @@
+"use client";
+
 import Link from "next/link";
 import type { CSSProperties } from "react";
 import { PieChart } from "lucide-react";
 import CountedAmount from "@/components/motion/CountedAmount";
+import { useDashboardAnimationReady } from "@/components/motion/useDashboardAnimationReady";
 import EmptyState from "@/components/ui/empty-state";
 
 interface SpendingData {
@@ -90,6 +93,7 @@ export default function SpendingBreakdown({
   total: number;
   periodLabel?: string;
 }) {
+  const { ready, reduceMotion } = useDashboardAnimationReady();
   const safeTotal = Number.isFinite(total) ? Math.max(total, 0) : 0;
   const sortedData = [...data]
     .map((item) => ({
@@ -159,12 +163,13 @@ export default function SpendingBreakdown({
           const percent = Math.max(0, Math.min(item.percentage, 100));
           const progressWidth =
             safeTotal > 0 && percent > 0 ? Math.max(2, percent) : 0;
+          const progressScale = ready ? progressWidth / 100 : 0;
           const rowStyle = {
             "--motion-reveal-delay": `${i * 65}ms`,
             "--category-accent": accent,
             "--progress-accent": accent,
-            "--progress-delay": `${i * 90 + 150}ms`,
-            "--progress-scale": progressWidth / 100,
+            "--progress-duration": reduceMotion ? "0ms" : "820ms",
+            "--progress-scale": progressScale,
           } as CSSProperties;
           const percentageStyle = {
             ...rowStyle,
@@ -191,13 +196,13 @@ export default function SpendingBreakdown({
                   className="motion-counter-ready whitespace-nowrap text-right text-[12px] font-semibold leading-5 text-text-primary sm:text-[13px]"
                   style={{ animationDelay: `${i * 65 + 85}ms` }}
                 >
-                  <CountedAmount amount={formatCurrency(item.value)} />
+                  <CountedAmount amount={formatCurrency(item.value)} duration={0.82} />
                 </span>
                 <span
                   className="motion-counter-ready w-10 whitespace-nowrap text-right text-[12px] font-bold leading-5 text-[var(--category-accent)] sm:text-[13px]"
                   style={percentageStyle}
                 >
-                  <CountedAmount amount={formatPercentage(item.percentage)} />
+                  <CountedAmount amount={formatPercentage(item.percentage)} duration={0.78} />
                 </span>
               </div>
 

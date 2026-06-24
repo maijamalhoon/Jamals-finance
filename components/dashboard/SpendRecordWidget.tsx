@@ -44,7 +44,7 @@ export default function SpendRecordWidget({
       <div className="flex min-h-0 flex-1 flex-col">
         <div className="pt-1">
           <p className="text-[25px] font-semibold leading-none tracking-normal text-[var(--dashboard-chart-spend)]">
-            <CountedAmount amount={displaySpend} />
+            <CountedAmount amount={displaySpend} duration={0.85} />
           </p>
           <p className="mt-1.5 truncate text-[11px] leading-none text-text-secondary">
             {displayDailyAverage} daily average

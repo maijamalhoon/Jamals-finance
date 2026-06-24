@@ -1,14 +1,19 @@
 "use client";
+
+import { useEffect, useState } from "react";
+import { BriefcaseBusiness } from "lucide-react";
 import { toast } from "sonner";
-import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import DatePicker from "@/components/ui/date-picker";
+import {
+  FinanceModalBody,
+  FinanceModalFooter,
+  FinanceModalHeader,
+  financeCancelButtonClass,
+  financeErrorClass,
+  financeModalContentClass,
+} from "@/components/ui/finance-modal";
 
 const TYPES = [
   { value: "crypto", label: "Crypto" },
@@ -99,16 +104,15 @@ export default function InvestmentModal({
       purchased_at: purchasedAt,
     };
 
-    const { error: e } =
-      isEditing ?
-        await supabase
+    const { error: e } = isEditing
+      ? await supabase
           .from("investments")
           .update(payload)
           .eq("id", investment!.id)
       : await supabase.from("investments").insert(payload);
 
     setLoading(false);
-    // Replace the if/else at the bottom of handleSave:
+
     if (e) {
       setError("Failed to save. Try again.");
       toast.error("Failed to save investment");
@@ -120,16 +124,16 @@ export default function InvestmentModal({
   }
 
   return (
-    <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="finance-panel max-w-md gap-0 p-0 text-text-primary">
-        <DialogHeader className="border-b border-border p-5">
-          <DialogTitle className="text-base font-semibold">
-            {isEditing ? "Edit Investment" : "Add Investment"}
-          </DialogTitle>
-        </DialogHeader>
+    <Dialog open={open} onOpenChange={(nextOpen) => !nextOpen && onClose()}>
+      <DialogContent className={`${financeModalContentClass} sm:max-w-lg`}>
+        <FinanceModalHeader
+          title={isEditing ? "Edit Investment" : "Add Investment"}
+          description="Enter asset details, pricing, and purchase date."
+          icon={BriefcaseBusiness}
+          tone="investment"
+        />
 
-        <div className="p-5 space-y-4">
-          {/* Name */}
+        <FinanceModalBody>
           <div>
             <label className="field-label">Asset Name</label>
             <input
@@ -140,18 +144,17 @@ export default function InvestmentModal({
             />
           </div>
 
-          {/* Type */}
           <div>
             <label className="field-label">Type</label>
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
               {TYPES.map((item) => (
                 <button
                   key={item.value}
                   type="button"
                   onClick={() => setType(item.value)}
-                  className={`finance-focus rounded-[18px] border px-3 py-2.5 text-sm font-semibold transition-colors ${
+                  className={`finance-focus min-h-11 rounded-[16px] border px-3 py-2 text-sm font-semibold transition-colors ${
                     type === item.value
-                      ? "border-border bg-card text-text-primary"
+                      ? "border-border bg-card text-text-primary shadow-theme"
                       : "border-border bg-surface-secondary text-slate-400 hover:bg-hover hover:text-text-primary"
                   }`}
                 >
@@ -161,8 +164,7 @@ export default function InvestmentModal({
             </div>
           </div>
 
-          {/* Quantity + Buy Price */}
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid gap-3 sm:grid-cols-2">
             <div>
               <label className="field-label">Quantity</label>
               <input
@@ -185,7 +187,6 @@ export default function InvestmentModal({
             </div>
           </div>
 
-          {/* Current Price */}
           <div>
             <label className="field-label">Current Price (PKR)</label>
             <input
@@ -197,7 +198,6 @@ export default function InvestmentModal({
             />
           </div>
 
-          {/* Date */}
           <div>
             <label className="field-label">Purchase Date</label>
             <DatePicker
@@ -207,20 +207,27 @@ export default function InvestmentModal({
             />
           </div>
 
-          {error && <p className="text-red-400 text-xs">{error}</p>}
+          {error && <p className={financeErrorClass}>{error}</p>}
+        </FinanceModalBody>
 
+        <FinanceModalFooter>
           <button
+            type="button"
+            onClick={onClose}
+            disabled={loading}
+            className={financeCancelButtonClass}
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
             onClick={handleSave}
             disabled={loading}
-            className="primary-action w-full py-3"
+            className="primary-action py-3"
           >
-            {loading ?
-              "Saving…"
-            : isEditing ?
-              "Update Investment"
-            : "Add Investment"}
+            {loading ? "Saving..." : isEditing ? "Update Investment" : "Add Investment"}
           </button>
-        </div>
+        </FinanceModalFooter>
       </DialogContent>
     </Dialog>
   );

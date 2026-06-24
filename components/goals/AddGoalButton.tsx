@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Plus } from "lucide-react";
+import { Target } from "lucide-react";
 import GoalModal from "./GoalModal";
 
 export default function AddGoalButton() {
@@ -15,7 +15,7 @@ export default function AddGoalButton() {
         onClick={() => setOpen(true)}
         className="primary-action"
       >
-        <Plus size={16} />
+        <Target size={16} />
         New Goal
       </button>
 

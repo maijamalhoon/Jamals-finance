@@ -83,11 +83,14 @@ function fmt(value: number) {
 }
 
 function pct(current: number, previous: number) {
-  if (previous > 0) {
-    return Number((((current - previous) / previous) * 100).toFixed(2));
+  if (previous !== 0) {
+    return Number((((current - previous) / Math.abs(previous)) * 100).toFixed(2));
   }
 
-  return current > 0 ? 100 : 0;
+  if (current > 0) return 100;
+  if (current < 0) return -100;
+
+  return 0;
 }
 
 export default async function DashboardPage() {
@@ -189,6 +192,16 @@ export default async function DashboardPage() {
       0,
     );
 
+  const previousMonthlyInvestmentsValue = investmentRows
+    .filter((investment) =>
+      isDateInRange(investment.purchased_at, lastFirst, lastLast),
+    )
+    .reduce(
+      (sum, investment) =>
+        sum + Number(investment.quantity) * Number(investment.purchase_price),
+      0,
+    );
+
   const totalInvested = investmentRows.reduce(
     (sum, investment) =>
       sum + Number(investment.quantity) * Number(investment.purchase_price),
@@ -205,6 +218,8 @@ export default async function DashboardPage() {
   const lastExpenses = previousTxns
     .filter((transaction) => transaction.type === "expense")
     .reduce((sum, transaction) => sum + Number(transaction.amount), 0);
+
+  const lastNetProfit = lastIncome - lastExpenses;
 
   const dailyTotals = new Map<string, { income: number; expenses: number }>();
 
@@ -304,7 +319,7 @@ export default async function DashboardPage() {
             title="Month Balance"
             subtitle={currentMonthLabel}
             amount={fmt(netProfit)}
-            change={4.35}
+            change={pct(netProfit, lastNetProfit)}
             iconName="wallet"
             accentColor="#3b82f6"
             progress={62}
@@ -340,7 +355,10 @@ export default async function DashboardPage() {
             title="Investments This Month"
             subtitle={currentMonthLabel}
             amount={fmt(monthlyInvestmentsValue)}
-            change={7.65}
+            change={pct(
+              monthlyInvestmentsValue,
+              previousMonthlyInvestmentsValue,
+            )}
             iconName="investments"
             accentColor="#f59e0b"
             progress={68}

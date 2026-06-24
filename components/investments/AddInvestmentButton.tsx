@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Plus } from "lucide-react";
+import { BriefcaseBusiness } from "lucide-react";
 import InvestmentModal from "./InvestmentModal";
 
 export default function AddInvestmentButton() {
@@ -13,9 +13,9 @@ export default function AddInvestmentButton() {
     <>
       <button
         onClick={() => setOpen(true)}
-        className="primary-action"
+        className="investment-action"
       >
-        <Plus size={16} />
+        <BriefcaseBusiness size={16} />
         Add Investment
       </button>
 

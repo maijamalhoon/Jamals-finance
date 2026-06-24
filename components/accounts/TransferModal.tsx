@@ -6,13 +6,16 @@ import { ArrowLeftRight } from "lucide-react";
 import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
 import DatePicker from "@/components/ui/date-picker";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
+import AccountSelect from "@/components/accounts/AccountSelect";
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+  FinanceModalBody,
+  FinanceModalFooter,
+  FinanceModalHeader,
+  financeCancelButtonClass,
+  financeErrorClass,
+  financeModalContentClass,
+} from "@/components/ui/finance-modal";
 
 interface Account {
   id: string;
@@ -25,16 +28,6 @@ interface Props {
   open: boolean;
   onClose: () => void;
   onSuccess?: () => void;
-}
-
-function formatPKR(value: number | string) {
-  return `PKR ${Number(value || 0).toLocaleString("en-PK", {
-    maximumFractionDigits: 0,
-  })}`;
-}
-
-function accountLabel(account: Account) {
-  return `${account.name} (${account.type}) - ${formatPKR(account.balance)}`;
 }
 
 export default function TransferModal({ open, onClose, onSuccess }: Props) {
@@ -135,21 +128,16 @@ export default function TransferModal({ open, onClose, onSuccess }: Props) {
   }
 
   return (
-    <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="finance-panel max-h-[calc(100dvh-1.5rem)] max-w-md gap-0 overflow-hidden p-0 text-text-primary">
-        <DialogHeader className="border-b border-border px-5 py-4">
-          <DialogTitle className="flex items-center gap-2 text-base font-semibold">
-            <span className="grid h-8 w-8 place-items-center rounded-[12px] border border-cyan-500/20 bg-cyan-500/10 text-cyan-700 dark:text-cyan-200">
-              <ArrowLeftRight size={16} />
-            </span>
-            Transfer Money
-          </DialogTitle>
-          <DialogDescription className="sr-only">
-            Select different accounts, amount, date, and an optional note.
-          </DialogDescription>
-        </DialogHeader>
+    <Dialog open={open} onOpenChange={(nextOpen) => !nextOpen && onClose()}>
+      <DialogContent className={financeModalContentClass}>
+        <FinanceModalHeader
+          title="Transfer Money"
+          description="Select different accounts, amount, date, and an optional note."
+          icon={ArrowLeftRight}
+          tone="info"
+        />
 
-        <div className="max-h-[calc(100dvh-9rem)] space-y-3.5 overflow-y-auto px-5 py-4">
+        <FinanceModalBody>
           {loading ? (
             <div className="finance-skeleton h-40" />
           ) : accounts.length < 2 ? (
@@ -160,10 +148,9 @@ export default function TransferModal({ open, onClose, onSuccess }: Props) {
             <>
               <div>
                 <label className="field-label">From Account</label>
-                <select
+                <AccountSelect
                   value={fromAccountId}
-                  onChange={(event) => {
-                    const nextFromId = event.target.value;
+                  onValueChange={(nextFromId) => {
                     setFromAccountId(nextFromId);
                     if (toAccountId === nextFromId) {
                       setToAccountId(
@@ -172,14 +159,9 @@ export default function TransferModal({ open, onClose, onSuccess }: Props) {
                       );
                     }
                   }}
-                  className="field-input"
-                >
-                  {accounts.map((account) => (
-                    <option key={account.id} value={account.id}>
-                      {accountLabel(account)}
-                    </option>
-                  ))}
-                </select>
+                  accounts={accounts}
+                  placeholder="Select source account"
+                />
               </div>
 
               <div className="flex justify-center">
@@ -190,17 +172,12 @@ export default function TransferModal({ open, onClose, onSuccess }: Props) {
 
               <div>
                 <label className="field-label">To Account</label>
-                <select
+                <AccountSelect
                   value={toAccountId}
-                  onChange={(event) => setToAccountId(event.target.value)}
-                  className="field-input"
-                >
-                  {toAccounts.map((account) => (
-                    <option key={account.id} value={account.id}>
-                      {accountLabel(account)}
-                    </option>
-                  ))}
-                </select>
+                  onValueChange={setToAccountId}
+                  accounts={toAccounts}
+                  placeholder="Select destination account"
+                />
               </div>
 
               <div className="grid gap-3 sm:grid-cols-2">
@@ -237,18 +214,18 @@ export default function TransferModal({ open, onClose, onSuccess }: Props) {
           )}
 
           {error && (
-            <p className="rounded-[16px] border border-red-500/15 bg-red-500/10 p-3 text-xs text-red-500 dark:text-red-300">
+            <p className={financeErrorClass}>
               {error}
             </p>
           )}
-        </div>
+        </FinanceModalBody>
 
-        <div className="grid grid-cols-2 gap-2 border-t border-border p-4">
+        <FinanceModalFooter>
           <button
             type="button"
             onClick={onClose}
             disabled={saving}
-            className="finance-focus inline-flex min-h-11 items-center justify-center rounded-[16px] border border-border bg-surface-secondary px-4 py-2.5 text-sm font-semibold text-text-primary transition-all hover:bg-hover active:scale-[0.985] disabled:opacity-50"
+            className={financeCancelButtonClass}
           >
             Cancel
           </button>
@@ -260,7 +237,7 @@ export default function TransferModal({ open, onClose, onSuccess }: Props) {
           >
             {saving ? "Saving..." : "Save Transfer"}
           </button>
-        </div>
+        </FinanceModalFooter>
       </DialogContent>
     </Dialog>
   );

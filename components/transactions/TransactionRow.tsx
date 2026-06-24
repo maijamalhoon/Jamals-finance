@@ -23,6 +23,7 @@ import { createClient } from "@/lib/supabase/client";
 import TransactionModal, {
   ExistingTransaction,
 } from "@/components/dashboard/TransactionModal";
+import { useCurrency } from "@/components/currency/CurrencyProvider";
 
 type TransactionType = "income" | "expense" | "transfer";
 
@@ -95,11 +96,6 @@ function normalizeType(type?: string | null): TransactionType {
   return "transfer";
 }
 
-function formatAmount(value?: number | string | null) {
-  const amount = Number(value ?? 0);
-  return Number.isFinite(amount) ? amount.toLocaleString() : "0";
-}
-
 function formatDate(date?: string | null, long = false) {
   if (!date) return "No date";
 
@@ -135,6 +131,7 @@ function escapeHtml(value: string) {
 export default function TransactionRow({ tx }: { tx: Transaction }) {
   const router = useRouter();
   const supabase = createClient();
+  const { formatCurrency } = useCurrency();
 
   const [receiptOpen, setReceiptOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
@@ -148,6 +145,7 @@ export default function TransactionRow({ tx }: { tx: Transaction }) {
   const categoryLabel = getCategoryLabel(tx);
   const title = tx.note || tx.categories?.name || meta.label;
   const accountName = tx.accounts?.name || "No account";
+  const displayAmount = `${meta.prefix}${formatCurrency(Number(tx.amount ?? 0))}`;
 
   const smallDetail = useMemo(() => {
     const details = [
@@ -175,7 +173,7 @@ export default function TransactionRow({ tx }: { tx: Transaction }) {
   function copyReceipt() {
     const text = [
       `Type: ${meta.label}`,
-      `Amount: ${meta.prefix} PKR ${formatAmount(tx.amount)}`,
+      `Amount: ${displayAmount}`,
       `Date: ${formatDate(tx.date, true)}`,
       `Account: ${accountName}`,
       `Category: ${categoryLabel}`,
@@ -194,7 +192,7 @@ export default function TransactionRow({ tx }: { tx: Transaction }) {
   function printReceipt() {
     const rows = [
       ["Type", meta.label],
-      ["Amount", `${meta.prefix} PKR ${formatAmount(tx.amount)}`],
+      ["Amount", displayAmount],
       ["Date", formatDate(tx.date, true)],
       ["Account", accountName],
       ["Category", categoryLabel],
@@ -329,7 +327,7 @@ export default function TransactionRow({ tx }: { tx: Transaction }) {
 
             <section class="amount">
               <span>Amount</span>
-              <strong>${escapeHtml(meta.prefix)} PKR ${escapeHtml(formatAmount(tx.amount))}</strong>
+              <strong>${escapeHtml(displayAmount)}</strong>
             </section>
 
             ${rows
@@ -400,7 +398,7 @@ export default function TransactionRow({ tx }: { tx: Transaction }) {
             <p
               className={`shrink-0 text-right text-sm font-black md:hidden ${meta.amountClass}`}
             >
-              {meta.prefix} PKR {formatAmount(tx.amount)}
+              {displayAmount}
             </p>
           </div>
 
@@ -430,7 +428,7 @@ export default function TransactionRow({ tx }: { tx: Transaction }) {
         <p
           className={`hidden w-32 shrink-0 text-right text-sm font-black md:block ${meta.amountClass}`}
         >
-          {meta.prefix} PKR {formatAmount(tx.amount)}
+          {displayAmount}
         </p>
 
         <p className="hidden w-24 shrink-0 text-right text-xs font-medium text-text-secondary md:block">
@@ -533,7 +531,7 @@ export default function TransactionRow({ tx }: { tx: Transaction }) {
                   </p>
 
                   <p className={`mt-1 text-3xl font-black ${meta.amountClass}`}>
-                    {meta.prefix} PKR {formatAmount(tx.amount)}
+                    {displayAmount}
                   </p>
                 </div>
               </div>

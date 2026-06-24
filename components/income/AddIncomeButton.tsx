@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Plus } from "lucide-react";
+import { TrendingUp } from "lucide-react";
 import TransactionModal from "@/components/dashboard/TransactionModal";
 
 export default function AddIncomeButton() {
@@ -15,7 +15,7 @@ export default function AddIncomeButton() {
         onClick={() => setOpen(true)}
         className="success-action"
       >
-        <Plus size={16} />
+        <TrendingUp size={16} />
         Add Income
       </button>
 

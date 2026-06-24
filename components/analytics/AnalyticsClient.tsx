@@ -26,6 +26,7 @@ import {
   TrendingDown,
   TrendingUp,
 } from "lucide-react";
+import { useCurrency } from "@/components/currency/CurrencyProvider";
 
 type AnalyticsPeriod = "week" | "month" | "sixMonth" | "year";
 
@@ -255,6 +256,19 @@ function AnimatedValue({
 }) {
   const animated = useAnimatedNumber(value, animationKey);
   const safeValue = Number.isFinite(animated) ? animated : 0;
+  const { formatCurrency } = useCurrency();
+
+  if (prefix === "PKR ") {
+    return (
+      <>
+        {formatCurrency(safeValue, {
+          minimumFractionDigits: decimals,
+          maximumFractionDigits: decimals,
+        })}
+        {suffix}
+      </>
+    );
+  }
 
   return (
     <>
