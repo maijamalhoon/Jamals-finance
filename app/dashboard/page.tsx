@@ -12,25 +12,58 @@ import {
   DashboardMotion,
   DashboardMotionItem,
 } from "@/components/dashboard/DashboardMotion";
-import {
-  Wallet,
-  TrendingUp,
-  TrendingDown,
-  Zap,
-} from "lucide-react";
+import { Zap } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
+type DashboardTransaction = {
+  id: string;
+  type: "income" | "expense" | "transfer" | string;
+  amount: number | string;
+  note: string | null;
+  date: string;
+  categories: {
+    name: string;
+    color: string;
+    parent?: { name: string } | null;
+  } | null;
+  accounts: { name: string } | null;
+};
+
+type DashboardInvestment = {
+  id: string;
+  name: string;
+  type: string;
+  quantity: number | string;
+  purchase_price: number | string;
+  current_price: number | string;
+  purchased_at?: string | null;
+};
+
+type DashboardGoal = {
+  id: string;
+  name: string;
+  current_amount: number;
+  target_amount: number;
+  icon: string | null;
+};
+
 function toLocalDateKey(date: Date) {
-  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(
+    2,
+    "0",
+  )}-${String(date.getDate()).padStart(2, "0")}`;
 }
 
 function normalizeDateKey(value: Date | string | null | undefined) {
   if (!value) return null;
+
   if (value instanceof Date) return toLocalDateKey(value);
+
   if (/^\d{4}-\d{2}-\d{2}$/.test(value)) return value;
 
   const parsed = new Date(value);
+
   return Number.isNaN(parsed.getTime()) ? null : toLocalDateKey(parsed);
 }
 
@@ -43,23 +76,42 @@ function isDateInRange(
   return Boolean(dateKey && dateKey >= start && dateKey <= end);
 }
 
+function fmt(value: number) {
+  return `PKR ${value.toLocaleString("en-PK", {
+    maximumFractionDigits: 0,
+  })}`;
+}
+
+function pct(current: number, previous: number) {
+  if (previous > 0) {
+    return Number((((current - previous) / previous) * 100).toFixed(2));
+  }
+
+  return current > 0 ? 100 : 0;
+}
+
 export default async function DashboardPage() {
   const supabase = await createClient();
+
   const now = new Date();
   const todayStr = toLocalDateKey(now);
 
   const firstDay = toLocalDateKey(
     new Date(now.getFullYear(), now.getMonth(), 1),
   );
+
   const lastDay = toLocalDateKey(
     new Date(now.getFullYear(), now.getMonth() + 1, 0),
   );
+
   const lastFirst = toLocalDateKey(
     new Date(now.getFullYear(), now.getMonth() - 1, 1),
   );
+
   const lastLast = toLocalDateKey(
     new Date(now.getFullYear(), now.getMonth(), 0),
   );
+
   const daysInMonth = new Date(
     now.getFullYear(),
     now.getMonth() + 1,
@@ -78,71 +130,118 @@ export default async function DashboardPage() {
       .gte("date", firstDay)
       .lte("date", lastDay)
       .order("date", { ascending: false }),
+
     supabase
       .from("transactions")
       .select("type, amount")
       .gte("date", lastFirst)
       .lte("date", lastLast),
+
     supabase
       .from("investments")
-      .select("id, name, type, quantity, purchase_price, current_price, purchased_at")
+      .select(
+        "id, name, type, quantity, purchase_price, current_price, purchased_at",
+      )
       .order("created_at", { ascending: false }),
+
     supabase.from("goals").select("*").order("created_at").limit(6),
   ]);
 
-  const txns = thisTxns ?? [];
+  const txns = (thisTxns ?? []) as DashboardTransaction[];
+  const previousTxns = (lastTxns ?? []) as Array<{
+    type: string;
+    amount: number | string;
+  }>;
+  const investmentRows = (investments ?? []) as DashboardInvestment[];
+  const goalRows = (goals ?? []) as DashboardGoal[];
 
-  // Totals
   const income = txns
-    .filter((t) => t.type === "income")
-    .reduce((s, t) => s + Number(t.amount), 0);
+    .filter((transaction) => transaction.type === "income")
+    .reduce((sum, transaction) => sum + Number(transaction.amount), 0);
+
   const expenses = txns
-    .filter((t) => t.type === "expense")
-    .reduce((s, t) => s + Number(t.amount), 0);
+    .filter((transaction) => transaction.type === "expense")
+    .reduce((sum, transaction) => sum + Number(transaction.amount), 0);
+
   const netProfit = income - expenses;
-  const investmentsValue = (investments ?? []).reduce(
-    (s, i) => s + Number(i.current_price) * Number(i.quantity),
+
+  const investmentsValue = investmentRows.reduce(
+    (sum, investment) =>
+      sum + Number(investment.current_price) * Number(investment.quantity),
     0,
   );
-  const monthlyInvestmentsValue = (investments ?? [])
-    .filter((i) => isDateInRange(i.purchased_at, firstDay, lastDay))
-    .reduce((s, i) => s + Number(i.quantity) * Number(i.purchase_price), 0);
-  const totalInvested = (investments ?? []).reduce(
-    (s, i) => s + Number(i.quantity) * Number(i.purchase_price),
+
+  const monthlyInvestmentsValue = investmentRows
+    .filter((investment) =>
+      isDateInRange(investment.purchased_at, firstDay, lastDay),
+    )
+    .reduce(
+      (sum, investment) =>
+        sum + Number(investment.quantity) * Number(investment.purchase_price),
+      0,
+    );
+
+  const totalInvested = investmentRows.reduce(
+    (sum, investment) =>
+      sum + Number(investment.quantity) * Number(investment.purchase_price),
     0,
   );
+
   const totalPnL = investmentsValue - totalInvested;
   const totalPnLPct = totalInvested > 0 ? (totalPnL / totalInvested) * 100 : 0;
-  const lastIncome = (lastTxns ?? [])
-    .filter((t) => t.type === "income")
-    .reduce((s, t) => s + Number(t.amount), 0);
-  const lastExpenses = (lastTxns ?? [])
-    .filter((t) => t.type === "expense")
-    .reduce((s, t) => s + Number(t.amount), 0);
-  const pct = (cur: number, prev: number) =>
-    prev > 0 ? parseFloat((((cur - prev) / prev) * 100).toFixed(2)) : 0;
+
+  const lastIncome = previousTxns
+    .filter((transaction) => transaction.type === "income")
+    .reduce((sum, transaction) => sum + Number(transaction.amount), 0);
+
+  const lastExpenses = previousTxns
+    .filter((transaction) => transaction.type === "expense")
+    .reduce((sum, transaction) => sum + Number(transaction.amount), 0);
 
   const dailyTotals = new Map<string, { income: number; expenses: number }>();
-  txns.forEach((t) => {
-    const dateKey = normalizeDateKey(t.date);
+
+  txns.forEach((transaction) => {
+    const dateKey = normalizeDateKey(transaction.date);
+
     if (!dateKey) return;
 
-    const current = dailyTotals.get(dateKey) ?? { income: 0, expenses: 0 };
-    if (t.type === "income") current.income += Number(t.amount);
-    if (t.type === "expense") current.expenses += Number(t.amount);
+    const current = dailyTotals.get(dateKey) ?? {
+      income: 0,
+      expenses: 0,
+    };
+
+    if (transaction.type === "income") {
+      current.income += Number(transaction.amount);
+    }
+
+    if (transaction.type === "expense") {
+      current.expenses += Number(transaction.amount);
+    }
+
     dailyTotals.set(dateKey, current);
   });
-  const todayTotals = dailyTotals.get(todayStr) ?? { income: 0, expenses: 0 };
-  const netToday = todayTotals.income - todayTotals.expenses;
-  const netTodayTone =
-    netToday > 0 ? "positive" : netToday < 0 ? "negative" : "neutral";
 
-  const chartData = Array.from({ length: daysInMonth }, (_, i) => {
-    const day = i + 1;
+  const todayTotals = dailyTotals.get(todayStr) ?? {
+    income: 0,
+    expenses: 0,
+  };
+
+  const netToday = todayTotals.income - todayTotals.expenses;
+
+  const netTodayTone =
+    netToday > 0 ? "positive"
+    : netToday < 0 ? "negative"
+    : "neutral";
+
+  const chartData = Array.from({ length: daysInMonth }, (_, index) => {
+    const day = index + 1;
+
     const dateStr = toLocalDateKey(
       new Date(now.getFullYear(), now.getMonth(), day),
     );
+
     const totals = dailyTotals.get(dateStr);
+
     return {
       date: `${day} ${now.toLocaleDateString("en-US", { month: "short" })}`,
       income: totals?.income ?? 0,
@@ -150,17 +249,25 @@ export default async function DashboardPage() {
     };
   });
 
-  // Spending breakdown by category
-  const catMap: Record<string, { amount: number; color: string }> = {};
+  const categoryMap: Record<string, { amount: number; color: string }> = {};
+
   txns
-    .filter((t) => t.type === "expense")
-    .forEach((t) => {
-      const name = (t.categories as any)?.name || "Other";
-      const color = (t.categories as any)?.color || "#6b7280";
-      if (!catMap[name]) catMap[name] = { amount: 0, color };
-      catMap[name].amount += Number(t.amount);
+    .filter((transaction) => transaction.type === "expense")
+    .forEach((transaction) => {
+      const name = transaction.categories?.name || "Other";
+      const color = transaction.categories?.color || "#6b7280";
+
+      if (!categoryMap[name]) {
+        categoryMap[name] = {
+          amount: 0,
+          color,
+        };
+      }
+
+      categoryMap[name].amount += Number(transaction.amount);
     });
-  const spendingData = Object.entries(catMap)
+
+  const spendingData = Object.entries(categoryMap)
     .map(([name, { amount, color }]) => ({
       name,
       value: amount,
@@ -170,64 +277,67 @@ export default async function DashboardPage() {
     .sort((a, b) => b.value - a.value)
     .slice(0, 5);
 
-  const fmt = (n: number) =>
-    `PKR ${n.toLocaleString("en-PK", { maximumFractionDigits: 0 })}`;
   const dayOfMonth = now.getDate();
+
   const currentMonthLabel = now.toLocaleDateString("en-US", {
     month: "long",
     year: "numeric",
   });
+
   const dailySpend = expenses / Math.max(dayOfMonth, 1);
   const remainingDays = Math.max(daysInMonth - dayOfMonth, 0);
   const dailyExpenseTrend = chartData.map((day) => day.expenses);
 
-  const stats = [
-    {
-      title: "Month Balance",
-      subtitle: currentMonthLabel,
-      amount: fmt(netProfit),
-      change: 4.35,
-      icon: Wallet,
-      accentColor: "#3b82f6",
-      progress: 62,
-    },
-    {
-      title: "Monthly Income",
-      subtitle: currentMonthLabel,
-      amount: fmt(income),
-      change: pct(income, lastIncome),
-      icon: TrendingUp,
-      accentColor: "#22c55e",
-      progress: 64,
-    },
-    {
-      title: "Monthly Expenses",
-      subtitle: currentMonthLabel,
-      amount: fmt(expenses),
-      change: pct(expenses, lastExpenses),
-      icon: TrendingDown,
-      accentColor: "#ef4444",
-      progress: 38,
-    },
-    {
-      title: "Investments This Month",
-      subtitle: currentMonthLabel,
-      amount: fmt(monthlyInvestmentsValue),
-      change: 7.65,
-      icon: Zap,
-      accentColor: "#f59e0b",
-      progress: 68,
-    },
-  ];
-
   return (
-    <DashboardMotion className="space-y-6 pb-12">
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        {stats.map((s) => (
-          <DashboardMotionItem key={s.title}>
-            <MetricCard {...s} />
-          </DashboardMotionItem>
-        ))}
+    <DashboardMotion className="w-full space-y-6 pb-12">
+      <div className="grid w-full grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <DashboardMotionItem>
+          <MetricCard
+            title="Month Balance"
+            subtitle={currentMonthLabel}
+            amount={fmt(netProfit)}
+            change={4.35}
+            iconName="wallet"
+            accentColor="#3b82f6"
+            progress={62}
+          />
+        </DashboardMotionItem>
+
+        <DashboardMotionItem>
+          <MetricCard
+            title="Monthly Income"
+            subtitle={currentMonthLabel}
+            amount={fmt(income)}
+            change={pct(income, lastIncome)}
+            iconName="income"
+            accentColor="#22c55e"
+            progress={64}
+          />
+        </DashboardMotionItem>
+
+        <DashboardMotionItem>
+          <MetricCard
+            title="Monthly Expenses"
+            subtitle={currentMonthLabel}
+            amount={fmt(expenses)}
+            change={pct(expenses, lastExpenses)}
+            iconName="expenses"
+            accentColor="#ef4444"
+            progress={38}
+          />
+        </DashboardMotionItem>
+
+        <DashboardMotionItem>
+          <MetricCard
+            title="Investments This Month"
+            subtitle={currentMonthLabel}
+            amount={fmt(monthlyInvestmentsValue)}
+            change={7.65}
+            iconName="investments"
+            accentColor="#f59e0b"
+            progress={68}
+          />
+        </DashboardMotionItem>
       </div>
 
       <DashboardMotionItem>
@@ -240,21 +350,21 @@ export default async function DashboardPage() {
         />
       </DashboardMotionItem>
 
-      <div className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,2fr)] xl:items-stretch">
-        <DashboardMotionItem className="[&>section]:h-full">
+      <div className="grid w-full grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,2fr)]">
+        <DashboardMotionItem className="min-w-0">
           <SpendRecordWidget
             dailySpend={fmt(dailySpend)}
             dailyExpenseTrend={dailyExpenseTrend}
           />
         </DashboardMotionItem>
-        <DashboardMotionItem className="[&>div]:h-full">
-          {(investments ?? []).length > 0 ? (
+
+        <DashboardMotionItem className="min-w-0">
+          {investmentRows.length > 0 ?
             <InvestmentOverviewWidget
-              investments={(investments ?? []) as any}
+              investments={investmentRows}
               totalPnLPct={totalPnLPct}
             />
-          ) : (
-            <ChartCard
+          : <ChartCard
               eyebrow="Investments"
               eyebrowIcon={<Zap />}
               title="Portfolio Overview"
@@ -274,26 +384,29 @@ export default async function DashboardPage() {
                 </div>
               </div>
             </ChartCard>
-          )}
+          }
         </DashboardMotionItem>
-        <DashboardMotionItem className="[&>section]:h-full">
+
+        <DashboardMotionItem className="min-w-0">
           <IncomeExpenseChart data={chartData} />
         </DashboardMotionItem>
       </div>
 
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-3 lg:items-stretch">
-        <DashboardMotionItem className="[&>section]:h-full">
+      <div className="grid w-full grid-cols-1 gap-4 lg:grid-cols-3">
+        <DashboardMotionItem className="min-w-0">
           <SpendingBreakdown
             data={spendingData}
             total={expenses}
             periodLabel={currentMonthLabel}
           />
         </DashboardMotionItem>
-        <DashboardMotionItem className="[&>section]:h-full">
-          <GoalsProgress goals={(goals ?? []) as any} />
+
+        <DashboardMotionItem className="min-w-0">
+          <GoalsProgress goals={goalRows} />
         </DashboardMotionItem>
-        <DashboardMotionItem className="[&>section]:h-full">
-          <RecentTransactions transactions={txns.slice(0, 5) as any} />
+
+        <DashboardMotionItem className="min-w-0">
+          <RecentTransactions transactions={txns.slice(0, 5)} />
         </DashboardMotionItem>
       </div>
     </DashboardMotion>

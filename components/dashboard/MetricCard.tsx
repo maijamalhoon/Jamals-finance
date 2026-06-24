@@ -1,84 +1,130 @@
-import type { LucideIcon } from "lucide-react";
-import { ArrowDownRight, ArrowUpRight } from "lucide-react";
+"use client";
+
+import {
+  ArrowDownRight,
+  ArrowUpRight,
+  TrendingDown,
+  TrendingUp,
+  Wallet,
+  Zap,
+} from "lucide-react";
+import { motion } from "framer-motion";
 import CountedAmount from "@/components/motion/CountedAmount";
+
+type MetricIconName = "wallet" | "income" | "expenses" | "investments";
 
 interface MetricCardProps {
   title: string;
   subtitle?: string;
   amount: string;
   change: number;
-  icon: LucideIcon;
+  iconName: MetricIconName;
   accentColor: string;
   progress: number;
 }
+
+const ICONS: Record<MetricIconName, typeof Wallet> = {
+  wallet: Wallet,
+  income: TrendingUp,
+  expenses: TrendingDown,
+  investments: Zap,
+};
 
 export default function MetricCard({
   title,
   subtitle,
   amount,
   change,
-  icon: Icon,
+  iconName,
   accentColor,
   progress,
 }: MetricCardProps) {
+  const Icon = ICONS[iconName];
   const positive = change >= 0;
-  const lineWidth = Math.min(100, Math.max(34, progress));
+  const lineWidth = Math.min(100, Math.max(8, progress));
   const displayAmount = amount.replace(/^PKR\s+/, "PKR");
 
   return (
-    <article className="card-hover relative flex min-h-[112px] flex-col justify-between overflow-hidden rounded-[18px] border border-[#dfe5ee] bg-white px-[18px] pb-[17px] pt-[18px] text-[#020817] shadow-[0_1px_2px_rgb(15_23_42/0.08),0_8px_18px_rgb(15_23_42/0.08)] dark:border-border dark:bg-card dark:text-text-primary">
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-0 opacity-85"
-        style={{
-          background: `radial-gradient(circle at 82% 20%, color-mix(in srgb, ${accentColor}, transparent 88%), transparent 24%)`,
-        }}
+    <motion.article
+      initial={{ opacity: 0, y: 16, scale: 0.98 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      whileHover={{ y: -3, scale: 1.01 }}
+      transition={{ duration: 0.42, ease: [0.16, 1, 0.3, 1] }}
+      className="finance-panel finance-hover-lift relative min-h-[96px] overflow-hidden rounded-[22px] p-4"
+    >
+      <motion.div
+        initial={{ opacity: 0, scale: 0.4 }}
+        animate={{ opacity: 1, scale: 1.35 }}
+        transition={{ duration: 1.1, ease: "easeOut" }}
+        className="pointer-events-none absolute right-4 top-2 h-20 w-20 rounded-full blur-2xl"
+        style={{ backgroundColor: `${accentColor}18` }}
       />
-      <div className="flex items-start justify-between gap-3">
-        <div
-          className="relative grid h-8 w-8 place-items-center rounded-full"
+
+      <div className="relative flex items-start justify-between gap-3">
+        <motion.div
+          initial={{ rotate: -18, scale: 0.82 }}
+          animate={{ rotate: 0, scale: 1 }}
+          transition={{ duration: 0.45, ease: "easeOut" }}
+          className="grid h-8 w-8 place-items-center rounded-2xl border"
           style={{
-            backgroundColor: `color-mix(in srgb, ${accentColor}, transparent 91%)`,
             color: accentColor,
+            borderColor: `${accentColor}30`,
+            backgroundColor: `${accentColor}12`,
           }}
         >
-          <Icon size={16} strokeWidth={2.15} />
-        </div>
-        <span
-          className="relative inline-flex items-center gap-1 rounded-full px-2 py-1 text-[11px] font-bold leading-none"
+          <Icon size={15} strokeWidth={2.2} />
+        </motion.div>
+
+        <motion.span
+          initial={{ opacity: 0, scale: 0.72 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.35, delay: 0.1 }}
+          className="inline-flex items-center gap-1 rounded-full px-2 py-1 text-[10px] font-bold"
           style={{
-            backgroundColor: `color-mix(in srgb, ${positive ? "#22c55e" : "#ef4444"}, transparent 90%)`,
-            color: positive ? "#22c55e" : "#ef4444",
+            color: positive ? "var(--success)" : "var(--danger)",
+            backgroundColor:
+              positive ?
+                "color-mix(in srgb, var(--success), transparent 88%)"
+              : "color-mix(in srgb, var(--danger), transparent 88%)",
           }}
         >
-          {positive ? <ArrowUpRight size={11} /> : <ArrowDownRight size={11} />}
+          {positive ?
+            <ArrowUpRight size={11} />
+          : <ArrowDownRight size={11} />}
           {positive ? "+" : "-"}
           {Math.abs(change).toFixed(1)}%
-        </span>
+        </motion.span>
       </div>
 
-      <div className="relative pt-3">
-        <div className="flex min-w-0 items-center justify-between gap-2">
-          <p className="truncate text-[11px] font-medium leading-none text-[#7f8798] dark:text-text-secondary">
-            {title}
+      <div className="relative mt-3">
+        <p className="text-[11px] font-semibold text-text-secondary">{title}</p>
+
+        <div className="mt-1 flex items-end justify-between gap-3">
+          <p className="text-[20px] font-black leading-none tracking-tight text-text-primary">
+            <CountedAmount amount={displayAmount} />
           </p>
+
           {subtitle ?
-            <span className="shrink-0 rounded-full border border-border bg-surface-secondary px-2 py-0.5 text-[10px] font-semibold leading-none text-text-secondary">
+            <span className="shrink-0 rounded-full border border-border bg-surface-secondary px-2.5 py-1 text-[10px] font-semibold leading-none text-text-secondary">
               {subtitle}
             </span>
           : null}
         </div>
-        <p className="mt-1.5 break-words text-[20px] font-bold leading-none tracking-normal text-[#020817] dark:text-text-primary">
-          <CountedAmount amount={displayAmount} />
-        </p>
       </div>
 
-      <div className="absolute bottom-0 left-[18px] h-[2px] rounded-full bg-transparent" style={{ width: "calc(100% - 36px)" }}>
-        <div
-          className="motion-progress-fill h-full rounded-full"
-          style={{ width: `${lineWidth}%`, backgroundColor: accentColor }}
+      <div className="absolute inset-x-4 bottom-0 h-[2px] overflow-hidden rounded-full bg-border/60">
+        <motion.div
+          initial={{ width: 0 }}
+          animate={{ width: `${lineWidth}%` }}
+          transition={{
+            duration: 1.05,
+            delay: 0.18,
+            ease: [0.16, 1, 0.3, 1],
+          }}
+          className="h-full rounded-full"
+          style={{ backgroundColor: accentColor }}
         />
       </div>
-    </article>
+    </motion.article>
   );
 }

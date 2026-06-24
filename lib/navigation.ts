@@ -1,7 +1,7 @@
 import {
   ArrowLeftRight,
   BarChart2,
-  FileText,
+  BarChart3,
   HandCoins,
   LayoutDashboard,
   LucideIcon,
@@ -70,10 +70,10 @@ export const NAV_ITEMS: NavItem[] = [
     tone: "text-lime-300 bg-lime-500/15",
   },
   {
-    label: "Reports",
-    href: "/dashboard/reports",
-    icon: FileText,
-    tone: "text-orange-300 bg-orange-500/15",
+    label: "Analytics",
+    href: "/dashboard/analytics",
+    icon: BarChart3,
+    tone: "text-blue-300 bg-blue-500/15",
   },
 ];
 

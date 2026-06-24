@@ -1,5 +1,5 @@
 "use client";
-
+import ExportButton from "@/components/reports/ExportButton";
 import type { FormEvent, ReactNode } from "react";
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -102,7 +102,9 @@ function IconBubble({
   };
 
   return (
-    <span className={`finance-icon-bubble h-11 w-11 rounded-full ${tones[tone]}`}>
+    <span
+      className={`finance-icon-bubble h-11 w-11 rounded-full ${tones[tone]}`}
+    >
       {children}
     </span>
   );
@@ -177,7 +179,9 @@ function SoftSwitch({
         onCheckedChange(!checked);
       }}
       className={`relative h-8 w-14 rounded-full border transition-colors ${
-        checked ? "border-active bg-active" : "border-border bg-surface-secondary"
+        checked ?
+          "border-active bg-active"
+        : "border-border bg-surface-secondary"
       }`}
     >
       <span
@@ -236,17 +240,34 @@ function ProfileDialog({
       <SettingsRow
         icon={
           <IconBubble tone="blue">
-            <Mail size={21} />
+            <Download size={21} />
           </IconBubble>
         }
-        title="Account Details"
-        description={email || "Name and profile information"}
-        onClick={() => setOpen(true)}
+        title="Export Data"
+        description="Download profile backup JSON or full transactions CSV"
+        right={
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+            <button
+              type="button"
+              onClick={handleExportData}
+              className="finance-control finance-focus inline-flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold text-text-primary"
+            >
+              <Download size={15} />
+              Backup JSON
+            </button>
+
+            <ExportButton />
+          </div>
+        }
       />
       <DialogContent className="max-h-[88dvh] overflow-y-auto rounded-3xl p-5 sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle className="text-xl font-bold">Profile Settings</DialogTitle>
-          <DialogDescription>Update the name shown across the app.</DialogDescription>
+          <DialogTitle className="text-xl font-bold">
+            Profile Settings
+          </DialogTitle>
+          <DialogDescription>
+            Update the name shown across the app.
+          </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleProfileSave} className="space-y-4">
           <div>
@@ -267,7 +288,9 @@ function ProfileDialog({
             <Input id="profile-email" value={email} disabled />
           </div>
           <Button type="submit" disabled={saving} className="w-full" size="lg">
-            {saving ? <Loader2 className="animate-spin" size={16} /> : <Save size={16} />}
+            {saving ?
+              <Loader2 className="animate-spin" size={16} />
+            : <Save size={16} />}
             {saving ? "Saving..." : "Save Profile"}
           </Button>
         </form>
@@ -292,7 +315,9 @@ function SecurityDialog({ email }: { email: string }) {
   function toggleTwoFactor(next: boolean) {
     setTwoFactorEnabled(next);
     window.localStorage.setItem("jamal-2fa-enabled", String(next));
-    toast.success(next ? "2FA preference enabled." : "2FA preference disabled.");
+    toast.success(
+      next ? "2FA preference enabled." : "2FA preference disabled.",
+    );
   }
 
   async function handlePasswordSubmit(event: FormEvent<HTMLFormElement>) {
@@ -353,7 +378,9 @@ function SecurityDialog({ email }: { email: string }) {
                 <ShieldCheck size={20} />
               </IconBubble>
               <div>
-                <p className="text-sm font-bold text-text-primary">Update Password</p>
+                <p className="text-sm font-bold text-text-primary">
+                  Update Password
+                </p>
                 <p className="text-xs text-text-secondary">
                   Your active Supabase session authorizes this change.
                 </p>
@@ -387,8 +414,15 @@ function SecurityDialog({ email }: { email: string }) {
                 />
               </div>
             </div>
-            <Button type="submit" disabled={isSubmitting} className="mt-4 w-full" size="lg">
-              {isSubmitting ? <Loader2 className="animate-spin" size={16} /> : <Save size={16} />}
+            <Button
+              type="submit"
+              disabled={isSubmitting}
+              className="mt-4 w-full"
+              size="lg"
+            >
+              {isSubmitting ?
+                <Loader2 className="animate-spin" size={16} />
+              : <Save size={16} />}
               {isSubmitting ? "Updating..." : "Update Password"}
             </Button>
           </div>
@@ -428,7 +462,8 @@ function CategoriesDialog({
   const supabase = createClient();
   const [open, setOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<CategoryKind>("income");
-  const [categories, setCategories] = useState<SettingsCategory[]>(initialCategories);
+  const [categories, setCategories] =
+    useState<SettingsCategory[]>(initialCategories);
   const [draftName, setDraftName] = useState("");
   const [savingId, setSavingId] = useState<string | null>(null);
 
@@ -478,12 +513,19 @@ function CategoriesDialog({
   }
 
   async function removeCategory(category: SettingsCategory) {
-    if (!confirm(`Delete "${category.name}"? Existing transactions may still use it.`)) {
+    if (
+      !confirm(
+        `Delete "${category.name}"? Existing transactions may still use it.`,
+      )
+    ) {
       return;
     }
 
     setSavingId(category.id);
-    const { error } = await supabase.from("categories").delete().eq("id", category.id);
+    const { error } = await supabase
+      .from("categories")
+      .delete()
+      .eq("id", category.id);
     setSavingId(null);
 
     if (error) {
@@ -491,7 +533,9 @@ function CategoriesDialog({
       return;
     }
 
-    setCategories((current) => current.filter((item) => item.id !== category.id));
+    setCategories((current) =>
+      current.filter((item) => item.id !== category.id),
+    );
     toast.success(`${category.name} removed.`);
     router.refresh();
   }
@@ -537,12 +581,16 @@ function CategoriesDialog({
             >
               <div className="mb-3 flex items-center justify-between">
                 <p className="text-xs font-bold uppercase tracking-[0.14em] text-text-secondary">
-                  {activeTab === "income" ? "Income Categories" : "Expense Categories"}
+                  {activeTab === "income" ?
+                    "Income Categories"
+                  : "Expense Categories"}
                 </p>
-                <span className="finance-state-pill">{activeCategories.length}</span>
+                <span className="finance-state-pill">
+                  {activeCategories.length}
+                </span>
               </div>
 
-              {activeCategories.length === 0 ? (
+              {activeCategories.length === 0 ?
                 <div className="rounded-[22px] border border-dashed border-border bg-card p-5 text-center">
                   <p className="text-sm font-semibold text-text-primary">
                     No {activeTab} categories yet
@@ -551,8 +599,7 @@ function CategoriesDialog({
                     Add one below and it will be available in transaction forms.
                   </p>
                 </div>
-              ) : (
-                <div className="flex min-h-28 flex-wrap content-start gap-2">
+              : <div className="flex min-h-28 flex-wrap content-start gap-2">
                   {activeCategories.map((category) => (
                     <Badge
                       key={category.id}
@@ -561,7 +608,10 @@ function CategoriesDialog({
                     >
                       <span
                         className="h-2 w-2 rounded-full"
-                        style={{ backgroundColor: category.color ?? CATEGORY_COLORS[category.type] }}
+                        style={{
+                          backgroundColor:
+                            category.color ?? CATEGORY_COLORS[category.type],
+                        }}
                       />
                       {category.name}
                       <button
@@ -571,16 +621,14 @@ function CategoriesDialog({
                         className="grid h-5 w-5 place-items-center rounded-full text-text-secondary hover:bg-hover hover:text-text-primary disabled:opacity-50"
                         aria-label={`Remove ${category.name}`}
                       >
-                        {savingId === category.id ? (
+                        {savingId === category.id ?
                           <Loader2 className="animate-spin" size={13} />
-                        ) : (
-                          <Trash2 size={13} />
-                        )}
+                        : <Trash2 size={13} />}
                       </button>
                     </Badge>
                   ))}
                 </div>
-              )}
+              }
             </motion.div>
           </TabsContent>
         </Tabs>
@@ -600,8 +648,14 @@ function CategoriesDialog({
               placeholder={`New ${activeTab} category`}
             />
           </div>
-          <Button type="submit" disabled={!draftName.trim() || savingId === "new"} size="lg">
-            {savingId === "new" ? <Loader2 className="animate-spin" size={16} /> : <Plus size={16} />}
+          <Button
+            type="submit"
+            disabled={!draftName.trim() || savingId === "new"}
+            size="lg"
+          >
+            {savingId === "new" ?
+              <Loader2 className="animate-spin" size={16} />
+            : <Plus size={16} />}
             {savingId === "new" ? "Adding..." : "Add"}
           </Button>
         </form>
@@ -627,7 +681,8 @@ function PreferencesDialog({
 }) {
   const [open, setOpen] = useState(false);
   const [draftCurrency, setDraftCurrency] = useState(currency);
-  const [draftDateFormat, setDraftDateFormat] = useState<DateFormat>(dateFormat);
+  const [draftDateFormat, setDraftDateFormat] =
+    useState<DateFormat>(dateFormat);
   const [draftCompact, setDraftCompact] = useState(compactMode);
 
   useEffect(() => {
@@ -661,7 +716,9 @@ function PreferencesDialog({
       <DialogContent className="max-h-[88dvh] overflow-y-auto rounded-3xl p-5 sm:max-w-lg">
         <DialogHeader>
           <DialogTitle className="text-xl font-bold">Preferences</DialogTitle>
-          <DialogDescription>Control display defaults for this device.</DialogDescription>
+          <DialogDescription>
+            Control display defaults for this device.
+          </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4">
@@ -688,7 +745,9 @@ function PreferencesDialog({
             <select
               id="date-format"
               value={draftDateFormat}
-              onChange={(event) => setDraftDateFormat(event.target.value as DateFormat)}
+              onChange={(event) =>
+                setDraftDateFormat(event.target.value as DateFormat)
+              }
               className="field-input"
             >
               <option value="MMM d, yyyy">Jun 22, 2026</option>
@@ -698,7 +757,9 @@ function PreferencesDialog({
           </div>
           <div className="flex items-center justify-between gap-3 rounded-3xl border border-border bg-surface-secondary px-4 py-4">
             <div>
-              <p className="text-sm font-bold text-text-primary">Compact dashboard</p>
+              <p className="text-sm font-bold text-text-primary">
+                Compact dashboard
+              </p>
               <p className="text-xs text-text-secondary">
                 Save a denser reading preference for this device.
               </p>
@@ -741,17 +802,32 @@ export default function SettingsOneUI({
 
   useEffect(() => {
     const savedTheme = window.localStorage.getItem("jamal-theme");
-    const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-    setThemeMode(savedTheme === "dark" || (!savedTheme && prefersDark) ? "dark" : "light");
-    setPushNotifications(window.localStorage.getItem("jamal-push-notifications") !== "false");
-    setBiometricLogin(window.localStorage.getItem("jamal-biometric-login") === "true");
+    const prefersDark = window.matchMedia(
+      "(prefers-color-scheme: dark)",
+    ).matches;
+    setThemeMode(
+      savedTheme === "dark" || (!savedTheme && prefersDark) ? "dark" : "light",
+    );
+    setPushNotifications(
+      window.localStorage.getItem("jamal-push-notifications") !== "false",
+    );
+    setBiometricLogin(
+      window.localStorage.getItem("jamal-biometric-login") === "true",
+    );
     setCurrency(window.localStorage.getItem("jamal-currency") || "PKR");
-    setDateFormat((window.localStorage.getItem("jamal-date-format") as DateFormat) || "MMM d, yyyy");
-    setCompactMode(window.localStorage.getItem("jamal-compact-dashboard") === "true");
+    setDateFormat(
+      (window.localStorage.getItem("jamal-date-format") as DateFormat) ||
+        "MMM d, yyyy",
+    );
+    setCompactMode(
+      window.localStorage.getItem("jamal-compact-dashboard") === "true",
+    );
   }, []);
 
   useEffect(() => {
-    setProfileName(displayName || email.split("@")[0]?.replace(/[._-]/g, " ") || "Jamal");
+    setProfileName(
+      displayName || email.split("@")[0]?.replace(/[._-]/g, " ") || "Jamal",
+    );
   }, [displayName, email]);
 
   useEffect(() => {
@@ -776,7 +852,9 @@ export default function SettingsOneUI({
   function handleBiometricChange(next: boolean) {
     setBiometricLogin(next);
     window.localStorage.setItem("jamal-biometric-login", String(next));
-    toast.success(next ? "Biometric preference enabled." : "Biometric preference disabled.");
+    toast.success(
+      next ? "Biometric preference enabled." : "Biometric preference disabled.",
+    );
   }
 
   function handlePreferencesSave(next: {
@@ -789,7 +867,10 @@ export default function SettingsOneUI({
     setCompactMode(next.compactMode);
     window.localStorage.setItem("jamal-currency", next.currency);
     window.localStorage.setItem("jamal-date-format", next.dateFormat);
-    window.localStorage.setItem("jamal-compact-dashboard", String(next.compactMode));
+    window.localStorage.setItem(
+      "jamal-compact-dashboard",
+      String(next.compactMode),
+    );
     toast.success("Preferences saved.");
   }
 
@@ -878,7 +959,9 @@ export default function SettingsOneUI({
                   {email || "Active Supabase profile"}
                 </p>
               </div>
-              <span className="finance-state-pill hidden sm:inline-flex">Active</span>
+              <span className="finance-state-pill hidden sm:inline-flex">
+                Active
+              </span>
             </div>
             <Divider />
             <ProfileDialog
@@ -901,11 +984,17 @@ export default function SettingsOneUI({
                 </IconBubble>
               }
               title="Dark Mode"
-              description={themeMode === "dark" ? "Dark theme is active" : "Light theme is active"}
+              description={
+                themeMode === "dark" ?
+                  "Dark theme is active"
+                : "Light theme is active"
+              }
               right={
                 <SoftSwitch
                   checked={themeMode === "dark"}
-                  onCheckedChange={(checked) => handleThemeChange(checked ? "dark" : "light")}
+                  onCheckedChange={(checked) =>
+                    handleThemeChange(checked ? "dark" : "light")
+                  }
                   label="Toggle dark mode"
                 />
               }
@@ -1015,7 +1104,9 @@ export default function SettingsOneUI({
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
             {metricCards.map((metric) => (
               <div key={metric.label} className="summary-card text-center">
-                <p className="text-2xl font-black text-active">{metric.value}</p>
+                <p className="text-2xl font-black text-active">
+                  {metric.value}
+                </p>
                 <p className="mt-1 text-xs font-semibold text-text-secondary">
                   {metric.label}
                 </p>
@@ -1030,17 +1121,16 @@ export default function SettingsOneUI({
           disabled={isSigningOut}
           className="flex w-full items-center justify-center gap-2 rounded-3xl border border-border bg-surface-secondary px-4 py-4 text-sm font-bold text-red-600 hover:bg-hover disabled:opacity-60"
         >
-          {isSigningOut ? (
+          {isSigningOut ?
             <>
               <Loader2 className="animate-spin" size={18} />
               Signing Out...
             </>
-          ) : (
-            <>
+          : <>
               <LogOut size={18} />
               Sign Out
             </>
-          )}
+          }
         </button>
 
         <footer className="pb-3 text-center text-xs leading-6 text-text-secondary">

@@ -1,39 +1,52 @@
 "use client";
 
-import { useReducedMotion } from "framer-motion";
 import CountUp from "react-countup";
+import { useReducedMotion } from "framer-motion";
 import { useHasMounted } from "@/components/motion/useHasMounted";
 
 function splitAmount(amount: string) {
-  const match = amount.match(/^([^0-9-]*)([-\d,]+(?:\.\d+)?)(.*)$/);
+  const cleaned = String(amount ?? "").trim();
+  const match = cleaned.match(/^([^0-9-]*)(-?[\d,]+(?:\.\d+)?)(.*)$/);
+
   if (!match) return null;
 
   return {
     prefix: match[1],
     value: Number(match[2].replace(/,/g, "")),
-    decimals: match[2].includes(".") ? match[2].split(".")[1]?.length ?? 0 : 0,
+    decimals:
+      match[2].includes(".") ? (match[2].split(".")[1]?.length ?? 0) : 0,
     suffix: match[3],
   };
 }
 
-export default function CountedAmount({ amount }: { amount: string }) {
+export default function CountedAmount({
+  amount,
+  duration = 1.05,
+}: {
+  amount: string;
+  duration?: number;
+}) {
   const mounted = useHasMounted();
   const reduceMotion = useReducedMotion();
-  const parsedAmount = splitAmount(amount);
+  const parsed = splitAmount(amount);
 
-  if (!mounted || reduceMotion || !parsedAmount) return amount;
+  if (!mounted || reduceMotion || !parsed || !Number.isFinite(parsed.value)) {
+    return amount;
+  }
 
   return (
     <>
-      {parsedAmount.prefix}
+      {parsed.prefix}
       <CountUp
-        end={parsedAmount.value}
-        duration={0.85}
-        decimals={parsedAmount.decimals}
+        key={amount}
+        start={0}
+        end={parsed.value}
+        duration={duration}
+        decimals={parsed.decimals}
         separator=","
-        preserveValue
+        redraw
       />
-      {parsedAmount.suffix}
+      {parsed.suffix}
     </>
   );
 }
