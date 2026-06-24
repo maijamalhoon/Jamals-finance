@@ -1,12 +1,12 @@
 import {
-  ArrowLeftRight,
-  BarChart2,
+  ArrowRightLeft,
   BarChart3,
   HandCoins,
   LayoutDashboard,
   LucideIcon,
   Target,
-  Wallet,
+  TrendingUp,
+  WalletCards,
 } from "lucide-react";
 
 export interface NavItem {
@@ -26,7 +26,7 @@ export const NAV_ITEMS: NavItem[] = [
   {
     label: "Transactions",
     href: "/dashboard/transactions",
-    icon: ArrowLeftRight,
+    icon: ArrowRightLeft,
     tone: "text-violet-300 bg-violet-500/15",
   },
   {
@@ -38,13 +38,13 @@ export const NAV_ITEMS: NavItem[] = [
   {
     label: "Investment Overview",
     href: "/dashboard/investments",
-    icon: BarChart2,
+    icon: TrendingUp,
     tone: "text-amber-300 bg-amber-500/15",
   },
   {
     label: "Accounts",
     href: "/dashboard/accounts",
-    icon: Wallet,
+    icon: WalletCards,
     tone: "text-sky-300 bg-sky-500/15",
   },
   {

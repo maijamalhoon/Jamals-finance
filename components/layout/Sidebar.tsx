@@ -2,10 +2,16 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { motion } from "framer-motion";
+import { LayoutGroup, motion } from "framer-motion";
 import { BarChart3, ChevronRight } from "lucide-react";
 import { isNavItemActive, NAV_ITEMS } from "@/lib/navigation";
 import JamalMenu from "@/components/layout/JamalMenu";
+
+const sidebarSpring = {
+  type: "spring" as const,
+  stiffness: 500,
+  damping: 40,
+};
 
 export default function Sidebar() {
   const pathname = usePathname();
@@ -28,52 +34,45 @@ export default function Sidebar() {
           aria-label="Main navigation"
           className="relative min-h-0 flex-1 overflow-y-auto px-1 pb-3 pt-2"
         >
-          <div className="space-y-1">
-            {NAV_ITEMS.map(({ label, href, icon: Icon }) => {
-              const active = isNavItemActive(pathname, href);
+          <LayoutGroup id="jf-sidebar-navigation">
+            <div className="space-y-1">
+              {NAV_ITEMS.map(({ label, href, icon: Icon }) => {
+                const active = isNavItemActive(pathname, href);
 
-              return (
-                <Link
-                  key={href}
-                  href={href}
-                  aria-current={active ? "page" : undefined}
-                  className={`finance-focus finance-interactive-tile group isolate flex items-center gap-3 overflow-visible px-3 py-2.5 text-sm ${
-                    active
-                      ? "border-border bg-hover text-active shadow-[var(--shadow)]"
-                      : "text-text-secondary"
-                  }`}
-                >
-                  {active && (
-                    <motion.span
-                      layoutId="sidebar-active-indicator"
-                      className="finance-active-indicator"
-                      transition={{ duration: 0.24, ease: [0.16, 1, 0.3, 1] }}
-                    />
-                  )}
-                  <span
-                    className={`relative z-10 grid h-9 w-9 flex-shrink-0 place-items-center rounded-[14px] border transition-all duration-200 ${
-                      active
-                        ? "border-active/30 bg-card text-active"
-                        : "border-border bg-surface-secondary text-text-secondary group-hover:text-text-primary"
-                    }`}
+                return (
+                  <Link
+                    key={href}
+                    href={href}
+                    aria-current={active ? "page" : undefined}
+                    data-active={active ? "true" : "false"}
+                    className="finance-focus jf-sidebar-link group text-sm font-semibold"
                   >
-                    <Icon size={16} strokeWidth={2.15} />
-                  </span>
-                  <span className="relative z-10 min-w-0 flex-1 truncate font-semibold">
-                    {label}
-                  </span>
-                  <ChevronRight
-                    size={15}
-                    className={`relative z-10 transition-all duration-200 ${
-                      active
-                        ? "translate-x-0 text-active opacity-100"
-                        : "-translate-x-1 text-text-tertiary opacity-0 group-hover:translate-x-0 group-hover:opacity-70"
-                    }`}
-                  />
-                </Link>
-              );
-            })}
-          </div>
+                    {active && (
+                      <>
+                        <motion.span
+                          layoutId="jf-sidebar-pill"
+                          className="jf-sidebar-pill"
+                          transition={sidebarSpring}
+                        />
+                        <motion.span
+                          layoutId="jf-sidebar-line"
+                          className="jf-sidebar-line"
+                          transition={sidebarSpring}
+                        />
+                      </>
+                    )}
+                    <span className="jf-sidebar-icon">
+                      <Icon size={16} strokeWidth={2.2} />
+                    </span>
+                    <span className="relative z-10 min-w-0 flex-1 truncate">
+                      {label}
+                    </span>
+                    <ChevronRight size={15} className="jf-sidebar-chevron" />
+                  </Link>
+                );
+              })}
+            </div>
+          </LayoutGroup>
         </nav>
 
         <div className="relative border-t border-border px-1.5 pt-3">
