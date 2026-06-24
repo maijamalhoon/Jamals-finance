@@ -314,13 +314,15 @@
   .finance-active-indicator {
     position: absolute;
     pointer-events: none;
-    inset-inline-start: 0;
+    inset-inline-start: 0.5rem;
     top: 50%;
     width: 3px;
-    height: 1.65rem;
+    height: 1.55rem;
     border-radius: 999px;
     background: var(--active);
     transform: translateY(-50%);
+    z-index: 1;
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--active), transparent 82%);
     transition:
       transform var(--motion-duration-base) var(--motion-ease),
       opacity var(--motion-duration-base) var(--motion-ease);

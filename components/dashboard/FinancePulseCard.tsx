@@ -13,9 +13,7 @@ interface FinancePulseCardProps {
   income: string;
   expenses: string;
   net: string;
-  netPositive: boolean;
-  topCategory: { name: string; amount: string } | null;
-  savingsRate: number;
+  netTone: "positive" | "negative" | "neutral";
   remainingDays: number;
 }
 
@@ -23,18 +21,21 @@ export default function FinancePulseCard({
   income,
   expenses,
   net,
-  netPositive,
-  topCategory,
-  savingsRate,
+  netTone,
   remainingDays,
 }: FinancePulseCardProps) {
-  const focus =
-    topCategory ? `${topCategory.name} leads spend` : "Spend mix is calm";
-
   const pulseStatus =
-    savingsRate >= 25 ? "Strong pace"
-    : savingsRate >= 0 ? "Stable"
-    : "Watch spend";
+    netTone === "positive" ? "Today is positive"
+    : netTone === "negative" ? "Today needs attention"
+    : "No net movement today";
+  const netDetail =
+    netTone === "positive" ? "Positive cash flow"
+    : netTone === "negative" ? "Expense pressure"
+    : "Break-even today";
+  const netClass =
+    netTone === "positive" ? "finance-status-success"
+    : netTone === "negative" ? "finance-status-danger"
+    : "border-border bg-surface-secondary text-text-secondary";
 
   const summaryTiles = [
     {
@@ -47,15 +48,15 @@ export default function FinancePulseCard({
     {
       label: "Expenses",
       value: expenses,
-      detail: focus,
+      detail: "Today spend",
       tone: "finance-status-danger",
       icon: Activity,
     },
     {
       label: "Net Today",
       value: net,
-      detail: netPositive ? "Positive flow" : "Expense pressure",
-      tone: netPositive ? "finance-status-success" : "finance-status-danger",
+      detail: netDetail,
+      tone: netClass,
       icon: Target,
     },
     {

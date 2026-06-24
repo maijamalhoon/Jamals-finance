@@ -8,7 +8,6 @@ import FinancePulseCard from "@/components/dashboard/FinancePulseCard";
 import InvestmentOverviewWidget from "@/components/dashboard/InvestmentOverviewWidget";
 import SpendRecordWidget from "@/components/dashboard/SpendRecordWidget";
 import ChartCard from "@/components/dashboard/ChartCard";
-import BottomInsightCard from "@/components/dashboard/BottomInsightCard";
 import {
   DashboardMotion,
   DashboardMotionItem,
@@ -18,31 +17,49 @@ import {
   TrendingUp,
   TrendingDown,
   Zap,
-  CalendarDays,
-  Gauge,
-  Landmark,
-  Target,
 } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
+function toLocalDateKey(date: Date) {
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+}
+
+function normalizeDateKey(value: Date | string | null | undefined) {
+  if (!value) return null;
+  if (value instanceof Date) return toLocalDateKey(value);
+  if (/^\d{4}-\d{2}-\d{2}$/.test(value)) return value;
+
+  const parsed = new Date(value);
+  return Number.isNaN(parsed.getTime()) ? null : toLocalDateKey(parsed);
+}
+
+function isDateInRange(
+  value: Date | string | null | undefined,
+  start: string,
+  end: string,
+) {
+  const dateKey = normalizeDateKey(value);
+  return Boolean(dateKey && dateKey >= start && dateKey <= end);
+}
+
 export default async function DashboardPage() {
   const supabase = await createClient();
   const now = new Date();
-  const todayStr = now.toISOString().split("T")[0];
+  const todayStr = toLocalDateKey(now);
 
-  const firstDay = new Date(now.getFullYear(), now.getMonth(), 1)
-    .toISOString()
-    .split("T")[0];
-  const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0)
-    .toISOString()
-    .split("T")[0];
-  const lastFirst = new Date(now.getFullYear(), now.getMonth() - 1, 1)
-    .toISOString()
-    .split("T")[0];
-  const lastLast = new Date(now.getFullYear(), now.getMonth(), 0)
-    .toISOString()
-    .split("T")[0];
+  const firstDay = toLocalDateKey(
+    new Date(now.getFullYear(), now.getMonth(), 1),
+  );
+  const lastDay = toLocalDateKey(
+    new Date(now.getFullYear(), now.getMonth() + 1, 0),
+  );
+  const lastFirst = toLocalDateKey(
+    new Date(now.getFullYear(), now.getMonth() - 1, 1),
+  );
+  const lastLast = toLocalDateKey(
+    new Date(now.getFullYear(), now.getMonth(), 0),
+  );
   const daysInMonth = new Date(
     now.getFullYear(),
     now.getMonth() + 1,
@@ -52,10 +69,8 @@ export default async function DashboardPage() {
   const [
     { data: thisTxns },
     { data: lastTxns },
-    { data: accounts },
     { data: investments },
     { data: goals },
-    { data: liabilities },
   ] = await Promise.all([
     supabase
       .from("transactions")
@@ -68,13 +83,11 @@ export default async function DashboardPage() {
       .select("type, amount")
       .gte("date", lastFirst)
       .lte("date", lastLast),
-    supabase.from("accounts").select("balance"),
     supabase
       .from("investments")
       .select("id, name, type, quantity, purchase_price, current_price, purchased_at")
       .order("created_at", { ascending: false }),
-    supabase.from("goals").select("*").order("created_at").limit(3),
-    supabase.from("liabilities").select("remaining_amount, status, due_date"),
+    supabase.from("goals").select("*").order("created_at").limit(6),
   ]);
 
   const txns = thisTxns ?? [];
@@ -87,33 +100,19 @@ export default async function DashboardPage() {
     .filter((t) => t.type === "expense")
     .reduce((s, t) => s + Number(t.amount), 0);
   const netProfit = income - expenses;
-  const totalBalance = (accounts ?? []).reduce(
-    (s, a) => s + Number(a.balance),
-    0,
-  );
   const investmentsValue = (investments ?? []).reduce(
     (s, i) => s + Number(i.current_price) * Number(i.quantity),
     0,
   );
+  const monthlyInvestmentsValue = (investments ?? [])
+    .filter((i) => isDateInRange(i.purchased_at, firstDay, lastDay))
+    .reduce((s, i) => s + Number(i.quantity) * Number(i.purchase_price), 0);
   const totalInvested = (investments ?? []).reduce(
     (s, i) => s + Number(i.quantity) * Number(i.purchase_price),
     0,
   );
   const totalPnL = investmentsValue - totalInvested;
   const totalPnLPct = totalInvested > 0 ? (totalPnL / totalInvested) * 100 : 0;
-  const payableRemaining = (liabilities ?? []).reduce(
-    (s, liability) => s + Number(liability.remaining_amount),
-    0,
-  );
-  const overduePayables = (liabilities ?? []).filter(
-    (liability) =>
-      Number(liability.remaining_amount) > 0 &&
-      liability.due_date &&
-      liability.due_date < todayStr,
-  ).length;
-  void netProfit;
-  void payableRemaining;
-  void overduePayables;
   const lastIncome = (lastTxns ?? [])
     .filter((t) => t.type === "income")
     .reduce((s, t) => s + Number(t.amount), 0);
@@ -125,16 +124,24 @@ export default async function DashboardPage() {
 
   const dailyTotals = new Map<string, { income: number; expenses: number }>();
   txns.forEach((t) => {
-    const current = dailyTotals.get(t.date) ?? { income: 0, expenses: 0 };
+    const dateKey = normalizeDateKey(t.date);
+    if (!dateKey) return;
+
+    const current = dailyTotals.get(dateKey) ?? { income: 0, expenses: 0 };
     if (t.type === "income") current.income += Number(t.amount);
     if (t.type === "expense") current.expenses += Number(t.amount);
-    dailyTotals.set(t.date, current);
+    dailyTotals.set(dateKey, current);
   });
   const todayTotals = dailyTotals.get(todayStr) ?? { income: 0, expenses: 0 };
+  const netToday = todayTotals.income - todayTotals.expenses;
+  const netTodayTone =
+    netToday > 0 ? "positive" : netToday < 0 ? "negative" : "neutral";
 
   const chartData = Array.from({ length: daysInMonth }, (_, i) => {
     const day = i + 1;
-    const dateStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+    const dateStr = toLocalDateKey(
+      new Date(now.getFullYear(), now.getMonth(), day),
+    );
     const totals = dailyTotals.get(dateStr);
     return {
       date: `${day} ${now.toLocaleDateString("en-US", { month: "short" })}`,
@@ -166,31 +173,19 @@ export default async function DashboardPage() {
   const fmt = (n: number) =>
     `PKR ${n.toLocaleString("en-PK", { maximumFractionDigits: 0 })}`;
   const dayOfMonth = now.getDate();
-  const savingsRate = income > 0 ? ((income - expenses) / income) * 100 : 0;
+  const currentMonthLabel = now.toLocaleDateString("en-US", {
+    month: "long",
+    year: "numeric",
+  });
   const dailySpend = expenses / Math.max(dayOfMonth, 1);
-  const projectedExpenses = dailySpend * daysInMonth;
   const remainingDays = Math.max(daysInMonth - dayOfMonth, 0);
-  const liquidityRatio =
-    totalBalance + investmentsValue > 0 ?
-      (totalBalance / (totalBalance + investmentsValue)) * 100
-    : 0;
-  const monthlyBurnStatus =
-    projectedExpenses > expenses ?
-      `${fmt(projectedExpenses)} projected by month end`
-    : "Spend pace is stable";
   const dailyExpenseTrend = chartData.map((day) => day.expenses);
-  const topCategory =
-    spendingData[0] ?
-      {
-        name: spendingData[0].name,
-        amount: fmt(spendingData[0].value),
-      }
-    : null;
 
   const stats = [
     {
-      title: "Total Balance",
-      amount: fmt(totalBalance),
+      title: "Month Balance",
+      subtitle: currentMonthLabel,
+      amount: fmt(netProfit),
       change: 4.35,
       icon: Wallet,
       accentColor: "#3b82f6",
@@ -198,6 +193,7 @@ export default async function DashboardPage() {
     },
     {
       title: "Monthly Income",
+      subtitle: currentMonthLabel,
       amount: fmt(income),
       change: pct(income, lastIncome),
       icon: TrendingUp,
@@ -205,7 +201,8 @@ export default async function DashboardPage() {
       progress: 64,
     },
     {
-      title: "Total Expenses",
+      title: "Monthly Expenses",
+      subtitle: currentMonthLabel,
       amount: fmt(expenses),
       change: pct(expenses, lastExpenses),
       icon: TrendingDown,
@@ -213,8 +210,9 @@ export default async function DashboardPage() {
       progress: 38,
     },
     {
-      title: "Investments",
-      amount: fmt(investmentsValue),
+      title: "Investments This Month",
+      subtitle: currentMonthLabel,
+      amount: fmt(monthlyInvestmentsValue),
       change: 7.65,
       icon: Zap,
       accentColor: "#f59e0b",
@@ -222,38 +220,8 @@ export default async function DashboardPage() {
     },
   ];
 
-  const intelligenceTiles = [
-    {
-      label: "Month Progress",
-      value: `${dayOfMonth}/${daysInMonth} days`,
-      detail: `${remainingDays} days left in this cycle`,
-      icon: CalendarDays,
-    },
-    {
-      label: "Spend Forecast",
-      value: fmt(projectedExpenses),
-      detail: monthlyBurnStatus,
-      icon: Gauge,
-    },
-    {
-      label: "Savings Efficiency",
-      value: `${Math.round(savingsRate)}%`,
-      detail:
-        savingsRate >= 25 ? "Strong retention pace"
-        : savingsRate >= 0 ? "Healthy, but can improve"
-        : "Expense pressure detected",
-      icon: Target,
-    },
-    {
-      label: "Capital Mix",
-      value: `${Math.round(liquidityRatio)}% liquid`,
-      detail: `${fmt(totalBalance + investmentsValue)} tracked capital`,
-      icon: Landmark,
-    },
-  ];
-
   return (
-    <DashboardMotion className="space-y-6 pb-10">
+    <DashboardMotion className="space-y-6 pb-12">
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {stats.map((s) => (
           <DashboardMotionItem key={s.title}>
@@ -266,10 +234,8 @@ export default async function DashboardPage() {
         <FinancePulseCard
           income={fmt(todayTotals.income)}
           expenses={fmt(todayTotals.expenses)}
-          net={fmt(todayTotals.income - todayTotals.expenses)}
-          netPositive={todayTotals.income - todayTotals.expenses >= 0}
-          topCategory={topCategory}
-          savingsRate={savingsRate}
+          net={fmt(netToday)}
+          netTone={netTodayTone}
           remainingDays={remainingDays}
         />
       </DashboardMotionItem>
@@ -316,23 +282,19 @@ export default async function DashboardPage() {
       </div>
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-3 lg:items-stretch">
-        <DashboardMotionItem className="[&>div]:h-full">
-          <SpendingBreakdown data={spendingData} total={expenses} />
+        <DashboardMotionItem className="[&>section]:h-full">
+          <SpendingBreakdown
+            data={spendingData}
+            total={expenses}
+            periodLabel={currentMonthLabel}
+          />
         </DashboardMotionItem>
-        <DashboardMotionItem className="[&>div]:h-full">
+        <DashboardMotionItem className="[&>section]:h-full">
           <GoalsProgress goals={(goals ?? []) as any} />
         </DashboardMotionItem>
-        <DashboardMotionItem className="[&>div]:h-full">
+        <DashboardMotionItem className="[&>section]:h-full">
           <RecentTransactions transactions={txns.slice(0, 5) as any} />
         </DashboardMotionItem>
-      </div>
-
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        {intelligenceTiles.map((tile) => (
-          <DashboardMotionItem key={tile.label}>
-            <BottomInsightCard {...tile} />
-          </DashboardMotionItem>
-        ))}
       </div>
     </DashboardMotion>
   );

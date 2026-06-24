@@ -38,7 +38,7 @@ export default function MobileNav() {
             key={href}
             href={href}
             aria-current={active ? "page" : undefined}
-            className={`finance-focus group relative flex min-w-0 flex-col items-center justify-center gap-1 overflow-hidden rounded-[16px] px-2 py-1.5 transition-all active:scale-[0.99] ${
+            className={`finance-focus group relative isolate flex min-w-0 flex-col items-center justify-center gap-1 overflow-visible rounded-[16px] px-2 py-1.5 transition-all active:scale-[0.99] ${
               active
                 ? "text-active"
                 : "text-text-secondary hover:bg-hover hover:text-text-primary"
@@ -47,7 +47,7 @@ export default function MobileNav() {
             {active && (
               <motion.span
                 layoutId="mobile-nav-active-pill"
-                className="pointer-events-none absolute inset-0 rounded-[16px] border border-border bg-hover"
+                className="pointer-events-none absolute inset-[3px] rounded-[14px] border border-border bg-hover shadow-[var(--shadow)]"
                 transition={{ duration: 0.24, ease: [0.16, 1, 0.3, 1] }}
               />
             )}

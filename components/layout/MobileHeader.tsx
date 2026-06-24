@@ -179,7 +179,7 @@ export default function MobileHeader() {
                           <Link
                             href={href}
                             aria-current={active ? "page" : undefined}
-                            className={`finance-focus finance-interactive-tile group flex items-center gap-3 overflow-hidden px-3 py-2.5 text-sm ${
+                            className={`finance-focus finance-interactive-tile group isolate flex items-center gap-3 overflow-visible px-3 py-2.5 text-sm ${
                               active
                                 ? "border-border bg-hover text-active shadow-[var(--shadow)]"
                                 : "text-text-secondary"

@@ -4,6 +4,7 @@ import CountedAmount from "@/components/motion/CountedAmount";
 
 interface MetricCardProps {
   title: string;
+  subtitle?: string;
   amount: string;
   change: number;
   icon: LucideIcon;
@@ -13,6 +14,7 @@ interface MetricCardProps {
 
 export default function MetricCard({
   title,
+  subtitle,
   amount,
   change,
   icon: Icon,
@@ -56,9 +58,16 @@ export default function MetricCard({
       </div>
 
       <div className="relative pt-3">
-        <p className="text-[11px] font-medium leading-none text-[#7f8798] dark:text-text-secondary">
-          {title}
-        </p>
+        <div className="flex min-w-0 items-center justify-between gap-2">
+          <p className="truncate text-[11px] font-medium leading-none text-[#7f8798] dark:text-text-secondary">
+            {title}
+          </p>
+          {subtitle ?
+            <span className="shrink-0 rounded-full border border-border bg-surface-secondary px-2 py-0.5 text-[10px] font-semibold leading-none text-text-secondary">
+              {subtitle}
+            </span>
+          : null}
+        </div>
         <p className="mt-1.5 break-words text-[20px] font-bold leading-none tracking-normal text-[#020817] dark:text-text-primary">
           <CountedAmount amount={displayAmount} />
         </p>

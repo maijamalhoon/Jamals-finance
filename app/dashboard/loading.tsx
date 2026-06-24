@@ -108,21 +108,6 @@ export default function DashboardLoading() {
           </LoadingPanel>
         ))}
       </div>
-
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        {Array.from({ length: 4 }).map((_, index) => (
-          <LoadingPanel key={index} className="min-h-[128px]" delay={460 + index * 35}>
-            <div className="flex items-start justify-between gap-3">
-              <div className="min-w-0 flex-1 space-y-3">
-                <Line className="h-3 w-28" />
-                <Line className="h-6 w-32 max-w-full" />
-              </div>
-              <Line className="h-10 w-10 rounded-[16px]" />
-            </div>
-            <Line className="mt-4 h-4 w-4/5" />
-          </LoadingPanel>
-        ))}
-      </div>
     </div>
   );
 }
