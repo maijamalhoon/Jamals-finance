@@ -46,24 +46,15 @@ export default async function TransactionsPage({
   const minAmount = min ? Number(min) : null;
   const maxAmount = max ? Number(max) : null;
 
-  const [raw, { data: categories }, { data: accounts }] =
-    await Promise.all([
-      loadTransactions(supabase, {
-        type: type === "income" || type === "expense" ? type : undefined,
-        from,
-        to,
-        category,
-        account,
-        minAmount,
-        maxAmount,
-      }),
-      supabase
-        .from("categories")
-        .select("id, name, type, parent_id")
-        .order("type")
-        .order("name"),
-      supabase.from("accounts").select("id, name").order("name"),
-    ]);
+  const raw = await loadTransactions(supabase, {
+    type: type === "income" || type === "expense" ? type : undefined,
+    from,
+    to,
+    category,
+    account,
+    minAmount,
+    maxAmount,
+  });
 
   const transactions =
     (raw ?? []).filter((t) => {
@@ -113,10 +104,7 @@ export default async function TransactionsPage({
       </div>
 
       <Suspense fallback={<div className="mb-5 h-12" />}>
-        <TransactionFilters
-          categories={(categories ?? []) as any}
-          accounts={(accounts ?? []) as any}
-        />
+        <TransactionFilters />
       </Suspense>
 
       <div className="finance-panel p-4 sm:p-5">

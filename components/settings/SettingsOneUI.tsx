@@ -1,5 +1,4 @@
 "use client";
-import ExportButton from "@/components/reports/ExportButton";
 import type { FormEvent, ReactNode } from "react";
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -13,7 +12,6 @@ import {
   Loader2,
   LockKeyhole,
   LogOut,
-  Mail,
   Moon,
   Palette,
   Plus,
@@ -237,29 +235,6 @@ function ProfileDialog({
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <SettingsRow
-        icon={
-          <IconBubble tone="blue">
-            <Download size={21} />
-          </IconBubble>
-        }
-        title="Export Data"
-        description="Download profile backup JSON or full transactions CSV"
-        right={
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-            <button
-              type="button"
-              onClick={handleExportData}
-              className="finance-control finance-focus inline-flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold text-text-primary"
-            >
-              <Download size={15} />
-              Backup JSON
-            </button>
-
-            <ExportButton />
-          </div>
-        }
-      />
       <DialogContent className="max-h-[88dvh] overflow-y-auto rounded-3xl p-5 sm:max-w-lg">
         <DialogHeader>
           <DialogTitle className="text-xl font-bold">

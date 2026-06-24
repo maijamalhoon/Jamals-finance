@@ -48,7 +48,7 @@ export default function MetricCard({
     <motion.article
       initial={{ opacity: 0, y: 16, scale: 0.98 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
-      whileHover={{ y: -3, scale: 1.01 }}
+      whileHover={{ y: -2 }}
       transition={{ duration: 0.42, ease: [0.16, 1, 0.3, 1] }}
       className="finance-panel finance-hover-lift relative min-h-[96px] overflow-hidden rounded-[22px] p-4"
     >
@@ -56,11 +56,11 @@ export default function MetricCard({
         initial={{ opacity: 0, scale: 0.4 }}
         animate={{ opacity: 1, scale: 1.35 }}
         transition={{ duration: 1.1, ease: "easeOut" }}
-        className="pointer-events-none absolute right-4 top-2 h-20 w-20 rounded-full blur-2xl"
-        style={{ backgroundColor: `${accentColor}18` }}
+        className="pointer-events-none absolute right-4 top-2 z-0 h-14 w-14 rounded-full blur-lg"
+        style={{ backgroundColor: `${accentColor}0d` }}
       />
 
-      <div className="relative flex items-start justify-between gap-3">
+      <div className="relative z-10 flex items-start justify-between gap-3">
         <motion.div
           initial={{ rotate: -18, scale: 0.82 }}
           animate={{ rotate: 0, scale: 1 }}
@@ -96,7 +96,7 @@ export default function MetricCard({
         </motion.span>
       </div>
 
-      <div className="relative mt-3">
+      <div className="relative z-10 mt-3">
         <p className="text-[11px] font-semibold text-text-secondary">{title}</p>
 
         <div className="mt-1 flex items-end justify-between gap-3">

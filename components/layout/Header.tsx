@@ -10,6 +10,8 @@ import { isNavItemActive, NAV_ITEMS } from "@/lib/navigation";
 function getRouteTitle(pathname: string) {
   const navItem = NAV_ITEMS.find((item) => isNavItemActive(pathname, item.href));
   if (navItem) return navItem.label;
+  if (pathname.startsWith("/dashboard/income")) return "Income";
+  if (pathname.startsWith("/dashboard/expenses")) return "Expenses";
   if (pathname.startsWith("/dashboard/settings")) return "Settings";
   if (pathname.startsWith("/dashboard/ai-insights")) return "AI Insights";
   return "Dashboard";
@@ -77,7 +79,7 @@ export default function Header() {
           onSubmit={handleSearch}
           role="search"
           aria-label="Search transactions"
-          className="finance-control finance-focus flex h-10 w-72 items-center gap-2 px-3 xl:w-80"
+          className="finance-control finance-search-control finance-focus flex h-10 w-72 items-center gap-2 px-3 xl:w-80"
         >
           <Search size={14} className="flex-shrink-0 text-text-secondary" />
           <input

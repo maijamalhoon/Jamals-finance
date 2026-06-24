@@ -53,13 +53,14 @@ export default function TransactionRow({ tx }: { tx: Transaction }) {
     <>
       <div className="motion-table-row group grid grid-cols-[auto,1fr] gap-3 rounded-[14px] border-b border-slate-100 py-3.5 transition-all duration-200 hover:bg-hover last:border-0 md:flex md:items-center">
         <div
-          className="finance-icon-bubble h-10 w-10"
+          className="grid h-9 w-9 shrink-0 place-items-center rounded-full border"
           style={{
-            backgroundColor: `${iconMeta.accent}18`,
             color: iconMeta.accent,
+            borderColor: `color-mix(in srgb, ${iconMeta.accent}, transparent 76%)`,
+            backgroundColor: `color-mix(in srgb, ${iconMeta.accent}, transparent 92%)`,
           }}
         >
-          <TypeIcon size={17} strokeWidth={2.1} />
+          <TypeIcon size={16} strokeWidth={2.2} />
         </div>
 
         <div className="min-w-0 md:flex-1">

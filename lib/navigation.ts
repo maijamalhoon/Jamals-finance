@@ -5,11 +5,7 @@ import {
   HandCoins,
   LayoutDashboard,
   LucideIcon,
-  PiggyBank,
-  ReceiptText,
   Target,
-  TrendingDown,
-  TrendingUp,
   Wallet,
 } from "lucide-react";
 
@@ -32,18 +28,6 @@ export const NAV_ITEMS: NavItem[] = [
     href: "/dashboard/transactions",
     icon: ArrowLeftRight,
     tone: "text-violet-300 bg-violet-500/15",
-  },
-  {
-    label: "Income",
-    href: "/dashboard/income",
-    icon: TrendingUp,
-    tone: "text-emerald-300 bg-emerald-500/15",
-  },
-  {
-    label: "Expenses",
-    href: "/dashboard/expenses",
-    icon: TrendingDown,
-    tone: "text-rose-300 bg-rose-500/15",
   },
   {
     label: "Payables",
@@ -74,33 +58,6 @@ export const NAV_ITEMS: NavItem[] = [
     href: "/dashboard/analytics",
     icon: BarChart3,
     tone: "text-blue-300 bg-blue-500/15",
-  },
-];
-
-export const QUICK_ACTION_ITEMS = [
-  {
-    label: "Income",
-    href: "/dashboard/income",
-    icon: TrendingUp,
-    tone: "text-emerald-300 bg-emerald-500/15",
-  },
-  {
-    label: "Expenses",
-    href: "/dashboard/expenses",
-    icon: TrendingDown,
-    tone: "text-rose-300 bg-rose-500/15",
-  },
-  {
-    label: "Savings",
-    href: "/dashboard/goals",
-    icon: PiggyBank,
-    tone: "text-lime-300 bg-lime-500/15",
-  },
-  {
-    label: "Bills",
-    href: "/dashboard/transactions?search=bill",
-    icon: ReceiptText,
-    tone: "text-orange-300 bg-orange-500/15",
   },
 ];
 

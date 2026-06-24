@@ -9,6 +9,7 @@ import DatePicker from "@/components/ui/date-picker";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -32,37 +33,8 @@ function formatPKR(value: number | string) {
   })}`;
 }
 
-function AccountChoice({
-  account,
-  active,
-  onSelect,
-}: {
-  account: Account;
-  active: boolean;
-  onSelect: () => void;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onSelect}
-      className={`finance-focus rounded-[20px] border px-3 py-3 text-left transition-colors ${
-        active
-          ? "border-border bg-card text-text-primary"
-          : "border-border bg-surface-secondary text-slate-400 hover:bg-hover hover:text-text-primary"
-      }`}
-    >
-      <span className="block truncate text-sm font-semibold">
-        {account.name}
-      </span>
-      <span
-        className={
-          active ? "text-[11px] text-slate-600" : "text-[11px] text-slate-500"
-        }
-      >
-        {account.type} - {formatPKR(account.balance)}
-      </span>
-    </button>
-  );
+function accountLabel(account: Account) {
+  return `${account.name} (${account.type}) - ${formatPKR(account.balance)}`;
 }
 
 export default function TransferModal({ open, onClose, onSuccess }: Props) {
@@ -79,6 +51,7 @@ export default function TransferModal({ open, onClose, onSuccess }: Props) {
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  const toAccounts = accounts.filter((account) => account.id !== fromAccountId);
 
   useEffect(() => {
     if (!open) return;
@@ -163,62 +136,71 @@ export default function TransferModal({ open, onClose, onSuccess }: Props) {
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="finance-panel max-w-2xl gap-0 p-0 text-text-primary">
-        <DialogHeader className="border-b border-border p-5">
+      <DialogContent className="finance-panel max-h-[calc(100dvh-1.5rem)] max-w-md gap-0 overflow-hidden p-0 text-text-primary">
+        <DialogHeader className="border-b border-border px-5 py-4">
           <DialogTitle className="flex items-center gap-2 text-base font-semibold">
-            <ArrowLeftRight size={18} />
-            Account Transfer
+            <span className="grid h-8 w-8 place-items-center rounded-[12px] border border-cyan-500/20 bg-cyan-500/10 text-cyan-700 dark:text-cyan-200">
+              <ArrowLeftRight size={16} />
+            </span>
+            Transfer Money
           </DialogTitle>
+          <DialogDescription className="sr-only">
+            Select different accounts, amount, date, and an optional note.
+          </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-5 p-5">
+        <div className="max-h-[calc(100dvh-9rem)] space-y-3.5 overflow-y-auto px-5 py-4">
           {loading ? (
-            <div className="finance-skeleton h-36" />
+            <div className="finance-skeleton h-40" />
           ) : accounts.length < 2 ? (
-            <div className="rounded-[24px] border border-amber-300/15 bg-amber-300/[0.08] p-4 text-sm text-amber-100">
+            <div className="rounded-[18px] border border-amber-500/20 bg-amber-500/10 p-4 text-sm text-amber-700 dark:text-amber-200">
               Add at least two accounts before recording a transfer.
             </div>
           ) : (
             <>
-              <div className="grid gap-4 lg:grid-cols-[1fr_auto_1fr] lg:items-start">
-                <div>
-                  <label className="field-label">From Account</label>
-                  <div className="grid max-h-64 gap-2 overflow-y-auto pr-1">
-                    {accounts.map((account) => (
-                      <AccountChoice
-                        key={account.id}
-                        account={account}
-                        active={fromAccountId === account.id}
-                        onSelect={() => {
-                          setFromAccountId(account.id);
-                          if (toAccountId === account.id) setToAccountId("");
-                        }}
-                      />
-                    ))}
-                  </div>
-                </div>
+              <div>
+                <label className="field-label">From Account</label>
+                <select
+                  value={fromAccountId}
+                  onChange={(event) => {
+                    const nextFromId = event.target.value;
+                    setFromAccountId(nextFromId);
+                    if (toAccountId === nextFromId) {
+                      setToAccountId(
+                        accounts.find((account) => account.id !== nextFromId)
+                          ?.id || "",
+                      );
+                    }
+                  }}
+                  className="field-input"
+                >
+                  {accounts.map((account) => (
+                    <option key={account.id} value={account.id}>
+                      {accountLabel(account)}
+                    </option>
+                  ))}
+                </select>
+              </div>
 
-                <div className="hidden h-full items-center justify-center lg:flex">
-                  <div className="grid h-11 w-11 place-items-center rounded-[20px] border border-border bg-surface-secondary text-text-primary">
-                    <ArrowLeftRight size={18} />
-                  </div>
-                </div>
+              <div className="flex justify-center">
+                <span className="grid h-9 w-9 place-items-center rounded-[14px] border border-border bg-surface-secondary text-text-secondary">
+                  <ArrowLeftRight size={16} />
+                </span>
+              </div>
 
-                <div>
-                  <label className="field-label">To Account</label>
-                  <div className="grid max-h-64 gap-2 overflow-y-auto pr-1">
-                    {accounts
-                      .filter((account) => account.id !== fromAccountId)
-                      .map((account) => (
-                        <AccountChoice
-                          key={account.id}
-                          account={account}
-                          active={toAccountId === account.id}
-                          onSelect={() => setToAccountId(account.id)}
-                        />
-                      ))}
-                  </div>
-                </div>
+              <div>
+                <label className="field-label">To Account</label>
+                <select
+                  value={toAccountId}
+                  onChange={(event) => setToAccountId(event.target.value)}
+                  className="field-input"
+                >
+                  {toAccounts.map((account) => (
+                    <option key={account.id} value={account.id}>
+                      {accountLabel(account)}
+                    </option>
+                  ))}
+                </select>
               </div>
 
               <div className="grid gap-3 sm:grid-cols-2">
@@ -243,7 +225,7 @@ export default function TransferModal({ open, onClose, onSuccess }: Props) {
               </div>
 
               <div>
-                <label className="field-label">Note</label>
+                <label className="field-label">Note (Optional)</label>
                 <input
                   value={note}
                   onChange={(event) => setNote(event.target.value)}
@@ -255,18 +237,28 @@ export default function TransferModal({ open, onClose, onSuccess }: Props) {
           )}
 
           {error && (
-            <p className="rounded-[18px] border border-red-400/15 bg-red-500/10 p-3 text-xs text-red-300">
+            <p className="rounded-[16px] border border-red-500/15 bg-red-500/10 p-3 text-xs text-red-500 dark:text-red-300">
               {error}
             </p>
           )}
+        </div>
 
+        <div className="grid grid-cols-2 gap-2 border-t border-border p-4">
+          <button
+            type="button"
+            onClick={onClose}
+            disabled={saving}
+            className="finance-focus inline-flex min-h-11 items-center justify-center rounded-[16px] border border-border bg-surface-secondary px-4 py-2.5 text-sm font-semibold text-text-primary transition-all hover:bg-hover active:scale-[0.985] disabled:opacity-50"
+          >
+            Cancel
+          </button>
           <button
             type="button"
             onClick={handleSave}
             disabled={saving || loading || accounts.length < 2}
-            className="primary-action w-full py-3"
+            className="primary-action py-3"
           >
-            {saving ? "Recording..." : "Record Transfer"}
+            {saving ? "Saving..." : "Save Transfer"}
           </button>
         </div>
       </DialogContent>

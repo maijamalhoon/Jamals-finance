@@ -5,11 +5,11 @@ import { createClient } from "@/lib/supabase/client";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
 import DatePicker from "@/components/ui/date-picker";
-import { INCOME_SOURCE_SUGGESTIONS } from "@/lib/finance-options";
 import { toast } from "sonner";
 
 interface Category {
@@ -213,35 +213,54 @@ export default function TransactionModal({
   const categoryById = new Map(categories.map((category) => [category.id, category]));
   const parentName = (category: Category) =>
     category.parent_id ? categoryById.get(category.parent_id)?.name : undefined;
+  const typeLocked = !isEditing;
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="finance-panel max-h-[calc(100dvh-1.5rem)] max-w-lg gap-0 overflow-hidden p-0 text-text-primary sm:max-h-[min(760px,calc(100dvh-2rem))]">
+      <DialogContent className="finance-panel max-h-[calc(100dvh-1.5rem)] max-w-md gap-0 overflow-hidden p-0 text-text-primary">
         <DialogHeader className="border-b border-border px-5 py-4">
-          <DialogTitle className="text-base font-semibold">
-            {isEditing ? "Edit Transaction" : `Add ${isIncome ? "Income" : "Expense"}`}
-          </DialogTitle>
-        </DialogHeader>
-
-        <div className="max-h-[calc(100dvh-6.5rem)] space-y-4 overflow-y-auto px-5 py-4 sm:max-h-[660px]">
-          <div className="flex gap-2 rounded-2xl border border-border bg-surface-secondary p-1">
-            {(["income", "expense"] as const).map((nextType) => (
-              <button
-                key={nextType}
-                type="button"
-                onClick={() => setType(nextType)}
-                className={`flex-1 rounded-xl py-2 text-sm font-medium transition-colors ${
-                  type === nextType
-                    ? nextType === "income"
-                      ? "bg-emerald-300 text-slate-950"
-                      : "bg-rose-300 text-slate-950"
-                    : "text-slate-500 hover:text-text-primary"
+          <DialogTitle className="flex items-center justify-between gap-3 text-base font-semibold">
+            <span>
+              {isEditing ? "Edit Transaction" : `Add ${isIncome ? "Income" : "Expense"}`}
+            </span>
+            {typeLocked && (
+              <span
+                className={`rounded-full border px-2.5 py-1 text-[11px] font-semibold ${
+                  isIncome
+                    ? "border-emerald-500/20 bg-emerald-500/10 text-emerald-700 dark:text-emerald-200"
+                    : "border-rose-500/20 bg-rose-500/10 text-rose-700 dark:text-rose-200"
                 }`}
               >
-                {nextType === "income" ? "Income" : "Expense"}
-              </button>
-            ))}
-          </div>
+                {isIncome ? "Income only" : "Expense only"}
+              </span>
+            )}
+          </DialogTitle>
+          <DialogDescription className="sr-only">
+            Enter amount, account, category, date, and an optional note.
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="max-h-[calc(100dvh-9rem)] space-y-3.5 overflow-y-auto px-5 py-4">
+          {!typeLocked && (
+            <div className="flex gap-1.5 rounded-[16px] border border-border bg-surface-secondary p-1">
+              {(["income", "expense"] as const).map((nextType) => (
+                <button
+                  key={nextType}
+                  type="button"
+                  onClick={() => setType(nextType)}
+                  className={`flex-1 rounded-[12px] py-2 text-sm font-semibold transition-colors ${
+                    type === nextType
+                      ? nextType === "income"
+                        ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-200"
+                        : "bg-rose-500/15 text-rose-700 dark:text-rose-200"
+                      : "text-text-secondary hover:bg-hover hover:text-text-primary"
+                  }`}
+                >
+                  {nextType === "income" ? "Income" : "Expense"}
+                </button>
+              ))}
+            </div>
+          )}
 
           <div>
             <label className="field-label">Amount (PKR)</label>
@@ -255,8 +274,27 @@ export default function TransactionModal({
           </div>
 
           <div>
+            <label className="field-label">Account</label>
+            <select
+              value={accountId}
+              onChange={(event) => setAccountId(event.target.value)}
+              className="field-input"
+            >
+              {loadingOptions && <option value="">Loading accounts...</option>}
+              {!loadingOptions && accounts.length === 0 && (
+                <option value="">No accounts found</option>
+              )}
+              {accounts.map((account) => (
+                <option key={account.id} value={account.id}>
+                  {account.name} ({account.type})
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div>
             <label className="field-label">
-              {isIncome ? "Income Source Category" : "Expense Category"}
+              Category
             </label>
             <select
               value={categoryId}
@@ -274,53 +312,6 @@ export default function TransactionModal({
                   {parentName(category)
                     ? `${parentName(category)} / ${category.name}`
                     : category.name}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {isIncome && (
-            <div>
-              <label className="field-label">Exact Income Source</label>
-              <input
-                value={sourceName}
-                onChange={(event) => setSourceName(event.target.value)}
-                placeholder="inDrive rides, Toyota commission, salary..."
-                className="field-input"
-              />
-              <div className="mt-2 flex gap-2 overflow-x-auto pb-1">
-                {INCOME_SOURCE_SUGGESTIONS.slice(0, 8).map((source) => (
-                  <button
-                    key={source}
-                    type="button"
-                    onClick={() => setSourceName(source)}
-                    className={`finance-focus flex-shrink-0 rounded-full border px-3 py-1.5 text-[11px] font-medium transition-colors ${
-                      sourceName === source
-                        ? "border-border bg-card text-text-primary"
-                        : "border-border bg-surface-secondary text-slate-400 hover:bg-hover hover:text-text-primary"
-                    }`}
-                  >
-                    {source}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
-          <div>
-            <label className="field-label">Account</label>
-            <select
-              value={accountId}
-              onChange={(event) => setAccountId(event.target.value)}
-              className="field-input"
-            >
-              {loadingOptions && <option value="">Loading accounts...</option>}
-              {!loadingOptions && accounts.length === 0 && (
-                <option value="">No accounts found</option>
-              )}
-              {accounts.map((account) => (
-                <option key={account.id} value={account.id}>
-                  {account.name} ({account.type})
                 </option>
               ))}
             </select>
@@ -346,42 +337,29 @@ export default function TransactionModal({
             />
           </div>
 
-          <div className="grid gap-3 sm:grid-cols-2">
-            <div>
-              <label className="field-label">Person Name (Optional)</label>
-              <input
-                type="text"
-                value={personName}
-                onChange={(event) => setPersonName(event.target.value)}
-                placeholder="Related person"
-                className="field-input"
-              />
-            </div>
-            <div>
-              <label className="field-label">Item Name (Optional)</label>
-              <input
-                type="text"
-                value={itemName}
-                onChange={(event) => setItemName(event.target.value)}
-                placeholder="Item, job, project"
-                className="field-input"
-              />
-            </div>
-          </div>
-
           {error && (
             <p className="rounded-xl bg-red-500/10 p-3 text-xs text-red-400">
               {error}
             </p>
           )}
+        </div>
 
+        <div className="grid grid-cols-2 gap-2 border-t border-border p-4">
+          <button
+            type="button"
+            onClick={onClose}
+            disabled={loading}
+            className="finance-focus inline-flex min-h-11 items-center justify-center rounded-[16px] border border-border bg-surface-secondary px-4 py-2.5 text-sm font-semibold text-text-primary transition-all hover:bg-hover active:scale-[0.985] disabled:opacity-50"
+          >
+            Cancel
+          </button>
           <button
             type="button"
             onClick={handleSave}
             disabled={loading || loadingOptions}
-            className={`w-full py-3 ${isIncome ? "success-action" : "danger-action"}`}
+            className={`py-3 ${isIncome ? "success-action" : "danger-action"}`}
           >
-            {loadingOptions ? "Loading options..." : btnLabel}
+            {loadingOptions ? "Loading..." : btnLabel}
           </button>
         </div>
       </DialogContent>

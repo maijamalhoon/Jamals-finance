@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo } from "react";
 import {
   LineChart,
   Line,
@@ -39,12 +40,12 @@ function CustomTooltip({
     payload.find((item) => item.dataKey === "expenses")?.value ?? 0;
 
   return (
-    <div className="finance-panel p-3 text-xs shadow-[var(--shadow-soft)]">
-      <p className="mb-2 font-medium text-text-secondary">{label}</p>
-      <p className="text-success">
+    <div className="rounded-[16px] border border-border bg-card/95 p-3 text-xs shadow-[var(--shadow-soft)] backdrop-blur-md">
+      <p className="mb-2 font-semibold text-text-secondary">{label}</p>
+      <p className="font-medium text-success">
         Income: PKR {income.toLocaleString()}
       </p>
-      <p className="mt-1 text-danger">
+      <p className="mt-1 font-medium text-danger">
         Expenses: PKR {expenses.toLocaleString()}
       </p>
     </div>
@@ -52,16 +53,27 @@ function CustomTooltip({
 }
 
 export default function IncomeExpenseChart({ data }: { data: ChartData[] }) {
-  const chartRows = data.map((point, index) => ({
-    ...point,
-    day: index + 1,
-  }));
+  const chartRows = useMemo(
+    () =>
+      data.map((point, index) => ({
+        ...point,
+        income: Number.isFinite(Number(point.income)) ? Number(point.income) : 0,
+        expenses:
+          Number.isFinite(Number(point.expenses)) ? Number(point.expenses) : 0,
+        day: index + 1,
+      })),
+    [data],
+  );
   const hasCashFlow = chartRows.some(
     (point) => point.income > 0 || point.expenses > 0,
   );
-  const maxValue = Math.max(
-    1000,
-    ...chartRows.flatMap((point) => [point.income, point.expenses]),
+  const maxValue = useMemo(
+    () =>
+      Math.max(
+        1000,
+        ...chartRows.flatMap((point) => [point.income, point.expenses]),
+      ),
+    [chartRows],
   );
 
   return (
@@ -71,29 +83,36 @@ export default function IncomeExpenseChart({ data }: { data: ChartData[] }) {
       title="Daily Cash Flow"
       legendPlacement="header"
       legend={
-        <div className="flex items-center gap-3 pt-1">
-          <div className="flex items-center gap-2">
-            <span className="h-px w-5 bg-[var(--dashboard-chart-income)]" />
-            <span className="text-[11px] font-medium text-text-secondary">In</span>
+        <div className="flex items-center gap-2 pt-0.5">
+          <div className="flex items-center gap-1.5">
+            <span className="h-px w-4 bg-[var(--dashboard-chart-income)]" />
+            <span className="text-[9.5px] font-medium text-text-secondary">
+              In
+            </span>
           </div>
-          <div className="flex items-center gap-2">
-            <span className="h-px w-5 bg-[var(--dashboard-chart-expense)]" />
-            <span className="text-[11px] font-medium text-text-secondary">Out</span>
+          <div className="flex items-center gap-1.5">
+            <span className="h-px w-4 border-t border-dashed border-[var(--dashboard-chart-expense)]" />
+            <span className="text-[9.5px] font-medium text-text-secondary">
+              Out
+            </span>
           </div>
         </div>
       }
     >
       {hasCashFlow ? (
-        <ChartFrame className="h-[169px] min-h-[169px] min-w-0 overflow-hidden" tone="green">
+        <ChartFrame
+          className="h-[162px] min-h-[162px] min-w-0 overflow-hidden"
+          tone="green"
+        >
           {({ width, height }) => (
             <LineChart
               data={chartRows}
               height={height}
-              margin={{ top: 5, right: 4, left: -9, bottom: 0 }}
+              margin={{ top: 10, right: 8, left: -6, bottom: 0 }}
               width={width}
             >
               <CartesianGrid
-                strokeDasharray="2 6"
+                strokeDasharray="2 7"
                 stroke="var(--dashboard-chart-grid)"
                 vertical={false}
               />
@@ -104,6 +123,12 @@ export default function IncomeExpenseChart({ data }: { data: ChartData[] }) {
                 tickLine={false}
                 interval={1}
                 minTickGap={16}
+                tickFormatter={(value) => {
+                  const day = Number(value);
+                  return day % 2 === 1 || day === chartRows.length ?
+                      String(day)
+                    : "";
+                }}
               />
               <YAxis
                 domain={[0, Math.ceil(maxValue / 250) * 250]}
@@ -121,7 +146,7 @@ export default function IncomeExpenseChart({ data }: { data: ChartData[] }) {
                 isAnimationActive
                 stroke="var(--dashboard-chart-income)"
                 strokeLinecap="round"
-                strokeWidth={2.4}
+                strokeWidth={2.35}
                 {...chartMotion}
               />
               <Line
@@ -132,7 +157,7 @@ export default function IncomeExpenseChart({ data }: { data: ChartData[] }) {
                 stroke="var(--dashboard-chart-expense)"
                 strokeDasharray="4 4"
                 strokeLinecap="round"
-                strokeWidth={2.4}
+                strokeWidth={2.25}
                 {...chartMotion}
                 animationBegin={140}
               />
@@ -140,7 +165,7 @@ export default function IncomeExpenseChart({ data }: { data: ChartData[] }) {
           )}
         </ChartFrame>
       ) : (
-        <div className="dashboard-chart-empty h-[169px] min-h-[169px]">
+        <div className="dashboard-chart-empty h-[162px] min-h-[162px]">
           <div>
             <span className="dashboard-chart-empty-icon">
               <DollarSign size={16} />

@@ -5,16 +5,7 @@ export default function TransactionsLoading() {
         <div className="h-7 w-48 finance-skeleton" />
         <div className="h-4 w-32 finance-skeleton" />
       </div>
-      <div className="space-y-3 mb-5">
-        <div className="flex gap-3">
-          <div className="h-10 w-48 finance-skeleton" />
-          <div className="h-10 w-56 finance-skeleton" />
-        </div>
-        <div className="flex gap-3">
-          <div className="h-9 w-40 finance-skeleton" />
-          <div className="h-9 w-40 finance-skeleton" />
-        </div>
-      </div>
+      <div className="mb-5 h-11 w-full max-w-[360px] finance-skeleton" />
       <div className="finance-skeleton p-5">
         <div className="h-8 finance-skeleton mb-4" />
         {Array.from({ length: 8 }).map((_, i) => (

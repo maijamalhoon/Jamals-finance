@@ -1,6 +1,7 @@
 import type { CSSProperties } from "react";
 import Link from "next/link";
 import { ArrowLeftRight } from "lucide-react";
+
 import CountedAmount from "@/components/motion/CountedAmount";
 import EmptyState from "@/components/ui/empty-state";
 import { getTransactionIconMeta } from "@/lib/transaction-icons";
@@ -8,20 +9,29 @@ import { getTransactionIconMeta } from "@/lib/transaction-icons";
 interface Transaction {
   id: string;
   type: "income" | "expense" | "transfer" | string;
-  amount: number;
+  amount: number | string;
   note: string | null;
   date: string;
-  categories: { name: string; color: string; parent?: { name: string } | null } | null;
+  categories: {
+    name: string;
+    color?: string | null;
+    parent?: { name: string } | null;
+  } | null;
   accounts: { name: string } | null;
 }
 
-function formatCurrency(value: number) {
-  const safeValue = Number.isFinite(value) ? Math.max(value, 0) : 0;
-  return `PKR ${safeValue.toLocaleString("en-PK", { maximumFractionDigits: 0 })}`;
+function formatCurrency(value: number | string) {
+  const numericValue = Number(value);
+  const safeValue = Number.isFinite(numericValue) ? Math.abs(numericValue) : 0;
+
+  return `PKR ${safeValue.toLocaleString("en-PK", {
+    maximumFractionDigits: 0,
+  })}`;
 }
 
 function formatDate(value: string) {
   const parsed = new Date(value);
+
   if (Number.isNaN(parsed.getTime())) return "No date";
 
   return parsed.toLocaleDateString("en-US", {
@@ -30,7 +40,7 @@ function formatDate(value: string) {
   });
 }
 
-function getAmountTone(type: Transaction["type"]) {
+function getAmountClass(type: Transaction["type"]) {
   if (type === "income") return "text-success";
   if (type === "expense") return "text-danger";
   return "text-active";
@@ -42,10 +52,16 @@ function getAmountPrefix(type: Transaction["type"]) {
   return "";
 }
 
-function getPillTone(type: Transaction["type"]) {
-  if (type === "income") return "finance-status-success";
-  if (type === "expense") return "finance-status-danger";
-  return "finance-status-info";
+function getDisplayName(tx: Transaction) {
+  if (tx.type === "transfer") return "Transfer";
+  return tx.note || tx.categories?.name || "Transaction";
+}
+
+function getTransactionSubtitle(tx: Transaction) {
+  const category = tx.categories?.name || "Uncategorized";
+  const account = tx.accounts?.name || "No account";
+
+  return `${category} - ${formatDate(tx.date)} - ${account}`;
 }
 
 export default function RecentTransactions({
@@ -56,111 +72,92 @@ export default function RecentTransactions({
   const visibleTransactions = transactions.slice(0, 5);
 
   return (
-    <section className="finance-reference-card motion-card-entry flex h-full min-h-[380px] min-w-0 flex-col overflow-hidden p-5 sm:p-6">
-      <div className="mb-5 flex min-w-0 items-start justify-between gap-3">
+    <section className="finance-reference-card dashboard-list-card motion-card-entry">
+      <div className="dashboard-list-card-header">
         <div className="min-w-0">
-          <div className="mb-2 flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-text-secondary">
-            <span className="grid h-6 w-6 place-items-center rounded-full bg-surface-secondary text-text-tertiary [&>svg]:h-3.5 [&>svg]:w-3.5">
+          <div className="dashboard-list-card-kicker">
+            <span className="dashboard-list-card-kicker-icon">
               <ArrowLeftRight />
             </span>
             <span className="truncate">Activity</span>
           </div>
-          <h3 className="text-[18px] font-semibold leading-tight tracking-normal text-text-primary">
-            Recent Transactions
-          </h3>
-          <p className="mt-1 text-xs leading-5 text-text-secondary">
-            Latest account activity
-          </p>
+          <h3 className="dashboard-list-card-title">Recent Transactions</h3>
+          <p className="dashboard-list-card-subtitle">Latest account activity</p>
         </div>
 
-        {visibleTransactions.length > 0 ? (
+        {transactions.length > 0 ?
           <Link
             href="/dashboard/transactions"
-            className="finance-focus finance-pressable shrink-0 rounded-full border border-border bg-surface-secondary px-3 py-1.5 text-[11px] font-semibold leading-none text-active hover:bg-hover"
+            className="dashboard-list-card-action"
           >
-            View All
+            View all
           </Link>
-        ) : null}
+        : null}
       </div>
 
-      {visibleTransactions.length === 0 ? (
+      {visibleTransactions.length === 0 ?
         <div className="dashboard-chart-empty flex-1">
           <EmptyState
             compact
             icon={ArrowLeftRight}
             title="No transactions yet"
-            description="Add your first income or expense to see recent activity here."
+            description="Add income or expense to see activity here."
           />
         </div>
-      ) : (
-        <div className="flex flex-1 flex-col gap-2.5">
-          {visibleTransactions.map((tx, index) => {
-            const iconMeta = getTransactionIconMeta({
-              type: tx.type,
-              note: tx.note,
-              categoryName: tx.categories?.name,
-              parentCategoryName: tx.categories?.parent?.name,
-            });
-            const TypeIcon = iconMeta.icon;
-            const title = tx.note || tx.categories?.name || "Transaction";
-            const category = tx.categories?.name || "Uncategorized";
-            const account = tx.accounts?.name || "No account";
-            const rowStyle = {
-              "--motion-reveal-delay": `${index * 55}ms`,
-            } as CSSProperties;
+      : <div className="dashboard-list-rows">
+          <div className="flex min-w-0 flex-col">
+            {visibleTransactions.map((tx, index) => {
+              const iconMeta = getTransactionIconMeta({
+                type: tx.type,
+                note: tx.note,
+                categoryName: tx.categories?.name,
+                parentCategoryName: tx.categories?.parent?.name,
+              });
+              const Icon = iconMeta.icon;
 
-            return (
-              <article
-                key={tx.id}
-                className="motion-table-row grid min-w-0 grid-cols-[auto_minmax(0,1fr)] gap-3 rounded-[20px] border border-transparent bg-surface-secondary/60 p-3 transition-colors duration-200 hover:border-border hover:bg-hover sm:grid-cols-[auto_minmax(0,1fr)_auto] sm:items-center"
-                style={rowStyle}
-              >
-                <div
-                  className="finance-icon-bubble h-9 w-9"
-                  style={{
-                    borderColor: `color-mix(in srgb, ${iconMeta.accent}, transparent 70%)`,
-                    backgroundColor: `color-mix(in srgb, ${iconMeta.accent}, transparent 88%)`,
-                    color: iconMeta.accent,
-                  }}
+              const rowStyle = {
+                "--motion-reveal-delay": `${index * 35}ms`,
+                "--transaction-accent": iconMeta.accent,
+              } as CSSProperties;
+
+              return (
+                <article
+                  key={tx.id}
+                  style={rowStyle}
+                  className="dashboard-list-row motion-table-row grid grid-cols-[36px_minmax(0,1fr)_auto] items-center gap-3 transition-colors duration-200 hover:bg-hover/40"
                 >
-                  <TypeIcon size={16} strokeWidth={2.1} />
-                </div>
-
-                <div className="min-w-0">
-                  <div className="flex min-w-0 items-center gap-2">
-                    <p className="min-w-0 flex-1 truncate text-[13px] font-semibold leading-5 text-text-primary">
-                      {title}
-                    </p>
-                    <span
-                      className={`finance-state-pill shrink-0 text-[10px] sm:hidden ${getPillTone(tx.type)}`}
-                    >
-                      {iconMeta.label}
-                    </span>
-                  </div>
-                  <p className="mt-0.5 truncate text-[11px] font-medium leading-4 text-text-secondary">
-                    {category} - {formatDate(tx.date)} - {account}
-                  </p>
-                </div>
-
-                <div className="col-span-2 flex min-w-0 items-center justify-between gap-3 sm:col-span-1 sm:block sm:text-right">
                   <span
-                    className={`finance-state-pill hidden text-[10px] sm:inline-flex ${getPillTone(tx.type)}`}
+                    className="grid h-9 w-9 shrink-0 place-items-center rounded-full border"
+                    style={{
+                      color: iconMeta.accent,
+                      borderColor: `color-mix(in srgb, ${iconMeta.accent}, transparent 76%)`,
+                      backgroundColor: `color-mix(in srgb, ${iconMeta.accent}, transparent 92%)`,
+                    }}
                   >
-                    <TypeIcon size={11} strokeWidth={2.1} />
-                    {iconMeta.label}
+                    <Icon size={16} strokeWidth={2.2} />
                   </span>
+
+                  <div className="min-w-0">
+                    <p className="truncate text-[13px] font-semibold leading-5 text-text-primary sm:text-sm">
+                      {getDisplayName(tx)}
+                    </p>
+                    <p className="mt-0.5 truncate text-[11px] font-medium leading-4 text-text-secondary">
+                      {getTransactionSubtitle(tx)}
+                    </p>
+                  </div>
+
                   <p
-                    className={`mt-0 whitespace-nowrap text-[13px] font-bold leading-5 sm:mt-1 ${getAmountTone(tx.type)}`}
+                    className={`shrink-0 whitespace-nowrap text-right text-[13px] font-bold leading-5 tabular-nums ${getAmountClass(tx.type)}`}
                   >
                     {getAmountPrefix(tx.type)}
-                    <CountedAmount amount={formatCurrency(Number(tx.amount))} />
+                    <CountedAmount amount={formatCurrency(tx.amount)} />
                   </p>
-                </div>
-              </article>
-            );
-          })}
+                </article>
+              );
+            })}
+          </div>
         </div>
-      )}
+      }
     </section>
   );
 }

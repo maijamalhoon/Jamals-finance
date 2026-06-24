@@ -25,28 +25,29 @@ export default function ChartCard({
 }: ChartCardProps) {
   return (
     <section
-      className={`dashboard-graph-card group/chart flex h-full min-h-[258px] flex-col overflow-hidden ${className}`}
+      className={`dashboard-graph-card group/chart flex h-full min-h-[220px] flex-col overflow-hidden ${className}`}
     >
-      <div className="mb-3 flex items-start justify-between gap-4">
-        <div className="flex min-w-0 items-start gap-3">
-          {eyebrowIcon ? (
-            <span className="finance-icon-bubble h-8 w-8 rounded-[14px] [&>svg]:h-[15px] [&>svg]:w-[15px] [&>svg]:stroke-[2.2]">
-              {eyebrowIcon}
-            </span>
-          ) : null}
-          <div className="min-w-0">
-            <p className="truncate text-[10px] font-semibold uppercase tracking-[0.18em] text-text-secondary">
+      <div className="mb-2 flex min-w-0 items-start justify-between gap-3">
+        <div className="min-w-0">
+          <div className="flex min-w-0 items-center gap-1.5 text-text-secondary">
+            {eyebrowIcon ? (
+              <span className="grid h-3.5 w-3.5 shrink-0 place-items-center text-active [&>svg]:h-3 [&>svg]:w-3 [&>svg]:stroke-[2.3]">
+                {eyebrowIcon}
+              </span>
+            ) : null}
+            <p className="truncate text-[9px] font-semibold uppercase tracking-[0.2em]">
               {eyebrow}
             </p>
-            <h3 className="mt-1.5 text-[16px] font-semibold leading-none tracking-normal text-text-primary">
-              {title}
-            </h3>
-            {description ? (
-              <p className="mt-1 text-xs leading-5 text-text-secondary">
-                {description}
-              </p>
-            ) : null}
           </div>
+
+          <h3 className="mt-1.5 truncate text-[13px] font-semibold leading-none tracking-normal text-text-primary">
+            {title}
+          </h3>
+          {description ? (
+            <p className="mt-1 text-[11px] leading-4 text-text-secondary">
+              {description}
+            </p>
+          ) : null}
         </div>
         <div className="shrink-0">
           {legendPlacement === "header" ? legend : action}

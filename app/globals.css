@@ -390,8 +390,10 @@
   }
 
   .finance-hover-lift:hover {
-    border-color: color-mix(in srgb, var(--active), var(--border) 72%);
-    box-shadow: var(--shadow-premium), var(--glow-soft);
+    border-color: var(--border);
+    box-shadow:
+      0 18px 42px rgb(16 24 40 / 0.09),
+      0 2px 8px rgb(16 24 40 / 0.04);
     transform: translate3d(0, -2px, 0);
   }
 
@@ -425,6 +427,12 @@
   .finance-control:focus-visible {
     border-color: var(--active);
     box-shadow: var(--focus-ring);
+  }
+
+  .finance-search-control:focus-within {
+    border-color: color-mix(in srgb, var(--active), var(--border) 68%);
+    box-shadow: none;
+    transform: none;
   }
 
   .finance-focus {
@@ -573,15 +581,82 @@
       inset 0 1px 0 rgb(255 255 255 / 0.04);
   }
 
-  .finance-reference-card:hover {
-    border-color: color-mix(in srgb, var(--active), var(--border) 70%);
-    box-shadow:
-      0 24px 60px rgb(16 24 40 / 0.11),
-      var(--glow-soft);
+  .dashboard-list-card {
+    @apply flex h-full min-h-[340px] min-w-0 flex-col overflow-hidden p-4 sm:min-h-[380px] sm:p-5;
+  }
+
+  .dashboard-list-card-header {
+    @apply mb-4 flex min-w-0 shrink-0 items-start justify-between gap-3;
+  }
+
+  .dashboard-list-card-kicker {
+    @apply mb-2 flex min-w-0 items-center gap-2 text-[10px] font-semibold uppercase text-text-secondary;
+    letter-spacing: 0.14em;
+  }
+
+  .dashboard-list-card-kicker-icon {
+    @apply grid h-6 w-6 shrink-0 place-items-center rounded-full border text-text-tertiary [&>svg]:h-3.5 [&>svg]:w-3.5;
+    border-color: var(--border);
+    background-color: var(--surface-secondary);
+  }
+
+  .dashboard-list-card-title {
+    @apply truncate text-[17px] font-semibold leading-tight tracking-normal text-text-primary;
+  }
+
+  .dashboard-list-card-subtitle {
+    @apply mt-1 truncate text-xs leading-5 text-text-secondary;
+  }
+
+  .dashboard-list-card-action {
+    @apply shrink-0 rounded-full border px-3 py-1.5 text-[11px] font-semibold leading-none transition;
+    border-color: var(--border);
+    background-color: var(--surface-secondary);
+    color: var(--active);
+  }
+
+  .dashboard-list-card-action:hover {
+    background-color: var(--hover);
+  }
+
+  .dashboard-list-card-action:focus-visible {
+    outline: none;
+    box-shadow: var(--focus-ring);
+  }
+
+  .dashboard-list-card-action:active {
+    transform: scale(0.985);
+  }
+
+  .dashboard-list-rows {
+    @apply min-h-0 flex-1 overflow-y-auto overflow-x-hidden pr-1;
+    scrollbar-gutter: stable;
+  }
+
+  .dashboard-list-row {
+    @apply min-w-0 border-b border-border/60 py-3 first:pt-0 last:border-b-0 last:pb-0;
+  }
+
+  .dashboard-progress-track {
+    @apply h-1.5 overflow-hidden rounded-full;
+    background-color: color-mix(in srgb, var(--progress-accent, var(--active)), var(--card) 88%);
+  }
+
+  .dashboard-progress-fill {
+    width: 100%;
+    height: 100%;
+    border-radius: inherit;
+    background-color: var(--progress-accent, var(--active));
+    opacity: 1;
+    transform: scaleX(var(--progress-scale, 0));
+    transform-origin: left center;
+    animation: dashboardProgressDraw 1.05s var(--motion-ease) both;
+    animation-delay: var(--progress-delay, 0ms);
+    will-change: transform;
   }
 
   .dashboard-graph-card {
-    @apply rounded-[22px] border px-5 pb-4 pt-5;
+    @apply rounded-[21px] border px-5 pb-4 pt-4;
     --dashboard-chart-spend: #ff9700;
     --dashboard-chart-income: #19c76f;
     --dashboard-chart-expense: #ff3b35;
@@ -593,14 +668,15 @@
       linear-gradient(180deg, color-mix(in srgb, var(--card), white 7%), var(--card));
     color: var(--text-primary);
     box-shadow:
-      0 18px 42px rgb(16 24 40 / 0.08),
-      0 2px 8px rgb(16 24 40 / 0.04),
+      0 14px 34px rgb(16 24 40 / 0.075),
+      0 2px 7px rgb(16 24 40 / 0.04),
       var(--surface-highlight);
     transition:
       transform 0.2s var(--motion-ease),
       border-color 0.2s var(--motion-ease),
       box-shadow 0.2s var(--motion-ease),
       background-color 0.2s var(--motion-ease);
+    will-change: transform;
   }
 
   .dark .dashboard-graph-card {
@@ -614,13 +690,6 @@
     box-shadow:
       0 22px 58px rgb(0 0 0 / 0.32),
       inset 0 1px 0 rgb(255 255 255 / 0.04);
-  }
-
-  .dashboard-graph-card:hover {
-    border-color: color-mix(in srgb, var(--active), var(--border) 74%);
-    box-shadow:
-      0 24px 60px rgb(16 24 40 / 0.11),
-      var(--glow-soft);
   }
 
   .dashboard-chart-empty {
@@ -1125,15 +1194,28 @@ button svg {
   contain: layout paint;
 }
 
-a:hover svg,
-button:hover svg {
+a:hover svg:not(.recharts-surface),
+button:hover svg:not(.recharts-surface) {
   transform: translateY(-0.5px);
 }
 
 .recharts-tooltip-wrapper {
+  z-index: 20;
+  pointer-events: none;
   transition:
     opacity 0.16s var(--motion-ease),
     transform 0.16s var(--motion-ease) !important;
+}
+
+.recharts-wrapper,
+.recharts-surface,
+.recharts-wrapper :focus,
+.recharts-wrapper :focus-visible {
+  outline: none !important;
+}
+
+.recharts-wrapper svg {
+  transform: none !important;
 }
 
 a,
@@ -1159,6 +1241,11 @@ input:focus,
 select:focus,
 textarea:focus {
   box-shadow: var(--focus-ring);
+}
+
+.finance-control :is(input, select, textarea):focus {
+  outline: none;
+  box-shadow: none;
 }
 
 :where(a, button, input, select, textarea, [tabindex]):focus-visible {
@@ -1283,6 +1370,18 @@ textarea:focus {
   }
 }
 
+@keyframes dashboardProgressDraw {
+  from {
+    opacity: 0.72;
+    transform: scaleX(0);
+  }
+
+  to {
+    opacity: 1;
+    transform: scaleX(var(--progress-scale, 1));
+  }
+}
+
 @keyframes graphLoaderDraw {
   0% {
     clip-path: inset(0 100% 0 0);
@@ -1381,6 +1480,7 @@ textarea:focus {
   .motion-reveal,
   .motion-progress-bar,
     .motion-progress-fill,
+    .dashboard-progress-fill,
     .motion-table-row,
     .motion-error-shake,
     .motion-empty,

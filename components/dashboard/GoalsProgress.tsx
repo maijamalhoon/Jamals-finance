@@ -1,8 +1,16 @@
-import type { CSSProperties } from "react";
+"use client";
+
+import {
+  useEffect,
+  useMemo,
+  useState,
+  type CSSProperties,
+  type ReactNode,
+} from "react";
 import Link from "next/link";
 import { CheckCircle2, Target } from "lucide-react";
+
 import { GOAL_ICONS } from "@/components/goals/goal-icons";
-import CountedAmount from "@/components/motion/CountedAmount";
 import EmptyState from "@/components/ui/empty-state";
 
 interface Goal {
@@ -13,150 +21,292 @@ interface Goal {
   icon: string | null;
 }
 
-const VISIBLE_GOALS = 5;
+const DEFAULT_VISIBLE_GOALS = 4;
 
-const GOAL_PALETTE = [
-  "#2563eb",
-  "#16a34a",
-  "#f59e0b",
-  "#7c3aed",
-  "#0891b2",
-  "#db2777",
+const GOAL_COLORS = [
+  "#f59e0b", // amber
+  "#22c55e", // green
+  "#ec4899", // pink
+  "#8b5cf6", // violet
+  "#3b82f6", // blue
+  "#06b6d4", // cyan
+  "#ef4444", // red
+  "#14b8a6", // teal
+  "#f97316", // orange
+  "#84cc16", // lime
+  "#a855f7", // purple
+  "#0ea5e9", // sky
 ] as const;
 
-function stableGoalAccent(goal: Goal, index: number) {
-  const seed = `${goal.icon ?? ""}${goal.name}`
-    .split("")
-    .reduce((total, letter) => total + letter.charCodeAt(0), index);
+function useReducedMotion() {
+  const [reduced, setReduced] = useState(false);
 
-  return GOAL_PALETTE[seed % GOAL_PALETTE.length];
+  useEffect(() => {
+    const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+
+    const update = () => setReduced(mediaQuery.matches);
+    update();
+
+    mediaQuery.addEventListener("change", update);
+    return () => mediaQuery.removeEventListener("change", update);
+  }, []);
+
+  return reduced;
 }
 
-function formatCurrency(value: number) {
-  const safeValue = Number.isFinite(value) ? Math.max(value, 0) : 0;
-  return `PKR ${safeValue.toLocaleString("en-PK", { maximumFractionDigits: 0 })}`;
+function useAnimatedNumber(value: number, delay = 0, duration = 900) {
+  const reducedMotion = useReducedMotion();
+  const [displayValue, setDisplayValue] = useState(reducedMotion ? value : 0);
+
+  useEffect(() => {
+    if (reducedMotion) {
+      setDisplayValue(value);
+      return;
+    }
+
+    setDisplayValue(0);
+
+    let frameId = 0;
+    let startTime: number | null = null;
+
+    const animate = (time: number) => {
+      if (startTime === null) startTime = time;
+
+      const progress = Math.min((time - startTime) / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3);
+
+      setDisplayValue(value * eased);
+
+      if (progress < 1) {
+        frameId = requestAnimationFrame(animate);
+      }
+    };
+
+    const timeoutId: ReturnType<typeof setTimeout> = setTimeout(() => {
+      frameId = requestAnimationFrame(animate);
+    }, delay);
+
+    return () => {
+      clearTimeout(timeoutId);
+      cancelAnimationFrame(frameId);
+    };
+  }, [value, delay, duration, reducedMotion]);
+
+  return displayValue;
 }
 
-function formatPercentage(value: number) {
-  const safeValue = Number.isFinite(value) ? Math.max(value, 0) : 0;
-  return `${Math.round(safeValue)}%`;
-}
-
-export default function GoalsProgress({ goals }: { goals: Goal[] }) {
-  const visibleGoals = goals.slice(0, VISIBLE_GOALS);
-  const hasHiddenGoals = goals.length > VISIBLE_GOALS;
+function AnimatedCurrency({
+  value,
+  delay = 0,
+}: {
+  value: number;
+  delay?: number;
+}) {
+  const animatedValue = useAnimatedNumber(value, delay, 950);
 
   return (
-    <section className="finance-reference-card motion-card-entry flex h-full min-h-[380px] min-w-0 flex-col overflow-hidden p-5 sm:p-6">
-      <div className="mb-5 flex min-w-0 items-start justify-between gap-3">
+    <>
+      PKR{" "}
+      {Math.round(animatedValue).toLocaleString("en-PK", {
+        maximumFractionDigits: 0,
+      })}
+    </>
+  );
+}
+
+function AnimatedPercent({
+  value,
+  delay = 0,
+}: {
+  value: number;
+  delay?: number;
+}) {
+  const animatedValue = useAnimatedNumber(value, delay, 900);
+
+  return <>{Math.round(animatedValue)}%</>;
+}
+
+function getGoalColor(goal: Goal, index: number) {
+  const text = `${goal.name} ${goal.icon ?? ""}`.toLowerCase();
+
+  if (text.includes("home") || text.includes("house")) return "#f59e0b";
+  if (
+    text.includes("car") ||
+    text.includes("toyota") ||
+    text.includes("suzuki") ||
+    text.includes("vehicle")
+  ) {
+    return index % 2 === 0 ? "#ec4899" : "#22c55e";
+  }
+  if (text.includes("phone") || text.includes("samsung")) return "#8b5cf6";
+  if (text.includes("travel") || text.includes("dubai")) return "#3b82f6";
+  if (text.includes("saving") || text.includes("savings")) return "#14b8a6";
+  if (text.includes("education") || text.includes("study")) return "#a855f7";
+  if (text.includes("emergency") || text.includes("health")) return "#ef4444";
+
+  return GOAL_COLORS[index % GOAL_COLORS.length];
+}
+
+function getGoalProgress(goal: Goal) {
+  const current = Number(goal.current_amount);
+  const target = Number(goal.target_amount);
+
+  const safeCurrent = Number.isFinite(current) ? Math.max(current, 0) : 0;
+  const safeTarget = Number.isFinite(target) ? Math.max(target, 0) : 0;
+
+  const percentage =
+    safeTarget > 0 ? Math.min((safeCurrent / safeTarget) * 100, 100) : 0;
+
+  return {
+    current: safeCurrent,
+    target: safeTarget,
+    percentage,
+    done: percentage >= 100,
+  };
+}
+
+function GoalRow({
+  goal,
+  index,
+}: {
+  goal: Goal;
+  index: number;
+}) {
+  const { current, target, percentage, done } = getGoalProgress(goal);
+
+  const entry =
+    GOAL_ICONS.find((item) => item.value === goal.icon) ??
+    GOAL_ICONS[GOAL_ICONS.length - 1];
+
+  const GoalIcon = done ? CheckCircle2 : entry.icon;
+  const accent = done ? "var(--success)" : getGoalColor(goal, index);
+
+  const delay = index * 90 + 120;
+  const progressScale =
+    percentage > 0 ? Math.max(2, Math.min(percentage, 100)) / 100 : 0;
+
+  const rowStyle = {
+    "--motion-reveal-delay": `${index * 65}ms`,
+    "--goal-accent": accent,
+    "--progress-accent": accent,
+    "--progress-delay": `${delay}ms`,
+    "--progress-scale": progressScale,
+  } as CSSProperties;
+
+  return (
+    <article
+      className="dashboard-list-row motion-card-entry"
+      style={rowStyle}
+    >
+      <div className="grid min-w-0 grid-cols-[36px_minmax(0,1fr)_auto] items-center gap-3">
+        <span
+          className="grid h-9 w-9 shrink-0 place-items-center rounded-full border"
+          style={{
+            color: accent,
+            borderColor: `color-mix(in srgb, ${accent}, transparent 76%)`,
+            backgroundColor: `color-mix(in srgb, ${accent}, transparent 92%)`,
+          }}
+        >
+          <GoalIcon size={15} strokeWidth={2.15} />
+        </span>
+
         <div className="min-w-0">
-          <div className="mb-2 flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-text-secondary">
-            <span className="grid h-6 w-6 place-items-center rounded-full bg-surface-secondary text-text-tertiary [&>svg]:h-3.5 [&>svg]:w-3.5">
+          <p className="truncate text-[13px] font-semibold leading-5 text-text-primary sm:text-sm">
+            {goal.name}
+          </p>
+
+          <p className="mt-0.5 truncate text-[11px] font-medium leading-4 text-text-secondary">
+            <AnimatedCurrency value={current} delay={delay} /> /{" "}
+            <AnimatedCurrency value={target} delay={delay} />
+          </p>
+        </div>
+
+        <span className="shrink-0 text-right text-[13px] font-bold leading-5 text-[var(--goal-accent)]">
+          <AnimatedPercent value={percentage} delay={delay} />
+        </span>
+      </div>
+
+      <div className="mt-2 dashboard-progress-track">
+        <div
+          key={`${goal.id}-${progressScale}`}
+          className="dashboard-progress-fill"
+        />
+      </div>
+    </article>
+  );
+}
+
+export default function GoalsProgress({
+  goals,
+  maxVisible = DEFAULT_VISIBLE_GOALS,
+}: {
+  goals: Goal[];
+  maxVisible?: number;
+}) {
+  const visibleGoals = useMemo(() => {
+    return goals.slice(0, maxVisible);
+  }, [goals, maxVisible]);
+
+  const hasHiddenGoals = goals.length > visibleGoals.length;
+
+  let content: ReactNode;
+
+  if (visibleGoals.length === 0) {
+    content = (
+      <div className="dashboard-chart-empty min-h-[150px] flex-1">
+        <EmptyState
+          compact
+          icon={CheckCircle2}
+          title="No goals yet"
+          description="Create goals to monitor savings progress from the dashboard."
+        />
+      </div>
+    );
+  } else {
+    content = (
+      <div className="dashboard-list-rows">
+        {visibleGoals.map((goal, index) => (
+          <GoalRow
+            key={goal.id}
+            goal={goal}
+            index={index}
+          />
+        ))}
+      </div>
+    );
+  }
+
+  return (
+    <section className="finance-reference-card dashboard-list-card motion-card-entry">
+      <div className="dashboard-list-card-header">
+        <div className="min-w-0">
+          <div className="dashboard-list-card-kicker">
+            <span className="dashboard-list-card-kicker-icon">
               <Target />
             </span>
             <span className="truncate">Savings Targets</span>
           </div>
-          <h3 className="text-[18px] font-semibold leading-tight tracking-normal text-text-primary">
+
+          <h3 className="dashboard-list-card-title">
             Goals Progress
           </h3>
-          <p className="mt-1 text-xs leading-5 text-text-secondary">
+
+          <p className="dashboard-list-card-subtitle">
             Savings targets and milestones
           </p>
         </div>
 
-        {hasHiddenGoals ? (
+        {goals.length > 0 ?
           <Link
             href="/dashboard/goals"
-            className="finance-focus finance-pressable shrink-0 rounded-full border border-border bg-surface-secondary px-3 py-1.5 text-[11px] font-semibold leading-none text-active hover:bg-hover"
+            className="dashboard-list-card-action"
           >
-            View All
+            {hasHiddenGoals ? "View All" : "Details"}
           </Link>
-        ) : null}
+        : null}
       </div>
 
-      {visibleGoals.length === 0 ? (
-        <div className="dashboard-chart-empty flex-1">
-          <EmptyState
-            compact
-            icon={CheckCircle2}
-            title="No goals yet"
-            description="Create goals to monitor savings progress from the dashboard."
-          />
-        </div>
-      ) : (
-        <div className="flex flex-1 flex-col gap-3">
-          {visibleGoals.map((goal, index) => {
-            const current = Number(goal.current_amount);
-            const target = Number(goal.target_amount);
-            const safeCurrent = Number.isFinite(current) ? Math.max(current, 0) : 0;
-            const safeTarget = Number.isFinite(target) ? Math.max(target, 0) : 0;
-            const pct =
-              safeTarget > 0 ? Math.min((safeCurrent / safeTarget) * 100, 100) : 0;
-            const done = pct >= 100;
-            const entry =
-              GOAL_ICONS.find((item) => item.value === goal.icon) ??
-              GOAL_ICONS[GOAL_ICONS.length - 1];
-            const GoalIcon = done ? CheckCircle2 : entry.icon;
-            const accent = done ? "var(--success)" : stableGoalAccent(goal, index);
-            const rowStyle = {
-              "--motion-reveal-delay": `${index * 70}ms`,
-              "--goal-accent": accent,
-            } as CSSProperties;
-
-            return (
-              <article
-                key={goal.id}
-                className="motion-card-entry min-w-0 rounded-[20px] border border-border/80 bg-surface-secondary/70 p-3.5 transition-all duration-200 hover:-translate-y-0.5 hover:bg-hover hover:shadow-[var(--shadow-soft)]"
-                style={rowStyle}
-              >
-                <div className="mb-2.5 grid min-w-0 grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3">
-                  <span
-                    className="grid h-9 w-9 shrink-0 place-items-center rounded-[14px] border"
-                    style={{
-                      borderColor: `color-mix(in srgb, ${accent}, transparent 68%)`,
-                      backgroundColor: `color-mix(in srgb, ${accent}, transparent 88%)`,
-                      color: accent,
-                    }}
-                  >
-                    <GoalIcon size={15} strokeWidth={2.15} />
-                  </span>
-                  <div className="min-w-0">
-                    <p className="truncate text-[13px] font-semibold leading-5 text-text-primary">
-                      {goal.name}
-                    </p>
-                    <p className="mt-0.5 truncate text-[11px] font-medium leading-4 text-text-secondary">
-                      <CountedAmount amount={formatCurrency(safeCurrent)} /> /{" "}
-                      <CountedAmount amount={formatCurrency(safeTarget)} />
-                    </p>
-                  </div>
-                  <span
-                    className="motion-counter-ready shrink-0 text-right text-[13px] font-bold leading-5 text-[var(--goal-accent)]"
-                    style={{ animationDelay: `${index * 70 + 100}ms` }}
-                  >
-                    <CountedAmount amount={formatPercentage(pct)} />
-                  </span>
-                </div>
-
-                <div
-                  className="h-1.5 overflow-hidden rounded-full"
-                  style={{
-                    backgroundColor: `color-mix(in srgb, ${accent}, var(--card) 88%)`,
-                  }}
-                >
-                  <div
-                    className="motion-progress-fill h-full rounded-full"
-                    style={{
-                      width: `${pct > 0 ? Math.max(2, pct) : 0}%`,
-                      backgroundColor: accent,
-                      animationDelay: `${index * 75 + 140}ms`,
-                    }}
-                  />
-                </div>
-              </article>
-            );
-          })}
-        </div>
-      )}
+      <div className="flex min-h-0 flex-1 flex-col">{content}</div>
     </section>
   );
 }

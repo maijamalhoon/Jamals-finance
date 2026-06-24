@@ -120,6 +120,7 @@ export default async function DashboardPage() {
 
   const [
     { data: thisTxns },
+    { data: recentTxns },
     { data: lastTxns },
     { data: investments },
     { data: goals },
@@ -130,6 +131,12 @@ export default async function DashboardPage() {
       .gte("date", firstDay)
       .lte("date", lastDay)
       .order("date", { ascending: false }),
+
+    supabase
+      .from("transactions")
+      .select("*, categories(name, color), accounts(name)")
+      .order("date", { ascending: false })
+      .limit(12),
 
     supabase
       .from("transactions")
@@ -148,6 +155,7 @@ export default async function DashboardPage() {
   ]);
 
   const txns = (thisTxns ?? []) as DashboardTransaction[];
+  const recentTransactions = (recentTxns ?? []) as DashboardTransaction[];
   const previousTxns = (lastTxns ?? []) as Array<{
     type: string;
     amount: number | string;
@@ -353,6 +361,7 @@ export default async function DashboardPage() {
       <div className="grid w-full grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,2fr)]">
         <DashboardMotionItem className="min-w-0">
           <SpendRecordWidget
+            monthlySpend={fmt(expenses)}
             dailySpend={fmt(dailySpend)}
             dailyExpenseTrend={dailyExpenseTrend}
           />
@@ -392,8 +401,8 @@ export default async function DashboardPage() {
         </DashboardMotionItem>
       </div>
 
-      <div className="grid w-full grid-cols-1 gap-4 lg:grid-cols-3">
-        <DashboardMotionItem className="min-w-0">
+      <div className="grid w-full grid-cols-1 items-stretch gap-4 lg:grid-cols-3">
+        <DashboardMotionItem className="h-full min-w-0">
           <SpendingBreakdown
             data={spendingData}
             total={expenses}
@@ -401,12 +410,12 @@ export default async function DashboardPage() {
           />
         </DashboardMotionItem>
 
-        <DashboardMotionItem className="min-w-0">
-          <GoalsProgress goals={goalRows} />
+        <DashboardMotionItem className="h-full min-w-0">
+          <GoalsProgress goals={goalRows} maxVisible={4} />
         </DashboardMotionItem>
 
-        <DashboardMotionItem className="min-w-0">
-          <RecentTransactions transactions={txns.slice(0, 5)} />
+        <DashboardMotionItem className="h-full min-w-0">
+          <RecentTransactions transactions={recentTransactions} />
         </DashboardMotionItem>
       </div>
     </DashboardMotion>

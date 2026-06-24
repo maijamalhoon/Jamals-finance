@@ -661,8 +661,8 @@ function IncomeExpenseChart({
                 color: "var(--text-primary)",
                 boxShadow: "var(--shadow-soft)",
               }}
-              formatter={(value: number, name: string) => [
-                formatMoney(Number(value)),
+              formatter={(value, name) => [
+                formatMoney(Number(value ?? 0)),
                 name === "income" ? "Income" : "Expenses",
               ]}
             />
@@ -748,8 +748,8 @@ function NetWorthChart({
                 color: "var(--text-primary)",
                 boxShadow: "var(--shadow-soft)",
               }}
-              formatter={(value: number) => [
-                formatMoney(Number(value)),
+              formatter={(value) => [
+                formatMoney(Number(value ?? 0)),
                 "Net Worth",
               ]}
             />
@@ -824,8 +824,8 @@ function SpendingBreakdown({
                   color: "var(--text-primary)",
                   boxShadow: "var(--shadow-soft)",
                 }}
-                formatter={(value: number) => [
-                  formatMoney(Number(value)),
+                formatter={(value) => [
+                  formatMoney(Number(value ?? 0)),
                   "Spent",
                 ]}
               />

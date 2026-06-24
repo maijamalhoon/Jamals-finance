@@ -146,7 +146,7 @@ export default async function PayablesPage({
             })}
           </div>
 
-          <form className="finance-control flex min-h-11 w-full items-center gap-2 px-3 xl:w-96">
+          <form className="finance-control finance-search-control flex min-h-11 w-full items-center gap-2 px-3 xl:w-96">
             {status !== "all" && <input type="hidden" name="status" value={status} />}
             <Search size={15} className="text-slate-500" />
             <input

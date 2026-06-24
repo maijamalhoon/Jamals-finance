@@ -8,7 +8,6 @@ import { BarChart3, Bell, Menu, X } from "lucide-react";
 import {
   isNavItemActive,
   NAV_ITEMS,
-  QUICK_ACTION_ITEMS,
 } from "@/lib/navigation";
 import JamalMenu from "@/components/layout/JamalMenu";
 import {
@@ -213,30 +212,6 @@ export default function MobileHeader() {
                     })}
                   </motion.nav>
 
-                  <motion.div
-                    className="mt-5 grid grid-cols-2 gap-2"
-                    variants={listContainerVariants}
-                    initial="initial"
-                    animate="animate"
-                    role="group"
-                    aria-label="Quick categories"
-                  >
-                    {QUICK_ACTION_ITEMS.map(({ label, href, icon: Icon, tone }) => (
-                      <motion.div key={label} variants={listItemVariants}>
-                        <Link
-                          href={href}
-                          className="finance-focus finance-interactive-tile flex items-center gap-2 border-border bg-surface-secondary px-3 py-2.5 text-sm font-semibold text-text-primary"
-                        >
-                          <span
-                            className={`grid h-8 w-8 flex-shrink-0 place-items-center rounded-[13px] ${tone}`}
-                          >
-                            <Icon size={16} />
-                          </span>
-                          <span className="truncate">{label}</span>
-                        </Link>
-                      </motion.div>
-                    ))}
-                  </motion.div>
                 </div>
 
                 <div className="relative border-t border-border px-1.5 pt-3">
