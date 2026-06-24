@@ -2,10 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import {
-  Pencil,
-  Trash2,
-} from "lucide-react";
+import { Pencil, Trash2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { getTransactionIconMeta } from "@/lib/transaction-icons";
 import TransactionModal, {
@@ -13,7 +10,11 @@ import TransactionModal, {
 } from "@/components/dashboard/TransactionModal";
 
 interface Transaction extends ExistingTransaction {
-  categories: { name: string; color: string; parent?: { name: string } | null } | null;
+  categories: {
+    name: string;
+    color: string;
+    parent?: { name: string } | null;
+  } | null;
   accounts: { name: string } | null;
 }
 
@@ -88,9 +89,7 @@ export default function TransactionRow({ tx }: { tx: Transaction }) {
           </div>
 
           <div className="mt-2 flex flex-wrap items-center gap-2 md:hidden">
-            <span
-              className="finance-state-pill px-2 py-1 text-[11px]"
-            >
+            <span className="finance-state-pill px-2 py-1 text-[11px]">
               <TypeIcon size={12} strokeWidth={2.1} />
               {iconMeta.label}
             </span>
@@ -111,9 +110,7 @@ export default function TransactionRow({ tx }: { tx: Transaction }) {
           {isIncome && tx.source_name ? tx.source_name : categoryLabel}
         </p>
 
-        <span
-          className="finance-state-pill hidden w-24 flex-shrink-0 justify-center text-xs md:inline-flex"
-        >
+        <span className="finance-state-pill hidden w-24 flex-shrink-0 justify-center text-xs md:inline-flex">
           <TypeIcon size={12} strokeWidth={2.1} />
           {iconMeta.label}
         </span>

@@ -27,9 +27,7 @@ export default function TransactionFilters() {
     (updates: Record<string, string>, resetLimit = true) => {
       const params = new URLSearchParams(searchParams.toString());
 
-      if (resetLimit) {
-        params.delete("limit");
-      }
+      if (resetLimit) params.delete("limit");
 
       Object.entries(updates).forEach(([key, value]) => {
         if (!value || value === "all") {
