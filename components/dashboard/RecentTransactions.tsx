@@ -4,7 +4,12 @@ import { ArrowLeftRight } from "lucide-react";
 
 import CountedAmount from "@/components/motion/CountedAmount";
 import EmptyState from "@/components/ui/empty-state";
-import { getTransactionIconMeta } from "@/lib/transaction-icons";
+import {
+  getTransactionIconMeta,
+  getTransactionPrefix,
+  getTransactionSoftStyle,
+  getTransactionToneClass,
+} from "@/lib/transaction-icons";
 
 interface Transaction {
   id: string;
@@ -12,6 +17,9 @@ interface Transaction {
   amount: number | string;
   note: string | null;
   date: string;
+  source_name?: string | null;
+  person_name?: string | null;
+  item_name?: string | null;
   categories: {
     name: string;
     color?: string | null;
@@ -40,28 +48,26 @@ function formatDate(value: string) {
   });
 }
 
-function getAmountClass(type: Transaction["type"]) {
-  if (type === "income") return "text-success";
-  if (type === "expense") return "text-danger";
-  return "text-active";
+function getFlowTitle(tx: Transaction) {
+  if (tx.type === "income") {
+    return tx.source_name || tx.categories?.name || tx.note || "Income";
+  }
+
+  if (tx.type === "expense") {
+    return tx.categories?.name || tx.note || "Expense";
+  }
+
+  return "Transfer";
 }
 
-function getAmountPrefix(type: Transaction["type"]) {
-  if (type === "income") return "+ ";
-  if (type === "expense") return "- ";
-  return "";
-}
-
-function getDisplayName(tx: Transaction) {
-  if (tx.type === "transfer") return "Transfer";
-  return tx.note || tx.categories?.name || "Transaction";
-}
-
-function getTransactionSubtitle(tx: Transaction) {
-  const category = tx.categories?.name || "Uncategorized";
+function getFlowSubtitle(tx: Transaction) {
   const account = tx.accounts?.name || "No account";
+  const date = formatDate(tx.date);
 
-  return `${category} - ${formatDate(tx.date)} - ${account}`;
+  if (tx.type === "income") return `Came to ${account} • ${date}`;
+  if (tx.type === "expense") return `Paid from ${account} • ${date}`;
+
+  return `${account} • ${date}`;
 }
 
 export default function RecentTransactions({
@@ -81,8 +87,11 @@ export default function RecentTransactions({
             </span>
             <span className="truncate">Activity</span>
           </div>
+
           <h3 className="dashboard-list-card-title">Recent Transactions</h3>
-          <p className="dashboard-list-card-subtitle">Latest account activity</p>
+          <p className="dashboard-list-card-subtitle">
+            Latest account activity
+          </p>
         </div>
 
         {transactions.length > 0 ?
@@ -105,7 +114,7 @@ export default function RecentTransactions({
           />
         </div>
       : <div className="dashboard-list-rows">
-          <div className="flex min-w-0 flex-col">
+          <div className="flex min-w-0 flex-col gap-1">
             {visibleTransactions.map((tx, index) => {
               const iconMeta = getTransactionIconMeta({
                 type: tx.type,
@@ -113,43 +122,42 @@ export default function RecentTransactions({
                 categoryName: tx.categories?.name,
                 parentCategoryName: tx.categories?.parent?.name,
               });
+
               const Icon = iconMeta.icon;
 
               const rowStyle = {
                 "--motion-reveal-delay": `${index * 35}ms`,
-                "--transaction-accent": iconMeta.accent,
               } as CSSProperties;
 
               return (
                 <article
                   key={tx.id}
                   style={rowStyle}
-                  className="dashboard-list-row motion-table-row grid grid-cols-[36px_minmax(0,1fr)_auto] items-center gap-3 transition-colors duration-200 hover:bg-hover/40"
+                  className="motion-table-row grid grid-cols-[36px_minmax(0,1fr)_auto] items-center gap-3 rounded-2xl border border-transparent px-2.5 py-2.5 transition-all duration-200 hover:-translate-y-0.5 hover:border-border hover:bg-hover/70 hover:shadow-sm"
                 >
                   <span
-                    className="grid h-9 w-9 shrink-0 place-items-center rounded-full border"
-                    style={{
-                      color: iconMeta.accent,
-                      borderColor: `color-mix(in srgb, ${iconMeta.accent}, transparent 76%)`,
-                      backgroundColor: `color-mix(in srgb, ${iconMeta.accent}, transparent 92%)`,
-                    }}
+                    className="grid h-9 w-9 shrink-0 place-items-center rounded-2xl border transition-transform duration-200 group-hover:scale-105"
+                    style={getTransactionSoftStyle(iconMeta.accent)}
                   >
-                    <Icon size={16} strokeWidth={2.2} />
+                    <Icon size={16} strokeWidth={2.35} />
                   </span>
 
                   <div className="min-w-0">
-                    <p className="truncate text-[13px] font-semibold leading-5 text-text-primary sm:text-sm">
-                      {getDisplayName(tx)}
+                    <p className="truncate text-[13px] font-bold leading-5 text-text-primary sm:text-sm">
+                      {getFlowTitle(tx)}
                     </p>
+
                     <p className="mt-0.5 truncate text-[11px] font-medium leading-4 text-text-secondary">
-                      {getTransactionSubtitle(tx)}
+                      {getFlowSubtitle(tx)}
                     </p>
                   </div>
 
                   <p
-                    className={`shrink-0 whitespace-nowrap text-right text-[13px] font-bold leading-5 tabular-nums ${getAmountClass(tx.type)}`}
+                    className={`shrink-0 whitespace-nowrap text-right text-[13px] font-black leading-5 tabular-nums ${getTransactionToneClass(
+                      tx.type,
+                    )}`}
                   >
-                    {getAmountPrefix(tx.type)}
+                    {getTransactionPrefix(tx.type)}
                     <CountedAmount amount={formatCurrency(tx.amount)} />
                   </p>
                 </article>
