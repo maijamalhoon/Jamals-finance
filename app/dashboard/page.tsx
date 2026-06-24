@@ -130,10 +130,6 @@ export default async function DashboardPage() {
     dailyTotals.set(t.date, current);
   });
   const todayTotals = dailyTotals.get(todayStr) ?? { income: 0, expenses: 0 };
-  const todayTransactions = txns.filter((t) => t.date === todayStr);
-  const activeDayNumbers = Array.from(dailyTotals.keys()).map((date) =>
-    Number(date.split("-")[2]),
-  );
 
   const chartData = Array.from({ length: daysInMonth }, (_, i) => {
     const day = i + 1;
@@ -271,12 +267,8 @@ export default async function DashboardPage() {
           expenses={fmt(todayTotals.expenses)}
           net={fmt(todayTotals.income - todayTotals.expenses)}
           netPositive={todayTotals.income - todayTotals.expenses >= 0}
-          transactionCount={todayTransactions.length}
-          avgDailySpend={fmt(dailySpend)}
           topCategory={topCategory}
           savingsRate={savingsRate}
-          activeDays={activeDayNumbers.length}
-          projectedExpenses={fmt(projectedExpenses)}
           remainingDays={remainingDays}
         />
       </DashboardMotionItem>
