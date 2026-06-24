@@ -25,28 +25,32 @@ export default function ChartCard({
 }: ChartCardProps) {
   return (
     <section
-      className={`dashboard-graph-card flex h-full min-h-[258px] flex-col ${className}`}
+      className={`dashboard-graph-card group/chart flex h-full min-h-[258px] flex-col overflow-hidden ${className}`}
     >
-      <div className="mb-2 flex items-start justify-between gap-4">
-        <div className="min-w-0">
-          <p className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.24em] text-[#758093]">
-            {eyebrowIcon ? (
-              <span className="text-[#4f83ff] [&>svg]:h-[14px] [&>svg]:w-[14px] [&>svg]:stroke-[2.2]">
-                {eyebrowIcon}
-              </span>
-            ) : null}
-            <span>{eyebrow}</span>
-          </p>
-          <h3 className="mt-1.5 text-[16px] font-semibold leading-none tracking-normal text-[#050816] dark:text-text-primary">
-            {title}
-          </h3>
-          {description ? (
-            <p className="mt-1 text-xs leading-5 text-[#8a93a4] dark:text-text-secondary">
-              {description}
-            </p>
+      <div className="mb-3 flex items-start justify-between gap-4">
+        <div className="flex min-w-0 items-start gap-3">
+          {eyebrowIcon ? (
+            <span className="finance-icon-bubble h-8 w-8 rounded-[14px] [&>svg]:h-[15px] [&>svg]:w-[15px] [&>svg]:stroke-[2.2]">
+              {eyebrowIcon}
+            </span>
           ) : null}
+          <div className="min-w-0">
+            <p className="truncate text-[10px] font-semibold uppercase tracking-[0.18em] text-text-secondary">
+              {eyebrow}
+            </p>
+            <h3 className="mt-1.5 text-[16px] font-semibold leading-none tracking-normal text-text-primary">
+              {title}
+            </h3>
+            {description ? (
+              <p className="mt-1 text-xs leading-5 text-text-secondary">
+                {description}
+              </p>
+            ) : null}
+          </div>
         </div>
-        {legendPlacement === "header" ? legend : action}
+        <div className="shrink-0">
+          {legendPlacement === "header" ? legend : action}
+        </div>
       </div>
 
       <div className="min-h-0 flex-1">{children}</div>

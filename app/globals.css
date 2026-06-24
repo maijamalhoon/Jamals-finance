@@ -579,20 +579,61 @@
   }
 
   .dashboard-graph-card {
-    @apply rounded-[20px] border px-5 pb-4 pt-5;
-    border-color: var(--border);
-    background: var(--surface-elevated);
+    @apply rounded-[22px] border px-5 pb-4 pt-5;
+    --dashboard-chart-spend: #ff9700;
+    --dashboard-chart-income: #19c76f;
+    --dashboard-chart-expense: #ff3b35;
+    --dashboard-chart-grid: color-mix(in srgb, var(--border), transparent 20%);
+    --dashboard-chart-muted: color-mix(in srgb, var(--text-secondary), transparent 8%);
+    --dashboard-chart-track: color-mix(in srgb, var(--border), var(--card) 40%);
+    border-color: color-mix(in srgb, var(--border), white 12%);
+    background:
+      linear-gradient(180deg, color-mix(in srgb, var(--card), white 7%), var(--card));
     color: var(--text-primary);
-    box-shadow: var(--shadow-soft), var(--surface-highlight);
+    box-shadow:
+      0 18px 42px rgb(16 24 40 / 0.08),
+      0 2px 8px rgb(16 24 40 / 0.04),
+      var(--surface-highlight);
+    transition:
+      transform 0.2s var(--motion-ease),
+      border-color 0.2s var(--motion-ease),
+      box-shadow 0.2s var(--motion-ease),
+      background-color 0.2s var(--motion-ease);
   }
 
   .dark .dashboard-graph-card {
-    border-color: var(--border);
-    background: var(--card);
+    --dashboard-chart-grid: color-mix(in srgb, var(--border), transparent 10%);
+    --dashboard-chart-muted: color-mix(in srgb, var(--text-secondary), white 8%);
+    --dashboard-chart-track: color-mix(in srgb, var(--border), white 5%);
+    border-color: color-mix(in srgb, var(--border), white 6%);
+    background:
+      linear-gradient(180deg, color-mix(in srgb, var(--card), white 6%), color-mix(in srgb, var(--card), black 8%));
     color: var(--text-primary);
     box-shadow:
       0 22px 58px rgb(0 0 0 / 0.32),
       inset 0 1px 0 rgb(255 255 255 / 0.04);
+  }
+
+  .dashboard-graph-card:hover {
+    border-color: color-mix(in srgb, var(--active), var(--border) 74%);
+    box-shadow:
+      0 24px 60px rgb(16 24 40 / 0.11),
+      var(--glow-soft);
+  }
+
+  .dashboard-chart-empty {
+    @apply flex items-center justify-center rounded-[18px] border border-dashed px-4 text-center;
+    border-color: color-mix(in srgb, var(--border), transparent 12%);
+    background:
+      linear-gradient(180deg, color-mix(in srgb, var(--surface-secondary), transparent 18%), transparent);
+    color: var(--text-secondary);
+  }
+
+  .dashboard-chart-empty-icon {
+    @apply mx-auto mb-2 grid h-9 w-9 place-items-center rounded-[14px] border;
+    border-color: color-mix(in srgb, var(--active), transparent 72%);
+    background-color: color-mix(in srgb, var(--active), transparent 90%);
+    color: var(--active);
   }
 
   .finance-graph-loader {

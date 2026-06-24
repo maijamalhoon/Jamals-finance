@@ -78,14 +78,14 @@ export default function DashboardLoading() {
         </div>
       </LoadingPanel>
 
-      <div className="grid grid-cols-1 gap-4 xl:grid-cols-3 xl:items-stretch">
+      <div className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,2fr)] xl:items-stretch">
         {Array.from({ length: 3 }).map((_, index) => (
-          <LoadingPanel key={index} className="min-h-[320px]" delay={180 + index * 40}>
+          <LoadingPanel key={index} className="min-h-[258px]" delay={180 + index * 40}>
             <div className="space-y-3">
               <Line className="h-4 w-32" />
               <Line className="h-3 w-24" />
-              <Line className="h-48 w-full rounded-[22px]" />
-              <Line className="h-12 w-full rounded-[18px]" />
+              <Line className="h-36 w-full rounded-[22px]" />
+              <Line className="h-10 w-full rounded-[18px]" />
             </div>
           </LoadingPanel>
         ))}

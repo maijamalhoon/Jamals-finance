@@ -7,6 +7,7 @@ import GoalsProgress from "@/components/dashboard/GoalsProgress";
 import FinancePulseCard from "@/components/dashboard/FinancePulseCard";
 import InvestmentOverviewWidget from "@/components/dashboard/InvestmentOverviewWidget";
 import SpendRecordWidget from "@/components/dashboard/SpendRecordWidget";
+import ChartCard from "@/components/dashboard/ChartCard";
 import BottomInsightCard from "@/components/dashboard/BottomInsightCard";
 import {
   DashboardMotion,
@@ -287,19 +288,26 @@ export default async function DashboardPage() {
               totalPnLPct={totalPnLPct}
             />
           ) : (
-            <div className="dashboard-graph-card flex h-full min-h-[258px] items-center justify-center text-center">
-              <div>
-                <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-[#758093]">
-                  Investments
-                </p>
-                <h3 className="mt-1.5 text-[16px] font-semibold text-[#050816] dark:text-text-primary">
-                  Portfolio Overview
-                </h3>
-                <p className="mt-3 text-xs leading-5 text-[#8a93a4] dark:text-text-secondary">
-                  Add investments to see your portfolio donut.
-                </p>
+            <ChartCard
+              eyebrow="Investments"
+              eyebrowIcon={<Zap />}
+              title="Portfolio Overview"
+              description="Allocation by current value"
+            >
+              <div className="dashboard-chart-empty min-h-[132px]">
+                <div>
+                  <span className="dashboard-chart-empty-icon">
+                    <Zap size={16} />
+                  </span>
+                  <p className="text-xs font-semibold text-text-primary">
+                    No holdings yet
+                  </p>
+                  <p className="mt-1 text-[11px] text-text-secondary">
+                    Add investments to see allocation.
+                  </p>
+                </div>
               </div>
-            </div>
+            </ChartCard>
           )}
         </DashboardMotionItem>
         <DashboardMotionItem className="[&>section]:h-full">

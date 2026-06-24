@@ -1,6 +1,14 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import type { ReactNode } from "react";
+
+type ChartSize = {
+  width: number;
+  height: number;
+};
+
+type ChartFrameChildren = ReactNode | ((size: ChartSize) => ReactNode);
 
 export default function ChartFrame({
   className,
@@ -9,10 +17,11 @@ export default function ChartFrame({
 }: {
   className: string;
   tone?: "orange" | "green" | "blue";
-  children: React.ReactNode;
+  children: ChartFrameChildren;
 }) {
   const frameRef = useRef<HTMLDivElement>(null);
   const [ready, setReady] = useState(false);
+  const [size, setSize] = useState<ChartSize | null>(null);
 
   useEffect(() => {
     const frame = frameRef.current;
@@ -25,12 +34,27 @@ export default function ChartFrame({
       window.cancelAnimationFrame(raf);
       raf = window.requestAnimationFrame(() => {
         const rect = frame.getBoundingClientRect();
-        const canRender = rect.width > 0 && rect.height > 0;
+        const nextSize = {
+          width: Math.max(1, Math.floor(rect.width)),
+          height: Math.max(1, Math.floor(rect.height)),
+        };
+        const canRender = nextSize.width > 1 && nextSize.height > 1;
 
         if (!canRender) {
+          if (revealTimeout) {
+            window.clearTimeout(revealTimeout);
+            revealTimeout = undefined;
+          }
+          setSize(null);
           setReady(false);
           return;
         }
+
+        setSize((current) =>
+          current?.width === nextSize.width && current?.height === nextSize.height ?
+            current
+          : nextSize,
+        );
 
         revealTimeout ??= window.setTimeout(() => {
           setReady(true);
@@ -51,9 +75,11 @@ export default function ChartFrame({
   }, []);
 
   return (
-    <div ref={frameRef} className={className}>
-      {ready ?
-        <div className="finance-graph-ready h-full w-full">{children}</div>
+    <div ref={frameRef} className={className} style={{ minHeight: 1, minWidth: 1 }}>
+      {ready && size ?
+        <div className="finance-graph-ready h-full min-h-px w-full min-w-px">
+          {typeof children === "function" ? children(size) : children}
+        </div>
       : <div className={`finance-graph-loader finance-graph-loader-${tone}`} />}
     </div>
   );

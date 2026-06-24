@@ -1,11 +1,11 @@
 "use client";
 
-import CountUp from "react-countup";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { Zap } from "lucide-react";
 import type { CSSProperties } from "react";
 import ChartCard from "@/components/dashboard/ChartCard";
+import CountedAmount from "@/components/motion/CountedAmount";
 
 interface Investment {
   id: string;
@@ -17,8 +17,8 @@ interface Investment {
 }
 
 const colors = ["#3b82f6", "#f59e0b", "#34d399", "#a855f7", "#64748b"];
-const profitColor = "#16a34a";
-const lossColor = "#dc2626";
+const profitColor = "var(--success)";
+const lossColor = "var(--danger)";
 
 function shortName(name: string) {
   return name.length > 11 ? `${name.slice(0, 9)}...` : name;
@@ -79,6 +79,7 @@ export default function InvestmentOverviewWidget({
           eyebrow="Investments"
           eyebrowIcon={<Zap />}
           title="Portfolio Overview"
+          description="Allocation by current value"
           legend={
             <div className="grid grid-cols-3 gap-2">
               {visibleInvestments.map((investment, index) => (
@@ -111,7 +112,7 @@ export default function InvestmentOverviewWidget({
                   cy="60"
                   r="42"
                   fill="none"
-                  stroke="#edf1f7"
+                  stroke="var(--dashboard-chart-track)"
                   strokeWidth="18"
                 />
                 {segments.map((segment, index) => (
@@ -137,14 +138,15 @@ export default function InvestmentOverviewWidget({
                   />
                 ))}
               </svg>
-              <div className="absolute inset-[25px] grid place-items-center rounded-full bg-white text-center dark:bg-card">
+              <div className="absolute inset-[25px] grid place-items-center rounded-full bg-card text-center shadow-[inset_0_1px_0_rgb(255_255_255_/_0.5)] dark:shadow-[inset_0_1px_0_rgb(255_255_255_/_0.05)]">
                 <div>
                   <p className="text-[20px] font-bold leading-none" style={{ color: pnlColor }}>
-                    {isProfit ? "+" : "-"}
-                    <CountUp end={Math.abs(totalPnLPct)} duration={1.1} decimals={1} />%
+                    <CountedAmount
+                      amount={`${isProfit ? "+" : "-"}${Math.abs(totalPnLPct).toFixed(1)}%`}
+                    />
                   </p>
                   <p className="mt-1 text-[10px] font-semibold leading-none tracking-[0.14em] text-[#9aa3b5]">
-                    total gain
+                    {isProfit ? "total gain" : "total loss"}
                   </p>
                 </div>
               </div>
