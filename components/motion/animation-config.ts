@@ -6,7 +6,7 @@ export const motionDurations = {
   fast: 0.16,
   base: 0.24,
   page: 0.28,
-  chart: 680,
+  chart: 1150,
 } as const;
 
 export const viewportReveal = {
@@ -16,7 +16,10 @@ export const viewportReveal = {
 } as const;
 
 export const pageVariants: Variants = {
-  initial: { opacity: 0, y: 10 },
+  initial: {
+    opacity: 0,
+    y: 10,
+  },
   animate: {
     opacity: 1,
     y: 0,
@@ -30,23 +33,36 @@ export const pageVariants: Variants = {
   exit: {
     opacity: 0,
     y: -4,
-    transition: { duration: motionDurations.fast, ease: motionEase },
+    transition: {
+      duration: motionDurations.fast,
+      ease: motionEase,
+    },
   },
 };
 
 export const panelVariants: Variants = {
-  initial: { opacity: 0, y: 8, scale: 0.985 },
+  initial: {
+    opacity: 0,
+    y: 8,
+    scale: 0.985,
+  },
   animate: {
     opacity: 1,
     y: 0,
     scale: 1,
-    transition: { duration: motionDurations.base, ease: motionEase },
+    transition: {
+      duration: motionDurations.base,
+      ease: motionEase,
+    },
   },
   exit: {
     opacity: 0,
     y: 6,
     scale: 0.985,
-    transition: { duration: motionDurations.fast, ease: motionEase },
+    transition: {
+      duration: motionDurations.fast,
+      ease: motionEase,
+    },
   },
 };
 
@@ -54,25 +70,40 @@ export const overlayVariants: Variants = {
   initial: { opacity: 0 },
   animate: {
     opacity: 1,
-    transition: { duration: motionDurations.fast, ease: motionEase },
+    transition: {
+      duration: motionDurations.fast,
+      ease: motionEase,
+    },
   },
   exit: {
     opacity: 0,
-    transition: { duration: motionDurations.fast, ease: motionEase },
+    transition: {
+      duration: motionDurations.fast,
+      ease: motionEase,
+    },
   },
 };
 
 export const drawerVariants: Variants = {
-  initial: { x: "-4%", opacity: 0.98 },
+  initial: {
+    x: "-4%",
+    opacity: 0.98,
+  },
   animate: {
     x: 0,
     opacity: 1,
-    transition: { duration: motionDurations.base, ease: motionEase },
+    transition: {
+      duration: motionDurations.base,
+      ease: motionEase,
+    },
   },
   exit: {
     x: "-4%",
     opacity: 0,
-    transition: { duration: motionDurations.fast, ease: motionEase },
+    transition: {
+      duration: motionDurations.fast,
+      ease: motionEase,
+    },
   },
 };
 
@@ -86,27 +117,44 @@ export const listContainerVariants: Variants = {
 };
 
 export const listItemVariants: Variants = {
-  initial: { opacity: 0, y: 6 },
+  initial: {
+    opacity: 0,
+    y: 6,
+  },
   animate: {
     opacity: 1,
     y: 0,
-    transition: { duration: motionDurations.fast, ease: motionEase },
+    transition: {
+      duration: motionDurations.fast,
+      ease: motionEase,
+    },
   },
   exit: {
     opacity: 0,
     y: 4,
-    transition: { duration: motionDurations.fast, ease: motionEase },
+    transition: {
+      duration: motionDurations.fast,
+      ease: motionEase,
+    },
   },
 };
 
 export const pressableMotion = {
-  whileHover: { y: -1, scale: 1.015 },
-  whileTap: { scale: 0.985 },
-  transition: { duration: motionDurations.fast, ease: motionEase },
+  whileHover: {
+    y: -1,
+    scale: 1.015,
+  },
+  whileTap: {
+    scale: 0.985,
+  },
+  transition: {
+    duration: motionDurations.fast,
+    ease: motionEase,
+  },
 } as const;
 
 export const chartMotion = {
-  animationBegin: 80,
+  animationBegin: 140,
   animationDuration: motionDurations.chart,
   animationEasing: "ease-out" as const,
 };

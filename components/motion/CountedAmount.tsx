@@ -21,32 +21,37 @@ function splitAmount(amount: string) {
 
 export default function CountedAmount({
   amount,
-  duration = 1.05,
+  duration = 1.15,
 }: {
   amount: string;
   duration?: number;
 }) {
   const mounted = useHasMounted();
   const reduceMotion = useReducedMotion();
-  const parsed = splitAmount(amount);
+  const parsedAmount = splitAmount(amount);
 
-  if (!mounted || reduceMotion || !parsed || !Number.isFinite(parsed.value)) {
+  if (
+    !mounted ||
+    reduceMotion ||
+    !parsedAmount ||
+    !Number.isFinite(parsedAmount.value)
+  ) {
     return amount;
   }
 
   return (
-    <>
-      {parsed.prefix}
+    <span className="motion-counter-ready">
+      {parsedAmount.prefix}
       <CountUp
         key={amount}
         start={0}
-        end={parsed.value}
+        end={parsedAmount.value}
         duration={duration}
-        decimals={parsed.decimals}
+        decimals={parsedAmount.decimals}
         separator=","
         redraw
       />
-      {parsed.suffix}
-    </>
+      {parsedAmount.suffix}
+    </span>
   );
 }
