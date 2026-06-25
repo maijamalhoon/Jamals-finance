@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   ArrowLeftRight,
@@ -35,13 +35,11 @@ type Transaction = Omit<ExistingTransaction, "type"> & {
   source_name?: string | null;
   person_name?: string | null;
   item_name?: string | null;
-  categories:
-    | {
-        name?: string | null;
-        color?: string | null;
-        parent?: { name?: string | null } | null;
-      }
-    | null;
+  categories: {
+    name?: string | null;
+    color?: string | null;
+    parent?: { name?: string | null } | null;
+  } | null;
   accounts: { name?: string | null } | null;
 };
 
@@ -100,6 +98,7 @@ function formatDate(date?: string | null, long = false) {
   if (!date) return "No date";
 
   const parsed = new Date(date);
+
   if (Number.isNaN(parsed.getTime())) return date;
 
   return parsed.toLocaleDateString("en-US", {
@@ -157,13 +156,44 @@ export default function TransactionRow({ tx }: { tx: Transaction }) {
     return details.join(" • ");
   }, [tx.item_name, tx.person_name, tx.source_name, type]);
 
+  useEffect(() => {
+    if (!receiptOpen) return;
+
+    const oldBodyOverflow = document.body.style.overflow;
+    const oldHtmlOverflow = document.documentElement.style.overflow;
+
+    document.body.style.overflow = "hidden";
+    document.documentElement.style.overflow = "hidden";
+
+    return () => {
+      document.body.style.overflow = oldBodyOverflow;
+      document.documentElement.style.overflow = oldHtmlOverflow;
+    };
+  }, [receiptOpen]);
+
+  function openReceipt() {
+    if (typeof document !== "undefined") {
+      const activeElement = document.activeElement;
+
+      if (activeElement instanceof HTMLElement) {
+        activeElement.blur();
+      }
+    }
+
+    setReceiptOpen(true);
+  }
+
   async function handleDelete() {
     if (!tx.id) return;
+
     if (!confirm("Delete this transaction? This cannot be undone.")) return;
 
     setDeleting(true);
 
-    const { error } = await supabase.from("transactions").delete().eq("id", tx.id);
+    const { error } = await supabase
+      .from("transactions")
+      .delete()
+      .eq("id", tx.id);
 
     setDeleting(false);
 
@@ -216,16 +246,15 @@ export default function TransactionRow({ tx }: { tx: Transaction }) {
         <head>
           <title>Transaction Receipt</title>
           <style>
-            * { box-sizing: border-box; }
             body {
               margin: 0;
               min-height: 100vh;
               display: grid;
               place-items: center;
               background: #f8fafc;
-              color: #0f172a;
               font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
             }
+
             .receipt {
               width: min(560px, calc(100vw - 32px));
               background: white;
@@ -234,6 +263,7 @@ export default function TransactionRow({ tx }: { tx: Transaction }) {
               padding: 28px;
               box-shadow: 0 24px 80px rgba(15, 23, 42, 0.12);
             }
+
             .top {
               display: flex;
               justify-content: space-between;
@@ -242,6 +272,7 @@ export default function TransactionRow({ tx }: { tx: Transaction }) {
               margin-bottom: 18px;
               border-bottom: 1px solid #e2e8f0;
             }
+
             .brand {
               font-size: 12px;
               color: #64748b;
@@ -249,10 +280,12 @@ export default function TransactionRow({ tx }: { tx: Transaction }) {
               letter-spacing: .08em;
               text-transform: uppercase;
             }
+
             h1 {
               margin: 6px 0 0;
               font-size: 24px;
             }
+
             .badge {
               height: fit-content;
               border-radius: 999px;
@@ -263,6 +296,7 @@ export default function TransactionRow({ tx }: { tx: Transaction }) {
               background: color-mix(in srgb, ${meta.accent}, transparent 91%);
               border: 1px solid color-mix(in srgb, ${meta.accent}, transparent 72%);
             }
+
             .amount {
               margin: 18px 0;
               border-radius: 20px;
@@ -270,6 +304,7 @@ export default function TransactionRow({ tx }: { tx: Transaction }) {
               background: color-mix(in srgb, ${meta.accent}, transparent 93%);
               border: 1px solid color-mix(in srgb, ${meta.accent}, transparent 78%);
             }
+
             .amount span {
               display: block;
               color: #64748b;
@@ -277,6 +312,7 @@ export default function TransactionRow({ tx }: { tx: Transaction }) {
               font-weight: 800;
               text-transform: uppercase;
             }
+
             .amount strong {
               display: block;
               margin-top: 6px;
@@ -284,6 +320,7 @@ export default function TransactionRow({ tx }: { tx: Transaction }) {
               font-size: 32px;
               line-height: 1;
             }
+
             .row {
               display: flex;
               justify-content: space-between;
@@ -291,30 +328,44 @@ export default function TransactionRow({ tx }: { tx: Transaction }) {
               padding: 13px 0;
               border-bottom: 1px solid #eef2f7;
             }
-            .row:last-child { border-bottom: 0; }
+
+            .row:last-child {
+              border-bottom: 0;
+            }
+
             .row span {
               color: #64748b;
               font-size: 13px;
               font-weight: 800;
             }
+
             .row strong {
               color: #0f172a;
               font-size: 13px;
               text-align: right;
               overflow-wrap: anywhere;
             }
+
             .footer {
               margin-top: 20px;
               color: #94a3b8;
               font-size: 12px;
               text-align: center;
             }
+
             @media print {
-              body { background: white; }
-              .receipt { box-shadow: none; width: 100%; }
+              body {
+                background: white;
+              }
+
+              .receipt {
+                box-shadow: none;
+                width: 100%;
+              }
             }
           </style>
         </head>
+
         <body>
           <main class="receipt">
             <section class="top">
@@ -322,6 +373,7 @@ export default function TransactionRow({ tx }: { tx: Transaction }) {
                 <div class="brand">Jamal Finance</div>
                 <h1>Transaction Receipt</h1>
               </div>
+
               <div class="badge">${escapeHtml(meta.label)}</div>
             </section>
 
@@ -362,14 +414,15 @@ export default function TransactionRow({ tx }: { tx: Transaction }) {
       <div
         role="button"
         tabIndex={0}
-        onClick={() => setReceiptOpen(true)}
+        onMouseDown={(event) => event.preventDefault()}
+        onClick={openReceipt}
         onKeyDown={(event) => {
           if (event.key === "Enter" || event.key === " ") {
             event.preventDefault();
-            setReceiptOpen(true);
+            openReceipt();
           }
         }}
-        className="group grid cursor-pointer grid-cols-[auto,1fr] gap-3 rounded-2xl border border-transparent px-3 py-3 transition-all duration-200 hover:-translate-y-0.5 hover:border-border hover:bg-hover hover:shadow-sm focus:outline-none focus:ring-2 focus:ring-brand/25 md:flex md:items-center"
+        className="group grid cursor-pointer grid-cols-[auto,1fr] gap-3 rounded-2xl border border-transparent px-3 py-3 transition-all duration-200 hover:-translate-y-0.5 hover:bg-hover hover:shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-brand/20 md:flex md:items-center"
       >
         <div
           className={`grid h-10 w-10 shrink-0 place-items-center rounded-2xl border transition-all duration-200 group-hover:scale-105 ${meta.softClass}`}
@@ -437,9 +490,10 @@ export default function TransactionRow({ tx }: { tx: Transaction }) {
 
         <div className="col-span-2 flex items-center justify-end gap-1.5 md:col-span-1 md:w-24 md:shrink-0 md:opacity-0 md:transition-opacity md:group-hover:opacity-100 md:group-focus-within:opacity-100">
           <button
+            onMouseDown={(event) => event.preventDefault()}
             onClick={(event) => {
               event.stopPropagation();
-              setReceiptOpen(true);
+              openReceipt();
             }}
             className="finance-focus grid h-8 w-8 place-items-center rounded-full border border-border bg-surface text-text-secondary shadow-sm transition-all hover:-translate-y-0.5 hover:bg-hover hover:text-brand hover:shadow-md"
             aria-label="View receipt"
@@ -451,6 +505,7 @@ export default function TransactionRow({ tx }: { tx: Transaction }) {
 
           {canEdit ?
             <button
+              onMouseDown={(event) => event.preventDefault()}
               onClick={(event) => {
                 event.stopPropagation();
                 setEditOpen(true);
@@ -465,6 +520,7 @@ export default function TransactionRow({ tx }: { tx: Transaction }) {
           : null}
 
           <button
+            onMouseDown={(event) => event.preventDefault()}
             onClick={(event) => {
               event.stopPropagation();
               void handleDelete();
@@ -482,129 +538,161 @@ export default function TransactionRow({ tx }: { tx: Transaction }) {
 
       {receiptOpen ?
         <div
-          className="fixed inset-0 z-50 overflow-y-auto bg-background/78 px-4 py-6 backdrop-blur-[2px] dark:bg-background/82 sm:py-10"
+          className="fixed inset-0 z-[100] overflow-hidden bg-background/96 backdrop-blur-md dark:bg-background/96"
           onClick={() => setReceiptOpen(false)}
         >
-          <div className="flex min-h-full items-start justify-center pt-4 sm:pt-8">
+          <div className="flex h-dvh w-full items-center justify-center p-3 sm:p-6">
             <div
-              className="w-full max-w-[520px] overflow-hidden rounded-[28px] border border-border bg-surface shadow-[0_24px_80px_rgba(15,23,42,0.16)] dark:shadow-[0_24px_80px_rgba(0,0,0,0.35)]"
+              className="flex max-h-[calc(100dvh-24px)] w-full max-w-[920px] flex-col overflow-hidden rounded-[30px] border border-border bg-surface shadow-[0_28px_90px_rgba(15,23,42,0.20)] dark:shadow-[0_28px_90px_rgba(0,0,0,0.48)] sm:max-h-[calc(100dvh-48px)]"
               onClick={(event) => event.stopPropagation()}
             >
               <div
-                className="border-b border-border p-5 sm:p-6"
+                className="shrink-0 border-b border-border p-5 sm:p-6"
                 style={{
-                  background: `linear-gradient(135deg, color-mix(in srgb, ${meta.accent}, transparent 90%), transparent 72%)`,
+                  background: `linear-gradient(135deg, color-mix(in srgb, ${meta.accent}, transparent 88%), transparent 74%)`,
                 }}
               >
-                <div className="mb-5 flex items-center justify-between gap-3">
-                  <div className="flex items-center gap-3">
+                <div className="flex items-start justify-between gap-4">
+                  <div className="flex min-w-0 items-center gap-3">
                     <div
-                      className={`grid h-12 w-12 place-items-center rounded-2xl border ${meta.softClass}`}
+                      className={`grid h-12 w-12 shrink-0 place-items-center rounded-2xl border ${meta.softClass}`}
                     >
                       <ReceiptText size={22} strokeWidth={2.4} />
                     </div>
 
-                    <div>
-                      <p className="text-xs font-bold uppercase tracking-wide text-text-secondary">
-                        Transaction Receipt
+                    <div className="min-w-0">
+                      <p className="text-xs font-bold uppercase tracking-[0.18em] text-text-secondary">
+                        Transaction Preview
                       </p>
 
-                      <h3 className="mt-1 max-w-[330px] truncate text-lg font-black text-text-primary sm:text-xl">
+                      <h3 className="mt-1 truncate text-xl font-black text-text-primary sm:text-2xl">
                         {title}
                       </h3>
+
+                      <p className="mt-1 text-xs font-semibold text-text-secondary sm:text-sm">
+                        {formatDate(tx.date, true)}
+                      </p>
                     </div>
                   </div>
 
                   <button
                     type="button"
+                    onMouseDown={(event) => event.preventDefault()}
                     onClick={() => setReceiptOpen(false)}
-                    className="finance-focus grid h-9 w-9 shrink-0 place-items-center rounded-full border border-border bg-surface text-text-secondary transition-colors hover:bg-hover hover:text-text-primary"
+                    className="finance-focus grid h-10 w-10 shrink-0 place-items-center rounded-full border border-border bg-surface text-text-secondary transition-colors hover:bg-hover hover:text-text-primary"
                     aria-label="Close receipt"
                   >
-                    <X size={16} />
+                    <X size={17} />
                   </button>
                 </div>
 
-                <div className="rounded-2xl border border-border bg-surface/85 p-4 shadow-sm">
-                  <p className="text-xs font-bold uppercase tracking-wide text-text-secondary">
-                    Amount
-                  </p>
+                <div className="mt-5 grid gap-3 sm:grid-cols-[1.1fr,0.9fr]">
+                  <div className="rounded-3xl border border-border bg-surface/88 p-5 shadow-sm">
+                    <p className="text-xs font-bold uppercase tracking-wide text-text-secondary">
+                      Amount
+                    </p>
 
-                  <p className={`mt-1 text-3xl font-black ${meta.amountClass}`}>
-                    {displayAmount}
-                  </p>
+                    <p
+                      className={`mt-2 text-4xl font-black ${meta.amountClass}`}
+                    >
+                      {displayAmount}
+                    </p>
+                  </div>
+
+                  <div className="rounded-3xl border border-border bg-surface/88 p-5 shadow-sm">
+                    <p className="text-xs font-bold uppercase tracking-wide text-text-secondary">
+                      Type
+                    </p>
+
+                    <div className="mt-3">
+                      <TypePill meta={meta} TypeIcon={TypeIcon} />
+                    </div>
+                  </div>
                 </div>
               </div>
 
-              <div className="space-y-2.5 p-5 sm:p-6">
-                <ReceiptLine icon={TypeIcon} label="Type" value={meta.label} />
-                <ReceiptLine
-                  icon={CalendarDays}
-                  label="Date"
-                  value={formatDate(tx.date, true)}
-                />
-                <ReceiptLine
-                  icon={Wallet}
-                  label="Account"
-                  value={accountName}
-                />
-                <ReceiptLine
-                  icon={FileText}
-                  label="Category"
-                  value={categoryLabel}
-                />
-
-                {tx.note ?
+              <div className="min-h-0 flex-1 overflow-y-auto p-5 sm:p-6">
+                <div className="grid gap-3 sm:grid-cols-2">
                   <ReceiptLine
-                    icon={ReceiptText}
-                    label="Note"
-                    value={tx.note}
+                    icon={CalendarDays}
+                    label="Date"
+                    value={formatDate(tx.date, true)}
                   />
-                : null}
 
-                {tx.source_name ?
+                  <ReceiptLine
+                    icon={Wallet}
+                    label="Account"
+                    value={accountName}
+                  />
+
                   <ReceiptLine
                     icon={FileText}
-                    label="Source"
-                    value={tx.source_name}
+                    label="Category"
+                    value={categoryLabel}
                   />
-                : null}
 
-                {tx.person_name ?
                   <ReceiptLine
-                    icon={FileText}
-                    label="Person"
-                    value={tx.person_name}
+                    icon={TypeIcon}
+                    label="Type"
+                    value={meta.label}
                   />
-                : null}
 
-                {tx.item_name ?
-                  <ReceiptLine
-                    icon={FileText}
-                    label="Item"
-                    value={tx.item_name}
-                  />
-                : null}
+                  {tx.note ?
+                    <ReceiptLine
+                      icon={ReceiptText}
+                      label="Note"
+                      value={tx.note}
+                    />
+                  : null}
+
+                  {tx.source_name ?
+                    <ReceiptLine
+                      icon={FileText}
+                      label="Source"
+                      value={tx.source_name}
+                    />
+                  : null}
+
+                  {tx.person_name ?
+                    <ReceiptLine
+                      icon={FileText}
+                      label="Person"
+                      value={tx.person_name}
+                    />
+                  : null}
+
+                  {tx.item_name ?
+                    <ReceiptLine
+                      icon={FileText}
+                      label="Item"
+                      value={tx.item_name}
+                    />
+                  : null}
+                </div>
               </div>
 
-              <div className="flex flex-col gap-2 border-t border-border bg-background/35 p-5 sm:flex-row sm:justify-end sm:p-6">
-                <button
-                  type="button"
-                  onClick={copyReceipt}
-                  className="finance-focus inline-flex items-center justify-center gap-2 rounded-full border border-border bg-surface px-4 py-2.5 text-sm font-bold text-text-primary transition-all hover:-translate-y-0.5 hover:bg-hover"
-                >
-                  <Copy size={16} />
-                  Copy
-                </button>
+              <div className="shrink-0 border-t border-border bg-background/45 p-4 sm:p-5">
+                <div className="flex flex-col gap-2 sm:flex-row sm:justify-end">
+                  <button
+                    type="button"
+                    onMouseDown={(event) => event.preventDefault()}
+                    onClick={copyReceipt}
+                    className="finance-focus inline-flex items-center justify-center gap-2 rounded-full border border-border bg-surface px-5 py-3 text-sm font-bold text-text-primary transition-all hover:-translate-y-0.5 hover:bg-hover"
+                  >
+                    <Copy size={16} />
+                    Copy
+                  </button>
 
-                <button
-                  type="button"
-                  onClick={printReceipt}
-                  className="finance-focus inline-flex items-center justify-center gap-2 rounded-full bg-brand px-4 py-2.5 text-sm font-black text-white shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md"
-                >
-                  <Printer size={16} />
-                  Print / Save PDF
-                </button>
+                  <button
+                    type="button"
+                    onMouseDown={(event) => event.preventDefault()}
+                    onClick={printReceipt}
+                    className="finance-focus inline-flex items-center justify-center gap-2 rounded-full bg-brand px-5 py-3 text-sm font-black text-white shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md"
+                  >
+                    <Printer size={16} />
+                    Print / Save PDF
+                  </button>
+                </div>
               </div>
             </div>
           </div>

@@ -74,11 +74,12 @@ function getCardVars(accent: string) {
   } as CSSProperties;
 }
 
-export default function AccountCard({
-  account,
-}: {
+type AccountCardProps = {
   account: AccountWithTotals;
-}) {
+  index?: number;
+};
+
+export default function AccountCard({ account }: AccountCardProps) {
   const router = useRouter();
   const supabase = createClient();
 
