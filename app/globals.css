@@ -162,7 +162,11 @@
     min-height: 100dvh;
     overflow-x: hidden;
     background:
-      linear-gradient(180deg, color-mix(in srgb, var(--background), var(--surface-secondary) 32%) 0%, var(--background) 34rem),
+      linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--background), var(--surface-secondary) 32%) 0%,
+        var(--background) 34rem
+      ),
       var(--background);
     text-rendering: geometricPrecision;
     transition:
@@ -180,8 +184,11 @@
   .finance-panel {
     @apply rounded-[20px] border;
     border-color: var(--border);
-    background:
-      linear-gradient(180deg, color-mix(in srgb, var(--card), var(--surface-secondary) 8%), var(--card));
+    background: linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--card), var(--surface-secondary) 8%),
+      var(--card)
+    );
     color: var(--text-primary);
     box-shadow: var(--shadow);
     transition:
@@ -195,8 +202,11 @@
   .finance-panel-soft {
     @apply rounded-[18px] border;
     border-color: var(--border);
-    background:
-      linear-gradient(180deg, color-mix(in srgb, var(--surface-secondary), var(--card) 18%), var(--surface-secondary));
+    background: linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--surface-secondary), var(--card) 18%),
+      var(--surface-secondary)
+    );
     color: var(--text-primary);
     box-shadow: none;
     transition:
@@ -222,15 +232,21 @@
 
   .finance-surface {
     border-radius: var(--oneui-card-radius);
-    background:
-      linear-gradient(180deg, color-mix(in srgb, var(--surface-elevated), white 4%), var(--card));
+    background: linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--surface-elevated), white 4%),
+      var(--card)
+    );
     box-shadow: var(--shadow), var(--surface-highlight);
   }
 
   .finance-surface-soft {
     border-radius: var(--oneui-card-radius);
-    background:
-      linear-gradient(180deg, color-mix(in srgb, var(--surface-secondary), var(--card) 22%), var(--surface-secondary));
+    background: linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--surface-secondary), var(--card) 22%),
+      var(--surface-secondary)
+    );
     box-shadow: var(--surface-highlight);
   }
 
@@ -241,7 +257,9 @@
     box-shadow: var(--shadow-soft), var(--surface-highlight);
   }
 
-  @supports ((backdrop-filter: blur(10px)) or (-webkit-backdrop-filter: blur(10px))) {
+  @supports (
+    (backdrop-filter: blur(10px)) or (-webkit-backdrop-filter: blur(10px))
+  ) {
     .finance-surface-glass {
       backdrop-filter: blur(10px) saturate(1.08);
       -webkit-backdrop-filter: blur(10px) saturate(1.08);
@@ -487,8 +505,11 @@
     z-index: -1;
     border: 1px solid color-mix(in srgb, var(--active), var(--border) 74%);
     border-radius: 1rem;
-    background:
-      linear-gradient(180deg, color-mix(in srgb, var(--card), var(--active) 8%), var(--hover));
+    background: linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--card), var(--active) 8%),
+      var(--hover)
+    );
     box-shadow: var(--shadow), var(--surface-highlight);
     will-change: transform, opacity;
   }
@@ -516,7 +537,11 @@
     place-items: center;
     border: 1px solid color-mix(in srgb, var(--border), transparent 14%);
     border-radius: 0.8rem;
-    background-color: color-mix(in srgb, var(--surface-secondary), transparent 14%);
+    background-color: color-mix(
+      in srgb,
+      var(--surface-secondary),
+      transparent 14%
+    );
     color: var(--text-tertiary);
     transition:
       color var(--motion-duration-base) var(--motion-ease),
@@ -537,7 +562,9 @@
     border-color: color-mix(in srgb, var(--active), transparent 72%);
     background-color: var(--card);
     color: var(--active);
-    box-shadow: 0 8px 18px color-mix(in srgb, var(--active), transparent 86%), var(--surface-highlight);
+    box-shadow:
+      0 8px 18px color-mix(in srgb, var(--active), transparent 86%),
+      var(--surface-highlight);
   }
 
   .jf-sidebar-chevron {
@@ -575,8 +602,11 @@
 
   .page-heading.finance-surface-glass {
     border-color: color-mix(in srgb, var(--border), transparent 18%);
-    background:
-      linear-gradient(135deg, color-mix(in srgb, var(--card), var(--active) 5%), var(--surface-glass));
+    background: linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--card), var(--active) 5%),
+      var(--surface-glass)
+    );
     box-shadow: var(--shadow-premium), var(--surface-highlight);
   }
 
@@ -723,8 +753,11 @@
   .finance-reference-card {
     @apply rounded-[28px] border;
     border-color: color-mix(in srgb, var(--border), white 18%);
-    background:
-      linear-gradient(180deg, color-mix(in srgb, var(--card), white 8%), var(--card));
+    background: linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--card), white 8%),
+      var(--card)
+    );
     color: var(--text-primary);
     box-shadow:
       0 18px 45px rgb(16 24 40 / 0.08),
@@ -739,8 +772,11 @@
 
   .dark .finance-reference-card {
     border-color: color-mix(in srgb, var(--border), white 6%);
-    background:
-      linear-gradient(180deg, color-mix(in srgb, var(--card), white 6%), color-mix(in srgb, var(--card), black 8%));
+    background: linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--card), white 6%),
+      color-mix(in srgb, var(--card), black 8%)
+    );
     box-shadow:
       0 22px 58px rgb(0 0 0 / 0.32),
       inset 0 1px 0 rgb(255 255 255 / 0.04);
@@ -804,7 +840,11 @@
 
   .dashboard-progress-track {
     @apply h-1.5 overflow-hidden rounded-full;
-    background-color: color-mix(in srgb, var(--progress-accent, var(--active)), var(--card) 88%);
+    background-color: color-mix(
+      in srgb,
+      var(--progress-accent, var(--active)),
+      var(--card) 88%
+    );
   }
 
   .dashboard-progress-fill {
@@ -825,11 +865,18 @@
     --dashboard-chart-income: #19c76f;
     --dashboard-chart-expense: #ff3b35;
     --dashboard-chart-grid: color-mix(in srgb, var(--border), transparent 20%);
-    --dashboard-chart-muted: color-mix(in srgb, var(--text-secondary), transparent 8%);
+    --dashboard-chart-muted: color-mix(
+      in srgb,
+      var(--text-secondary),
+      transparent 8%
+    );
     --dashboard-chart-track: color-mix(in srgb, var(--border), var(--card) 40%);
     border-color: color-mix(in srgb, var(--border), white 12%);
-    background:
-      linear-gradient(180deg, color-mix(in srgb, var(--card), white 7%), var(--card));
+    background: linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--card), white 7%),
+      var(--card)
+    );
     color: var(--text-primary);
     box-shadow:
       0 14px 34px rgb(16 24 40 / 0.075),
@@ -845,11 +892,18 @@
 
   .dark .dashboard-graph-card {
     --dashboard-chart-grid: color-mix(in srgb, var(--border), transparent 10%);
-    --dashboard-chart-muted: color-mix(in srgb, var(--text-secondary), white 8%);
+    --dashboard-chart-muted: color-mix(
+      in srgb,
+      var(--text-secondary),
+      white 8%
+    );
     --dashboard-chart-track: color-mix(in srgb, var(--border), white 5%);
     border-color: color-mix(in srgb, var(--border), white 6%);
-    background:
-      linear-gradient(180deg, color-mix(in srgb, var(--card), white 6%), color-mix(in srgb, var(--card), black 8%));
+    background: linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--card), white 6%),
+      color-mix(in srgb, var(--card), black 8%)
+    );
     color: var(--text-primary);
     box-shadow:
       0 22px 58px rgb(0 0 0 / 0.32),
@@ -859,8 +913,11 @@
   .dashboard-chart-empty {
     @apply flex items-center justify-center rounded-[18px] border border-dashed px-4 text-center;
     border-color: color-mix(in srgb, var(--border), transparent 12%);
-    background:
-      linear-gradient(180deg, color-mix(in srgb, var(--surface-secondary), transparent 18%), transparent);
+    background: linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--surface-secondary), transparent 18%),
+      transparent
+    );
     color: var(--text-secondary);
     transition:
       border-color var(--motion-duration-base) var(--motion-ease),
@@ -882,8 +939,22 @@
     overflow: hidden;
     border-radius: 16px;
     background:
-      linear-gradient(180deg, transparent 0 24%, rgb(148 163 184 / 0.14) 24% 25%, transparent 25% 49%, rgb(148 163 184 / 0.12) 49% 50%, transparent 50% 74%, rgb(148 163 184 / 0.1) 74% 75%, transparent 75%),
-      linear-gradient(90deg, rgb(248 250 252 / 0.2), rgb(241 245 249 / 0.5), rgb(248 250 252 / 0.2));
+      linear-gradient(
+        180deg,
+        transparent 0 24%,
+        rgb(148 163 184 / 0.14) 24% 25%,
+        transparent 25% 49%,
+        rgb(148 163 184 / 0.12) 49% 50%,
+        transparent 50% 74%,
+        rgb(148 163 184 / 0.1) 74% 75%,
+        transparent 75%
+      ),
+      linear-gradient(
+        90deg,
+        rgb(248 250 252 / 0.2),
+        rgb(241 245 249 / 0.5),
+        rgb(248 250 252 / 0.2)
+      );
   }
 
   .finance-graph-loader::before,
@@ -902,7 +973,12 @@
 
   .finance-graph-loader::after {
     width: 32%;
-    background: linear-gradient(90deg, transparent, rgb(255 255 255 / 0.75), transparent);
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgb(255 255 255 / 0.75),
+      transparent
+    );
     animation: graphLoaderSweep 0.92s ease-in-out infinite;
   }
 
@@ -933,7 +1009,11 @@
 
   .finance-panel-interactive:hover {
     border-color: color-mix(in srgb, var(--active), var(--border) 72%);
-    background: linear-gradient(180deg, color-mix(in srgb, var(--card), var(--hover) 46%), var(--card));
+    background: linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--card), var(--hover) 46%),
+      var(--card)
+    );
     box-shadow: var(--shadow-premium), var(--glow-soft);
     transform: translate3d(0, -2px, 0);
   }
@@ -973,8 +1053,11 @@
   .finance-loading-panel {
     @apply rounded-[20px] border p-4 sm:p-5;
     border-color: var(--border);
-    background:
-      linear-gradient(180deg, color-mix(in srgb, var(--card), white 3%), var(--card));
+    background: linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--card), white 3%),
+      var(--card)
+    );
     box-shadow: var(--shadow);
   }
 
@@ -1096,35 +1179,129 @@
 }
 
 /* Token-backed compatibility for older utility classes still present in feature markup. */
-:is(.bg-white, .bg-white\/72, .bg-white\/88, .bg-white\/92, .bg-white\/95, .bg-\[\#1b1f27\]\/86) {
+:is(
+  .bg-white,
+  .bg-white\/72,
+  .bg-white\/88,
+  .bg-white\/92,
+  .bg-white\/95,
+  .bg-\[\#1b1f27\]\/86
+) {
   background-color: var(--card) !important;
 }
 
-:is(.bg-slate-50, .bg-slate-50\/80, .bg-slate-100, .bg-slate-100\/80, .bg-gray-800, .bg-gray-900\/60, .bg-white\/\[0\.035\], .bg-white\/\[0\.045\], .bg-white\/\[0\.055\], .bg-white\/\[0\.06\], .bg-white\/\[0\.065\], .bg-white\/\[0\.07\], .bg-white\/\[0\.08\], .bg-blue-50, .bg-emerald-50, .bg-green-50, .bg-rose-50, .bg-red-50, .bg-sky-50, .bg-lime-50, .bg-amber-50, .bg-violet-50, .bg-indigo-50, .bg-cyan-50) {
+:is(
+  .bg-slate-50,
+  .bg-slate-50\/80,
+  .bg-slate-100,
+  .bg-slate-100\/80,
+  .bg-gray-800,
+  .bg-gray-900\/60,
+  .bg-white\/\[0\.035\],
+  .bg-white\/\[0\.045\],
+  .bg-white\/\[0\.055\],
+  .bg-white\/\[0\.06\],
+  .bg-white\/\[0\.065\],
+  .bg-white\/\[0\.07\],
+  .bg-white\/\[0\.08\],
+  .bg-blue-50,
+  .bg-emerald-50,
+  .bg-green-50,
+  .bg-rose-50,
+  .bg-red-50,
+  .bg-sky-50,
+  .bg-lime-50,
+  .bg-amber-50,
+  .bg-violet-50,
+  .bg-indigo-50,
+  .bg-cyan-50
+) {
   background-color: var(--surface-secondary) !important;
 }
 
-:is(.hover\:bg-white\/\[0\.08\]:hover, .hover\:bg-white\/\[0\.09\]:hover, .hover\:bg-white\/\[0\.11\]:hover, .hover\:bg-slate-50:hover, .hover\:bg-slate-100:hover, .hover\:bg-muted:hover) {
+:is(
+  .hover\:bg-white\/\[0\.08\]:hover,
+  .hover\:bg-white\/\[0\.09\]:hover,
+  .hover\:bg-white\/\[0\.11\]:hover,
+  .hover\:bg-slate-50:hover,
+  .hover\:bg-slate-100:hover,
+  .hover\:bg-muted:hover
+) {
   background-color: var(--hover) !important;
 }
 
-:is(.border-slate-200, .border-slate-200\/80, .border-slate-200\/90, .border-slate-300, .border-gray-800\/50, .border-white, .border-white\/\[0\.06\], .border-white\/\[0\.07\], .border-white\/\[0\.08\], .border-white\/\[0\.10\], .border-\[\#dfe5ee\], .border-blue-100, .border-emerald-200, .border-rose-200, .border-red-200, .border-green-200, .border-sky-200, .border-lime-200, .border-amber-200) {
+:is(
+  .border-slate-200,
+  .border-slate-200\/80,
+  .border-slate-200\/90,
+  .border-slate-300,
+  .border-gray-800\/50,
+  .border-white,
+  .border-white\/\[0\.06\],
+  .border-white\/\[0\.07\],
+  .border-white\/\[0\.08\],
+  .border-white\/\[0\.10\],
+  .border-\[\#dfe5ee\],
+  .border-blue-100,
+  .border-emerald-200,
+  .border-rose-200,
+  .border-red-200,
+  .border-green-200,
+  .border-sky-200,
+  .border-lime-200,
+  .border-amber-200
+) {
   border-color: var(--border) !important;
 }
 
-:is(.hover\:border-slate-200:hover, .hover\:border-blue-200:hover, .hover\:border-white\/\[0\.14\]:hover, .hover\:border-red-200:hover) {
+:is(
+  .hover\:border-slate-200:hover,
+  .hover\:border-blue-200:hover,
+  .hover\:border-white\/\[0\.14\]:hover,
+  .hover\:border-red-200:hover
+) {
   border-color: var(--border) !important;
 }
 
-:is(.ring-slate-200, .ring-blue-100, .ring-emerald-100, .ring-amber-100, .ring-blue-200, .ring-foreground\/10) {
+:is(
+  .ring-slate-200,
+  .ring-blue-100,
+  .ring-emerald-100,
+  .ring-amber-100,
+  .ring-blue-200,
+  .ring-foreground\/10
+) {
   --tw-ring-color: var(--border) !important;
 }
 
-:is(.text-white, .text-slate-950, .text-slate-900, .text-slate-800, .text-slate-700, .text-\[\#111318\], .text-\[\#101318\], .text-\[\#050816\], .text-\[\#020817\]) {
+:is(
+  .text-white,
+  .text-slate-950,
+  .text-slate-900,
+  .text-slate-800,
+  .text-slate-700,
+  .text-\[\#111318\],
+  .text-\[\#101318\],
+  .text-\[\#050816\],
+  .text-\[\#020817\]
+) {
   color: var(--text-primary) !important;
 }
 
-:is(.text-white\/70, .text-white\/80, .text-slate-600, .text-slate-500, .text-slate-400, .text-slate-300, .text-muted-foreground, .text-\[\#758093\], .text-\[\#7f8798\], .text-\[\#8a93a4\], .text-\[\#8d96a8\], .text-\[\#9aa3b5\]) {
+:is(
+  .text-white\/70,
+  .text-white\/80,
+  .text-slate-600,
+  .text-slate-500,
+  .text-slate-400,
+  .text-slate-300,
+  .text-muted-foreground,
+  .text-\[\#758093\],
+  .text-\[\#7f8798\],
+  .text-\[\#8a93a4\],
+  .text-\[\#8d96a8\],
+  .text-\[\#9aa3b5\]
+) {
   color: var(--text-secondary) !important;
 }
 
@@ -1132,19 +1309,71 @@
   color: var(--text-secondary) !important;
 }
 
-:is(.text-blue-500, .text-blue-600, .text-blue-700, .text-sky-300, .text-sky-600, .text-sky-700, .text-cyan-100, .text-cyan-300, .text-cyan-600, .text-indigo-300, .text-indigo-600, .text-violet-300, .text-violet-600, .text-fuchsia-300, .text-pink-300) {
+:is(
+  .text-blue-500,
+  .text-blue-600,
+  .text-blue-700,
+  .text-sky-300,
+  .text-sky-600,
+  .text-sky-700,
+  .text-cyan-100,
+  .text-cyan-300,
+  .text-cyan-600,
+  .text-indigo-300,
+  .text-indigo-600,
+  .text-violet-300,
+  .text-violet-600,
+  .text-fuchsia-300,
+  .text-pink-300
+) {
   color: var(--active) !important;
 }
 
-:is(.text-emerald-200, .text-emerald-300, .text-emerald-400, .text-emerald-500, .text-emerald-600, .text-emerald-700, .text-emerald-800, .text-green-300, .text-green-400, .text-green-500, .text-green-600, .text-green-700, .text-green-800, .text-lime-300, .text-lime-700) {
+:is(
+  .text-emerald-200,
+  .text-emerald-300,
+  .text-emerald-400,
+  .text-emerald-500,
+  .text-emerald-600,
+  .text-emerald-700,
+  .text-emerald-800,
+  .text-green-300,
+  .text-green-400,
+  .text-green-500,
+  .text-green-600,
+  .text-green-700,
+  .text-green-800,
+  .text-lime-300,
+  .text-lime-700
+) {
   color: var(--success) !important;
 }
 
-:is(.text-red-300, .text-red-400, .text-red-500, .text-red-600, .text-red-700, .text-red-800, .text-rose-200, .text-rose-300, .text-rose-400, .text-rose-700) {
+:is(
+  .text-red-300,
+  .text-red-400,
+  .text-red-500,
+  .text-red-600,
+  .text-red-700,
+  .text-red-800,
+  .text-rose-200,
+  .text-rose-300,
+  .text-rose-400,
+  .text-rose-700
+) {
   color: var(--danger) !important;
 }
 
-:is(.text-amber-300, .text-amber-400, .text-amber-500, .text-amber-600, .text-amber-700, .text-yellow-400, .text-orange-300, .text-orange-400) {
+:is(
+  .text-amber-300,
+  .text-amber-400,
+  .text-amber-500,
+  .text-amber-600,
+  .text-amber-700,
+  .text-yellow-400,
+  .text-orange-300,
+  .text-orange-400
+) {
   color: var(--warning) !important;
 }
 
@@ -1153,24 +1382,76 @@
   color: var(--background) !important;
 }
 
-:is(.hover\:bg-blue-700:hover, .hover\:bg-\[\#242832\]:hover, .hover\:bg-primary\/90:hover) {
+:is(
+  .hover\:bg-blue-700:hover,
+  .hover\:bg-\[\#242832\]:hover,
+  .hover\:bg-primary\/90:hover
+) {
   background-color: var(--active) !important;
 }
 
-:is(.bg-blue-500\/10, .bg-blue-500\/15, .bg-blue-600\/10, .bg-sky-400\/12, .bg-sky-500\/15, .bg-fuchsia-500\/15, .bg-violet-500\/15, .bg-indigo-500\/15, .bg-pink-500\/15, .bg-cyan-500\/15) {
-  background-color: color-mix(in srgb, var(--active), transparent 90%) !important;
+:is(
+  .bg-blue-500\/10,
+  .bg-blue-500\/15,
+  .bg-blue-600\/10,
+  .bg-sky-400\/12,
+  .bg-sky-500\/15,
+  .bg-fuchsia-500\/15,
+  .bg-violet-500\/15,
+  .bg-indigo-500\/15,
+  .bg-pink-500\/15,
+  .bg-cyan-500\/15
+) {
+  background-color: color-mix(
+    in srgb,
+    var(--active),
+    transparent 90%
+  ) !important;
 }
 
-:is(.bg-emerald-300\/\[0\.055\], .bg-emerald-400\/16, .bg-emerald-500\/10, .bg-emerald-500\/15, .bg-green-500\/5, .bg-green-500\/10, .bg-green-500\/15, .bg-lime-500\/15) {
-  background-color: color-mix(in srgb, var(--success), transparent 90%) !important;
+:is(
+  .bg-emerald-300\/\[0\.055\],
+  .bg-emerald-400\/16,
+  .bg-emerald-500\/10,
+  .bg-emerald-500\/15,
+  .bg-green-500\/5,
+  .bg-green-500\/10,
+  .bg-green-500\/15,
+  .bg-lime-500\/15
+) {
+  background-color: color-mix(
+    in srgb,
+    var(--success),
+    transparent 90%
+  ) !important;
 }
 
-:is(.bg-red-500\/5, .bg-red-500\/10, .bg-rose-300\/\[0\.055\], .bg-rose-400\/16, .bg-rose-500\/15) {
-  background-color: color-mix(in srgb, var(--danger), transparent 90%) !important;
+:is(
+  .bg-red-500\/5,
+  .bg-red-500\/10,
+  .bg-rose-300\/\[0\.055\],
+  .bg-rose-400\/16,
+  .bg-rose-500\/15
+) {
+  background-color: color-mix(
+    in srgb,
+    var(--danger),
+    transparent 90%
+  ) !important;
 }
 
-:is(.bg-amber-300\/\[0\.08\], .bg-amber-400\/12, .bg-amber-500\/15, .bg-yellow-500\/10, .bg-orange-500\/15) {
-  background-color: color-mix(in srgb, var(--warning), transparent 88%) !important;
+:is(
+  .bg-amber-300\/\[0\.08\],
+  .bg-amber-400\/12,
+  .bg-amber-500\/15,
+  .bg-yellow-500\/10,
+  .bg-orange-500\/15
+) {
+  background-color: color-mix(
+    in srgb,
+    var(--warning),
+    transparent 88%
+  ) !important;
 }
 
 :is(.bg-slate-500\/15) {
@@ -1181,11 +1462,21 @@
   border-color: color-mix(in srgb, var(--active), transparent 68%) !important;
 }
 
-:is(.border-emerald-500, .border-green-500\/20, .border-emerald-300\/10, .border-emerald-300\/25) {
+:is(
+  .border-emerald-500,
+  .border-green-500\/20,
+  .border-emerald-300\/10,
+  .border-emerald-300\/25
+) {
   border-color: color-mix(in srgb, var(--success), transparent 68%) !important;
 }
 
-:is(.border-red-500\/20, .border-rose-300\/10, .border-red-400\/15, .border-rose-300\/25) {
+:is(
+  .border-red-500\/20,
+  .border-rose-300\/10,
+  .border-red-400\/15,
+  .border-rose-300\/25
+) {
   border-color: color-mix(in srgb, var(--danger), transparent 68%) !important;
 }
 
@@ -1193,11 +1484,25 @@
   border-color: color-mix(in srgb, var(--warning), transparent 66%) !important;
 }
 
-:is(.shadow-lg, .shadow-sm, .shadow-md, .shadow-2xl, .shadow-slate-100, .shadow-slate-200, .shadow-blue-100, [class*="shadow-["]) {
+:is(
+  .shadow-lg,
+  .shadow-sm,
+  .shadow-md,
+  .shadow-2xl,
+  .shadow-slate-100,
+  .shadow-slate-200,
+  .shadow-blue-100,
+  [class*="shadow-["]
+) {
   box-shadow: var(--shadow) !important;
 }
 
-:is(.backdrop-blur-sm, .backdrop-blur-xl, .backdrop-blur-2xl, .supports-backdrop-filter\:backdrop-blur-xs) {
+:is(
+  .backdrop-blur-sm,
+  .backdrop-blur-xl,
+  .backdrop-blur-2xl,
+  .supports-backdrop-filter\:backdrop-blur-xs
+) {
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
 }
@@ -1226,7 +1531,9 @@
   -webkit-tap-highlight-color: transparent;
 }
 
-*, *::before, *::after {
+*,
+*::before,
+*::after {
   box-sizing: border-box;
 }
 
@@ -1351,11 +1658,13 @@ button svg {
 
 .motion-active-indicator {
   transform-origin: center;
-  animation: oneuiIndicatorIn var(--motion-duration-base) var(--motion-ease) both;
+  animation: oneuiIndicatorIn var(--motion-duration-base) var(--motion-ease)
+    both;
 }
 
 .motion-counter-ready {
-  animation: oneuiCounterReady var(--motion-duration-base) var(--motion-ease) both;
+  animation: oneuiCounterReady var(--motion-duration-base) var(--motion-ease)
+    both;
 }
 
 .motion-drawer-surface {
@@ -1390,7 +1699,8 @@ button:hover svg:not(.recharts-surface) {
 a,
 button {
   transition-duration: 180ms;
-  transition-property: color, background-color, border-color, box-shadow, opacity, transform;
+  transition-property:
+    color, background-color, border-color, box-shadow, opacity, transform;
   transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
@@ -1648,32 +1958,504 @@ textarea:focus {
   .page-transition,
   .motion-reveal,
   .motion-progress-bar,
-    .motion-progress-fill,
-    .dashboard-progress-fill,
-    .motion-table-row,
-    .motion-error-shake,
-    .motion-empty,
-    .motion-fade-slide,
-    .motion-card-entry,
-    .motion-scale-in,
-    .motion-active-indicator,
-    .motion-counter-ready,
-    .finance-skeleton {
+  .motion-progress-fill,
+  .dashboard-progress-fill,
+  .motion-table-row,
+  .motion-error-shake,
+  .motion-empty,
+  .motion-fade-slide,
+  .motion-card-entry,
+  .motion-scale-in,
+  .motion-active-indicator,
+  .motion-counter-ready,
+  .finance-skeleton {
     animation: none !important;
   }
 
   .page-transition,
   .motion-reveal,
-    .motion-observe,
-    .motion-table-row,
-    .motion-empty,
-    .motion-fade-slide,
-    .motion-card-entry,
-    .motion-scale-in,
-    .motion-active-indicator,
-    .motion-counter-ready,
-    .motion-error-shake {
+  .motion-observe,
+  .motion-table-row,
+  .motion-empty,
+  .motion-fade-slide,
+  .motion-card-entry,
+  .motion-scale-in,
+  .motion-active-indicator,
+  .motion-counter-ready,
+  .motion-error-shake {
     transform: none !important;
     opacity: 1 !important;
+  }
+}
+
+/* -------------------------------------------------------------------------- */
+/* Jamal's Finance — Premium Design System Foundation                         */
+/* Safe additive layer: reusable UI/UX classes for landing + app screens       */
+/* -------------------------------------------------------------------------- */
+
+:root {
+  --jf-radius-xs: 10px;
+  --jf-radius-sm: 14px;
+  --jf-radius-md: 18px;
+  --jf-radius-lg: 24px;
+  --jf-radius-xl: 30px;
+
+  --jf-space-page-x: clamp(1rem, 3vw, 2rem);
+  --jf-space-section-y: clamp(3rem, 7vw, 6rem);
+
+  --jf-ease: cubic-bezier(0.16, 1, 0.3, 1);
+  --jf-duration-fast: 160ms;
+  --jf-duration-base: 220ms;
+  --jf-duration-slow: 420ms;
+}
+
+/* Page shells */
+
+.jf-page-shell {
+  min-height: 100dvh;
+  background:
+    radial-gradient(
+      circle at 18% 8%,
+      color-mix(in srgb, var(--active), transparent 88%),
+      transparent 34rem
+    ),
+    radial-gradient(
+      circle at 88% 16%,
+      color-mix(in srgb, var(--success), transparent 90%),
+      transparent 30rem
+    ),
+    var(--background);
+  color: var(--text-primary);
+}
+
+.jf-section {
+  width: min(100%, 1280px);
+  margin-inline: auto;
+  padding-inline: var(--jf-space-page-x);
+  padding-block: var(--jf-space-section-y);
+}
+
+.jf-section-tight {
+  width: min(100%, 1280px);
+  margin-inline: auto;
+  padding-inline: var(--jf-space-page-x);
+  padding-block: clamp(1.5rem, 4vw, 3rem);
+}
+
+/* Premium surfaces */
+
+.jf-card {
+  border: 1px solid var(--border);
+  border-radius: var(--jf-radius-lg);
+  background: linear-gradient(
+    145deg,
+    color-mix(in srgb, var(--card), white 3%),
+    var(--card)
+  );
+  box-shadow: var(--shadow);
+}
+
+.jf-card-soft {
+  border: 1px solid var(--border);
+  border-radius: var(--jf-radius-lg);
+  background: var(--surface-secondary);
+}
+
+.jf-card-premium {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--border), var(--active) 8%);
+  border-radius: var(--jf-radius-xl);
+  background:
+    linear-gradient(
+      145deg,
+      color-mix(in srgb, var(--card), var(--active) 4%),
+      var(--card)
+    ),
+    var(--card);
+  box-shadow: var(--shadow-premium, var(--shadow));
+}
+
+.jf-card-premium::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.08),
+    transparent
+  );
+  opacity: 0.55;
+  transform: translateX(-120%);
+  transition: transform 700ms var(--jf-ease);
+}
+
+.jf-card-premium:hover::before {
+  transform: translateX(120%);
+}
+
+.jf-card-hover {
+  transition:
+    transform var(--jf-duration-base) var(--jf-ease),
+    border-color var(--jf-duration-base) var(--jf-ease),
+    box-shadow var(--jf-duration-base) var(--jf-ease),
+    background-color var(--jf-duration-base) var(--jf-ease);
+  will-change: transform;
+}
+
+.jf-card-hover:hover {
+  transform: translate3d(0, -3px, 0);
+  border-color: color-mix(in srgb, var(--active), var(--border) 72%);
+  box-shadow: var(--shadow-premium, var(--shadow));
+}
+
+.jf-card-hover:active {
+  transform: translate3d(0, -1px, 0) scale(0.995);
+}
+
+/* Buttons */
+
+.jf-btn {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  justify-content: center;
+  gap: 0.55rem;
+  border-radius: var(--jf-radius-md);
+  padding-inline: 1rem;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  transition:
+    transform var(--jf-duration-fast) var(--jf-ease),
+    box-shadow var(--jf-duration-base) var(--jf-ease),
+    background-color var(--jf-duration-base) var(--jf-ease),
+    border-color var(--jf-duration-base) var(--jf-ease),
+    color var(--jf-duration-base) var(--jf-ease);
+}
+
+.jf-btn:active {
+  transform: scale(0.985);
+}
+
+.jf-btn-primary {
+  border: 1px solid color-mix(in srgb, var(--active), transparent 18%);
+  background: var(--active);
+  color: var(--background);
+  box-shadow: 0 16px 36px color-mix(in srgb, var(--active), transparent 82%);
+}
+
+.jf-btn-primary:hover {
+  box-shadow: 0 20px 48px color-mix(in srgb, var(--active), transparent 76%);
+}
+
+.jf-btn-secondary {
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--text-primary);
+}
+
+.jf-btn-secondary:hover {
+  background: var(--hover);
+}
+
+.jf-btn-ghost {
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--text-secondary);
+}
+
+.jf-btn-ghost:hover {
+  border-color: var(--border);
+  background: var(--hover);
+  color: var(--text-primary);
+}
+
+/* Inputs */
+
+.jf-field {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.jf-label {
+  font-size: 0.78rem;
+  font-weight: 800;
+  color: var(--text-secondary);
+}
+
+.jf-input {
+  min-height: 46px;
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: var(--jf-radius-md);
+  background: var(--card);
+  padding-inline: 0.95rem;
+  color: var(--text-primary);
+  outline: none;
+  transition:
+    border-color var(--jf-duration-base) var(--jf-ease),
+    box-shadow var(--jf-duration-base) var(--jf-ease),
+    background-color var(--jf-duration-base) var(--jf-ease);
+}
+
+.jf-input::placeholder {
+  color: color-mix(in srgb, var(--text-secondary), transparent 22%);
+}
+
+.jf-input:hover {
+  background: var(--surface-secondary);
+}
+
+.jf-input:focus {
+  border-color: color-mix(in srgb, var(--active), white 14%);
+  box-shadow: var(--focus-ring);
+}
+
+/* Icon bubbles and badges */
+
+.jf-icon-bubble {
+  display: grid;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border: 1px solid var(--border);
+  border-radius: var(--jf-radius-md);
+  background: color-mix(in srgb, var(--active), transparent 91%);
+  color: var(--active);
+}
+
+.jf-icon-bubble-success {
+  background: color-mix(in srgb, var(--success), transparent 91%);
+  color: var(--success);
+}
+
+.jf-icon-bubble-warning {
+  background: color-mix(in srgb, var(--warning), transparent 90%);
+  color: var(--warning);
+}
+
+.jf-icon-bubble-danger {
+  background: color-mix(in srgb, var(--danger), transparent 91%);
+  color: var(--danger);
+}
+
+.jf-badge {
+  display: inline-flex;
+  min-height: 28px;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface-secondary);
+  padding-inline: 0.75rem;
+  font-size: 0.74rem;
+  font-weight: 800;
+  color: var(--text-secondary);
+}
+
+.jf-badge-active {
+  border-color: color-mix(in srgb, var(--active), transparent 70%);
+  background: color-mix(in srgb, var(--active), transparent 90%);
+  color: var(--active);
+}
+
+/* Text rhythm */
+
+.jf-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.78rem;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--active);
+}
+
+.jf-heading-xl {
+  max-width: 780px;
+  font-size: clamp(2.4rem, 7vw, 5.2rem);
+  line-height: 0.96;
+  letter-spacing: -0.065em;
+  font-weight: 900;
+  color: var(--text-primary);
+}
+
+.jf-heading-lg {
+  max-width: 720px;
+  font-size: clamp(2rem, 4.5vw, 3.8rem);
+  line-height: 1;
+  letter-spacing: -0.055em;
+  font-weight: 900;
+  color: var(--text-primary);
+}
+
+.jf-copy {
+  max-width: 640px;
+  font-size: clamp(1rem, 2vw, 1.125rem);
+  line-height: 1.85;
+  color: var(--text-secondary);
+}
+
+/* Mobile-first layout helpers */
+
+.jf-mobile-stack {
+  display: grid;
+  gap: 1rem;
+}
+
+.jf-responsive-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
+}
+
+.jf-dashboard-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 768px) {
+  .jf-dashboard-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1180px) {
+  .jf-dashboard-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+/* Motion utilities */
+
+.jf-reveal {
+  animation: jfReveal 420ms var(--jf-ease) both;
+}
+
+.jf-reveal-up {
+  animation: jfRevealUp 520ms var(--jf-ease) both;
+  animation-delay: var(--jf-delay, 0ms);
+}
+
+.jf-scale-in {
+  animation: jfScaleIn 360ms var(--jf-ease) both;
+}
+
+@keyframes jfReveal {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes jfRevealUp {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 14px, 0);
+  }
+
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes jfScaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.975);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Premium skeletons */
+
+.jf-skeleton {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--jf-radius-md);
+  background: var(--surface-secondary);
+}
+
+.jf-skeleton::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in srgb, var(--text-primary), transparent 92%),
+    transparent
+  );
+  transform: translateX(-120%);
+  animation: jfSkeletonSweep 1.25s var(--jf-ease) infinite;
+}
+
+@keyframes jfSkeletonSweep {
+  to {
+    transform: translateX(120%);
+  }
+}
+
+/* Mobile polish */
+
+@media (max-width: 640px) {
+  .jf-section {
+    padding-block: clamp(2.5rem, 12vw, 4rem);
+  }
+
+  .jf-card,
+  .jf-card-soft,
+  .jf-card-premium {
+    border-radius: 22px;
+  }
+
+  .jf-btn {
+    min-height: 48px;
+    width: 100%;
+  }
+
+  .jf-heading-xl {
+    letter-spacing: -0.055em;
+  }
+
+  .jf-copy {
+    line-height: 1.75;
+  }
+}
+
+/* Accessibility */
+
+@media (prefers-reduced-motion: reduce) {
+  .jf-reveal,
+  .jf-reveal-up,
+  .jf-scale-in,
+  .jf-skeleton::after {
+    animation: none !important;
+  }
+
+  .jf-card-hover,
+  .jf-card-premium::before,
+  .jf-btn,
+  .jf-input {
+    transition: none !important;
+  }
+
+  .jf-card-hover:hover,
+  .jf-card-hover:active,
+  .jf-btn:active {
+    transform: none !important;
   }
 }
