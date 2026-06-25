@@ -3,6 +3,7 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { CalendarDays, ChevronLeft, ChevronRight } from "lucide-react";
+import { getAppDateKey } from "@/lib/dates";
 import { cn } from "@/lib/utils";
 
 interface DatePickerProps {
@@ -74,7 +75,7 @@ export default function DatePicker({
 
   const min = toDate(minDate);
   const max = toDate(maxDate);
-  const today = new Date();
+  const today = toDate(getAppDateKey()) ?? new Date();
 
   useEffect(() => {
     const nextSelectedDate = toDate(value);

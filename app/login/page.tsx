@@ -2,10 +2,11 @@
 
 import { type FormEvent, type ReactNode, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   ArrowLeft,
   ArrowRight,
+  BadgeCheck,
   CheckCircle2,
   Eye,
   EyeOff,
@@ -23,23 +24,118 @@ import {
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 
-type Step = "email" | "login" | "signup" | "forgot" | "check-email";
+type Step =
+  | "email"
+  | "login"
+  | "signup"
+  | "forgot"
+  | "check-email"
+  | "phone"
+  | "phone-otp";
 
 type LoadingMode =
   | "checking"
   | "signing"
   | "creating"
   | "google"
+  | "apple"
   | "sending"
+  | "phone"
+  | "otp"
   | null;
 
+type OAuthProvider = "google" | "apple";
+
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const phoneRegex = /^\+[1-9]\d{7,14}$/;
 
 const inputBaseClass =
-  "h-[52px] w-full rounded-full border border-white/12 bg-white/[0.075] px-4 text-[15px] font-medium text-white outline-none transition placeholder:text-white/38 hover:border-white/18 hover:bg-white/[0.095] focus:border-blue-300/70 focus:bg-white/[0.11] focus:ring-4 focus:ring-blue-400/15";
+  "h-12 w-full rounded-lg border border-[rgba(255,255,255,0.14)] bg-[rgba(255,255,255,0.075)] px-4 text-[15px] font-medium text-[rgba(248,251,255,0.96)] outline-none transition placeholder:text-[rgba(248,251,255,0.36)] hover:border-[rgba(255,255,255,0.22)] hover:bg-[rgba(255,255,255,0.1)] focus:border-[#8ec5ff] focus:bg-[rgba(255,255,255,0.11)] focus:ring-4 focus:ring-[rgba(96,165,250,0.18)]";
 
 function cleanEmail(value: string) {
   return value.trim().toLowerCase();
+}
+
+function normalizePhone(value: string) {
+  const compact = value.replace(/[^\d+]/g, "");
+  const digitsOnly = compact.replace(/\D/g, "");
+
+  if (compact.startsWith("00")) {
+    return `+${digitsOnly.slice(2)}`;
+  }
+
+  if (compact.startsWith("+")) {
+    return `+${digitsOnly}`;
+  }
+
+  if (compact.startsWith("0") && compact.length >= 10) {
+    return `+92${digitsOnly.slice(1)}`;
+  }
+
+  if (digitsOnly.length >= 8 && digitsOnly.length <= 15) {
+    return `+${digitsOnly}`;
+  }
+
+  return digitsOnly;
+}
+
+function getOAuthError(provider: OAuthProvider, message?: string) {
+  const providerLabel = provider === "google" ? "Google" : "Apple";
+  const lower = message?.toLowerCase() ?? "";
+
+  if (
+    lower.includes("unsupported provider") ||
+    lower.includes("provider is not enabled")
+  ) {
+    return `${providerLabel} is not enabled in Supabase. Open Authentication > Providers, enable ${providerLabel}, and add your callback URL to the redirect allow list.`;
+  }
+
+  return message || `${providerLabel} sign-in could not be completed.`;
+}
+
+function getPhoneError(message?: string, action: "send" | "verify" = "send") {
+  const lower = message?.toLowerCase() ?? "";
+
+  if (
+    lower.includes("rate") ||
+    lower.includes("too many") ||
+    lower.includes("over limit")
+  ) {
+    return "Please wait a moment before requesting another WhatsApp code.";
+  }
+
+  if (
+    lower.includes("invalid phone") ||
+    lower.includes("valid phone") ||
+    lower.includes("e.164") ||
+    lower.includes("format")
+  ) {
+    return "Enter a valid phone number in international format, e.g. +923282685435.";
+  }
+
+  if (
+    action === "verify" &&
+    (lower.includes("expired") ||
+      lower.includes("invalid token") ||
+      lower.includes("invalid otp") ||
+      lower.includes("otp"))
+  ) {
+    return "That WhatsApp code did not match or has expired. Check it and try again.";
+  }
+
+  if (
+    lower.includes("sms") ||
+    lower.includes("whatsapp") ||
+    lower.includes("twilio") ||
+    lower.includes("phone") ||
+    lower.includes("provider") ||
+    lower.includes("channel") ||
+    lower.includes("not enabled")
+  ) {
+    return "Phone login requires the Phone provider and Twilio Verify with WhatsApp to be enabled in Supabase Auth.";
+  }
+
+  return "Phone login could not be completed. Please try again.";
 }
 
 function GoogleLogo() {
@@ -76,6 +172,10 @@ function AppleLogo() {
   );
 }
 
+function ButtonSpinner() {
+  return <LoaderCircle className="h-4 w-4 animate-spin" aria-hidden="true" />;
+}
+
 function PrimaryButton({
   children,
   disabled,
@@ -97,25 +197,25 @@ function PrimaryButton({
       onClick={onClick}
       disabled={disabled || loading}
       aria-busy={loading}
-      className="group flex h-[52px] w-full items-center justify-center gap-2 rounded-full bg-white px-5 text-[15px] font-bold text-[#07101f] shadow-[0_18px_40px_rgba(255,255,255,0.12)] transition hover:bg-blue-50 disabled:cursor-not-allowed disabled:opacity-95"
+      className="group flex h-12 w-full items-center justify-center gap-2 rounded-lg bg-[#f8fbff] px-5 text-[15px] font-bold text-[#07101f] shadow-[0_18px_44px_rgba(216,235,255,0.16)] transition hover:bg-[#eaf5ff] disabled:cursor-not-allowed disabled:opacity-80"
     >
-      {loading ?
-        <LoaderCircle className="h-4 w-4 animate-spin" />
-      : null}
+      {loading ? <ButtonSpinner /> : null}
       <span>{children}</span>
-      {!loading ?
+      {!loading ? (
         <ArrowRight className="h-4 w-4 transition group-hover:translate-x-0.5" />
-      : null}
+      ) : null}
     </motion.button>
   );
 }
 
 function SocialButton({
+  icon,
   children,
   onClick,
   disabled,
   loading,
 }: {
+  icon: ReactNode;
   children: ReactNode;
   onClick: () => void;
   disabled?: boolean;
@@ -129,11 +229,12 @@ function SocialButton({
       onClick={onClick}
       disabled={disabled || loading}
       aria-busy={loading}
-      className="flex h-[50px] w-full items-center justify-center gap-3 rounded-full border border-white/12 bg-white/[0.075] text-[15px] font-semibold text-white shadow-[0_10px_24px_rgba(0,0,0,0.12)] transition hover:border-white/18 hover:bg-white/[0.12] disabled:cursor-not-allowed disabled:opacity-70"
+      className="flex h-12 w-full items-center justify-center gap-3 rounded-lg border border-[rgba(255,255,255,0.13)] bg-[rgba(255,255,255,0.075)] text-[15px] font-semibold text-[rgba(248,251,255,0.94)] shadow-[0_10px_24px_rgba(0,0,0,0.12)] transition hover:border-[rgba(255,255,255,0.22)] hover:bg-[rgba(255,255,255,0.12)] disabled:cursor-not-allowed disabled:opacity-70"
     >
-      {loading ?
-        <LoaderCircle className="h-4 w-4 animate-spin" />
-      : children}
+      <span className="grid h-5 w-5 place-items-center">
+        {loading ? <ButtonSpinner /> : icon}
+      </span>
+      <span>{children}</span>
     </motion.button>
   );
 }
@@ -149,16 +250,16 @@ function Field({
 }) {
   return (
     <label className="block">
-      <span className="mb-2 block text-xs font-semibold text-white/58">
+      <span className="mb-2 block text-xs font-semibold text-[rgba(248,251,255,0.58)]">
         {label}
       </span>
 
       <div className="relative">
-        {icon ?
-          <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-white/45">
+        {icon ? (
+          <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[rgba(248,251,255,0.46)]">
             {icon}
           </span>
-        : null}
+        ) : null}
 
         {children}
       </div>
@@ -166,106 +267,118 @@ function Field({
   );
 }
 
-function ErrorMessage({ children }: { children: ReactNode }) {
+function Feedback({
+  tone,
+  children,
+}: {
+  tone: "error" | "success" | "info";
+  children: ReactNode;
+}) {
+  const toneClass =
+    tone === "error"
+      ? "border-[rgba(248,113,113,0.26)] bg-[rgba(239,68,68,0.14)] text-[#fecaca]"
+      : tone === "success"
+        ? "border-[rgba(52,211,153,0.24)] bg-[rgba(16,185,129,0.12)] text-[#bbf7d0]"
+        : "border-[rgba(125,211,252,0.22)] bg-[rgba(14,165,233,0.12)] text-[#bae6fd]";
+
   return (
     <motion.p
       initial={{ opacity: 0, y: -5 }}
       animate={{ opacity: 1, y: 0 }}
-      className="rounded-2xl border border-red-400/20 bg-red-500/12 px-4 py-3 text-sm font-medium leading-6 text-red-100"
+      className={`rounded-lg border px-4 py-3 text-sm font-medium leading-6 ${toneClass}`}
     >
       {children}
     </motion.p>
   );
 }
 
-function HeroGlassCard({
+function MiniStat({
   icon,
-  title,
-  subtitle,
-  children,
+  label,
+  value,
+  tone,
 }: {
   icon: ReactNode;
-  title: string;
-  subtitle: string;
-  children?: ReactNode;
+  label: string;
+  value: string;
+  tone: string;
 }) {
   return (
-    <motion.div
-      animate={{ y: [0, -6, 0] }}
-      transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
-      className="rounded-[28px] border border-white/12 bg-white/[0.085] p-5 shadow-[0_18px_55px_rgba(0,0,0,0.18)] backdrop-blur-xl"
-    >
-      <div className="flex items-center gap-3">
-        <div className="grid h-11 w-11 place-items-center rounded-2xl bg-white/10 text-blue-100">
+    <div className="rounded-lg border border-[rgba(255,255,255,0.12)] bg-[rgba(255,255,255,0.075)] p-4 shadow-[0_18px_55px_rgba(0,0,0,0.18)]">
+      <div className="flex items-center justify-between gap-3">
+        <div className="grid h-10 w-10 place-items-center rounded-lg border border-[rgba(255,255,255,0.12)] bg-[rgba(255,255,255,0.09)] text-[#dbeafe]">
           {icon}
         </div>
-
-        <div>
-          <p className="font-semibold text-white">{title}</p>
-          <p className="text-xs font-medium text-white/45">{subtitle}</p>
-        </div>
+        <span className={`rounded-full px-2.5 py-1 text-xs font-bold ${tone}`}>
+          Live
+        </span>
       </div>
 
-      {children ?
-        <div className="mt-5">{children}</div>
-      : null}
-    </motion.div>
+      <p className="mt-5 text-sm font-medium text-[rgba(248,251,255,0.56)]">
+        {label}
+      </p>
+      <p className="mt-1 text-3xl font-semibold text-[#f8fbff]">{value}</p>
+    </div>
   );
 }
 
 function HeroPanel() {
-  const points = [
-    "Track income, expenses, investments and payables in one premium dashboard.",
-    "Get clean financial overview with animated charts and daily insights.",
-    "Secure Supabase sync keeps your personal finance data protected.",
-  ];
-
   return (
     <motion.aside
       initial={{ opacity: 0, x: -18 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ duration: 0.45, ease: "easeOut" }}
-      className="relative hidden min-h-[680px] w-full flex-col justify-center overflow-visible pr-4 lg:flex"
+      className="relative hidden min-h-[660px] w-full flex-col justify-center overflow-hidden rounded-lg border border-[rgba(255,255,255,0.1)] bg-[linear-gradient(145deg,rgba(255,255,255,0.09),rgba(255,255,255,0.035))] p-8 shadow-[0_30px_90px_rgba(0,0,0,0.25)] lg:flex xl:p-10"
     >
-      <div className="pointer-events-none absolute -left-32 top-0 h-[420px] w-[420px] rounded-full bg-blue-500/18 blur-3xl" />
-      <div className="pointer-events-none absolute bottom-0 right-10 h-[420px] w-[420px] rounded-full bg-violet-500/18 blur-3xl" />
+      <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(255,255,255,0.055)_1px,transparent_1px),linear-gradient(0deg,rgba(255,255,255,0.045)_1px,transparent_1px)] bg-[size:44px_44px] opacity-35" />
+      <div className="absolute inset-x-0 top-0 h-1 bg-[linear-gradient(90deg,#22c55e,#38bdf8,#fbbf24)]" />
 
       <div className="relative z-10">
-        <div className="inline-flex items-center gap-2 rounded-full border border-white/12 bg-white/10 px-4 py-2 text-sm font-semibold text-white/72 backdrop-blur">
-          <Sparkles className="h-4 w-4 text-blue-200" />
-          Jamals Finance Premium Access
+        <div className="inline-flex items-center gap-2 rounded-lg border border-[rgba(255,255,255,0.12)] bg-[rgba(255,255,255,0.08)] px-3.5 py-2 text-sm font-semibold text-[rgba(248,251,255,0.72)]">
+          <Sparkles className="h-4 w-4 text-[#fef3c7]" />
+          Jamals Finance
         </div>
 
-        <h2 className="mt-8 max-w-[580px] text-[56px] font-semibold leading-[1.01] tracking-[-0.075em] text-white xl:text-[62px]">
-          Your money, goals and growth in one calm workspace.
+        <h2 className="mt-8 max-w-[620px] text-[48px] font-semibold leading-[1.05] text-[#f8fbff] xl:text-[58px]">
+          Secure access for your complete money workspace.
         </h2>
 
-        <p className="mt-5 max-w-[470px] text-[16px] leading-7 text-white/62">
-          Sign in once and manage your complete finance system with a smooth,
-          modern and secure experience.
+        <p className="mt-5 max-w-[510px] text-[16px] leading-7 text-[rgba(248,251,255,0.64)]">
+          Track accounts, cash flow, goals and payables with a clean dashboard
+          that feels fast on every screen.
         </p>
 
-        <div className="mt-10 grid max-w-[650px] grid-cols-2 gap-4">
-          <HeroGlassCard
+        <div className="mt-10 grid max-w-[680px] grid-cols-2 gap-4">
+          <MiniStat
             icon={<WalletCards className="h-5 w-5" />}
-            title="Net balance"
-            subtitle="Track every account"
-          >
-            <div className="flex items-end justify-between">
-              <p className="text-3xl font-semibold tracking-[-0.05em] text-white">
-                $24,850
-              </p>
-              <span className="rounded-full bg-emerald-400/15 px-3 py-1 text-xs font-bold text-emerald-200">
-                +18.4%
-              </span>
-            </div>
-          </HeroGlassCard>
+            label="Net balance"
+            value="$24,850"
+            tone="bg-[rgba(34,197,94,0.14)] text-[#bbf7d0]"
+          />
 
-          <HeroGlassCard
-            icon={<LineChart className="h-5 w-5" />}
-            title="Cash flow"
-            subtitle="Live monthly insight"
-          >
+          <MiniStat
+            icon={<TrendingUp className="h-5 w-5" />}
+            label="Monthly growth"
+            value="+18.4%"
+            tone="bg-[rgba(251,191,36,0.15)] text-[#fde68a]"
+          />
+
+          <div className="col-span-2 rounded-lg border border-[rgba(255,255,255,0.12)] bg-[rgba(255,255,255,0.075)] p-4">
+            <div className="mb-4 flex items-center justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <div className="grid h-10 w-10 place-items-center rounded-lg border border-[rgba(255,255,255,0.12)] bg-[rgba(255,255,255,0.09)] text-[#bfdbfe]">
+                  <LineChart className="h-5 w-5" />
+                </div>
+                <div>
+                  <p className="font-semibold text-[#f8fbff]">Cash flow</p>
+                  <p className="text-xs font-medium text-[rgba(248,251,255,0.48)]">
+                    Monthly rhythm
+                  </p>
+                </div>
+              </div>
+              <BadgeCheck className="h-5 w-5 text-[#86efac]" />
+            </div>
+
             <div className="flex h-20 items-end gap-2">
               {[38, 58, 46, 74, 56, 82, 66, 92].map((height, index) => (
                 <motion.span
@@ -274,85 +387,54 @@ function HeroPanel() {
                   animate={{ height }}
                   transition={{
                     duration: 0.9,
-                    delay: index * 0.08,
+                    delay: index * 0.07,
                     repeat: Infinity,
                     repeatType: "reverse",
                     repeatDelay: 2,
                   }}
-                  className="w-full rounded-full bg-white/70"
+                  className="w-full rounded-full bg-[linear-gradient(180deg,#f8fbff,#93c5fd)]"
                 />
               ))}
             </div>
-          </HeroGlassCard>
-
-          <div className="col-span-2">
-            <HeroGlassCard
-              icon={<TrendingUp className="h-5 w-5" />}
-              title="Goals progress"
-              subtitle="Animated from zero"
-            >
-              <div className="h-3 overflow-hidden rounded-full bg-white/10">
-                <motion.div
-                  initial={{ width: 0 }}
-                  animate={{ width: "78%" }}
-                  transition={{
-                    duration: 1.2,
-                    repeat: Infinity,
-                    repeatType: "reverse",
-                    repeatDelay: 2,
-                  }}
-                  className="h-full rounded-full bg-white"
-                />
-              </div>
-            </HeroGlassCard>
           </div>
-        </div>
-
-        <div className="mt-5 grid max-w-[650px] gap-3">
-          {points.map((point, index) => (
-            <motion.div
-              key={point}
-              initial={{ opacity: 0, x: -14 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.15 + index * 0.12 }}
-              className="flex items-start gap-3 rounded-3xl border border-white/12 bg-white/[0.075] p-4 backdrop-blur"
-            >
-              <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-emerald-300" />
-              <p className="text-sm leading-6 text-white/72">{point}</p>
-            </motion.div>
-          ))}
         </div>
       </div>
     </motion.aside>
   );
 }
 
-function MobileBenefitCards() {
+function MobileHighlights() {
   return (
-    <div className="grid w-full max-w-[430px] gap-3 lg:hidden">
-      <div className="rounded-[28px] border border-white/12 bg-white/[0.075] p-4 backdrop-blur-xl">
-        <div className="flex items-center gap-3">
-          <WalletCards className="h-5 w-5 text-emerald-200" />
-          <div>
-            <p className="text-sm font-semibold text-white">Smart dashboard</p>
-            <p className="text-xs text-white/50">
-              Track your money in one clean workspace.
-            </p>
+    <div className="grid w-full max-w-[460px] grid-cols-1 gap-3 sm:grid-cols-2 lg:hidden">
+      {[
+        {
+          icon: <WalletCards className="h-5 w-5 text-[#86efac]" />,
+          title: "Smart dashboard",
+          copy: "Accounts, goals and cash flow together.",
+        },
+        {
+          icon: <LineChart className="h-5 w-5 text-[#93c5fd]" />,
+          title: "Fast insights",
+          copy: "Smooth charts with secure sync.",
+        },
+      ].map((item) => (
+        <div
+          key={item.title}
+          className="rounded-lg border border-[rgba(255,255,255,0.12)] bg-[rgba(255,255,255,0.07)] p-4"
+        >
+          <div className="flex items-center gap-3">
+            {item.icon}
+            <div>
+              <p className="text-sm font-semibold text-[#f8fbff]">
+                {item.title}
+              </p>
+              <p className="text-xs text-[rgba(248,251,255,0.54)]">
+                {item.copy}
+              </p>
+            </div>
           </div>
         </div>
-      </div>
-
-      <div className="rounded-[28px] border border-white/12 bg-white/[0.075] p-4 backdrop-blur-xl">
-        <div className="flex items-center gap-3">
-          <LineChart className="h-5 w-5 text-blue-200" />
-          <div>
-            <p className="text-sm font-semibold text-white">Fast insights</p>
-            <p className="text-xs text-white/50">
-              Smooth charts, goals and secure sync.
-            </p>
-          </div>
-        </div>
-      </div>
+      ))}
     </div>
   );
 }
@@ -366,6 +448,8 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
   const [age, setAge] = useState("");
+  const [phone, setPhone] = useState("");
+  const [phoneOtp, setPhoneOtp] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loadingMode, setLoadingMode] = useState<LoadingMode>(null);
   const [error, setError] = useState("");
@@ -381,6 +465,7 @@ export default function LoginPage() {
   function backToEmail() {
     resetFeedback();
     setPassword("");
+    setPhoneOtp("");
     setStep("email");
   }
 
@@ -391,12 +476,12 @@ export default function LoginPage() {
     const nextEmail = cleanEmail(email);
 
     if (!nextEmail) {
-      setError("Email address enter karo.");
+      setError("Enter your email address.");
       return;
     }
 
     if (!emailRegex.test(nextEmail)) {
-      setError("Valid email address enter karo.");
+      setError("Enter a valid email address.");
       return;
     }
 
@@ -410,18 +495,13 @@ export default function LoginPage() {
 
     if (rpcError) {
       setError(
-        "Account check nahi ho saka. Supabase RPC email_exists check karo.",
+        "We could not check this account. Please verify the Supabase email_exists RPC.",
       );
       return;
     }
 
     setEmail(nextEmail);
-
-    if (data === true) {
-      setStep("login");
-    } else {
-      setStep("signup");
-    }
+    setStep(data === true ? "login" : "signup");
   }
 
   async function handleLogin(event: FormEvent) {
@@ -429,7 +509,7 @@ export default function LoginPage() {
     resetFeedback();
 
     if (!password) {
-      setError("Password enter karo.");
+      setError("Enter your password.");
       return;
     }
 
@@ -442,7 +522,7 @@ export default function LoginPage() {
 
     if (signInError) {
       setLoadingMode(null);
-      setError("Email ya password wrong hai.");
+      setError("The email or password is incorrect.");
       return;
     }
 
@@ -457,7 +537,7 @@ export default function LoginPage() {
     const numericAge = Number(age);
 
     if (!fullName.trim()) {
-      setError("Apna full name enter karo.");
+      setError("Enter your full name.");
       return;
     }
 
@@ -467,12 +547,12 @@ export default function LoginPage() {
       numericAge < 10 ||
       numericAge > 120
     ) {
-      setError("Valid age enter karo.");
+      setError("Enter a valid age.");
       return;
     }
 
     if (!password || password.length < 6) {
-      setError("Password kam se kam 6 characters ka hona chahiye.");
+      setError("Password must be at least 6 characters.");
       return;
     }
 
@@ -495,11 +575,11 @@ export default function LoginPage() {
 
       if (signUpError.message.toLowerCase().includes("already")) {
         setStep("login");
-        setError("Is email ka account already hai. Password se login karo.");
+        setError("An account already exists for this email. Log in with your password.");
         return;
       }
 
-      setError(signUpError.message || "Account create nahi ho saka.");
+      setError(signUpError.message || "We could not create your account.");
       return;
     }
 
@@ -511,24 +591,96 @@ export default function LoginPage() {
 
     setLoadingMode(null);
     setStep("check-email");
-    setMessage(`Verification link ${cleanEmail(email)} par send ho gaya hai.`);
+    setMessage(`A verification link has been sent to ${cleanEmail(email)}.`);
   }
 
-  async function handleGoogleSignIn() {
+  async function handleOAuthSignIn(provider: OAuthProvider) {
     resetFeedback();
-    setLoadingMode("google");
+    setLoadingMode(provider);
 
     const { error: oauthError } = await supabase.auth.signInWithOAuth({
-      provider: "google",
+      provider,
       options: {
         redirectTo: `${window.location.origin}/auth/callback?next=/onboarding`,
+        queryParams:
+          provider === "google"
+            ? { access_type: "offline", prompt: "consent" }
+            : undefined,
       },
     });
 
     if (oauthError) {
       setLoadingMode(null);
-      setError(oauthError.message || "Google sign in nahi ho saka.");
+      setError(getOAuthError(provider, oauthError.message));
     }
+  }
+
+  async function handlePhoneOtpSend(event: FormEvent) {
+    event.preventDefault();
+    resetFeedback();
+
+    const nextPhone = normalizePhone(phone);
+
+    if (!phoneRegex.test(nextPhone)) {
+      setError("Enter a phone number with country code, e.g. +923001234567.");
+      return;
+    }
+
+    setPhone(nextPhone);
+    setLoadingMode("phone");
+
+    const { error: phoneError } = await supabase.auth.signInWithOtp({
+      phone: nextPhone,
+      options: {
+        channel: "whatsapp",
+      },
+    });
+
+    setLoadingMode(null);
+
+    if (phoneError) {
+      setError(getPhoneError(phoneError.message, "send"));
+      return;
+    }
+
+    setStep("phone-otp");
+    setMessage(`A WhatsApp code has been sent to ${nextPhone}.`);
+  }
+
+  async function handlePhoneOtpVerify(event: FormEvent) {
+    event.preventDefault();
+    resetFeedback();
+
+    const token = phoneOtp.replace(/\D/g, "");
+    const phoneNumber = normalizePhone(phone);
+
+    if (token.length !== 6) {
+      setError("Enter the 6 digit WhatsApp code.");
+      return;
+    }
+
+    if (!phoneRegex.test(phoneNumber)) {
+      setError("Enter a phone number with country code, e.g. +923282685435.");
+      return;
+    }
+
+    setPhone(phoneNumber);
+    setLoadingMode("otp");
+
+    const { error: otpError } = await supabase.auth.verifyOtp({
+      phone: phoneNumber,
+      token,
+      type: "sms",
+    });
+
+    if (otpError) {
+      setLoadingMode(null);
+      setError(getPhoneError(otpError.message, "verify"));
+      return;
+    }
+
+    router.replace("/onboarding");
+    router.refresh();
   }
 
   async function handleForgotPassword(event: FormEvent) {
@@ -538,7 +690,7 @@ export default function LoginPage() {
     const nextEmail = cleanEmail(email);
 
     if (!nextEmail || !emailRegex.test(nextEmail)) {
-      setError("Valid email address enter karo.");
+      setError("Enter a valid email address.");
       return;
     }
 
@@ -554,38 +706,50 @@ export default function LoginPage() {
     setLoadingMode(null);
 
     if (resetError) {
-      setError(resetError.message || "Reset link send nahi ho saka.");
+      setError(resetError.message || "We could not send the reset link.");
       return;
     }
 
     setStep("check-email");
-    setMessage(`Password reset link ${nextEmail} par send ho gaya hai.`);
+    setMessage(`A password reset link has been sent to ${nextEmail}.`);
   }
 
   const title =
-    step === "email" ? "Log in or sign up"
-    : step === "login" ? "Welcome back"
-    : step === "signup" ? "Create your account"
-    : step === "forgot" ? "Reset password"
-    : "Check your email";
+    step === "email"
+      ? "Log in or sign up"
+      : step === "login"
+        ? "Welcome back"
+        : step === "signup"
+          ? "Create your account"
+          : step === "forgot"
+            ? "Reset password"
+            : step === "phone"
+              ? "Continue with phone"
+            : step === "phone-otp"
+                ? "Verify WhatsApp code"
+                : "Check your email";
 
   const subtitle =
-    step === "email" ?
-      "Continue to your personal finance dashboard with secure sync and smarter insights."
-    : step === "login" ?
-      "This account already exists. Enter your password to continue."
-    : step === "signup" ?
-      "This email is new. Add your details to finish signup."
-    : step === "forgot" ? "Enter your email and we’ll send a secure reset link."
-    : message || "Open your inbox and follow the secure link.";
+    step === "email"
+      ? "Secure access for your personal finance dashboard."
+      : step === "login"
+        ? "This account already exists. Enter your password to continue."
+        : step === "signup"
+          ? "This email is new. Add your details to finish signup."
+          : step === "forgot"
+            ? "Enter your email and we will send a secure reset link."
+            : step === "phone"
+              ? "Use a phone number with country code."
+            : step === "phone-otp"
+                ? message || "Enter the 6 digit WhatsApp code."
+                : message || "Open your inbox and follow the secure link.";
 
   return (
-    <main className="relative min-h-dvh overflow-x-hidden bg-[#050914] px-4 py-5 text-white sm:px-6 lg:px-8">
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_15%_15%,rgba(59,130,246,0.28),transparent_32%),radial-gradient(circle_at_85%_80%,rgba(139,92,246,0.24),transparent_34%),linear-gradient(135deg,#07111f_0%,#0b1326_42%,#151139_100%)]" />
-      <div className="pointer-events-none absolute left-1/2 top-0 h-[500px] w-[500px] -translate-x-1/2 rounded-full bg-blue-500/10 blur-3xl" />
-      <div className="pointer-events-none absolute bottom-[-160px] right-[-120px] h-[420px] w-[420px] rounded-full bg-violet-500/20 blur-3xl" />
+    <main className="jf-auth-page relative min-h-dvh overflow-x-hidden bg-[linear-gradient(135deg,#07111a_0%,#0c1724_48%,#121523_100%)] px-4 py-5 text-[#f8fbff] sm:px-6 lg:px-8">
+      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(90deg,rgba(255,255,255,0.045)_1px,transparent_1px),linear-gradient(0deg,rgba(255,255,255,0.04)_1px,transparent_1px)] bg-[size:52px_52px] opacity-25" />
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-1 bg-[linear-gradient(90deg,#22c55e,#38bdf8,#fbbf24)]" />
 
-      <div className="relative mx-auto grid min-h-[calc(100dvh-40px)] w-full max-w-[1220px] items-center gap-10 lg:grid-cols-[minmax(0,1fr)_430px]">
+      <div className="relative mx-auto grid min-h-[calc(100dvh-40px)] w-full max-w-[1240px] items-center gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(390px,450px)] lg:gap-8">
         <HeroPanel />
 
         <div className="flex w-full flex-col items-center gap-4">
@@ -593,315 +757,422 @@ export default function LoginPage() {
             initial={{ opacity: 0, x: 18, scale: 0.985 }}
             animate={{ opacity: 1, x: 0, scale: 1 }}
             transition={{ duration: 0.45, ease: "easeOut" }}
-            className="relative mx-auto w-full max-w-[430px] overflow-hidden rounded-[36px] border border-white/12 bg-white/[0.085] p-6 shadow-[0_30px_90px_rgba(0,0,0,0.25)] backdrop-blur-2xl sm:p-7 lg:mx-0"
+            className="relative mx-auto w-full max-w-[460px] overflow-hidden rounded-lg border border-[rgba(255,255,255,0.14)] bg-[rgba(255,255,255,0.085)] p-5 shadow-[0_30px_90px_rgba(0,0,0,0.28)] backdrop-blur-xl sm:p-6 lg:mx-0"
           >
-            <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(96,165,250,0.16),transparent_42%),radial-gradient(circle_at_bottom_right,rgba(139,92,246,0.14),transparent_40%)]" />
+            <div className="absolute inset-x-0 top-0 h-px bg-[linear-gradient(90deg,transparent,rgba(255,255,255,0.42),transparent)]" />
 
             <div className="relative z-10">
               <button
                 type="button"
                 onClick={() => router.push("/")}
-                className="absolute right-0 top-0 grid h-10 w-10 place-items-center rounded-full text-white/48 transition hover:bg-white/10 hover:text-white active:scale-95"
+                className="absolute right-0 top-0 grid h-10 w-10 place-items-center rounded-lg text-[rgba(248,251,255,0.48)] transition hover:bg-[rgba(255,255,255,0.1)] hover:text-[#f8fbff] active:scale-95"
                 aria-label="Close"
               >
                 <X className="h-5 w-5" />
               </button>
 
-              {step !== "email" ?
+              {step !== "email" ? (
                 <button
                   type="button"
                   onClick={backToEmail}
-                  className="mb-4 inline-flex h-10 items-center gap-2 rounded-full px-2 text-sm font-semibold text-white/55 transition hover:bg-white/10 hover:text-white"
+                  className="mb-4 inline-flex h-10 items-center gap-2 rounded-lg px-2 text-sm font-semibold text-[rgba(248,251,255,0.58)] transition hover:bg-[rgba(255,255,255,0.1)] hover:text-[#f8fbff]"
                 >
                   <ArrowLeft className="h-4 w-4" />
                   Back
                 </button>
-              : <div className="h-10" />}
+              ) : (
+                <div className="h-10" />
+              )}
 
-              <div className="mb-8 text-center">
-                <div className="mx-auto mb-4 grid h-12 w-12 place-items-center rounded-2xl border border-white/12 bg-white/10 shadow-[0_16px_36px_rgba(59,130,246,0.14)]">
-                  <ShieldCheck className="h-6 w-6 text-blue-100" />
+              <div className="mb-7 text-center">
+                <div className="mx-auto mb-4 grid h-12 w-12 place-items-center rounded-lg border border-[rgba(255,255,255,0.13)] bg-[rgba(255,255,255,0.09)] shadow-[0_16px_36px_rgba(59,130,246,0.16)]">
+                  <ShieldCheck className="h-6 w-6 text-[#bfdbfe]" />
                 </div>
 
-                <h1 className="text-[32px] font-semibold tracking-[-0.055em] text-white">
+                <h1 className="text-[30px] font-semibold leading-tight text-[#f8fbff] sm:text-[34px]">
                   {title}
                 </h1>
 
-                <p className="mx-auto mt-4 max-w-[320px] text-[15.5px] leading-7 text-white/60">
+                <p className="mx-auto mt-3 max-w-[330px] text-[15px] leading-7 text-[rgba(248,251,255,0.62)]">
                   {subtitle}
                 </p>
               </div>
 
-              {step === "email" ?
-                <form onSubmit={handleEmailContinue} className="space-y-4">
-                  <SocialButton
-                    onClick={handleGoogleSignIn}
-                    disabled={isLoading}
-                    loading={loadingMode === "google"}
+              <AnimatePresence mode="wait">
+                {step === "email" ? (
+                  <motion.form
+                    key="email"
+                    onSubmit={handleEmailContinue}
+                    className="space-y-4"
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -8 }}
                   >
-                    <GoogleLogo />
-                    <span>Continue with Google</span>
-                  </SocialButton>
-
-                  <SocialButton
-                    onClick={() =>
-                      setError(
-                        "Apple sign in ke liye pehle Supabase Apple provider enable karna hoga.",
-                      )
-                    }
-                    disabled={isLoading}
-                  >
-                    <AppleLogo />
-                    <span>Continue with Apple</span>
-                  </SocialButton>
-
-                  <SocialButton
-                    onClick={() =>
-                      setError(
-                        "Phone login abhi enable nahi hai. Email ya Google use karo.",
-                      )
-                    }
-                    disabled={isLoading}
-                  >
-                    <Phone className="h-4 w-4" />
-                    <span>Continue with phone</span>
-                  </SocialButton>
-
-                  <div className="flex items-center gap-5 py-3">
-                    <span className="h-px flex-1 bg-white/12" />
-                    <span className="text-xs font-semibold text-white/46">
-                      OR
-                    </span>
-                    <span className="h-px flex-1 bg-white/12" />
-                  </div>
-
-                  <Field
-                    label="Email address"
-                    icon={<Mail className="h-4 w-4" />}
-                  >
-                    <input
-                      value={email}
-                      onChange={(event) => setEmail(event.target.value)}
-                      placeholder="Email address"
-                      autoComplete="email"
-                      inputMode="email"
+                    <SocialButton
+                      icon={<GoogleLogo />}
+                      onClick={() => handleOAuthSignIn("google")}
                       disabled={isLoading}
-                      className={`${inputBaseClass} pl-11 disabled:cursor-not-allowed disabled:opacity-70`}
-                    />
-                  </Field>
+                      loading={loadingMode === "google"}
+                    >
+                      Continue with Google
+                    </SocialButton>
 
-                  {error ?
-                    <ErrorMessage>{error}</ErrorMessage>
-                  : null}
-
-                  <PrimaryButton
-                    type="submit"
-                    disabled={isLoading}
-                    loading={loadingMode === "checking"}
-                  >
-                    Continue
-                  </PrimaryButton>
-                </form>
-              : null}
-
-              {step === "login" ?
-                <form onSubmit={handleLogin} className="space-y-4">
-                  <div className="rounded-2xl border border-white/12 bg-white/[0.075] px-4 py-3 text-sm font-semibold text-white/76">
-                    {email}
-                  </div>
-
-                  <Field
-                    label="Password"
-                    icon={<LockKeyhole className="h-4 w-4" />}
-                  >
-                    <input
-                      type={showPassword ? "text" : "password"}
-                      value={password}
-                      onChange={(event) => setPassword(event.target.value)}
-                      placeholder="Enter your password"
-                      autoComplete="current-password"
+                    <SocialButton
+                      icon={<AppleLogo />}
+                      onClick={() => handleOAuthSignIn("apple")}
                       disabled={isLoading}
-                      className={`${inputBaseClass} pl-11 pr-12 disabled:cursor-not-allowed disabled:opacity-70`}
-                    />
+                      loading={loadingMode === "apple"}
+                    >
+                      Continue with Apple
+                    </SocialButton>
+
+                    <SocialButton
+                      icon={<Phone className="h-4 w-4" />}
+                      onClick={() => {
+                        resetFeedback();
+                        setStep("phone");
+                      }}
+                      disabled={isLoading}
+                    >
+                      Continue with phone
+                    </SocialButton>
+
+                    <div className="flex items-center gap-5 py-2">
+                      <span className="h-px flex-1 bg-[rgba(255,255,255,0.13)]" />
+                      <span className="text-xs font-semibold text-[rgba(248,251,255,0.46)]">
+                        OR
+                      </span>
+                      <span className="h-px flex-1 bg-[rgba(255,255,255,0.13)]" />
+                    </div>
+
+                    <Field
+                      label="Email address"
+                      icon={<Mail className="h-4 w-4" />}
+                    >
+                      <input
+                        value={email}
+                        onChange={(event) => setEmail(event.target.value)}
+                        placeholder="Email address"
+                        autoComplete="email"
+                        inputMode="email"
+                        disabled={isLoading}
+                        className={`${inputBaseClass} pl-11 disabled:cursor-not-allowed disabled:opacity-70`}
+                      />
+                    </Field>
+
+                    {error ? <Feedback tone="error">{error}</Feedback> : null}
+
+                    <PrimaryButton
+                      type="submit"
+                      disabled={isLoading}
+                      loading={loadingMode === "checking"}
+                    >
+                      Continue
+                    </PrimaryButton>
+                  </motion.form>
+                ) : null}
+
+                {step === "login" ? (
+                  <motion.form
+                    key="login"
+                    onSubmit={handleLogin}
+                    className="space-y-4"
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -8 }}
+                  >
+                    <div className="rounded-lg border border-[rgba(255,255,255,0.13)] bg-[rgba(255,255,255,0.075)] px-4 py-3 text-sm font-semibold text-[rgba(248,251,255,0.78)]">
+                      {email}
+                    </div>
+
+                    <Field
+                      label="Password"
+                      icon={<LockKeyhole className="h-4 w-4" />}
+                    >
+                      <input
+                        type={showPassword ? "text" : "password"}
+                        value={password}
+                        onChange={(event) => setPassword(event.target.value)}
+                        placeholder="Enter your password"
+                        autoComplete="current-password"
+                        disabled={isLoading}
+                        className={`${inputBaseClass} pl-11 pr-12 disabled:cursor-not-allowed disabled:opacity-70`}
+                      />
+
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword((value) => !value)}
+                        className="absolute right-2 top-1/2 grid h-9 w-9 -translate-y-1/2 place-items-center rounded-lg text-[rgba(248,251,255,0.44)] transition hover:bg-[rgba(255,255,255,0.1)] hover:text-[#f8fbff]"
+                        aria-label={
+                          showPassword ? "Hide password" : "Show password"
+                        }
+                      >
+                        {showPassword ? (
+                          <EyeOff className="h-4 w-4" />
+                        ) : (
+                          <Eye className="h-4 w-4" />
+                        )}
+                      </button>
+                    </Field>
+
+                    {error ? <Feedback tone="error">{error}</Feedback> : null}
+
+                    <PrimaryButton
+                      type="submit"
+                      disabled={isLoading}
+                      loading={loadingMode === "signing"}
+                    >
+                      Log in
+                    </PrimaryButton>
 
                     <button
                       type="button"
-                      onClick={() => setShowPassword((value) => !value)}
-                      className="absolute right-2 top-1/2 grid h-9 w-9 -translate-y-1/2 place-items-center rounded-full text-white/42 transition hover:bg-white/10 hover:text-white"
-                      aria-label={
-                        showPassword ? "Hide password" : "Show password"
-                      }
+                      onClick={() => {
+                        resetFeedback();
+                        setStep("forgot");
+                      }}
+                      disabled={isLoading}
+                      className="w-full rounded-lg py-2 text-sm font-semibold text-[rgba(248,251,255,0.6)] transition hover:bg-[rgba(255,255,255,0.1)] hover:text-[#f8fbff] disabled:cursor-not-allowed disabled:opacity-60"
                     >
-                      {showPassword ?
-                        <EyeOff className="h-4 w-4" />
-                      : <Eye className="h-4 w-4" />}
+                      Forgot password?
                     </button>
-                  </Field>
+                  </motion.form>
+                ) : null}
 
-                  {error ?
-                    <ErrorMessage>{error}</ErrorMessage>
-                  : null}
-
-                  <PrimaryButton
-                    type="submit"
-                    disabled={isLoading}
-                    loading={loadingMode === "signing"}
+                {step === "signup" ? (
+                  <motion.form
+                    key="signup"
+                    onSubmit={handleSignup}
+                    className="space-y-4"
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -8 }}
                   >
-                    Log in
-                  </PrimaryButton>
+                    <Feedback tone="info">New account for {email}</Feedback>
 
-                  <button
-                    type="button"
-                    onClick={() => {
-                      resetFeedback();
-                      setStep("forgot");
-                    }}
-                    disabled={isLoading}
-                    className="w-full rounded-full py-2 text-sm font-semibold text-white/58 transition hover:bg-white/10 hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
-                  >
-                    Forgot password?
-                  </button>
-                </form>
-              : null}
-
-              {step === "signup" ?
-                <form onSubmit={handleSignup} className="space-y-4">
-                  <div className="rounded-2xl border border-blue-300/18 bg-blue-400/10 px-4 py-3 text-sm font-semibold text-blue-100">
-                    New account for {email}
-                  </div>
-
-                  <Field
-                    label="Full name"
-                    icon={<UserRound className="h-4 w-4" />}
-                  >
-                    <input
-                      value={fullName}
-                      onChange={(event) => setFullName(event.target.value)}
-                      placeholder="Enter your name"
-                      autoComplete="name"
-                      disabled={isLoading}
-                      className={`${inputBaseClass} pl-11 disabled:cursor-not-allowed disabled:opacity-70`}
-                    />
-                  </Field>
-
-                  <Field label="Age" icon={<Sparkles className="h-4 w-4" />}>
-                    <input
-                      value={age}
-                      onChange={(event) =>
-                        setAge(
-                          event.target.value.replace(/\D/g, "").slice(0, 3),
-                        )
-                      }
-                      placeholder="Enter your age"
-                      inputMode="numeric"
-                      disabled={isLoading}
-                      className={`${inputBaseClass} pl-11 disabled:cursor-not-allowed disabled:opacity-70`}
-                    />
-                  </Field>
-
-                  <Field
-                    label="Password"
-                    icon={<LockKeyhole className="h-4 w-4" />}
-                  >
-                    <input
-                      type={showPassword ? "text" : "password"}
-                      value={password}
-                      onChange={(event) => setPassword(event.target.value)}
-                      placeholder="Create a password"
-                      autoComplete="new-password"
-                      disabled={isLoading}
-                      className={`${inputBaseClass} pl-11 pr-12 disabled:cursor-not-allowed disabled:opacity-70`}
-                    />
-
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword((value) => !value)}
-                      className="absolute right-2 top-1/2 grid h-9 w-9 -translate-y-1/2 place-items-center rounded-full text-white/42 transition hover:bg-white/10 hover:text-white"
-                      aria-label={
-                        showPassword ? "Hide password" : "Show password"
-                      }
+                    <Field
+                      label="Full name"
+                      icon={<UserRound className="h-4 w-4" />}
                     >
-                      {showPassword ?
-                        <EyeOff className="h-4 w-4" />
-                      : <Eye className="h-4 w-4" />}
-                    </button>
-                  </Field>
+                      <input
+                        value={fullName}
+                        onChange={(event) => setFullName(event.target.value)}
+                        placeholder="Enter your name"
+                        autoComplete="name"
+                        disabled={isLoading}
+                        className={`${inputBaseClass} pl-11 disabled:cursor-not-allowed disabled:opacity-70`}
+                      />
+                    </Field>
 
-                  <div className="flex items-center gap-2 rounded-2xl border border-emerald-300/16 bg-emerald-400/10 px-4 py-3 text-xs font-semibold text-emerald-100">
-                    <ShieldCheck className="h-4 w-4" />
-                    Your profile will be stored securely in Supabase.
-                  </div>
+                    <Field label="Age" icon={<Sparkles className="h-4 w-4" />}>
+                      <input
+                        value={age}
+                        onChange={(event) =>
+                          setAge(
+                            event.target.value.replace(/\D/g, "").slice(0, 3),
+                          )
+                        }
+                        placeholder="Enter your age"
+                        inputMode="numeric"
+                        disabled={isLoading}
+                        className={`${inputBaseClass} pl-11 disabled:cursor-not-allowed disabled:opacity-70`}
+                      />
+                    </Field>
 
-                  {error ?
-                    <ErrorMessage>{error}</ErrorMessage>
-                  : null}
+                    <Field
+                      label="Password"
+                      icon={<LockKeyhole className="h-4 w-4" />}
+                    >
+                      <input
+                        type={showPassword ? "text" : "password"}
+                        value={password}
+                        onChange={(event) => setPassword(event.target.value)}
+                        placeholder="Create a password"
+                        autoComplete="new-password"
+                        disabled={isLoading}
+                        className={`${inputBaseClass} pl-11 pr-12 disabled:cursor-not-allowed disabled:opacity-70`}
+                      />
 
-                  <PrimaryButton
-                    type="submit"
-                    disabled={isLoading}
-                    loading={loadingMode === "creating"}
-                  >
-                    Create account
-                  </PrimaryButton>
-                </form>
-              : null}
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword((value) => !value)}
+                        className="absolute right-2 top-1/2 grid h-9 w-9 -translate-y-1/2 place-items-center rounded-lg text-[rgba(248,251,255,0.44)] transition hover:bg-[rgba(255,255,255,0.1)] hover:text-[#f8fbff]"
+                        aria-label={
+                          showPassword ? "Hide password" : "Show password"
+                        }
+                      >
+                        {showPassword ? (
+                          <EyeOff className="h-4 w-4" />
+                        ) : (
+                          <Eye className="h-4 w-4" />
+                        )}
+                      </button>
+                    </Field>
 
-              {step === "forgot" ?
-                <form onSubmit={handleForgotPassword} className="space-y-4">
-                  <Field
-                    label="Email address"
-                    icon={<Mail className="h-4 w-4" />}
-                  >
-                    <input
-                      value={email}
-                      onChange={(event) => setEmail(event.target.value)}
-                      placeholder="Email address"
-                      autoComplete="email"
-                      inputMode="email"
+                    <div className="flex items-center gap-2 rounded-lg border border-[rgba(52,211,153,0.18)] bg-[rgba(16,185,129,0.1)] px-4 py-3 text-xs font-semibold text-[#bbf7d0]">
+                      <ShieldCheck className="h-4 w-4" />
+                      Your profile will be stored securely in Supabase.
+                    </div>
+
+                    {error ? <Feedback tone="error">{error}</Feedback> : null}
+
+                    <PrimaryButton
+                      type="submit"
                       disabled={isLoading}
-                      className={`${inputBaseClass} pl-11 disabled:cursor-not-allowed disabled:opacity-70`}
-                    />
-                  </Field>
+                      loading={loadingMode === "creating"}
+                    >
+                      Create account
+                    </PrimaryButton>
+                  </motion.form>
+                ) : null}
 
-                  {error ?
-                    <ErrorMessage>{error}</ErrorMessage>
-                  : null}
-
-                  <PrimaryButton
-                    type="submit"
-                    disabled={isLoading}
-                    loading={loadingMode === "sending"}
+                {step === "phone" ? (
+                  <motion.form
+                    key="phone"
+                    onSubmit={handlePhoneOtpSend}
+                    className="space-y-4"
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -8 }}
                   >
-                    Send reset link
-                  </PrimaryButton>
-                </form>
-              : null}
+                    <Field label="Phone number" icon={<Phone className="h-4 w-4" />}>
+                      <input
+                        value={phone}
+                        onChange={(event) => setPhone(event.target.value)}
+                        placeholder="+923001234567"
+                        autoComplete="tel"
+                        inputMode="tel"
+                        disabled={isLoading}
+                        className={`${inputBaseClass} pl-11 disabled:cursor-not-allowed disabled:opacity-70`}
+                      />
+                    </Field>
 
-              {step === "check-email" ?
-                <div className="space-y-4 text-center">
-                  <div className="mx-auto grid h-16 w-16 place-items-center rounded-full border border-emerald-300/16 bg-emerald-400/10 text-emerald-200">
-                    <Mail className="h-8 w-8" />
-                  </div>
+                    {error ? <Feedback tone="error">{error}</Feedback> : null}
 
-                  <p className="text-sm leading-6 text-white/60">
-                    Email open karo aur secure link click karo. Uske baad tum
-                    dashboard par aa jaoge.
-                  </p>
+                    <PrimaryButton
+                      type="submit"
+                      disabled={isLoading}
+                      loading={loadingMode === "phone"}
+                    >
+                      {loadingMode === "phone"
+                        ? "Sending WhatsApp code"
+                        : "Send WhatsApp code"}
+                    </PrimaryButton>
+                  </motion.form>
+                ) : null}
 
-                  <PrimaryButton onClick={() => setStep("email")}>
-                    Back to login
-                  </PrimaryButton>
-                </div>
-              : null}
+                {step === "phone-otp" ? (
+                  <motion.form
+                    key="phone-otp"
+                    onSubmit={handlePhoneOtpVerify}
+                    className="space-y-4"
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -8 }}
+                  >
+                    <Feedback tone="success">{message}</Feedback>
 
-              <p className="mt-7 text-center text-[11px] leading-5 text-white/38">
-                By continuing, you agree to Jamals Finance secure account
-                experience.
-              </p>
+                    <Field
+                      label="WhatsApp code"
+                      icon={<ShieldCheck className="h-4 w-4" />}
+                    >
+                      <input
+                        value={phoneOtp}
+                        onChange={(event) =>
+                          setPhoneOtp(
+                            event.target.value.replace(/\D/g, "").slice(0, 6),
+                          )
+                        }
+                        placeholder="123456"
+                        inputMode="numeric"
+                        autoComplete="one-time-code"
+                        disabled={isLoading}
+                        className={`${inputBaseClass} pl-11 tracking-[0.34em] disabled:cursor-not-allowed disabled:opacity-70`}
+                      />
+                    </Field>
+
+                    {error ? <Feedback tone="error">{error}</Feedback> : null}
+
+                    <PrimaryButton
+                      type="submit"
+                      disabled={isLoading}
+                      loading={loadingMode === "otp"}
+                    >
+                      {loadingMode === "otp"
+                        ? "Verifying code"
+                        : "Verify and continue"}
+                    </PrimaryButton>
+                  </motion.form>
+                ) : null}
+
+                {step === "forgot" ? (
+                  <motion.form
+                    key="forgot"
+                    onSubmit={handleForgotPassword}
+                    className="space-y-4"
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -8 }}
+                  >
+                    <Field
+                      label="Email address"
+                      icon={<Mail className="h-4 w-4" />}
+                    >
+                      <input
+                        value={email}
+                        onChange={(event) => setEmail(event.target.value)}
+                        placeholder="Email address"
+                        autoComplete="email"
+                        inputMode="email"
+                        disabled={isLoading}
+                        className={`${inputBaseClass} pl-11 disabled:cursor-not-allowed disabled:opacity-70`}
+                      />
+                    </Field>
+
+                    {error ? <Feedback tone="error">{error}</Feedback> : null}
+
+                    <PrimaryButton
+                      type="submit"
+                      disabled={isLoading}
+                      loading={loadingMode === "sending"}
+                    >
+                      Send reset link
+                    </PrimaryButton>
+                  </motion.form>
+                ) : null}
+
+                {step === "check-email" ? (
+                  <motion.div
+                    key="check-email"
+                    className="space-y-4 text-center"
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -8 }}
+                  >
+                    <div className="mx-auto grid h-16 w-16 place-items-center rounded-lg border border-[rgba(52,211,153,0.22)] bg-[rgba(16,185,129,0.12)] text-[#bbf7d0]">
+                      <Mail className="h-8 w-8" />
+                    </div>
+
+                    <p className="text-sm leading-6 text-[rgba(248,251,255,0.62)]">
+                      Open your email and follow the secure link. You will be
+                      redirected back to your dashboard after verification.
+                    </p>
+
+                    <PrimaryButton onClick={() => setStep("email")}>
+                      Back to login
+                    </PrimaryButton>
+                  </motion.div>
+                ) : null}
+              </AnimatePresence>
+
+              <div className="mt-7 flex items-center justify-center gap-2 text-center text-[11px] leading-5 text-[rgba(248,251,255,0.42)]">
+                <CheckCircle2 className="h-3.5 w-3.5 text-[#86efac]" />
+                <span>Protected by Supabase Auth and secure sessions.</span>
+              </div>
             </div>
           </motion.section>
 
-          <MobileBenefitCards />
+          <MobileHighlights />
         </div>
       </div>
     </main>

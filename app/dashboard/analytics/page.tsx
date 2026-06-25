@@ -2,6 +2,7 @@ import AnalyticsClient, {
   type AnalyticsInvestmentData,
   type AnalyticsTransactionData,
 } from "@/components/analytics/AnalyticsClient";
+import { formatDateKey, getAppDateKey, getAppDateParts } from "@/lib/dates";
 import { createClient } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
@@ -45,12 +46,6 @@ const INVESTMENT_TYPE_COLORS: Record<string, string> = {
   other: "#64748b",
 };
 
-function toDateKey(date: Date) {
-  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(
-    date.getDate(),
-  ).padStart(2, "0")}`;
-}
-
 function titleCase(value: string) {
   return value
     .replace(/_/g, " ")
@@ -84,8 +79,8 @@ function getCategoryName(
 export default async function AnalyticsPage() {
   const supabase = await createClient();
 
-  const now = new Date();
-  const oldestNeededDate = new Date(now.getFullYear() - 1, 0, 1);
+  const now = getAppDateParts();
+  const oldestNeededDate = formatDateKey(now.year - 1, 1, 1);
 
   const [
     { data: rawTransactions },
@@ -95,8 +90,8 @@ export default async function AnalyticsPage() {
     supabase
       .from("transactions")
       .select("id, amount, date, type, categories(name, color)")
-      .gte("date", toDateKey(oldestNeededDate))
-      .lte("date", toDateKey(now)),
+      .gte("date", oldestNeededDate)
+      .lte("date", getAppDateKey()),
     supabase
       .from("investments")
       .select(

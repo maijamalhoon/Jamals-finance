@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import DatePicker from "@/components/ui/date-picker";
 import AccountSelect from "@/components/accounts/AccountSelect";
+import { getAppDateKey } from "@/lib/dates";
 import {
   FinanceModalBody,
   FinanceModalFooter,
@@ -66,7 +67,7 @@ export default function TransactionModal({
   const [amount, setAmount] = useState("");
   const [categoryId, setCategoryId] = useState("");
   const [accountId, setAccountId] = useState("");
-  const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
+  const [date, setDate] = useState(getAppDateKey());
   const [note, setNote] = useState("");
   const [sourceName, setSourceName] = useState("");
   const [personName, setPersonName] = useState("");
@@ -90,7 +91,7 @@ export default function TransactionModal({
     } else {
       setType(defaultType);
       setAmount("");
-      setDate(new Date().toISOString().split("T")[0]);
+      setDate(getAppDateKey());
       setNote("");
       setSourceName("");
       setPersonName("");

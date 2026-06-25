@@ -4,17 +4,16 @@ import AddExpenseButton from "@/components/expenses/AddExpenseButton";
 import EmptyState from "@/components/ui/empty-state";
 import { TrendingDown } from "lucide-react";
 import { loadTransactions } from "@/lib/transactions";
+import { formatDateKey, getAppDateParts } from "@/lib/dates";
 
 export const dynamic = "force-dynamic";
 
 export default async function ExpensesPage() {
   const supabase = await createClient();
-  const now = new Date();
+  const now = getAppDateParts();
 
-  const firstDayMonth = new Date(now.getFullYear(), now.getMonth(), 1)
-    .toISOString()
-    .split("T")[0];
-  const firstDayYear = `${now.getFullYear()}-01-01`;
+  const firstDayMonth = formatDateKey(now.year, now.month, 1);
+  const firstDayYear = `${now.year}-01-01`;
 
   const raw = await loadTransactions(supabase, { type: "expense" });
 

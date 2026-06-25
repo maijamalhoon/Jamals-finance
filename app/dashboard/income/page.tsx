@@ -4,17 +4,16 @@ import AddIncomeButton from "@/components/income/AddIncomeButton";
 import EmptyState from "@/components/ui/empty-state";
 import { TrendingUp } from "lucide-react";
 import { loadTransactions } from "@/lib/transactions";
+import { formatDateKey, getAppDateParts } from "@/lib/dates";
 
 export const dynamic = "force-dynamic";
 
 export default async function IncomePage() {
   const supabase = await createClient();
-  const now = new Date();
+  const now = getAppDateParts();
 
-  const firstDayMonth = new Date(now.getFullYear(), now.getMonth(), 1)
-    .toISOString()
-    .split("T")[0];
-  const firstDayYear = `${now.getFullYear()}-01-01`;
+  const firstDayMonth = formatDateKey(now.year, now.month, 1);
+  const firstDayYear = `${now.year}-01-01`;
 
   const raw = await loadTransactions(supabase, { type: "income" });
 

@@ -76,20 +76,20 @@ export default function InvestmentOverviewWidget({
     .join("-");
 
   return (
-    <Link
-      href="/dashboard/investments"
-      className="finance-focus group/investment-widget block h-full rounded-[21px]"
-      aria-label="Open Investment Overview"
-    >
+    <div className="h-full rounded-[21px]">
       <ChartCard
         eyebrow="Investments"
         eyebrowIcon={<Zap />}
         title="Portfolio Overview"
         action={
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-surface-secondary px-2.5 py-1 text-[10px] font-semibold text-text-secondary transition-all group-hover/investment-widget:border-active/35 group-hover/investment-widget:text-active">
-            View all
+          <Link
+            href="/dashboard/investments"
+            className="finance-focus inline-flex items-center gap-1.5 rounded-full border border-border bg-surface-secondary px-2.5 py-1 text-[10px] font-semibold text-text-secondary transition-all hover:border-active/35 hover:text-active"
+            aria-label="Open Investment Overview details"
+          >
+            Details
             <ArrowRight size={11} />
-          </span>
+          </Link>
         }
         legend={
           <div className="grid grid-cols-3 gap-2">
@@ -164,6 +164,6 @@ export default function InvestmentOverviewWidget({
           </div>
         </div>
       </ChartCard>
-    </Link>
+    </div>
   );
 }

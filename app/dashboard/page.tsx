@@ -9,6 +9,14 @@ import InvestmentOverviewWidget from "@/components/dashboard/InvestmentOverviewW
 import SpendRecordWidget from "@/components/dashboard/SpendRecordWidget";
 import ChartCard from "@/components/dashboard/ChartCard";
 import {
+  formatAppMonth,
+  formatAppMonthYear,
+  formatDateKey,
+  getAppDateKey,
+  getAppMonthRange,
+  normalizeDateKey,
+} from "@/lib/dates";
+import {
   DashboardMotion,
   DashboardMotionItem,
 } from "@/components/dashboard/DashboardMotion";
@@ -48,25 +56,6 @@ type DashboardGoal = {
   icon: string | null;
 };
 
-function toLocalDateKey(date: Date) {
-  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(
-    2,
-    "0",
-  )}-${String(date.getDate()).padStart(2, "0")}`;
-}
-
-function normalizeDateKey(value: Date | string | null | undefined) {
-  if (!value) return null;
-
-  if (value instanceof Date) return toLocalDateKey(value);
-
-  if (/^\d{4}-\d{2}-\d{2}$/.test(value)) return value;
-
-  const parsed = new Date(value);
-
-  return Number.isNaN(parsed.getTime()) ? null : toLocalDateKey(parsed);
-}
-
 function isDateInRange(
   value: Date | string | null | undefined,
   start: string,
@@ -97,29 +86,17 @@ export default async function DashboardPage() {
   const supabase = await createClient();
 
   const now = new Date();
-  const todayStr = toLocalDateKey(now);
-
-  const firstDay = toLocalDateKey(
-    new Date(now.getFullYear(), now.getMonth(), 1),
-  );
-
-  const lastDay = toLocalDateKey(
-    new Date(now.getFullYear(), now.getMonth() + 1, 0),
-  );
-
-  const lastFirst = toLocalDateKey(
-    new Date(now.getFullYear(), now.getMonth() - 1, 1),
-  );
-
-  const lastLast = toLocalDateKey(
-    new Date(now.getFullYear(), now.getMonth(), 0),
-  );
-
-  const daysInMonth = new Date(
-    now.getFullYear(),
-    now.getMonth() + 1,
-    0,
-  ).getDate();
+  const todayStr = getAppDateKey(now);
+  const {
+    year,
+    month,
+    day: dayOfMonth,
+    daysInMonth,
+    firstDay,
+    lastDay,
+    lastFirst,
+    lastLast,
+  } = getAppMonthRange(now);
 
   const [
     { data: thisTxns },
@@ -258,15 +235,12 @@ export default async function DashboardPage() {
 
   const chartData = Array.from({ length: daysInMonth }, (_, index) => {
     const day = index + 1;
-
-    const dateStr = toLocalDateKey(
-      new Date(now.getFullYear(), now.getMonth(), day),
-    );
+    const dateStr = formatDateKey(year, month, day);
 
     const totals = dailyTotals.get(dateStr);
 
     return {
-      date: `${day} ${now.toLocaleDateString("en-US", { month: "short" })}`,
+      date: `${day} ${formatAppMonth(year, month)}`,
       income: totals?.income ?? 0,
       expenses: totals?.expenses ?? 0,
     };
@@ -300,12 +274,7 @@ export default async function DashboardPage() {
     .sort((a, b) => b.value - a.value)
     .slice(0, 5);
 
-  const dayOfMonth = now.getDate();
-
-  const currentMonthLabel = now.toLocaleDateString("en-US", {
-    month: "long",
-    year: "numeric",
-  });
+  const currentMonthLabel = formatAppMonthYear(year, month);
 
   const dailySpend = expenses / Math.max(dayOfMonth, 1);
   const remainingDays = Math.max(daysInMonth - dayOfMonth, 0);

@@ -11,6 +11,7 @@ import {
   Smartphone,
   Wallet,
 } from "lucide-react";
+import { getAppDateKey } from "@/lib/dates";
 
 export const INCOME_SOURCE_SUGGESTIONS = [
   "inDrive rides",
@@ -92,7 +93,7 @@ export function getPayableStatus(payable: {
 }) {
   const remaining = Number(payable.remaining_amount);
   if (remaining <= 0) return "completed";
-  if (payable.due_date && payable.due_date < new Date().toISOString().split("T")[0]) {
+  if (payable.due_date && payable.due_date < getAppDateKey()) {
     return "overdue";
   }
   return payable.status === "completed" ? "partial" : payable.status;

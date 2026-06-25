@@ -1,4 +1,5 @@
 import Anthropic from '@anthropic-ai/sdk'
+import { getAppMonthRange } from '@/lib/dates'
 import { createClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
 
@@ -6,17 +7,14 @@ export async function GET() {
   try {
     const supabase = await createClient()
     const client   = new Anthropic()
-    const now      = new Date()
-
-    // Fetch last 2 months of data
-    const twoMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 1, 1)
-      .toISOString().split('T')[0]
+    const { firstDay, lastDay, lastFirst, lastLast } = getAppMonthRange()
 
     const [{ data: transactions }, { data: goals }] = await Promise.all([
       supabase
         .from('transactions')
         .select('*, categories(name)')
-        .gte('date', twoMonthsAgo)
+        .gte('date', lastFirst)
+        .lte('date', lastDay)
         .order('date', { ascending: false }),
       supabase.from('goals').select('*'),
     ])
@@ -24,17 +22,10 @@ export async function GET() {
     const txns = transactions ?? []
 
     // This month
-    const thisMon = txns.filter(t => {
-      const d = new Date(t.date)
-      return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth()
-    })
+    const thisMon = txns.filter(t => t.date >= firstDay && t.date <= lastDay)
 
     // Last month
-    const lastMon = txns.filter(t => {
-      const d = new Date(t.date)
-      const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1)
-      return d.getFullYear() === lastMonth.getFullYear() && d.getMonth() === lastMonth.getMonth()
-    })
+    const lastMon = txns.filter(t => t.date >= lastFirst && t.date <= lastLast)
 
     const income      = thisMon.filter(t => t.type === 'income') .reduce((s, t) => s + Number(t.amount), 0)
     const expenses    = thisMon.filter(t => t.type === 'expense').reduce((s, t) => s + Number(t.amount), 0)

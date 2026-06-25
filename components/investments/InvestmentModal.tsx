@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import DatePicker from "@/components/ui/date-picker";
+import { getAppDateKey } from "@/lib/dates";
 import {
   FinanceModalBody,
   FinanceModalFooter,
@@ -54,9 +55,7 @@ export default function InvestmentModal({
   const [quantity, setQuantity] = useState("");
   const [purchasePrice, setPurchasePrice] = useState("");
   const [currentPrice, setCurrentPrice] = useState("");
-  const [purchasedAt, setPurchasedAt] = useState(
-    new Date().toISOString().split("T")[0],
-  );
+  const [purchasedAt, setPurchasedAt] = useState(getAppDateKey());
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -75,7 +74,7 @@ export default function InvestmentModal({
       setQuantity("");
       setPurchasePrice("");
       setCurrentPrice("");
-      setPurchasedAt(new Date().toISOString().split("T")[0]);
+      setPurchasedAt(getAppDateKey());
     }
     setError("");
   }, [open, investment]);

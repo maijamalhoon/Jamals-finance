@@ -6,6 +6,7 @@ import { ArrowLeftRight } from "lucide-react";
 import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
 import DatePicker from "@/components/ui/date-picker";
+import { getAppDateKey } from "@/lib/dates";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import AccountSelect from "@/components/accounts/AccountSelect";
 import {
@@ -37,9 +38,7 @@ export default function TransferModal({ open, onClose, onSuccess }: Props) {
   const [fromAccountId, setFromAccountId] = useState("");
   const [toAccountId, setToAccountId] = useState("");
   const [amount, setAmount] = useState("");
-  const [transferDate, setTransferDate] = useState(
-    new Date().toISOString().split("T")[0],
-  );
+  const [transferDate, setTransferDate] = useState(getAppDateKey());
   const [note, setNote] = useState("");
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -67,7 +66,7 @@ export default function TransferModal({ open, onClose, onSuccess }: Props) {
 
     setAmount("");
     setNote("");
-    setTransferDate(new Date().toISOString().split("T")[0]);
+    setTransferDate(getAppDateKey());
     setError("");
     loadAccounts();
   }, [open, supabase]);

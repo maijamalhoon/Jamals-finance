@@ -490,6 +490,7 @@
     background:
       linear-gradient(180deg, color-mix(in srgb, var(--card), var(--active) 8%), var(--hover));
     box-shadow: var(--shadow), var(--surface-highlight);
+    will-change: transform, opacity;
   }
 
   .jf-sidebar-line {
@@ -502,6 +503,7 @@
     border-radius: 999px;
     background: var(--active);
     box-shadow: 0 0 0 1px color-mix(in srgb, var(--active), transparent 84%);
+    pointer-events: none;
   }
 
   .jf-sidebar-icon {
@@ -811,9 +813,9 @@
     border-radius: inherit;
     background-color: var(--progress-accent, var(--active));
     opacity: 1;
-    transform: scaleX(var(--progress-scale, 0));
+    transform: scaleX(0);
     transform-origin: left center;
-    transition: transform var(--progress-duration, 820ms) var(--motion-ease);
+    transition: transform 820ms var(--motion-ease);
     will-change: transform;
   }
 
@@ -841,20 +843,6 @@
     will-change: transform;
   }
 
-  .group\/investment-widget:hover .dashboard-graph-card,
-  .group\/investment-widget:focus-visible .dashboard-graph-card {
-    border-color: color-mix(in srgb, var(--investment), var(--border) 58%);
-    box-shadow:
-      0 20px 46px rgb(16 24 40 / 0.11),
-      0 4px 12px rgb(16 24 40 / 0.05),
-      var(--surface-highlight);
-    transform: translate3d(0, -3px, 0);
-  }
-
-  .group\/investment-widget:active .dashboard-graph-card {
-    transform: translate3d(0, -1px, 0) scale(0.992);
-  }
-
   .dark .dashboard-graph-card {
     --dashboard-chart-grid: color-mix(in srgb, var(--border), transparent 10%);
     --dashboard-chart-muted: color-mix(in srgb, var(--text-secondary), white 8%);
@@ -874,6 +862,10 @@
     background:
       linear-gradient(180deg, color-mix(in srgb, var(--surface-secondary), transparent 18%), transparent);
     color: var(--text-secondary);
+    transition:
+      border-color var(--motion-duration-base) var(--motion-ease),
+      background-color var(--motion-duration-base) var(--motion-ease),
+      transform var(--motion-duration-fast) var(--motion-ease);
   }
 
   .dashboard-chart-empty-icon {
@@ -1303,17 +1295,17 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 
 .motion-observe {
   opacity: 0;
-  transform: translate3d(0, 12px, 0);
+  transform: translate3d(0, 14px, 0) scale(0.992);
   transition:
-    opacity 0.32s var(--motion-ease),
-    transform 0.32s var(--motion-ease);
+    opacity 0.38s var(--motion-ease),
+    transform 0.38s var(--motion-ease);
   transition-delay: var(--motion-reveal-delay, 0ms);
   will-change: opacity, transform;
 }
 
 .motion-observe.is-visible {
   opacity: 1;
-  transform: translate3d(0, 0, 0);
+  transform: translate3d(0, 0, 0) scale(1);
 }
 
 .motion-progress-bar,
@@ -1324,6 +1316,7 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 
 .motion-table-row {
   animation: tableRowIn 0.26s var(--motion-ease) both;
+  animation-delay: var(--motion-reveal-delay, 0ms);
   will-change: opacity, transform;
 }
 

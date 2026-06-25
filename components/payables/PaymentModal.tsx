@@ -13,6 +13,7 @@ import {
   financeErrorClass,
   financeModalContentClass,
 } from "@/components/ui/finance-modal";
+import { getAppDateKey } from "@/lib/dates";
 import { formatPKR } from "@/lib/finance-options";
 import { CircleDollarSign } from "lucide-react";
 
@@ -42,7 +43,7 @@ export default function PaymentModal({ open, onClose, payable, accounts }: Props
   const router = useRouter();
   const [amount, setAmount] = useState("");
   const [accountId, setAccountId] = useState(accounts[0]?.id ?? "");
-  const [paidAt, setPaidAt] = useState(new Date().toISOString().split("T")[0]);
+  const [paidAt, setPaidAt] = useState(getAppDateKey());
   const [note, setNote] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");

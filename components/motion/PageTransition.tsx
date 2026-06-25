@@ -5,12 +5,10 @@ import { usePathname } from "next/navigation";
 import { useEffect, useRef } from "react";
 import type { ReactNode } from "react";
 import { pageVariants } from "@/components/motion/animation-config";
-import { useHasMounted } from "@/components/motion/useHasMounted";
 
 export default function PageTransition({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const reduceMotion = useReducedMotion();
-  const mounted = useHasMounted();
   const pageRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -19,7 +17,18 @@ export default function PageTransition({ children }: { children: ReactNode }) {
 
     const targets = Array.from(
       page.querySelectorAll<HTMLElement>(
-        ".page-heading, .finance-panel, .summary-card, [data-slot='card']",
+        [
+          ".page-heading",
+          ".finance-panel",
+          ".finance-panel-soft",
+          ".finance-reference-card",
+          ".dashboard-graph-card",
+          ".dashboard-chart-empty",
+          ".summary-card",
+          ".card-hover",
+          "[data-slot='card']",
+          "[data-motion-reveal]",
+        ].join(", "),
       ),
     );
 
@@ -64,9 +73,9 @@ export default function PageTransition({ children }: { children: ReactNode }) {
         key={pathname}
         className="page-transition"
         variants={pageVariants}
-        initial={!mounted || reduceMotion ? false : "initial"}
+        initial={reduceMotion ? false : "initial"}
         animate="animate"
-        exit={!mounted || reduceMotion ? undefined : "exit"}
+        exit={reduceMotion ? undefined : "exit"}
       >
         {children}
       </motion.div>

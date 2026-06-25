@@ -5,6 +5,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { panelVariants } from "@/components/motion/animation-config";
+import { formatInAppTimeZone } from "@/lib/dates";
 import { isNavItemActive, NAV_ITEMS } from "@/lib/navigation";
 
 function getRouteTitle(pathname: string) {
@@ -93,7 +94,7 @@ export default function Header() {
 
         <time className="finance-control hidden h-10 items-center gap-2 px-3 text-xs font-medium text-text-secondary xl:flex">
           <CalendarDays size={14} className="text-text-secondary" />
-          {new Date().toLocaleDateString("en-US", {
+          {formatInAppTimeZone(new Date(), {
             month: "short",
             day: "numeric",
             year: "numeric",

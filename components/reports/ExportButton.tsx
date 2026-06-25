@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Download } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import { getAppDateKey } from "@/lib/dates";
 
 export default function ExportButton() {
   const supabase = createClient();
@@ -38,7 +39,7 @@ export default function ExportButton() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `jamals-finance-${new Date().toISOString().split("T")[0]}.csv`;
+    a.download = `jamals-finance-${getAppDateKey()}.csv`;
     a.click();
     URL.revokeObjectURL(url);
 
