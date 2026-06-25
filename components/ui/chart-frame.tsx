@@ -8,8 +8,10 @@ type ChartSize = {
   height: number;
 };
 
+type ChartFrameChildren = ReactNode | ((size: ChartSize) => ReactNode);
+
 type ChartFrameProps = {
-  children: (size: ChartSize) => ReactNode;
+  children: ChartFrameChildren;
   className?: string;
   style?: CSSProperties;
   tone?: string;
@@ -18,7 +20,7 @@ type ChartFrameProps = {
 const MIN_RENDER_WIDTH = 16;
 const MIN_RENDER_HEIGHT = 16;
 
-function getElementSize(element: HTMLDivElement | null) {
+function getElementSize(element: HTMLDivElement | null): ChartSize {
   if (!element) {
     return {
       width: 0,
@@ -106,6 +108,8 @@ export default function ChartFrame({
   const isReady =
     size.width >= MIN_RENDER_WIDTH && size.height >= MIN_RENDER_HEIGHT;
 
+  const content = typeof children === "function" ? children(size) : children;
+
   return (
     <div
       ref={frameRef}
@@ -113,9 +117,7 @@ export default function ChartFrame({
       data-chart-tone={tone}
       style={style}
     >
-      {isReady ?
-        children(size)
-      : <div aria-hidden="true" className="h-full w-full" />}
+      {isReady ? content : <div aria-hidden="true" className="h-full w-full" />}
     </div>
   );
 }
