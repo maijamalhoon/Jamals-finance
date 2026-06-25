@@ -168,8 +168,10 @@ export default function SpendingBreakdown({
             "--motion-reveal-delay": `${i * 65}ms`,
             "--category-accent": accent,
             "--progress-accent": accent,
-            "--progress-duration": reduceMotion ? "0ms" : "820ms",
-            "--progress-scale": progressScale,
+          } as CSSProperties;
+          const progressStyle = {
+            transform: `scaleX(${progressScale})`,
+            transitionDuration: reduceMotion ? "0ms" : "820ms",
           } as CSSProperties;
           const percentageStyle = {
             ...rowStyle,
@@ -208,8 +210,8 @@ export default function SpendingBreakdown({
 
               <div className="dashboard-progress-track">
                 <div
-                  key={`${item.name}-${progressWidth}-${safeTotal}`}
                   className="dashboard-progress-fill"
+                  style={progressStyle}
                 />
               </div>
             </div>

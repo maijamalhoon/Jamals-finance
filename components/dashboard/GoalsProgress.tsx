@@ -156,8 +156,10 @@ function GoalRow({
     "--motion-reveal-delay": `${index * 65}ms`,
     "--goal-accent": accent,
     "--progress-accent": accent,
-    "--progress-duration": reduceMotion ? "0ms" : "820ms",
-    "--progress-scale": progressScale,
+  } as CSSProperties;
+  const progressStyle = {
+    transform: `scaleX(${progressScale})`,
+    transitionDuration: reduceMotion ? "0ms" : "820ms",
   } as CSSProperties;
 
   return (
@@ -195,8 +197,8 @@ function GoalRow({
 
       <div className="mt-2 dashboard-progress-track">
         <div
-          key={`${goal.id}-${progressScale}`}
           className="dashboard-progress-fill"
+          style={progressStyle}
         />
       </div>
     </article>

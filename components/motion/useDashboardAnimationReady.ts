@@ -15,11 +15,17 @@ export function useDashboardAnimationReady() {
 
     setReady(false);
 
+    let secondFrameId = 0;
     const frameId = requestAnimationFrame(() => {
-      setReady(true);
+      secondFrameId = requestAnimationFrame(() => {
+        setReady(true);
+      });
     });
 
-    return () => cancelAnimationFrame(frameId);
+    return () => {
+      cancelAnimationFrame(frameId);
+      cancelAnimationFrame(secondFrameId);
+    };
   }, [reduceMotion]);
 
   return {

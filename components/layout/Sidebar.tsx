@@ -2,19 +2,44 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutGroup, motion } from "framer-motion";
+import { LayoutGroup, motion, useReducedMotion } from "framer-motion";
 import { BarChart3, ChevronRight } from "lucide-react";
 import { isNavItemActive, NAV_ITEMS } from "@/lib/navigation";
 import JamalMenu from "@/components/layout/JamalMenu";
 
 const sidebarSpring = {
   type: "spring" as const,
-  stiffness: 500,
-  damping: 40,
+  stiffness: 360,
+  damping: 34,
+  mass: 0.82,
+};
+
+const navContainer = {
+  hidden: { opacity: 0 },
+  show: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.035,
+      delayChildren: 0.08,
+    },
+  },
+};
+
+const navItem = {
+  hidden: { opacity: 0, x: -8 },
+  show: {
+    opacity: 1,
+    x: 0,
+    transition: {
+      duration: 0.24,
+      ease: [0.16, 1, 0.3, 1] as const,
+    },
+  },
 };
 
 export default function Sidebar() {
   const pathname = usePathname();
+  const reduceMotion = useReducedMotion();
 
   return (
     <aside className="motion-fade-slide relative z-50 flex h-full w-[296px] flex-shrink-0 flex-col border-r border-border bg-sidebar p-3 shadow-theme">
@@ -35,43 +60,45 @@ export default function Sidebar() {
           className="relative min-h-0 flex-1 overflow-y-auto px-1 pb-3 pt-2"
         >
           <LayoutGroup id="jf-sidebar-navigation">
-            <div className="space-y-1">
+            <motion.div
+              className="space-y-1"
+              variants={navContainer}
+              initial={reduceMotion ? false : "hidden"}
+              animate="show"
+            >
               {NAV_ITEMS.map(({ label, href, icon: Icon }) => {
                 const active = isNavItemActive(pathname, href);
 
                 return (
-                  <Link
-                    key={href}
-                    href={href}
-                    aria-current={active ? "page" : undefined}
-                    data-active={active ? "true" : "false"}
-                    className="finance-focus jf-sidebar-link group text-sm font-semibold"
-                  >
-                    {active && (
-                      <>
-                        <motion.span
-                          layoutId="jf-sidebar-pill"
-                          className="jf-sidebar-pill"
-                          transition={sidebarSpring}
-                        />
-                        <motion.span
-                          layoutId="jf-sidebar-line"
-                          className="jf-sidebar-line"
-                          transition={sidebarSpring}
-                        />
-                      </>
-                    )}
-                    <span className="jf-sidebar-icon">
-                      <Icon size={16} strokeWidth={2.2} />
-                    </span>
-                    <span className="relative z-10 min-w-0 flex-1 truncate">
-                      {label}
-                    </span>
-                    <ChevronRight size={15} className="jf-sidebar-chevron" />
-                  </Link>
+                  <motion.div key={href} variants={navItem}>
+                    <Link
+                      href={href}
+                      aria-current={active ? "page" : undefined}
+                      data-active={active ? "true" : "false"}
+                      className="finance-focus jf-sidebar-link group text-sm font-semibold"
+                    >
+                      {active && (
+                        <>
+                          <motion.span
+                            layoutId="jf-sidebar-pill"
+                            className="jf-sidebar-pill"
+                            transition={sidebarSpring}
+                          />
+                          <span className="jf-sidebar-line" />
+                        </>
+                      )}
+                      <span className="jf-sidebar-icon">
+                        <Icon size={16} strokeWidth={2.2} />
+                      </span>
+                      <span className="relative z-10 min-w-0 flex-1 truncate">
+                        {label}
+                      </span>
+                      <ChevronRight size={15} className="jf-sidebar-chevron" />
+                    </Link>
+                  </motion.div>
                 );
               })}
-            </div>
+            </motion.div>
           </LayoutGroup>
         </nav>
 
