@@ -34,10 +34,12 @@ export async function proxy(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
 
   const isPublicRoute =
-    pathname === "/" ||
-    pathname.startsWith("/login") ||
-    pathname.startsWith("/auth/callback") ||
-    pathname.startsWith("/reset-password");
+  pathname === "/" ||
+  pathname === "/robots.txt" ||
+  pathname === "/sitemap.xml" ||
+  pathname.startsWith("/login") ||
+  pathname.startsWith("/auth/callback") ||
+  pathname.startsWith("/reset-password");
 
   if (!user && !isPublicRoute) {
     const url = request.nextUrl.clone();
