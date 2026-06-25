@@ -99,7 +99,7 @@ const modules = [
 ];
 
 const previewBars = [46, 72, 54, 88, 66, 96, 78];
-
+const premiumEase = [0.16, 1, 0.3, 1] as const;
 export default function HomePage() {
   const shouldReduceMotion = useReducedMotion();
 
@@ -110,7 +110,7 @@ export default function HomePage() {
         initial: { opacity: 0, y: 18 },
         whileInView: { opacity: 1, y: 0 },
         viewport: { once: true, margin: "-80px" },
-        transition: { duration: 0.55, ease: [0.16, 1, 0.3, 1] },
+        transition: { duration: 0.55, ease: premiumEase },
       };
 
   const heroMotion =
@@ -119,7 +119,7 @@ export default function HomePage() {
     : {
         initial: { opacity: 0, y: 20 },
         animate: { opacity: 1, y: 0 },
-        transition: { duration: 0.6, ease: [0.16, 1, 0.3, 1] },
+        transition: { duration: 0.6, ease: premiumEase },
       };
 
   return (
@@ -244,7 +244,7 @@ export default function HomePage() {
               transition: {
                 duration: 0.7,
                 delay: 0.1,
-                ease: [0.16, 1, 0.3, 1],
+                ease: premiumEase,
               },
             })}
           className="relative mx-auto w-full max-w-xl"
@@ -358,7 +358,7 @@ export default function HomePage() {
                     transition: {
                       duration: 0.45,
                       delay: index * 0.04,
-                      ease: [0.16, 1, 0.3, 1],
+                      ease: premiumEase,
                     },
                   })}
                 className="jf-card-premium jf-card-hover p-5"
@@ -407,7 +407,7 @@ export default function HomePage() {
                     transition: {
                       duration: 0.45,
                       delay: index * 0.06,
-                      ease: [0.16, 1, 0.3, 1],
+                      ease: premiumEase,
                     },
                   })}
                 className="jf-card-soft flex gap-4 p-4"
@@ -522,7 +522,7 @@ export default function HomePage() {
                     transition: {
                       duration: 0.4,
                       delay: index * 0.05,
-                      ease: [0.16, 1, 0.3, 1],
+                      ease: premiumEase,
                     },
                   })}
                 className="jf-card-soft flex items-start gap-3 p-4"
