@@ -1,15 +1,18 @@
 "use client";
 
+import type { ComponentType } from "react";
 import Link from "next/link";
-import { motion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 import {
   ArrowRight,
-  BarChart3,
-  CheckCircle2,
+  BadgeCheck,
+  ChartColumn,
+  ChartLine,
+  ChartPie,
+  CircleCheck,
   CreditCard,
-  Globe2,
+  Earth,
   LockKeyhole,
-  PieChart,
   ShieldCheck,
   Sparkles,
   TrendingUp,
@@ -17,80 +20,110 @@ import {
   Zap,
 } from "lucide-react";
 
-const ease = [0.16, 1, 0.3, 1] as const;
+type IconType = ComponentType<{ className?: string }>;
 
-const container = {
-  hidden: {},
-  show: {
-    transition: {
-      staggerChildren: 0.08,
-    },
-  },
-};
-
-const fadeUp = {
-  hidden: {
-    opacity: 0,
-    y: 18,
-  },
-  show: {
-    opacity: 1,
-    y: 0,
-    transition: {
-      duration: 0.55,
-      ease,
-    },
-  },
-};
-
-const features = [
+const features: Array<{
+  title: string;
+  description: string;
+  icon: IconType;
+  tone: string;
+}> = [
   {
+    title: "All accounts together",
+    description:
+      "Track bank, cash, wallets, savings, and business money from one clean workspace.",
     icon: WalletCards,
-    title: "All accounts in one place",
-    text: "Track cash, bank, wallets, savings, and business money without messy spreadsheets.",
+    tone: "jf-icon-bubble-success",
   },
   {
-    icon: CreditCard,
     title: "Smart transactions",
-    text: "Record income, expenses, transfers, liabilities, and payments with a clean finance flow.",
+    description:
+      "Record income, expenses, transfers, liabilities, and payments with a fast flow.",
+    icon: CreditCard,
+    tone: "",
   },
   {
-    icon: PieChart,
-    title: "Clear money insights",
-    text: "Understand where your money goes with summaries, categories, and visual breakdowns.",
+    title: "Clear insights",
+    description:
+      "Understand your money movement with summaries, categories, and readable charts.",
+    icon: ChartPie,
+    tone: "jf-icon-bubble-warning",
   },
   {
-    icon: TrendingUp,
     title: "Goals and growth",
-    text: "Plan savings goals, investments, and future financial targets with confidence.",
+    description:
+      "Plan savings, investments, and future targets with confidence and clarity.",
+    icon: TrendingUp,
+    tone: "jf-icon-bubble-success",
   },
   {
-    icon: ShieldCheck,
     title: "Private by design",
-    text: "Built with secure authentication, row-level access, and user-specific finance data.",
+    description:
+      "Your dashboard stays protected behind secure authentication and user-specific data.",
+    icon: ShieldCheck,
+    tone: "",
   },
   {
-    icon: Globe2,
-    title: "Ready for global users",
-    text: "A premium foundation for freelancers, families, founders, and finance-conscious users.",
+    title: "Mobile-ready experience",
+    description:
+      "Designed for quick daily finance checks on mobile, tablet, and desktop.",
+    icon: Earth,
+    tone: "jf-icon-bubble-success",
   },
 ];
 
-const stats = [
-  { label: "Finance modules", value: "8+" },
-  { label: "Clean dashboard", value: "100%" },
-  { label: "Private workspace", value: "Secure" },
+const steps = [
+  {
+    title: "Create your workspace",
+    description: "Sign in securely and start with a clean personal dashboard.",
+  },
+  {
+    title: "Add money activity",
+    description: "Track accounts, income, expenses, goals, and liabilities.",
+  },
+  {
+    title: "Review your progress",
+    description: "Use charts and summaries to understand where money moves.",
+  },
 ];
 
-const previewRows = [
-  { label: "Income", value: "+$4,280", tone: "text-success" },
-  { label: "Expenses", value: "-$1,940", tone: "text-danger" },
-  { label: "Savings", value: "$2,340", tone: "text-active" },
+const modules = [
+  "Accounts",
+  "Income",
+  "Expenses",
+  "Transactions",
+  "Goals",
+  "Investments",
+  "Payables",
+  "Reports",
 ];
 
-export default function RootPage() {
+const previewBars = [46, 72, 54, 88, 66, 96, 78];
+
+export default function HomePage() {
+  const shouldReduceMotion = useReducedMotion();
+
+  const revealProps =
+    shouldReduceMotion ?
+      {}
+    : {
+        initial: { opacity: 0, y: 18 },
+        whileInView: { opacity: 1, y: 0 },
+        viewport: { once: true, margin: "-80px" },
+        transition: { duration: 0.55, ease: [0.16, 1, 0.3, 1] },
+      };
+
+  const heroMotion =
+    shouldReduceMotion ?
+      {}
+    : {
+        initial: { opacity: 0, y: 20 },
+        animate: { opacity: 1, y: 0 },
+        transition: { duration: 0.6, ease: [0.16, 1, 0.3, 1] },
+      };
+
   return (
-    <main className="chat-auth-shell min-h-dvh overflow-hidden">
+    <main className="jf-page-shell min-h-dvh overflow-hidden pb-24 sm:pb-0">
       <div className="pointer-events-none fixed inset-0 -z-10">
         <div className="absolute left-1/2 top-0 h-[360px] w-[680px] -translate-x-1/2 rounded-full bg-active/10 blur-3xl" />
         <div className="absolute bottom-0 right-0 h-[300px] w-[420px] rounded-full bg-success/10 blur-3xl" />
@@ -103,7 +136,7 @@ export default function RootPage() {
             className="finance-focus flex items-center gap-3 rounded-2xl"
           >
             <span className="grid h-10 w-10 place-items-center rounded-2xl border border-border bg-card shadow-theme">
-              <BarChart3 className="h-5 w-5 text-active" />
+              <ChartColumn className="h-5 w-5 text-active" />
             </span>
             <span>
               <span className="block text-sm font-bold tracking-tight text-text-primary">
@@ -118,34 +151,34 @@ export default function RootPage() {
           <div className="hidden items-center gap-2 md:flex">
             <a
               href="#features"
-              className="finance-focus rounded-xl px-3 py-2 text-sm font-medium text-text-secondary hover:bg-hover hover:text-text-primary"
+              className="jf-btn jf-btn-ghost min-h-10 px-3 text-sm"
             >
               Features
             </a>
             <a
-              href="#security"
-              className="finance-focus rounded-xl px-3 py-2 text-sm font-medium text-text-secondary hover:bg-hover hover:text-text-primary"
+              href="#workflow"
+              className="jf-btn jf-btn-ghost min-h-10 px-3 text-sm"
             >
-              Security
+              How it works
             </a>
             <a
-              href="#global"
-              className="finance-focus rounded-xl px-3 py-2 text-sm font-medium text-text-secondary hover:bg-hover hover:text-text-primary"
+              href="#security"
+              className="jf-btn jf-btn-ghost min-h-10 px-3 text-sm"
             >
-              Global
+              Security
             </a>
           </div>
 
           <div className="flex items-center gap-2">
             <Link
               href="/login"
-              className="finance-focus hidden rounded-2xl px-4 py-2 text-sm font-semibold text-text-secondary hover:bg-hover hover:text-text-primary sm:inline-flex"
+              className="jf-btn jf-btn-ghost hidden min-h-10 px-4 text-sm sm:inline-flex"
             >
               Sign in
             </Link>
             <Link
               href="/login"
-              className="primary-action min-h-10 rounded-2xl px-4"
+              className="jf-btn jf-btn-primary min-h-10 px-4 text-sm"
             >
               Get started
               <ArrowRight className="h-4 w-4" />
@@ -154,151 +187,140 @@ export default function RootPage() {
         </nav>
       </header>
 
-      <section className="mx-auto grid max-w-7xl items-center gap-10 px-4 pb-16 pt-12 sm:px-6 sm:pb-20 sm:pt-16 lg:grid-cols-[1.02fr_0.98fr] lg:px-8 lg:pb-24 lg:pt-20">
+      <section className="jf-section grid items-center gap-10 pb-12 pt-12 lg:grid-cols-[1.02fr_0.98fr] lg:gap-14 lg:pb-20 lg:pt-16">
         <motion.div
-          variants={container}
-          initial="hidden"
-          animate="show"
+          {...heroMotion}
           className="mx-auto max-w-2xl text-center lg:mx-0 lg:text-left"
         >
-          <motion.div
-            variants={fadeUp}
-            className="mx-auto mb-5 inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-2 text-xs font-semibold text-text-secondary shadow-theme lg:mx-0"
-          >
-            <Sparkles className="h-4 w-4 text-active" />
-            Premium finance dashboard for smarter money control
-          </motion.div>
+          <div className="jf-badge jf-badge-active mx-auto mb-5 lg:mx-0">
+            <Sparkles className="h-4 w-4" />
+            Premium finance dashboard
+          </div>
 
-          <motion.h1
-            variants={fadeUp}
-            className="text-4xl font-bold tracking-[-0.04em] text-text-primary sm:text-5xl lg:text-7xl"
-          >
+          <h1 className="jf-heading-xl mx-auto lg:mx-0">
             Manage your money with clarity, speed, and confidence.
-          </motion.h1>
+          </h1>
 
-          <motion.p
-            variants={fadeUp}
-            className="mx-auto mt-5 max-w-xl text-base leading-8 text-text-secondary sm:text-lg lg:mx-0"
-          >
+          <p className="jf-copy mx-auto mt-5 lg:mx-0">
             Jamal&apos;s Finance helps you track accounts, expenses, income,
-            goals, liabilities, and savings in one clean premium workspace —
+            goals, liabilities, investments, and savings in one clean workspace
             built to feel smooth on every device.
-          </motion.p>
+          </p>
 
-          <motion.div
-            variants={fadeUp}
-            className="mt-8 flex flex-col gap-3 sm:flex-row sm:justify-center lg:justify-start"
-          >
-            <Link href="/login" className="chat-auth-button sm:w-auto sm:px-6">
+          <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:justify-center lg:justify-start">
+            <Link
+              href="/login"
+              className="jf-btn jf-btn-primary sm:w-auto sm:px-6"
+            >
               Start your finance workspace
               <ArrowRight className="h-4 w-4" />
             </Link>
             <a
               href="#features"
-              className="chat-auth-secondary sm:w-auto sm:px-6"
+              className="jf-btn jf-btn-secondary sm:w-auto sm:px-6"
             >
               Explore features
             </a>
-          </motion.div>
+          </div>
 
-          <motion.div
-            variants={fadeUp}
-            className="mt-7 flex flex-col items-center gap-3 text-sm text-text-secondary sm:flex-row sm:justify-center lg:justify-start"
-          >
-            {["No spreadsheet mess", "Smooth mobile UI", "Secure login"].map(
+          <div className="mt-7 flex flex-wrap items-center justify-center gap-3 text-sm text-text-secondary lg:justify-start">
+            {["No spreadsheet mess", "Mobile-first UI", "Secure login"].map(
               (item) => (
                 <span key={item} className="inline-flex items-center gap-2">
-                  <CheckCircle2 className="h-4 w-4 text-success" />
+                  <CircleCheck className="h-4 w-4 text-success" />
                   {item}
                 </span>
               ),
             )}
-          </motion.div>
+          </div>
         </motion.div>
 
         <motion.div
-          initial={{ opacity: 0, y: 22, scale: 0.98 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
-          transition={{ duration: 0.65, ease }}
+          {...(shouldReduceMotion ?
+            {}
+          : {
+              initial: { opacity: 0, y: 24, scale: 0.98 },
+              animate: { opacity: 1, y: 0, scale: 1 },
+              transition: {
+                duration: 0.7,
+                delay: 0.1,
+                ease: [0.16, 1, 0.3, 1],
+              },
+            })}
           className="relative mx-auto w-full max-w-xl"
         >
           <div className="absolute -inset-4 rounded-[34px] bg-active/10 blur-2xl" />
 
-          <div className="finance-panel relative overflow-hidden rounded-[30px] p-4 sm:p-5">
+          <div className="jf-card-premium relative p-4 sm:p-5">
             <div className="mb-5 flex items-center justify-between">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-text-secondary">
-                  Live preview
-                </p>
-                <h2 className="mt-1 text-xl font-bold text-text-primary">
+                <p className="jf-eyebrow text-[0.68rem]">Live preview</p>
+                <h2 className="mt-1 text-xl font-black tracking-tight text-text-primary">
                   Personal dashboard
                 </h2>
               </div>
-              <div className="grid h-11 w-11 place-items-center rounded-2xl border border-border bg-surface-secondary">
-                <LockKeyhole className="h-5 w-5 text-active" />
+              <div className="jf-icon-bubble">
+                <LockKeyhole className="h-5 w-5" />
               </div>
             </div>
 
             <div className="grid gap-3 sm:grid-cols-3">
-              {stats.map((stat) => (
-                <div
-                  key={stat.label}
-                  className="rounded-[22px] border border-border bg-surface-secondary p-4"
-                >
-                  <p className="text-2xl font-bold text-text-primary">
-                    {stat.value}
+              {[
+                ["8+", "Finance modules"],
+                ["100%", "Clean dashboard"],
+                ["Secure", "Private workspace"],
+              ].map(([value, label]) => (
+                <div key={label} className="jf-card-soft p-4">
+                  <p className="text-2xl font-black tracking-tight text-text-primary">
+                    {value}
                   </p>
                   <p className="mt-1 text-xs leading-5 text-text-secondary">
-                    {stat.label}
+                    {label}
                   </p>
                 </div>
               ))}
             </div>
 
-            <div className="mt-4 rounded-[24px] border border-border bg-card p-4">
+            <div className="jf-card mt-4 p-4">
               <div className="mb-4 flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-semibold text-text-primary">
+                  <p className="text-sm font-bold text-text-primary">
                     Monthly flow
                   </p>
                   <p className="text-xs text-text-secondary">
                     Clean view of money movement
                   </p>
                 </div>
-                <span className="finance-state-pill">Demo</span>
+                <span className="jf-badge jf-badge-active">Demo</span>
               </div>
 
               <div className="flex h-36 items-end gap-3">
-                {[42, 68, 48, 78, 62, 88, 72].map((height, index) => (
-                  <motion.div
+                {previewBars.map((height, index) => (
+                  <div
                     key={index}
-                    initial={{ height: 0 }}
-                    animate={{ height: `${height}%` }}
-                    transition={{
-                      delay: 0.25 + index * 0.06,
-                      duration: 0.55,
-                      ease,
-                    }}
                     className="flex-1 rounded-t-2xl bg-active/20"
+                    style={{ height: `${height}%` }}
                   >
                     <div className="h-full rounded-t-2xl bg-active/70" />
-                  </motion.div>
+                  </div>
                 ))}
               </div>
             </div>
 
             <div className="mt-4 grid gap-3">
-              {previewRows.map((row) => (
+              {[
+                ["Income", "+$4,280", "text-success"],
+                ["Expenses", "-$1,940", "text-danger"],
+                ["Savings", "$2,340", "text-active"],
+              ].map(([label, value, color]) => (
                 <div
-                  key={row.label}
+                  key={label}
                   className="flex items-center justify-between rounded-[20px] border border-border bg-surface-secondary px-4 py-3"
                 >
                   <span className="text-sm font-medium text-text-secondary">
-                    {row.label}
+                    {label}
                   </span>
-                  <span className={`text-sm font-bold ${row.tone}`}>
-                    {row.value}
-                  </span>
+                  <span className={`text-sm font-black ${color}`}>{value}</span>
                 </div>
               ))}
             </div>
@@ -306,90 +328,179 @@ export default function RootPage() {
         </motion.div>
       </section>
 
-      <section
-        id="features"
-        className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8"
-      >
-        <motion.div
-          initial="hidden"
-          whileInView="show"
-          viewport={{ once: true, margin: "-80px" }}
-          variants={container}
-          className="mx-auto max-w-2xl text-center"
-        >
-          <motion.p
-            variants={fadeUp}
-            className="text-sm font-semibold text-active"
-          >
+      <section id="features" className="jf-section-tight">
+        <motion.div {...revealProps} className="mx-auto max-w-2xl text-center">
+          <p className="jf-eyebrow justify-center">
             Built for daily money control
-          </motion.p>
-          <motion.h2
-            variants={fadeUp}
-            className="mt-3 text-3xl font-bold tracking-[-0.03em] text-text-primary sm:text-4xl"
-          >
+          </p>
+          <h2 className="jf-heading-lg mx-auto mt-3">
             Everything important, without the clutter.
-          </motion.h2>
-          <motion.p
-            variants={fadeUp}
-            className="mt-4 leading-7 text-text-secondary"
-          >
+          </h2>
+          <p className="jf-copy mx-auto mt-4">
             A clean finance experience that feels simple for beginners and
             powerful enough for serious users.
-          </motion.p>
+          </p>
         </motion.div>
 
-        <motion.div
-          initial="hidden"
-          whileInView="show"
-          viewport={{ once: true, margin: "-80px" }}
-          variants={container}
-          className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3"
-        >
-          {features.map((feature) => {
+        <div className="mt-10 jf-responsive-grid">
+          {features.map((feature, index) => {
             const Icon = feature.icon;
 
             return (
               <motion.div
                 key={feature.title}
-                variants={fadeUp}
-                className="finance-panel finance-panel-interactive p-5"
+                {...(shouldReduceMotion ?
+                  {}
+                : {
+                    initial: { opacity: 0, y: 18 },
+                    whileInView: { opacity: 1, y: 0 },
+                    viewport: { once: true, margin: "-60px" },
+                    transition: {
+                      duration: 0.45,
+                      delay: index * 0.04,
+                      ease: [0.16, 1, 0.3, 1],
+                    },
+                  })}
+                className="jf-card-premium jf-card-hover p-5"
               >
-                <div className="finance-icon-bubble mb-5 h-12 w-12">
+                <div className={`jf-icon-bubble mb-5 ${feature.tone}`}>
                   <Icon className="h-5 w-5" />
                 </div>
-                <h3 className="text-lg font-bold text-text-primary">
+                <h3 className="text-lg font-black tracking-tight text-text-primary">
                   {feature.title}
                 </h3>
                 <p className="mt-3 text-sm leading-7 text-text-secondary">
-                  {feature.text}
+                  {feature.description}
                 </p>
               </motion.div>
             );
           })}
-        </motion.div>
+        </div>
       </section>
 
-      <section
-        id="security"
-        className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8"
-      >
-        <div className="finance-panel grid gap-8 overflow-hidden rounded-[30px] p-5 sm:p-8 lg:grid-cols-[0.9fr_1.1fr] lg:p-10">
-          <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-80px" }}
-            transition={{ duration: 0.55, ease }}
-          >
-            <div className="finance-icon-bubble mb-5 h-13 w-13">
+      <section id="workflow" className="jf-section-tight">
+        <div className="jf-card-premium grid gap-8 p-5 sm:p-8 lg:grid-cols-[0.9fr_1.1fr] lg:p-10">
+          <motion.div {...revealProps}>
+            <div className="jf-icon-bubble mb-5">
+              <Zap className="h-6 w-6" />
+            </div>
+            <p className="jf-eyebrow">How it works</p>
+            <h2 className="jf-heading-lg mt-3">
+              A smoother routine for your daily money decisions.
+            </h2>
+            <p className="jf-copy mt-4">
+              The goal is not just to store numbers. The goal is to help users
+              understand their financial life quickly on mobile and desktop.
+            </p>
+          </motion.div>
+
+          <div className="grid gap-3">
+            {steps.map((step, index) => (
+              <motion.div
+                key={step.title}
+                {...(shouldReduceMotion ?
+                  {}
+                : {
+                    initial: { opacity: 0, x: 18 },
+                    whileInView: { opacity: 1, x: 0 },
+                    viewport: { once: true },
+                    transition: {
+                      duration: 0.45,
+                      delay: index * 0.06,
+                      ease: [0.16, 1, 0.3, 1],
+                    },
+                  })}
+                className="jf-card-soft flex gap-4 p-4"
+              >
+                <div className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-active text-sm font-black text-background">
+                  {index + 1}
+                </div>
+                <div>
+                  <h3 className="font-black tracking-tight text-text-primary">
+                    {step.title}
+                  </h3>
+                  <p className="mt-1 text-sm leading-6 text-text-secondary">
+                    {step.description}
+                  </p>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="jf-section-tight">
+        <div className="grid gap-5 lg:grid-cols-[1fr_0.9fr]">
+          <motion.div {...revealProps} className="jf-card-premium p-5 sm:p-8">
+            <p className="jf-eyebrow">Finance modules</p>
+            <h2 className="jf-heading-lg mt-3">
+              One workspace for every important money area.
+            </h2>
+            <p className="jf-copy mt-4">
+              Each module should feel connected, fast, and easy to understand,
+              especially on mobile screens.
+            </p>
+
+            <div className="mt-7 flex flex-wrap gap-2">
+              {modules.map((module) => (
+                <span key={module} className="jf-badge">
+                  <BadgeCheck className="h-3.5 w-3.5 text-success" />
+                  {module}
+                </span>
+              ))}
+            </div>
+          </motion.div>
+
+          <motion.div {...revealProps} className="jf-card p-5 sm:p-6">
+            <div className="mb-5 flex items-center justify-between">
+              <div>
+                <p className="text-sm font-black text-text-primary">
+                  Mobile focus
+                </p>
+                <p className="text-xs text-text-secondary">
+                  Fast thumb-friendly UI
+                </p>
+              </div>
+              <div className="jf-icon-bubble-success jf-icon-bubble">
+                <ChartLine className="h-5 w-5" />
+              </div>
+            </div>
+
+            <div className="grid gap-3">
+              {[
+                "Readable cards on small screens",
+                "Clear CTAs with large tap area",
+                "No horizontal scroll",
+                "Reduced motion support",
+              ].map((item) => (
+                <div
+                  key={item}
+                  className="flex items-center gap-3 rounded-2xl bg-surface-secondary p-3"
+                >
+                  <CircleCheck className="h-4 w-4 shrink-0 text-success" />
+                  <span className="text-sm font-semibold text-text-primary">
+                    {item}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
+      <section id="security" className="jf-section-tight">
+        <div className="jf-card-premium grid gap-8 p-5 sm:p-8 lg:grid-cols-[0.85fr_1.15fr] lg:p-10">
+          <motion.div {...revealProps}>
+            <div className="jf-icon-bubble-success jf-icon-bubble mb-5">
               <ShieldCheck className="h-6 w-6" />
             </div>
-            <h2 className="text-3xl font-bold tracking-[-0.03em] text-text-primary sm:text-4xl">
-              Private finance space for real users.
+            <p className="jf-eyebrow">Security and trust</p>
+            <h2 className="jf-heading-lg mt-3">
+              Premium look, protected workspace.
             </h2>
-            <p className="mt-4 leading-8 text-text-secondary">
-              Your finance app should feel premium, but it should also feel
-              safe. This landing page keeps the public product clean while the
-              dashboard remains protected behind login.
+            <p className="jf-copy mt-4">
+              The public site explains the product clearly, while private
+              finance data stays behind secure authentication.
             </p>
           </motion.div>
 
@@ -397,19 +508,27 @@ export default function RootPage() {
             {[
               "Dashboard stays protected for signed-in users only",
               "Landing page is public for visitors and search engines",
-              "Clear login path without confusing redirects",
-              "Clean UI system matching the existing login screen",
+              "Login path is clean and easy to understand",
+              "Design system is ready for full app polish",
             ].map((item, index) => (
               <motion.div
                 key={item}
-                initial={{ opacity: 0, x: 16 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true, margin: "-80px" }}
-                transition={{ delay: index * 0.06, duration: 0.45, ease }}
-                className="flex items-start gap-3 rounded-[20px] border border-border bg-surface-secondary p-4"
+                {...(shouldReduceMotion ?
+                  {}
+                : {
+                    initial: { opacity: 0, x: 16 },
+                    whileInView: { opacity: 1, x: 0 },
+                    viewport: { once: true },
+                    transition: {
+                      duration: 0.4,
+                      delay: index * 0.05,
+                      ease: [0.16, 1, 0.3, 1],
+                    },
+                  })}
+                className="jf-card-soft flex items-start gap-3 p-4"
               >
-                <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-success" />
-                <span className="text-sm font-medium leading-6 text-text-primary">
+                <CircleCheck className="mt-0.5 h-5 w-5 shrink-0 text-success" />
+                <span className="text-sm font-bold leading-6 text-text-primary">
                   {item}
                 </span>
               </motion.div>
@@ -418,78 +537,33 @@ export default function RootPage() {
         </div>
       </section>
 
-      <section
-        id="global"
-        className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8"
-      >
-        <div className="grid gap-4 lg:grid-cols-3">
-          {[
-            {
-              icon: Zap,
-              title: "Fast first impression",
-              text: "Visitors instantly understand the product instead of being pushed directly to login.",
-            },
-            {
-              icon: Globe2,
-              title: "Global product feel",
-              text: "Premium copy, clean spacing, and polished animations make the app feel ready for wider users.",
-            },
-            {
-              icon: BarChart3,
-              title: "Finance-first design",
-              text: "The visuals speak the product language: accounts, flow, insights, savings, and control.",
-            },
-          ].map((item) => {
-            const Icon = item.icon;
-
-            return (
-              <motion.div
-                key={item.title}
-                initial={{ opacity: 0, y: 16 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: "-80px" }}
-                transition={{ duration: 0.5, ease }}
-                className="finance-panel p-5"
-              >
-                <Icon className="mb-5 h-6 w-6 text-active" />
-                <h3 className="text-lg font-bold text-text-primary">
-                  {item.title}
-                </h3>
-                <p className="mt-3 text-sm leading-7 text-text-secondary">
-                  {item.text}
-                </p>
-              </motion.div>
-            );
-          })}
-        </div>
-      </section>
-
       <section className="px-4 py-14 sm:px-6 lg:px-8">
         <motion.div
-          initial={{ opacity: 0, y: 18 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-80px" }}
-          transition={{ duration: 0.55, ease }}
-          className="mx-auto max-w-4xl rounded-[32px] border border-border bg-card p-6 text-center shadow-theme sm:p-10"
+          {...revealProps}
+          className="jf-card-premium mx-auto max-w-4xl p-6 text-center sm:p-10"
         >
-          <div className="mx-auto mb-5 grid h-14 w-14 place-items-center rounded-3xl border border-border bg-surface-secondary">
-            <Sparkles className="h-6 w-6 text-active" />
+          <div className="jf-icon-bubble mx-auto mb-5 h-14 w-14">
+            <Sparkles className="h-6 w-6" />
           </div>
-          <h2 className="text-3xl font-bold tracking-[-0.03em] text-text-primary sm:text-4xl">
+          <h2 className="jf-heading-lg mx-auto">
             Start building better money habits today.
           </h2>
-          <p className="mx-auto mt-4 max-w-2xl leading-8 text-text-secondary">
+          <p className="jf-copy mx-auto mt-4">
             Create your workspace, connect your finance routine, and turn daily
             money tracking into a clean premium experience.
           </p>
+
           <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
-            <Link href="/login" className="chat-auth-button sm:w-auto sm:px-7">
+            <Link
+              href="/login"
+              className="jf-btn jf-btn-primary sm:w-auto sm:px-7"
+            >
               Open Jamal&apos;s Finance
               <ArrowRight className="h-4 w-4" />
             </Link>
             <a
               href="#features"
-              className="chat-auth-secondary sm:w-auto sm:px-7"
+              className="jf-btn jf-btn-secondary sm:w-auto sm:px-7"
             >
               View features
             </a>
@@ -501,7 +575,7 @@ export default function RootPage() {
         <div className="mx-auto flex max-w-7xl flex-col gap-3 text-center text-sm text-text-secondary sm:flex-row sm:items-center sm:justify-between sm:text-left">
           <p>© 2026 Jamal&apos;s Finance. Built for smarter money control.</p>
           <div className="flex justify-center gap-4">
-            <Link href="/login" className="hover:text-text-primary">
+            <Link className="hover:text-text-primary" href="/login">
               Sign in
             </Link>
             <a href="#features" className="hover:text-text-primary">
@@ -510,6 +584,18 @@ export default function RootPage() {
           </div>
         </div>
       </footer>
+
+      <div className="fixed inset-x-3 bottom-3 z-40 rounded-[22px] border border-border bg-card/95 p-2 shadow-theme backdrop-blur-xl sm:hidden">
+        <div className="grid grid-cols-[1fr_auto] gap-2">
+          <Link href="/login" className="jf-btn jf-btn-primary">
+            Get started
+            <ArrowRight className="h-4 w-4" />
+          </Link>
+          <a href="#features" className="jf-btn jf-btn-secondary px-4">
+            Features
+          </a>
+        </div>
+      </div>
     </main>
   );
 }
