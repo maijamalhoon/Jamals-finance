@@ -1,76 +1,121 @@
 "use client";
 
+import type { CSSProperties, ReactNode } from "react";
 import { useEffect, useRef, useState } from "react";
-import type { ReactNode } from "react";
 
 type ChartSize = {
   width: number;
   height: number;
 };
 
-type ChartFrameChildren = ReactNode | ((size: ChartSize) => ReactNode);
+type ChartFrameProps = {
+  children: (size: ChartSize) => ReactNode;
+  className?: string;
+  style?: CSSProperties;
+  tone?: string;
+};
+
+const MIN_RENDER_WIDTH = 16;
+const MIN_RENDER_HEIGHT = 16;
+
+function getElementSize(element: HTMLDivElement | null) {
+  if (!element) {
+    return {
+      width: 0,
+      height: 0,
+    };
+  }
+
+  const rect = element.getBoundingClientRect();
+
+  return {
+    width: Math.max(0, Math.floor(rect.width)),
+    height: Math.max(0, Math.floor(rect.height)),
+  };
+}
 
 export default function ChartFrame({
-  className,
-  tone = "orange",
   children,
-}: {
-  className: string;
-  tone?: "orange" | "green" | "blue";
-  children: ChartFrameChildren;
-}) {
-  const frameRef = useRef<HTMLDivElement>(null);
-  const [ready, setReady] = useState(false);
-  const [size, setSize] = useState<ChartSize | null>(null);
+  className = "",
+  style,
+  tone = "default",
+}: ChartFrameProps) {
+  const frameRef = useRef<HTMLDivElement | null>(null);
+  const animationFrameRef = useRef<number | null>(null);
+
+  const [size, setSize] = useState<ChartSize>({
+    width: 0,
+    height: 0,
+  });
 
   useEffect(() => {
-    const frame = frameRef.current;
-    if (!frame) return;
+    const element = frameRef.current;
 
-    let raf = 0;
-    const measure = () => {
-      window.cancelAnimationFrame(raf);
-      raf = window.requestAnimationFrame(() => {
-        const rect = frame.getBoundingClientRect();
-        const nextSize = {
-          width: Math.max(1, Math.floor(rect.width)),
-          height: Math.max(1, Math.floor(rect.height)),
-        };
-        const canRender = nextSize.width > 1 && nextSize.height > 1;
+    if (!element) return;
 
-        if (!canRender) {
-          setSize(null);
-          setReady(false);
-          return;
+    const updateSize = () => {
+      const nextSize = getElementSize(element);
+
+      setSize((currentSize) => {
+        if (
+          currentSize.width === nextSize.width &&
+          currentSize.height === nextSize.height
+        ) {
+          return currentSize;
         }
 
-        setSize((current) =>
-          current?.width === nextSize.width && current?.height === nextSize.height ?
-            current
-          : nextSize,
-        );
-        setReady(true);
+        return nextSize;
       });
     };
 
-    measure();
+    const scheduleUpdate = () => {
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+      }
 
-    const observer = new ResizeObserver(measure);
-    observer.observe(frame);
+      animationFrameRef.current = requestAnimationFrame(updateSize);
+    };
+
+    scheduleUpdate();
+
+    if (typeof ResizeObserver === "undefined") {
+      window.addEventListener("resize", scheduleUpdate);
+
+      return () => {
+        if (animationFrameRef.current) {
+          cancelAnimationFrame(animationFrameRef.current);
+        }
+
+        window.removeEventListener("resize", scheduleUpdate);
+      };
+    }
+
+    const resizeObserver = new ResizeObserver(scheduleUpdate);
+
+    resizeObserver.observe(element);
 
     return () => {
-      window.cancelAnimationFrame(raf);
-      observer.disconnect();
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+      }
+
+      resizeObserver.disconnect();
     };
   }, []);
 
+  const isReady =
+    size.width >= MIN_RENDER_WIDTH && size.height >= MIN_RENDER_HEIGHT;
+
   return (
-    <div ref={frameRef} className={className} style={{ minHeight: 1, minWidth: 1 }}>
-      {ready && size ?
-        <div className="finance-graph-ready h-full min-h-px w-full min-w-px">
-          {typeof children === "function" ? children(size) : children}
-        </div>
-      : <div className={`finance-graph-loader finance-graph-loader-${tone}`} />}
+    <div
+      ref={frameRef}
+      className={`relative w-full min-w-0 ${className}`}
+      data-chart-tone={tone}
+      style={style}
+    >
+      {isReady ?
+        children(size)
+      : <div aria-hidden="true" className="h-full w-full" />}
     </div>
   );
 }
