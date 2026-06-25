@@ -54,7 +54,7 @@ export const metadata: Metadata = {
     locale: "en_US",
   },
   twitter: {
-    card: "summary",
+    card: "summary_large_image",
     title: "Jamal's Finance — Premium Personal Finance Dashboard",
     description:
       "Track accounts, expenses, income, goals, liabilities, investments, and savings in one secure personal finance workspace.",

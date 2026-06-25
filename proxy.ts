@@ -33,10 +33,12 @@ export async function proxy(request: NextRequest) {
 
   const pathname = request.nextUrl.pathname;
 
-  const isPublicRoute =
+ const isPublicRoute =
   pathname === "/" ||
   pathname === "/robots.txt" ||
   pathname === "/sitemap.xml" ||
+  pathname.startsWith("/opengraph-image") ||
+  pathname.startsWith("/twitter-image") ||
   pathname.startsWith("/login") ||
   pathname.startsWith("/auth/callback") ||
   pathname.startsWith("/reset-password");
