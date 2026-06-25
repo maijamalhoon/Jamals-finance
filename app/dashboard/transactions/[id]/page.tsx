@@ -122,10 +122,11 @@ function buildReceiptText(receipt: Omit<ReceiptData, "receiptText">) {
 }
 
 function mapTransactionReceipt(transaction: any): ReceiptData {
-  const type = transaction.type === "income" ? "income" : "expense";
+  const type: ReceiptType =
+    transaction.type === "income" ? "income" : "expense";
   const meta = TYPE_META[type];
 
-  const baseReceipt = {
+  const baseReceipt: Omit<ReceiptData, "receiptText"> = {
     id: transaction.id,
     type,
     typeLabel: meta.label,
@@ -160,7 +161,7 @@ function mapTransactionReceipt(transaction: any): ReceiptData {
 function mapTransferReceipt(transfer: any): ReceiptData {
   const meta = TYPE_META.transfer;
 
-  const baseReceipt = {
+  const baseReceipt: Omit<ReceiptData, "receiptText"> = {
     id: transfer.id,
     type: "transfer" as const,
     typeLabel: meta.label,
