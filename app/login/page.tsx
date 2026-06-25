@@ -14,7 +14,6 @@ import {
   LoaderCircle,
   LockKeyhole,
   Mail,
-  Phone,
   ShieldCheck,
   Sparkles,
   TrendingUp,
@@ -24,30 +23,19 @@ import {
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 
-type Step =
-  | "email"
-  | "login"
-  | "signup"
-  | "forgot"
-  | "check-email"
-  | "phone"
-  | "phone-otp";
+type Step = "email" | "login" | "signup" | "forgot" | "check-email";
 
 type LoadingMode =
   | "checking"
   | "signing"
   | "creating"
   | "google"
-  | "apple"
   | "sending"
-  | "phone"
-  | "otp"
   | null;
 
-type OAuthProvider = "google" | "apple";
+type OAuthProvider = "google";
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const phoneRegex = /^\+[1-9]\d{7,14}$/;
 
 const inputBaseClass =
   "h-12 w-full rounded-lg border border-[rgba(255,255,255,0.14)] bg-[rgba(255,255,255,0.075)] px-4 text-[15px] font-medium text-[rgba(248,251,255,0.96)] outline-none transition placeholder:text-[rgba(248,251,255,0.36)] hover:border-[rgba(255,255,255,0.22)] hover:bg-[rgba(255,255,255,0.1)] focus:border-[#8ec5ff] focus:bg-[rgba(255,255,255,0.11)] focus:ring-4 focus:ring-[rgba(96,165,250,0.18)]";
@@ -56,31 +44,8 @@ function cleanEmail(value: string) {
   return value.trim().toLowerCase();
 }
 
-function normalizePhone(value: string) {
-  const compact = value.replace(/[^\d+]/g, "");
-  const digitsOnly = compact.replace(/\D/g, "");
-
-  if (compact.startsWith("00")) {
-    return `+${digitsOnly.slice(2)}`;
-  }
-
-  if (compact.startsWith("+")) {
-    return `+${digitsOnly}`;
-  }
-
-  if (compact.startsWith("0") && compact.length >= 10) {
-    return `+92${digitsOnly.slice(1)}`;
-  }
-
-  if (digitsOnly.length >= 8 && digitsOnly.length <= 15) {
-    return `+${digitsOnly}`;
-  }
-
-  return digitsOnly;
-}
-
 function getOAuthError(provider: OAuthProvider, message?: string) {
-  const providerLabel = provider === "google" ? "Google" : "Apple";
+  const providerLabel = provider === "google" ? "Google" : "Google";
   const lower = message?.toLowerCase() ?? "";
 
   if (
@@ -91,51 +56,6 @@ function getOAuthError(provider: OAuthProvider, message?: string) {
   }
 
   return message || `${providerLabel} sign-in could not be completed.`;
-}
-
-function getPhoneError(message?: string, action: "send" | "verify" = "send") {
-  const lower = message?.toLowerCase() ?? "";
-
-  if (
-    lower.includes("rate") ||
-    lower.includes("too many") ||
-    lower.includes("over limit")
-  ) {
-    return "Please wait a moment before requesting another WhatsApp code.";
-  }
-
-  if (
-    lower.includes("invalid phone") ||
-    lower.includes("valid phone") ||
-    lower.includes("e.164") ||
-    lower.includes("format")
-  ) {
-    return "Enter a valid phone number in international format, e.g. +923282685435.";
-  }
-
-  if (
-    action === "verify" &&
-    (lower.includes("expired") ||
-      lower.includes("invalid token") ||
-      lower.includes("invalid otp") ||
-      lower.includes("otp"))
-  ) {
-    return "That WhatsApp code did not match or has expired. Check it and try again.";
-  }
-
-  if (
-    lower.includes("sms") ||
-    lower.includes("whatsapp") ||
-    lower.includes("twilio") ||
-    lower.includes("phone") ||
-    lower.includes("provider") ||
-    lower.includes("channel") ||
-    lower.includes("not enabled")
-  ) {
-    return "Phone login requires the Phone provider and Twilio Verify with WhatsApp to be enabled in Supabase Auth.";
-  }
-
-  return "Phone login could not be completed. Please try again.";
 }
 
 function GoogleLogo() {
@@ -156,17 +76,6 @@ function GoogleLogo() {
       <path
         fill="#1976D2"
         d="M43.6 20.5H42V20H24v8h11.3c-.8 2.4-2.3 4.3-4.1 5.6l6.2 5.2C36.9 39.3 44 34 44 24c0-1.3-.1-2.4-.4-3.5Z"
-      />
-    </svg>
-  );
-}
-
-function AppleLogo() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
-      <path
-        fill="currentColor"
-        d="M17.1 12.7c0-2.4 2-3.6 2.1-3.7-1.1-1.7-2.9-1.9-3.5-1.9-1.5-.2-2.9.9-3.7.9-.8 0-2-.9-3.3-.9-1.7 0-3.3 1-4.2 2.5-1.8 3.1-.5 7.8 1.3 10.3.9 1.2 1.9 2.6 3.2 2.5 1.3-.1 1.8-.8 3.3-.8s2 .8 3.4.8c1.4 0 2.3-1.2 3.1-2.5 1-1.4 1.4-2.8 1.4-2.9-.1 0-2.8-1.1-2.8-4.3h-.3ZM14.7 5.5c.7-.9 1.2-2.1 1.1-3.3-1.1 0-2.4.7-3.1 1.6-.7.8-1.3 2.1-1.1 3.2 1.2.1 2.4-.6 3.1-1.5Z"
       />
     </svg>
   );
@@ -199,11 +108,13 @@ function PrimaryButton({
       aria-busy={loading}
       className="group flex h-12 w-full items-center justify-center gap-2 rounded-lg bg-[#f8fbff] px-5 text-[15px] font-bold text-[#07101f] shadow-[0_18px_44px_rgba(216,235,255,0.16)] transition hover:bg-[#eaf5ff] disabled:cursor-not-allowed disabled:opacity-80"
     >
-      {loading ? <ButtonSpinner /> : null}
+      {loading ?
+        <ButtonSpinner />
+      : null}
       <span>{children}</span>
-      {!loading ? (
+      {!loading ?
         <ArrowRight className="h-4 w-4 transition group-hover:translate-x-0.5" />
-      ) : null}
+      : null}
     </motion.button>
   );
 }
@@ -232,7 +143,9 @@ function SocialButton({
       className="flex h-12 w-full items-center justify-center gap-3 rounded-lg border border-[rgba(255,255,255,0.13)] bg-[rgba(255,255,255,0.075)] text-[15px] font-semibold text-[rgba(248,251,255,0.94)] shadow-[0_10px_24px_rgba(0,0,0,0.12)] transition hover:border-[rgba(255,255,255,0.22)] hover:bg-[rgba(255,255,255,0.12)] disabled:cursor-not-allowed disabled:opacity-70"
     >
       <span className="grid h-5 w-5 place-items-center">
-        {loading ? <ButtonSpinner /> : icon}
+        {loading ?
+          <ButtonSpinner />
+        : icon}
       </span>
       <span>{children}</span>
     </motion.button>
@@ -255,11 +168,11 @@ function Field({
       </span>
 
       <div className="relative">
-        {icon ? (
+        {icon ?
           <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[rgba(248,251,255,0.46)]">
             {icon}
           </span>
-        ) : null}
+        : null}
 
         {children}
       </div>
@@ -275,11 +188,11 @@ function Feedback({
   children: ReactNode;
 }) {
   const toneClass =
-    tone === "error"
-      ? "border-[rgba(248,113,113,0.26)] bg-[rgba(239,68,68,0.14)] text-[#fecaca]"
-      : tone === "success"
-        ? "border-[rgba(52,211,153,0.24)] bg-[rgba(16,185,129,0.12)] text-[#bbf7d0]"
-        : "border-[rgba(125,211,252,0.22)] bg-[rgba(14,165,233,0.12)] text-[#bae6fd]";
+    tone === "error" ?
+      "border-[rgba(248,113,113,0.26)] bg-[rgba(239,68,68,0.14)] text-[#fecaca]"
+    : tone === "success" ?
+      "border-[rgba(52,211,153,0.24)] bg-[rgba(16,185,129,0.12)] text-[#bbf7d0]"
+    : "border-[rgba(125,211,252,0.22)] bg-[rgba(14,165,233,0.12)] text-[#bae6fd]";
 
   return (
     <motion.p
@@ -442,14 +355,14 @@ function MobileHighlights() {
 export default function LoginPage() {
   const supabase = useMemo(() => createClient(), []);
   const router = useRouter();
+  const enableGoogleAuth =
+    process.env.NEXT_PUBLIC_ENABLE_GOOGLE_AUTH === "true";
 
   const [step, setStep] = useState<Step>("email");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
   const [age, setAge] = useState("");
-  const [phone, setPhone] = useState("");
-  const [phoneOtp, setPhoneOtp] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loadingMode, setLoadingMode] = useState<LoadingMode>(null);
   const [error, setError] = useState("");
@@ -465,7 +378,6 @@ export default function LoginPage() {
   function backToEmail() {
     resetFeedback();
     setPassword("");
-    setPhoneOtp("");
     setStep("email");
   }
 
@@ -575,7 +487,9 @@ export default function LoginPage() {
 
       if (signUpError.message.toLowerCase().includes("already")) {
         setStep("login");
-        setError("An account already exists for this email. Log in with your password.");
+        setError(
+          "An account already exists for this email. Log in with your password.",
+        );
         return;
       }
 
@@ -602,10 +516,7 @@ export default function LoginPage() {
       provider,
       options: {
         redirectTo: `${window.location.origin}/auth/callback?next=/onboarding`,
-        queryParams:
-          provider === "google"
-            ? { access_type: "offline", prompt: "consent" }
-            : undefined,
+        queryParams: { access_type: "offline", prompt: "consent" },
       },
     });
 
@@ -613,74 +524,6 @@ export default function LoginPage() {
       setLoadingMode(null);
       setError(getOAuthError(provider, oauthError.message));
     }
-  }
-
-  async function handlePhoneOtpSend(event: FormEvent) {
-    event.preventDefault();
-    resetFeedback();
-
-    const nextPhone = normalizePhone(phone);
-
-    if (!phoneRegex.test(nextPhone)) {
-      setError("Enter a phone number with country code, e.g. +923001234567.");
-      return;
-    }
-
-    setPhone(nextPhone);
-    setLoadingMode("phone");
-
-    const { error: phoneError } = await supabase.auth.signInWithOtp({
-      phone: nextPhone,
-      options: {
-        channel: "whatsapp",
-      },
-    });
-
-    setLoadingMode(null);
-
-    if (phoneError) {
-      setError(getPhoneError(phoneError.message, "send"));
-      return;
-    }
-
-    setStep("phone-otp");
-    setMessage(`A WhatsApp code has been sent to ${nextPhone}.`);
-  }
-
-  async function handlePhoneOtpVerify(event: FormEvent) {
-    event.preventDefault();
-    resetFeedback();
-
-    const token = phoneOtp.replace(/\D/g, "");
-    const phoneNumber = normalizePhone(phone);
-
-    if (token.length !== 6) {
-      setError("Enter the 6 digit WhatsApp code.");
-      return;
-    }
-
-    if (!phoneRegex.test(phoneNumber)) {
-      setError("Enter a phone number with country code, e.g. +923282685435.");
-      return;
-    }
-
-    setPhone(phoneNumber);
-    setLoadingMode("otp");
-
-    const { error: otpError } = await supabase.auth.verifyOtp({
-      phone: phoneNumber,
-      token,
-      type: "sms",
-    });
-
-    if (otpError) {
-      setLoadingMode(null);
-      setError(getPhoneError(otpError.message, "verify"));
-      return;
-    }
-
-    router.replace("/onboarding");
-    router.refresh();
   }
 
   async function handleForgotPassword(event: FormEvent) {
@@ -715,34 +558,21 @@ export default function LoginPage() {
   }
 
   const title =
-    step === "email"
-      ? "Log in or sign up"
-      : step === "login"
-        ? "Welcome back"
-        : step === "signup"
-          ? "Create your account"
-          : step === "forgot"
-            ? "Reset password"
-            : step === "phone"
-              ? "Continue with phone"
-            : step === "phone-otp"
-                ? "Verify WhatsApp code"
-                : "Check your email";
+    step === "email" ? "Log in or sign up"
+    : step === "login" ? "Welcome back"
+    : step === "signup" ? "Create your account"
+    : step === "forgot" ? "Reset password"
+    : "Check your email";
 
   const subtitle =
-    step === "email"
-      ? "Secure access for your personal finance dashboard."
-      : step === "login"
-        ? "This account already exists. Enter your password to continue."
-        : step === "signup"
-          ? "This email is new. Add your details to finish signup."
-          : step === "forgot"
-            ? "Enter your email and we will send a secure reset link."
-            : step === "phone"
-              ? "Use a phone number with country code."
-            : step === "phone-otp"
-                ? message || "Enter the 6 digit WhatsApp code."
-                : message || "Open your inbox and follow the secure link.";
+    step === "email" ? "Secure access for your personal finance dashboard."
+    : step === "login" ?
+      "This account already exists. Enter your password to continue."
+    : step === "signup" ?
+      "This email is new. Add your details to finish signup."
+    : step === "forgot" ?
+      "Enter your email and we will send a secure reset link."
+    : message || "Open your inbox and follow the secure link.";
 
   return (
     <main className="jf-auth-page relative min-h-dvh overflow-x-hidden bg-[linear-gradient(135deg,#07111a_0%,#0c1724_48%,#121523_100%)] px-4 py-5 text-[#f8fbff] sm:px-6 lg:px-8">
@@ -771,7 +601,7 @@ export default function LoginPage() {
                 <X className="h-5 w-5" />
               </button>
 
-              {step !== "email" ? (
+              {step !== "email" ?
                 <button
                   type="button"
                   onClick={backToEmail}
@@ -780,9 +610,7 @@ export default function LoginPage() {
                   <ArrowLeft className="h-4 w-4" />
                   Back
                 </button>
-              ) : (
-                <div className="h-10" />
-              )}
+              : <div className="h-10" />}
 
               <div className="mb-7 text-center">
                 <div className="mx-auto mb-4 grid h-12 w-12 place-items-center rounded-lg border border-[rgba(255,255,255,0.13)] bg-[rgba(255,255,255,0.09)] shadow-[0_16px_36px_rgba(59,130,246,0.16)]">
@@ -799,7 +627,7 @@ export default function LoginPage() {
               </div>
 
               <AnimatePresence mode="wait">
-                {step === "email" ? (
+                {step === "email" ?
                   <motion.form
                     key="email"
                     onSubmit={handleEmailContinue}
@@ -808,42 +636,26 @@ export default function LoginPage() {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -8 }}
                   >
-                    <SocialButton
-                      icon={<GoogleLogo />}
-                      onClick={() => handleOAuthSignIn("google")}
-                      disabled={isLoading}
-                      loading={loadingMode === "google"}
-                    >
-                      Continue with Google
-                    </SocialButton>
+                    {enableGoogleAuth ?
+                      <>
+                        <SocialButton
+                          icon={<GoogleLogo />}
+                          onClick={() => handleOAuthSignIn("google")}
+                          disabled={isLoading}
+                          loading={loadingMode === "google"}
+                        >
+                          Continue with Google
+                        </SocialButton>
 
-                    <SocialButton
-                      icon={<AppleLogo />}
-                      onClick={() => handleOAuthSignIn("apple")}
-                      disabled={isLoading}
-                      loading={loadingMode === "apple"}
-                    >
-                      Continue with Apple
-                    </SocialButton>
-
-                    <SocialButton
-                      icon={<Phone className="h-4 w-4" />}
-                      onClick={() => {
-                        resetFeedback();
-                        setStep("phone");
-                      }}
-                      disabled={isLoading}
-                    >
-                      Continue with phone
-                    </SocialButton>
-
-                    <div className="flex items-center gap-5 py-2">
-                      <span className="h-px flex-1 bg-[rgba(255,255,255,0.13)]" />
-                      <span className="text-xs font-semibold text-[rgba(248,251,255,0.46)]">
-                        OR
-                      </span>
-                      <span className="h-px flex-1 bg-[rgba(255,255,255,0.13)]" />
-                    </div>
+                        <div className="flex items-center gap-5 py-2">
+                          <span className="h-px flex-1 bg-[rgba(255,255,255,0.13)]" />
+                          <span className="text-xs font-semibold text-[rgba(255,255,255,0.46)]">
+                            OR
+                          </span>
+                          <span className="h-px flex-1 bg-[rgba(255,255,255,0.13)]" />
+                        </div>
+                      </>
+                    : null}
 
                     <Field
                       label="Email address"
@@ -860,19 +672,21 @@ export default function LoginPage() {
                       />
                     </Field>
 
-                    {error ? <Feedback tone="error">{error}</Feedback> : null}
+                    {error ?
+                      <Feedback tone="error">{error}</Feedback>
+                    : null}
 
                     <PrimaryButton
                       type="submit"
                       disabled={isLoading}
                       loading={loadingMode === "checking"}
                     >
-                      Continue
+                      Continue with email
                     </PrimaryButton>
                   </motion.form>
-                ) : null}
+                : null}
 
-                {step === "login" ? (
+                {step === "login" ?
                   <motion.form
                     key="login"
                     onSubmit={handleLogin}
@@ -907,15 +721,15 @@ export default function LoginPage() {
                           showPassword ? "Hide password" : "Show password"
                         }
                       >
-                        {showPassword ? (
+                        {showPassword ?
                           <EyeOff className="h-4 w-4" />
-                        ) : (
-                          <Eye className="h-4 w-4" />
-                        )}
+                        : <Eye className="h-4 w-4" />}
                       </button>
                     </Field>
 
-                    {error ? <Feedback tone="error">{error}</Feedback> : null}
+                    {error ?
+                      <Feedback tone="error">{error}</Feedback>
+                    : null}
 
                     <PrimaryButton
                       type="submit"
@@ -937,9 +751,9 @@ export default function LoginPage() {
                       Forgot password?
                     </button>
                   </motion.form>
-                ) : null}
+                : null}
 
-                {step === "signup" ? (
+                {step === "signup" ?
                   <motion.form
                     key="signup"
                     onSubmit={handleSignup}
@@ -1001,11 +815,9 @@ export default function LoginPage() {
                           showPassword ? "Hide password" : "Show password"
                         }
                       >
-                        {showPassword ? (
+                        {showPassword ?
                           <EyeOff className="h-4 w-4" />
-                        ) : (
-                          <Eye className="h-4 w-4" />
-                        )}
+                        : <Eye className="h-4 w-4" />}
                       </button>
                     </Field>
 
@@ -1014,7 +826,9 @@ export default function LoginPage() {
                       Your profile will be stored securely in Supabase.
                     </div>
 
-                    {error ? <Feedback tone="error">{error}</Feedback> : null}
+                    {error ?
+                      <Feedback tone="error">{error}</Feedback>
+                    : null}
 
                     <PrimaryButton
                       type="submit"
@@ -1024,88 +838,9 @@ export default function LoginPage() {
                       Create account
                     </PrimaryButton>
                   </motion.form>
-                ) : null}
+                : null}
 
-                {step === "phone" ? (
-                  <motion.form
-                    key="phone"
-                    onSubmit={handlePhoneOtpSend}
-                    className="space-y-4"
-                    initial={{ opacity: 0, y: 8 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -8 }}
-                  >
-                    <Field label="Phone number" icon={<Phone className="h-4 w-4" />}>
-                      <input
-                        value={phone}
-                        onChange={(event) => setPhone(event.target.value)}
-                        placeholder="+923001234567"
-                        autoComplete="tel"
-                        inputMode="tel"
-                        disabled={isLoading}
-                        className={`${inputBaseClass} pl-11 disabled:cursor-not-allowed disabled:opacity-70`}
-                      />
-                    </Field>
-
-                    {error ? <Feedback tone="error">{error}</Feedback> : null}
-
-                    <PrimaryButton
-                      type="submit"
-                      disabled={isLoading}
-                      loading={loadingMode === "phone"}
-                    >
-                      {loadingMode === "phone"
-                        ? "Sending WhatsApp code"
-                        : "Send WhatsApp code"}
-                    </PrimaryButton>
-                  </motion.form>
-                ) : null}
-
-                {step === "phone-otp" ? (
-                  <motion.form
-                    key="phone-otp"
-                    onSubmit={handlePhoneOtpVerify}
-                    className="space-y-4"
-                    initial={{ opacity: 0, y: 8 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -8 }}
-                  >
-                    <Feedback tone="success">{message}</Feedback>
-
-                    <Field
-                      label="WhatsApp code"
-                      icon={<ShieldCheck className="h-4 w-4" />}
-                    >
-                      <input
-                        value={phoneOtp}
-                        onChange={(event) =>
-                          setPhoneOtp(
-                            event.target.value.replace(/\D/g, "").slice(0, 6),
-                          )
-                        }
-                        placeholder="123456"
-                        inputMode="numeric"
-                        autoComplete="one-time-code"
-                        disabled={isLoading}
-                        className={`${inputBaseClass} pl-11 tracking-[0.34em] disabled:cursor-not-allowed disabled:opacity-70`}
-                      />
-                    </Field>
-
-                    {error ? <Feedback tone="error">{error}</Feedback> : null}
-
-                    <PrimaryButton
-                      type="submit"
-                      disabled={isLoading}
-                      loading={loadingMode === "otp"}
-                    >
-                      {loadingMode === "otp"
-                        ? "Verifying code"
-                        : "Verify and continue"}
-                    </PrimaryButton>
-                  </motion.form>
-                ) : null}
-
-                {step === "forgot" ? (
+                {step === "forgot" ?
                   <motion.form
                     key="forgot"
                     onSubmit={handleForgotPassword}
@@ -1129,7 +864,9 @@ export default function LoginPage() {
                       />
                     </Field>
 
-                    {error ? <Feedback tone="error">{error}</Feedback> : null}
+                    {error ?
+                      <Feedback tone="error">{error}</Feedback>
+                    : null}
 
                     <PrimaryButton
                       type="submit"
@@ -1139,9 +876,9 @@ export default function LoginPage() {
                       Send reset link
                     </PrimaryButton>
                   </motion.form>
-                ) : null}
+                : null}
 
-                {step === "check-email" ? (
+                {step === "check-email" ?
                   <motion.div
                     key="check-email"
                     className="space-y-4 text-center"
@@ -1162,7 +899,7 @@ export default function LoginPage() {
                       Back to login
                     </PrimaryButton>
                   </motion.div>
-                ) : null}
+                : null}
               </AnimatePresence>
 
               <div className="mt-7 flex items-center justify-center gap-2 text-center text-[11px] leading-5 text-[rgba(248,251,255,0.42)]">
