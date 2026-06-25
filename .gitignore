@@ -44,3 +44,10 @@ next-env.d.ts
 
 # Sentry Config File
 .env.sentry-build-plugin
+
+# Development logs
+*.log
+*.err.log
+*.out.log
+next-dev*.log
+.next-dev*.log
