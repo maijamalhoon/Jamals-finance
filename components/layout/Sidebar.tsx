@@ -57,19 +57,10 @@ export default function Sidebar() {
                       />
                     )}
 
-                    {active && (
-                      <motion.span
-                        layoutId="sidebar-active-line"
-                        className="absolute left-4 top-1/2 h-7 w-1.5 rounded-full bg-active/90"
-                        style={{ translateY: "-50%" }}
-                        transition={sidebarSpring}
-                      />
-                    )}
-
                     <span
                       className={`relative z-10 grid h-10 w-10 shrink-0 place-items-center rounded-[14px] border transition-all duration-200 ${
                         active
-                          ? "border-active/25 bg-active/15 text-active"
+                          ? "border-active/30 bg-active/15 text-active"
                           : "border-border/70 bg-surface text-text-secondary group-hover:border-border group-hover:bg-surface-secondary group-hover:text-text-primary"
                       }`}
                     >
