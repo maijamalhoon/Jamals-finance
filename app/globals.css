@@ -3052,3 +3052,313 @@ tbody tr:hover {
     animation-duration: 1ms !important;
   }
 }
+/* Empty states + loading skeleton premium polish (safe CSS-only patch) */
+[data-dashboard-shell]
+  :where(.finance-loading-panel, [class*="loading-panel"]) {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--border) 72%, transparent);
+  background:
+    radial-gradient(
+      circle at 18% 0%,
+      rgba(59, 130, 246, 0.08),
+      transparent 34%
+    ),
+    linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--card) 94%, transparent),
+      color-mix(in srgb, var(--surface-secondary) 58%, transparent)
+    );
+  box-shadow: 0 18px 44px rgba(15, 23, 42, 0.06);
+  backdrop-filter: blur(16px);
+}
+
+.dark
+  [data-dashboard-shell]
+  :where(.finance-loading-panel, [class*="loading-panel"]) {
+  background:
+    radial-gradient(
+      circle at 18% 0%,
+      rgba(59, 130, 246, 0.13),
+      transparent 36%
+    ),
+    linear-gradient(135deg, rgba(15, 23, 42, 0.72), rgba(15, 23, 42, 0.44));
+  box-shadow: 0 20px 54px rgba(0, 0, 0, 0.24);
+}
+
+[data-dashboard-shell]
+  :where(.finance-loading-panel, [class*="loading-panel"])::before {
+  content: "";
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(
+    120deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.22) 22%,
+    transparent 44%
+  );
+  opacity: 0.48;
+  transform: translateX(-120%);
+  animation: jfLoadingPanelSheen 2.8s ease-in-out infinite;
+}
+
+.dark
+  [data-dashboard-shell]
+  :where(.finance-loading-panel, [class*="loading-panel"])::before {
+  background: linear-gradient(
+    120deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.1) 22%,
+    transparent 44%
+  );
+}
+
+[data-dashboard-shell]
+  :where(.finance-skeleton, [class*="skeleton"]):not(.recharts-wrapper):not(
+    [class*="chart"]
+  ):not([class*="Chart"]) {
+  position: relative;
+  overflow: hidden;
+  border-radius: 9999px;
+  background: linear-gradient(
+    90deg,
+    rgba(148, 163, 184, 0.13),
+    rgba(148, 163, 184, 0.24),
+    rgba(148, 163, 184, 0.13)
+  );
+  background-size: 220% 100%;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18);
+  animation: jfSkeletonFlow 1.65s ease-in-out infinite;
+}
+
+.dark
+  [data-dashboard-shell]
+  :where(.finance-skeleton, [class*="skeleton"]):not(.recharts-wrapper):not(
+    [class*="chart"]
+  ):not([class*="Chart"]) {
+  background: linear-gradient(
+    90deg,
+    rgba(71, 85, 105, 0.22),
+    rgba(148, 163, 184, 0.2),
+    rgba(71, 85, 105, 0.22)
+  );
+  background-size: 220% 100%;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.07);
+}
+
+[data-dashboard-shell]
+  :where(
+    [data-empty-state],
+    .empty-state,
+    .finance-empty-state,
+    .jf-empty-state,
+    [class*="empty-state"],
+    [class*="EmptyState"]
+  ) {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--border) 74%, transparent);
+  border-radius: 28px;
+  background:
+    radial-gradient(circle at 50% 0%, rgba(34, 197, 94, 0.1), transparent 34%),
+    radial-gradient(
+      circle at 100% 100%,
+      rgba(59, 130, 246, 0.08),
+      transparent 30%
+    ),
+    color-mix(in srgb, var(--card) 92%, transparent);
+  box-shadow: 0 18px 50px rgba(15, 23, 42, 0.06);
+  animation: jfEmptyStateIn 480ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.dark
+  [data-dashboard-shell]
+  :where(
+    [data-empty-state],
+    .empty-state,
+    .finance-empty-state,
+    .jf-empty-state,
+    [class*="empty-state"],
+    [class*="EmptyState"]
+  ) {
+  background:
+    radial-gradient(circle at 50% 0%, rgba(34, 197, 94, 0.14), transparent 34%),
+    radial-gradient(
+      circle at 100% 100%,
+      rgba(59, 130, 246, 0.12),
+      transparent 30%
+    ),
+    rgba(15, 23, 42, 0.66);
+  box-shadow: 0 20px 54px rgba(0, 0, 0, 0.22);
+}
+
+[data-dashboard-shell]
+  :where(
+    [data-empty-state],
+    .empty-state,
+    .finance-empty-state,
+    .jf-empty-state,
+    [class*="empty-state"],
+    [class*="EmptyState"]
+  )
+  :where(svg) {
+  filter: drop-shadow(0 12px 18px rgba(59, 130, 246, 0.18));
+  transform-origin: center;
+  animation: jfEmptyIconFloat 4.6s ease-in-out infinite;
+}
+
+[data-dashboard-shell]
+  :where(
+    [data-empty-state],
+    .empty-state,
+    .finance-empty-state,
+    .jf-empty-state,
+    [class*="empty-state"],
+    [class*="EmptyState"]
+  )
+  :where(a, button) {
+  transition:
+    transform 180ms ease,
+    box-shadow 180ms ease,
+    border-color 180ms ease,
+    background-color 180ms ease;
+}
+
+[data-dashboard-shell]
+  :where(
+    [data-empty-state],
+    .empty-state,
+    .finance-empty-state,
+    .jf-empty-state,
+    [class*="empty-state"],
+    [class*="EmptyState"]
+  )
+  :where(a, button):hover {
+  transform: translateY(-1px);
+  box-shadow: 0 12px 26px rgba(59, 130, 246, 0.14);
+}
+
+[data-dashboard-shell]
+  :where(
+    [data-empty-state],
+    .empty-state,
+    .finance-empty-state,
+    .jf-empty-state,
+    [class*="empty-state"],
+    [class*="EmptyState"]
+  )
+  :where(a, button):active {
+  transform: translateY(0) scale(0.99);
+}
+
+[data-dashboard-shell]
+  :where([aria-busy="true"], [data-loading="true"]):not(.recharts-wrapper):not(
+    [class*="chart"]
+  ):not([class*="Chart"]) {
+  cursor: progress;
+}
+
+[data-dashboard-shell]
+  :where([aria-busy="true"], [data-loading="true"]):not(.recharts-wrapper):not(
+    [class*="chart"]
+  ):not([class*="Chart"])
+  :where(button, a, input, select, textarea) {
+  pointer-events: none;
+}
+
+@keyframes jfSkeletonFlow {
+  0% {
+    background-position: 120% 0;
+  }
+
+  100% {
+    background-position: -120% 0;
+  }
+}
+
+@keyframes jfLoadingPanelSheen {
+  0% {
+    transform: translateX(-125%);
+  }
+
+  45%,
+  100% {
+    transform: translateX(125%);
+  }
+}
+
+@keyframes jfEmptyStateIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.985);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes jfEmptyIconFloat {
+  0%,
+  100% {
+    transform: translateY(0) scale(1);
+  }
+
+  50% {
+    transform: translateY(-3px) scale(1.025);
+  }
+}
+
+@media (max-width: 639px) {
+  [data-dashboard-shell]
+    :where(.finance-loading-panel, [class*="loading-panel"]) {
+    border-radius: 22px;
+  }
+
+  [data-dashboard-shell]
+    :where(
+      [data-empty-state],
+      .empty-state,
+      .finance-empty-state,
+      .jf-empty-state,
+      [class*="empty-state"],
+      [class*="EmptyState"]
+    ) {
+    border-radius: 24px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-dashboard-shell]
+    :where(.finance-loading-panel, [class*="loading-panel"])::before,
+  [data-dashboard-shell]
+    :where(.finance-skeleton, [class*="skeleton"]):not(.recharts-wrapper):not(
+      [class*="chart"]
+    ):not([class*="Chart"]),
+  [data-dashboard-shell]
+    :where(
+      [data-empty-state],
+      .empty-state,
+      .finance-empty-state,
+      .jf-empty-state,
+      [class*="empty-state"],
+      [class*="EmptyState"]
+    ),
+  [data-dashboard-shell]
+    :where(
+      [data-empty-state],
+      .empty-state,
+      .finance-empty-state,
+      .jf-empty-state,
+      [class*="empty-state"],
+      [class*="EmptyState"]
+    )
+    :where(svg) {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 1ms !important;
+  }
+}
