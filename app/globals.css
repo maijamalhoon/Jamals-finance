@@ -2898,3 +2898,157 @@ tbody tr:hover {
     transition-duration: 1ms !important;
   }
 }
+/* Navigation/header/sidebar safe polish — no chart selectors touched */
+.jf-dashboard-header-wrap,
+.jf-dashboard-sidebar-wrap,
+.jf-mobile-nav-shell {
+  transform: translateZ(0);
+}
+
+.jf-dashboard-header-wrap {
+  position: relative;
+  z-index: 30;
+}
+
+.jf-dashboard-header-wrap::after {
+  content: "";
+  pointer-events: none;
+  position: absolute;
+  inset-inline: 0;
+  bottom: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in srgb, var(--border, #cbd5e1) 72%, transparent),
+    transparent
+  );
+  opacity: 0.7;
+}
+
+.jf-dashboard-header-wrap input,
+.jf-dashboard-header-wrap button,
+.jf-dashboard-header-wrap a,
+.jf-dashboard-sidebar-wrap a,
+.jf-dashboard-sidebar-wrap button,
+.jf-mobile-nav-shell a {
+  -webkit-tap-highlight-color: transparent;
+}
+
+.jf-dashboard-header-wrap input,
+.jf-dashboard-header-wrap [role="searchbox"] {
+  transition:
+    border-color 180ms ease,
+    background-color 180ms ease,
+    box-shadow 180ms ease,
+    transform 180ms ease;
+}
+
+.jf-dashboard-header-wrap input:focus,
+.jf-dashboard-header-wrap [role="searchbox"]:focus {
+  box-shadow: 0 0 0 4px
+    color-mix(in srgb, var(--active, #3b82f6) 14%, transparent);
+}
+
+.jf-dashboard-header-wrap button,
+.jf-dashboard-header-wrap a,
+.jf-dashboard-sidebar-wrap a,
+.jf-dashboard-sidebar-wrap button {
+  transition:
+    border-color 180ms ease,
+    background-color 180ms ease,
+    color 180ms ease,
+    box-shadow 180ms ease,
+    transform 180ms ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .jf-dashboard-header-wrap button:hover,
+  .jf-dashboard-header-wrap a:hover,
+  .jf-dashboard-sidebar-wrap a:hover,
+  .jf-dashboard-sidebar-wrap button:hover {
+    transform: translateY(-1px);
+  }
+}
+
+.jf-dashboard-header-wrap button:active,
+.jf-dashboard-header-wrap a:active,
+.jf-dashboard-sidebar-wrap a:active,
+.jf-dashboard-sidebar-wrap button:active,
+.jf-mobile-nav-shell a:active {
+  transform: scale(0.985);
+}
+
+.jf-dashboard-sidebar-wrap {
+  isolation: isolate;
+}
+
+.jf-dashboard-sidebar-wrap::after {
+  content: "";
+  pointer-events: none;
+  position: absolute;
+  inset-block: 1.25rem;
+  right: 0;
+  width: 1px;
+  background: linear-gradient(
+    180deg,
+    transparent,
+    color-mix(in srgb, var(--border, #cbd5e1) 65%, transparent),
+    transparent
+  );
+  opacity: 0.72;
+}
+
+.jf-dashboard-sidebar-wrap a[aria-current="page"],
+.jf-dashboard-sidebar-wrap a[data-active="true"] {
+  box-shadow:
+    0 14px 36px color-mix(in srgb, var(--active, #3b82f6) 16%, transparent),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.jf-mobile-nav-shell > div {
+  box-shadow:
+    0 22px 52px rgba(15, 23, 42, 0.16),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.dark .jf-mobile-nav-shell > div {
+  box-shadow:
+    0 24px 60px rgba(0, 0, 0, 0.36),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+.jf-mobile-nav-shell a[aria-current="page"] {
+  position: relative;
+  overflow: hidden;
+}
+
+.jf-mobile-nav-shell a[aria-current="page"]::after {
+  content: "";
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(
+    120deg,
+    rgba(255, 255, 255, 0.22),
+    transparent 45%
+  );
+  opacity: 0.55;
+}
+
+@media (max-width: 1023px) {
+  .jf-dashboard-header-wrap::after,
+  .jf-dashboard-sidebar-wrap::after {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .jf-dashboard-header-wrap *,
+  .jf-dashboard-sidebar-wrap *,
+  .jf-mobile-nav-shell * {
+    transition-duration: 1ms !important;
+    animation-duration: 1ms !important;
+  }
+}
