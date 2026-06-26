@@ -59,7 +59,7 @@ export default function MonthlyChart({ data }: Props) {
         Monthly Overview (Last 6 Months)
       </h3>
       <ChartFrame className="h-[260px] min-h-[260px] min-w-0 overflow-hidden">
-        <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1}>
+        <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1} initialDimension={{ width: 720, height: 280 }}>
           <BarChart
             data={data}
             margin={{ top: 5, right: 5, left: -20, bottom: 0 }}

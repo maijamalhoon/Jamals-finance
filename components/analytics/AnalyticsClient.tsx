@@ -644,7 +644,7 @@ function IncomeExpenseChart({
       animationKey={chartKey}
     >
       <div className="h-[230px]">
-        <ResponsiveContainer width="100%" height="100%">
+        <ResponsiveContainer width="100%" height="100%" initialDimension={{ width: 720, height: 280 }}>
           <BarChart key={chartKey} data={data} barGap={10} barCategoryGap="30%">
             <CartesianGrid
               stroke="var(--border)"
@@ -722,7 +722,7 @@ function NetWorthChart({
       animationKey={chartKey}
     >
       <div className="h-[200px]">
-        <ResponsiveContainer width="100%" height="100%">
+        <ResponsiveContainer width="100%" height="100%" initialDimension={{ width: 720, height: 280 }}>
           <AreaChart key={chartKey} data={data}>
             <defs>
               <linearGradient
@@ -813,7 +813,7 @@ function SpendingBreakdown({
     >
       <div className="grid h-[200px] grid-cols-1 items-center gap-3 sm:grid-cols-[0.95fr_1.25fr]">
         <div className="h-[170px]">
-          <ResponsiveContainer width="100%" height="100%">
+          <ResponsiveContainer width="100%" height="100%" initialDimension={{ width: 720, height: 280 }}>
             <PieChart key={chartKey}>
               <Pie
                 data={chartData}
