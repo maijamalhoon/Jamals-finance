@@ -1,5 +1,4 @@
 import { createClient } from "@/lib/supabase/server";
-
 import MetricCard from "@/components/dashboard/MetricCard";
 import IncomeExpenseChart from "@/components/dashboard/IncomeExpenseChart";
 import SpendingBreakdown from "@/components/dashboard/SpendingBreakdown";
@@ -9,6 +8,14 @@ import FinancePulseCard from "@/components/dashboard/FinancePulseCard";
 import InvestmentOverviewWidget from "@/components/dashboard/InvestmentOverviewWidget";
 import SpendRecordWidget from "@/components/dashboard/SpendRecordWidget";
 import ChartCard from "@/components/dashboard/ChartCard";
+import {
+  formatAppMonth,
+  formatAppMonthYear,
+  formatDateKey,
+  getAppDateKey,
+  getAppMonthRange,
+  normalizeDateKey,
+} from "@/lib/dates";
 import {
   DashboardMotion,
   DashboardMotionItem,
@@ -49,22 +56,6 @@ type DashboardGoal = {
   icon: string | null;
 };
 
-function toLocalDateKey(date: Date) {
-  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(
-    2,
-    "0",
-  )}-${String(date.getDate()).padStart(2, "0")}`;
-}
-
-function normalizeDateKey(value: Date | string | null | undefined) {
-  if (!value) return null;
-  if (value instanceof Date) return toLocalDateKey(value);
-  if (/^\d{4}-\d{2}-\d{2}$/.test(value)) return value;
-
-  const parsed = new Date(value);
-  return Number.isNaN(parsed.getTime()) ? null : toLocalDateKey(parsed);
-}
-
 function isDateInRange(
   value: Date | string | null | undefined,
   start: string,
@@ -81,35 +72,31 @@ function fmt(value: number) {
 }
 
 function pct(current: number, previous: number) {
-  if (previous > 0) {
-    return Number((((current - previous) / previous) * 100).toFixed(2));
+  if (previous !== 0) {
+    return Number((((current - previous) / Math.abs(previous)) * 100).toFixed(2));
   }
 
-  return current > 0 ? 100 : 0;
+  if (current > 0) return 100;
+  if (current < 0) return -100;
+
+  return 0;
 }
 
 export default async function DashboardPage() {
   const supabase = await createClient();
 
   const now = new Date();
-  const todayStr = toLocalDateKey(now);
-  const firstDay = toLocalDateKey(
-    new Date(now.getFullYear(), now.getMonth(), 1),
-  );
-  const lastDay = toLocalDateKey(
-    new Date(now.getFullYear(), now.getMonth() + 1, 0),
-  );
-  const lastFirst = toLocalDateKey(
-    new Date(now.getFullYear(), now.getMonth() - 1, 1),
-  );
-  const lastLast = toLocalDateKey(
-    new Date(now.getFullYear(), now.getMonth(), 0),
-  );
-  const daysInMonth = new Date(
-    now.getFullYear(),
-    now.getMonth() + 1,
-    0,
-  ).getDate();
+  const todayStr = getAppDateKey(now);
+  const {
+    year,
+    month,
+    day: dayOfMonth,
+    daysInMonth,
+    firstDay,
+    lastDay,
+    lastFirst,
+    lastLast,
+  } = getAppMonthRange(now);
 
   const [
     { data: thisTxns },
@@ -124,22 +111,26 @@ export default async function DashboardPage() {
       .gte("date", firstDay)
       .lte("date", lastDay)
       .order("date", { ascending: false }),
+
     supabase
       .from("transactions")
       .select("*, categories(name, color), accounts(name)")
       .order("date", { ascending: false })
       .limit(12),
+
     supabase
       .from("transactions")
       .select("type, amount")
       .gte("date", lastFirst)
       .lte("date", lastLast),
+
     supabase
       .from("investments")
       .select(
         "id, name, type, quantity, purchase_price, current_price, purchased_at",
       )
       .order("created_at", { ascending: false }),
+
     supabase.from("goals").select("*").order("created_at").limit(6),
   ]);
 
@@ -178,6 +169,16 @@ export default async function DashboardPage() {
       0,
     );
 
+  const previousMonthlyInvestmentsValue = investmentRows
+    .filter((investment) =>
+      isDateInRange(investment.purchased_at, lastFirst, lastLast),
+    )
+    .reduce(
+      (sum, investment) =>
+        sum + Number(investment.quantity) * Number(investment.purchase_price),
+      0,
+    );
+
   const totalInvested = investmentRows.reduce(
     (sum, investment) =>
       sum + Number(investment.quantity) * Number(investment.purchase_price),
@@ -195,10 +196,13 @@ export default async function DashboardPage() {
     .filter((transaction) => transaction.type === "expense")
     .reduce((sum, transaction) => sum + Number(transaction.amount), 0);
 
+  const lastNetProfit = lastIncome - lastExpenses;
+
   const dailyTotals = new Map<string, { income: number; expenses: number }>();
 
   txns.forEach((transaction) => {
     const dateKey = normalizeDateKey(transaction.date);
+
     if (!dateKey) return;
 
     const current = dailyTotals.get(dateKey) ?? {
@@ -223,6 +227,7 @@ export default async function DashboardPage() {
   };
 
   const netToday = todayTotals.income - todayTotals.expenses;
+
   const netTodayTone =
     netToday > 0 ? "positive"
     : netToday < 0 ? "negative"
@@ -230,13 +235,12 @@ export default async function DashboardPage() {
 
   const chartData = Array.from({ length: daysInMonth }, (_, index) => {
     const day = index + 1;
-    const dateStr = toLocalDateKey(
-      new Date(now.getFullYear(), now.getMonth(), day),
-    );
+    const dateStr = formatDateKey(year, month, day);
+
     const totals = dailyTotals.get(dateStr);
 
     return {
-      date: `${day} ${now.toLocaleDateString("en-US", { month: "short" })}`,
+      date: `${day} ${formatAppMonth(year, month)}`,
       income: totals?.income ?? 0,
       expenses: totals?.expenses ?? 0,
     };
@@ -270,72 +274,28 @@ export default async function DashboardPage() {
     .sort((a, b) => b.value - a.value)
     .slice(0, 5);
 
-  const dayOfMonth = now.getDate();
-  const currentMonthLabel = now.toLocaleDateString("en-US", {
-    month: "long",
-    year: "numeric",
-  });
+  const currentMonthLabel = formatAppMonthYear(year, month);
+
   const dailySpend = expenses / Math.max(dayOfMonth, 1);
   const remainingDays = Math.max(daysInMonth - dayOfMonth, 0);
   const dailyExpenseTrend = chartData.map((day) => day.expenses);
-  const transactionCount = txns.length;
-  const savingsRate = income > 0 ? Math.max(0, (netProfit / income) * 100) : 0;
 
   return (
-    <DashboardMotion className="jf-dashboard-cards-page w-full min-w-0 space-y-5 pb-14 sm:space-y-6 lg:space-y-7">
-      <DashboardMotionItem>
-        <section className="jf-dashboard-hero-card overflow-hidden rounded-[28px] border border-border/80 bg-card/80 p-4 shadow-theme backdrop-blur-xl sm:p-5 lg:p-6">
-          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-            <div className="min-w-0">
-              <div className="jf-dashboard-eyebrow mb-3 inline-flex items-center gap-2 rounded-full border border-border/80 bg-surface-secondary px-3 py-1.5 text-[11px] font-black uppercase tracking-[0.18em] text-text-secondary">
-                <Zap size={14} className="text-active" />
-                Dashboard command center
-              </div>
-              <h1 className="text-[clamp(1.75rem,7vw,3.25rem)] font-black leading-none tracking-[-0.055em] text-text-primary">
-                Your money, simplified for {currentMonthLabel}.
-              </h1>
-              <p className="mt-3 max-w-2xl text-sm leading-7 text-text-secondary sm:text-base">
-                Review cash flow, daily spending, investments, goals, and recent
-                activity from one responsive workspace.
-              </p>
-            </div>
-
-            <div className="grid min-w-0 grid-cols-2 gap-2 sm:grid-cols-4 lg:w-[440px] lg:grid-cols-2 xl:grid-cols-4">
-              <div className="jf-dashboard-mini-stat">
-                <span>Transactions</span>
-                <strong>{transactionCount}</strong>
-              </div>
-              <div className="jf-dashboard-mini-stat">
-                <span>Saving rate</span>
-                <strong>{savingsRate.toFixed(0)}%</strong>
-              </div>
-              <div className="jf-dashboard-mini-stat">
-                <span>Today net</span>
-                <strong>{fmt(netToday)}</strong>
-              </div>
-              <div className="jf-dashboard-mini-stat">
-                <span>Days left</span>
-                <strong>{remainingDays}</strong>
-              </div>
-            </div>
-          </div>
-        </section>
-      </DashboardMotionItem>
-
-      <div className="jf-dashboard-metric-grid grid w-full min-w-0 grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 xl:grid-cols-4">
-        <DashboardMotionItem className="jf-dashboard-card-wrap jf-dashboard-card-wrap-primary min-w-0">
+    <DashboardMotion className="w-full space-y-6 pb-12">
+      <div className="grid w-full grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <DashboardMotionItem>
           <MetricCard
             title="Month Balance"
             subtitle={currentMonthLabel}
             amount={fmt(netProfit)}
-            change={4.35}
+            change={pct(netProfit, lastNetProfit)}
             iconName="wallet"
             accentColor="#3b82f6"
             progress={62}
           />
         </DashboardMotionItem>
 
-        <DashboardMotionItem className="jf-dashboard-card-wrap jf-dashboard-card-wrap-success min-w-0">
+        <DashboardMotionItem>
           <MetricCard
             title="Monthly Income"
             subtitle={currentMonthLabel}
@@ -347,7 +307,7 @@ export default async function DashboardPage() {
           />
         </DashboardMotionItem>
 
-        <DashboardMotionItem className="jf-dashboard-card-wrap jf-dashboard-card-wrap-danger min-w-0">
+        <DashboardMotionItem>
           <MetricCard
             title="Monthly Expenses"
             subtitle={currentMonthLabel}
@@ -359,12 +319,15 @@ export default async function DashboardPage() {
           />
         </DashboardMotionItem>
 
-        <DashboardMotionItem className="jf-dashboard-card-wrap jf-dashboard-card-wrap-warning min-w-0">
+        <DashboardMotionItem>
           <MetricCard
             title="Investments This Month"
             subtitle={currentMonthLabel}
             amount={fmt(monthlyInvestmentsValue)}
-            change={7.65}
+            change={pct(
+              monthlyInvestmentsValue,
+              previousMonthlyInvestmentsValue,
+            )}
             iconName="investments"
             accentColor="#f59e0b"
             progress={68}
@@ -372,7 +335,7 @@ export default async function DashboardPage() {
         </DashboardMotionItem>
       </div>
 
-      <DashboardMotionItem className="jf-dashboard-feature-wrap min-w-0">
+      <DashboardMotionItem>
         <FinancePulseCard
           income={fmt(todayTotals.income)}
           expenses={fmt(todayTotals.expenses)}
@@ -382,8 +345,8 @@ export default async function DashboardPage() {
         />
       </DashboardMotionItem>
 
-      <div className="jf-dashboard-chart-grid grid w-full min-w-0 grid-cols-1 gap-4 xl:grid-cols-[minmax(260px,0.85fr)_minmax(260px,0.85fr)_minmax(420px,1.55fr)]">
-        <DashboardMotionItem className="jf-dashboard-card-wrap jf-dashboard-card-tall min-w-0">
+      <div className="grid w-full grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,2fr)]">
+        <DashboardMotionItem className="min-w-0">
           <SpendRecordWidget
             monthlySpend={fmt(expenses)}
             dailySpend={fmt(dailySpend)}
@@ -391,7 +354,7 @@ export default async function DashboardPage() {
           />
         </DashboardMotionItem>
 
-        <DashboardMotionItem className="jf-dashboard-card-wrap jf-dashboard-card-tall min-w-0">
+        <DashboardMotionItem className="min-w-0">
           {investmentRows.length > 0 ?
             <InvestmentOverviewWidget
               investments={investmentRows}
@@ -403,7 +366,7 @@ export default async function DashboardPage() {
               title="Portfolio Overview"
               description="Allocation by current value"
             >
-              <div className="dashboard-chart-empty jf-dashboard-empty-state min-h-[156px]">
+              <div className="dashboard-chart-empty min-h-[132px]">
                 <div>
                   <span className="dashboard-chart-empty-icon">
                     <Zap size={16} />
@@ -420,13 +383,13 @@ export default async function DashboardPage() {
           }
         </DashboardMotionItem>
 
-        <DashboardMotionItem className="jf-dashboard-card-wrap jf-dashboard-card-wide min-w-0">
+        <DashboardMotionItem className="min-w-0">
           <IncomeExpenseChart data={chartData} />
         </DashboardMotionItem>
       </div>
 
-      <div className="jf-dashboard-lower-grid grid w-full min-w-0 grid-cols-1 items-stretch gap-4 xl:grid-cols-[minmax(0,0.95fr)_minmax(0,0.95fr)_minmax(320px,1.1fr)]">
-        <DashboardMotionItem className="jf-dashboard-card-wrap h-full min-w-0">
+      <div className="grid w-full grid-cols-1 items-stretch gap-4 lg:grid-cols-3">
+        <DashboardMotionItem className="h-full min-w-0">
           <SpendingBreakdown
             data={spendingData}
             total={expenses}
@@ -434,11 +397,11 @@ export default async function DashboardPage() {
           />
         </DashboardMotionItem>
 
-        <DashboardMotionItem className="jf-dashboard-card-wrap h-full min-w-0">
+        <DashboardMotionItem className="h-full min-w-0">
           <GoalsProgress goals={goalRows} maxVisible={4} />
         </DashboardMotionItem>
 
-        <DashboardMotionItem className="jf-dashboard-card-wrap h-full min-w-0">
+        <DashboardMotionItem className="h-full min-w-0">
           <RecentTransactions transactions={recentTransactions} />
         </DashboardMotionItem>
       </div>
