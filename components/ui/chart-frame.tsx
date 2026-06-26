@@ -127,8 +127,11 @@ export default function ChartFrame({
 
   const isReady = isRenderableSize(size);
 
-  const content =
-    isReady && typeof children === "function" ? children(size) : children;
+  let content: ReactNode = null;
+
+  if (isReady) {
+    content = typeof children === "function" ? children(size) : children;
+  }
 
   return (
     <div
