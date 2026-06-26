@@ -389,6 +389,26 @@ function LandingMicroPolishStyles() {
         __html: `
 .jf-landing-polish {
   scroll-behavior: smooth;
+  color: #f8fbff;
+  background:
+    radial-gradient(circle at 20% 8%, rgba(96, 165, 250, 0.14), transparent 24rem),
+    radial-gradient(circle at 90% 12%, rgba(34, 197, 94, 0.12), transparent 20rem),
+    linear-gradient(180deg, #05090f 0%, #0c1624 42%, #060b14 100%);
+  --background: #06090f;
+  --card: rgba(12, 18, 32, 0.95);
+  --surface-secondary: rgba(16, 24, 38, 0.96);
+  --border: rgba(255, 255, 255, 0.12);
+  --text-primary: #f8fbff;
+  --text-secondary: rgba(248, 251, 255, 0.72);
+  --text-tertiary: rgba(248, 251, 255, 0.54);
+  --hover: rgba(255, 255, 255, 0.06);
+  --active: #74a7ff;
+  --success: #5ee2a0;
+  --danger: #fca5a5;
+  --warning: #fde68a;
+  --shadow: 0 22px 70px rgba(0, 0, 0, 0.32);
+  --shadow-premium: 0 28px 100px rgba(0, 0, 0, 0.42);
+  --focus-ring: 0 0 0 3px rgba(96, 165, 250, 0.28);
 }
 
 .jf-landing-polish ::selection {
@@ -608,9 +628,6 @@ function Header() {
         </div>
 
         <div className="flex shrink-0 items-center gap-2">
-          <span className="grid h-10 w-10 place-items-center rounded-2xl border border-border bg-card text-text-secondary md:hidden">
-            <Menu className="h-4 w-4" />
-          </span>
           <Link
             href="/login"
             className="jf-btn jf-btn-primary min-h-10 px-4 text-sm sm:w-auto"

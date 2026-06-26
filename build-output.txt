@@ -1,0 +1,53 @@
+
+> jamals-finance@0.1.0 build
+> next build
+
+▲ Next.js 16.2.9 (Turbopack)
+- Environments: .env
+
+  Creating an optimized production build ...
+✓ Compiled successfully in 46s
+  Running TypeScript ...
+  Finished TypeScript in 23.0s ...
+  Collecting page data using 3 workers ...
+  Generating static pages using 3 workers (0/15) ...
+  Generating static pages using 3 workers (3/15) 
+  Generating static pages using 3 workers (7/15) 
+  Generating static pages using 3 workers (11/15) 
+✓ Generating static pages using 3 workers (15/15) in 3.0s
+  Finalizing page optimization ...
+
+Route (app)
+┌ ○ /
+├ ○ /_not-found
+├ ƒ /api/ai-insights
+├ ƒ /api/exchange-rate
+├ ƒ /auth/callback
+├ ƒ /dashboard
+├ ƒ /dashboard/accounts
+├ ƒ /dashboard/ai-insights
+├ ƒ /dashboard/analytics
+├ ƒ /dashboard/expenses
+├ ƒ /dashboard/goals
+├ ƒ /dashboard/income
+├ ƒ /dashboard/investments
+├ ƒ /dashboard/payables
+├ ƒ /dashboard/reports
+├ ƒ /dashboard/settings
+├ ƒ /dashboard/transactions
+├ ƒ /dashboard/transactions/[id]
+├ ○ /login
+├ ○ /login-step5-preview
+├ ○ /onboarding
+├ ○ /opengraph-image
+├ ○ /reset-password
+├ ○ /robots.txt
+├ ○ /sitemap.xml
+└ ○ /twitter-image
+
+
+ƒ Proxy (Middleware)
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+

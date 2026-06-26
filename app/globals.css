@@ -1105,17 +1105,27 @@
   }
 
   .chat-auth-card {
-    @apply rounded-[20px] border p-4 sm:p-5;
+    @apply rounded-[24px] border p-5 sm:p-6;
     border-color: var(--border);
-    background: var(--card);
-    box-shadow: var(--shadow);
+    background: linear-gradient(145deg, color-mix(in srgb, var(--card), white 4%), var(--card));
+    box-shadow: var(--shadow-premium);
   }
 
   .chat-auth-input {
-    @apply h-13 w-full rounded-2xl border px-4 text-[15px] outline-none transition-all focus:ring-2 focus:ring-active/40;
-    border-color: var(--border);
-    background-color: var(--input);
+    @apply h-13 w-full rounded-2xl border px-4 text-[15px] outline-none transition-all;
+    border-color: color-mix(in srgb, var(--border), var(--active) 30%);
+    background-color: color-mix(in srgb, var(--card), var(--surface-secondary) 12%);
     color: var(--text-primary);
+  }
+
+  .chat-auth-input:hover {
+    border-color: var(--active);
+    background-color: color-mix(in srgb, var(--card), var(--surface-secondary) 18%);
+  }
+
+  .chat-auth-input:focus {
+    border-color: color-mix(in srgb, var(--active), white 20%);
+    box-shadow: var(--focus-ring);
   }
 
   .chat-auth-button {
@@ -1126,10 +1136,16 @@
     box-shadow: var(--shadow);
   }
 
-  .chat-auth-button:hover {
-    background-color: var(--active);
+  .chat-auth-button:hover,
+  .chat-auth-button:focus-visible {
+    background-color: color-mix(in srgb, var(--active), white 12%);
     box-shadow: var(--shadow-soft);
     transform: translateY(-1px);
+    outline: none;
+  }
+
+  .chat-auth-button:focus-visible {
+    box-shadow: var(--focus-ring), var(--shadow-soft);
   }
 
   .chat-auth-secondary {
@@ -1139,10 +1155,12 @@
     color: var(--text-primary);
   }
 
-  .chat-auth-secondary:hover {
+  .chat-auth-secondary:hover,
+  .chat-auth-secondary:focus-visible {
     background-color: var(--hover);
     box-shadow: var(--shadow-soft);
     transform: translateY(-1px);
+    outline: none;
   }
 
   .chat-auth-tabs {
@@ -2028,6 +2046,16 @@ textarea:focus {
   color: var(--text-primary);
 }
 
+.jf-auth-page {
+  min-height: 100dvh;
+  overflow-x: hidden;
+  background:
+    radial-gradient(circle at 20% 8%, color-mix(in srgb, var(--active), transparent 88%), transparent 28rem),
+    radial-gradient(circle at 90% 12%, color-mix(in srgb, var(--success), transparent 90%), transparent 24rem),
+    var(--background);
+  color: var(--text-primary);
+}
+
 .jf-section {
   width: min(100%, 1280px);
   margin-inline: auto;
@@ -2137,6 +2165,11 @@ textarea:focus {
 
 .jf-btn:active {
   transform: scale(0.985);
+}
+
+.jf-btn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 4px rgba(96, 165, 250, 0.28);
 }
 
 .jf-btn-primary {
@@ -3002,7 +3035,7 @@ tbody tr:hover {
 .jf-dashboard-sidebar-wrap a[aria-current="page"],
 .jf-dashboard-sidebar-wrap a[data-active="true"] {
   box-shadow:
-    0 14px 36px color-mix(in srgb, var(--active, #3b82f6) 16%, transparent),
+    0 8px 20px color-mix(in srgb, var(--active, #3b82f6) 12%, transparent),
     inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 
