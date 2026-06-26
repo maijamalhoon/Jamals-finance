@@ -48,6 +48,8 @@ function AuthPolishStyles() {
         __html: `
 .jf-login-polish {
   isolation: isolate;
+  background: linear-gradient(135deg, #07111a 0%, #0c1724 48%, #121523 100%);
+  color: #f8fbff;
 }
 
 .jf-login-polish ::selection {
@@ -55,7 +57,13 @@ function AuthPolishStyles() {
 }
 
 .jf-auth-grid {
-  min-height: calc(100svh - 40px);
+  min-height: auto;
+}
+
+@media (min-width: 1024px) {
+  .jf-auth-grid {
+    min-height: min(640px, calc(100svh - 48px));
+  }
 }
 
 .jf-auth-orb {
@@ -181,7 +189,7 @@ function AuthPolishStyles() {
 
 @media (max-width: 639px) {
   .jf-auth-grid {
-    min-height: calc(100svh - 24px);
+    min-height: auto;
   }
 
   .jf-auth-card {
@@ -406,7 +414,7 @@ function HeroPanel() {
       initial={{ opacity: 0.96, x: -10 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ duration: 0.32, ease: "easeOut" }}
-      className="jf-auth-panel relative hidden min-h-[620px] w-full flex-col justify-center overflow-hidden rounded-[32px] border border-[rgba(255,255,255,0.1)] bg-[linear-gradient(145deg,rgba(255,255,255,0.09),rgba(255,255,255,0.035))] p-8 lg:flex xl:min-h-[660px] xl:p-10"
+      className="jf-auth-panel relative hidden min-h-[500px] w-full flex-col justify-center overflow-hidden rounded-[32px] border border-[rgba(255,255,255,0.1)] bg-[linear-gradient(145deg,rgba(255,255,255,0.09),rgba(255,255,255,0.035))] p-8 lg:flex xl:min-h-[560px] xl:p-10"
     >
       <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(255,255,255,0.055)_1px,transparent_1px),linear-gradient(0deg,rgba(255,255,255,0.045)_1px,transparent_1px)] bg-[size:44px_44px] opacity-35" />
       <div className="absolute inset-x-0 top-0 h-1 bg-[linear-gradient(90deg,#22c55e,#38bdf8,#fbbf24)]" />
@@ -721,7 +729,7 @@ export default function LoginPage() {
     : message || "Open your inbox and follow the secure link.";
 
   return (
-    <main className="jf-auth-page jf-login-polish relative min-h-dvh overflow-x-hidden bg-[linear-gradient(135deg,#07111a_0%,#0c1724_48%,#121523_100%)] px-3 py-3 text-[#f8fbff] sm:px-6 sm:py-5 lg:px-8">
+    <main className="jf-auth-page jf-login-polish relative min-h-dvh overflow-x-hidden px-3 py-3 text-[#f8fbff] sm:px-6 sm:py-5 lg:px-8">
       <AuthPolishStyles />
       <div className="jf-auth-orb jf-auth-orb-one" />
       <div className="jf-auth-orb jf-auth-orb-two" />

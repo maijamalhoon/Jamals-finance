@@ -106,10 +106,10 @@ export default function HomePage() {
   return (
     <>
       <LandingMicroPolishStyles />
-      <main className="jf-page-shell jf-landing-polish min-h-dvh overflow-x-hidden pb-24 text-text-primary sm:pb-0">
+      <main className="jf-page-shell jf-landing-polish min-h-dvh overflow-x-hidden text-text-primary pb-24 sm:pb-0">
         <Header />
 
-        <section className="jf-hero-section mx-auto grid w-full max-w-7xl items-center gap-8 px-4 pb-10 pt-7 sm:px-6 sm:pb-14 sm:pt-12 md:gap-10 lg:grid-cols-[1.02fr_0.98fr] lg:gap-14 lg:px-8 lg:pb-20 lg:pt-16">
+        <section className="jf-hero-section mx-auto grid w-full max-w-7xl items-start gap-8 px-4 pb-6 pt-4 sm:px-6 sm:pb-8 sm:pt-8 md:gap-10 lg:grid-cols-[1.02fr_0.98fr] lg:gap-14 lg:items-center lg:px-8 lg:pb-12 lg:pt-12">
           <MotionReveal className="jf-animate-in mx-auto max-w-2xl text-center lg:mx-0 lg:text-left">
             <div className="jf-badge jf-badge-active jf-delay-1 mx-auto mb-5 lg:mx-0">
               <Sparkles className="h-4 w-4" />
@@ -748,16 +748,14 @@ function Footer() {
 
 function MobileStickyCta() {
   return (
-    <div className="jf-mobile-cta fixed inset-x-3 bottom-3 z-40 rounded-[22px] border border-border bg-card/95 p-2 shadow-theme backdrop-blur-xl sm:hidden">
-      <div className="grid grid-cols-[1fr_auto] gap-2">
-        <Link href="/login" className="jf-btn jf-btn-primary">
-          Get started
-          <ArrowRight className="h-4 w-4" />
-        </Link>
-        <a href="#features" className="jf-btn jf-btn-secondary px-4">
-          Features
-        </a>
-      </div>
+    <div className="fixed bottom-3 left-3 right-3 z-40 flex gap-2 rounded-3xl border border-white/10 bg-[rgba(12,18,32,0.9)] p-2 backdrop-blur-xl sm:hidden">
+      <Link href="/login" className="jf-btn jf-btn-primary flex-1">
+        Get started
+        <ArrowRight className="h-4 w-4" />
+      </Link>
+      <a href="#features" className="jf-btn jf-btn-secondary">
+        Features
+      </a>
     </div>
   );
 }
