@@ -3625,3 +3625,136 @@ tbody tr:hover {
     will-change: auto !important;
   }
 }
+/* Dashboard table rows + list item hover polish */
+:where([data-slot="table-row"], table tbody tr) {
+  transition:
+    background-color 180ms cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 180ms cubic-bezier(0.16, 1, 0.3, 1),
+    border-color 180ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  :where([data-slot="table-row"], table tbody tr):hover {
+    background-color: color-mix(
+      in srgb,
+      var(--active, var(--primary)),
+      transparent 94%
+    );
+    box-shadow:
+      inset 3px 0 0
+        color-mix(in srgb, var(--active, var(--primary)), transparent 48%),
+      0 1px 0 rgba(148, 163, 184, 0.08);
+  }
+
+  .dark :where([data-slot="table-row"], table tbody tr):hover {
+    background-color: color-mix(
+      in srgb,
+      var(--active, var(--primary)),
+      transparent 90%
+    );
+    box-shadow:
+      inset 3px 0 0
+        color-mix(in srgb, var(--active, var(--primary)), transparent 38%),
+      0 1px 0 rgba(255, 255, 255, 0.04);
+  }
+
+  :where(
+    [data-slot="card"] li,
+    [data-slot="card"] [role="listitem"],
+    .card-hover li,
+    .card-hover [role="listitem"]
+  ) {
+    transform: translate3d(0, 0, 0);
+    transition:
+      transform 180ms cubic-bezier(0.16, 1, 0.3, 1),
+      background-color 180ms cubic-bezier(0.16, 1, 0.3, 1),
+      border-color 180ms cubic-bezier(0.16, 1, 0.3, 1),
+      box-shadow 180ms cubic-bezier(0.16, 1, 0.3, 1);
+    will-change: transform;
+  }
+
+  :where(
+    [data-slot="card"] li,
+    [data-slot="card"] [role="listitem"],
+    .card-hover li,
+    .card-hover [role="listitem"]
+  ):hover {
+    transform: translate3d(3px, -1px, 0);
+    background-color: color-mix(
+      in srgb,
+      var(--active, var(--primary)),
+      transparent 95%
+    );
+    box-shadow:
+      0 10px 24px rgba(15, 23, 42, 0.06),
+      inset 3px 0 0
+        color-mix(in srgb, var(--active, var(--primary)), transparent 60%);
+  }
+
+  .dark
+    :where(
+      [data-slot="card"] li,
+      [data-slot="card"] [role="listitem"],
+      .card-hover li,
+      .card-hover [role="listitem"]
+    ):hover {
+    background-color: color-mix(
+      in srgb,
+      var(--active, var(--primary)),
+      transparent 90%
+    );
+    box-shadow:
+      0 12px 28px rgba(0, 0, 0, 0.22),
+      inset 3px 0 0
+        color-mix(in srgb, var(--active, var(--primary)), transparent 48%);
+  }
+}
+
+:where([data-slot="table-row"], table tbody tr):active {
+  background-color: color-mix(
+    in srgb,
+    var(--active, var(--primary)),
+    transparent 90%
+  );
+}
+
+:where(
+  [data-slot="card"] li,
+  [data-slot="card"] [role="listitem"],
+  .card-hover li,
+  .card-hover [role="listitem"]
+):active {
+  transform: scale(0.992);
+  transition-duration: 90ms;
+}
+
+@media (hover: none) {
+  :where(
+    [data-slot="card"] li,
+    [data-slot="card"] [role="listitem"],
+    .card-hover li,
+    .card-hover [role="listitem"]
+  ):active {
+    background-color: color-mix(
+      in srgb,
+      var(--active, var(--primary)),
+      transparent 92%
+    );
+    transform: scale(0.992);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :where(
+    [data-slot="table-row"],
+    table tbody tr,
+    [data-slot="card"] li,
+    [data-slot="card"] [role="listitem"],
+    .card-hover li,
+    .card-hover [role="listitem"]
+  ) {
+    transform: none !important;
+    transition: none !important;
+    will-change: auto !important;
+  }
+}
