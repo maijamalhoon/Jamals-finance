@@ -47,7 +47,7 @@ export default function ChartFrame({
   tone = "default",
 }: ChartFrameProps) {
   const frameRef = useRef<HTMLDivElement | null>(null);
-  const animationFrameRef = useRef<number | null>(null);
+  const firstAnimationFrameRef = useRef<number | null>(null);
   const secondAnimationFrameRef = useRef<number | null>(null);
 
   const [size, setSize] = useState<ChartSize>({
@@ -76,15 +76,15 @@ export default function ChartFrame({
     };
 
     const scheduleUpdate = () => {
-      if (animationFrameRef.current) {
-        cancelAnimationFrame(animationFrameRef.current);
+      if (firstAnimationFrameRef.current) {
+        cancelAnimationFrame(firstAnimationFrameRef.current);
       }
 
       if (secondAnimationFrameRef.current) {
         cancelAnimationFrame(secondAnimationFrameRef.current);
       }
 
-      animationFrameRef.current = requestAnimationFrame(() => {
+      firstAnimationFrameRef.current = requestAnimationFrame(() => {
         secondAnimationFrameRef.current = requestAnimationFrame(updateSize);
       });
     };
@@ -95,8 +95,8 @@ export default function ChartFrame({
 
     if (typeof ResizeObserver === "undefined") {
       return () => {
-        if (animationFrameRef.current) {
-          cancelAnimationFrame(animationFrameRef.current);
+        if (firstAnimationFrameRef.current) {
+          cancelAnimationFrame(firstAnimationFrameRef.current);
         }
 
         if (secondAnimationFrameRef.current) {
@@ -112,8 +112,8 @@ export default function ChartFrame({
     resizeObserver.observe(element);
 
     return () => {
-      if (animationFrameRef.current) {
-        cancelAnimationFrame(animationFrameRef.current);
+      if (firstAnimationFrameRef.current) {
+        cancelAnimationFrame(firstAnimationFrameRef.current);
       }
 
       if (secondAnimationFrameRef.current) {
@@ -136,15 +136,17 @@ export default function ChartFrame({
   return (
     <div
       ref={frameRef}
-      className={`relative w-full min-w-0 overflow-hidden ${className}`}
+      className={`relative h-full w-full min-w-0 overflow-hidden ${className}`}
       data-chart-tone={tone}
       style={style}
     >
       {isReady ?
-        <div className="h-full min-h-0 w-full min-w-0">{content}</div>
+        <div className="h-full min-h-0 w-full min-w-0 overflow-hidden">
+          {content}
+        </div>
       : <div
           aria-hidden="true"
-          className="jf-skeleton h-full min-h-[180px] w-full"
+          className="h-full min-h-[160px] w-full animate-pulse rounded-[24px] bg-surface-secondary/70"
         />
       }
     </div>
