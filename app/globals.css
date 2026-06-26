@@ -2630,3 +2630,271 @@ textarea:focus {
     transition-duration: 1ms !important;
   }
 }
+/* Jamal's Finance — Safe Forms / Modals / Tables Polish
+   Append this at the very end of app/globals.css.
+   Scope: inputs, buttons inside forms, dialogs/modals, tables, empty/loading states.
+   This patch intentionally avoids dashboard chart containers and Recharts classes. */
+
+/* ---------- Form surfaces ---------- */
+form:not(.recharts-wrapper form) {
+  min-width: 0;
+}
+
+form label,
+.form-label,
+.jf-form-label {
+  color: var(--color-text-secondary, #64748b);
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.055em;
+  text-transform: uppercase;
+}
+
+input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+textarea,
+select {
+  min-height: 2.85rem;
+  width: 100%;
+  min-width: 0;
+  border-radius: 1rem;
+  border: 1px solid var(--color-border, rgba(148, 163, 184, 0.28));
+  background: color-mix(in srgb, var(--color-card, #ffffff) 90%, transparent);
+  color: var(--color-text-primary, #0f172a);
+  box-shadow: 0 1px 0 rgba(15, 23, 42, 0.03);
+  transition:
+    border-color 180ms ease,
+    box-shadow 180ms ease,
+    background-color 180ms ease,
+    transform 180ms ease;
+}
+
+input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):hover,
+textarea:hover,
+select:hover {
+  border-color: color-mix(
+    in srgb,
+    var(--color-active, #3b82f6) 36%,
+    var(--color-border, #cbd5e1)
+  );
+}
+
+input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):focus,
+textarea:focus,
+select:focus {
+  border-color: var(--color-active, #3b82f6);
+  box-shadow:
+    0 0 0 4px color-mix(in srgb, var(--color-active, #3b82f6) 16%, transparent),
+    0 14px 34px rgba(15, 23, 42, 0.08);
+  outline: none;
+}
+
+textarea {
+  min-height: 7rem;
+  resize: vertical;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: color-mix(
+    in srgb,
+    var(--color-text-secondary, #64748b) 58%,
+    transparent
+  );
+}
+
+input:disabled,
+textarea:disabled,
+select:disabled,
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.64;
+}
+
+/* Better number/date/select behavior on mobile */
+input[type="number"],
+input[type="date"],
+input[type="month"],
+select {
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- Modal / dialog polish ---------- */
+[role="dialog"],
+.jf-modal,
+.jf-dialog,
+.dialog-content {
+  max-width: min(calc(100vw - 1.5rem), 42rem);
+  border-radius: 1.45rem;
+  border: 1px solid var(--color-border, rgba(148, 163, 184, 0.28));
+  background: color-mix(in srgb, var(--color-card, #ffffff) 94%, transparent);
+  box-shadow: 0 30px 90px rgba(15, 23, 42, 0.18);
+}
+
+[data-radix-popper-content-wrapper] {
+  z-index: 60 !important;
+}
+
+/* ---------- Table polish ---------- */
+table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+th {
+  color: var(--color-text-secondary, #64748b);
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+td,
+th {
+  border-bottom: 1px solid
+    color-mix(in srgb, var(--color-border, #e2e8f0) 72%, transparent);
+}
+
+tbody tr {
+  transition: background-color 160ms ease;
+}
+
+tbody tr:hover {
+  background: color-mix(in srgb, var(--color-active, #3b82f6) 5%, transparent);
+}
+
+/* Horizontal scroll stays contained on mobile instead of breaking the page */
+.jf-table-wrap,
+.table-wrap,
+.overflow-x-auto {
+  max-width: 100%;
+  min-width: 0;
+  overflow-x: auto;
+  overscroll-behavior-inline: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+.jf-table-wrap::-webkit-scrollbar,
+.table-wrap::-webkit-scrollbar,
+.overflow-x-auto::-webkit-scrollbar {
+  height: 8px;
+}
+
+.jf-table-wrap::-webkit-scrollbar-thumb,
+.table-wrap::-webkit-scrollbar-thumb,
+.overflow-x-auto::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: color-mix(
+    in srgb,
+    var(--color-text-secondary, #64748b) 24%,
+    transparent
+  );
+}
+
+/* ---------- Empty / loading / error states ---------- */
+.jf-empty-state,
+.empty-state,
+[data-empty="true"] {
+  border: 1px dashed
+    color-mix(in srgb, var(--color-border, #cbd5e1) 78%, transparent);
+  border-radius: 1.35rem;
+  background:
+    radial-gradient(
+      circle at top left,
+      color-mix(in srgb, var(--color-active, #3b82f6) 9%, transparent),
+      transparent 34%
+    ),
+    color-mix(in srgb, var(--color-card, #ffffff) 88%, transparent);
+  padding: clamp(1.25rem, 4vw, 2rem);
+}
+
+.jf-skeleton,
+.skeleton,
+[data-loading="true"] {
+  position: relative;
+  overflow: hidden;
+  border-radius: 1rem;
+  background: color-mix(
+    in srgb,
+    var(--color-text-secondary, #64748b) 10%,
+    transparent
+  );
+}
+
+.jf-skeleton::after,
+.skeleton::after,
+[data-loading="true"]::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.34),
+    transparent
+  );
+  animation: jfSafeSkeleton 1.55s ease-in-out infinite;
+}
+
+@keyframes jfSafeSkeleton {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+/* ---------- Mobile comfort ---------- */
+@media (max-width: 640px) {
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+  textarea,
+  select,
+  form button {
+    min-height: 3rem;
+    font-size: 16px; /* prevents iOS zoom */
+  }
+
+  [role="dialog"],
+  .jf-modal,
+  .jf-dialog,
+  .dialog-content {
+    max-width: calc(100vw - 1rem);
+    border-radius: 1.25rem;
+  }
+
+  th,
+  td {
+    white-space: nowrap;
+  }
+}
+
+/* ---------- Dark mode support ---------- */
+.dark input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+.dark textarea,
+.dark select {
+  background: color-mix(in srgb, var(--color-card, #0f172a) 86%, transparent);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+.dark [role="dialog"],
+.dark .jf-modal,
+.dark .jf-dialog,
+.dark .dialog-content {
+  box-shadow: 0 30px 90px rgba(0, 0, 0, 0.4);
+}
+
+/* ---------- Motion safety ---------- */
+@media (prefers-reduced-motion: reduce) {
+  input,
+  textarea,
+  select,
+  button,
+  tbody tr,
+  .jf-skeleton::after,
+  .skeleton::after,
+  [data-loading="true"]::after {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 1ms !important;
+  }
+}
