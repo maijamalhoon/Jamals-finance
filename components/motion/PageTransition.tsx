@@ -45,7 +45,7 @@ export default function PageTransition({ children }: { children: ReactNode }) {
           observer.unobserve(entry.target);
         });
       },
-      { rootMargin: "0px 0px -8% 0px", threshold: 0.12 },
+      { rootMargin: "0px 0px -10% 0px", threshold: 0.12 },
     );
 
     targets.forEach((target, index) => {

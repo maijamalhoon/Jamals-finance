@@ -1,5 +1,6 @@
 import type { ComponentType } from "react";
 import Link from "next/link";
+import MotionReveal from "@/components/motion/MotionReveal";
 import {
   ArrowRight,
   BadgeCheck,
@@ -109,7 +110,7 @@ export default function HomePage() {
         <Header />
 
         <section className="jf-hero-section mx-auto grid w-full max-w-7xl items-center gap-8 px-4 pb-10 pt-7 sm:px-6 sm:pb-14 sm:pt-12 md:gap-10 lg:grid-cols-[1.02fr_0.98fr] lg:gap-14 lg:px-8 lg:pb-20 lg:pt-16">
-          <div className="jf-animate-in mx-auto max-w-2xl text-center lg:mx-0 lg:text-left">
+          <MotionReveal className="jf-animate-in mx-auto max-w-2xl text-center lg:mx-0 lg:text-left">
             <div className="jf-badge jf-badge-active jf-delay-1 mx-auto mb-5 lg:mx-0">
               <Sparkles className="h-4 w-4" />
               Premium finance dashboard
@@ -156,18 +157,18 @@ export default function HomePage() {
                 </span>
               ))}
             </div>
-          </div>
+          </MotionReveal>
 
-          <div className="jf-animate-in jf-delay-3 mx-auto w-full max-w-xl lg:max-w-none">
+          <MotionReveal className="jf-animate-in jf-delay-3 mx-auto w-full max-w-xl lg:max-w-none">
             <DashboardPreview />
-          </div>
+          </MotionReveal>
         </section>
 
         <section
           id="features"
           className="mx-auto w-full max-w-7xl px-4 py-10 sm:px-6 sm:py-14 lg:px-8 lg:py-16"
         >
-          <div className="mx-auto max-w-2xl text-center">
+          <MotionReveal className="mx-auto max-w-2xl text-center">
             <p className="jf-eyebrow justify-center">
               Built for daily money control
             </p>
@@ -178,9 +179,9 @@ export default function HomePage() {
               A clean finance experience that feels simple for beginners and
               powerful enough for serious users.
             </p>
-          </div>
+          </MotionReveal>
 
-          <div className="mt-9 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <MotionReveal className="mt-9 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {features.map((feature, index) => {
               const Icon = feature.icon;
 
@@ -202,14 +203,14 @@ export default function HomePage() {
                 </article>
               );
             })}
-          </div>
+          </MotionReveal>
         </section>
 
         <section
           id="workflow"
           className="mx-auto w-full max-w-7xl px-4 py-10 sm:px-6 sm:py-14 lg:px-8 lg:py-16"
         >
-          <div className="jf-card-premium grid gap-8 p-5 sm:p-8 lg:grid-cols-[0.9fr_1.1fr] lg:p-10">
+          <MotionReveal className="jf-card-premium grid gap-8 p-5 sm:p-8 lg:grid-cols-[0.9fr_1.1fr] lg:p-10">
             <div>
               <div className="jf-icon-bubble mb-5">
                 <Zap className="h-6 w-6" />
@@ -244,11 +245,11 @@ export default function HomePage() {
                 </div>
               ))}
             </div>
-          </div>
+          </MotionReveal>
         </section>
 
         <section className="mx-auto grid w-full max-w-7xl gap-5 px-4 py-10 sm:px-6 sm:py-14 lg:grid-cols-[1fr_0.9fr] lg:px-8 lg:py-16">
-          <div className="jf-card-premium p-5 sm:p-8">
+          <MotionReveal className="jf-card-premium p-5 sm:p-8">
             <p className="jf-eyebrow">Finance modules</p>
             <h2 className="mt-3 text-[clamp(2rem,6vw,3.75rem)] font-black leading-none tracking-[-0.055em] text-text-primary">
               One workspace for every money area.
@@ -266,9 +267,9 @@ export default function HomePage() {
                 </span>
               ))}
             </div>
-          </div>
+          </MotionReveal>
 
-          <div className="jf-card p-5 sm:p-6">
+          <MotionReveal className="jf-card p-5 sm:p-6">
             <div className="mb-5 flex items-center justify-between">
               <div>
                 <p className="text-sm font-black text-text-primary">
@@ -301,7 +302,7 @@ export default function HomePage() {
                 </div>
               ))}
             </div>
-          </div>
+          </MotionReveal>
         </section>
 
         <section

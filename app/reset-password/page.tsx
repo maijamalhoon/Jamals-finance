@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { BarChart3, Eye, EyeOff, LoaderCircle, LockKeyhole } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import MotionReveal from "@/components/motion/MotionReveal";
 
 export default function ResetPasswordPage() {
   const supabase = useMemo(() => createClient(), []);
@@ -44,7 +45,7 @@ export default function ResetPasswordPage() {
 
   return (
     <main className="chat-auth-shell grid min-h-screen place-items-center px-4 py-8">
-      <div className="w-full max-w-md">
+      <MotionReveal className="w-full max-w-md">
         <div className="mb-8 flex flex-col items-center text-center">
           <div className="finance-icon-bubble mb-5 h-14 w-14 rounded-[22px]">
             <BarChart3 size={24} />
@@ -136,7 +137,7 @@ export default function ResetPasswordPage() {
             </button>
           </form>
         </div>
-      </div>
+      </MotionReveal>
     </main>
   );
 }

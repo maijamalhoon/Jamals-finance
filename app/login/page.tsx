@@ -3,6 +3,7 @@
 import { type FormEvent, type ReactNode, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
+import MotionReveal from "@/components/motion/MotionReveal";
 import {
   ArrowLeft,
   ArrowRight,
@@ -731,10 +732,9 @@ export default function LoginPage() {
         <HeroPanel />
 
         <div className="flex w-full flex-col items-center gap-4">
-          <motion.section
-            initial={{ opacity: 0.98, x: 10, scale: 0.992 }}
-            animate={{ opacity: 1, x: 0, scale: 1 }}
-            transition={{ duration: 0.32, ease: "easeOut" }}
+          <MotionReveal
+            as="section"
+            delay={0.02}
             className="jf-auth-card relative mx-auto w-full max-w-[480px] overflow-hidden rounded-[28px] border border-[rgba(255,255,255,0.14)] bg-[rgba(255,255,255,0.085)] p-5 backdrop-blur-xl sm:rounded-[32px] sm:p-7 lg:mx-0"
           >
             <div className="absolute inset-x-0 top-0 h-px bg-[linear-gradient(90deg,transparent,rgba(255,255,255,0.42),transparent)]" />
@@ -1071,7 +1071,7 @@ export default function LoginPage() {
                 <span>Protected by Supabase Auth and secure sessions.</span>
               </div>
             </div>
-          </motion.section>
+          </MotionReveal>
 
           <MobileHighlights />
         </div>

@@ -21,10 +21,18 @@ export default function MotionReveal<T extends ElementType = "div">({
 
   return (
     <MotionTag
-      initial={reduceMotion ? false : { opacity: 0, y: 10 }}
-      whileInView={reduceMotion ? undefined : { opacity: 1, y: 0 }}
+      initial={
+        reduceMotion
+          ? false
+          : { opacity: 0, y: 12, scale: 0.992 }
+      }
+      whileInView={
+        reduceMotion
+          ? undefined
+          : { opacity: 1, y: 0, scale: 1 }
+      }
       viewport={viewportReveal}
-      transition={{ duration: 0.28, ease: motionEase, delay }}
+      transition={{ duration: 0.42, ease: motionEase, delay }}
       {...props}
     >
       {children}
