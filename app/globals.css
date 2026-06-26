@@ -4052,3 +4052,70 @@ tbody tr:hover {
     transition: none !important;
   }
 }
+/* Dashboard section dividers + micro label polish */
+:where(.finance-panel, .finance-panel-soft, .summary-card)
+  :where([class*="divide-y"])
+  > :where(:not([hidden]) ~ :not([hidden])) {
+  border-color: color-mix(in srgb, var(--border), transparent 26%);
+}
+
+:where(.finance-panel, .finance-panel-soft, .summary-card)
+  :where(.border-t, .border-b, [class*="border-t"], [class*="border-b"]) {
+  border-color: color-mix(in srgb, var(--border), transparent 22%);
+}
+
+/* Soft premium section headers inside dashboard cards */
+:where(.finance-panel, .finance-panel-soft, .summary-card)
+  :where(
+    h2,
+    h3,
+    [class*="font-bold"][class*="tracking"],
+    [class*="font-semibold"][class*="tracking"]
+  ) {
+  text-wrap: balance;
+  text-rendering: geometricPrecision;
+}
+
+/* Small uppercase / eyebrow finance labels */
+:where(.finance-panel, .finance-panel-soft, .summary-card)
+  :where(
+    [class*="uppercase"],
+    [class*="tracking-wider"],
+    [class*="tracking-wide"]
+  ) {
+  letter-spacing: 0.075em;
+  color: color-mix(in srgb, var(--text-secondary), var(--text-primary) 10%);
+}
+
+/* Muted helper labels and metadata */
+:where(.finance-panel, .finance-panel-soft, .summary-card)
+  :where(
+    small,
+    [class*="text-muted"],
+    [class*="text-text-secondary"],
+    [class*="text-text-tertiary"]
+  ) {
+  text-rendering: geometricPrecision;
+}
+
+/* Gentle separator glow for grouped dashboard rows */
+:where(.finance-panel, .finance-panel-soft, .summary-card)
+  :where([class*="border-border"], [class*="divide-border"]) {
+  border-color: color-mix(in srgb, var(--border), transparent 18%);
+}
+
+/* Keep mobile calm and prevent label overflow */
+@media (max-width: 640px) {
+  :where(.finance-panel, .finance-panel-soft, .summary-card)
+    :where(
+      h2,
+      h3,
+      [class*="font-bold"][class*="tracking"],
+      [class*="font-semibold"][class*="tracking"],
+      [class*="uppercase"],
+      [class*="tracking-wider"],
+      [class*="tracking-wide"]
+    ) {
+    overflow-wrap: anywhere;
+  }
+}
