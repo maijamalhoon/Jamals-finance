@@ -3930,3 +3930,125 @@ tbody tr:hover {
     0 16px 34px rgba(0, 0, 0, 0.24),
     0 0 0 3px color-mix(in srgb, var(--active, var(--primary)), transparent 78%);
 }
+/* Dashboard badges + status pill polish */
+:where(.finance-panel, .finance-panel-soft, .summary-card, .page-heading)
+  :where(
+    .finance-state-pill,
+    span[class*="rounded-full"][class*="text-"],
+    div[class*="rounded-full"][class*="text-"],
+    span[class*="rounded-"][class*="text-[11px]"],
+    span[class*="rounded-"][class*="text-xs"]
+  ) {
+  border-color: color-mix(in srgb, currentColor, var(--border) 72%);
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, currentColor, transparent 91%),
+    color-mix(in srgb, currentColor, transparent 96%)
+  );
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.18),
+    0 1px 2px rgb(16 24 40 / 0.04);
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  line-height: 1;
+  text-shadow: none;
+}
+
+/* Success / paid / active / completed style */
+:where(.finance-panel, .finance-panel-soft, .summary-card, .page-heading)
+  :where(
+    .finance-state-pill.finance-status-success,
+    span[class*="rounded"][class*="text-emerald"],
+    span[class*="rounded"][class*="text-green"],
+    span[class*="rounded"][class*="text-lime"]
+  ) {
+  border-color: color-mix(in srgb, var(--success), transparent 66%);
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--success), transparent 88%),
+    color-mix(in srgb, var(--success), transparent 94%)
+  );
+  color: var(--success);
+}
+
+/* Danger / unpaid / overdue style */
+:where(.finance-panel, .finance-panel-soft, .summary-card, .page-heading)
+  :where(
+    .finance-state-pill.finance-status-danger,
+    span[class*="rounded"][class*="text-red"],
+    span[class*="rounded"][class*="text-rose"]
+  ) {
+  border-color: color-mix(in srgb, var(--danger), transparent 66%);
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--danger), transparent 88%),
+    color-mix(in srgb, var(--danger), transparent 94%)
+  );
+  color: var(--danger);
+}
+
+/* Warning / pending style */
+:where(.finance-panel, .finance-panel-soft, .summary-card, .page-heading)
+  :where(
+    .finance-state-pill.finance-status-warning,
+    span[class*="rounded"][class*="text-amber"],
+    span[class*="rounded"][class*="text-yellow"],
+    span[class*="rounded"][class*="text-orange"]
+  ) {
+  border-color: color-mix(in srgb, var(--warning), transparent 64%);
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--warning), transparent 87%),
+    color-mix(in srgb, var(--warning), transparent 94%)
+  );
+  color: var(--warning);
+}
+
+/* Info / neutral finance chips */
+:where(.finance-panel, .finance-panel-soft, .summary-card, .page-heading)
+  :where(
+    .finance-state-pill.finance-status-info,
+    span[class*="rounded"][class*="text-blue"],
+    span[class*="rounded"][class*="text-sky"],
+    span[class*="rounded"][class*="text-cyan"],
+    span[class*="rounded"][class*="text-indigo"]
+  ) {
+  border-color: color-mix(in srgb, var(--active), transparent 68%);
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--active), transparent 89%),
+    color-mix(in srgb, var(--active), transparent 95%)
+  );
+  color: var(--active);
+}
+
+/* Percent labels / small numeric labels */
+:where(.finance-panel, .finance-panel-soft, .summary-card)
+  :where([class*="text-[10px]"], [class*="text-[11px]"], [class*="text-xs"]) {
+  font-variant-numeric: tabular-nums;
+  text-rendering: geometricPrecision;
+}
+
+/* Category dots polish */
+:where(.finance-panel, .finance-panel-soft, .summary-card)
+  :where(
+    span[class*="h-2"][class*="w-2"][class*="rounded-full"],
+    span[class*="h-2.5"][class*="w-2.5"][class*="rounded-full"],
+    span[class*="size-2"][class*="rounded-full"],
+    span[class*="size-2.5"][class*="rounded-full"]
+  ) {
+  box-shadow:
+    0 0 0 3px color-mix(in srgb, var(--card), transparent 18%),
+    0 0 0 4px color-mix(in srgb, var(--border), transparent 42%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :where(.finance-panel, .finance-panel-soft, .summary-card, .page-heading)
+    :where(
+      .finance-state-pill,
+      span[class*="rounded-full"][class*="text-"],
+      div[class*="rounded-full"][class*="text-"]
+    ) {
+    transition: none !important;
+  }
+}
