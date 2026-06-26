@@ -353,6 +353,7 @@ function MobileHighlights() {
 }
 
 export default function LoginPage() {
+  const router = useRouter();
   const supabase = useMemo(() => createClient(), []);
   const router = useRouter();
   const isGoogleAuthEnabled = true;
