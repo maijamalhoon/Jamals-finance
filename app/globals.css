@@ -3443,3 +3443,58 @@ tbody tr:hover {
     will-change: auto;
   }
 }
+/* Dashboard card hover + press polish */
+@media (hover: hover) and (pointer: fine) {
+  :where(.card-hover, [data-slot="card"]) {
+    transform: translate3d(0, 0, 0);
+    transition:
+      transform 220ms cubic-bezier(0.16, 1, 0.3, 1),
+      box-shadow 220ms cubic-bezier(0.16, 1, 0.3, 1),
+      border-color 220ms cubic-bezier(0.16, 1, 0.3, 1),
+      background-color 220ms cubic-bezier(0.16, 1, 0.3, 1);
+    will-change: transform;
+  }
+
+  :where(.card-hover, [data-slot="card"]):hover {
+    transform: translate3d(0, -3px, 0);
+    border-color: color-mix(in srgb, var(--active), transparent 72%);
+    box-shadow:
+      0 22px 55px rgba(15, 23, 42, 0.1),
+      0 0 0 1px color-mix(in srgb, var(--active), transparent 88%);
+  }
+
+  .dark :where(.card-hover, [data-slot="card"]):hover {
+    box-shadow:
+      0 24px 60px rgba(0, 0, 0, 0.34),
+      0 0 0 1px color-mix(in srgb, var(--active), transparent 78%),
+      0 0 28px color-mix(in srgb, var(--active), transparent 88%);
+  }
+}
+
+:where(.card-hover, [data-slot="card"]):active {
+  transform: translate3d(0, -1px, 0) scale(0.997);
+  transition-duration: 110ms;
+}
+
+:where(.card-hover, [data-slot="card"]):focus-within {
+  border-color: color-mix(in srgb, var(--active), transparent 68%);
+  box-shadow:
+    0 18px 42px rgba(15, 23, 42, 0.08),
+    0 0 0 1px color-mix(in srgb, var(--active), transparent 82%);
+}
+
+@media (hover: none) {
+  :where(.card-hover, [data-slot="card"]):active {
+    transform: scale(0.992);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :where(.card-hover, [data-slot="card"]),
+  :where(.card-hover, [data-slot="card"]):hover,
+  :where(.card-hover, [data-slot="card"]):active {
+    transform: none !important;
+    transition: none !important;
+    will-change: auto !important;
+  }
+}
