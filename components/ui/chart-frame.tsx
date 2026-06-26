@@ -17,8 +17,8 @@ type ChartFrameProps = {
   tone?: string;
 };
 
-const MIN_RENDER_WIDTH = 16;
-const MIN_RENDER_HEIGHT = 16;
+const MIN_RENDER_WIDTH = 32;
+const MIN_RENDER_HEIGHT = 32;
 
 function getElementSize(element: HTMLDivElement | null): ChartSize {
   if (!element) {
@@ -36,6 +36,10 @@ function getElementSize(element: HTMLDivElement | null): ChartSize {
   };
 }
 
+function isRenderableSize(size: ChartSize) {
+  return size.width >= MIN_RENDER_WIDTH && size.height >= MIN_RENDER_HEIGHT;
+}
+
 export default function ChartFrame({
   children,
   className = "",
@@ -44,6 +48,7 @@ export default function ChartFrame({
 }: ChartFrameProps) {
   const frameRef = useRef<HTMLDivElement | null>(null);
   const animationFrameRef = useRef<number | null>(null);
+  const secondAnimationFrameRef = useRef<number | null>(null);
 
   const [size, setSize] = useState<ChartSize>({
     width: 0,
@@ -75,17 +80,27 @@ export default function ChartFrame({
         cancelAnimationFrame(animationFrameRef.current);
       }
 
-      animationFrameRef.current = requestAnimationFrame(updateSize);
+      if (secondAnimationFrameRef.current) {
+        cancelAnimationFrame(secondAnimationFrameRef.current);
+      }
+
+      animationFrameRef.current = requestAnimationFrame(() => {
+        secondAnimationFrameRef.current = requestAnimationFrame(updateSize);
+      });
     };
 
     scheduleUpdate();
 
-    if (typeof ResizeObserver === "undefined") {
-      window.addEventListener("resize", scheduleUpdate);
+    window.addEventListener("resize", scheduleUpdate);
 
+    if (typeof ResizeObserver === "undefined") {
       return () => {
         if (animationFrameRef.current) {
           cancelAnimationFrame(animationFrameRef.current);
+        }
+
+        if (secondAnimationFrameRef.current) {
+          cancelAnimationFrame(secondAnimationFrameRef.current);
         }
 
         window.removeEventListener("resize", scheduleUpdate);
@@ -101,23 +116,34 @@ export default function ChartFrame({
         cancelAnimationFrame(animationFrameRef.current);
       }
 
+      if (secondAnimationFrameRef.current) {
+        cancelAnimationFrame(secondAnimationFrameRef.current);
+      }
+
       resizeObserver.disconnect();
+      window.removeEventListener("resize", scheduleUpdate);
     };
   }, []);
 
-  const isReady =
-    size.width >= MIN_RENDER_WIDTH && size.height >= MIN_RENDER_HEIGHT;
+  const isReady = isRenderableSize(size);
 
-  const content = typeof children === "function" ? children(size) : children;
+  const content =
+    isReady && typeof children === "function" ? children(size) : children;
 
   return (
     <div
       ref={frameRef}
-      className={`relative w-full min-w-0 ${className}`}
+      className={`relative w-full min-w-0 overflow-hidden ${className}`}
       data-chart-tone={tone}
       style={style}
     >
-      {isReady ? content : <div aria-hidden="true" className="h-full w-full" />}
+      {isReady ?
+        <div className="h-full min-h-0 w-full min-w-0">{content}</div>
+      : <div
+          aria-hidden="true"
+          className="jf-skeleton h-full min-h-[180px] w-full"
+        />
+      }
     </div>
   );
 }
