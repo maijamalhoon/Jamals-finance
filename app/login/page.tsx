@@ -381,7 +381,7 @@ export default function LoginPage() {
     setStep("email");
   }
 
-  async function handleEmailContinue(event: FormEvent) {
+  function handleEmailContinue(event: FormEvent) {
     event.preventDefault();
     resetFeedback();
 
@@ -397,23 +397,10 @@ export default function LoginPage() {
       return;
     }
 
-    setLoadingMode("checking");
-
-    const { data, error: rpcError } = await supabase.rpc("email_exists", {
-      p_email: nextEmail,
-    });
-
-    setLoadingMode(null);
-
-    if (rpcError) {
-      setError(
-        "We could not check this account. Please verify the Supabase email_exists RPC.",
-      );
-      return;
-    }
-
     setEmail(nextEmail);
-    setStep(data === true ? "login" : "signup");
+    setPassword("");
+    setShowPassword(false);
+    setStep("login");
   }
 
   async function handleLogin(event: FormEvent) {
@@ -567,9 +554,9 @@ export default function LoginPage() {
   const subtitle =
     step === "email" ? "Secure access for your personal finance dashboard."
     : step === "login" ?
-      "This account already exists. Enter your password to continue."
+      "Enter your password to continue, or create a new account."
     : step === "signup" ?
-      "This email is new. Add your details to finish signup."
+      "Add your details to create your Jamal's Finance account."
     : step === "forgot" ?
       "Enter your email and we will send a secure reset link."
     : message || "Open your inbox and follow the secure link.";
@@ -750,6 +737,20 @@ export default function LoginPage() {
                     >
                       Forgot password?
                     </button>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        resetFeedback();
+                        setPassword("");
+                        setShowPassword(false);
+                        setStep("signup");
+                      }}
+                      disabled={isLoading}
+                      className="w-full rounded-lg py-2 text-sm font-semibold text-[#bfdbfe] transition hover:bg-[rgba(255,255,255,0.1)] hover:text-[#f8fbff] disabled:cursor-not-allowed disabled:opacity-60"
+                    >
+                      Create a new account
+                    </button>
                   </motion.form>
                 : null}
 
@@ -762,7 +763,9 @@ export default function LoginPage() {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -8 }}
                   >
-                    <Feedback tone="info">New account for {email}</Feedback>
+                    <Feedback tone="info">
+                      Creating account for {email}
+                    </Feedback>
 
                     <Field
                       label="Full name"
