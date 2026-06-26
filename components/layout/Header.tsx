@@ -1,6 +1,6 @@
 "use client";
 
-import { Bell, CalendarDays, Search } from "lucide-react";
+import { Bell, Search } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
@@ -9,7 +9,9 @@ import { formatInAppTimeZone } from "@/lib/dates";
 import { isNavItemActive, NAV_ITEMS } from "@/lib/navigation";
 
 function getRouteTitle(pathname: string) {
-  const navItem = NAV_ITEMS.find((item) => isNavItemActive(pathname, item.href));
+  const navItem = NAV_ITEMS.find((item) =>
+    isNavItemActive(pathname, item.href),
+  );
   if (navItem) return navItem.label;
   if (pathname.startsWith("/dashboard/income")) return "Income";
   if (pathname.startsWith("/dashboard/expenses")) return "Expenses";
@@ -92,15 +94,6 @@ export default function Header() {
           />
         </form>
 
-        <time className="finance-control hidden h-10 items-center gap-2 px-3 text-xs font-medium text-text-secondary xl:flex">
-          <CalendarDays size={14} className="text-text-secondary" />
-          {formatInAppTimeZone(new Date(), {
-            month: "short",
-            day: "numeric",
-            year: "numeric",
-          })}
-        </time>
-
         <div className="relative" ref={bellRef}>
           <button
             onClick={() => setBellOpen((current) => !current)}
@@ -130,8 +123,13 @@ export default function Header() {
                   </p>
                 </div>
                 <div className="motion-empty p-4 py-8 text-center">
-                  <Bell size={24} className="mx-auto mb-2 text-text-secondary" />
-                  <p className="text-sm text-text-secondary">No new notifications</p>
+                  <Bell
+                    size={24}
+                    className="mx-auto mb-2 text-text-secondary"
+                  />
+                  <p className="text-sm text-text-secondary">
+                    No new notifications
+                  </p>
                   <p className="mt-1 text-xs text-text-secondary">
                     You're all caught up
                   </p>
@@ -140,7 +138,6 @@ export default function Header() {
             )}
           </AnimatePresence>
         </div>
-
       </div>
     </header>
   );
