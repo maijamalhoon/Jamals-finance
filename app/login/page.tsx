@@ -2,38 +2,26 @@
 
 import { type FormEvent, type ReactNode, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { motion, AnimatePresence } from "framer-motion";
-import MotionReveal from "@/components/motion/MotionReveal";
+import { AnimatePresence, motion } from "framer-motion";
 import {
   ArrowLeft,
   ArrowRight,
-  BadgeCheck,
   CheckCircle2,
   Eye,
   EyeOff,
-  LineChart,
   LoaderCircle,
   LockKeyhole,
   Mail,
   ShieldCheck,
   Sparkles,
-  TrendingUp,
   UserRound,
-  WalletCards,
   X,
 } from "lucide-react";
+
 import { createClient } from "@/lib/supabase/client";
 
-type Step = "email" | "login" | "signup" | "forgot" | "check-email";
-
-type LoadingMode =
-  | "checking"
-  | "signing"
-  | "creating"
-  | "google"
-  | "sending"
-  | null;
-
+type Step = "login" | "signup" | "forgot" | "check-email";
+type LoadingMode = "signing" | "creating" | "google" | "sending" | null;
 type OAuthProvider = "google";
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -48,7 +36,10 @@ function AuthPolishStyles() {
         __html: `
 .jf-login-polish {
   isolation: isolate;
-  background: linear-gradient(135deg, #07111a 0%, #0c1724 48%, #121523 100%);
+  background:
+    radial-gradient(circle at 18% 12%, rgba(34, 197, 94, 0.16), transparent 30%),
+    radial-gradient(circle at 82% 18%, rgba(56, 189, 248, 0.18), transparent 34%),
+    linear-gradient(135deg, #07111a 0%, #0b1522 48%, #111827 100%);
   color: #f8fbff;
 }
 
@@ -56,36 +47,26 @@ function AuthPolishStyles() {
   background: rgba(147, 197, 253, 0.28);
 }
 
-.jf-auth-grid {
-  min-height: auto;
-}
-
-@media (min-width: 1024px) {
-  .jf-auth-grid {
-    min-height: min(640px, calc(100svh - 48px));
-  }
-}
-
 .jf-auth-orb {
   position: absolute;
   border-radius: 9999px;
-  filter: blur(70px);
+  filter: blur(80px);
   opacity: 0.42;
   transform: translateZ(0);
-  animation: jfAuthOrb 10s ease-in-out infinite;
+  animation: jfAuthOrb 11s ease-in-out infinite;
 }
 
 .jf-auth-orb-one {
-  left: -9rem;
-  top: 7rem;
+  left: -7rem;
+  top: 8rem;
   height: 18rem;
   width: 18rem;
   background: rgba(56, 189, 248, 0.2);
 }
 
 .jf-auth-orb-two {
-  bottom: 3rem;
-  right: -8rem;
+  bottom: -5rem;
+  right: -7rem;
   height: 20rem;
   width: 20rem;
   background: rgba(34, 197, 94, 0.16);
@@ -95,7 +76,7 @@ function AuthPolishStyles() {
 .jf-auth-card {
   transform: translateZ(0);
   box-shadow:
-    0 32px 90px rgba(0, 0, 0, 0.32),
+    0 32px 96px rgba(0, 0, 0, 0.34),
     inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 
@@ -106,30 +87,8 @@ function AuthPolishStyles() {
   pointer-events: none;
   border-radius: inherit;
   background:
-    radial-gradient(circle at 20% 0%, rgba(147, 197, 253, 0.12), transparent 32%),
-    radial-gradient(circle at 80% 0%, rgba(134, 239, 172, 0.08), transparent 34%);
-}
-
-.jf-auth-panel {
-  transform: translateZ(0);
-  box-shadow:
-    0 32px 96px rgba(0, 0, 0, 0.28),
-    inset 0 1px 0 rgba(255, 255, 255, 0.08);
-}
-
-.jf-auth-soft-card {
-  transform: translateZ(0);
-  transition:
-    transform 220ms ease,
-    border-color 220ms ease,
-    background-color 220ms ease,
-    box-shadow 220ms ease;
-}
-
-.jf-auth-soft-card:hover {
-  transform: translateY(-3px);
-  border-color: rgba(255, 255, 255, 0.2);
-  background-color: rgba(255, 255, 255, 0.095);
+    radial-gradient(circle at 20% 0%, rgba(147, 197, 253, 0.13), transparent 34%),
+    radial-gradient(circle at 80% 0%, rgba(134, 239, 172, 0.09), transparent 36%);
 }
 
 .jf-auth-input-glow:focus-within {
@@ -151,27 +110,6 @@ function AuthPolishStyles() {
   animation: jfAuthSheen 5.2s ease-in-out infinite;
 }
 
-.jf-auth-bar {
-  display: block;
-  width: 100%;
-  border-radius: 9999px;
-  background: linear-gradient(180deg, #f8fbff, #93c5fd);
-  transform-origin: bottom;
-  animation: jfAuthBar 3.6s ease-in-out infinite;
-}
-
-.jf-auth-mobile-chip {
-  transform: translateZ(0);
-  transition:
-    transform 220ms ease,
-    border-color 220ms ease,
-    background-color 220ms ease;
-}
-
-.jf-auth-mobile-chip:hover {
-  transform: translateY(-2px);
-}
-
 @keyframes jfAuthOrb {
   0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
   50% { transform: translate3d(12px, -16px, 0) scale(1.08); }
@@ -180,21 +118,6 @@ function AuthPolishStyles() {
 @keyframes jfAuthSheen {
   0%, 70% { transform: translateX(-120%); }
   84%, 100% { transform: translateX(120%); }
-}
-
-@keyframes jfAuthBar {
-  0%, 100% { transform: scaleY(0.82); opacity: 0.82; }
-  50% { transform: scaleY(1); opacity: 1; }
-}
-
-@media (max-width: 639px) {
-  .jf-auth-grid {
-    min-height: auto;
-  }
-
-  .jf-auth-card {
-    box-shadow: 0 24px 70px rgba(0, 0, 0, 0.26);
-  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -378,154 +301,12 @@ function Feedback({
   );
 }
 
-function MiniStat({
-  icon,
-  label,
-  value,
-  tone,
-}: {
-  icon: ReactNode;
-  label: string;
-  value: string;
-  tone: string;
-}) {
-  return (
-    <div className="jf-auth-soft-card rounded-2xl border border-[rgba(255,255,255,0.12)] bg-[rgba(255,255,255,0.075)] p-4 shadow-[0_18px_55px_rgba(0,0,0,0.18)]">
-      <div className="flex items-center justify-between gap-3">
-        <div className="grid h-10 w-10 place-items-center rounded-2xl border border-[rgba(255,255,255,0.12)] bg-[rgba(255,255,255,0.09)] text-[#dbeafe]">
-          {icon}
-        </div>
-        <span className={`rounded-full px-2.5 py-1 text-xs font-bold ${tone}`}>
-          Live
-        </span>
-      </div>
-
-      <p className="mt-5 text-sm font-medium text-[rgba(248,251,255,0.56)]">
-        {label}
-      </p>
-      <p className="mt-1 text-3xl font-semibold text-[#f8fbff]">{value}</p>
-    </div>
-  );
-}
-
-function HeroPanel() {
-  return (
-    <motion.aside
-      initial={{ opacity: 0.96, x: -10 }}
-      animate={{ opacity: 1, x: 0 }}
-      transition={{ duration: 0.32, ease: "easeOut" }}
-      className="jf-auth-panel relative hidden min-h-[500px] w-full flex-col justify-center overflow-hidden rounded-[32px] border border-[rgba(255,255,255,0.1)] bg-[linear-gradient(145deg,rgba(255,255,255,0.09),rgba(255,255,255,0.035))] p-8 lg:flex xl:min-h-[560px] xl:p-10"
-    >
-      <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(255,255,255,0.055)_1px,transparent_1px),linear-gradient(0deg,rgba(255,255,255,0.045)_1px,transparent_1px)] bg-[size:44px_44px] opacity-35" />
-      <div className="absolute inset-x-0 top-0 h-1 bg-[linear-gradient(90deg,#22c55e,#38bdf8,#fbbf24)]" />
-
-      <div className="relative z-10">
-        <div className="inline-flex items-center gap-2 rounded-2xl border border-[rgba(255,255,255,0.12)] bg-[rgba(255,255,255,0.08)] px-3.5 py-2 text-sm font-semibold text-[rgba(248,251,255,0.72)]">
-          <Sparkles className="h-4 w-4 text-[#fef3c7]" />
-          Jamals Finance
-        </div>
-
-        <h2 className="mt-8 max-w-[620px] text-[48px] font-semibold leading-[1.05] text-[#f8fbff] xl:text-[58px]">
-          Secure access for your complete money workspace.
-        </h2>
-
-        <p className="mt-5 max-w-[510px] text-[16px] leading-7 text-[rgba(248,251,255,0.64)]">
-          Track accounts, cash flow, goals and payables with a clean dashboard
-          that feels fast on every screen.
-        </p>
-
-        <div className="mt-10 grid max-w-[680px] grid-cols-2 gap-4">
-          <MiniStat
-            icon={<WalletCards className="h-5 w-5" />}
-            label="Net balance"
-            value="$24,850"
-            tone="bg-[rgba(34,197,94,0.14)] text-[#bbf7d0]"
-          />
-
-          <MiniStat
-            icon={<TrendingUp className="h-5 w-5" />}
-            label="Monthly growth"
-            value="+18.4%"
-            tone="bg-[rgba(251,191,36,0.15)] text-[#fde68a]"
-          />
-
-          <div className="jf-auth-soft-card col-span-2 rounded-2xl border border-[rgba(255,255,255,0.12)] bg-[rgba(255,255,255,0.075)] p-4">
-            <div className="mb-4 flex items-center justify-between gap-3">
-              <div className="flex items-center gap-3">
-                <div className="grid h-10 w-10 place-items-center rounded-2xl border border-[rgba(255,255,255,0.12)] bg-[rgba(255,255,255,0.09)] text-[#bfdbfe]">
-                  <LineChart className="h-5 w-5" />
-                </div>
-                <div>
-                  <p className="font-semibold text-[#f8fbff]">Cash flow</p>
-                  <p className="text-xs font-medium text-[rgba(248,251,255,0.48)]">
-                    Monthly rhythm
-                  </p>
-                </div>
-              </div>
-              <BadgeCheck className="h-5 w-5 text-[#86efac]" />
-            </div>
-
-            <div className="flex h-20 items-end gap-2">
-              {[38, 58, 46, 74, 56, 82, 66, 92].map((height, index) => (
-                <span
-                  key={index}
-                  className="jf-auth-bar"
-                  style={{
-                    height,
-                    animationDelay: `${index * 90}ms`,
-                  }}
-                />
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-    </motion.aside>
-  );
-}
-
-function MobileHighlights() {
-  return (
-    <div className="grid w-full max-w-[460px] grid-cols-1 gap-3 sm:grid-cols-2 lg:hidden">
-      {[
-        {
-          icon: <WalletCards className="h-5 w-5 text-[#86efac]" />,
-          title: "Smart dashboard",
-          copy: "Accounts, goals and cash flow together.",
-        },
-        {
-          icon: <LineChart className="h-5 w-5 text-[#93c5fd]" />,
-          title: "Fast insights",
-          copy: "Smooth charts with secure sync.",
-        },
-      ].map((item) => (
-        <div
-          key={item.title}
-          className="jf-auth-mobile-chip rounded-2xl border border-[rgba(255,255,255,0.12)] bg-[rgba(255,255,255,0.07)] p-4"
-        >
-          <div className="flex items-center gap-3">
-            {item.icon}
-            <div>
-              <p className="text-sm font-semibold text-[#f8fbff]">
-                {item.title}
-              </p>
-              <p className="text-xs text-[rgba(248,251,255,0.54)]">
-                {item.copy}
-              </p>
-            </div>
-          </div>
-        </div>
-      ))}
-    </div>
-  );
-}
-
 export default function LoginPage() {
   const router = useRouter();
   const supabase = useMemo(() => createClient(), []);
   const isGoogleAuthEnabled = true;
 
-  const [step, setStep] = useState<Step>("email");
+  const [step, setStep] = useState<Step>("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
@@ -542,37 +323,37 @@ export default function LoginPage() {
     setMessage("");
   }
 
-  function backToEmail() {
+  function switchStep(nextStep: Step) {
     resetFeedback();
     setPassword("");
-    setStep("email");
+    setShowPassword(false);
+    setStep(nextStep);
   }
 
-  function handleEmailContinue(event: FormEvent) {
-    event.preventDefault();
-    resetFeedback();
-
+  function validateEmailAddress() {
     const nextEmail = cleanEmail(email);
 
     if (!nextEmail) {
       setError("Enter your email address.");
-      return;
+      return null;
     }
 
     if (!emailRegex.test(nextEmail)) {
       setError("Enter a valid email address.");
-      return;
+      return null;
     }
 
     setEmail(nextEmail);
-    setPassword("");
-    setShowPassword(false);
-    setStep("login");
+    return nextEmail;
   }
 
   async function handleLogin(event: FormEvent) {
     event.preventDefault();
     resetFeedback();
+
+    const nextEmail = validateEmailAddress();
+
+    if (!nextEmail) return;
 
     if (!password) {
       setError("Enter your password.");
@@ -582,7 +363,7 @@ export default function LoginPage() {
     setLoadingMode("signing");
 
     const { error: signInError } = await supabase.auth.signInWithPassword({
-      email: cleanEmail(email),
+      email: nextEmail,
       password,
     });
 
@@ -600,7 +381,10 @@ export default function LoginPage() {
     event.preventDefault();
     resetFeedback();
 
+    const nextEmail = validateEmailAddress();
     const numericAge = Number(age);
+
+    if (!nextEmail) return;
 
     if (!fullName.trim()) {
       setError("Enter your full name.");
@@ -625,7 +409,7 @@ export default function LoginPage() {
     setLoadingMode("creating");
 
     const { data, error: signUpError } = await supabase.auth.signUp({
-      email: cleanEmail(email),
+      email: nextEmail,
       password,
       options: {
         data: {
@@ -659,7 +443,7 @@ export default function LoginPage() {
 
     setLoadingMode(null);
     setStep("check-email");
-    setMessage(`A verification link has been sent to ${cleanEmail(email)}.`);
+    setMessage(`A verification link has been sent to ${nextEmail}.`);
   }
 
   async function handleOAuthSignIn(provider: OAuthProvider) {
@@ -684,12 +468,9 @@ export default function LoginPage() {
     event.preventDefault();
     resetFeedback();
 
-    const nextEmail = cleanEmail(email);
+    const nextEmail = validateEmailAddress();
 
-    if (!nextEmail || !emailRegex.test(nextEmail)) {
-      setError("Enter a valid email address.");
-      return;
-    }
+    if (!nextEmail) return;
 
     setLoadingMode("sending");
 
@@ -712,378 +493,393 @@ export default function LoginPage() {
   }
 
   const title =
-    step === "email" ? "Log in or sign up"
-    : step === "login" ? "Welcome back"
+    step === "login" ? "Welcome back"
     : step === "signup" ? "Create your account"
     : step === "forgot" ? "Reset password"
     : "Check your email";
 
   const subtitle =
-    step === "email" ? "Secure access for your personal finance dashboard."
-    : step === "login" ?
-      "Enter your password to continue, or create a new account."
+    step === "login" ? "Log in to continue to your personal finance dashboard."
     : step === "signup" ?
-      "Add your details to create your Jamal's Finance account."
+      "Create a secure Jamal's Finance account in a few seconds."
     : step === "forgot" ?
       "Enter your email and we will send a secure reset link."
     : message || "Open your inbox and follow the secure link.";
 
   return (
-    <main className="jf-auth-page jf-login-polish relative min-h-dvh overflow-x-hidden px-3 py-3 text-[#f8fbff] sm:px-6 sm:py-5 lg:px-8">
+    <main className="jf-auth-page jf-login-polish relative flex min-h-dvh items-center justify-center overflow-hidden px-4 py-8 text-[#f8fbff] sm:px-6 lg:px-8">
       <AuthPolishStyles />
       <div className="jf-auth-orb jf-auth-orb-one" />
       <div className="jf-auth-orb jf-auth-orb-two" />
-      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(90deg,rgba(255,255,255,0.045)_1px,transparent_1px),linear-gradient(0deg,rgba(255,255,255,0.04)_1px,transparent_1px)] bg-[size:52px_52px] opacity-25" />
+      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(90deg,rgba(255,255,255,0.045)_1px,transparent_1px),linear-gradient(0deg,rgba(255,255,255,0.04)_1px,transparent_1px)] bg-[size:52px_52px] opacity-20" />
       <div className="pointer-events-none absolute inset-x-0 top-0 h-1 bg-[linear-gradient(90deg,#22c55e,#38bdf8,#fbbf24)]" />
 
-      <div className="jf-auth-grid relative mx-auto grid w-full max-w-[1240px] items-center gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(390px,460px)] lg:gap-8">
-        <HeroPanel />
+      <motion.section
+        initial={{ opacity: 0, y: 18, scale: 0.985 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        transition={{ duration: 0.28, ease: "easeOut" }}
+        className="jf-auth-card relative w-full max-w-[520px] overflow-hidden rounded-[30px] border border-[rgba(255,255,255,0.14)] bg-[rgba(255,255,255,0.085)] p-5 backdrop-blur-xl sm:rounded-[34px] sm:p-7"
+      >
+        <div className="absolute inset-x-0 top-0 h-px bg-[linear-gradient(90deg,transparent,rgba(255,255,255,0.42),transparent)]" />
 
-        <div className="flex w-full flex-col items-center gap-4">
-          <MotionReveal
-            as="section"
-            delay={0.02}
-            className="jf-auth-card relative mx-auto w-full max-w-[480px] overflow-hidden rounded-[28px] border border-[rgba(255,255,255,0.14)] bg-[rgba(255,255,255,0.085)] p-5 backdrop-blur-xl sm:rounded-[32px] sm:p-7 lg:mx-0"
+        <div className="relative z-10">
+          <button
+            type="button"
+            onClick={() => router.push("/")}
+            className="absolute right-0 top-0 grid h-10 w-10 place-items-center rounded-2xl text-[rgba(248,251,255,0.48)] transition hover:bg-[rgba(255,255,255,0.1)] hover:text-[#f8fbff] active:scale-95"
+            aria-label="Close"
           >
-            <div className="absolute inset-x-0 top-0 h-px bg-[linear-gradient(90deg,transparent,rgba(255,255,255,0.42),transparent)]" />
+            <X className="h-5 w-5" />
+          </button>
 
-            <div className="relative z-10">
+          <div className="mb-7 text-center">
+            <div className="mx-auto mb-4 inline-flex items-center gap-2 rounded-2xl border border-[rgba(255,255,255,0.12)] bg-[rgba(255,255,255,0.08)] px-3.5 py-2 text-sm font-semibold text-[rgba(248,251,255,0.72)]">
+              <Sparkles className="h-4 w-4 text-[#fef3c7]" />
+              Jamals Finance
+            </div>
+
+            <div className="mx-auto mb-4 grid h-12 w-12 place-items-center rounded-2xl border border-[rgba(255,255,255,0.13)] bg-[rgba(255,255,255,0.09)] shadow-[0_16px_36px_rgba(59,130,246,0.16)]">
+              <ShieldCheck className="h-6 w-6 text-[#bfdbfe]" />
+            </div>
+
+            <h1 className="text-[30px] font-semibold leading-tight text-[#f8fbff] sm:text-[36px]">
+              {title}
+            </h1>
+
+            <p className="mx-auto mt-3 max-w-[350px] text-[15px] leading-7 text-[rgba(248,251,255,0.62)]">
+              {subtitle}
+            </p>
+          </div>
+
+          {step === "login" || step === "signup" ?
+            <div className="mb-5 grid grid-cols-2 rounded-2xl border border-[rgba(255,255,255,0.12)] bg-[rgba(255,255,255,0.065)] p-1">
               <button
                 type="button"
-                onClick={() => router.push("/")}
-                className="absolute right-0 top-0 grid h-10 w-10 place-items-center rounded-2xl text-[rgba(248,251,255,0.48)] transition hover:bg-[rgba(255,255,255,0.1)] hover:text-[#f8fbff] active:scale-95"
-                aria-label="Close"
+                onClick={() => switchStep("login")}
+                disabled={isLoading}
+                className={`h-10 rounded-xl text-sm font-bold transition ${
+                  step === "login" ?
+                    "bg-[#f8fbff] text-[#07101f] shadow-[0_12px_28px_rgba(216,235,255,0.12)]"
+                  : "text-[rgba(248,251,255,0.58)] hover:bg-[rgba(255,255,255,0.08)] hover:text-[#f8fbff]"
+                }`}
               >
-                <X className="h-5 w-5" />
+                Login
               </button>
+              <button
+                type="button"
+                onClick={() => switchStep("signup")}
+                disabled={isLoading}
+                className={`h-10 rounded-xl text-sm font-bold transition ${
+                  step === "signup" ?
+                    "bg-[#f8fbff] text-[#07101f] shadow-[0_12px_28px_rgba(216,235,255,0.12)]"
+                  : "text-[rgba(248,251,255,0.58)] hover:bg-[rgba(255,255,255,0.08)] hover:text-[#f8fbff]"
+                }`}
+              >
+                Sign up
+              </button>
+            </div>
+          : null}
 
-              {step !== "email" ?
+          <AnimatePresence mode="wait">
+            {step === "login" ?
+              <motion.form
+                key="login"
+                onSubmit={handleLogin}
+                noValidate
+                className="space-y-4"
+                initial={{ opacity: 0.96, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8 }}
+              >
+                {isGoogleAuthEnabled ?
+                  <>
+                    <SocialButton
+                      icon={<GoogleLogo />}
+                      onClick={() => handleOAuthSignIn("google")}
+                      disabled={isLoading}
+                      loading={loadingMode === "google"}
+                    >
+                      Continue with Google
+                    </SocialButton>
+
+                    <div className="flex items-center gap-5 py-2">
+                      <span className="h-px flex-1 bg-[rgba(255,255,255,0.13)]" />
+                      <span className="text-xs font-semibold text-[rgba(255,255,255,0.46)]">
+                        OR
+                      </span>
+                      <span className="h-px flex-1 bg-[rgba(255,255,255,0.13)]" />
+                    </div>
+                  </>
+                : null}
+
+                <Field
+                  label="Email address"
+                  icon={<Mail className="h-4 w-4" />}
+                >
+                  <input
+                    value={email}
+                    onChange={(event) => setEmail(event.target.value)}
+                    placeholder="Email address"
+                    autoComplete="email"
+                    inputMode="email"
+                    disabled={isLoading}
+                    className={`${inputBaseClass} pl-11 disabled:cursor-not-allowed disabled:opacity-70`}
+                  />
+                </Field>
+
+                <Field
+                  label="Password"
+                  icon={<LockKeyhole className="h-4 w-4" />}
+                >
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    value={password}
+                    onChange={(event) => setPassword(event.target.value)}
+                    placeholder="Enter your password"
+                    autoComplete="current-password"
+                    disabled={isLoading}
+                    className={`${inputBaseClass} pl-11 pr-12 disabled:cursor-not-allowed disabled:opacity-70`}
+                  />
+
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((value) => !value)}
+                    className="absolute right-2 top-1/2 grid h-9 w-9 -translate-y-1/2 place-items-center rounded-2xl text-[rgba(248,251,255,0.44)] transition hover:bg-[rgba(255,255,255,0.1)] hover:text-[#f8fbff]"
+                    aria-label={
+                      showPassword ? "Hide password" : "Show password"
+                    }
+                  >
+                    {showPassword ?
+                      <EyeOff className="h-4 w-4" />
+                    : <Eye className="h-4 w-4" />}
+                  </button>
+                </Field>
+
+                {error ?
+                  <Feedback tone="error">{error}</Feedback>
+                : null}
+
+                <PrimaryButton
+                  type="submit"
+                  disabled={isLoading}
+                  loading={loadingMode === "signing"}
+                >
+                  Log in
+                </PrimaryButton>
+
                 <button
                   type="button"
-                  onClick={backToEmail}
-                  className="mb-4 inline-flex h-10 items-center gap-2 rounded-2xl px-2 text-sm font-semibold text-[rgba(248,251,255,0.58)] transition hover:bg-[rgba(255,255,255,0.1)] hover:text-[#f8fbff]"
+                  onClick={() => switchStep("forgot")}
+                  disabled={isLoading}
+                  className="w-full rounded-2xl py-2 text-sm font-semibold text-[rgba(248,251,255,0.6)] transition hover:bg-[rgba(255,255,255,0.1)] hover:text-[#f8fbff] disabled:cursor-not-allowed disabled:opacity-60"
                 >
-                  <ArrowLeft className="h-4 w-4" />
-                  Back
+                  Forgot password?
                 </button>
-              : <div className="h-10" />}
+              </motion.form>
+            : null}
 
-              <div className="mb-7 text-center">
-                <div className="mx-auto mb-4 grid h-12 w-12 place-items-center rounded-2xl border border-[rgba(255,255,255,0.13)] bg-[rgba(255,255,255,0.09)] shadow-[0_16px_36px_rgba(59,130,246,0.16)]">
-                  <ShieldCheck className="h-6 w-6 text-[#bfdbfe]" />
+            {step === "signup" ?
+              <motion.form
+                key="signup"
+                onSubmit={handleSignup}
+                noValidate
+                className="space-y-4"
+                initial={{ opacity: 0.96, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8 }}
+              >
+                {isGoogleAuthEnabled ?
+                  <>
+                    <SocialButton
+                      icon={<GoogleLogo />}
+                      onClick={() => handleOAuthSignIn("google")}
+                      disabled={isLoading}
+                      loading={loadingMode === "google"}
+                    >
+                      Sign up with Google
+                    </SocialButton>
+
+                    <div className="flex items-center gap-5 py-2">
+                      <span className="h-px flex-1 bg-[rgba(255,255,255,0.13)]" />
+                      <span className="text-xs font-semibold text-[rgba(255,255,255,0.46)]">
+                        OR
+                      </span>
+                      <span className="h-px flex-1 bg-[rgba(255,255,255,0.13)]" />
+                    </div>
+                  </>
+                : null}
+
+                <Field
+                  label="Full name"
+                  icon={<UserRound className="h-4 w-4" />}
+                >
+                  <input
+                    value={fullName}
+                    onChange={(event) => setFullName(event.target.value)}
+                    placeholder="Enter your name"
+                    autoComplete="name"
+                    disabled={isLoading}
+                    className={`${inputBaseClass} pl-11 disabled:cursor-not-allowed disabled:opacity-70`}
+                  />
+                </Field>
+
+                <Field label="Age" icon={<Sparkles className="h-4 w-4" />}>
+                  <input
+                    value={age}
+                    onChange={(event) =>
+                      setAge(event.target.value.replace(/\D/g, "").slice(0, 3))
+                    }
+                    placeholder="Enter your age"
+                    inputMode="numeric"
+                    disabled={isLoading}
+                    className={`${inputBaseClass} pl-11 disabled:cursor-not-allowed disabled:opacity-70`}
+                  />
+                </Field>
+
+                <Field
+                  label="Email address"
+                  icon={<Mail className="h-4 w-4" />}
+                >
+                  <input
+                    value={email}
+                    onChange={(event) => setEmail(event.target.value)}
+                    placeholder="Email address"
+                    autoComplete="email"
+                    inputMode="email"
+                    disabled={isLoading}
+                    className={`${inputBaseClass} pl-11 disabled:cursor-not-allowed disabled:opacity-70`}
+                  />
+                </Field>
+
+                <Field
+                  label="Password"
+                  icon={<LockKeyhole className="h-4 w-4" />}
+                >
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    value={password}
+                    onChange={(event) => setPassword(event.target.value)}
+                    placeholder="Create a password"
+                    autoComplete="new-password"
+                    disabled={isLoading}
+                    className={`${inputBaseClass} pl-11 pr-12 disabled:cursor-not-allowed disabled:opacity-70`}
+                  />
+
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((value) => !value)}
+                    className="absolute right-2 top-1/2 grid h-9 w-9 -translate-y-1/2 place-items-center rounded-2xl text-[rgba(248,251,255,0.44)] transition hover:bg-[rgba(255,255,255,0.1)] hover:text-[#f8fbff]"
+                    aria-label={
+                      showPassword ? "Hide password" : "Show password"
+                    }
+                  >
+                    {showPassword ?
+                      <EyeOff className="h-4 w-4" />
+                    : <Eye className="h-4 w-4" />}
+                  </button>
+                </Field>
+
+                <div className="flex items-center gap-2 rounded-2xl border border-[rgba(52,211,153,0.18)] bg-[rgba(16,185,129,0.1)] px-4 py-3 text-xs font-semibold text-[#bbf7d0]">
+                  <ShieldCheck className="h-4 w-4 shrink-0" />
+                  Your profile will be stored securely with Supabase Auth.
                 </div>
 
-                <h1 className="text-[30px] font-semibold leading-tight text-[#f8fbff] sm:text-[34px]">
-                  {title}
-                </h1>
+                {error ?
+                  <Feedback tone="error">{error}</Feedback>
+                : null}
 
-                <p className="mx-auto mt-3 max-w-[330px] text-[15px] leading-7 text-[rgba(248,251,255,0.62)]">
-                  {subtitle}
+                <PrimaryButton
+                  type="submit"
+                  disabled={isLoading}
+                  loading={loadingMode === "creating"}
+                >
+                  Create account
+                </PrimaryButton>
+              </motion.form>
+            : null}
+
+            {step === "forgot" ?
+              <motion.form
+                key="forgot"
+                onSubmit={handleForgotPassword}
+                noValidate
+                className="space-y-4"
+                initial={{ opacity: 0.96, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8 }}
+              >
+                <button
+                  type="button"
+                  onClick={() => switchStep("login")}
+                  className="inline-flex h-10 items-center gap-2 rounded-2xl px-2 text-sm font-semibold text-[rgba(248,251,255,0.58)] transition hover:bg-[rgba(255,255,255,0.1)] hover:text-[#f8fbff]"
+                >
+                  <ArrowLeft className="h-4 w-4" />
+                  Back to login
+                </button>
+
+                <Field
+                  label="Email address"
+                  icon={<Mail className="h-4 w-4" />}
+                >
+                  <input
+                    value={email}
+                    onChange={(event) => setEmail(event.target.value)}
+                    placeholder="Email address"
+                    autoComplete="email"
+                    inputMode="email"
+                    disabled={isLoading}
+                    className={`${inputBaseClass} pl-11 disabled:cursor-not-allowed disabled:opacity-70`}
+                  />
+                </Field>
+
+                {error ?
+                  <Feedback tone="error">{error}</Feedback>
+                : null}
+
+                <PrimaryButton
+                  type="submit"
+                  disabled={isLoading}
+                  loading={loadingMode === "sending"}
+                >
+                  Send reset link
+                </PrimaryButton>
+              </motion.form>
+            : null}
+
+            {step === "check-email" ?
+              <motion.div
+                key="check-email"
+                className="space-y-4 text-center"
+                initial={{ opacity: 0.96, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8 }}
+              >
+                <div className="mx-auto grid h-16 w-16 place-items-center rounded-2xl border border-[rgba(52,211,153,0.22)] bg-[rgba(16,185,129,0.12)] text-[#bbf7d0]">
+                  <Mail className="h-8 w-8" />
+                </div>
+
+                {message ?
+                  <Feedback tone="success">{message}</Feedback>
+                : null}
+
+                <p className="text-sm leading-6 text-[rgba(248,251,255,0.62)]">
+                  Open your email and follow the secure link. You will be
+                  redirected back after verification.
                 </p>
-              </div>
 
-              <AnimatePresence mode="wait">
-                {step === "email" ?
-                  <motion.form
-                    key="email"
-                    onSubmit={handleEmailContinue}
-                    className="space-y-4"
-                    initial={{ opacity: 0.96, y: 8 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -8 }}
-                  >
-                    {isGoogleAuthEnabled ?
-                      <>
-                        <SocialButton
-                          icon={<GoogleLogo />}
-                          onClick={() => handleOAuthSignIn("google")}
-                          disabled={isLoading}
-                          loading={loadingMode === "google"}
-                        >
-                          Continue with Google
-                        </SocialButton>
+                <PrimaryButton onClick={() => switchStep("login")}>
+                  Back to login
+                </PrimaryButton>
+              </motion.div>
+            : null}
+          </AnimatePresence>
 
-                        <div className="flex items-center gap-5 py-2">
-                          <span className="h-px flex-1 bg-[rgba(255,255,255,0.13)]" />
-                          <span className="text-xs font-semibold text-[rgba(255,255,255,0.46)]">
-                            OR
-                          </span>
-                          <span className="h-px flex-1 bg-[rgba(255,255,255,0.13)]" />
-                        </div>
-                      </>
-                    : null}
-
-                    <Field
-                      label="Email address"
-                      icon={<Mail className="h-4 w-4" />}
-                    >
-                      <input
-                        value={email}
-                        onChange={(event) => setEmail(event.target.value)}
-                        placeholder="Email address"
-                        autoComplete="email"
-                        inputMode="email"
-                        disabled={isLoading}
-                        className={`${inputBaseClass} pl-11 disabled:cursor-not-allowed disabled:opacity-70`}
-                      />
-                    </Field>
-
-                    {error ?
-                      <Feedback tone="error">{error}</Feedback>
-                    : null}
-
-                    <PrimaryButton
-                      type="submit"
-                      disabled={isLoading}
-                      loading={loadingMode === "checking"}
-                    >
-                      Continue with email
-                    </PrimaryButton>
-                  </motion.form>
-                : null}
-
-                {step === "login" ?
-                  <motion.form
-                    key="login"
-                    onSubmit={handleLogin}
-                    className="space-y-4"
-                    initial={{ opacity: 0.96, y: 8 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -8 }}
-                  >
-                    <div className="rounded-2xl border border-[rgba(255,255,255,0.13)] bg-[rgba(255,255,255,0.075)] px-4 py-3 text-sm font-semibold text-[rgba(248,251,255,0.78)]">
-                      {email}
-                    </div>
-
-                    <Field
-                      label="Password"
-                      icon={<LockKeyhole className="h-4 w-4" />}
-                    >
-                      <input
-                        type={showPassword ? "text" : "password"}
-                        value={password}
-                        onChange={(event) => setPassword(event.target.value)}
-                        placeholder="Enter your password"
-                        autoComplete="current-password"
-                        disabled={isLoading}
-                        className={`${inputBaseClass} pl-11 pr-12 disabled:cursor-not-allowed disabled:opacity-70`}
-                      />
-
-                      <button
-                        type="button"
-                        onClick={() => setShowPassword((value) => !value)}
-                        className="absolute right-2 top-1/2 grid h-9 w-9 -translate-y-1/2 place-items-center rounded-2xl text-[rgba(248,251,255,0.44)] transition hover:bg-[rgba(255,255,255,0.1)] hover:text-[#f8fbff]"
-                        aria-label={
-                          showPassword ? "Hide password" : "Show password"
-                        }
-                      >
-                        {showPassword ?
-                          <EyeOff className="h-4 w-4" />
-                        : <Eye className="h-4 w-4" />}
-                      </button>
-                    </Field>
-
-                    {error ?
-                      <Feedback tone="error">{error}</Feedback>
-                    : null}
-
-                    <PrimaryButton
-                      type="submit"
-                      disabled={isLoading}
-                      loading={loadingMode === "signing"}
-                    >
-                      Log in
-                    </PrimaryButton>
-
-                    <button
-                      type="button"
-                      onClick={() => {
-                        resetFeedback();
-                        setStep("forgot");
-                      }}
-                      disabled={isLoading}
-                      className="w-full rounded-2xl py-2 text-sm font-semibold text-[rgba(248,251,255,0.6)] transition hover:bg-[rgba(255,255,255,0.1)] hover:text-[#f8fbff] disabled:cursor-not-allowed disabled:opacity-60"
-                    >
-                      Forgot password?
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={() => {
-                        resetFeedback();
-                        setPassword("");
-                        setShowPassword(false);
-                        setStep("signup");
-                      }}
-                      disabled={isLoading}
-                      className="w-full rounded-2xl py-2 text-sm font-semibold text-[#bfdbfe] transition hover:bg-[rgba(255,255,255,0.1)] hover:text-[#f8fbff] disabled:cursor-not-allowed disabled:opacity-60"
-                    >
-                      Create a new account
-                    </button>
-                  </motion.form>
-                : null}
-
-                {step === "signup" ?
-                  <motion.form
-                    key="signup"
-                    onSubmit={handleSignup}
-                    className="space-y-4"
-                    initial={{ opacity: 0.96, y: 8 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -8 }}
-                  >
-                    <Feedback tone="info">
-                      Creating account for {email}
-                    </Feedback>
-
-                    <Field
-                      label="Full name"
-                      icon={<UserRound className="h-4 w-4" />}
-                    >
-                      <input
-                        value={fullName}
-                        onChange={(event) => setFullName(event.target.value)}
-                        placeholder="Enter your name"
-                        autoComplete="name"
-                        disabled={isLoading}
-                        className={`${inputBaseClass} pl-11 disabled:cursor-not-allowed disabled:opacity-70`}
-                      />
-                    </Field>
-
-                    <Field label="Age" icon={<Sparkles className="h-4 w-4" />}>
-                      <input
-                        value={age}
-                        onChange={(event) =>
-                          setAge(
-                            event.target.value.replace(/\D/g, "").slice(0, 3),
-                          )
-                        }
-                        placeholder="Enter your age"
-                        inputMode="numeric"
-                        disabled={isLoading}
-                        className={`${inputBaseClass} pl-11 disabled:cursor-not-allowed disabled:opacity-70`}
-                      />
-                    </Field>
-
-                    <Field
-                      label="Password"
-                      icon={<LockKeyhole className="h-4 w-4" />}
-                    >
-                      <input
-                        type={showPassword ? "text" : "password"}
-                        value={password}
-                        onChange={(event) => setPassword(event.target.value)}
-                        placeholder="Create a password"
-                        autoComplete="new-password"
-                        disabled={isLoading}
-                        className={`${inputBaseClass} pl-11 pr-12 disabled:cursor-not-allowed disabled:opacity-70`}
-                      />
-
-                      <button
-                        type="button"
-                        onClick={() => setShowPassword((value) => !value)}
-                        className="absolute right-2 top-1/2 grid h-9 w-9 -translate-y-1/2 place-items-center rounded-2xl text-[rgba(248,251,255,0.44)] transition hover:bg-[rgba(255,255,255,0.1)] hover:text-[#f8fbff]"
-                        aria-label={
-                          showPassword ? "Hide password" : "Show password"
-                        }
-                      >
-                        {showPassword ?
-                          <EyeOff className="h-4 w-4" />
-                        : <Eye className="h-4 w-4" />}
-                      </button>
-                    </Field>
-
-                    <div className="flex items-center gap-2 rounded-2xl border border-[rgba(52,211,153,0.18)] bg-[rgba(16,185,129,0.1)] px-4 py-3 text-xs font-semibold text-[#bbf7d0]">
-                      <ShieldCheck className="h-4 w-4" />
-                      Your profile will be stored securely in Supabase.
-                    </div>
-
-                    {error ?
-                      <Feedback tone="error">{error}</Feedback>
-                    : null}
-
-                    <PrimaryButton
-                      type="submit"
-                      disabled={isLoading}
-                      loading={loadingMode === "creating"}
-                    >
-                      Create account
-                    </PrimaryButton>
-                  </motion.form>
-                : null}
-
-                {step === "forgot" ?
-                  <motion.form
-                    key="forgot"
-                    onSubmit={handleForgotPassword}
-                    className="space-y-4"
-                    initial={{ opacity: 0.96, y: 8 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -8 }}
-                  >
-                    <Field
-                      label="Email address"
-                      icon={<Mail className="h-4 w-4" />}
-                    >
-                      <input
-                        value={email}
-                        onChange={(event) => setEmail(event.target.value)}
-                        placeholder="Email address"
-                        autoComplete="email"
-                        inputMode="email"
-                        disabled={isLoading}
-                        className={`${inputBaseClass} pl-11 disabled:cursor-not-allowed disabled:opacity-70`}
-                      />
-                    </Field>
-
-                    {error ?
-                      <Feedback tone="error">{error}</Feedback>
-                    : null}
-
-                    <PrimaryButton
-                      type="submit"
-                      disabled={isLoading}
-                      loading={loadingMode === "sending"}
-                    >
-                      Send reset link
-                    </PrimaryButton>
-                  </motion.form>
-                : null}
-
-                {step === "check-email" ?
-                  <motion.div
-                    key="check-email"
-                    className="space-y-4 text-center"
-                    initial={{ opacity: 0.96, y: 8 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -8 }}
-                  >
-                    <div className="mx-auto grid h-16 w-16 place-items-center rounded-2xl border border-[rgba(52,211,153,0.22)] bg-[rgba(16,185,129,0.12)] text-[#bbf7d0]">
-                      <Mail className="h-8 w-8" />
-                    </div>
-
-                    <p className="text-sm leading-6 text-[rgba(248,251,255,0.62)]">
-                      Open your email and follow the secure link. You will be
-                      redirected back to your dashboard after verification.
-                    </p>
-
-                    <PrimaryButton onClick={() => setStep("email")}>
-                      Back to login
-                    </PrimaryButton>
-                  </motion.div>
-                : null}
-              </AnimatePresence>
-
-              <div className="mt-7 flex items-center justify-center gap-2 text-center text-[11px] leading-5 text-[rgba(248,251,255,0.42)]">
-                <CheckCircle2 className="h-3.5 w-3.5 text-[#86efac]" />
-                <span>Protected by Supabase Auth and secure sessions.</span>
-              </div>
-            </div>
-          </MotionReveal>
-
-          <MobileHighlights />
+          <div className="mt-7 flex items-center justify-center gap-2 text-center text-[11px] leading-5 text-[rgba(248,251,255,0.42)]">
+            <CheckCircle2 className="h-3.5 w-3.5 text-[#86efac]" />
+            <span>Protected by Supabase Auth and secure sessions.</span>
+          </div>
         </div>
-      </div>
+      </motion.section>
     </main>
   );
 }

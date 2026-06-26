@@ -1,18 +1,21 @@
 import type { ComponentType } from "react";
 import Link from "next/link";
-import MotionReveal from "@/components/motion/MotionReveal";
 import {
   ArrowRight,
   BadgeCheck,
-  ChartColumn,
-  ChartLine,
-  ChartPie,
+  BarChart3,
+  BellRing,
   CircleCheck,
   CreditCard,
   Earth,
+  Goal,
+  Landmark,
+  Layers3,
   LockKeyhole,
-  Menu,
+  PieChart,
+  ReceiptText,
   ShieldCheck,
+  Smartphone,
   Sparkles,
   TrendingUp,
   WalletCards,
@@ -25,737 +28,1263 @@ type Feature = {
   title: string;
   description: string;
   icon: IconType;
-  tone?: string;
+  accent: "mint" | "blue" | "gold" | "rose";
 };
 
 const features: Feature[] = [
   {
-    title: "All accounts together",
+    title: "All money in one place",
     description:
-      "Track bank, cash, wallets, savings, and business money from one clean workspace.",
+      "Track bank, cash, wallets, savings, business money, and transfers from one clean workspace.",
     icon: WalletCards,
-    tone: "jf-icon-bubble-success",
+    accent: "mint",
   },
   {
-    title: "Smart transactions",
+    title: "Fast daily entries",
     description:
-      "Record income, expenses, transfers, liabilities, and payments with a fast daily flow.",
-    icon: CreditCard,
+      "Add income, expenses, liabilities, payables, and payments quickly without spreadsheet clutter.",
+    icon: ReceiptText,
+    accent: "blue",
   },
   {
-    title: "Clear insights",
+    title: "Clear visual reports",
     description:
-      "Understand your money movement with summaries, categories, and readable charts.",
-    icon: ChartPie,
-    tone: "jf-icon-bubble-warning",
+      "Readable cards, charts, categories, and summaries help users understand where money is moving.",
+    icon: PieChart,
+    accent: "gold",
   },
   {
-    title: "Goals and growth",
+    title: "Private finance workspace",
     description:
-      "Plan savings, investments, and future targets with confidence and clarity.",
-    icon: TrendingUp,
-    tone: "jf-icon-bubble-success",
-  },
-  {
-    title: "Private by design",
-    description:
-      "Your dashboard stays protected behind secure authentication and user-specific data.",
+      "Dashboard routes stay protected with login, RLS-backed data access, and user-specific records.",
     icon: ShieldCheck,
-  },
-  {
-    title: "Mobile-ready experience",
-    description:
-      "Designed for quick finance checks on mobile, tablet, and desktop devices.",
-    icon: Earth,
-    tone: "jf-icon-bubble-success",
-  },
-];
-
-const steps = [
-  {
-    title: "Create your workspace",
-    description:
-      "Sign in securely and start with a focused personal dashboard.",
-  },
-  {
-    title: "Add money activity",
-    description:
-      "Track accounts, income, expenses, transfers, goals, and liabilities.",
-  },
-  {
-    title: "Review progress",
-    description:
-      "Use cards, summaries, and charts to see where your money is moving.",
+    accent: "rose",
   },
 ];
 
 const modules = [
-  "Accounts",
-  "Income",
-  "Expenses",
-  "Transactions",
-  "Goals",
-  "Investments",
-  "Payables",
-  "Reports",
+  { label: "Accounts", icon: Landmark },
+  { label: "Income", icon: TrendingUp },
+  { label: "Expenses", icon: CreditCard },
+  { label: "Transactions", icon: ReceiptText },
+  { label: "Goals", icon: Goal },
+  { label: "Investments", icon: BarChart3 },
+  { label: "Payables", icon: BellRing },
+  { label: "Reports", icon: Layers3 },
 ];
 
-const previewBars = [44, 68, 52, 84, 62, 92, 74] as const;
+const workflow = [
+  {
+    title: "Start secure",
+    description:
+      "Create your workspace and keep private finance data behind protected dashboard routes.",
+  },
+  {
+    title: "Record activity",
+    description:
+      "Add accounts, income, expenses, transfers, goals, investments, and payables in one flow.",
+  },
+  {
+    title: "Review progress",
+    description:
+      "Use clean summaries and charts to make better daily money decisions.",
+  },
+];
+
+const previewBars = [42, 62, 48, 76, 58, 88, 70, 94] as const;
 
 export default function HomePage() {
   return (
-    <>
-      <LandingMicroPolishStyles />
-      <main className="jf-page-shell jf-landing-polish min-h-dvh overflow-x-hidden text-text-primary pb-24 sm:pb-0">
-        <Header />
+    <main className="jf-landing">
+      <section className="jf-hero-shell" id="top">
+        <div className="jf-orb jf-orb-one" />
+        <div className="jf-orb jf-orb-two" />
+        <div className="jf-grid-overlay" />
 
-        <section className="jf-hero-section mx-auto grid w-full max-w-7xl items-start gap-8 px-4 pb-6 pt-4 sm:px-6 sm:pb-8 sm:pt-8 md:gap-10 lg:grid-cols-[1.02fr_0.98fr] lg:gap-14 lg:items-center lg:px-8 lg:pb-12 lg:pt-12">
-          <MotionReveal className="jf-animate-in mx-auto max-w-2xl text-center lg:mx-0 lg:text-left">
-            <div className="jf-badge jf-badge-active jf-delay-1 mx-auto mb-5 lg:mx-0">
-              <Sparkles className="h-4 w-4" />
+        <nav className="jf-nav" aria-label="Main navigation">
+          <Link
+            href="#top"
+            className="jf-brand"
+            aria-label="Jamal's Finance home"
+          >
+            <span className="jf-brand-mark">
+              <Sparkles className="jf-brand-icon" />
+            </span>
+            <span>Jamals Finance</span>
+          </Link>
+
+          <div className="jf-nav-links">
+            <a href="#features">Features</a>
+            <a href="#workflow">Workflow</a>
+            <a href="#security">Security</a>
+          </div>
+
+          <Link href="/login" className="jf-nav-cta">
+            Login / Sign up
+          </Link>
+        </nav>
+
+        <div className="jf-hero">
+          <div className="jf-hero-copy">
+            <div className="jf-badge">
+              <BadgeCheck className="jf-badge-icon" />
               Premium finance dashboard
             </div>
 
-            <h1 className="jf-hero-title mx-auto max-w-[780px] text-[clamp(2.45rem,11vw,5.2rem)] font-black leading-[0.94] tracking-[-0.065em] text-text-primary lg:mx-0">
-              Manage your money with clarity, speed, and confidence.
-            </h1>
+            <h1>Manage your money with clarity, speed, and confidence.</h1>
 
-            <p className="jf-delay-2 mx-auto mt-5 max-w-[650px] text-base leading-8 text-text-secondary sm:text-lg lg:mx-0">
-              Jamal&apos;s Finance helps you track accounts, expenses, income,
-              goals, liabilities, investments, and savings in one secure
-              workspace that feels smooth on every device.
+            <p className="jf-hero-text">
+              Jamal&apos;s Finance brings accounts, expenses, income, goals,
+              liabilities, investments, and savings into one smooth workspace
+              made for daily use.
             </p>
 
-            <div className="jf-delay-3 mt-8 flex flex-col gap-3 sm:flex-row sm:justify-center lg:justify-start">
-              <Link
-                href="/login"
-                className="jf-btn jf-btn-primary sm:w-auto sm:px-6"
-              >
+            <div className="jf-hero-actions">
+              <Link href="/login" className="jf-primary-btn">
                 Start your workspace
-                <ArrowRight className="h-4 w-4" />
+                <ArrowRight className="jf-btn-icon" />
               </Link>
-              <a
-                href="#features"
-                className="jf-btn jf-btn-secondary sm:w-auto sm:px-6"
-              >
+              <a href="#features" className="jf-secondary-btn">
                 Explore features
               </a>
             </div>
 
-            <div className="jf-delay-4 mt-7 grid gap-3 text-sm text-text-secondary sm:flex sm:flex-wrap sm:items-center sm:justify-center lg:justify-start">
+            <div className="jf-trust-row" aria-label="Product highlights">
               {[
                 "No spreadsheet mess",
                 "Mobile-first UI",
                 "Secure private login",
               ].map((item) => (
-                <span
-                  key={item}
-                  className="inline-flex items-center justify-center gap-2 sm:justify-start"
-                >
-                  <CircleCheck className="h-4 w-4 shrink-0 text-success" />
+                <span key={item}>
+                  <CircleCheck className="jf-trust-icon" />
                   {item}
                 </span>
               ))}
             </div>
-          </MotionReveal>
+          </div>
 
-          <MotionReveal className="jf-animate-in jf-delay-3 mx-auto w-full max-w-xl lg:max-w-none">
-            <DashboardPreview />
-          </MotionReveal>
-        </section>
-
-        <section
-          id="features"
-          className="mx-auto w-full max-w-7xl px-4 py-10 sm:px-6 sm:py-14 lg:px-8 lg:py-16"
-        >
-          <MotionReveal className="mx-auto max-w-2xl text-center">
-            <p className="jf-eyebrow justify-center">
-              Built for daily money control
-            </p>
-            <h2 className="mt-3 text-[clamp(2rem,6vw,3.75rem)] font-black leading-none tracking-[-0.055em] text-text-primary">
-              Everything important, without the clutter.
-            </h2>
-            <p className="mt-4 text-base leading-8 text-text-secondary sm:text-lg">
-              A clean finance experience that feels simple for beginners and
-              powerful enough for serious users.
-            </p>
-          </MotionReveal>
-
-          <MotionReveal className="mt-9 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {features.map((feature, index) => {
-              const Icon = feature.icon;
-
-              return (
-                <article
-                  key={feature.title}
-                  className="jf-card-premium jf-card-hover jf-landing-card jf-animate-in p-5 sm:p-6"
-                  style={{ animationDelay: `${Math.min(index * 70, 280)}ms` }}
-                >
-                  <div className={`jf-icon-bubble mb-5 ${feature.tone ?? ""}`}>
-                    <Icon className="h-5 w-5" />
-                  </div>
-                  <h3 className="text-lg font-black tracking-tight text-text-primary">
-                    {feature.title}
-                  </h3>
-                  <p className="mt-3 text-sm leading-7 text-text-secondary">
-                    {feature.description}
-                  </p>
-                </article>
-              );
-            })}
-          </MotionReveal>
-        </section>
-
-        <section
-          id="workflow"
-          className="mx-auto w-full max-w-7xl px-4 py-10 sm:px-6 sm:py-14 lg:px-8 lg:py-16"
-        >
-          <MotionReveal className="jf-card-premium grid gap-8 p-5 sm:p-8 lg:grid-cols-[0.9fr_1.1fr] lg:p-10">
-            <div>
-              <div className="jf-icon-bubble mb-5">
-                <Zap className="h-6 w-6" />
+          <div className="jf-hero-visual" aria-label="Dashboard preview">
+            <div className="jf-device-card">
+              <div className="jf-device-topbar">
+                <span />
+                <span />
+                <span />
+                <p>Live workspace</p>
               </div>
-              <p className="jf-eyebrow">How it works</p>
-              <h2 className="mt-3 text-[clamp(2rem,6vw,3.75rem)] font-black leading-none tracking-[-0.055em] text-text-primary">
-                A smoother routine for daily money decisions.
-              </h2>
-              <p className="mt-4 max-w-2xl text-base leading-8 text-text-secondary sm:text-lg">
-                The goal is not just to store numbers. The goal is to help users
-                understand their financial life quickly on mobile and desktop.
-              </p>
-            </div>
 
-            <div className="grid gap-3">
-              {steps.map((step, index) => (
-                <div
-                  key={step.title}
-                  className="jf-card-soft jf-landing-card flex gap-4 p-4"
-                >
-                  <div className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-active text-sm font-black text-background">
-                    {index + 1}
-                  </div>
+              <div className="jf-balance-panel">
+                <div>
+                  <p>Net balance</p>
+                  <strong>$24,850</strong>
+                </div>
+                <span className="jf-live-pill">Live</span>
+              </div>
+
+              <div className="jf-metric-grid">
+                <div className="jf-mini-card">
+                  <span className="jf-icon-dot jf-mint">
+                    <TrendingUp className="jf-mini-icon" />
+                  </span>
+                  <p>Growth</p>
+                  <strong>+18.4%</strong>
+                </div>
+                <div className="jf-mini-card">
+                  <span className="jf-icon-dot jf-blue">
+                    <Zap className="jf-mini-icon" />
+                  </span>
+                  <p>Saved time</p>
+                  <strong>4.8h</strong>
+                </div>
+              </div>
+
+              <div className="jf-chart-card">
+                <div className="jf-chart-head">
                   <div>
-                    <h3 className="font-black tracking-tight text-text-primary">
-                      {step.title}
-                    </h3>
-                    <p className="mt-1 text-sm leading-6 text-text-secondary">
-                      {step.description}
-                    </p>
+                    <strong>Cash flow</strong>
+                    <p>Monthly rhythm</p>
                   </div>
+                  <LockKeyhole className="jf-chart-lock" />
                 </div>
-              ))}
+                <div className="jf-bars" aria-hidden="true">
+                  {previewBars.map((height, index) => (
+                    <span
+                      key={`${height}-${index}`}
+                      style={{ height: `${height}%` }}
+                    />
+                  ))}
+                </div>
+              </div>
             </div>
-          </MotionReveal>
-        </section>
 
-        <section className="mx-auto grid w-full max-w-7xl gap-5 px-4 py-10 sm:px-6 sm:py-14 lg:grid-cols-[1fr_0.9fr] lg:px-8 lg:py-16">
-          <MotionReveal className="jf-card-premium p-5 sm:p-8">
-            <p className="jf-eyebrow">Finance modules</p>
-            <h2 className="mt-3 text-[clamp(2rem,6vw,3.75rem)] font-black leading-none tracking-[-0.055em] text-text-primary">
-              One workspace for every money area.
-            </h2>
-            <p className="mt-4 max-w-2xl text-base leading-8 text-text-secondary sm:text-lg">
-              Each module should feel connected, fast, and easy to understand,
-              especially on mobile screens.
-            </p>
-
-            <div className="mt-7 flex flex-wrap gap-2">
-              {modules.map((module) => (
-                <span key={module} className="jf-badge">
-                  <BadgeCheck className="h-3.5 w-3.5 text-success" />
-                  {module}
-                </span>
-              ))}
-            </div>
-          </MotionReveal>
-
-          <MotionReveal className="jf-card p-5 sm:p-6">
-            <div className="mb-5 flex items-center justify-between">
+            <div className="jf-floating-card jf-floating-left">
+              <Smartphone className="jf-floating-icon" />
               <div>
-                <p className="text-sm font-black text-text-primary">
-                  Mobile focus
-                </p>
-                <p className="text-xs text-text-secondary">
-                  Fast thumb-friendly UI
-                </p>
-              </div>
-              <div className="jf-icon-bubble jf-icon-bubble-success">
-                <ChartLine className="h-5 w-5" />
+                <strong>Mobile ready</strong>
+                <p>Fast thumb-friendly screens</p>
               </div>
             </div>
 
-            <div className="grid gap-3">
-              {[
-                "Readable cards on small screens",
-                "Clear CTAs with large tap area",
-                "No horizontal scroll",
-                "Reduced motion support",
-              ].map((item) => (
-                <div
-                  key={item}
-                  className="jf-landing-card flex items-center gap-3 rounded-2xl bg-surface-secondary p-3"
-                >
-                  <CircleCheck className="h-4 w-4 shrink-0 text-success" />
-                  <span className="text-sm font-semibold text-text-primary">
-                    {item}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </MotionReveal>
-        </section>
-
-        <section
-          id="security"
-          className="mx-auto w-full max-w-7xl px-4 py-10 sm:px-6 sm:py-14 lg:px-8 lg:py-16"
-        >
-          <div className="jf-card-premium grid gap-8 p-5 sm:p-8 lg:grid-cols-[0.85fr_1.15fr] lg:p-10">
-            <div>
-              <div className="jf-icon-bubble jf-icon-bubble-success mb-5">
-                <ShieldCheck className="h-6 w-6" />
+            <div className="jf-floating-card jf-floating-right">
+              <Earth className="jf-floating-icon" />
+              <div>
+                <strong>Global polish</strong>
+                <p>Clean, scalable product base</p>
               </div>
-              <p className="jf-eyebrow">Security and trust</p>
-              <h2 className="mt-3 text-[clamp(2rem,6vw,3.75rem)] font-black leading-none tracking-[-0.055em] text-text-primary">
-                Premium look, protected workspace.
-              </h2>
-              <p className="mt-4 max-w-2xl text-base leading-8 text-text-secondary sm:text-lg">
-                The public site explains the product clearly, while private
-                finance data stays behind secure authentication.
-              </p>
-            </div>
-
-            <div className="grid gap-3">
-              {[
-                "Dashboard stays protected for signed-in users only",
-                "Landing page is public for visitors and search engines",
-                "Login path is clean and easy to understand",
-                "Design system is ready for full app polish",
-              ].map((item) => (
-                <div
-                  key={item}
-                  className="jf-card-soft jf-landing-card flex items-start gap-3 p-4"
-                >
-                  <CircleCheck className="mt-0.5 h-5 w-5 shrink-0 text-success" />
-                  <span className="text-sm font-bold leading-6 text-text-primary">
-                    {item}
-                  </span>
-                </div>
-              ))}
             </div>
           </div>
-        </section>
+        </div>
+      </section>
 
-        <section className="px-4 py-12 sm:px-6 sm:py-16 lg:px-8">
-          <div className="jf-card-premium mx-auto max-w-4xl p-6 text-center sm:p-10">
-            <div className="jf-icon-bubble mx-auto mb-5 h-14 w-14">
-              <Sparkles className="h-6 w-6" />
-            </div>
-            <h2 className="mx-auto max-w-3xl text-[clamp(2rem,6vw,3.75rem)] font-black leading-none tracking-[-0.055em] text-text-primary">
-              Start building better money habits today.
-            </h2>
-            <p className="mx-auto mt-4 max-w-2xl text-base leading-8 text-text-secondary sm:text-lg">
-              Create your workspace, connect your finance routine, and turn
-              daily money tracking into a clean premium experience.
+      <section
+        className="jf-section jf-stats-section"
+        aria-label="Product stats"
+      >
+        {[
+          ["8+", "Finance modules"],
+          ["24/7", "Secure access"],
+          ["100%", "Private workspace focus"],
+          ["Fast", "Mobile experience"],
+        ].map(([value, label]) => (
+          <div className="jf-stat-card" key={label}>
+            <strong>{value}</strong>
+            <span>{label}</span>
+          </div>
+        ))}
+      </section>
+
+      <section className="jf-section" id="features">
+        <div className="jf-section-heading">
+          <span className="jf-eyebrow">Built for daily money control</span>
+          <h2>Everything important, without the clutter.</h2>
+          <p>
+            A finance experience that feels simple for beginners and still
+            powerful enough for serious users.
+          </p>
+        </div>
+
+        <div className="jf-feature-grid">
+          {features.map((feature) => {
+            const Icon = feature.icon;
+            return (
+              <article
+                className={`jf-feature-card jf-accent-${feature.accent}`}
+                key={feature.title}
+              >
+                <span className="jf-feature-icon-wrap">
+                  <Icon className="jf-feature-icon" />
+                </span>
+                <h3>{feature.title}</h3>
+                <p>{feature.description}</p>
+              </article>
+            );
+          })}
+        </div>
+      </section>
+
+      <section className="jf-section jf-workflow-section" id="workflow">
+        <div className="jf-section-heading jf-left-heading">
+          <span className="jf-eyebrow">How it works</span>
+          <h2>A smoother routine for daily money decisions.</h2>
+          <p>
+            The goal is not just to store numbers. The goal is to help users
+            understand their financial life quickly on mobile and desktop.
+          </p>
+        </div>
+
+        <div className="jf-workflow-grid">
+          {workflow.map((step, index) => (
+            <article className="jf-step-card" key={step.title}>
+              <span>{String(index + 1).padStart(2, "0")}</span>
+              <h3>{step.title}</h3>
+              <p>{step.description}</p>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section className="jf-section jf-modules-section">
+        <div className="jf-section-heading">
+          <span className="jf-eyebrow">Finance modules</span>
+          <h2>One connected workspace for every money area.</h2>
+          <p>
+            Every module should feel connected, fast, and easy to understand,
+            especially on mobile screens.
+          </p>
+        </div>
+
+        <div className="jf-module-grid">
+          {modules.map((module) => {
+            const Icon = module.icon;
+            return (
+              <div className="jf-module-pill" key={module.label}>
+                <Icon className="jf-module-icon" />
+                {module.label}
+              </div>
+            );
+          })}
+        </div>
+      </section>
+
+      <section className="jf-section jf-security-section" id="security">
+        <div className="jf-security-card">
+          <div>
+            <span className="jf-eyebrow">Security and trust</span>
+            <h2>Premium look, protected workspace.</h2>
+            <p>
+              The public landing page explains the product clearly, while
+              private finance data stays behind secure authentication and
+              user-specific access.
             </p>
-
-            <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
-              <Link
-                href="/login"
-                className="jf-btn jf-btn-primary sm:w-auto sm:px-7"
-              >
-                Open Jamal&apos;s Finance
-                <ArrowRight className="h-4 w-4" />
-              </Link>
-              <a
-                href="#features"
-                className="jf-btn jf-btn-secondary sm:w-auto sm:px-7"
-              >
-                View features
-              </a>
-            </div>
           </div>
-        </section>
 
-        <Footer />
-        <MobileStickyCta />
-      </main>
-    </>
+          <div className="jf-security-list">
+            {[
+              "Dashboard stays protected for signed-in users only",
+              "Landing page remains public for visitors and search engines",
+              "Login and signup flow stays clean and focused",
+              "Design system is ready for full UI polish",
+            ].map((item) => (
+              <div key={item}>
+                <ShieldCheck className="jf-security-icon" />
+                <span>{item}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="jf-final-cta">
+        <div className="jf-final-glow" />
+        <span className="jf-eyebrow">Ready for the next phase</span>
+        <h2>Start building better money habits today.</h2>
+        <p>
+          Create your workspace, connect your finance routine, and turn daily
+          money tracking into a clean premium experience.
+        </p>
+        <Link href="/login" className="jf-primary-btn">
+          Open Jamal&apos;s Finance
+          <ArrowRight className="jf-btn-icon" />
+        </Link>
+      </section>
+
+      <LandingPageStyles />
+    </main>
   );
 }
 
-function LandingMicroPolishStyles() {
+function LandingPageStyles() {
   return (
     <style
       dangerouslySetInnerHTML={{
         __html: `
-.jf-landing-polish {
+:root {
+  --jf-bg: #050b14;
+  --jf-panel: rgba(255, 255, 255, 0.075);
+  --jf-panel-strong: rgba(255, 255, 255, 0.11);
+  --jf-border: rgba(255, 255, 255, 0.14);
+  --jf-text: #f5f8ff;
+  --jf-muted: rgba(235, 242, 255, 0.72);
+  --jf-soft: rgba(235, 242, 255, 0.52);
+  --jf-green: #37f1a5;
+  --jf-blue: #7cc7ff;
+  --jf-gold: #ffd35a;
+  --jf-rose: #ff8db3;
+}
+
+html {
   scroll-behavior: smooth;
-  color: #f8fbff;
+}
+
+.jf-landing {
+  min-height: 100vh;
+  overflow: hidden;
   background:
-    radial-gradient(circle at 20% 8%, rgba(96, 165, 250, 0.14), transparent 24rem),
-    radial-gradient(circle at 90% 12%, rgba(34, 197, 94, 0.12), transparent 20rem),
-    linear-gradient(180deg, #05090f 0%, #0c1624 42%, #060b14 100%);
-  --background: #06090f;
-  --card: rgba(12, 18, 32, 0.95);
-  --surface-secondary: rgba(16, 24, 38, 0.96);
-  --border: rgba(255, 255, 255, 0.12);
-  --text-primary: #f8fbff;
-  --text-secondary: rgba(248, 251, 255, 0.72);
-  --text-tertiary: rgba(248, 251, 255, 0.54);
-  --hover: rgba(255, 255, 255, 0.06);
-  --active: #74a7ff;
-  --success: #5ee2a0;
-  --danger: #fca5a5;
-  --warning: #fde68a;
-  --shadow: 0 22px 70px rgba(0, 0, 0, 0.32);
-  --shadow-premium: 0 28px 100px rgba(0, 0, 0, 0.42);
-  --focus-ring: 0 0 0 3px rgba(96, 165, 250, 0.28);
+    radial-gradient(circle at 15% 10%, rgba(55, 241, 165, 0.16), transparent 28rem),
+    radial-gradient(circle at 82% 20%, rgba(124, 199, 255, 0.16), transparent 30rem),
+    linear-gradient(180deg, #06101c 0%, #050b14 42%, #03070d 100%);
+  color: var(--jf-text);
+  font-family: inherit;
 }
 
-.jf-landing-polish ::selection {
-  background: color-mix(in srgb, var(--color-active, #60a5fa) 26%, transparent);
+.jf-hero-shell {
+  position: relative;
+  min-height: 100vh;
+  padding: 1.25rem clamp(1rem, 3vw, 2rem) 5rem;
+  isolation: isolate;
 }
 
-.jf-glass-header {
-  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
+.jf-grid-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: -3;
+  background-image:
+    linear-gradient(rgba(255,255,255,0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.035) 1px, transparent 1px);
+  background-size: 42px 42px;
+  mask-image: linear-gradient(to bottom, black, transparent 88%);
 }
 
-.dark .jf-glass-header {
-  box-shadow: 0 10px 34px rgba(0, 0, 0, 0.22);
+.jf-orb {
+  position: absolute;
+  z-index: -2;
+  border-radius: 999px;
+  filter: blur(36px);
+  opacity: 0.9;
 }
 
-.jf-hero-title {
+.jf-orb-one {
+  left: -8rem;
+  top: 12rem;
+  width: 22rem;
+  height: 22rem;
+  background: rgba(55, 241, 165, 0.22);
+}
+
+.jf-orb-two {
+  right: -9rem;
+  top: 8rem;
+  width: 28rem;
+  height: 28rem;
+  background: rgba(124, 199, 255, 0.18);
+}
+
+.jf-nav {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: min(1180px, 100%);
+  margin: 0 auto;
+  padding: 0.75rem;
+  border: 1px solid rgba(255, 255, 255, 0.11);
+  border-radius: 999px;
+  background: rgba(5, 11, 20, 0.72);
+  box-shadow: 0 20px 80px rgba(0, 0, 0, 0.28);
+  backdrop-filter: blur(18px);
+}
+
+.jf-brand,
+.jf-nav-links a,
+.jf-nav-cta,
+.jf-primary-btn,
+.jf-secondary-btn {
+  text-decoration: none;
+}
+
+.jf-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.65rem;
+  color: var(--jf-text);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.jf-brand-mark {
+  display: grid;
+  width: 2.35rem;
+  height: 2.35rem;
+  place-items: center;
+  border-radius: 999px;
+  background: linear-gradient(135deg, rgba(55,241,165,0.2), rgba(124,199,255,0.18));
+  border: 1px solid rgba(255,255,255,0.14);
+}
+
+.jf-brand-icon {
+  width: 1.1rem;
+  height: 1.1rem;
+  color: var(--jf-gold);
+}
+
+.jf-nav-links {
+  display: flex;
+  gap: 0.35rem;
+  padding: 0.25rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.055);
+}
+
+.jf-nav-links a {
+  color: var(--jf-muted);
+  font-size: 0.9rem;
+  font-weight: 700;
+  padding: 0.65rem 0.9rem;
+  border-radius: 999px;
+  transition: 180ms ease;
+}
+
+.jf-nav-links a:hover {
+  color: var(--jf-text);
+  background: rgba(255,255,255,0.08);
+}
+
+.jf-nav-cta {
+  color: #06101c;
+  font-size: 0.9rem;
+  font-weight: 900;
+  padding: 0.72rem 1rem;
+  border-radius: 999px;
+  background: linear-gradient(135deg, var(--jf-green), var(--jf-gold));
+  box-shadow: 0 16px 40px rgba(55, 241, 165, 0.2);
+}
+
+.jf-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(420px, 0.92fr);
+  align-items: center;
+  gap: clamp(2rem, 5vw, 4.5rem);
+  width: min(1180px, 100%);
+  min-height: calc(100vh - 6.5rem);
+  margin: 0 auto;
+  padding-top: clamp(2.5rem, 5vh, 5rem);
+}
+
+.jf-hero-copy {
+  max-width: 650px;
+}
+
+.jf-badge,
+.jf-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  width: fit-content;
+  border: 1px solid rgba(255,255,255,0.14);
+  background: rgba(255,255,255,0.075);
+  color: rgba(245,248,255,0.86);
+  border-radius: 999px;
+  font-size: 0.82rem;
+  font-weight: 900;
+  letter-spacing: 0.01em;
+}
+
+.jf-badge {
+  padding: 0.55rem 0.75rem;
+  margin-bottom: 1.4rem;
+}
+
+.jf-badge-icon {
+  width: 1rem;
+  height: 1rem;
+  color: var(--jf-green);
+}
+
+.jf-hero h1 {
+  margin: 0;
+  color: var(--jf-text);
+  font-size: clamp(3rem, 7vw, 6.7rem);
+  line-height: 0.94;
+  letter-spacing: -0.075em;
   text-wrap: balance;
 }
 
-.jf-hero-section,
-.jf-landing-polish section {
-  scroll-margin-top: 90px;
+.jf-hero-text {
+  max-width: 610px;
+  margin: 1.5rem 0 0;
+  color: var(--jf-muted);
+  font-size: clamp(1.04rem, 1.8vw, 1.28rem);
+  line-height: 1.75;
 }
 
-.jf-animate-in {
-  animation: jfRiseIn 720ms cubic-bezier(0.16, 1, 0.3, 1) both;
+.jf-hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.9rem;
+  margin-top: 2rem;
 }
 
-.jf-delay-1 { animation-delay: 60ms; }
-.jf-delay-2 { animation-delay: 120ms; }
-.jf-delay-3 { animation-delay: 180ms; }
-.jf-delay-4 { animation-delay: 240ms; }
-
-.jf-landing-card {
-  transform: translateZ(0);
-  transition:
-    transform 220ms ease,
-    border-color 220ms ease,
-    box-shadow 220ms ease,
-    background-color 220ms ease;
+.jf-primary-btn,
+.jf-secondary-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.65rem;
+  min-height: 3.35rem;
+  border-radius: 999px;
+  padding: 0.95rem 1.25rem;
+  font-weight: 950;
+  transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
 }
 
-.jf-landing-card:hover {
-  transform: translateY(-3px);
+.jf-primary-btn {
+  color: #04100b;
+  background: linear-gradient(135deg, var(--jf-green), var(--jf-gold));
+  box-shadow: 0 18px 48px rgba(55, 241, 165, 0.24);
 }
 
-.jf-landing-polish .jf-btn {
-  transform: translateZ(0);
-  transition:
-    transform 180ms ease,
-    box-shadow 220ms ease,
-    background-color 220ms ease,
-    border-color 220ms ease;
+.jf-secondary-btn {
+  color: var(--jf-text);
+  border: 1px solid rgba(255,255,255,0.16);
+  background: rgba(255,255,255,0.075);
 }
 
-.jf-landing-polish .jf-btn:hover {
-  transform: translateY(-1px);
+.jf-primary-btn:hover,
+.jf-secondary-btn:hover,
+.jf-nav-cta:hover {
+  transform: translateY(-2px);
 }
 
-.jf-landing-polish .jf-btn:active {
-  transform: translateY(0) scale(0.99);
+.jf-btn-icon {
+  width: 1.05rem;
+  height: 1.05rem;
 }
 
-.jf-landing-polish .jf-btn-primary {
+.jf-trust-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.7rem;
+  margin-top: 1.35rem;
+}
+
+.jf-trust-row span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  color: rgba(245,248,255,0.76);
+  font-size: 0.92rem;
+  font-weight: 800;
+}
+
+.jf-trust-icon {
+  width: 1rem;
+  height: 1rem;
+  color: var(--jf-green);
+}
+
+.jf-hero-visual {
   position: relative;
-  overflow: hidden;
+  min-height: 640px;
 }
 
-.jf-landing-polish .jf-btn-primary::after {
+.jf-device-card {
+  position: absolute;
+  inset: 4rem 0 auto auto;
+  width: min(100%, 520px);
+  min-height: 560px;
+  border: 1px solid rgba(255,255,255,0.16);
+  border-radius: 2.1rem;
+  padding: 1.05rem;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.13), rgba(255,255,255,0.06)),
+    rgba(6, 14, 26, 0.82);
+  box-shadow: 0 40px 120px rgba(0,0,0,0.42);
+  backdrop-filter: blur(22px);
+  animation: jfFloat 7s ease-in-out infinite;
+}
+
+.jf-device-card::before {
   content: "";
   position: absolute;
-  inset: 0;
+  inset: -1px;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(135deg, rgba(55,241,165,0.7), transparent 36%, rgba(255,211,90,0.62));
+  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  mask-composite: exclude;
   pointer-events: none;
-  background: linear-gradient(110deg, transparent 0%, rgba(255,255,255,0.26) 45%, transparent 58%);
-  transform: translateX(-120%);
-  animation: jfButtonSheen 4.8s ease-in-out infinite;
 }
 
-.jf-preview-float {
-  transform: translateZ(0);
-  animation: jfFloatPreview 7s ease-in-out infinite;
+.jf-device-topbar {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.6rem 0.65rem 1rem;
+  color: var(--jf-soft);
+  font-size: 0.78rem;
+  font-weight: 800;
 }
 
-.jf-demo-bar > div {
-  transform-origin: bottom;
-  animation: jfBarGrow 780ms cubic-bezier(0.16, 1, 0.3, 1) both;
+.jf-device-topbar span {
+  width: 0.62rem;
+  height: 0.62rem;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.22);
 }
 
-.jf-mobile-cta {
-  bottom: max(0.75rem, env(safe-area-inset-bottom));
-  animation: jfMobileCtaIn 520ms cubic-bezier(0.16, 1, 0.3, 1) both;
+.jf-device-topbar p {
+  margin: 0 0 0 auto;
 }
 
-@keyframes jfRiseIn {
-  from {
-    opacity: 0.86;
-    transform: translateY(14px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+.jf-balance-panel,
+.jf-mini-card,
+.jf-chart-card,
+.jf-floating-card,
+.jf-feature-card,
+.jf-step-card,
+.jf-stat-card,
+.jf-security-card {
+  border: 1px solid var(--jf-border);
+  background: var(--jf-panel);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.08);
 }
 
-@keyframes jfFloatPreview {
+.jf-balance-panel {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  min-height: 145px;
+  padding: 1.15rem;
+  border-radius: 1.5rem;
+}
+
+.jf-balance-panel p,
+.jf-mini-card p,
+.jf-chart-head p,
+.jf-floating-card p,
+.jf-feature-card p,
+.jf-step-card p,
+.jf-section-heading p,
+.jf-security-card p,
+.jf-final-cta p {
+  margin: 0;
+  color: var(--jf-muted);
+  line-height: 1.65;
+}
+
+.jf-balance-panel strong {
+  display: block;
+  margin-top: 0.35rem;
+  font-size: 3rem;
+  letter-spacing: -0.06em;
+}
+
+.jf-live-pill {
+  color: #052016;
+  background: var(--jf-green);
+  border-radius: 999px;
+  padding: 0.35rem 0.55rem;
+  font-size: 0.72rem;
+  font-weight: 950;
+}
+
+.jf-metric-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.85rem;
+  margin-top: 0.85rem;
+}
+
+.jf-mini-card {
+  min-height: 150px;
+  border-radius: 1.35rem;
+  padding: 1rem;
+}
+
+.jf-icon-dot {
+  display: grid;
+  width: 2.5rem;
+  height: 2.5rem;
+  place-items: center;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,0.16);
+}
+
+.jf-mint { background: rgba(55,241,165,0.14); color: var(--jf-green); }
+.jf-blue { background: rgba(124,199,255,0.14); color: var(--jf-blue); }
+
+.jf-mini-icon {
+  width: 1.15rem;
+  height: 1.15rem;
+}
+
+.jf-mini-card p {
+  margin-top: 1.05rem;
+  font-size: 0.85rem;
+  font-weight: 800;
+}
+
+.jf-mini-card strong {
+  display: block;
+  margin-top: 0.15rem;
+  font-size: 1.85rem;
+  letter-spacing: -0.055em;
+}
+
+.jf-chart-card {
+  margin-top: 0.85rem;
+  border-radius: 1.5rem;
+  padding: 1rem;
+}
+
+.jf-chart-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.jf-chart-head strong {
+  font-size: 1rem;
+}
+
+.jf-chart-lock {
+  width: 1.15rem;
+  height: 1.15rem;
+  color: var(--jf-green);
+}
+
+.jf-bars {
+  display: flex;
+  align-items: end;
+  gap: 0.55rem;
+  height: 150px;
+  padding-top: 1.1rem;
+}
+
+.jf-bars span {
+  flex: 1;
+  min-width: 0;
+  border-radius: 999px 999px 0.55rem 0.55rem;
+  background: linear-gradient(180deg, #eef7ff, #7dbdff);
+  box-shadow: 0 10px 30px rgba(124,199,255,0.22);
+}
+
+.jf-floating-card {
+  position: absolute;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  width: max-content;
+  max-width: 280px;
+  padding: 0.85rem 1rem;
+  border-radius: 1.2rem;
+  background: rgba(8, 18, 32, 0.78);
+  backdrop-filter: blur(18px);
+}
+
+.jf-floating-left {
+  left: -1rem;
+  bottom: 5rem;
+}
+
+.jf-floating-right {
+  right: -1rem;
+  top: 1rem;
+}
+
+.jf-floating-icon {
+  width: 1.35rem;
+  height: 1.35rem;
+  color: var(--jf-gold);
+}
+
+.jf-floating-card strong {
+  display: block;
+  font-size: 0.92rem;
+}
+
+.jf-floating-card p {
+  font-size: 0.8rem;
+}
+
+.jf-section {
+  width: min(1180px, calc(100% - 2rem));
+  margin: 0 auto;
+  padding: clamp(4rem, 8vw, 7rem) 0;
+}
+
+.jf-stats-section {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.9rem;
+  padding-top: 0;
+}
+
+.jf-stat-card {
+  border-radius: 1.35rem;
+  padding: 1.35rem;
+  background: rgba(255,255,255,0.06);
+}
+
+.jf-stat-card strong {
+  display: block;
+  font-size: clamp(2rem, 4vw, 3.3rem);
+  letter-spacing: -0.06em;
+}
+
+.jf-stat-card span {
+  color: var(--jf-muted);
+  font-size: 0.92rem;
+  font-weight: 800;
+}
+
+.jf-section-heading {
+  max-width: 720px;
+  margin: 0 auto 2.3rem;
+  text-align: center;
+}
+
+.jf-left-heading {
+  margin-left: 0;
+  text-align: left;
+}
+
+.jf-eyebrow {
+  padding: 0.45rem 0.68rem;
+  margin-bottom: 0.95rem;
+  color: var(--jf-green);
+}
+
+.jf-section-heading h2,
+.jf-security-card h2,
+.jf-final-cta h2 {
+  margin: 0;
+  color: var(--jf-text);
+  font-size: clamp(2.2rem, 5vw, 4.5rem);
+  line-height: 1;
+  letter-spacing: -0.065em;
+  text-wrap: balance;
+}
+
+.jf-section-heading p {
+  margin-top: 1rem;
+  font-size: 1.05rem;
+}
+
+.jf-feature-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.9rem;
+}
+
+.jf-feature-card {
+  position: relative;
+  min-height: 310px;
+  overflow: hidden;
+  border-radius: 1.6rem;
+  padding: 1.25rem;
+  background: rgba(255,255,255,0.065);
+}
+
+.jf-feature-card::after {
+  content: "";
+  position: absolute;
+  inset: auto -30% -35% -30%;
+  height: 55%;
+  opacity: 0.18;
+  background: radial-gradient(circle, currentColor, transparent 62%);
+}
+
+.jf-accent-mint { color: var(--jf-green); }
+.jf-accent-blue { color: var(--jf-blue); }
+.jf-accent-gold { color: var(--jf-gold); }
+.jf-accent-rose { color: var(--jf-rose); }
+
+.jf-feature-icon-wrap {
+  display: grid;
+  width: 3.1rem;
+  height: 3.1rem;
+  place-items: center;
+  border-radius: 1rem;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.14);
+}
+
+.jf-feature-icon {
+  width: 1.45rem;
+  height: 1.45rem;
+}
+
+.jf-feature-card h3,
+.jf-step-card h3 {
+  margin: 1.3rem 0 0.65rem;
+  color: var(--jf-text);
+  font-size: 1.2rem;
+  letter-spacing: -0.035em;
+}
+
+.jf-feature-card p,
+.jf-step-card p {
+  color: rgba(235,242,255,0.68);
+}
+
+.jf-workflow-section {
+  display: grid;
+  grid-template-columns: 0.82fr 1.18fr;
+  gap: clamp(1.5rem, 4vw, 3rem);
+  align-items: start;
+}
+
+.jf-workflow-grid {
+  display: grid;
+  gap: 0.9rem;
+}
+
+.jf-step-card {
+  border-radius: 1.45rem;
+  padding: 1.15rem;
+  background: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.055));
+}
+
+.jf-step-card span {
+  display: inline-flex;
+  color: var(--jf-green);
+  font-weight: 950;
+  letter-spacing: -0.04em;
+}
+
+.jf-module-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.9rem;
+}
+
+.jf-module-pill {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  min-height: 4.4rem;
+  border: 1px solid rgba(255,255,255,0.13);
+  border-radius: 1.25rem;
+  padding: 0.95rem 1rem;
+  background: rgba(255,255,255,0.06);
+  color: var(--jf-text);
+  font-weight: 900;
+}
+
+.jf-module-icon {
+  width: 1.2rem;
+  height: 1.2rem;
+  color: var(--jf-blue);
+}
+
+.jf-security-card {
+  display: grid;
+  grid-template-columns: 0.95fr 1.05fr;
+  gap: clamp(1.5rem, 4vw, 3rem);
+  align-items: center;
+  border-radius: 2rem;
+  padding: clamp(1.4rem, 4vw, 3rem);
+  background:
+    radial-gradient(circle at top left, rgba(55,241,165,0.12), transparent 28rem),
+    rgba(255,255,255,0.065);
+}
+
+.jf-security-card p {
+  margin-top: 1rem;
+}
+
+.jf-security-list {
+  display: grid;
+  gap: 0.85rem;
+}
+
+.jf-security-list div {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 1.1rem;
+  padding: 0.9rem;
+  background: rgba(255,255,255,0.055);
+  color: rgba(245,248,255,0.84);
+  font-weight: 800;
+}
+
+.jf-security-icon {
+  flex: 0 0 auto;
+  width: 1.15rem;
+  height: 1.15rem;
+  color: var(--jf-green);
+}
+
+.jf-final-cta {
+  position: relative;
+  width: min(980px, calc(100% - 2rem));
+  margin: 0 auto 5rem;
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,0.14);
+  border-radius: 2rem;
+  padding: clamp(2rem, 6vw, 4rem);
+  text-align: center;
+  background: rgba(255,255,255,0.075);
+  box-shadow: 0 30px 100px rgba(0,0,0,0.28);
+}
+
+.jf-final-glow {
+  position: absolute;
+  inset: -70% 15% auto;
+  height: 16rem;
+  border-radius: 999px;
+  background: rgba(55,241,165,0.18);
+  filter: blur(38px);
+}
+
+.jf-final-cta .jf-eyebrow,
+.jf-final-cta .jf-primary-btn {
+  position: relative;
+}
+
+.jf-final-cta h2,
+.jf-final-cta p {
+  position: relative;
+}
+
+.jf-final-cta p {
+  max-width: 620px;
+  margin: 1rem auto 1.5rem;
+}
+
+@keyframes jfFloat {
   0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-8px); }
+  50% { transform: translateY(-12px); }
 }
 
-@keyframes jfBarGrow {
-  from {
-    opacity: 0.9;
-    transform: scaleY(0.86);
-  }
-  to {
-    opacity: 1;
-    transform: scaleY(1);
-  }
-}
-
-@keyframes jfButtonSheen {
-  0%, 68% { transform: translateX(-120%); }
-  82%, 100% { transform: translateX(120%); }
-}
-
-@keyframes jfMobileCtaIn {
-  from {
-    opacity: 0.92;
-    transform: translateY(14px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@media (max-width: 639px) {
-  .jf-hero-section {
+@media (max-width: 1050px) {
+  .jf-hero {
+    grid-template-columns: 1fr;
     min-height: auto;
   }
 
-  .jf-hero-title {
-    letter-spacing: -0.055em;
+  .jf-hero-copy {
+    max-width: 850px;
+    text-align: center;
+    margin: 0 auto;
   }
 
-  .jf-preview-float {
+  .jf-badge,
+  .jf-hero-actions,
+  .jf-trust-row {
+    justify-content: center;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .jf-hero-visual {
+    min-height: 590px;
+  }
+
+  .jf-device-card {
+    inset: 1rem 50% auto auto;
+    transform: translateX(50%);
     animation: none;
   }
 
-  .jf-landing-polish .jf-card-premium,
-  .jf-landing-polish .jf-card {
-    border-radius: 1.45rem;
+  .jf-floating-left {
+    left: calc(50% - 290px);
+  }
+
+  .jf-floating-right {
+    right: calc(50% - 290px);
+  }
+
+  .jf-feature-grid,
+  .jf-module-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .jf-workflow-section,
+  .jf-security-card {
+    grid-template-columns: 1fr;
   }
 }
 
-@media (min-width: 640px) and (max-width: 1023px) {
-  .jf-hero-section {
-    max-width: 860px;
+@media (max-width: 760px) {
+  .jf-hero-shell {
+    min-height: auto;
+    padding-bottom: 3rem;
+  }
+
+  .jf-nav {
+    border-radius: 1.3rem;
+  }
+
+  .jf-nav-links {
+    display: none;
+  }
+
+  .jf-nav-cta {
+    padding-inline: 0.8rem;
+    font-size: 0.8rem;
+  }
+
+  .jf-hero {
+    padding-top: 2.25rem;
+    gap: 1.7rem;
+  }
+
+  .jf-hero h1 {
+    font-size: clamp(2.65rem, 15vw, 4.5rem);
+  }
+
+  .jf-hero-actions {
+    flex-direction: column;
+  }
+
+  .jf-primary-btn,
+  .jf-secondary-btn {
+    width: 100%;
+  }
+
+  .jf-trust-row {
+    align-items: center;
+    flex-direction: column;
+  }
+
+  .jf-hero-visual {
+    min-height: auto;
+  }
+
+  .jf-device-card {
+    position: relative;
+    inset: auto;
+    width: 100%;
+    min-height: auto;
+    transform: none;
+  }
+
+  .jf-floating-card {
+    display: none;
+  }
+
+  .jf-balance-panel strong {
+    font-size: 2.3rem;
+  }
+
+  .jf-bars {
+    height: 115px;
+  }
+
+  .jf-stats-section,
+  .jf-feature-grid,
+  .jf-module-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .jf-section {
+    width: min(100% - 1rem, 1180px);
+    padding-block: 3.6rem;
+  }
+
+  .jf-section-heading,
+  .jf-left-heading {
+    text-align: left;
+  }
+
+  .jf-section-heading {
+    margin-left: 0;
+  }
+
+  .jf-feature-card {
+    min-height: 245px;
+  }
+
+  .jf-security-list div {
+    align-items: flex-start;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .jf-landing-polish *,
-  .jf-landing-polish *::before,
-  .jf-landing-polish *::after {
-    animation-duration: 1ms !important;
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
     animation-iteration-count: 1 !important;
     scroll-behavior: auto !important;
-    transition-duration: 1ms !important;
+    transition-duration: 0.001ms !important;
   }
 }
         `,
       }}
     />
-  );
-}
-
-function Header() {
-  return (
-    <header className="jf-glass-header sticky top-0 z-30 border-b border-border/70 bg-background/90 backdrop-blur-xl">
-      <nav className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-3 sm:px-6 lg:px-8">
-        <Link
-          href="/"
-          className="finance-focus flex min-w-0 items-center gap-3 rounded-2xl"
-        >
-          <span className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl border border-border bg-card shadow-theme">
-            <ChartColumn className="h-5 w-5 text-active" />
-          </span>
-          <span className="min-w-0">
-            <span className="block truncate text-sm font-bold tracking-tight text-text-primary">
-              Jamal&apos;s Finance
-            </span>
-            <span className="block truncate text-xs text-text-secondary">
-              Personal money OS
-            </span>
-          </span>
-        </Link>
-
-        <div className="hidden items-center gap-2 md:flex">
-          <a
-            href="#features"
-            className="jf-btn jf-btn-ghost min-h-10 px-3 text-sm"
-          >
-            Features
-          </a>
-          <a
-            href="#workflow"
-            className="jf-btn jf-btn-ghost min-h-10 px-3 text-sm"
-          >
-            How it works
-          </a>
-          <a
-            href="#security"
-            className="jf-btn jf-btn-ghost min-h-10 px-3 text-sm"
-          >
-            Security
-          </a>
-        </div>
-
-        <div className="flex shrink-0 items-center gap-2">
-          <Link
-            href="/login"
-            className="jf-btn jf-btn-primary min-h-10 px-4 text-sm sm:w-auto"
-          >
-            Get started
-            <ArrowRight className="hidden h-4 w-4 sm:block" />
-          </Link>
-        </div>
-      </nav>
-    </header>
-  );
-}
-
-function DashboardPreview() {
-  return (
-    <div className="jf-preview-float relative">
-      <div className="pointer-events-none absolute -inset-4 rounded-[34px] bg-active/10 blur-2xl" />
-
-      <div className="jf-card-premium relative p-4 sm:p-5 lg:p-6">
-        <div className="mb-5 flex items-center justify-between gap-3">
-          <div>
-            <p className="jf-eyebrow text-[0.68rem]">Live preview</p>
-            <h2 className="mt-1 text-xl font-black tracking-tight text-text-primary sm:text-2xl">
-              Personal dashboard
-            </h2>
-          </div>
-          <div className="jf-icon-bubble">
-            <LockKeyhole className="h-5 w-5" />
-          </div>
-        </div>
-
-        <div className="grid gap-3 sm:grid-cols-3">
-          {[
-            ["8+", "Finance modules"],
-            ["100%", "Clean dashboard"],
-            ["Secure", "Private workspace"],
-          ].map(([value, label]) => (
-            <div key={label} className="jf-card-soft p-4">
-              <p className="text-2xl font-black tracking-tight text-text-primary">
-                {value}
-              </p>
-              <p className="mt-1 text-xs leading-5 text-text-secondary">
-                {label}
-              </p>
-            </div>
-          ))}
-        </div>
-
-        <div className="jf-card mt-4 p-4">
-          <div className="mb-4 flex items-center justify-between gap-3">
-            <div>
-              <p className="text-sm font-bold text-text-primary">
-                Monthly flow
-              </p>
-              <p className="text-xs text-text-secondary">
-                Clean money movement
-              </p>
-            </div>
-            <span className="jf-badge jf-badge-active">Demo</span>
-          </div>
-
-          <div className="flex h-28 items-end gap-2 sm:h-36 sm:gap-3">
-            {previewBars.map((height, index) => (
-              <div
-                key={index}
-                className="jf-demo-bar flex-1 rounded-t-2xl bg-active/20"
-                style={{
-                  height: `${height}%`,
-                  animationDelay: `${index * 80}ms`,
-                }}
-              >
-                <div className="h-full rounded-t-2xl bg-active/70" />
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <div className="mt-4 grid gap-3">
-          {[
-            ["Income", "+$4,280", "text-success"],
-            ["Expenses", "-$1,940", "text-danger"],
-            ["Savings", "USD 2,340", "text-active"],
-          ].map(([label, value, color]) => (
-            <div
-              key={label}
-              className="flex items-center justify-between rounded-[20px] border border-border bg-surface-secondary px-4 py-3"
-            >
-              <span className="text-sm font-medium text-text-secondary">
-                {label}
-              </span>
-              <span className={`text-sm font-black ${color}`}>{value}</span>
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function Footer() {
-  return (
-    <footer className="border-t border-border px-4 py-8 sm:px-6 lg:px-8">
-      <div className="mx-auto flex max-w-7xl flex-col gap-3 text-center text-sm text-text-secondary sm:flex-row sm:items-center sm:justify-between sm:text-left">
-        <p>© 2026 Jamal&apos;s Finance. Built for smarter money control.</p>
-        <div className="flex justify-center gap-4">
-          <Link className="hover:text-text-primary" href="/login">
-            Sign in
-          </Link>
-          <a href="#features" className="hover:text-text-primary">
-            Features
-          </a>
-        </div>
-      </div>
-    </footer>
-  );
-}
-
-function MobileStickyCta() {
-  return (
-    <div className="fixed bottom-3 left-3 right-3 z-40 flex gap-2 rounded-3xl border border-white/10 bg-[rgba(12,18,32,0.9)] p-2 backdrop-blur-xl sm:hidden">
-      <Link href="/login" className="jf-btn jf-btn-primary flex-1">
-        Get started
-        <ArrowRight className="h-4 w-4" />
-      </Link>
-      <a href="#features" className="jf-btn jf-btn-secondary">
-        Features
-      </a>
-    </div>
   );
 }
