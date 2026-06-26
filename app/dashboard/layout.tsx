@@ -13,25 +13,46 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex h-dvh overflow-hidden bg-transparent text-foreground">
-      <div className="hidden lg:block flex-shrink-0">
+    <div
+      data-dashboard-shell
+      className="relative flex h-dvh min-w-0 overflow-hidden bg-background text-foreground"
+    >
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 z-0 bg-[radial-gradient(circle_at_12%_12%,rgba(34,197,94,0.10),transparent_30%),radial-gradient(circle_at_88%_8%,rgba(59,130,246,0.12),transparent_32%),linear-gradient(135deg,rgba(15,23,42,0.03),transparent_42%)]"
+      />
+      <div
+        aria-hidden="true"
+        className="jf-dashboard-grid pointer-events-none absolute inset-0 z-0 opacity-[0.34]"
+      />
+      <div
+        aria-hidden="true"
+        className="jf-dashboard-orb jf-dashboard-orb-one pointer-events-none absolute z-0"
+      />
+      <div
+        aria-hidden="true"
+        className="jf-dashboard-orb jf-dashboard-orb-two pointer-events-none absolute z-0"
+      />
+
+      <div className="jf-dashboard-sidebar-wrap relative z-10 hidden flex-shrink-0 lg:block">
         <Sidebar />
       </div>
 
-      <div className="relative flex min-w-0 flex-1 flex-col overflow-hidden">
-        <div className="hidden lg:block">
+      <div className="relative z-10 flex min-w-0 flex-1 flex-col overflow-hidden">
+        <div className="jf-dashboard-header-wrap hidden lg:block">
           <Header />
         </div>
 
         <MobileHeader />
-
         <DashboardScrollRestoration />
 
         <main
           data-dashboard-scroll
-          className="relative flex-1 overflow-y-auto px-3 py-4 sm:px-5 lg:px-7 lg:py-7"
+          className="jf-dashboard-scroll relative flex-1 overflow-y-auto overscroll-contain px-3 pb-[calc(6.75rem+env(safe-area-inset-bottom))] pt-4 sm:px-5 sm:pt-5 lg:px-7 lg:pb-8 lg:pt-7 xl:px-8"
         >
-          <div className="mx-auto w-full max-w-[1600px]">{children}</div>
+          <div className="jf-dashboard-content-frame mx-auto w-full max-w-[1600px] min-w-0">
+            {children}
+          </div>
         </main>
 
         <MobileNav />
