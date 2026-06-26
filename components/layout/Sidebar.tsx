@@ -60,7 +60,7 @@ export default function Sidebar() {
                     {active && (
                       <motion.span
                         layoutId="sidebar-active-line"
-                        className="absolute left-0 top-1/2 h-9 w-1.5 rounded-r-full bg-active"
+                        className="absolute left-4 top-1/2 h-7 w-1.5 rounded-full bg-active/90"
                         style={{ translateY: "-50%" }}
                         transition={sidebarSpring}
                       />
