@@ -1107,20 +1107,32 @@
   .chat-auth-card {
     @apply rounded-[24px] border p-5 sm:p-6;
     border-color: var(--border);
-    background: linear-gradient(145deg, color-mix(in srgb, var(--card), white 4%), var(--card));
+    background: linear-gradient(
+      145deg,
+      color-mix(in srgb, var(--card), white 4%),
+      var(--card)
+    );
     box-shadow: var(--shadow-premium);
   }
 
   .chat-auth-input {
     @apply h-13 w-full rounded-2xl border px-4 text-[15px] outline-none transition-all;
     border-color: color-mix(in srgb, var(--border), var(--active) 30%);
-    background-color: color-mix(in srgb, var(--card), var(--surface-secondary) 12%);
+    background-color: color-mix(
+      in srgb,
+      var(--card),
+      var(--surface-secondary) 12%
+    );
     color: var(--text-primary);
   }
 
   .chat-auth-input:hover {
     border-color: var(--active);
-    background-color: color-mix(in srgb, var(--card), var(--surface-secondary) 18%);
+    background-color: color-mix(
+      in srgb,
+      var(--card),
+      var(--surface-secondary) 18%
+    );
   }
 
   .chat-auth-input:focus {
@@ -2050,8 +2062,16 @@ textarea:focus {
   min-height: 100dvh;
   overflow-x: hidden;
   background:
-    radial-gradient(circle at 20% 8%, color-mix(in srgb, var(--active), transparent 88%), transparent 28rem),
-    radial-gradient(circle at 90% 12%, color-mix(in srgb, var(--success), transparent 90%), transparent 24rem),
+    radial-gradient(
+      circle at 20% 8%,
+      color-mix(in srgb, var(--active), transparent 88%),
+      transparent 28rem
+    ),
+    radial-gradient(
+      circle at 90% 12%,
+      color-mix(in srgb, var(--success), transparent 90%),
+      transparent 24rem
+    ),
     var(--background);
   color: var(--text-primary);
 }
@@ -3393,5 +3413,33 @@ tbody tr:hover {
     animation-duration: 1ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 1ms !important;
+  }
+}
+/* Dashboard progress bars: animate existing widths from 0 to value */
+.motion-progress-fill {
+  transform-origin: left center;
+  transform: scaleX(0);
+  animation: jfProgressFillLoad 900ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  will-change: transform;
+  backface-visibility: hidden;
+}
+
+@keyframes jfProgressFillLoad {
+  from {
+    opacity: 0.82;
+    transform: scaleX(0);
+  }
+
+  to {
+    opacity: 1;
+    transform: scaleX(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .motion-progress-fill {
+    animation: none !important;
+    transform: none !important;
+    will-change: auto;
   }
 }
