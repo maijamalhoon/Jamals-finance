@@ -355,7 +355,6 @@ function MobileHighlights() {
 export default function LoginPage() {
   const router = useRouter();
   const supabase = useMemo(() => createClient(), []);
-  const router = useRouter();
   const isGoogleAuthEnabled = true;
 
   const [step, setStep] = useState<Step>("email");
@@ -623,7 +622,7 @@ export default function LoginPage() {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -8 }}
                   >
-                    {enableGoogleAuth ?
+                    {isGoogleAuthEnabled ?
                       <>
                         <SocialButton
                           icon={<GoogleLogo />}
