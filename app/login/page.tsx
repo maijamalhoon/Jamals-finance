@@ -355,8 +355,7 @@ function MobileHighlights() {
 export default function LoginPage() {
   const supabase = useMemo(() => createClient(), []);
   const router = useRouter();
-  const enableGoogleAuth =
-    process.env.NEXT_PUBLIC_ENABLE_GOOGLE_AUTH === "true";
+  const isGoogleAuthEnabled = true;
 
   const [step, setStep] = useState<Step>("email");
   const [email, setEmail] = useState("");
