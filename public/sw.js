@@ -1,47 +1,74 @@
-const CACHE = 'jamals-finance-v1'
+const CACHE_NAME = "jamals-finance-shell-v1";
+const OFFLINE_URL = "/offline.html";
 
-const PRECACHE = [
-  '/',
-  '/dashboard',
-  '/dashboard/transactions',
-  '/dashboard/accounts',
-  '/dashboard/investments',
-  '/dashboard/goals',
-  '/dashboard/reports',
-  '/dashboard/settings',
-]
+const shouldBypassCache = (pathname) => {
+  return (
+    pathname.startsWith("/dashboard") ||
+    pathname.startsWith("/auth") ||
+    pathname.startsWith("/api/ai-insights") ||
+    (pathname.startsWith("/api/") && !pathname.startsWith("/api/exchange-rate"))
+  );
+};
 
-// Install — cache core pages
-self.addEventListener('install', event => {
+self.addEventListener("install", (event) => {
   event.waitUntil(
-    caches.open(CACHE).then(cache => cache.addAll(PRECACHE))
-  )
-  self.skipWaiting()
-})
+    caches.open(CACHE_NAME).then((cache) => cache.addAll(["/", OFFLINE_URL]))
+  );
+  self.skipWaiting();
+});
 
-// Activate — remove old caches
-self.addEventListener('activate', event => {
+self.addEventListener("activate", (event) => {
   event.waitUntil(
-    caches.keys().then(keys =>
-      Promise.all(
-        keys.filter(key => key !== CACHE).map(key => caches.delete(key))
-      )
-    )
-  )
-  self.clients.claim()
-})
+    caches.keys().then((keys) =>
+      Promise.all(keys.filter((key) => key !== CACHE_NAME).map((key) => caches.delete(key))))
+  );
+  self.clients.claim();
+});
 
-// Fetch — network first, fall back to cache
-self.addEventListener('fetch', event => {
-  if (event.request.method !== 'GET') return
+self.addEventListener("fetch", (event) => {
+  const { request } = event;
+
+  if (request.method !== "GET") return;
+
+  const url = new URL(request.url);
+  if (url.origin !== self.location.origin) return;
+
+  if (request.mode === "navigate") {
+    event.respondWith(
+      fetch(request).catch(() => caches.match(OFFLINE_URL, { ignoreSearch: true }))
+    );
+    return;
+  }
+
+  if (shouldBypassCache(url.pathname)) {
+    event.respondWith(fetch(request));
+    return;
+  }
+
+  if (url.pathname === "/api/exchange-rate") {
+    event.respondWith(
+      fetch(request)
+        .then((response) => {
+          const copy = response.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(request, copy));
+          return response;
+        })
+        .catch(() => caches.match(request))
+    );
+    return;
+  }
 
   event.respondWith(
-    fetch(event.request)
-      .then(response => {
-        const clone = response.clone()
-        caches.open(CACHE).then(cache => cache.put(event.request, clone))
-        return response
-      })
-      .catch(() => caches.match(event.request))
-  )
-})
+    caches.match(request).then((cached) => {
+      if (cached) {
+        return cached;
+      }
+
+      return fetch(request).then((response) => {
+        const copy = response.clone();
+        caches.open(CACHE_NAME).then((cache) => cache.put(request, copy));
+        return response;
+      });
+    })
+  );
+});

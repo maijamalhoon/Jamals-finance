@@ -4,6 +4,7 @@ import "./globals.css";
 import { Toaster } from "sonner";
 import MotionProvider from "@/components/motion/MotionProvider";
 import { CurrencyProvider } from "@/components/currency/CurrencyProvider";
+import PWARegister from "./pwa-register";
 
 const geistSans = Geist({
   subsets: ["latin"],
@@ -116,6 +117,7 @@ try {
         <MotionProvider>
           <CurrencyProvider>
             {children}
+            <PWARegister />
             <Toaster
               position="top-right"
               toastOptions={{
