@@ -160,7 +160,7 @@ export default async function DashboardPage() {
 
   const accountRows = (accounts ?? []) as DashboardAccount[];
 
-  const totalNetBalance = accountRows.reduce(
+  const cashBalance = accountRows.reduce(
     (sum, account) => sum + Number(account.balance ?? 0),
     0,
   );
@@ -179,6 +179,7 @@ export default async function DashboardPage() {
       sum + Number(investment.current_price) * Number(investment.quantity),
     0,
   );
+  const totalNetBalance = cashBalance + investmentsValue;
 
   const monthlyInvestmentsValue = investmentRows
     .filter((investment) =>
