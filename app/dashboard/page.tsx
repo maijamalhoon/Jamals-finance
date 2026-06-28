@@ -8,6 +8,7 @@ import FinancePulseCard from "@/components/dashboard/FinancePulseCard";
 import InvestmentOverviewWidget from "@/components/dashboard/InvestmentOverviewWidget";
 import SpendRecordWidget from "@/components/dashboard/SpendRecordWidget";
 import ChartCard from "@/components/dashboard/ChartCard";
+import QuickActionsBalance from "@/components/dashboard/QuickActionsBalance";
 import {
   formatAppMonth,
   formatAppMonthYear,
@@ -36,6 +37,10 @@ type DashboardTransaction = {
     parent?: { name: string } | null;
   } | null;
   accounts: { name: string } | null;
+};
+type DashboardAccount = {
+  id: string;
+  balance: number | string | null;
 };
 
 type DashboardInvestment = {
@@ -70,10 +75,18 @@ function fmt(value: number) {
     maximumFractionDigits: 0,
   })}`;
 }
+function fmtBalance(value: number) {
+  return `PKR ${value.toLocaleString("en-PK", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })}`;
+}
 
 function pct(current: number, previous: number) {
   if (previous !== 0) {
-    return Number((((current - previous) / Math.abs(previous)) * 100).toFixed(2));
+    return Number(
+      (((current - previous) / Math.abs(previous)) * 100).toFixed(2),
+    );
   }
 
   if (current > 0) return 100;
@@ -104,6 +117,7 @@ export default async function DashboardPage() {
     { data: lastTxns },
     { data: investments },
     { data: goals },
+    { data: accounts },
   ] = await Promise.all([
     supabase
       .from("transactions")
@@ -132,6 +146,7 @@ export default async function DashboardPage() {
       .order("created_at", { ascending: false }),
 
     supabase.from("goals").select("*").order("created_at").limit(6),
+    supabase.from("accounts").select("id, balance"),
   ]);
 
   const txns = (thisTxns ?? []) as DashboardTransaction[];
@@ -143,6 +158,12 @@ export default async function DashboardPage() {
   const investmentRows = (investments ?? []) as DashboardInvestment[];
   const goalRows = (goals ?? []) as DashboardGoal[];
 
+  const accountRows = (accounts ?? []) as DashboardAccount[];
+
+  const totalNetBalance = accountRows.reduce(
+    (sum, account) => sum + Number(account.balance ?? 0),
+    0,
+  );
   const income = txns
     .filter((transaction) => transaction.type === "income")
     .reduce((sum, transaction) => sum + Number(transaction.amount), 0);
@@ -282,6 +303,10 @@ export default async function DashboardPage() {
 
   return (
     <DashboardMotion className="w-full space-y-6 pb-12">
+      <DashboardMotionItem>
+        <QuickActionsBalance totalBalance={fmtBalance(totalNetBalance)} />
+      </DashboardMotionItem>
+
       <div className="grid w-full grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <DashboardMotionItem>
           <MetricCard
