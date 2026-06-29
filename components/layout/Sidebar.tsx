@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { LayoutGroup, motion } from "framer-motion";
 import { BarChart3 } from "lucide-react";
 
-import { isNavItemActive, NAV_ITEMS } from "@/lib/navigation";
+import { isNavItemActive, NAV_GROUPS } from "@/lib/navigation";
 import JamalMenu from "@/components/layout/JamalMenu";
 
 const sidebarSpring = {
@@ -33,44 +33,55 @@ export default function Sidebar() {
         </div>
 
         <div className="flex-1 overflow-y-auto px-3 py-4">
-          <nav aria-label="Main navigation" className="space-y-2">
+          <nav aria-label="Main navigation" className="space-y-4">
             <LayoutGroup id="jamals-finance-sidebar">
-              {NAV_ITEMS.map(({ label, href, icon: Icon }) => {
-                const active = isNavItemActive(pathname, href);
+              {NAV_GROUPS.map((group) => (
+                <div key={group.label} className="space-y-1.5">
+                  <p className="px-3 text-[10px] font-bold uppercase tracking-[0.14em] text-text-tertiary">
+                    {group.label}
+                  </p>
 
-                return (
-                  <Link
-                    key={href}
-                    href={href}
-                    aria-current={active ? "page" : undefined}
-                    className={`finance-focus group relative flex items-center gap-3 rounded-[18px] px-4 py-3 text-sm font-medium transition duration-200 ${
-                      active
-                        ? "text-active"
-                        : "text-text-secondary hover:bg-surface-secondary hover:text-text-primary"
-                    }`}
-                  >
-                    {active && (
-                      <motion.span
-                        layoutId="sidebar-active-bg"
-                        className="absolute inset-0 rounded-[18px] bg-active/10"
-                        transition={sidebarSpring}
-                      />
-                    )}
+                  {group.items.map(({ label, href, icon: Icon }) => {
+                    const active = isNavItemActive(pathname, href);
 
-                    <span
-                      className={`relative z-10 grid h-10 w-10 shrink-0 place-items-center rounded-[14px] border transition-all duration-200 ${
-                        active
-                          ? "border-active/30 bg-active/15 text-active"
-                          : "border-border/70 bg-surface text-text-secondary group-hover:border-border group-hover:bg-surface-secondary group-hover:text-text-primary"
-                      }`}
-                    >
-                      <Icon size={18} strokeWidth={2.2} />
-                    </span>
+                    return (
+                      <Link
+                        key={href}
+                        href={href}
+                        aria-current={active ? "page" : undefined}
+                        title={label}
+                        className={`finance-focus group relative flex min-h-11 items-center gap-3 rounded-[16px] px-3 py-2 text-sm font-medium transition duration-200 ${
+                          active
+                            ? "text-active"
+                            : "text-text-secondary hover:bg-surface-secondary hover:text-text-primary"
+                        }`}
+                      >
+                        {active && (
+                          <motion.span
+                            layoutId="sidebar-active-bg"
+                            className="absolute inset-0 rounded-[16px] bg-active/10"
+                            transition={sidebarSpring}
+                          />
+                        )}
 
-                    <span className="relative z-10 min-w-0 truncate">{label}</span>
-                  </Link>
-                );
-              })}
+                        <span
+                          className={`relative z-10 grid h-9 w-9 shrink-0 place-items-center rounded-[13px] border transition-all duration-200 ${
+                            active
+                              ? "border-active/30 bg-active/15 text-active"
+                              : "border-border/70 bg-surface text-text-secondary group-hover:border-border group-hover:bg-surface-secondary group-hover:text-text-primary"
+                          }`}
+                        >
+                          <Icon size={17} strokeWidth={2.2} />
+                        </span>
+
+                        <span className="relative z-10 min-w-0 flex-1 truncate">
+                          {label}
+                        </span>
+                      </Link>
+                    );
+                  })}
+                </div>
+              ))}
             </LayoutGroup>
           </nav>
         </div>

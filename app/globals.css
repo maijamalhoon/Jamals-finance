@@ -2636,11 +2636,12 @@ textarea:focus {
 }
 
 .jf-mobile-nav-shell {
-  padding-bottom: env(safe-area-inset-bottom);
+  padding-bottom: 0;
   animation: jfDashboardMobileNavIn 520ms cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
-.jf-mobile-nav-shell a {
+.jf-mobile-nav-shell a,
+.jf-mobile-nav-shell button {
   -webkit-tap-highlight-color: transparent;
 }
 
@@ -3022,7 +3023,8 @@ tbody tr:hover {
 .jf-dashboard-header-wrap a,
 .jf-dashboard-sidebar-wrap a,
 .jf-dashboard-sidebar-wrap button,
-.jf-mobile-nav-shell a {
+.jf-mobile-nav-shell a,
+.jf-mobile-nav-shell button {
   -webkit-tap-highlight-color: transparent;
 }
 
@@ -3066,7 +3068,8 @@ tbody tr:hover {
 .jf-dashboard-header-wrap a:active,
 .jf-dashboard-sidebar-wrap a:active,
 .jf-dashboard-sidebar-wrap button:active,
-.jf-mobile-nav-shell a:active {
+.jf-mobile-nav-shell a:active,
+.jf-mobile-nav-shell button:active {
   transform: scale(0.985);
 }
 
@@ -3109,12 +3112,14 @@ tbody tr:hover {
     inset 0 1px 0 rgba(255, 255, 255, 0.06);
 }
 
-.jf-mobile-nav-shell a[aria-current="page"] {
+.jf-mobile-nav-shell a[aria-current="page"],
+.jf-mobile-nav-shell button[aria-current="page"] {
   position: relative;
   overflow: hidden;
 }
 
-.jf-mobile-nav-shell a[aria-current="page"]::after {
+.jf-mobile-nav-shell a[aria-current="page"]::after,
+.jf-mobile-nav-shell button[aria-current="page"]::after {
   content: "";
   pointer-events: none;
   position: absolute;
