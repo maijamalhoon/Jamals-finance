@@ -26,115 +26,7 @@ type OAuthProvider = "google";
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-const inputBaseClass =
-  "h-12 w-full rounded-2xl border border-[rgba(255,255,255,0.14)] bg-[rgba(255,255,255,0.075)] px-4 text-[15px] font-semibold text-[rgba(248,251,255,0.96)] outline-none transition placeholder:text-[rgba(248,251,255,0.36)] hover:border-[rgba(255,255,255,0.24)] hover:bg-[rgba(255,255,255,0.1)] focus:border-[#8ec5ff] focus:bg-[rgba(255,255,255,0.11)] focus:ring-4 focus:ring-[rgba(96,165,250,0.18)]";
-
-function AuthPolishStyles() {
-  return (
-    <style
-      dangerouslySetInnerHTML={{
-        __html: `
-.jf-login-polish {
-  isolation: isolate;
-  background:
-    radial-gradient(circle at 18% 12%, rgba(34, 197, 94, 0.16), transparent 30%),
-    radial-gradient(circle at 82% 18%, rgba(56, 189, 248, 0.18), transparent 34%),
-    linear-gradient(135deg, #07111a 0%, #0b1522 48%, #111827 100%);
-  color: #f8fbff;
-}
-
-.jf-login-polish ::selection {
-  background: rgba(147, 197, 253, 0.28);
-}
-
-.jf-auth-orb {
-  position: absolute;
-  border-radius: 9999px;
-  filter: blur(80px);
-  opacity: 0.42;
-  transform: translateZ(0);
-  animation: jfAuthOrb 11s ease-in-out infinite;
-}
-
-.jf-auth-orb-one {
-  left: -7rem;
-  top: 8rem;
-  height: 18rem;
-  width: 18rem;
-  background: rgba(56, 189, 248, 0.2);
-}
-
-.jf-auth-orb-two {
-  bottom: -5rem;
-  right: -7rem;
-  height: 20rem;
-  width: 20rem;
-  background: rgba(34, 197, 94, 0.16);
-  animation-delay: -4s;
-}
-
-.jf-auth-card {
-  transform: translateZ(0);
-  box-shadow:
-    0 32px 96px rgba(0, 0, 0, 0.34),
-    inset 0 1px 0 rgba(255, 255, 255, 0.08);
-}
-
-.jf-auth-card::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  border-radius: inherit;
-  background:
-    radial-gradient(circle at 20% 0%, rgba(147, 197, 253, 0.13), transparent 34%),
-    radial-gradient(circle at 80% 0%, rgba(134, 239, 172, 0.09), transparent 36%);
-}
-
-.jf-auth-input-glow:focus-within {
-  filter: drop-shadow(0 12px 28px rgba(96, 165, 250, 0.1));
-}
-
-.jf-auth-action {
-  position: relative;
-  overflow: hidden;
-}
-
-.jf-auth-action::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background: linear-gradient(110deg, transparent 0%, rgba(255,255,255,0.28) 45%, transparent 58%);
-  transform: translateX(-120%);
-  animation: jfAuthSheen 5.2s ease-in-out infinite;
-}
-
-@keyframes jfAuthOrb {
-  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
-  50% { transform: translate3d(12px, -16px, 0) scale(1.08); }
-}
-
-@keyframes jfAuthSheen {
-  0%, 70% { transform: translateX(-120%); }
-  84%, 100% { transform: translateX(120%); }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .jf-login-polish *,
-  .jf-login-polish *::before,
-  .jf-login-polish *::after {
-    animation-duration: 1ms !important;
-    animation-iteration-count: 1 !important;
-    scroll-behavior: auto !important;
-    transition-duration: 1ms !important;
-  }
-}
-        `,
-      }}
-    />
-  );
-}
+const inputBaseClass = "jf-auth-input";
 
 function cleanEmail(value: string) {
   return value.trim().toLowerCase();
@@ -202,7 +94,7 @@ function PrimaryButton({
       onClick={onClick}
       disabled={disabled || loading}
       aria-busy={loading}
-      className="jf-auth-action group flex h-12 w-full items-center justify-center gap-2 rounded-2xl bg-[#f8fbff] px-5 text-[15px] font-bold text-[#07101f] shadow-[0_18px_44px_rgba(216,235,255,0.16)] transition hover:bg-[#eaf5ff] disabled:cursor-not-allowed disabled:opacity-80"
+      className="jf-auth-action jf-auth-primary group"
     >
       {loading ?
         <ButtonSpinner />
@@ -236,7 +128,7 @@ function SocialButton({
       onClick={onClick}
       disabled={disabled || loading}
       aria-busy={loading}
-      className="flex h-12 w-full items-center justify-center gap-3 rounded-2xl border border-[rgba(255,255,255,0.13)] bg-[rgba(255,255,255,0.075)] text-[15px] font-semibold text-[rgba(248,251,255,0.94)] shadow-[0_10px_24px_rgba(0,0,0,0.12)] transition hover:border-[rgba(255,255,255,0.22)] hover:bg-[rgba(255,255,255,0.12)] disabled:cursor-not-allowed disabled:opacity-70"
+      className="jf-auth-social"
     >
       <span className="grid h-5 w-5 place-items-center">
         {loading ?
@@ -259,7 +151,7 @@ function Field({
 }) {
   return (
     <label className="block">
-      <span className="mb-2 block text-xs font-semibold text-[rgba(248,251,255,0.58)]">
+      <span className="jf-auth-label">
         {label}
       </span>
 
@@ -283,18 +175,14 @@ function Feedback({
   tone: "error" | "success" | "info";
   children: ReactNode;
 }) {
-  const toneClass =
-    tone === "error" ?
-      "border-[rgba(248,113,113,0.26)] bg-[rgba(239,68,68,0.14)] text-[#fecaca]"
-    : tone === "success" ?
-      "border-[rgba(52,211,153,0.24)] bg-[rgba(16,185,129,0.12)] text-[#bbf7d0]"
-    : "border-[rgba(125,211,252,0.22)] bg-[rgba(14,165,233,0.12)] text-[#bae6fd]";
-
   return (
     <motion.p
       initial={{ opacity: 0, y: -5 }}
       animate={{ opacity: 1, y: 0 }}
-      className={`rounded-2xl border px-4 py-3 text-sm font-semibold leading-6 ${toneClass}`}
+      role={tone === "error" ? "alert" : undefined}
+      aria-live={tone === "error" ? undefined : "polite"}
+      data-tone={tone}
+      className="jf-auth-feedback"
     >
       {children}
     </motion.p>
@@ -508,17 +396,14 @@ export default function LoginPage() {
 
   return (
     <main className="jf-auth-page jf-login-polish relative flex min-h-dvh items-center justify-center overflow-hidden px-4 py-8 text-[#f8fbff] sm:px-6 lg:px-8">
-      <AuthPolishStyles />
-      <div className="jf-auth-orb jf-auth-orb-one" />
-      <div className="jf-auth-orb jf-auth-orb-two" />
-      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(90deg,rgba(255,255,255,0.045)_1px,transparent_1px),linear-gradient(0deg,rgba(255,255,255,0.04)_1px,transparent_1px)] bg-[size:52px_52px] opacity-20" />
-      <div className="pointer-events-none absolute inset-x-0 top-0 h-1 bg-[linear-gradient(90deg,#22c55e,#38bdf8,#fbbf24)]" />
+      <div className="jf-auth-grid pointer-events-none absolute inset-0" />
+      <div className="jf-auth-accent-line pointer-events-none absolute inset-x-0 top-0 h-1" />
 
       <motion.section
         initial={{ opacity: 0, y: 18, scale: 0.985 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
         transition={{ duration: 0.28, ease: "easeOut" }}
-        className="jf-auth-card relative w-full max-w-[520px] overflow-hidden rounded-[30px] border border-[rgba(255,255,255,0.14)] bg-[rgba(255,255,255,0.085)] p-5 backdrop-blur-xl sm:rounded-[34px] sm:p-7"
+        className="jf-auth-card relative w-full max-w-[520px] overflow-hidden p-5 sm:p-7"
       >
         <div className="absolute inset-x-0 top-0 h-px bg-[linear-gradient(90deg,transparent,rgba(255,255,255,0.42),transparent)]" />
 
@@ -526,7 +411,7 @@ export default function LoginPage() {
           <button
             type="button"
             onClick={() => router.push("/")}
-            className="absolute right-0 top-0 grid h-10 w-10 place-items-center rounded-2xl text-[rgba(248,251,255,0.48)] transition hover:bg-[rgba(255,255,255,0.1)] hover:text-[#f8fbff] active:scale-95"
+            className="absolute right-0 top-0 grid h-11 w-11 place-items-center rounded-2xl text-[rgba(248,251,255,0.48)] transition hover:bg-[rgba(255,255,255,0.1)] hover:text-[#f8fbff] active:scale-95"
             aria-label="Close"
           >
             <X className="h-5 w-5" />
@@ -538,7 +423,7 @@ export default function LoginPage() {
               Jamals Finance
             </div>
 
-            <div className="mx-auto mb-4 grid h-12 w-12 place-items-center rounded-2xl border border-[rgba(255,255,255,0.13)] bg-[rgba(255,255,255,0.09)] shadow-[0_16px_36px_rgba(59,130,246,0.16)]">
+            <div className="jf-auth-icon mx-auto mb-4">
               <ShieldCheck className="h-6 w-6 text-[#bfdbfe]" />
             </div>
 
@@ -552,16 +437,13 @@ export default function LoginPage() {
           </div>
 
           {step === "login" || step === "signup" ?
-            <div className="mb-5 grid grid-cols-2 rounded-2xl border border-[rgba(255,255,255,0.12)] bg-[rgba(255,255,255,0.065)] p-1">
+            <div className="jf-auth-tab-list mb-5">
               <button
                 type="button"
                 onClick={() => switchStep("login")}
                 disabled={isLoading}
-                className={`h-10 rounded-xl text-sm font-bold transition ${
-                  step === "login" ?
-                    "bg-[#f8fbff] text-[#07101f] shadow-[0_12px_28px_rgba(216,235,255,0.12)]"
-                  : "text-[rgba(248,251,255,0.58)] hover:bg-[rgba(255,255,255,0.08)] hover:text-[#f8fbff]"
-                }`}
+                data-active={step === "login"}
+                className="jf-auth-tab h-11"
               >
                 Login
               </button>
@@ -569,11 +451,8 @@ export default function LoginPage() {
                 type="button"
                 onClick={() => switchStep("signup")}
                 disabled={isLoading}
-                className={`h-10 rounded-xl text-sm font-bold transition ${
-                  step === "signup" ?
-                    "bg-[#f8fbff] text-[#07101f] shadow-[0_12px_28px_rgba(216,235,255,0.12)]"
-                  : "text-[rgba(248,251,255,0.58)] hover:bg-[rgba(255,255,255,0.08)] hover:text-[#f8fbff]"
-                }`}
+                data-active={step === "signup"}
+                className="jf-auth-tab h-11"
               >
                 Sign up
               </button>
@@ -599,7 +478,9 @@ export default function LoginPage() {
                       disabled={isLoading}
                       loading={loadingMode === "google"}
                     >
-                      Continue with Google
+                      {loadingMode === "google" ?
+                        "Opening Google..."
+                      : "Continue with Google"}
                     </SocialButton>
 
                     <div className="flex items-center gap-5 py-2">
@@ -644,7 +525,7 @@ export default function LoginPage() {
                   <button
                     type="button"
                     onClick={() => setShowPassword((value) => !value)}
-                    className="absolute right-2 top-1/2 grid h-9 w-9 -translate-y-1/2 place-items-center rounded-2xl text-[rgba(248,251,255,0.44)] transition hover:bg-[rgba(255,255,255,0.1)] hover:text-[#f8fbff]"
+                    className="absolute right-1 top-1/2 grid h-11 w-11 -translate-y-1/2 place-items-center rounded-2xl text-[rgba(248,251,255,0.44)] transition hover:bg-[rgba(255,255,255,0.1)] hover:text-[#f8fbff]"
                     aria-label={
                       showPassword ? "Hide password" : "Show password"
                     }
@@ -671,7 +552,7 @@ export default function LoginPage() {
                   type="button"
                   onClick={() => switchStep("forgot")}
                   disabled={isLoading}
-                  className="w-full rounded-2xl py-2 text-sm font-semibold text-[rgba(248,251,255,0.6)] transition hover:bg-[rgba(255,255,255,0.1)] hover:text-[#f8fbff] disabled:cursor-not-allowed disabled:opacity-60"
+                  className="flex h-11 w-full items-center justify-center rounded-2xl text-sm font-semibold text-[rgba(248,251,255,0.6)] transition hover:bg-[rgba(255,255,255,0.1)] hover:text-[#f8fbff] disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   Forgot password?
                 </button>
@@ -696,7 +577,9 @@ export default function LoginPage() {
                       disabled={isLoading}
                       loading={loadingMode === "google"}
                     >
-                      Sign up with Google
+                      {loadingMode === "google" ?
+                        "Opening Google..."
+                      : "Sign up with Google"}
                     </SocialButton>
 
                     <div className="flex items-center gap-5 py-2">
@@ -768,7 +651,7 @@ export default function LoginPage() {
                   <button
                     type="button"
                     onClick={() => setShowPassword((value) => !value)}
-                    className="absolute right-2 top-1/2 grid h-9 w-9 -translate-y-1/2 place-items-center rounded-2xl text-[rgba(248,251,255,0.44)] transition hover:bg-[rgba(255,255,255,0.1)] hover:text-[#f8fbff]"
+                    className="absolute right-1 top-1/2 grid h-11 w-11 -translate-y-1/2 place-items-center rounded-2xl text-[rgba(248,251,255,0.44)] transition hover:bg-[rgba(255,255,255,0.1)] hover:text-[#f8fbff]"
                     aria-label={
                       showPassword ? "Hide password" : "Show password"
                     }
@@ -811,7 +694,7 @@ export default function LoginPage() {
                 <button
                   type="button"
                   onClick={() => switchStep("login")}
-                  className="inline-flex h-10 items-center gap-2 rounded-2xl px-2 text-sm font-semibold text-[rgba(248,251,255,0.58)] transition hover:bg-[rgba(255,255,255,0.1)] hover:text-[#f8fbff]"
+                  className="inline-flex h-11 items-center gap-2 rounded-2xl px-2 text-sm font-semibold text-[rgba(248,251,255,0.58)] transition hover:bg-[rgba(255,255,255,0.1)] hover:text-[#f8fbff]"
                 >
                   <ArrowLeft className="h-4 w-4" />
                   Back to login
