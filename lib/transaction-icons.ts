@@ -2,7 +2,6 @@ import {
   ArrowLeftRight,
   Car,
   Coffee,
-  CreditCard,
   Landmark,
   ReceiptText,
   ShoppingBag,

@@ -91,7 +91,7 @@ export default function QuickActionsBalance({
     <>
       <section
         aria-label="Total net balance and quick actions"
-        className="finance-reference-card relative overflow-hidden px-4 py-5 sm:px-5 sm:py-6 lg:px-6"
+        className="finance-reference-card relative overflow-hidden px-4 py-4 sm:px-5 sm:py-5 lg:px-6"
       >
         <div
           aria-hidden="true"
@@ -103,18 +103,18 @@ export default function QuickActionsBalance({
           className="pointer-events-none absolute -right-16 -top-20 h-44 w-44 rounded-full bg-blue-500/10 blur-3xl"
         />
 
-        <div className="relative flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+        <div className="relative flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
           <div className="min-w-0 text-center lg:text-left">
             <p className="mb-2 text-[10px] font-black uppercase tracking-[0.24em] text-text-muted">
               Total net balance
             </p>
 
-            <h1 className="break-words text-[clamp(3rem,7vw,5.6rem)] font-black leading-none tracking-[-0.08em] text-text-primary [font-variant-numeric:tabular-nums]">
+            <h1 className="break-words text-[clamp(2.25rem,4.6vw,4.15rem)] font-black leading-[0.96] tracking-[-0.045em] text-text-primary [font-variant-numeric:tabular-nums] [overflow-wrap:anywhere]">
               {totalBalance}
             </h1>
           </div>
 
-          <div className="mx-auto grid w-full max-w-[520px] grid-cols-4 gap-3 lg:mx-0 lg:w-auto lg:min-w-[430px] lg:gap-5">
+          <div className="mx-auto grid w-full max-w-[480px] grid-cols-4 gap-2.5 lg:mx-0 lg:w-auto lg:min-w-[392px] lg:gap-3">
             {actions.map((action) => {
               const Icon = action.icon;
 
@@ -127,11 +127,11 @@ export default function QuickActionsBalance({
                   className="finance-focus group flex min-w-0 flex-col items-center justify-center gap-2 rounded-[var(--oneui-control-radius)] px-1 py-1.5 transition-transform duration-200 hover:-translate-y-0.5"
                 >
                   <span
-                    className={`grid h-12 w-12 place-items-center rounded-full border shadow-sm transition-all duration-200 group-hover:shadow-md sm:h-14 sm:w-14 lg:h-16 lg:w-16 ${action.circleClass}`}
+                    className={`grid h-11 w-11 place-items-center rounded-full border shadow-sm transition-all duration-200 group-hover:shadow-md sm:h-12 sm:w-12 lg:h-14 lg:w-14 ${action.circleClass}`}
                   >
                     <Icon
                       aria-hidden="true"
-                      className="h-5 w-5 stroke-[2.5] sm:h-6 sm:w-6 lg:h-7 lg:w-7"
+                      className="h-5 w-5 stroke-[2.5] lg:h-6 lg:w-6"
                     />
                   </span>
 

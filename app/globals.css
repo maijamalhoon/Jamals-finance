@@ -776,10 +776,18 @@
   }
 
   .field-input:focus,
-  .field-input:focus-visible {
+  .field-input:focus-visible,
+  .field-input:focus-within {
     border-color: color-mix(in srgb, var(--active), var(--border) 55%);
     background-color: var(--surface);
     box-shadow: var(--focus-ring);
+  }
+
+  .field-input input {
+    border: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    outline: none !important;
   }
 
   .widget-link {

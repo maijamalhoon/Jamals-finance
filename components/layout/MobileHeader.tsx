@@ -126,7 +126,7 @@ export default function MobileHeader() {
       <AnimatePresence>
         {open && (
           <motion.div
-            className="fixed inset-0 z-50 lg:hidden"
+            className="fixed inset-0 z-[80] lg:hidden"
             variants={overlayVariants}
             initial="initial"
             animate="animate"

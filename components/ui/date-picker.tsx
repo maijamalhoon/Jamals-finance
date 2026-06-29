@@ -32,16 +32,6 @@ function formatDate(date: Date) {
   return `${year}-${month}-${day}`;
 }
 
-function displayDate(value: string) {
-  const date = toDate(value);
-  if (!date) return "";
-  return date.toLocaleDateString("en-US", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-  });
-}
-
 function sameDay(a: Date, b: Date) {
   return (
     a.getFullYear() === b.getFullYear() &&
@@ -53,16 +43,17 @@ function sameDay(a: Date, b: Date) {
 export default function DatePicker({
   value,
   onChange,
-  placeholder = "Select date",
+  placeholder = "YYYY-MM-DD",
   disabled,
   className,
   minDate,
   maxDate,
 }: DatePickerProps) {
   const rootRef = useRef<HTMLDivElement>(null);
-  const buttonRef = useRef<HTMLButtonElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
   const popoverRef = useRef<HTMLDivElement>(null);
   const selectedDate = toDate(value);
+  const [inputValue, setInputValue] = useState(value);
   const [open, setOpen] = useState(false);
   const [viewDate, setViewDate] = useState(selectedDate ?? new Date());
   const [isCompact, setIsCompact] = useState(false);
@@ -80,6 +71,7 @@ export default function DatePicker({
   useEffect(() => {
     const nextSelectedDate = toDate(value);
     if (nextSelectedDate) setViewDate(nextSelectedDate);
+    setInputValue(value);
   }, [value]);
 
   useEffect(() => {
@@ -119,7 +111,7 @@ export default function DatePicker({
     if (!open || isCompact) return;
 
     function updatePosition() {
-      const trigger = buttonRef.current;
+      const trigger = inputRef.current;
       if (!trigger) return;
 
       const rect = trigger.getBoundingClientRect();
@@ -177,6 +169,31 @@ export default function DatePicker({
     if (min && day < min) return true;
     if (max && day > max) return true;
     return false;
+  }
+
+  function commitTypedDate(nextValue: string) {
+    setInputValue(nextValue);
+
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(nextValue)) return;
+
+    const parsed = toDate(nextValue);
+    if (!parsed || formatDate(parsed) !== nextValue || isDisabled(parsed)) return;
+
+    setViewDate(parsed);
+    onChange(nextValue);
+  }
+
+  function resetInvalidTypedDate() {
+    if (!inputValue || inputValue === value) return;
+
+    const parsed = toDate(inputValue);
+    const valid =
+      /^\d{4}-\d{2}-\d{2}$/.test(inputValue) &&
+      parsed &&
+      formatDate(parsed) === inputValue &&
+      !isDisabled(parsed);
+
+    if (!valid) setInputValue(value);
   }
 
   const calendar = (
@@ -250,7 +267,9 @@ export default function DatePicker({
               type="button"
               disabled={unavailable}
               onClick={() => {
-                onChange(formatDate(day));
+                const nextValue = formatDate(day);
+                onChange(nextValue);
+                setInputValue(nextValue);
                 setOpen(false);
               }}
               className={cn(
@@ -273,7 +292,9 @@ export default function DatePicker({
         <button
           type="button"
           onClick={() => {
-            onChange(formatDate(today));
+            const nextValue = formatDate(today);
+            onChange(nextValue);
+            setInputValue(nextValue);
             setViewDate(today);
             setOpen(false);
           }}
@@ -294,22 +315,49 @@ export default function DatePicker({
 
   return (
     <div ref={rootRef} className={cn("relative", className)}>
-      <button
-        ref={buttonRef}
-        type="button"
-        disabled={disabled}
-        onClick={() => setOpen((current) => !current)}
+      <div
         className={cn(
-          "field-input finance-focus flex cursor-pointer items-center justify-between gap-3 pr-3 text-left",
+          "field-input finance-focus flex items-center justify-between gap-3 px-3 text-left",
           !value && "text-text-secondary",
           disabled && "cursor-not-allowed opacity-50",
         )}
-        aria-haspopup="dialog"
-        aria-expanded={open}
       >
-        <span>{value ? displayDate(value) : placeholder}</span>
-        <CalendarDays size={16} className="text-text-secondary" aria-hidden="true" />
-      </button>
+        <input
+          ref={inputRef}
+          type="text"
+          inputMode="numeric"
+          value={inputValue}
+          disabled={disabled}
+          placeholder={placeholder}
+          aria-label="Transaction date"
+          pattern="\d{4}-\d{2}-\d{2}"
+          onFocus={() => setOpen(true)}
+          onChange={(event) => commitTypedDate(event.target.value)}
+          onBlur={resetInvalidTypedDate}
+          onKeyDown={(event) => {
+            if (event.key === "Enter") {
+              resetInvalidTypedDate();
+              setOpen(false);
+            }
+          }}
+          className="min-w-0 flex-1 border-0 bg-transparent p-0 text-sm font-medium text-text-primary outline-none placeholder:text-text-secondary"
+        />
+        <button
+          type="button"
+          disabled={disabled}
+          onClick={() => {
+            const nextOpen = !open;
+            setOpen(nextOpen);
+            if (nextOpen) inputRef.current?.focus();
+          }}
+          className="finance-focus grid h-8 w-8 shrink-0 place-items-center rounded-[12px] text-text-secondary transition-colors hover:bg-hover hover:text-text-primary disabled:cursor-not-allowed"
+          aria-label={open ? "Close calendar" : "Open calendar"}
+          aria-haspopup="dialog"
+          aria-expanded={open}
+        >
+          <CalendarDays size={16} aria-hidden="true" />
+        </button>
+      </div>
 
       {open && !disabled && (isCompact ? calendar : createPortal(calendar, document.body))}
     </div>

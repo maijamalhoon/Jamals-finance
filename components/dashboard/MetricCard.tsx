@@ -99,13 +99,13 @@ export default function MetricCard({
       <div className="relative z-10 mt-3">
         <p className="text-[11px] font-semibold text-text-secondary">{title}</p>
 
-        <div className="mt-1 flex items-end justify-between gap-3">
-          <p className="text-[20px] font-black leading-none tracking-tight text-text-primary">
+        <div className="mt-1 flex min-w-0 flex-col gap-2 2xl:flex-row 2xl:items-end 2xl:justify-between">
+          <p className="min-w-0 break-words text-[clamp(1.05rem,1.35vw,1.25rem)] font-black leading-tight tracking-tight text-text-primary [overflow-wrap:anywhere]">
             <CountedAmount amount={displayAmount} />
           </p>
 
           {subtitle ?
-            <span className="shrink-0 rounded-full border border-border bg-surface-secondary px-2.5 py-1 text-[10px] font-semibold leading-none text-text-secondary">
+            <span className="w-fit shrink-0 rounded-full border border-border bg-surface-secondary px-2.5 py-1 text-[10px] font-semibold leading-none text-text-secondary">
               {subtitle}
             </span>
           : null}

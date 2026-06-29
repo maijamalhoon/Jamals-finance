@@ -48,9 +48,9 @@ export default function DashboardLayout({
 
         <main
           data-dashboard-scroll
-          className="jf-dashboard-scroll relative flex-1 overflow-y-auto overscroll-contain px-3 pb-[calc(10rem+env(safe-area-inset-bottom))] pt-4 sm:px-5 sm:pb-[calc(10.5rem+env(safe-area-inset-bottom))] sm:pt-5 lg:px-7 lg:pb-10 lg:pt-7 xl:px-8"
+          className="jf-dashboard-scroll relative flex-1 overflow-y-auto overscroll-contain px-3 pb-[calc(10.75rem+env(safe-area-inset-bottom))] pt-4 sm:px-5 sm:pb-[calc(11rem+env(safe-area-inset-bottom))] sm:pt-5 lg:px-6 lg:pb-10 lg:pt-6 xl:px-7"
         >
-          <div className="jf-dashboard-content-frame mx-auto w-full max-w-[1600px] min-w-0">
+          <div className="jf-dashboard-content-frame mx-auto w-full max-w-[1360px] min-w-0">
             {children}
           </div>
         </main>

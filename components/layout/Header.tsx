@@ -5,7 +5,6 @@ import { AnimatePresence, motion } from "framer-motion";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { panelVariants } from "@/components/motion/animation-config";
-import { formatInAppTimeZone } from "@/lib/dates";
 import { isNavItemActive, NAV_ITEMS } from "@/lib/navigation";
 
 function getRouteTitle(pathname: string) {
