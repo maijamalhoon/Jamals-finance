@@ -3485,9 +3485,19 @@ tbody tr:hover {
 }
 
 @media (max-width: 1023px) {
+  .jf-dashboard-sidebar-wrap {
+    display: none !important;
+  }
+
   .jf-dashboard-header-wrap::after,
   .jf-dashboard-sidebar-wrap::after {
     display: none;
+  }
+}
+
+@media (min-width: 1024px) {
+  .jf-mobile-nav-shell {
+    display: none !important;
   }
 }
 

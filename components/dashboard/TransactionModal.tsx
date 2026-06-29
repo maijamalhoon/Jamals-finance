@@ -158,6 +158,11 @@ export default function TransactionModal({
       return;
     }
 
+    if (!date) {
+      setError("Enter a valid date as DD/MM/YYYY.");
+      return;
+    }
+
     const parsedAmount = Number(amount);
     if (!Number.isFinite(parsedAmount) || parsedAmount <= 0) {
       setError("Enter an amount greater than 0.");
@@ -318,7 +323,7 @@ export default function TransactionModal({
             <DatePicker
               value={date}
               onChange={setDate}
-              placeholder="Select transaction date"
+              placeholder="DD/MM/YYYY"
             />
           </div>
 

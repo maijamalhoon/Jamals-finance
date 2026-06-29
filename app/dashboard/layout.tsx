@@ -34,7 +34,7 @@ export default function DashboardLayout({
         className="jf-dashboard-orb jf-dashboard-orb-two pointer-events-none absolute z-0"
       />
 
-      <div className="jf-dashboard-sidebar-wrap relative z-10 hidden flex-shrink-0 lg:block">
+      <div className="jf-dashboard-sidebar-wrap relative z-10 hidden flex-shrink-0 lg:flex">
         <Sidebar />
       </div>
 
