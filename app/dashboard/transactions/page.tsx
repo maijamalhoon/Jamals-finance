@@ -179,8 +179,8 @@ export default async function TransactionsPage({
 
   return (
     <div className="space-y-5">
-      <div className="page-heading">
-        <div>
+      <div className="page-heading finance-surface-glass overflow-hidden">
+        <div className="min-w-0">
           <h2 className="page-title">Transactions</h2>
           <p className="page-subtitle">
             Showing {visibleTransactions.length} of {transactions.length}{" "}
@@ -193,7 +193,7 @@ export default async function TransactionsPage({
         <TransactionFilters />
       </Suspense>
 
-      <div className="finance-panel p-4 sm:p-5">
+      <div className="finance-panel min-w-0 overflow-hidden p-3 sm:p-5">
         <div className="desktop-list-header mb-2">
           <div className="w-10 flex-shrink-0" />
           <p className="flex-1">Description</p>

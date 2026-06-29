@@ -48,8 +48,8 @@ function getTypeMeta(type?: string | null): {
       label: "Income",
       icon: TrendingUp,
       softClass:
-        "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-500/25 dark:bg-emerald-500/10 dark:text-emerald-300",
-      amountClass: "text-emerald-600 dark:text-emerald-400",
+        "border-success/30 bg-success/10 text-success",
+      amountClass: "text-success",
       prefix: "+",
     };
   }
@@ -59,8 +59,8 @@ function getTypeMeta(type?: string | null): {
       label: "Expense",
       icon: TrendingDown,
       softClass:
-        "border-red-200 bg-red-50 text-red-700 dark:border-red-500/25 dark:bg-red-500/10 dark:text-red-300",
-      amountClass: "text-red-600 dark:text-red-400",
+        "border-danger/30 bg-danger/10 text-danger",
+      amountClass: "text-danger",
       prefix: "-",
     };
   }
@@ -69,8 +69,8 @@ function getTypeMeta(type?: string | null): {
     label: "Transfer",
     icon: ArrowLeftRight,
     softClass:
-      "border-blue-200 bg-blue-50 text-blue-700 dark:border-blue-500/25 dark:bg-blue-500/10 dark:text-blue-300",
-    amountClass: "text-blue-600 dark:text-blue-400",
+      "border-active/30 bg-active/10 text-active",
+    amountClass: "text-active",
     prefix: "",
   };
 }
@@ -186,7 +186,7 @@ export default function TransactionRow({ tx }: { tx: Transaction }) {
             openReceipt();
           }
         }}
-        className="group grid cursor-pointer grid-cols-[auto,1fr] gap-3 rounded-2xl border border-transparent px-3 py-3 transition-all duration-200 hover:-translate-y-0.5 hover:bg-hover hover:shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-brand/20 md:flex md:items-center"
+        className="finance-focus group grid min-w-0 cursor-pointer grid-cols-[auto,minmax(0,1fr)] gap-3 rounded-[var(--oneui-tile-radius)] border border-transparent px-3 py-3 transition-all duration-200 hover:-translate-y-0.5 hover:bg-hover hover:shadow-sm md:flex md:items-center"
       >
         <div
           className={`grid h-10 w-10 shrink-0 place-items-center rounded-2xl border transition-all duration-200 group-hover:scale-105 ${meta.softClass}`}
@@ -213,7 +213,7 @@ export default function TransactionRow({ tx }: { tx: Transaction }) {
             </div>
 
             <p
-              className={`shrink-0 text-right text-sm font-black md:hidden ${meta.amountClass}`}
+              className={`max-w-[46%] shrink-0 break-words text-right text-sm font-black [overflow-wrap:anywhere] md:hidden ${meta.amountClass}`}
             >
               {displayAmount}
             </p>
@@ -243,7 +243,7 @@ export default function TransactionRow({ tx }: { tx: Transaction }) {
         </div>
 
         <p
-          className={`hidden w-32 shrink-0 text-right text-sm font-black md:block ${meta.amountClass}`}
+          className={`hidden w-32 shrink-0 break-words text-right text-sm font-black [overflow-wrap:anywhere] md:block ${meta.amountClass}`}
         >
           {displayAmount}
         </p>
@@ -259,7 +259,7 @@ export default function TransactionRow({ tx }: { tx: Transaction }) {
               event.stopPropagation();
               router.push(receiptHref);
             }}
-            className="finance-focus grid h-8 w-8 place-items-center rounded-full border border-border bg-surface text-text-secondary shadow-sm transition-all hover:-translate-y-0.5 hover:bg-hover hover:text-brand hover:shadow-md"
+            className="finance-focus grid h-8 w-8 place-items-center rounded-full border border-border bg-surface text-text-secondary shadow-sm transition-all hover:-translate-y-0.5 hover:bg-hover hover:text-active hover:shadow-md"
             aria-label="View receipt"
             title="View receipt"
             type="button"
@@ -274,7 +274,7 @@ export default function TransactionRow({ tx }: { tx: Transaction }) {
                 event.stopPropagation();
                 setEditOpen(true);
               }}
-              className="finance-focus grid h-8 w-8 place-items-center rounded-full border border-border bg-surface text-text-secondary shadow-sm transition-all hover:-translate-y-0.5 hover:bg-blue-50 hover:text-blue-600 hover:shadow-md dark:hover:bg-blue-500/10 dark:hover:text-blue-400"
+              className="finance-focus grid h-8 w-8 place-items-center rounded-full border border-border bg-surface text-text-secondary shadow-sm transition-all hover:-translate-y-0.5 hover:bg-hover hover:text-active hover:shadow-md"
               aria-label="Edit transaction"
               title="Edit"
               type="button"
@@ -290,7 +290,7 @@ export default function TransactionRow({ tx }: { tx: Transaction }) {
               void handleDelete();
             }}
             disabled={deleting}
-            className="finance-focus grid h-8 w-8 place-items-center rounded-full border border-border bg-surface text-text-secondary shadow-sm transition-all hover:-translate-y-0.5 hover:border-red-200 hover:bg-red-50 hover:text-red-600 hover:shadow-md disabled:cursor-not-allowed disabled:opacity-50 dark:hover:border-red-500/30 dark:hover:bg-red-500/10 dark:hover:text-red-400"
+            className="finance-focus grid h-8 w-8 place-items-center rounded-full border border-border bg-surface text-text-secondary shadow-sm transition-all hover:-translate-y-0.5 hover:border-danger/30 hover:bg-danger/10 hover:text-danger hover:shadow-md disabled:cursor-not-allowed disabled:opacity-50"
             aria-label="Delete transaction"
             title="Delete"
             type="button"

@@ -111,9 +111,9 @@ export default function TransactionFilters() {
   ]);
 
   return (
-    <div className="mb-5 space-y-3">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="finance-control finance-search-control finance-focus flex min-h-11 w-full max-w-[420px] items-center gap-2 px-3 py-2">
+    <div className="mb-5 min-w-0 space-y-3">
+      <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="finance-control finance-search-control finance-focus flex min-h-11 w-full min-w-0 max-w-[420px] items-center gap-2 px-3 py-2">
           <Search size={15} className="flex-shrink-0 text-text-secondary" />
 
           <input
@@ -135,7 +135,7 @@ export default function TransactionFilters() {
           : null}
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center justify-end gap-2">
           {activeFilterCount > 0 ?
             <button
               onClick={clearFilters}
@@ -148,13 +148,14 @@ export default function TransactionFilters() {
 
           <button
             onClick={() => setOpen((value) => !value)}
+            aria-expanded={open}
             className="finance-focus inline-flex items-center gap-2 rounded-full border border-border bg-surface px-4 py-2 text-sm font-semibold text-text-primary shadow-sm transition-all hover:-translate-y-0.5 hover:bg-hover hover:shadow-md"
             type="button"
           >
             <Filter size={15} />
             Filters
             {activeFilterCount > 0 ?
-              <span className="grid h-5 min-w-5 place-items-center rounded-full bg-brand px-1 text-[11px] text-white">
+              <span className="grid h-5 min-w-5 place-items-center rounded-full bg-active px-1 text-[11px] text-background">
                 {activeFilterCount}
               </span>
             : null}
@@ -167,7 +168,7 @@ export default function TransactionFilters() {
       </div>
 
       {open ?
-        <div className="grid gap-3 rounded-[18px] border border-border bg-surface p-3 shadow-sm sm:grid-cols-2 lg:grid-cols-4">
+        <div className="finance-panel-soft grid min-w-0 gap-3 p-3 sm:grid-cols-2 lg:grid-cols-4">
           <FilterField label="Type">
             <select
               value={activeType}

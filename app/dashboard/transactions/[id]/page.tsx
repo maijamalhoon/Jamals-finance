@@ -199,7 +199,7 @@ function DetailLine({
   if (!value) return null;
 
   return (
-    <div className="rounded-2xl border border-border bg-surface-secondary/70 p-4">
+    <div className="finance-panel-soft min-w-0 p-4">
       <div className="mb-2 flex items-center gap-2 text-xs font-bold uppercase tracking-[0.14em] text-text-secondary">
         <Icon size={15} />
         {label}
@@ -299,11 +299,11 @@ export default async function TransactionReceiptPage({
   } as CSSProperties;
 
   return (
-    <main className="mx-auto flex w-full max-w-6xl flex-col gap-5 px-3 pb-24 pt-2 sm:px-5 lg:px-0">
-      <div className="print:hidden flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+    <main className="mx-auto flex w-full max-w-6xl min-w-0 flex-col gap-5 pb-24 print:max-w-none">
+      <div className="print:hidden flex min-w-0 flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <Link
           href="/dashboard/transactions"
-          className="finance-focus inline-flex w-fit items-center gap-2 rounded-2xl border border-border bg-surface px-4 py-2.5 text-sm font-bold text-text-primary shadow-sm transition-all hover:-translate-y-0.5 hover:bg-hover hover:shadow-md"
+          className="finance-focus inline-flex w-fit items-center gap-2 rounded-[var(--oneui-control-radius)] border border-border bg-surface px-4 py-2.5 text-sm font-bold text-text-primary shadow-sm transition-all hover:-translate-y-0.5 hover:bg-hover hover:shadow-md"
         >
           <ArrowLeft size={17} />
           Back to transactions
@@ -313,30 +313,12 @@ export default async function TransactionReceiptPage({
       </div>
 
       <section
-        className="relative overflow-hidden rounded-[28px] border border-border bg-card shadow-sm print:border-none print:shadow-none"
+        className="finance-reference-card relative min-w-0 overflow-hidden print:border-none print:shadow-none"
         style={receiptVars}
       >
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute -right-20 -top-24 h-56 w-56 rounded-full blur-3xl"
-          style={{
-            backgroundColor:
-              "color-mix(in srgb, var(--receipt-accent), transparent 78%)",
-          }}
-        />
-
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute -left-16 top-24 h-44 w-44 rounded-full blur-3xl"
-          style={{
-            backgroundColor:
-              "color-mix(in srgb, var(--receipt-accent), transparent 88%)",
-          }}
-        />
-
         <div className="relative border-b border-border p-5 sm:p-7">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-            <div className="flex items-start gap-4">
+          <div className="flex min-w-0 flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+            <div className="flex min-w-0 items-start gap-4">
               <div
                 className="grid h-14 w-14 shrink-0 place-items-center rounded-3xl border"
                 style={{
@@ -350,7 +332,7 @@ export default async function TransactionReceiptPage({
                 <TypeIcon size={24} strokeWidth={2.4} />
               </div>
 
-              <div>
+              <div className="min-w-0">
                 <p className="text-xs font-black uppercase tracking-[0.18em] text-text-secondary">
                   Transaction Receipt
                 </p>
@@ -366,7 +348,7 @@ export default async function TransactionReceiptPage({
             </div>
 
             <div
-              className="w-fit rounded-full border px-4 py-2 text-sm font-black"
+              className="w-fit shrink-0 rounded-full border px-4 py-2 text-sm font-black"
               style={{
                 color: "var(--receipt-accent)",
                 borderColor:
@@ -380,10 +362,10 @@ export default async function TransactionReceiptPage({
           </div>
         </div>
 
-        <div className="relative grid gap-5 p-5 sm:p-7 lg:grid-cols-[1fr_360px]">
-          <div className="space-y-4">
+        <div className="relative grid min-w-0 gap-5 p-5 sm:p-7 lg:grid-cols-[minmax(0,1fr)_minmax(280px,360px)]">
+          <div className="min-w-0 space-y-4">
             <div
-              className="rounded-[26px] border p-5 sm:p-6"
+              className="min-w-0 rounded-[var(--oneui-card-radius)] border p-5 sm:p-6"
               style={{
                 borderColor:
                   "color-mix(in srgb, var(--receipt-accent), transparent 70%)",
@@ -396,7 +378,7 @@ export default async function TransactionReceiptPage({
               </p>
 
               <p
-                className="mt-3 break-words text-4xl font-black tracking-tight sm:text-5xl"
+                className="mt-3 break-words text-3xl font-black tracking-tight [overflow-wrap:anywhere] sm:text-5xl"
                 style={{ color: "var(--receipt-accent)" }}
               >
                 {receipt.amountText}
@@ -407,7 +389,7 @@ export default async function TransactionReceiptPage({
               </p>
             </div>
 
-            <div className="grid gap-3 sm:grid-cols-2">
+            <div className="grid min-w-0 gap-3 sm:grid-cols-2">
               <DetailLine
                 icon={CalendarDays}
                 label="Transaction Date"
@@ -459,7 +441,7 @@ export default async function TransactionReceiptPage({
             </div>
           </div>
 
-          <aside className="rounded-[26px] border border-border bg-surface-secondary/60 p-5">
+          <aside className="finance-panel-soft min-w-0 p-5">
             <p className="text-xs font-black uppercase tracking-[0.18em] text-text-secondary">
               Extra Details
             </p>

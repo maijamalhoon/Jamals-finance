@@ -131,7 +131,7 @@ export default function CategoriesSettings({
             className="finance-focus grid h-7 w-7 place-items-center rounded-full transition-transform hover:scale-110"
             style={{
               background: color,
-              outline: value === color ? "2px solid white" : "none",
+              outline: value === color ? "2px solid var(--card)" : "none",
               outlineOffset: "2px",
             }}
             aria-label={`Pick ${color}`}
@@ -157,7 +157,7 @@ export default function CategoriesSettings({
     const choices = roots.filter((root) => root.id !== excludeId);
     return (
       <div>
-        <p className="mb-2 text-[11px] font-medium text-slate-500">
+        <p className="mb-2 text-[11px] font-medium text-text-secondary">
           Parent category
         </p>
         <div className="flex flex-wrap gap-2">
@@ -167,7 +167,7 @@ export default function CategoriesSettings({
             className={`finance-focus rounded-full border px-3 py-1.5 text-[11px] font-semibold transition-colors ${
               !value
                 ? "border-border bg-card text-text-primary"
-                : "border-border bg-surface-secondary text-slate-400 hover:bg-hover hover:text-text-primary"
+                : "border-border bg-surface-secondary text-text-secondary hover:bg-hover hover:text-text-primary"
             }`}
           >
             Top level
@@ -180,7 +180,7 @@ export default function CategoriesSettings({
               className={`finance-focus rounded-full border px-3 py-1.5 text-[11px] font-semibold transition-colors ${
                 value === root.id
                   ? "border-border bg-card text-text-primary"
-                  : "border-border bg-surface-secondary text-slate-400 hover:bg-hover hover:text-text-primary"
+                  : "border-border bg-surface-secondary text-text-secondary hover:bg-hover hover:text-text-primary"
               }`}
             >
               {root.name}
@@ -261,7 +261,7 @@ export default function CategoriesSettings({
           <button
             type="button"
             onClick={() => setEditingId(null)}
-            className="finance-focus inline-flex items-center gap-1 rounded-[14px] border border-border bg-surface-secondary px-3 py-2 text-xs font-semibold text-slate-300 hover:bg-hover"
+            className="finance-focus inline-flex items-center gap-1 rounded-[14px] border border-border bg-surface-secondary px-3 py-2 text-xs font-semibold text-text-secondary hover:bg-hover hover:text-text-primary"
           >
             <X size={12} />
             Cancel
@@ -285,7 +285,7 @@ export default function CategoriesSettings({
       return (
         <div
           key={category.id}
-          className={`group rounded-[22px] border border-border bg-surface-secondary p-3 transition-colors hover:border-border hover:bg-hover/[0.065] ${
+          className={`group rounded-[22px] border border-border bg-surface-secondary p-3 transition-colors hover:border-border hover:bg-hover ${
             nested ? "ml-5" : ""
           }`}
         >
@@ -298,7 +298,7 @@ export default function CategoriesSettings({
               <span className="block truncate text-sm font-semibold text-text-primary">
                 {category.name}
               </span>
-              <span className="text-[11px] text-slate-500">
+              <span className="text-[11px] text-text-secondary">
                 {stat.count} records tracked
               </span>
             </div>
@@ -313,26 +313,26 @@ export default function CategoriesSettings({
             <button
               type="button"
               onClick={() => handleDelete(category.id, category.name)}
-              className="flex h-8 w-8 items-center justify-center rounded-[14px] opacity-0 transition-all hover:bg-red-500/20 group-hover:opacity-100"
+              className="finance-focus flex h-8 w-8 items-center justify-center rounded-[14px] text-danger opacity-0 transition-all hover:bg-danger/10 group-hover:opacity-100"
               aria-label={`Delete ${category.name}`}
             >
-              <Trash2 size={12} className="text-red-400" />
+              <Trash2 size={12} />
             </button>
           </div>
           <div className="mt-3 grid grid-cols-2 gap-2">
-            <div className="rounded-[18px] border border-border bg-black/10 px-3 py-2">
-              <p className="text-[10px] uppercase text-slate-600">
+            <div className="rounded-[18px] border border-border bg-surface px-3 py-2">
+              <p className="text-[10px] uppercase text-text-secondary">
                 This month
               </p>
               <p className="mt-0.5 truncate text-xs font-bold text-text-primary">
                 {fmt(stat.monthAmount)}
               </p>
             </div>
-            <div className="rounded-[18px] border border-border bg-black/10 px-3 py-2">
-              <p className="text-[10px] uppercase text-slate-600">
+            <div className="rounded-[18px] border border-border bg-surface px-3 py-2">
+              <p className="text-[10px] uppercase text-text-secondary">
                 Total {label}
               </p>
-              <p className="mt-0.5 truncate text-xs font-bold text-slate-300">
+              <p className="mt-0.5 truncate text-xs font-bold text-text-primary">
                 {fmt(stat.totalAmount)}
               </p>
             </div>
@@ -345,10 +345,10 @@ export default function CategoriesSettings({
       <div>
         <div className="mb-3 flex items-center justify-between">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+            <p className="text-xs font-semibold uppercase tracking-wide text-text-secondary">
               {title}
             </p>
-            <p className="mt-0.5 text-[11px] text-slate-600">
+            <p className="mt-0.5 text-[11px] text-text-secondary">
               Add, edit, delete, and track totals.
             </p>
           </div>
@@ -406,7 +406,7 @@ export default function CategoriesSettings({
               <button
                 type="button"
                 onClick={() => setAddingFor(null)}
-                className="finance-focus rounded-[14px] border border-border bg-surface-secondary px-3 py-2 text-xs font-semibold text-slate-300 transition-colors hover:bg-hover"
+                className="finance-focus rounded-[14px] border border-border bg-surface-secondary px-3 py-2 text-xs font-semibold text-text-secondary transition-colors hover:bg-hover hover:text-text-primary"
               >
                 Cancel
               </button>
@@ -418,15 +418,15 @@ export default function CategoriesSettings({
   }
 
   return (
-    <div className="finance-panel p-5">
+    <div className="finance-panel min-w-0 p-5">
       <div className="mb-5 flex items-center justify-between gap-3">
         <div>
           <h3 className="text-sm font-semibold text-text-primary">Categories</h3>
-          <p className="mt-1 text-xs text-slate-500">
+          <p className="mt-1 text-xs text-text-secondary">
             Full control over income sources and expense groups.
           </p>
         </div>
-        <span className="rounded-full border border-border bg-surface-secondary px-3 py-1 text-[11px] font-semibold text-slate-400">
+        <span className="rounded-full border border-border bg-surface-secondary px-3 py-1 text-[11px] font-semibold text-text-secondary">
           {categories.length} total
         </span>
       </div>

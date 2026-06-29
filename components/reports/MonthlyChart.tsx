@@ -40,12 +40,12 @@ function CustomTooltip({
 
   return (
     <div className="finance-panel p-3 text-xs shadow-xl">
-      <p className="mb-2 font-medium text-slate-400">{label}</p>
-      <p className="text-green-300">Income: {formatCurrency(income)}</p>
-      <p className="mt-1 text-red-300">
+      <p className="mb-2 font-medium text-text-secondary">{label}</p>
+      <p className="text-success">Income: {formatCurrency(income)}</p>
+      <p className="mt-1 text-danger">
         Expenses: {formatCurrency(expenses)}
       </p>
-      <p className={`mt-1 ${net >= 0 ? "text-sky-300" : "text-orange-300"}`}>
+      <p className={`mt-1 ${net >= 0 ? "text-active" : "text-warning"}`}>
         Net: {formatCurrency(net)}
       </p>
     </div>
@@ -54,12 +54,18 @@ function CustomTooltip({
 
 export default function MonthlyChart({ data }: Props) {
   return (
-    <div className="finance-panel p-4 sm:p-5">
+    <div className="finance-panel min-w-0 overflow-hidden p-4 sm:p-5">
       <h3 className="mb-5 text-sm font-semibold text-text-primary">
         Monthly Overview (Last 6 Months)
       </h3>
       <ChartFrame className="h-[260px] min-h-[260px] min-w-0 overflow-hidden">
-        <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1} initialDimension={{ width: 720, height: 280 }}>
+        <ResponsiveContainer
+          width="100%"
+          height="100%"
+          minWidth={1}
+          minHeight={1}
+          initialDimension={{ width: 720, height: 280 }}
+        >
           <BarChart
             data={data}
             margin={{ top: 5, right: 5, left: -20, bottom: 0 }}

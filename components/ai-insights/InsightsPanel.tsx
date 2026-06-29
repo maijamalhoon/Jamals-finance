@@ -24,48 +24,48 @@ interface AIData {
 const INSIGHT_STYLE = {
   positive: {
     icon: TrendingUp,
-    color: "text-green-400",
-    bg: "bg-green-500/10",
-    border: "border-green-500/20",
+    color: "text-success",
+    bg: "bg-success/10",
+    border: "border-success/25",
   },
   warning: {
     icon: AlertTriangle,
-    color: "text-yellow-400",
-    bg: "bg-yellow-500/10",
-    border: "border-yellow-500/20",
+    color: "text-warning",
+    bg: "bg-warning/10",
+    border: "border-warning/25",
   },
   tip: {
     icon: Lightbulb,
-    color: "text-blue-400",
-    bg: "bg-blue-500/10",
-    border: "border-blue-500/20",
+    color: "text-active",
+    bg: "bg-active/10",
+    border: "border-active/25",
   },
 };
 
 function HealthMeter({ score, label }: { score: number; label: string }) {
   const color =
-    score >= 80 ? "#22c55e"
-    : score >= 60 ? "#f59e0b"
-    : score >= 40 ? "#f97316"
-    : "#ef4444";
+    score >= 80 ? "var(--success)"
+    : score >= 60 ? "var(--warning)"
+    : score >= 40 ? "var(--warning)"
+    : "var(--danger)";
   const r = 54;
   const circ = 2 * Math.PI * r;
   const offset = circ - (score / 100) * circ;
 
   return (
-    <div className="finance-panel flex flex-col items-center p-6">
-      <p className="mb-4 text-xs font-medium uppercase tracking-wide text-slate-500">
+    <div className="finance-panel flex min-w-0 flex-col items-center p-6">
+      <p className="mb-4 text-xs font-bold uppercase tracking-wide text-text-secondary">
         Financial Health Score
       </p>
 
-      <div className="relative w-36 h-36">
-        <svg className="w-full h-full -rotate-90" viewBox="0 0 120 120">
+      <div className="relative h-36 w-36">
+        <svg className="h-full w-full -rotate-90" viewBox="0 0 120 120">
           <circle
             cx="60"
             cy="60"
             r={r}
             fill="none"
-            stroke="#1f2937"
+            stroke="var(--border)"
             strokeWidth="10"
           />
           <circle
@@ -82,12 +82,12 @@ function HealthMeter({ score, label }: { score: number; label: string }) {
           />
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-center">
-          <p className="text-text-primary text-3xl font-bold">{score}</p>
-          <p className="text-xs text-slate-500">/ 100</p>
+          <p className="text-3xl font-bold text-text-primary">{score}</p>
+          <p className="text-xs text-text-secondary">/ 100</p>
         </div>
       </div>
 
-      <p className="text-text-primary font-semibold mt-4 text-sm">{label}</p>
+      <p className="mt-4 text-sm font-semibold text-text-primary">{label}</p>
     </div>
   );
 }
@@ -117,7 +117,7 @@ export default function InsightsPanel() {
   }, []);
 
   return (
-    <div className="space-y-4">
+    <div className="min-w-0 space-y-4">
       {/* Health Score */}
       {data && !loading && (
         <HealthMeter score={data.healthScore} label={data.healthLabel} />
@@ -130,23 +130,27 @@ export default function InsightsPanel() {
       )}
 
       {/* Insights Feed */}
-      <div className="finance-panel p-5">
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-2.5">
+      <div className="finance-panel min-w-0 p-5">
+        <div className="mb-4 flex min-w-0 items-center justify-between gap-3">
+          <div className="flex min-w-0 items-center gap-2.5">
             <div className="flex h-8 w-8 items-center justify-center rounded-[15px] bg-surface-secondary">
               <Brain size={15} className="text-text-secondary" />
             </div>
-            <h3 className="text-text-primary font-medium text-sm">AI Insights</h3>
+            <h3 className="text-sm font-semibold text-text-primary">
+              AI Insights
+            </h3>
           </div>
           <button
             onClick={load}
             disabled={loading}
             className="icon-button h-8 w-8 rounded-2xl"
+            aria-label="Refresh AI insights"
             title="Refresh"
+            type="button"
           >
             <RefreshCw
               size={12}
-              className={`text-slate-400 ${loading ? "animate-spin" : ""}`}
+              className={`text-text-secondary ${loading ? "animate-spin" : ""}`}
             />
           </button>
         </div>
@@ -162,33 +166,37 @@ export default function InsightsPanel() {
           </div>
         : error ?
           <div className="py-10 text-center">
-            <p className="text-red-400 text-sm">{error}</p>
+            <p className="text-sm text-danger">{error}</p>
             <button
               onClick={load}
-              className="mt-3 text-xs text-text-secondary hover:text-text-primary"
+              className="finance-focus mt-3 rounded-full border border-border bg-surface px-3 py-2 text-xs font-semibold text-text-secondary hover:bg-hover hover:text-text-primary"
+              type="button"
             >
               Try again
             </button>
           </div>
-        : <div className="space-y-3">
+        : data?.insights.length ?
+          <div className="space-y-3">
             {data?.insights.map((ins, i) => {
               const cfg = INSIGHT_STYLE[ins.type] || INSIGHT_STYLE.tip;
               const Icon = cfg.icon;
               return (
                 <div
                   key={i}
-                  className={`rounded-2xl border p-4 ${cfg.bg} ${cfg.border}`}
+                  className={`min-w-0 rounded-[var(--oneui-tile-radius)] border p-4 ${cfg.bg} ${cfg.border}`}
                 >
                   <div className="flex items-start gap-3">
                     <Icon
                       size={14}
-                      className={`${cfg.color} flex-shrink-0 mt-0.5`}
+                      className={`${cfg.color} mt-0.5 flex-shrink-0`}
                     />
-                    <div>
-                      <p className={`text-xs font-semibold mb-1 ${cfg.color}`}>
+                    <div className="min-w-0">
+                      <p
+                        className={`mb-1 break-words text-xs font-semibold ${cfg.color}`}
+                      >
                         {ins.title}
                       </p>
-                      <p className="text-xs leading-relaxed text-slate-300">
+                      <p className="break-words text-xs leading-relaxed text-text-secondary">
                         {ins.message}
                       </p>
                     </div>
@@ -196,6 +204,14 @@ export default function InsightsPanel() {
                 </div>
               );
             })}
+          </div>
+        : <div className="py-10 text-center">
+            <p className="text-sm font-semibold text-text-primary">
+              No insights yet
+            </p>
+            <p className="mt-1 text-xs text-text-secondary">
+              Add more transactions and refresh this panel.
+            </p>
           </div>
         }
       </div>

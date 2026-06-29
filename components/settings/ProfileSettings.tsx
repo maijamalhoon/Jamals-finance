@@ -45,7 +45,7 @@ export default function ProfileSettings({ email }: { email: string }) {
   }
 
   return (
-    <div className="finance-panel p-5">
+    <div className="finance-panel min-w-0 p-5">
       <h3 className="mb-4 text-sm font-semibold text-text-primary">Profile</h3>
 
       <div className="space-y-4">
@@ -59,7 +59,7 @@ export default function ProfileSettings({ email }: { email: string }) {
         </div>
 
         <div className="border-t border-border pt-4">
-          <p className="mb-3 text-xs font-medium text-slate-400">
+          <p className="mb-3 text-xs font-medium text-text-secondary">
             Change Password
           </p>
 
@@ -86,15 +86,16 @@ export default function ProfileSettings({ email }: { email: string }) {
             </div>
           </div>
 
-          {error && <p className="mt-2 text-xs text-red-300">{error}</p>}
+          {error && <p className="mt-2 text-xs text-danger">{error}</p>}
           {message && (
-            <p className="mt-2 text-xs text-emerald-300">{message}</p>
+            <p className="mt-2 text-xs text-success">{message}</p>
           )}
 
           <button
             onClick={handlePasswordChange}
             disabled={loading}
             className="primary-action mt-3"
+            type="button"
           >
             {loading ? "Updating..." : "Update Password"}
           </button>

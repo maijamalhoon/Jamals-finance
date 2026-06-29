@@ -14,12 +14,12 @@ export default function SignOutButton() {
   }
 
   return (
-    <div className="finance-panel p-5">
+    <div className="finance-panel min-w-0 p-5">
       <h3 className="mb-1 text-sm font-semibold text-text-primary">Account</h3>
-      <p className="mb-4 text-xs text-slate-500">
+      <p className="mb-4 text-xs text-text-secondary">
         Sign out of Jamal's Finance on this device
       </p>
-      <button onClick={handleSignOut} className="danger-action">
+      <button onClick={handleSignOut} className="danger-action" type="button">
         <LogOut size={15} />
         Sign Out
       </button>

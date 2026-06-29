@@ -99,11 +99,11 @@ function IconBubble({
   tone?: "blue" | "green" | "red" | "gray" | "violet";
 }) {
   const tones: Record<string, string> = {
-    blue: "text-blue-600",
-    green: "text-emerald-600",
-    red: "text-red-600",
+    blue: "text-active",
+    green: "text-success",
+    red: "text-danger",
     gray: "text-text-secondary",
-    violet: "text-violet-600",
+    violet: "text-active",
   };
 
   return (
@@ -116,7 +116,7 @@ function IconBubble({
 }
 
 function SettingsCard({ children }: { children: ReactNode }) {
-  return <div className="finance-panel overflow-hidden">{children}</div>;
+  return <div className="finance-panel min-w-0 overflow-hidden">{children}</div>;
 }
 
 function SettingsRow({
@@ -146,7 +146,7 @@ function SettingsRow({
       <button
         type="button"
         onClick={onClick}
-        className="flex w-full items-center gap-3 px-4 py-4 text-left transition-colors hover:bg-hover focus-visible:bg-hover sm:px-5"
+        className="finance-focus flex w-full min-w-0 items-center gap-3 px-4 py-4 text-left transition-colors hover:bg-hover focus-visible:bg-hover sm:px-5"
       >
         {content}
       </button>
@@ -154,7 +154,7 @@ function SettingsRow({
   }
 
   return (
-    <div className="flex w-full items-center gap-3 px-4 py-4 text-left transition-colors hover:bg-hover sm:px-5">
+    <div className="flex w-full min-w-0 items-center gap-3 px-4 py-4 text-left transition-colors hover:bg-hover sm:px-5">
       {content}
     </div>
   );
@@ -183,7 +183,7 @@ function SoftSwitch({
         event.stopPropagation();
         onCheckedChange(!checked);
       }}
-      className={`relative h-8 w-14 rounded-full border transition-colors ${
+      className={`finance-focus relative h-8 w-14 shrink-0 rounded-full border transition-colors ${
         checked ?
           "border-active bg-active"
         : "border-border bg-surface-secondary"
@@ -918,26 +918,26 @@ export default function SettingsOneUI({
   );
 
   return (
-    <div className="min-h-full rounded-[28px] bg-background px-3 py-4 text-text-primary sm:px-5 lg:px-7">
+    <div className="min-h-full min-w-0 text-text-primary">
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.24 }}
-        className="mx-auto max-w-3xl space-y-5"
+        className="mx-auto max-w-4xl space-y-5"
       >
-        <div className="px-2">
-          <h2 className="text-3xl font-bold tracking-normal text-text-primary">
-            Settings
-          </h2>
-          <p className="mt-1 text-sm text-text-secondary">
-            Account, theme, preferences, security, and data controls.
-          </p>
+        <div className="page-heading finance-surface-glass overflow-hidden">
+          <div className="min-w-0">
+            <h2 className="page-title">Settings</h2>
+            <p className="page-subtitle">
+              Account, theme, preferences, security, and data controls.
+            </p>
+          </div>
         </div>
 
         <section>
           <SectionTitle>Profile</SectionTitle>
           <SettingsCard>
-            <div className="flex items-center gap-4 px-4 py-5 sm:px-5">
+            <div className="flex min-w-0 items-center gap-4 px-4 py-5 sm:px-5">
               <div className="grid h-16 w-16 shrink-0 place-items-center rounded-full bg-active text-background shadow-theme">
                 <UserRound size={30} />
               </div>
@@ -1116,7 +1116,7 @@ export default function SettingsOneUI({
           <SectionTitle>Account Stats</SectionTitle>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
             {metricCards.map((metric) => (
-              <div key={metric.label} className="summary-card text-center">
+              <div key={metric.label} className="summary-card min-w-0 text-center">
                 <p className="text-2xl font-black text-active">
                   {metric.value}
                 </p>
@@ -1132,7 +1132,7 @@ export default function SettingsOneUI({
           type="button"
           onClick={handleSignOut}
           disabled={isSigningOut}
-          className="flex w-full items-center justify-center gap-2 rounded-3xl border border-border bg-surface-secondary px-4 py-4 text-sm font-bold text-red-600 hover:bg-hover disabled:opacity-60"
+          className="finance-focus flex w-full items-center justify-center gap-2 rounded-[var(--oneui-control-radius)] border border-danger/30 bg-danger/10 px-4 py-4 text-sm font-bold text-danger hover:bg-hover disabled:opacity-60"
         >
           {isSigningOut ?
             <>

@@ -497,9 +497,9 @@ function ChangeBadge({
 }) {
   const isPositive = value >= 0;
   const color =
-    tone === "warning" ? "#ff9700"
-    : isPositive ? "#22c55e"
-    : "#ff3b35";
+    tone === "warning" ? "var(--warning)"
+    : isPositive ? "var(--success)"
+    : "var(--danger)";
 
   return (
     <motion.span
@@ -507,10 +507,11 @@ function ChangeBadge({
       initial={{ opacity: 0, scale: 0.65 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{ duration: 0.35 }}
-      className="inline-flex items-center rounded-full px-2 py-1 text-[10px] font-bold"
+      className="inline-flex items-center rounded-full border px-2 py-1 text-[10px] font-bold"
       style={{
         color,
-        backgroundColor: `${color}14`,
+        borderColor: `color-mix(in srgb, ${color}, transparent 68%)`,
+        backgroundColor: `color-mix(in srgb, ${color}, transparent 90%)`,
       }}
     >
       {isPositive ? "+" : ""}
@@ -544,14 +545,16 @@ function KpiCard({
       initial={{ opacity: 0, y: 18, scale: 0.97 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
       transition={{ duration: 0.45, ease: "easeOut" }}
-      className="finance-panel finance-hover-lift relative min-h-[104px] overflow-hidden rounded-[22px] px-4 py-4"
+      className="summary-card finance-hover-lift relative min-h-[104px] min-w-0 overflow-hidden px-4 py-4"
     >
       <motion.div
         initial={{ opacity: 0, scale: 0 }}
         animate={{ opacity: 1, scale: 1.35 }}
         transition={{ duration: 1.1, ease: "easeOut" }}
         className="pointer-events-none absolute right-3 top-2 h-20 w-20 rounded-full blur-2xl"
-        style={{ backgroundColor: `${accent}18` }}
+        style={{
+          backgroundColor: `color-mix(in srgb, ${accent}, transparent 90%)`,
+        }}
       />
 
       <div className="relative flex items-start justify-between gap-3">
@@ -562,8 +565,8 @@ function KpiCard({
           className="grid h-9 w-9 place-items-center rounded-2xl border"
           style={{
             color: accent,
-            borderColor: `${accent}28`,
-            backgroundColor: `${accent}12`,
+            borderColor: `color-mix(in srgb, ${accent}, transparent 72%)`,
+            backgroundColor: `color-mix(in srgb, ${accent}, transparent 90%)`,
           }}
         >
           {icon}
@@ -575,7 +578,7 @@ function KpiCard({
       <div className="relative mt-3">
         <p className="text-[11px] font-semibold text-text-secondary">{title}</p>
         <p
-          className="mt-1 text-xl font-extrabold tracking-tight"
+          className="mt-1 break-words text-xl font-extrabold tracking-tight [overflow-wrap:anywhere]"
           style={{ color: accent }}
         >
           {suffix ?
@@ -612,10 +615,10 @@ function ChartShell({
       initial={{ opacity: 0, y: 20, scale: 0.985 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
       transition={{ duration: 0.45, ease: "easeOut" }}
-      className={`finance-panel rounded-[24px] p-4 sm:p-5 ${className}`}
+      className={`finance-panel min-w-0 overflow-hidden p-4 sm:p-5 ${className}`}
     >
       <div className="mb-3">
-        <p className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.18em] text-blue-500">
+        <p className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.18em] text-active">
           <BarChart3 size={12} />
           {eyebrow}
         </p>
@@ -643,9 +646,20 @@ function IncomeExpenseChart({
       className="min-h-[300px]"
       animationKey={chartKey}
     >
-      <div className="h-[230px]">
-        <ResponsiveContainer width="100%" height="100%" initialDimension={{ width: 720, height: 280 }}>
-          <BarChart key={chartKey} data={data} barGap={10} barCategoryGap="30%">
+      <div className="h-[230px] min-w-0 overflow-hidden">
+        <ResponsiveContainer
+          width="100%"
+          height="100%"
+          minWidth={1}
+          minHeight={1}
+          initialDimension={{ width: 720, height: 280 }}
+        >
+          <BarChart
+            key={chartKey}
+            data={data}
+            barGap={10}
+            barCategoryGap="30%"
+          >
             <CartesianGrid
               stroke="var(--border)"
               strokeDasharray="3 6"
@@ -682,7 +696,7 @@ function IncomeExpenseChart({
             />
             <Bar
               dataKey="income"
-              fill="#33cf83"
+              fill="var(--success)"
               radius={[7, 7, 2, 2]}
               maxBarSize={58}
               isAnimationActive
@@ -691,7 +705,7 @@ function IncomeExpenseChart({
             />
             <Bar
               dataKey="expenses"
-              fill="#ff403b"
+              fill="var(--danger)"
               radius={[7, 7, 2, 2]}
               maxBarSize={58}
               isAnimationActive
@@ -721,8 +735,14 @@ function NetWorthChart({
       className="min-h-[270px]"
       animationKey={chartKey}
     >
-      <div className="h-[200px]">
-        <ResponsiveContainer width="100%" height="100%" initialDimension={{ width: 720, height: 280 }}>
+      <div className="h-[200px] min-w-0 overflow-hidden">
+        <ResponsiveContainer
+          width="100%"
+          height="100%"
+          minWidth={1}
+          minHeight={1}
+          initialDimension={{ width: 720, height: 280 }}
+        >
           <AreaChart key={chartKey} data={data}>
             <defs>
               <linearGradient
@@ -732,8 +752,8 @@ function NetWorthChart({
                 x2="0"
                 y2="1"
               >
-                <stop offset="5%" stopColor="#4f83ff" stopOpacity={0.25} />
-                <stop offset="95%" stopColor="#4f83ff" stopOpacity={0.02} />
+                <stop offset="5%" stopColor="var(--active)" stopOpacity={0.25} />
+                <stop offset="95%" stopColor="var(--active)" stopOpacity={0.02} />
               </linearGradient>
             </defs>
             <CartesianGrid
@@ -770,7 +790,7 @@ function NetWorthChart({
             <Area
               type="monotone"
               dataKey="netWorth"
-              stroke="#4f83ff"
+              stroke="var(--active)"
               strokeWidth={3}
               fill={`url(#netWorthGradient-${period})`}
               isAnimationActive
@@ -811,9 +831,9 @@ function SpendingBreakdown({
       className="min-h-[270px]"
       animationKey={chartKey}
     >
-      <div className="grid h-[200px] grid-cols-1 items-center gap-3 sm:grid-cols-[0.95fr_1.25fr]">
-        <div className="h-[170px]">
-          <ResponsiveContainer width="100%" height="100%" initialDimension={{ width: 720, height: 280 }}>
+      <div className="grid min-h-[310px] min-w-0 grid-cols-1 items-center gap-3 sm:h-[200px] sm:min-h-0 sm:grid-cols-[0.95fr_1.25fr]">
+        <div className="h-[170px] min-w-0 overflow-hidden">
+          <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1} initialDimension={{ width: 720, height: 280 }}>
             <PieChart key={chartKey}>
               <Pie
                 data={chartData}
@@ -859,7 +879,7 @@ function SpendingBreakdown({
               },
             },
           }}
-          className="space-y-2"
+          className="min-w-0 space-y-2"
         >
           {chartData.slice(0, 5).map((item) => (
             <motion.div
@@ -868,7 +888,7 @@ function SpendingBreakdown({
                 hidden: { opacity: 0, x: 14 },
                 visible: { opacity: 1, x: 0 },
               }}
-              className="flex items-center justify-between gap-3 text-xs"
+              className="flex min-w-0 items-center justify-between gap-3 text-xs"
             >
               <div className="flex min-w-0 items-center gap-2">
                 <span
@@ -879,7 +899,7 @@ function SpendingBreakdown({
                   {item.name}
                 </span>
               </div>
-              <span className="shrink-0 font-bold text-text-primary">
+              <span className="shrink-0 break-words text-right font-bold text-text-primary [overflow-wrap:anywhere]">
                 {formatMoney(item.amount)}
               </span>
             </motion.div>
@@ -907,7 +927,7 @@ function InvestmentPerformance({
       className="min-h-[195px]"
       animationKey={`investment-${period}`}
     >
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid min-w-0 grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
         {list.map((item, index) => {
           const isProfit = item.pnl >= 0;
           const accent =
@@ -919,10 +939,10 @@ function InvestmentPerformance({
               initial={{ opacity: 0, y: 18, scale: 0.96 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               transition={{ duration: 0.4, delay: index * 0.08 }}
-              className="relative overflow-hidden rounded-[18px] border p-4"
+              className="finance-panel-soft relative min-w-0 overflow-hidden p-4"
               style={{
-                borderColor: `${accent}32`,
-                background: `linear-gradient(135deg, ${accent}10, transparent 72%)`,
+                borderColor: `color-mix(in srgb, ${accent}, transparent 72%)`,
+                background: `linear-gradient(135deg, color-mix(in srgb, ${accent}, transparent 92%), var(--surface-secondary))`,
               }}
             >
               <div className="flex items-start justify-between gap-3">
@@ -939,7 +959,7 @@ function InvestmentPerformance({
               </div>
 
               <p
-                className="mt-5 text-lg font-black tracking-tight"
+                className="mt-5 break-words text-lg font-black tracking-tight [overflow-wrap:anywhere]"
                 style={{ color: accent }}
               >
                 <AnimatedValue
@@ -950,7 +970,7 @@ function InvestmentPerformance({
 
               <p
                 className={`mt-1 flex items-center gap-1 text-[11px] font-bold ${
-                  isProfit ? "text-emerald-500" : "text-rose-500"
+                  isProfit ? "text-success" : "text-danger"
                 }`}
               >
                 {isProfit ?
@@ -1049,22 +1069,23 @@ export default function AnalyticsClient({
   }, [transactions, periodRange]);
 
   return (
-    <div className="min-h-full rounded-[28px] bg-background px-2 py-2 text-text-primary sm:px-4 sm:py-3 lg:px-5">
+    <div className="min-h-full min-w-0 text-text-primary">
       <div className="space-y-4">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div className="page-heading finance-surface-glass overflow-hidden">
           <motion.div
             initial={{ opacity: 0, y: -8 }}
             animate={{ opacity: 1, y: 0 }}
+            className="min-w-0"
           >
-            <h1 className="text-2xl font-black tracking-tight text-text-primary">
+            <h1 className="page-title">
               Analytics
             </h1>
-            <p className="mt-1 text-xs font-medium text-text-secondary">
+            <p className="page-subtitle">
               Financial intelligence overview
             </p>
           </motion.div>
 
-          <div className="inline-flex w-fit rounded-full border border-border bg-card p-1 shadow-theme">
+          <div className="inline-flex w-full min-w-0 overflow-x-auto rounded-full border border-border bg-card p-1 shadow-theme sm:w-fit">
             {PERIODS.map((item) => {
               const active = item.value === period;
 
@@ -1073,7 +1094,7 @@ export default function AnalyticsClient({
                   key={item.value}
                   type="button"
                   onClick={() => setPeriod(item.value)}
-                  className={`relative rounded-full px-4 py-2 text-xs font-bold transition-all ${
+                  className={`finance-focus relative min-w-max rounded-full px-4 py-2 text-xs font-bold transition-all ${
                     active ? "text-background" : (
                       "text-text-secondary hover:bg-hover hover:text-text-primary"
                     )
@@ -1115,7 +1136,7 @@ export default function AnalyticsClient({
             title="Total Income"
             value={kpis.totalIncome}
             change={kpis.incomeChange}
-            accent="#22c55e"
+            accent="var(--success)"
             icon={<TrendingUp size={17} />}
             animationKey={`${period}-income-${kpis.totalIncome}`}
           />
@@ -1123,7 +1144,7 @@ export default function AnalyticsClient({
             title="Total Expenses"
             value={kpis.totalExpenses}
             change={kpis.expensesChange}
-            accent="#ff3b35"
+            accent="var(--danger)"
             tone="negative"
             icon={<TrendingDown size={17} />}
             animationKey={`${period}-expenses-${kpis.totalExpenses}`}
@@ -1132,7 +1153,7 @@ export default function AnalyticsClient({
             title="Net Savings"
             value={kpis.netSavings}
             change={kpis.netSavingsChange}
-            accent="#22c55e"
+            accent="var(--success)"
             icon={<PiggyBank size={17} />}
             animationKey={`${period}-savings-${kpis.netSavings}`}
           />
@@ -1141,7 +1162,7 @@ export default function AnalyticsClient({
             value={kpis.savingsRate}
             suffix="%"
             change={kpis.savingsRateChange}
-            accent="#ff9700"
+            accent="var(--warning)"
             tone="warning"
             icon={<CircleDollarSign size={17} />}
             animationKey={`${period}-rate-${kpis.savingsRate}`}
