@@ -7,9 +7,15 @@ import EmptyState from "@/components/ui/empty-state";
 import {
   formatPKR,
   getPayableStatus,
-  PAYABLE_STATUS_META,
 } from "@/lib/finance-options";
-import { Banknote, CheckCircle2, Clock3, HandCoins, Search, WalletCards } from "lucide-react";
+import {
+  Banknote,
+  CheckCircle2,
+  Clock3,
+  HandCoins,
+  Search,
+  WalletCards,
+} from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -137,11 +143,11 @@ export default async function PayablesPage({
 
       <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
         {statCards.map(({ label, value, icon: Icon, tone, valueClassName }) => (
-          <div key={label} className="summary-card finance-hover-lift min-h-[118px]">
-            <div className="flex items-start justify-between gap-3">
-              <div>
+          <div key={label} className="summary-card finance-hover-lift min-h-[118px] min-w-0">
+            <div className="flex min-w-0 items-start justify-between gap-3">
+              <div className="min-w-0">
                 <p className="text-xs font-semibold text-text-secondary">{label}</p>
-                <p className={`mt-2 text-xl font-bold ${valueClassName}`}>
+                <p className={`mt-2 break-words text-xl font-bold [overflow-wrap:anywhere] ${valueClassName}`}>
                   <CountedAmount amount={formatPKR(value)} />
                 </p>
               </div>
@@ -176,14 +182,14 @@ export default async function PayablesPage({
             })}
           </div>
 
-          <form className="finance-control finance-search-control flex min-h-11 w-full items-center gap-2 px-3 xl:w-96">
+          <form className="finance-control finance-search-control flex min-h-11 w-full min-w-0 items-center gap-2 px-3 xl:w-96">
             {status !== "all" && <input type="hidden" name="status" value={status} />}
-            <Search size={15} className="text-slate-500" />
+            <Search size={15} className="shrink-0 text-text-secondary" />
             <input
               name="search"
               defaultValue={search}
               placeholder="Search person, item, reason, or notes..."
-              className="w-full bg-transparent text-sm text-text-primary outline-none placeholder-slate-600"
+              className="min-w-0 flex-1 bg-transparent text-sm text-text-primary outline-none placeholder:text-text-secondary"
             />
           </form>
         </div>
@@ -205,15 +211,14 @@ export default async function PayablesPage({
         <div className="space-y-4">
           {payables.map((payable) => {
             const displayStatus = getPayableStatus(payable);
-            const meta = PAYABLE_STATUS_META[displayStatus];
             return (
               <div key={payable.id} className="relative">
                 <div
                   className={`pointer-events-none absolute left-3 top-3 h-2 w-2 rounded-full ${
-                    meta.className.includes("rose") ? "bg-rose-300"
-                    : meta.className.includes("emerald") ? "bg-emerald-300"
-                    : meta.className.includes("sky") ? "bg-sky-300"
-                    : "bg-amber-300"
+                    displayStatus === "overdue" ? "bg-danger"
+                    : displayStatus === "completed" ? "bg-success"
+                    : displayStatus === "partial" ? "bg-info"
+                    : "bg-warning"
                   }`}
                 />
                 <PayableCard payable={payable} accounts={accounts ?? []} />

@@ -201,6 +201,7 @@ export default function PayableModal({ open, onClose, payable }: Props) {
 
         <FinanceModalFooter className="grid-cols-1">
           <button
+            type="button"
             onClick={handleSave}
             disabled={loading}
             className="primary-action w-full py-3"

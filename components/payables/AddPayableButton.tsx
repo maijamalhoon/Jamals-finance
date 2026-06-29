@@ -9,7 +9,7 @@ export default function AddPayableButton() {
 
   return (
     <>
-      <button onClick={() => setOpen(true)} className="primary-action">
+      <button type="button" onClick={() => setOpen(true)} className="primary-action">
         <Plus size={16} />
         Add Payable
       </button>

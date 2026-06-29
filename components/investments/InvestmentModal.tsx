@@ -154,7 +154,7 @@ export default function InvestmentModal({
                   className={`finance-focus min-h-11 rounded-[16px] border px-3 py-2 text-sm font-semibold transition-colors ${
                     type === item.value
                       ? "border-border bg-card text-text-primary shadow-theme"
-                      : "border-border bg-surface-secondary text-slate-400 hover:bg-hover hover:text-text-primary"
+                      : "border-border bg-surface-secondary text-text-secondary hover:bg-hover hover:text-text-primary"
                   }`}
                 >
                   {item.label}

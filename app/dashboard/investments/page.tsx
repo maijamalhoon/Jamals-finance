@@ -30,16 +30,20 @@ export default async function InvestmentsPage() {
     <div className="space-y-5">
       <div className="page-heading finance-surface-glass overflow-hidden">
         <div className="flex min-w-0 gap-3">
-          <span className="finance-icon-container mt-0.5" data-size="lg" data-tone="investment">
+          <span
+            className="finance-icon-container mt-0.5"
+            data-size="lg"
+            data-tone="investment"
+          >
             <TrendingUp size={20} />
           </span>
           <div className="min-w-0">
-            <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-blue-500">
+            <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-active">
               <Sparkles size={14} />
               Investments
             </div>
             <h2 className="page-title mt-2">Investment Overview</h2>
-            <p className="page-subtitle">
+            <p className="page-subtitle break-words">
               Portfolio value, profit/loss momentum, allocation signals, and compact AI guidance.
             </p>
           </div>

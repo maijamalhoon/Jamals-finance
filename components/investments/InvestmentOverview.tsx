@@ -155,7 +155,7 @@ function ProgressRing({
           }}
         />
       </svg>
-      <div className="grid h-[calc(100%-28px)] w-[calc(100%-28px)] place-items-center rounded-full border border-white/65 bg-card/95 p-4 text-center shadow-[inset_0_1px_0_rgba(255,255,255,0.72)] dark:border-white/10 dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]">
+      <div className="grid h-[calc(100%-28px)] w-[calc(100%-28px)] place-items-center rounded-full border border-border bg-card/95 p-4 text-center shadow-[var(--surface-highlight)]">
         {children}
       </div>
     </div>
@@ -198,10 +198,11 @@ function InvestmentDonut({
         animate={{ opacity: 1, y: 0, scale: 1 }}
         transition={{ duration: 0.42, delay: index * 0.04, ease: [0.16, 1, 0.3, 1] }}
         whileHover={{ y: -5 }}
-        className="group relative flex min-h-[286px] flex-col rounded-[24px] border border-white/70 bg-white/78 p-5 shadow-[0_20px_52px_rgba(15,23,42,0.10)] backdrop-blur-2xl transition-colors hover:border-blue-300/35 dark:border-white/10 dark:bg-white/[0.055]"
+        className="finance-reference-card finance-hover-lift group relative flex min-h-[286px] min-w-0 flex-col p-5"
       >
         <div className="absolute right-4 top-4 flex gap-1 opacity-100 transition-opacity sm:opacity-0 sm:group-hover:opacity-100">
           <button
+            type="button"
             onClick={() => setEditOpen(true)}
             className="icon-button h-8 w-8"
             aria-label="Edit investment"
@@ -209,9 +210,10 @@ function InvestmentDonut({
             <Pencil size={12} />
           </button>
           <button
+            type="button"
             onClick={handleDelete}
             disabled={deleting}
-            className="icon-button h-8 w-8"
+            className="icon-button h-8 w-8 hover:border-danger/30 hover:bg-danger/10 hover:text-danger"
             aria-label="Delete investment"
           >
             <Trash2 size={12} />
@@ -230,7 +232,7 @@ function InvestmentDonut({
               <p className="truncate text-sm font-semibold text-text-primary">
                 {investment.name}
               </p>
-              <p className="mt-1 text-[11px] font-medium text-text-secondary">
+              <p className="mt-1 break-words text-[11px] font-medium text-text-secondary [overflow-wrap:anywhere]">
                 {shortCurrency(currentValue)}
               </p>
               <div
@@ -250,31 +252,33 @@ function InvestmentDonut({
         <div className="mt-4 w-full space-y-3">
           <div className="flex items-center justify-between gap-3">
             <span
-              className="inline-flex max-w-[58%] items-center gap-1.5 truncate rounded-full border px-2.5 py-1 text-xs font-semibold"
+              className="inline-flex max-w-[58%] min-w-0 items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-semibold"
               style={{
                 borderColor: `${accent}33`,
                 backgroundColor: `${accent}14`,
                 color: accent,
               }}
             >
-              {TYPE_META[investment.type]?.label ?? "Other"}
+              <span className="truncate">
+                {TYPE_META[investment.type]?.label ?? "Other"}
+              </span>
             </span>
-            <span className="truncate text-xs font-semibold" style={{ color }}>
+            <span className="min-w-0 truncate text-xs font-semibold" style={{ color }}>
               {isProfit ? "+" : "-"}
               {shortCurrency(Math.abs(pnl)).replace("PKR ", "")}
             </span>
           </div>
 
           <div className="grid grid-cols-2 gap-2">
-            <div className="rounded-[16px] border border-border bg-surface-secondary p-3">
+            <div className="finance-panel-soft min-w-0 p-3">
               <p className="text-[11px] text-text-secondary">Invested</p>
-              <p className="mt-1 truncate text-xs font-bold text-text-primary">
+              <p className="mt-1 break-words text-xs font-bold text-text-primary [overflow-wrap:anywhere]">
                 {shortCurrency(invested)}
               </p>
             </div>
-            <div className="rounded-[16px] border border-border bg-surface-secondary p-3">
+            <div className="finance-panel-soft min-w-0 p-3">
               <p className="text-[11px] text-text-secondary">Current</p>
-              <p className="mt-1 truncate text-xs font-bold text-text-primary">
+              <p className="mt-1 break-words text-xs font-bold text-text-primary [overflow-wrap:anywhere]">
                 {shortCurrency(currentValue)}
               </p>
             </div>
@@ -317,11 +321,11 @@ function PortfolioSummary({
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.48, ease: [0.16, 1, 0.3, 1] }}
-      className="overflow-hidden rounded-[26px] border border-white/70 bg-white/80 p-5 shadow-[0_24px_70px_rgba(15,23,42,0.10)] backdrop-blur-2xl dark:border-white/10 dark:bg-white/[0.055]"
+      className="finance-reference-card overflow-hidden p-5"
     >
       <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
         <div>
-          <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.22em] text-blue-500">
+          <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.22em] text-active">
             <Sparkles size={13} />
             Investment Overview
           </div>
@@ -336,19 +340,19 @@ function PortfolioSummary({
         <div className="grid gap-3 sm:grid-cols-3 lg:min-w-[560px]">
           <div className="rounded-[22px] border border-border bg-surface-secondary p-4">
             <p className="text-[11px] font-medium text-text-secondary">Total invested</p>
-            <p className="mt-2 text-lg font-bold text-text-primary">
+            <p className="mt-2 break-words text-lg font-bold text-text-primary [overflow-wrap:anywhere]">
               <AnimatedCurrency value={totalInvested} />
             </p>
           </div>
           <div className="rounded-[22px] border border-border bg-surface-secondary p-4">
             <p className="text-[11px] font-medium text-text-secondary">Current value</p>
-            <p className="mt-2 text-lg font-bold text-text-primary">
+            <p className="mt-2 break-words text-lg font-bold text-text-primary [overflow-wrap:anywhere]">
               <AnimatedCurrency value={totalValue} />
             </p>
           </div>
           <div className="rounded-[22px] border border-border bg-surface-secondary p-4">
             <p className="text-[11px] font-medium text-text-secondary">Total profit/loss</p>
-            <p className="mt-2 flex items-center gap-1 text-lg font-bold" style={{ color }}>
+            <p className="mt-2 flex min-w-0 items-center gap-1 break-words text-lg font-bold [overflow-wrap:anywhere]" style={{ color }}>
               {isProfit ? <ArrowUpRight size={18} /> : <ArrowDownRight size={18} />}
               {isProfit ? "+" : "-"}
               <AnimatedCurrency value={Math.abs(totalPnL)} />
@@ -362,7 +366,7 @@ function PortfolioSummary({
           <ProgressRing
             progress={ringProgress}
             color={color}
-            accent="#3b82f6"
+            accent="var(--active)"
             size={144}
             stroke={11}
           >
@@ -377,8 +381,8 @@ function PortfolioSummary({
         </div>
 
         <div className="grid flex-1 gap-3 sm:grid-cols-2">
-          <div className="rounded-[22px] border border-border bg-card/65 p-4">
-            <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-[18px] bg-surface-secondary text-blue-500">
+          <div className="finance-panel-soft p-4">
+            <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-[18px] bg-surface-secondary text-active">
               <WalletCards size={18} />
             </div>
             <p className="text-sm font-semibold text-text-primary">Portfolio value</p>
@@ -386,8 +390,8 @@ function PortfolioSummary({
               Current value is {formatCurrency(totalValue)} against {formatCurrency(totalInvested)} invested.
             </p>
           </div>
-          <div className="rounded-[22px] border border-border bg-card/65 p-4">
-            <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-[18px] bg-surface-secondary text-blue-500">
+          <div className="finance-panel-soft p-4">
+            <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-[18px] bg-surface-secondary text-active">
               <TrendingUp size={18} />
             </div>
             <p className="text-sm font-semibold text-text-primary">Momentum</p>
@@ -449,10 +453,10 @@ function EmbeddedInsightCard({ investments }: { investments: ExistingInvestment[
       transition={{ duration: 0.42, delay: 0.08, ease: [0.16, 1, 0.3, 1] }}
       className="space-y-4"
     >
-      <div className="rounded-[28px] border border-white/70 bg-white/80 p-5 shadow-[0_20px_52px_rgba(15,23,42,0.10)] backdrop-blur-2xl dark:border-white/10 dark:bg-white/[0.055]">
+      <div className="finance-reference-card p-5">
         <div className="mb-3 flex items-center justify-between gap-3">
           <div className="flex items-center gap-2.5">
-            <div className="grid h-9 w-9 place-items-center rounded-[18px] bg-surface-secondary text-blue-500">
+            <div className="grid h-9 w-9 place-items-center rounded-[18px] bg-surface-secondary text-active">
               <Brain size={16} />
             </div>
             <div>
@@ -468,7 +472,7 @@ function EmbeddedInsightCard({ investments }: { investments: ExistingInvestment[
             : insight?.message ?? fallbackSuggestion}
         </p>
         {insight?.title && (
-          <p className="mt-2 text-xs font-semibold text-blue-500">
+          <p className="mt-2 text-xs font-semibold text-active">
             {insight.title}
           </p>
         )}

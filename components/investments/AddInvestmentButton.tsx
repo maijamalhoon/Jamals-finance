@@ -12,6 +12,7 @@ export default function AddInvestmentButton() {
   return (
     <>
       <button
+        type="button"
         onClick={() => setOpen(true)}
         className="investment-action"
       >

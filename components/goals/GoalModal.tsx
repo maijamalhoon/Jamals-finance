@@ -122,7 +122,7 @@ export default function GoalModal({ open, onClose, onSuccess, goal }: Props) {
                   className={`finance-focus flex min-h-[58px] flex-col items-center justify-center gap-1 rounded-[14px] border p-2 transition-all ${
                     icon === value
                       ? "border-active bg-active/10 text-active shadow-theme"
-                      : "border-border bg-surface-secondary text-slate-500 hover:bg-hover hover:text-text-primary"
+                      : "border-border bg-surface-secondary text-text-secondary hover:bg-hover hover:text-text-primary"
                   }`}
                 >
                   <Icon size={16} />

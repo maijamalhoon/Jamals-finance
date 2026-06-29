@@ -79,6 +79,7 @@ export default function GoalCard({ goal }: { goal: ExistingGoal }) {
       >
         <div className="absolute right-3 top-3 flex gap-1 opacity-100 transition-opacity sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100">
           <button
+            type="button"
             onClick={() => setEditOpen(true)}
             className="icon-button"
             aria-label="Edit goal"
@@ -86,9 +87,10 @@ export default function GoalCard({ goal }: { goal: ExistingGoal }) {
             <Pencil size={12} />
           </button>
           <button
+            type="button"
             onClick={handleDelete}
             disabled={deleting}
-            className="icon-button hover:border-red-400/20 hover:bg-red-500/10 hover:text-red-300"
+            className="icon-button hover:border-danger/30 hover:bg-danger/10 hover:text-danger"
             aria-label="Delete goal"
           >
             <Trash2 size={12} />
@@ -143,17 +145,17 @@ export default function GoalCard({ goal }: { goal: ExistingGoal }) {
           <div className="dashboard-progress-fill" />
         </div>
 
-        <div className="mt-auto flex items-end justify-between gap-3 border-t border-border pt-4">
+        <div className="mt-auto flex min-w-0 items-end justify-between gap-3 border-t border-border pt-4">
           <div className="min-w-0">
-            <p className="break-words text-sm font-bold text-text-primary">
+            <p className="break-words text-sm font-bold text-text-primary [overflow-wrap:anywhere]">
               {fmt(safeCurrent)}
             </p>
-            <p className="mt-0.5 break-words text-xs text-text-secondary">
+            <p className="mt-0.5 break-words text-xs text-text-secondary [overflow-wrap:anywhere]">
               of {fmt(safeTarget)}
             </p>
           </div>
-          <div className="min-w-[76px] text-right">
-            <p className="text-sm font-bold text-[var(--goal-accent)]">
+          <div className="min-w-0 max-w-[48%] text-right">
+            <p className="break-words text-sm font-bold text-[var(--goal-accent)] [overflow-wrap:anywhere]">
               {fmt(Math.max(safeTarget - safeCurrent, 0))}
             </p>
             {!done && (

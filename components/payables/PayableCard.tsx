@@ -45,11 +45,11 @@ export interface Payable extends ExistingPayable {
 
 const STATUS_BADGE_CLASS: Record<string, string> = {
   pending:
-    "border-amber-400/25 bg-amber-500/10 text-amber-700 dark:text-amber-200",
-  partial: "border-sky-400/25 bg-sky-500/10 text-sky-700 dark:text-sky-200",
-  overdue: "border-rose-400/25 bg-rose-500/10 text-rose-700 dark:text-rose-200",
+    "border-warning/30 bg-warning/10 text-warning",
+  partial: "border-info/30 bg-info/10 text-info",
+  overdue: "border-danger/30 bg-danger/10 text-danger",
   completed:
-    "border-emerald-400/25 bg-emerald-500/10 text-emerald-700 dark:text-emerald-200",
+    "border-success/30 bg-success/10 text-success",
 };
 
 const STATUS_PROGRESS_COLOR: Record<string, string> = {
@@ -104,7 +104,7 @@ export default function PayableCard({
 
   return (
     <>
-      <article className="finance-panel finance-hover-lift overflow-hidden p-4 sm:p-5">
+      <article className="finance-panel finance-hover-lift min-w-0 overflow-hidden p-4 sm:p-5">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-2">
@@ -128,30 +128,33 @@ export default function PayableCard({
               {payable.reason}
               {payable.item_name ? ` - ${payable.item_name}` : ""}
             </p>
-            <p className="mt-2 text-sm font-semibold text-text-primary">
-              Paid <span className="text-success"><CountedAmount amount={formatPKR(paid)} /></span>
+            <p className="mt-2 break-words text-sm font-semibold text-text-primary [overflow-wrap:anywhere]">
+              Paid{" "}
+              <span className="text-success">
+                <CountedAmount amount={formatPKR(paid)} />
+              </span>
             </p>
             {payable.notes && (
-              <p className="mt-3 rounded-2xl border border-border bg-surface-secondary p-3 text-xs leading-5 text-text-secondary">
+              <p className="finance-panel-soft mt-3 p-3 text-xs leading-5 text-text-secondary">
                 {payable.notes}
               </p>
             )}
           </div>
 
           <div className="grid min-w-0 grid-cols-2 gap-2 lg:min-w-[360px]">
-            <div className="rounded-2xl border border-border bg-surface-secondary p-3">
+            <div className="finance-panel-soft min-w-0 p-3">
               <p className="text-[11px] font-medium text-text-secondary">Actual Value</p>
-              <p className="mt-1 break-words text-sm font-bold text-text-primary">
+              <p className="mt-1 break-words text-sm font-bold text-text-primary [overflow-wrap:anywhere]">
                 <CountedAmount amount={formatPKR(total)} />
               </p>
             </div>
-            <div className="rounded-2xl border border-border bg-surface-secondary p-3">
+            <div className="finance-panel-soft min-w-0 p-3">
               <p className="text-[11px] font-medium text-text-secondary">Remaining</p>
-              <p className="mt-1 break-words text-sm font-bold text-warning">
+              <p className="mt-1 break-words text-sm font-bold text-warning [overflow-wrap:anywhere]">
                 <CountedAmount amount={formatPKR(remaining)} />
               </p>
             </div>
-            <div className="col-span-2 rounded-2xl border border-border bg-card/70 p-3">
+            <div className="finance-panel-soft col-span-2 min-w-0 p-3">
               <div className="mb-2 flex items-center justify-between text-xs">
                 <span className="text-text-secondary">Progress</span>
                 <span className="font-semibold text-text-primary">
@@ -174,6 +177,7 @@ export default function PayableCard({
         <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex flex-wrap gap-2">
             <button
+              type="button"
               onClick={() => setPaymentOpen(true)}
               disabled={remaining <= 0 || !accounts.length}
               className="success-action min-h-10 rounded-full px-3 py-2 text-xs"
@@ -182,6 +186,7 @@ export default function PayableCard({
               Record Payment
             </button>
             <button
+              type="button"
               onClick={() => setEditOpen(true)}
               className="primary-action min-h-10 rounded-full bg-surface-secondary px-3 py-2 text-xs text-text-primary shadow-none hover:bg-hover"
             >
@@ -189,9 +194,10 @@ export default function PayableCard({
               Edit
             </button>
             <button
+              type="button"
               onClick={handleDelete}
               disabled={deleting}
-              className="danger-action min-h-10 rounded-full px-3 py-2 text-xs hover:border-rose-400/35 hover:bg-rose-500/10"
+              className="danger-action min-h-10 rounded-full px-3 py-2 text-xs hover:border-danger/35 hover:bg-danger/10"
             >
               <Trash2 size={14} />
               Delete
@@ -206,7 +212,7 @@ export default function PayableCard({
           <button
             type="button"
             onClick={() => setHistoryOpen((open) => !open)}
-            className="finance-focus flex w-full items-center justify-between gap-3 rounded-2xl px-1 py-2 text-left transition-colors hover:bg-hover sm:px-2"
+            className="finance-focus flex w-full items-center justify-between gap-3 rounded-[var(--oneui-tile-radius)] px-1 py-2 text-left transition-colors hover:bg-hover sm:px-2"
           >
             <span className="flex min-w-0 items-center gap-2">
               <ReceiptText size={14} className="text-text-secondary" />
@@ -226,7 +232,7 @@ export default function PayableCard({
           {historyOpen && (
             <div className="mt-2">
               {payments.length === 0 ? (
-                <p className="rounded-2xl border border-dashed border-border bg-surface-secondary/70 p-3 text-xs text-text-secondary">
+                <p className="rounded-[var(--oneui-tile-radius)] border border-dashed border-border bg-surface-secondary/70 p-3 text-xs text-text-secondary">
                   No payments recorded yet.
                 </p>
               ) : (
@@ -234,7 +240,7 @@ export default function PayableCard({
                   {payments.map((payment) => (
                     <div
                       key={payment.id}
-                      className="flex flex-col gap-2 rounded-2xl border border-border bg-surface-secondary p-3 sm:flex-row sm:items-center sm:justify-between"
+                      className="finance-panel-soft flex min-w-0 flex-col gap-2 p-3 sm:flex-row sm:items-center sm:justify-between"
                     >
                       <div>
                         <p className="text-sm font-semibold text-text-primary">

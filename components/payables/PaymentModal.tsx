@@ -164,10 +164,10 @@ export default function PaymentModal({ open, onClose, payable, accounts }: Props
         />
 
         <FinanceModalBody>
-          <div className="rounded-2xl border border-border bg-surface-secondary p-3">
+          <div className="finance-panel-soft min-w-0 p-3">
             <p className="text-sm font-semibold text-text-primary">{payable.person_name}</p>
             <p className="mt-1 text-xs text-text-secondary">{payable.reason}</p>
-            <p className="mt-2 text-xs text-text-secondary">
+            <p className="mt-2 break-words text-xs text-text-secondary [overflow-wrap:anywhere]">
               Remaining:{" "}
               <span className="font-semibold text-warning">
                 {formatPKR(payable.remaining_amount)}
@@ -205,7 +205,7 @@ export default function PaymentModal({ open, onClose, payable, accounts }: Props
                   </span>
                   <span
                     className={`block text-[11px] ${
-                      accountId === account.id ? "text-slate-600" : "text-slate-500"
+                      accountId === account.id ? "text-text-primary" : "text-text-secondary"
                     }`}
                   >
                     {account.type}
@@ -243,6 +243,7 @@ export default function PaymentModal({ open, onClose, payable, accounts }: Props
 
         <FinanceModalFooter className="grid-cols-1">
           <button
+            type="button"
             onClick={handleSave}
             disabled={loading || !accounts.length}
             className="primary-action w-full py-3"

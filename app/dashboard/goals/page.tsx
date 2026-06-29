@@ -25,7 +25,7 @@ export default async function GoalsPage() {
 
   return (
     <div className="space-y-4 sm:space-y-5">
-      <section className="finance-reference-card motion-card-entry overflow-hidden p-4 sm:p-5">
+      <section className="page-heading finance-surface-glass motion-card-entry overflow-hidden">
         <div className="flex min-w-0 flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="min-w-0">
             <div className="dashboard-list-card-kicker">
@@ -35,7 +35,7 @@ export default async function GoalsPage() {
               <span className="truncate">Savings Targets</span>
             </div>
             <h2 className="page-title">Goals Progress</h2>
-            <p className="page-subtitle">
+            <p className="page-subtitle break-words">
               {completed.length} of {list.length} completed
             </p>
           </div>
@@ -54,7 +54,7 @@ export default async function GoalsPage() {
       )}
 
       {list.length === 0 ? (
-        <div className="finance-reference-card min-h-[280px] px-5">
+        <div className="finance-panel min-h-[280px] px-5">
           <EmptyState
             icon={Target}
             title="No goals yet"

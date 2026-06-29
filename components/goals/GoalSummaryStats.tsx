@@ -69,7 +69,7 @@ export default function GoalSummaryStats({
       {stats.map(({ label, value, icon: Icon, accent }) => (
         <article
           key={label}
-          className="finance-reference-card flex min-h-[118px] min-w-0 items-start gap-3 p-4"
+          className="summary-card flex min-h-[118px] min-w-0 items-start gap-3"
         >
           <span
             className="grid h-10 w-10 shrink-0 place-items-center rounded-full border"
@@ -85,14 +85,14 @@ export default function GoalSummaryStats({
             <p className="text-xs font-medium leading-5 text-text-secondary">
               {label}
             </p>
-            <p className="mt-1 break-words text-xl font-semibold leading-tight text-text-primary">
+            <p className="mt-1 break-words text-xl font-semibold leading-tight text-text-primary [overflow-wrap:anywhere]">
               {value}
             </p>
           </div>
         </article>
       ))}
 
-      <article className="finance-reference-card flex min-h-[118px] min-w-0 flex-col justify-between p-4">
+      <article className="summary-card flex min-h-[118px] min-w-0 flex-col justify-between">
         <div className="flex min-w-0 items-start gap-3">
           <span
             className="grid h-10 w-10 shrink-0 place-items-center rounded-full border"

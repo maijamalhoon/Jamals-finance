@@ -12,6 +12,7 @@ export default function AddGoalButton() {
   return (
     <>
       <button
+        type="button"
         onClick={() => setOpen(true)}
         className="primary-action"
       >
