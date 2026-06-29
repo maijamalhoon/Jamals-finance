@@ -58,8 +58,8 @@ export default async function ExpensesPage() {
 
   return (
     <div className="space-y-5">
-      <div className="page-heading">
-        <div>
+      <div className="page-heading finance-surface-glass">
+        <div className="min-w-0">
           <h2 className="page-title">Expenses</h2>
           <p className="page-subtitle">{expenses.length} total entries</p>
         </div>
@@ -67,7 +67,7 @@ export default async function ExpensesPage() {
       </div>
 
       <div className="finance-panel p-5">
-        <h3 className="mb-4 text-sm font-medium text-slate-950">
+        <h3 className="mb-4 text-sm font-semibold text-text-primary">
           Expenses by Account
         </h3>
         <div className="grid gap-2 md:grid-cols-2 xl:grid-cols-4">
@@ -80,10 +80,12 @@ export default async function ExpensesPage() {
           ).map(([account, amount]) => (
             <div
               key={account}
-              className="rounded-2xl border border-slate-200 bg-slate-50 p-3"
+              className="finance-panel-soft min-w-0 p-3"
             >
-              <p className="truncate text-xs text-slate-500">{account}</p>
-              <p className="mt-1 text-sm font-bold text-rose-600">
+              <p className="truncate text-xs font-medium text-text-secondary">
+                {account}
+              </p>
+              <p className="mt-1 break-words text-sm font-bold text-danger">
                 {fmt(amount)}
               </p>
             </div>
@@ -92,22 +94,32 @@ export default async function ExpensesPage() {
       </div>
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-        <div className="summary-card">
-          <p className="mb-1.5 text-xs text-slate-500">This Month</p>
-          <p className="text-xl font-bold text-slate-950">{fmt(thisMonth)}</p>
+        <div className="summary-card min-w-0">
+          <p className="mb-1.5 text-xs font-semibold text-text-secondary">
+            This Month
+          </p>
+          <p className="break-words text-xl font-bold text-text-primary">
+            {fmt(thisMonth)}
+          </p>
         </div>
 
-        <div className="summary-card">
-          <p className="mb-1.5 text-xs text-slate-500">This Year</p>
-          <p className="text-xl font-bold text-slate-950">{fmt(thisYear)}</p>
+        <div className="summary-card min-w-0">
+          <p className="mb-1.5 text-xs font-semibold text-text-secondary">
+            This Year
+          </p>
+          <p className="break-words text-xl font-bold text-text-primary">
+            {fmt(thisYear)}
+          </p>
         </div>
 
-        <div className="summary-card border-red-200 bg-red-50">
-          <p className="mb-1.5 text-xs text-slate-500">Highest Month Ever</p>
-          <p className="text-xl font-bold text-red-600">
+        <div className="summary-card min-w-0 border-danger/30 bg-danger/10">
+          <p className="mb-1.5 text-xs font-semibold text-text-secondary">
+            Highest Month Ever
+          </p>
+          <p className="break-words text-xl font-bold text-danger">
             {fmt(highestMonth)}
           </p>
-          <p className="mt-0.5 text-xs text-slate-600">
+          <p className="mt-0.5 text-xs text-text-secondary">
             Your most expensive month
           </p>
         </div>
@@ -115,7 +127,7 @@ export default async function ExpensesPage() {
 
       {categories.length > 0 && (
         <div className="finance-panel p-5">
-          <h3 className="mb-4 text-sm font-medium text-slate-950">
+          <h3 className="mb-4 text-sm font-semibold text-text-primary">
             This Month by Category
           </h3>
           <div className="space-y-4">
@@ -127,19 +139,19 @@ export default async function ExpensesPage() {
                       className="h-2 w-2 flex-shrink-0 rounded-full"
                       style={{ background: category.color }}
                     />
-                    <span className="truncate text-sm text-slate-700">
+                    <span className="truncate text-sm font-medium text-text-primary">
                       {category.name}
                     </span>
-                    <span className="text-xs text-slate-600">
+                    <span className="shrink-0 text-xs text-text-secondary">
                       {category.count}{" "}
                       {category.count === 1 ? "entry" : "entries"}
                     </span>
                   </div>
-                  <span className="text-sm font-semibold text-red-600">
+                  <span className="min-w-0 break-words text-right text-sm font-semibold text-danger">
                     {fmt(category.amount)}
                   </span>
                 </div>
-                <div className="h-1.5 overflow-hidden rounded-full bg-slate-100">
+                <div className="h-1.5 overflow-hidden rounded-full bg-surface-secondary">
                   <div
                     className="motion-progress-fill h-full rounded-full transition-all"
                     style={{
@@ -155,9 +167,11 @@ export default async function ExpensesPage() {
       )}
 
       <div className="finance-panel p-4 sm:p-5">
-        <div className="mb-4 flex items-center justify-between">
-          <h3 className="text-sm font-medium text-slate-950">All Expenses</h3>
-          <span className="text-xs text-slate-500">
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
+          <h3 className="text-sm font-semibold text-text-primary">
+            All Expenses
+          </h3>
+          <span className="text-xs font-medium text-text-secondary">
             {expenses.length} entries
           </span>
         </div>

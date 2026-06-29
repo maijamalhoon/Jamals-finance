@@ -65,7 +65,7 @@ function maskAccountNumber(value?: string | null) {
 
   if (clean.length <= 4) return clean;
 
-  return `•••• ${clean.slice(-4)}`;
+  return `**** ${clean.slice(-4)}`;
 }
 
 function getCardVars(accent: string) {
@@ -76,7 +76,6 @@ function getCardVars(accent: string) {
 
 type AccountCardProps = {
   account: AccountWithTotals;
-  index?: number;
 };
 
 export default function AccountCard({ account }: AccountCardProps) {
@@ -111,44 +110,21 @@ export default function AccountCard({ account }: AccountCardProps) {
   return (
     <>
       <article
-        className="group relative min-h-[320px] overflow-hidden rounded-[28px] border p-5 transition-all duration-300 hover:-translate-y-1"
-        style={{
-          ...getCardVars(accent),
-          borderColor: "var(--border)",
-          background:
-            "linear-gradient(135deg, color-mix(in srgb, var(--account-accent), transparent 93%), var(--card))",
-          boxShadow: "var(--shadow)",
-        }}
+        className="account-card-shell finance-panel-interactive group relative flex min-h-[320px] min-w-0 flex-col overflow-hidden rounded-[var(--oneui-card-radius)] border p-5"
+        style={getCardVars(accent)}
       >
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute -right-12 -top-14 h-36 w-36 rounded-full blur-3xl"
-          style={{
-            backgroundColor:
-              "color-mix(in srgb, var(--account-accent), transparent 82%)",
-          }}
+          className="account-card-glow pointer-events-none absolute -right-12 -top-14 h-36 w-36 rounded-full blur-3xl"
         />
 
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute inset-x-6 top-0 h-px"
-          style={{
-            background:
-              "linear-gradient(90deg, transparent, color-mix(in srgb, var(--account-accent), transparent 45%), transparent)",
-          }}
+          className="account-card-line pointer-events-none absolute inset-x-6 top-0 h-px"
         />
 
         <div className="relative flex items-start justify-between gap-3">
-          <div
-            className="grid h-12 w-12 place-items-center rounded-[18px] border"
-            style={{
-              color: "var(--account-accent)",
-              borderColor:
-                "color-mix(in srgb, var(--account-accent), transparent 72%)",
-              backgroundColor:
-                "color-mix(in srgb, var(--account-accent), transparent 88%)",
-            }}
-          >
+          <div className="account-accent-tile grid h-12 w-12 shrink-0 place-items-center rounded-[18px] border">
             <Icon size={20} strokeWidth={2.2} />
           </div>
 
@@ -166,7 +142,7 @@ export default function AccountCard({ account }: AccountCardProps) {
               type="button"
               onClick={handleDelete}
               disabled={deleting}
-              className="icon-button hover:border-red-400/30 hover:bg-red-500/10 hover:text-red-400"
+              className="icon-button hover:border-danger/30 hover:bg-danger/10 hover:text-danger"
               aria-label="Delete account"
             >
               <Trash2 size={13} />
@@ -174,44 +150,30 @@ export default function AccountCard({ account }: AccountCardProps) {
           </div>
         </div>
 
-        <div className="relative mt-5">
+        <div className="relative mt-5 min-w-0">
           <p className="line-clamp-2 break-words text-[15px] font-bold leading-6 text-text-primary">
             {account.name}
           </p>
 
           <div className="mt-2 flex flex-wrap items-center gap-2">
-            <span
-              className="inline-flex rounded-full border px-2.5 py-1 text-[11px] font-bold"
-              style={{
-                color: "var(--account-accent)",
-                borderColor:
-                  "color-mix(in srgb, var(--account-accent), transparent 72%)",
-                backgroundColor:
-                  "color-mix(in srgb, var(--account-accent), transparent 90%)",
-              }}
-            >
+            <span className="account-accent-pill inline-flex rounded-full border px-2.5 py-1 text-[11px] font-bold">
               {getAccountKindLabel(account.account_kind)}
             </span>
 
-            <span className="inline-flex rounded-full border border-border bg-surface-secondary px-2.5 py-1 text-[11px] font-semibold text-text-secondary">
-              {maskAccountNumber(account.account_number)}
+            <span className="inline-flex min-w-0 max-w-full rounded-full border border-border bg-surface-secondary px-2.5 py-1 text-[11px] font-semibold text-text-secondary">
+              <span className="truncate">
+                {maskAccountNumber(account.account_number)}
+              </span>
             </span>
           </div>
         </div>
 
-        <div
-          className="relative mt-5 rounded-[22px] border p-4"
-          style={{
-            borderColor: "color-mix(in srgb, var(--border), transparent 15%)",
-            background:
-              "linear-gradient(180deg, color-mix(in srgb, var(--surface-secondary), var(--card) 22%), var(--card))",
-          }}
-        >
+        <div className="finance-panel-soft relative mt-5 min-w-0 p-4">
           <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-text-secondary">
             Balance
           </p>
 
-          <p className="mt-1 break-words text-2xl font-black tracking-tight text-text-primary">
+          <p className="mt-1 break-words text-2xl font-black tracking-normal text-text-primary [overflow-wrap:anywhere]">
             {formatPKR(account.balance)}
           </p>
 
@@ -221,38 +183,24 @@ export default function AccountCard({ account }: AccountCardProps) {
         </div>
 
         <div className="relative mt-4 grid grid-cols-2 gap-2.5">
-          <div
-            className="rounded-[20px] border p-3"
-            style={{
-              borderColor: "color-mix(in srgb, #10b981, transparent 68%)",
-              background:
-                "linear-gradient(135deg, color-mix(in srgb, #10b981, transparent 90%), var(--card))",
-            }}
-          >
+          <div className="finance-panel-soft min-w-0 border-success/30 bg-success/10 p-3">
             <div className="mb-2 flex items-center gap-1.5 text-[11px] font-semibold text-text-secondary">
-              <ArrowDownLeft size={13} className="text-emerald-500" />
+              <ArrowDownLeft size={13} className="text-success" />
               Income In
             </div>
 
-            <p className="break-words text-sm font-black text-emerald-600">
+            <p className="break-words text-sm font-black text-success [overflow-wrap:anywhere]">
               {formatPKR(account.inflow ?? 0)}
             </p>
           </div>
 
-          <div
-            className="rounded-[20px] border p-3"
-            style={{
-              borderColor: "color-mix(in srgb, #ef4444, transparent 68%)",
-              background:
-                "linear-gradient(135deg, color-mix(in srgb, #ef4444, transparent 91%), var(--card))",
-            }}
-          >
+          <div className="finance-panel-soft min-w-0 border-danger/30 bg-danger/10 p-3">
             <div className="mb-2 flex items-center gap-1.5 text-[11px] font-semibold text-text-secondary">
-              <ArrowUpRight size={13} className="text-rose-500" />
+              <ArrowUpRight size={13} className="text-danger" />
               Expense Out
             </div>
 
-            <p className="break-words text-sm font-black text-rose-600">
+            <p className="break-words text-sm font-black text-danger [overflow-wrap:anywhere]">
               {formatPKR(account.outflow ?? 0)}
             </p>
           </div>

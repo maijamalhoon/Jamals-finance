@@ -12,6 +12,7 @@ export default function AddIncomeButton() {
   return (
     <>
       <button
+        type="button"
         onClick={() => setOpen(true)}
         className="success-action"
       >

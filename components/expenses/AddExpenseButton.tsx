@@ -12,6 +12,7 @@ export default function AddExpenseButton() {
   return (
     <>
       <button
+        type="button"
         onClick={() => setOpen(true)}
         className="danger-action"
       >

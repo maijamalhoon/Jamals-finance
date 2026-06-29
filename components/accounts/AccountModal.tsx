@@ -376,7 +376,7 @@ export default function AccountModal({
           </div>
 
           {error && (
-            <p className="rounded-2xl border border-red-400/20 bg-red-500/10 px-3 py-2 text-sm font-medium text-red-400">
+            <p className="rounded-2xl border border-danger/20 bg-danger/10 px-3 py-2 text-sm font-medium text-danger">
               {error}
             </p>
           )}

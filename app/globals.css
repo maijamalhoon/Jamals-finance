@@ -820,6 +820,61 @@
       inset 0 1px 0 rgb(255 255 255 / 0.04);
   }
 
+  .account-card-shell {
+    border-color: var(--border);
+    background: linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--account-accent, var(--active)), transparent 93%),
+      var(--card)
+    );
+    box-shadow: var(--shadow);
+  }
+
+  .account-card-glow {
+    background-color: color-mix(
+      in srgb,
+      var(--account-accent, var(--active)),
+      transparent 82%
+    );
+  }
+
+  .account-card-line {
+    background: linear-gradient(
+      90deg,
+      transparent,
+      color-mix(in srgb, var(--account-accent, var(--active)), transparent 45%),
+      transparent
+    );
+  }
+
+  .account-accent-tile {
+    border-color: color-mix(
+      in srgb,
+      var(--account-accent, var(--active)),
+      transparent 72%
+    );
+    background-color: color-mix(
+      in srgb,
+      var(--account-accent, var(--active)),
+      transparent 88%
+    );
+    color: var(--account-accent, var(--active));
+  }
+
+  .account-accent-pill {
+    border-color: color-mix(
+      in srgb,
+      var(--account-accent, var(--active)),
+      transparent 72%
+    );
+    background-color: color-mix(
+      in srgb,
+      var(--account-accent, var(--active)),
+      transparent 90%
+    );
+    color: var(--account-accent, var(--active));
+  }
+
   .dashboard-list-card {
     @apply flex h-full min-h-[340px] min-w-0 flex-col overflow-hidden p-4 sm:min-h-[380px] sm:p-5;
   }
