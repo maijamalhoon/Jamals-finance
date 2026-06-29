@@ -10,6 +10,7 @@ import {
   FinanceModalBody,
   FinanceModalFooter,
   FinanceModalHeader,
+  financeCancelButtonClass,
   financeErrorClass,
   financeModalContentClass,
 } from "@/components/ui/finance-modal";
@@ -119,8 +120,11 @@ export default function PayableModal({ open, onClose, payable }: Props) {
         <FinanceModalBody>
           <div className="grid gap-3 sm:grid-cols-2">
             <div>
-              <label className="field-label">Person Name</label>
+              <label className="field-label" htmlFor="payable-person-name">
+                Person Name
+              </label>
               <input
+                id="payable-person-name"
                 value={personName}
                 onChange={(e) => setPersonName(e.target.value)}
                 placeholder="Who do you need to pay?"
@@ -128,8 +132,11 @@ export default function PayableModal({ open, onClose, payable }: Props) {
               />
             </div>
             <div>
-              <label className="field-label">Item / Amount Name</label>
+              <label className="field-label" htmlFor="payable-item-name">
+                Item / Amount Name
+              </label>
               <input
+                id="payable-item-name"
                 value={itemName}
                 onChange={(e) => setItemName(e.target.value)}
                 placeholder="Phone, cash, loan, etc."
@@ -139,8 +146,11 @@ export default function PayableModal({ open, onClose, payable }: Props) {
           </div>
 
           <div>
-            <label className="field-label">Reason</label>
+            <label className="field-label" htmlFor="payable-reason">
+              Reason
+            </label>
             <input
+              id="payable-reason"
               value={reason}
               onChange={(e) => setReason(e.target.value)}
               placeholder="Why was this taken?"
@@ -163,8 +173,11 @@ export default function PayableModal({ open, onClose, payable }: Props) {
 
           <div className="grid gap-3 sm:grid-cols-2">
             <div>
-              <label className="field-label">Actual Value (PKR)</label>
+              <label className="field-label" htmlFor="payable-original-value">
+                Actual Value (PKR)
+              </label>
               <input
+                id="payable-original-value"
                 type="number"
                 value={originalValue}
                 onChange={(e) => setOriginalValue(e.target.value)}
@@ -173,18 +186,25 @@ export default function PayableModal({ open, onClose, payable }: Props) {
               />
             </div>
             <div>
-              <label className="field-label">Due Date</label>
+              <label className="field-label" htmlFor="payable-due-date">
+                Due Date
+              </label>
               <DatePicker
+                id="payable-due-date"
                 value={dueDate}
                 onChange={setDueDate}
                 placeholder="Select due date"
+                ariaLabel="Payable due date"
               />
             </div>
           </div>
 
           <div>
-            <label className="field-label">Notes</label>
+            <label className="field-label" htmlFor="payable-notes">
+              Notes
+            </label>
             <textarea
+              id="payable-notes"
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               placeholder="Agreement details, reminders, or partial payment notes"
@@ -199,7 +219,15 @@ export default function PayableModal({ open, onClose, payable }: Props) {
           )}
         </FinanceModalBody>
 
-        <FinanceModalFooter className="grid-cols-1">
+        <FinanceModalFooter>
+          <button
+            type="button"
+            onClick={onClose}
+            disabled={loading}
+            className={financeCancelButtonClass}
+          >
+            Cancel
+          </button>
           <button
             type="button"
             onClick={handleSave}

@@ -73,6 +73,7 @@ function DialogContent({
               variant="ghost"
               className="absolute top-3 right-3 z-10"
               size="icon-sm"
+              aria-label="Close dialog"
             >
               <XIcon
               />

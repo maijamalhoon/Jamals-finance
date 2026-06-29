@@ -12,13 +12,13 @@ import { cn } from "@/lib/utils";
 type FinanceTone = "default" | "success" | "danger" | "info" | "investment" | "warning";
 
 export const financeModalContentClass =
-  "finance-panel flex max-h-[min(90dvh,760px)] w-[calc(100vw-1rem)] max-w-md flex-col gap-0 overflow-hidden p-0 text-text-primary sm:w-full";
+  "finance-panel flex max-h-[calc(100dvh-1rem)] w-[calc(100vw-1rem)] max-w-md flex-col gap-0 overflow-hidden p-0 text-text-primary shadow-premium sm:max-h-[min(90dvh,760px)] sm:w-full";
 
 export const financeCancelButtonClass =
   "finance-focus inline-flex min-h-[var(--oneui-control-height-lg)] items-center justify-center rounded-[var(--oneui-button-radius)] border border-border bg-surface-secondary px-4 py-2 text-sm font-semibold text-text-primary transition-all hover:bg-hover active:scale-[0.985] disabled:opacity-50";
 
 export const financeErrorClass =
-  "rounded-[var(--oneui-control-radius)] border border-danger/20 bg-danger/10 p-3 text-xs text-danger";
+  "rounded-[var(--oneui-control-radius)] border border-danger/20 bg-danger/10 px-3 py-2.5 text-sm font-medium leading-5 text-danger";
 
 interface FinanceModalHeaderProps {
   title: string;
@@ -40,7 +40,7 @@ export function FinanceModalHeader({
   return (
     <DialogHeader
       className={cn(
-        "shrink-0 border-b border-border px-5 py-4 pr-12",
+        "shrink-0 border-b border-border px-4 py-4 pr-12 sm:px-5",
         className,
       )}
     >
@@ -63,7 +63,7 @@ export function FinanceModalBody({
   return (
     <div
       className={cn(
-        "min-h-0 flex-1 space-y-4 overflow-y-auto overscroll-contain px-5 py-4",
+        "min-h-0 flex-1 space-y-4 overflow-y-auto overscroll-contain px-4 py-4 sm:px-5",
         className,
       )}
       {...props}
@@ -77,8 +77,9 @@ export function FinanceModalFooter({
 }: React.ComponentProps<"div">) {
   return (
     <div
+      data-slot="dialog-footer"
       className={cn(
-        "grid shrink-0 grid-cols-2 gap-2 border-t border-border bg-card px-4 py-3.5",
+        "grid shrink-0 grid-cols-1 gap-2 border-t border-border bg-card px-4 py-3.5 sm:grid-cols-2",
         className,
       )}
       {...props}

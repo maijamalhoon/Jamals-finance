@@ -13,12 +13,15 @@ import {
 } from "lucide-react";
 
 import { createClient } from "@/lib/supabase/client";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+  FinanceModalBody,
+  FinanceModalFooter,
+  FinanceModalHeader,
+  financeCancelButtonClass,
+  financeErrorClass,
+  financeModalContentClass,
+} from "@/components/ui/finance-modal";
 
 export interface ExistingAccount {
   id: string;
@@ -195,44 +198,47 @@ export default function AccountModal({
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent
-        className="finance-panel w-[calc(100vw-24px)] max-w-[430px] gap-0 overflow-hidden p-0 text-text-primary"
+        className={financeModalContentClass}
         style={getCssVars(accentHex)}
       >
-        <DialogHeader className="border-b border-border px-5 py-4">
-          <DialogTitle className="text-base font-bold">
-            {isEditing ? "Edit Account" : "Add Account"}
-          </DialogTitle>
-        </DialogHeader>
+        <FinanceModalHeader
+          title={isEditing ? "Edit Account" : "Add Account"}
+          description="Enter account name, number, type, icon, color, and balance."
+          icon={Wallet}
+          tone="info"
+        />
 
-        <div className="max-h-[calc(100dvh-110px)] space-y-3 overflow-y-auto px-5 py-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        <FinanceModalBody>
           <div>
-            <label className="mb-1.5 block text-xs font-bold text-text-primary">
+            <label className="field-label" htmlFor="account-name">
               Account Name
             </label>
             <input
+              id="account-name"
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="e.g. Habib Metro Bank"
-              className="field-input h-11 rounded-[16px] text-sm"
+              className="field-input"
             />
           </div>
 
           <div>
-            <label className="mb-1.5 block text-xs font-bold text-text-primary">
+            <label className="field-label" htmlFor="account-number">
               Account Number
             </label>
             <input
+              id="account-number"
               value={accountNumber}
               onChange={(e) => setAccountNumber(e.target.value)}
               placeholder="e.g. 0123456789"
-              className="field-input h-11 rounded-[16px] text-sm"
+              className="field-input"
             />
           </div>
 
           <div>
-            <label className="mb-1.5 block text-xs font-bold text-text-primary">
+            <span className="field-label">
               Account Type
-            </label>
+            </span>
 
             <div className="grid grid-cols-2 gap-2">
               {ACCOUNT_KINDS.map((kind) => {
@@ -243,7 +249,8 @@ export default function AccountModal({
                     key={kind.value}
                     type="button"
                     onClick={() => setAccountKind(kind.value)}
-                    className="finance-focus h-11 rounded-[16px] border text-sm font-bold transition-all"
+                    aria-pressed={active}
+                    className="finance-focus min-h-11 rounded-[var(--oneui-input-radius)] border px-3 py-2 text-sm font-bold transition-all"
                     style={{
                       borderColor:
                         active ?
@@ -267,9 +274,9 @@ export default function AccountModal({
           </div>
 
           <div>
-            <label className="mb-1.5 block text-xs font-bold text-text-primary">
+            <span className="field-label">
               Icon
-            </label>
+            </span>
 
             <div className="grid grid-cols-4 gap-2">
               {ICON_OPTIONS.map(({ value, label, icon: Icon }) => {
@@ -280,7 +287,8 @@ export default function AccountModal({
                     key={value}
                     type="button"
                     onClick={() => setIconKey(value)}
-                    className="finance-focus flex h-[62px] flex-col items-center justify-center gap-1 rounded-[16px] border text-[11px] font-bold transition-all"
+                    aria-pressed={active}
+                    className="finance-focus flex min-h-[62px] flex-col items-center justify-center gap-1 rounded-[var(--oneui-input-radius)] border px-1.5 py-2 text-[11px] font-bold transition-all"
                     style={{
                       borderColor:
                         active ?
@@ -316,9 +324,9 @@ export default function AccountModal({
 
           <div>
             <div className="mb-1.5 flex items-center justify-between gap-3">
-              <label className="block text-xs font-bold text-text-primary">
+              <span className="field-label mb-0">
                 Color
-              </label>
+              </span>
               <span className="text-[11px] font-semibold text-text-secondary">
                 {
                   COLOR_OPTIONS.find((color) => color.value === accentColor)
@@ -362,30 +370,41 @@ export default function AccountModal({
           </div>
 
           <div>
-            <label className="mb-1.5 block text-xs font-bold text-text-primary">
+            <label className="field-label" htmlFor="account-balance">
               {isEditing ? "Current Balance (PKR)" : "Opening Balance (PKR)"}
             </label>
 
             <input
+              id="account-balance"
               type="number"
               value={balance}
               onChange={(e) => setBalance(e.target.value)}
               placeholder="0"
-              className="field-input h-11 rounded-[16px] text-sm font-bold"
+              className="field-input font-bold"
             />
           </div>
 
           {error && (
-            <p className="rounded-2xl border border-danger/20 bg-danger/10 px-3 py-2 text-sm font-medium text-danger">
+            <p className={financeErrorClass}>
               {error}
             </p>
           )}
+        </FinanceModalBody>
 
+        <FinanceModalFooter>
+          <button
+            type="button"
+            onClick={onClose}
+            disabled={loading}
+            className={financeCancelButtonClass}
+          >
+            Cancel
+          </button>
           <button
             type="button"
             onClick={handleSave}
             disabled={loading}
-            className="finance-focus h-11 w-full rounded-[16px] px-4 text-sm font-black text-white shadow-lg transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-60"
+            className="finance-focus primary-action min-h-[var(--oneui-control-height-lg)] w-full px-4 text-sm font-black text-white"
             style={{
               background:
                 "linear-gradient(135deg, var(--account-accent), color-mix(in srgb, var(--account-accent), #111827 18%))",
@@ -394,12 +413,12 @@ export default function AccountModal({
             }}
           >
             {loading ?
-              "Saving…"
+              "Saving..."
             : isEditing ?
               "Update Account"
             : "Add Account"}
           </button>
-        </div>
+        </FinanceModalFooter>
       </DialogContent>
     </Dialog>
   );

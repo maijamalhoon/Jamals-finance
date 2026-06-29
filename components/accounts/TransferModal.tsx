@@ -181,8 +181,11 @@ export default function TransferModal({ open, onClose, onSuccess }: Props) {
 
               <div className="grid gap-3 sm:grid-cols-2">
                 <div>
-                  <label className="field-label">Amount (PKR)</label>
+                  <label className="field-label" htmlFor="transfer-amount">
+                    Amount (PKR)
+                  </label>
                   <input
+                    id="transfer-amount"
                     type="number"
                     value={amount}
                     onChange={(event) => setAmount(event.target.value)}
@@ -191,18 +194,25 @@ export default function TransferModal({ open, onClose, onSuccess }: Props) {
                   />
                 </div>
                 <div>
-                  <label className="field-label">Transfer Date</label>
+                  <label className="field-label" htmlFor="transfer-date">
+                    Transfer Date
+                  </label>
                   <DatePicker
+                    id="transfer-date"
                     value={transferDate}
                     onChange={setTransferDate}
                     placeholder="Select transfer date"
+                    ariaLabel="Transfer date"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="field-label">Note (Optional)</label>
+                <label className="field-label" htmlFor="transfer-note">
+                  Note (Optional)
+                </label>
                 <input
+                  id="transfer-note"
                   value={note}
                   onChange={(event) => setNote(event.target.value)}
                   placeholder="ATM cash withdrawal, bank deposit, wallet move..."

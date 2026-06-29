@@ -119,6 +119,7 @@ export default function GoalModal({ open, onClose, onSuccess, goal }: Props) {
                   type="button"
                   onClick={() => setIcon(value)}
                   title={label}
+                  aria-pressed={icon === value}
                   className={`finance-focus flex min-h-[58px] flex-col items-center justify-center gap-1 rounded-[14px] border p-2 transition-all ${
                     icon === value
                       ? "border-active bg-active/10 text-active shadow-theme"
@@ -133,8 +134,11 @@ export default function GoalModal({ open, onClose, onSuccess, goal }: Props) {
           </div>
 
           <div>
-            <label className="field-label">Goal Name</label>
+            <label className="field-label" htmlFor="goal-name">
+              Goal Name
+            </label>
             <input
+              id="goal-name"
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="e.g. New House, Emergency Fund"
@@ -144,8 +148,11 @@ export default function GoalModal({ open, onClose, onSuccess, goal }: Props) {
 
           <div className="grid gap-3 sm:grid-cols-2">
             <div>
-              <label className="field-label">Target Amount (PKR)</label>
+              <label className="field-label" htmlFor="goal-target-amount">
+                Target Amount (PKR)
+              </label>
               <input
+                id="goal-target-amount"
                 type="number"
                 value={targetAmount}
                 onChange={(e) => setTargetAmount(e.target.value)}
@@ -155,8 +162,11 @@ export default function GoalModal({ open, onClose, onSuccess, goal }: Props) {
             </div>
 
             <div>
-              <label className="field-label">Saved So Far (PKR)</label>
+              <label className="field-label" htmlFor="goal-current-amount">
+                Saved So Far (PKR)
+              </label>
               <input
+                id="goal-current-amount"
                 type="number"
                 value={currentAmount}
                 onChange={(e) => setCurrentAmount(e.target.value)}
@@ -167,11 +177,15 @@ export default function GoalModal({ open, onClose, onSuccess, goal }: Props) {
           </div>
 
           <div>
-            <label className="field-label">Deadline (Optional)</label>
+            <label className="field-label" htmlFor="goal-deadline">
+              Deadline (Optional)
+            </label>
             <DatePicker
+              id="goal-deadline"
               value={deadline}
               onChange={setDeadline}
               placeholder="Select deadline"
+              ariaLabel="Goal deadline"
             />
           </div>
 

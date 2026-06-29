@@ -257,6 +257,7 @@ export default function TransactionModal({
                   key={nextType}
                   type="button"
                   onClick={() => setType(nextType)}
+                  aria-pressed={type === nextType}
                   className={`flex-1 rounded-[12px] py-2 text-sm font-semibold transition-colors ${
                     type === nextType
                       ? nextType === "income"
@@ -272,8 +273,11 @@ export default function TransactionModal({
           )}
 
           <div>
-            <label className="field-label">Amount (PKR)</label>
+            <label className="field-label" htmlFor="transaction-amount">
+              Amount (PKR)
+            </label>
             <input
+              id="transaction-amount"
               type="number"
               value={amount}
               onChange={(event) => setAmount(event.target.value)}
@@ -294,10 +298,11 @@ export default function TransactionModal({
           </div>
 
           <div>
-            <label className="field-label">
+            <label className="field-label" htmlFor="transaction-category">
               Category
             </label>
             <select
+              id="transaction-category"
               value={categoryId}
               onChange={(event) => setCategoryId(event.target.value)}
               className="field-input"
@@ -319,17 +324,24 @@ export default function TransactionModal({
           </div>
 
           <div>
-            <label className="field-label">Date</label>
+            <label className="field-label" htmlFor="transaction-date">
+              Date
+            </label>
             <DatePicker
+              id="transaction-date"
               value={date}
               onChange={setDate}
               placeholder="DD/MM/YYYY"
+              ariaLabel="Transaction date"
             />
           </div>
 
           <div>
-            <label className="field-label">Note (Optional)</label>
+            <label className="field-label" htmlFor="transaction-note">
+              Note (Optional)
+            </label>
             <input
+              id="transaction-note"
               type="text"
               value={note}
               onChange={(event) => setNote(event.target.value)}

@@ -10,6 +10,7 @@ import {
   FinanceModalBody,
   FinanceModalFooter,
   FinanceModalHeader,
+  financeCancelButtonClass,
   financeErrorClass,
   financeModalContentClass,
 } from "@/components/ui/finance-modal";
@@ -176,8 +177,11 @@ export default function PaymentModal({ open, onClose, payable, accounts }: Props
           </div>
 
           <div>
-            <label className="field-label">Payment Amount (PKR)</label>
+            <label className="field-label" htmlFor="payment-amount">
+              Payment Amount (PKR)
+            </label>
             <input
+              id="payment-amount"
               type="number"
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
@@ -194,13 +198,14 @@ export default function PaymentModal({ open, onClose, payable, accounts }: Props
                   key={account.id}
                   type="button"
                   onClick={() => setAccountId(account.id)}
+                  aria-pressed={accountId === account.id}
                   className={`finance-focus rounded-[18px] border px-3 py-2.5 text-left transition-colors ${
                     accountId === account.id
                       ? "border-border bg-card text-text-primary"
                       : "border-border bg-surface-secondary text-text-secondary hover:bg-hover hover:text-text-primary"
                   }`}
                 >
-                  <span className="block truncate text-sm font-semibold">
+                  <span className="block break-words text-sm font-semibold [overflow-wrap:anywhere]">
                     {account.name}
                   </span>
                   <span
@@ -216,17 +221,24 @@ export default function PaymentModal({ open, onClose, payable, accounts }: Props
           </div>
 
           <div>
-            <label className="field-label">Payment Date</label>
+            <label className="field-label" htmlFor="payment-paid-at">
+              Payment Date
+            </label>
             <DatePicker
+              id="payment-paid-at"
               value={paidAt}
               onChange={setPaidAt}
               placeholder="Select payment date"
+              ariaLabel="Payment date"
             />
           </div>
 
           <div>
-            <label className="field-label">Payment Note</label>
+            <label className="field-label" htmlFor="payment-note">
+              Payment Note
+            </label>
             <input
+              id="payment-note"
               value={note}
               onChange={(e) => setNote(e.target.value)}
               placeholder="Receipt, method, or short note"
@@ -241,7 +253,15 @@ export default function PaymentModal({ open, onClose, payable, accounts }: Props
           )}
         </FinanceModalBody>
 
-        <FinanceModalFooter className="grid-cols-1">
+        <FinanceModalFooter>
+          <button
+            type="button"
+            onClick={onClose}
+            disabled={loading}
+            className={financeCancelButtonClass}
+          >
+            Cancel
+          </button>
           <button
             type="button"
             onClick={handleSave}

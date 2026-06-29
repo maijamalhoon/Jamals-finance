@@ -674,7 +674,7 @@
   }
 
   .primary-action {
-    @apply inline-flex items-center justify-center gap-2 border px-4 py-2 text-sm font-semibold transition-all duration-200 ease-out focus-visible:outline-none disabled:opacity-50;
+    @apply inline-flex min-w-0 items-center justify-center gap-2 border px-4 py-2 text-sm font-semibold transition-all duration-200 ease-out focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50;
     min-height: var(--oneui-control-height-lg);
     border-radius: var(--oneui-button-radius);
     border-color: var(--active);
@@ -693,11 +693,16 @@
     transform: translateY(0) scale(0.985);
   }
 
+  .primary-action:disabled {
+    box-shadow: var(--shadow);
+    transform: none;
+  }
+
   .danger-action,
   .success-action,
   .investment-action,
   .warning-action {
-    @apply inline-flex items-center justify-center gap-2 border px-4 py-2 text-sm font-semibold transition-all duration-200 ease-out focus-visible:outline-none disabled:opacity-50;
+    @apply inline-flex min-w-0 items-center justify-center gap-2 border px-4 py-2 text-sm font-semibold transition-all duration-200 ease-out focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50;
     min-height: var(--oneui-control-height-lg);
     border-radius: var(--oneui-button-radius);
     border-color: var(--border);
@@ -723,6 +728,14 @@
   .investment-action:active,
   .warning-action:active {
     transform: translateY(0) scale(0.985);
+  }
+
+  .danger-action:disabled,
+  .success-action:disabled,
+  .investment-action:disabled,
+  .warning-action:disabled {
+    box-shadow: none;
+    transform: none;
   }
 
   .success-action svg {
@@ -752,22 +765,48 @@
   }
 
   .field-label {
-    @apply mb-1.5 block text-xs font-semibold;
+    @apply mb-1.5 block text-xs font-semibold leading-5;
     color: var(--text-primary);
+    text-wrap: pretty;
   }
 
   .field-input {
-    @apply w-full border px-4 py-2 text-sm outline-none transition-all duration-200 ease-out;
+    @apply w-full min-w-0 border px-4 py-2 text-base outline-none transition-all duration-200 ease-out md:text-sm;
     min-height: var(--oneui-control-height-lg);
     border-radius: var(--oneui-input-radius);
     border-color: var(--border);
     background-color: var(--input);
     color: var(--text-primary);
     box-shadow: none;
+    font-variant-numeric: tabular-nums;
+    overflow-wrap: anywhere;
+    text-overflow: ellipsis;
   }
 
   .field-input::placeholder {
     color: var(--text-secondary);
+    opacity: 0.82;
+  }
+
+  textarea.field-input {
+    height: auto;
+    line-height: 1.5;
+    resize: vertical;
+  }
+
+  select.field-input {
+    appearance: none;
+    background-image:
+      linear-gradient(45deg, transparent 50%, var(--text-secondary) 50%),
+      linear-gradient(135deg, var(--text-secondary) 50%, transparent 50%);
+    background-position:
+      calc(100% - 18px) calc(50% - 3px),
+      calc(100% - 13px) calc(50% - 3px);
+    background-size:
+      5px 5px,
+      5px 5px;
+    background-repeat: no-repeat;
+    padding-right: 2.75rem;
   }
 
   .field-input:hover {
@@ -781,6 +820,14 @@
     border-color: color-mix(in srgb, var(--active), var(--border) 55%);
     background-color: var(--surface);
     box-shadow: var(--focus-ring);
+  }
+
+  .field-input:disabled,
+  .field-input[aria-disabled="true"] {
+    cursor: not-allowed;
+    background-color: var(--muted);
+    color: var(--text-secondary);
+    opacity: 0.65;
   }
 
   .field-input input {

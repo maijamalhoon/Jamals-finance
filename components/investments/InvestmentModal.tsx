@@ -134,8 +134,11 @@ export default function InvestmentModal({
 
         <FinanceModalBody>
           <div>
-            <label className="field-label">Asset Name</label>
+            <label className="field-label" htmlFor="investment-name">
+              Asset Name
+            </label>
             <input
+              id="investment-name"
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="e.g. Bitcoin, Apple Stock"
@@ -151,6 +154,7 @@ export default function InvestmentModal({
                   key={item.value}
                   type="button"
                   onClick={() => setType(item.value)}
+                  aria-pressed={type === item.value}
                   className={`finance-focus min-h-11 rounded-[16px] border px-3 py-2 text-sm font-semibold transition-colors ${
                     type === item.value
                       ? "border-border bg-card text-text-primary shadow-theme"
@@ -165,8 +169,11 @@ export default function InvestmentModal({
 
           <div className="grid gap-3 sm:grid-cols-2">
             <div>
-              <label className="field-label">Quantity</label>
+              <label className="field-label" htmlFor="investment-quantity">
+                Quantity
+              </label>
               <input
+                id="investment-quantity"
                 type="number"
                 value={quantity}
                 onChange={(e) => setQuantity(e.target.value)}
@@ -175,8 +182,11 @@ export default function InvestmentModal({
               />
             </div>
             <div>
-              <label className="field-label">Buy Price (PKR)</label>
+              <label className="field-label" htmlFor="investment-purchase-price">
+                Buy Price (PKR)
+              </label>
               <input
+                id="investment-purchase-price"
                 type="number"
                 value={purchasePrice}
                 onChange={(e) => setPurchasePrice(e.target.value)}
@@ -187,8 +197,11 @@ export default function InvestmentModal({
           </div>
 
           <div>
-            <label className="field-label">Current Price (PKR)</label>
+            <label className="field-label" htmlFor="investment-current-price">
+              Current Price (PKR)
+            </label>
             <input
+              id="investment-current-price"
               type="number"
               value={currentPrice}
               onChange={(e) => setCurrentPrice(e.target.value)}
@@ -198,11 +211,15 @@ export default function InvestmentModal({
           </div>
 
           <div>
-            <label className="field-label">Purchase Date</label>
+            <label className="field-label" htmlFor="investment-purchased-at">
+              Purchase Date
+            </label>
             <DatePicker
+              id="investment-purchased-at"
               value={purchasedAt}
               onChange={setPurchasedAt}
               placeholder="Select purchase date"
+              ariaLabel="Investment purchase date"
             />
           </div>
 

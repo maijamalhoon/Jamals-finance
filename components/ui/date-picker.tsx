@@ -5,9 +5,11 @@ import { useEffect, useMemo, useState } from "react";
 import { cn } from "@/lib/utils";
 
 interface DatePickerProps {
+  id?: string;
   value: string;
   onChange: (value: string) => void;
   placeholder?: string;
+  ariaLabel?: string;
   disabled?: boolean;
   className?: string;
   minDate?: string;
@@ -73,9 +75,11 @@ function getDateError(value: string, minDate?: string, maxDate?: string) {
 }
 
 export default function DatePicker({
+  id,
   value,
   onChange,
   placeholder = "DD/MM/YYYY",
+  ariaLabel = "Date",
   disabled,
   className,
   minDate,
@@ -115,12 +119,13 @@ export default function DatePicker({
   return (
     <div className={cn("w-full", className)}>
       <input
+        id={id}
         type="text"
         inputMode="numeric"
         value={displayValue}
         disabled={disabled}
         placeholder={placeholder}
-        aria-label="Transaction date"
+        aria-label={ariaLabel}
         aria-invalid={Boolean(touched && error)}
         maxLength={10}
         onChange={(event) => handleChange(event.target.value)}
