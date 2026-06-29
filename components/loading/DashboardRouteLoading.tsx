@@ -66,12 +66,12 @@ export default function DashboardRouteLoading({
           <Panel className="min-h-[360px]" delay={120}>
             <div className="space-y-4">
               <SkeletonLine className="h-5 w-48" />
-              <SkeletonLine className="h-10 w-full rounded-[22px]" />
+              <SkeletonLine className="h-10 w-full rounded-[var(--oneui-control-radius)]" />
               <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
                 {Array.from({ length: 4 }).map((_, index) => (
                   <SkeletonLine
                     key={index}
-                    className="h-20 rounded-[18px]"
+                    className="h-20 rounded-[var(--oneui-control-radius)]"
                     delay={index * 20}
                   />
                 ))}
@@ -82,7 +82,7 @@ export default function DashboardRouteLoading({
           <Panel className="min-h-[360px]" delay={160}>
             <div className="space-y-4">
               <SkeletonLine className="h-5 w-32" />
-              <SkeletonLine className="h-56 rounded-[24px]" />
+              <SkeletonLine className="h-56 rounded-[var(--oneui-card-radius)]" />
             </div>
           </Panel>
         </div>
@@ -99,7 +99,7 @@ export default function DashboardRouteLoading({
         </div>
 
         <Panel className="space-y-5" delay={40}>
-          <SkeletonLine className="h-12 w-full max-w-[420px] rounded-[18px]" />
+          <SkeletonLine className="h-12 w-full max-w-[420px] rounded-[var(--oneui-control-radius)]" />
           <div className="hidden grid-cols-[auto_1fr_112px_88px_120px_88px] items-center gap-4 border-b border-border pb-3 text-xs font-semibold uppercase tracking-wide text-text-secondary md:grid">
             {Array.from({ length: 6 }).map((_, index) => (
               <SkeletonLine key={index} className="h-3 w-full rounded-full" />
@@ -109,9 +109,9 @@ export default function DashboardRouteLoading({
             {Array.from({ length: 7 }).map((_, index) => (
               <div
                 key={index}
-                className="grid gap-3 rounded-[20px] border border-border p-4 sm:grid-cols-[auto_1fr_112px_88px_120px_88px]"
+                className="grid gap-3 rounded-[var(--oneui-card-radius)] border border-border p-4 sm:grid-cols-[auto_1fr_112px_88px_120px_88px]"
               >
-                <SkeletonLine className="h-12 w-12 rounded-[18px]" />
+                <SkeletonLine className="h-12 w-12 rounded-[var(--oneui-control-radius)]" />
                 <div className="space-y-2 py-1">
                   <SkeletonLine className="h-4 w-36" />
                   <SkeletonLine className="h-3 w-24" />
@@ -154,7 +154,7 @@ export default function DashboardRouteLoading({
               <div className="space-y-4">
                 <SkeletonLine className="h-5 w-24" />
                 <SkeletonLine className="h-4 w-40" />
-                <SkeletonLine className="h-48 w-full rounded-[22px]" />
+                <SkeletonLine className="h-48 w-full rounded-[var(--oneui-card-radius)]" />
               </div>
             </Panel>
           ))}
@@ -241,10 +241,10 @@ export default function DashboardRouteLoading({
       <Panel className="min-h-[350px]" delay={160}>
         <div className="space-y-5">
           <SkeletonLine className="h-5 w-40" />
-          <SkeletonLine className="h-10 w-full rounded-[22px]" />
+          <SkeletonLine className="h-10 w-full rounded-[var(--oneui-control-radius)]" />
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
             {Array.from({ length: 4 }).map((_, index) => (
-              <SkeletonLine key={index} className="h-20 rounded-[18px]" delay={index * 25} />
+              <SkeletonLine key={index} className="h-20 rounded-[var(--oneui-control-radius)]" delay={index * 25} />
             ))}
           </div>
         </div>
@@ -256,7 +256,7 @@ export default function DashboardRouteLoading({
             <div className="space-y-4">
               <SkeletonLine className="h-4 w-32" />
               <SkeletonLine className="h-3 w-24" />
-              <SkeletonLine className="h-28 w-full rounded-[22px]" />
+              <SkeletonLine className="h-28 w-full rounded-[var(--oneui-card-radius)]" />
             </div>
           </Panel>
         ))}
@@ -268,7 +268,7 @@ export default function DashboardRouteLoading({
             <div className="space-y-4">
               <SkeletonLine className="h-4 w-36" />
               <SkeletonLine className="h-3 w-28" />
-              <SkeletonLine className="h-44 w-full rounded-[22px]" />
+              <SkeletonLine className="h-44 w-full rounded-[var(--oneui-card-radius)]" />
             </div>
           </Panel>
         ))}

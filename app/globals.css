@@ -97,7 +97,15 @@
   --oneui-card-radius: 1.25rem;
   --oneui-tile-radius: 1rem;
   --oneui-control-radius: 0.875rem;
+  --oneui-button-radius: 0.875rem;
+  --oneui-input-radius: 0.875rem;
   --oneui-touch-target: 2.75rem;
+  --oneui-control-height-sm: 2rem;
+  --oneui-control-height: 2.5rem;
+  --oneui-control-height-lg: 2.75rem;
+  --oneui-icon-size-sm: 2rem;
+  --oneui-icon-size: 2.5rem;
+  --oneui-icon-size-lg: 3rem;
   --motion-ease: cubic-bezier(0.16, 1, 0.3, 1);
   --motion-duration-fast: 160ms;
   --motion-duration-base: 220ms;
@@ -139,7 +147,15 @@
   --oneui-card-radius: 1.25rem;
   --oneui-tile-radius: 1rem;
   --oneui-control-radius: 0.875rem;
+  --oneui-button-radius: 0.875rem;
+  --oneui-input-radius: 0.875rem;
   --oneui-touch-target: 2.75rem;
+  --oneui-control-height-sm: 2rem;
+  --oneui-control-height: 2.5rem;
+  --oneui-control-height-lg: 2.75rem;
+  --oneui-icon-size-sm: 2rem;
+  --oneui-icon-size: 2.5rem;
+  --oneui-icon-size-lg: 3rem;
   --motion-ease: cubic-bezier(0.16, 1, 0.3, 1);
   --motion-duration-fast: 160ms;
   --motion-duration-base: 220ms;
@@ -182,7 +198,8 @@
 
 @layer components {
   .finance-panel {
-    @apply rounded-[20px] border;
+    @apply border;
+    border-radius: var(--oneui-card-radius);
     border-color: var(--border);
     background: linear-gradient(
       180deg,
@@ -200,7 +217,8 @@
   }
 
   .finance-panel-soft {
-    @apply rounded-[18px] border;
+    @apply border;
+    border-radius: var(--oneui-card-radius);
     border-color: var(--border);
     background: linear-gradient(
       180deg,
@@ -350,8 +368,8 @@
 
   .finance-icon-container {
     display: grid;
-    width: 2.5rem;
-    height: 2.5rem;
+    width: var(--oneui-icon-size);
+    height: var(--oneui-icon-size);
     flex-shrink: 0;
     place-items: center;
     border: 1px solid color-mix(in srgb, var(--active), var(--border) 78%);
@@ -367,15 +385,15 @@
   }
 
   .finance-icon-container[data-size="sm"] {
-    width: 2rem;
-    height: 2rem;
-    border-radius: 0.8rem;
+    width: var(--oneui-icon-size-sm);
+    height: var(--oneui-icon-size-sm);
+    border-radius: calc(var(--oneui-tile-radius) - 0.2rem);
   }
 
   .finance-icon-container[data-size="lg"] {
-    width: 3rem;
-    height: 3rem;
-    border-radius: 1.15rem;
+    width: var(--oneui-icon-size-lg);
+    height: var(--oneui-icon-size-lg);
+    border-radius: calc(var(--oneui-tile-radius) + 0.15rem);
   }
 
   .finance-icon-container[data-tone="success"] {
@@ -435,7 +453,9 @@
   }
 
   .finance-control {
-    @apply rounded-[14px] border transition-all duration-200 ease-out;
+    @apply border transition-all duration-200 ease-out;
+    min-height: var(--oneui-control-height);
+    border-radius: var(--oneui-control-radius);
     border-color: var(--border);
     background-color: var(--input);
     color: var(--text-secondary);
@@ -451,6 +471,7 @@
 
   .finance-control:focus-within,
   .finance-control:focus-visible {
+    outline: none;
     border-color: var(--active);
     box-shadow: var(--focus-ring);
   }
@@ -593,7 +614,8 @@
   }
 
   .page-heading {
-    @apply flex flex-col gap-3 rounded-[20px] border p-4 sm:flex-row sm:items-end sm:justify-between sm:p-5;
+    @apply flex flex-col gap-3 border p-4 sm:flex-row sm:items-end sm:justify-between sm:p-5;
+    border-radius: var(--oneui-card-radius);
     border-color: var(--border);
     background: var(--card);
     color: var(--text-primary);
@@ -621,7 +643,8 @@
   }
 
   .summary-card {
-    @apply rounded-[20px] border p-4;
+    @apply border p-4;
+    border-radius: var(--oneui-card-radius);
     border-color: var(--border);
     background: var(--card);
     color: var(--text-primary);
@@ -634,7 +657,10 @@
   }
 
   .icon-button {
-    @apply flex h-9 w-9 items-center justify-center rounded-[15px] border transition-all duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-active/40 focus-visible:ring-offset-0 disabled:cursor-not-allowed disabled:opacity-50;
+    @apply flex items-center justify-center border transition-all duration-200 ease-out focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50;
+    width: var(--oneui-control-height);
+    height: var(--oneui-control-height);
+    border-radius: var(--oneui-control-radius);
     border-color: var(--border);
     background-color: var(--input);
     color: var(--text-secondary);
@@ -648,7 +674,9 @@
   }
 
   .primary-action {
-    @apply inline-flex min-h-11 items-center justify-center gap-2 rounded-[18px] border px-4 py-2.5 text-sm font-semibold transition-all duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-active/40 focus-visible:ring-offset-0 disabled:opacity-50;
+    @apply inline-flex items-center justify-center gap-2 border px-4 py-2 text-sm font-semibold transition-all duration-200 ease-out focus-visible:outline-none disabled:opacity-50;
+    min-height: var(--oneui-control-height-lg);
+    border-radius: var(--oneui-button-radius);
     border-color: var(--active);
     background-color: var(--active);
     color: color-mix(in srgb, var(--background), white 8%);
@@ -669,7 +697,9 @@
   .success-action,
   .investment-action,
   .warning-action {
-    @apply inline-flex min-h-11 items-center justify-center gap-2 rounded-[18px] border px-4 py-2.5 text-sm font-semibold transition-all duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-active/40 focus-visible:ring-offset-0 disabled:opacity-50;
+    @apply inline-flex items-center justify-center gap-2 border px-4 py-2 text-sm font-semibold transition-all duration-200 ease-out focus-visible:outline-none disabled:opacity-50;
+    min-height: var(--oneui-control-height-lg);
+    border-radius: var(--oneui-button-radius);
     border-color: var(--border);
     background-color: var(--surface-secondary);
     color: var(--text-primary);
@@ -727,7 +757,9 @@
   }
 
   .field-input {
-    @apply min-h-12 w-full rounded-[16px] border px-4 py-3 text-sm outline-none transition-all duration-200 ease-out;
+    @apply w-full border px-4 py-2 text-sm outline-none transition-all duration-200 ease-out;
+    min-height: var(--oneui-control-height-lg);
+    border-radius: var(--oneui-input-radius);
     border-color: var(--border);
     background-color: var(--input);
     color: var(--text-primary);
@@ -738,11 +770,16 @@
     color: var(--text-secondary);
   }
 
-  .field-input:hover,
-  .field-input:focus {
+  .field-input:hover {
+    border-color: color-mix(in srgb, var(--active), var(--border) 68%);
+    background-color: var(--surface);
+  }
+
+  .field-input:focus,
+  .field-input:focus-visible {
     border-color: color-mix(in srgb, var(--active), var(--border) 55%);
     background-color: var(--surface);
-    box-shadow: 0 0 0 2px color-mix(in srgb, var(--active), transparent 86%);
+    box-shadow: var(--focus-ring);
   }
 
   .widget-link {
@@ -751,7 +788,8 @@
   }
 
   .finance-reference-card {
-    @apply rounded-[28px] border;
+    @apply border;
+    border-radius: var(--oneui-card-radius);
     border-color: color-mix(in srgb, var(--border), white 18%);
     background: linear-gradient(
       180deg,
@@ -3910,7 +3948,7 @@ tbody tr:hover {
 }
 
 .finance-control:has(input) {
-  border-radius: 999px;
+  border-radius: var(--oneui-control-radius);
   overflow: hidden;
 }
 

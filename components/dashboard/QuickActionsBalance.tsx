@@ -91,7 +91,7 @@ export default function QuickActionsBalance({
     <>
       <section
         aria-label="Total net balance and quick actions"
-        className="relative overflow-hidden rounded-2xl border border-border bg-card px-4 py-5 shadow-theme sm:px-5 sm:py-6 lg:px-6"
+        className="finance-reference-card relative overflow-hidden px-4 py-5 sm:px-5 sm:py-6 lg:px-6"
       >
         <div
           aria-hidden="true"
@@ -124,7 +124,7 @@ export default function QuickActionsBalance({
                   type="button"
                   aria-label={action.ariaLabel}
                   onClick={() => openAction(action.key)}
-                  className="group flex min-w-0 flex-col items-center justify-center gap-2 rounded-2xl px-1 py-1.5 transition-transform duration-200 hover:-translate-y-0.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-active"
+                  className="finance-focus group flex min-w-0 flex-col items-center justify-center gap-2 rounded-[var(--oneui-control-radius)] px-1 py-1.5 transition-transform duration-200 hover:-translate-y-0.5"
                 >
                   <span
                     className={`grid h-12 w-12 place-items-center rounded-full border shadow-sm transition-all duration-200 group-hover:shadow-md sm:h-14 sm:w-14 lg:h-16 lg:w-16 ${action.circleClass}`}

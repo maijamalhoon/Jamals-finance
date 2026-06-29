@@ -15,10 +15,10 @@ export const financeModalContentClass =
   "finance-panel flex max-h-[min(90dvh,760px)] w-[calc(100vw-1rem)] max-w-md flex-col gap-0 overflow-hidden p-0 text-text-primary sm:w-full";
 
 export const financeCancelButtonClass =
-  "finance-focus inline-flex min-h-11 items-center justify-center rounded-[16px] border border-border bg-surface-secondary px-4 py-2.5 text-sm font-semibold text-text-primary transition-all hover:bg-hover active:scale-[0.985] disabled:opacity-50";
+  "finance-focus inline-flex min-h-[var(--oneui-control-height-lg)] items-center justify-center rounded-[var(--oneui-button-radius)] border border-border bg-surface-secondary px-4 py-2 text-sm font-semibold text-text-primary transition-all hover:bg-hover active:scale-[0.985] disabled:opacity-50";
 
 export const financeErrorClass =
-  "rounded-[16px] border border-red-500/15 bg-red-500/10 p-3 text-xs text-red-500 dark:text-red-300";
+  "rounded-[var(--oneui-control-radius)] border border-danger/20 bg-danger/10 p-3 text-xs text-danger";
 
 interface FinanceModalHeaderProps {
   title: string;

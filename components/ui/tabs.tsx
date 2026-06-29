@@ -26,7 +26,7 @@ function TabsList({
     <TabsPrimitive.List
       data-slot="tabs-list"
       className={cn(
-        "grid grid-cols-2 rounded-[22px] border border-border bg-surface-secondary p-1",
+        "grid grid-cols-2 rounded-[var(--oneui-card-radius)] border border-border bg-surface-secondary p-1",
         className,
       )}
       {...props}
@@ -42,7 +42,7 @@ function TabsTrigger({
     <TabsPrimitive.Trigger
       data-slot="tabs-trigger"
       className={cn(
-        "h-10 rounded-[18px] text-sm font-bold text-text-secondary transition-all hover:bg-hover hover:text-text-primary data-[state=active]:bg-card data-[state=active]:text-text-primary data-[state=active]:shadow-theme",
+        "h-[var(--oneui-control-height)] rounded-[var(--oneui-control-radius)] text-sm font-bold text-text-secondary transition-all outline-none hover:bg-hover hover:text-text-primary focus-visible:ring-3 focus-visible:ring-active/25 data-[state=active]:bg-card data-[state=active]:text-text-primary data-[state=active]:shadow-theme",
         className,
       )}
       {...props}
@@ -57,7 +57,7 @@ function TabsContent({
   return (
     <TabsPrimitive.Content
       data-slot="tabs-content"
-      className={cn("outline-none", className)}
+      className={cn("outline-none focus-visible:ring-3 focus-visible:ring-active/25", className)}
       {...props}
     />
   );

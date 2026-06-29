@@ -15,6 +15,7 @@ export default function EmptyState({
 }: EmptyStateProps) {
   return (
     <div
+      data-empty-state
       className={`motion-empty flex flex-col items-center justify-center text-center ${
         compact ? "py-7" : "py-14 sm:py-16"
       }`}
@@ -23,7 +24,7 @@ export default function EmptyState({
         <Icon size={18} />
       </div>
       <p className="text-sm font-semibold text-text-primary">{title}</p>
-      <p className="mt-1 max-w-xs text-xs leading-5 text-muted-foreground">
+      <p className="mt-1 max-w-xs text-xs leading-5 text-text-secondary">
         {description}
       </p>
     </div>
