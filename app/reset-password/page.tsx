@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { type FormEvent, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   ArrowRight,
@@ -13,6 +13,28 @@ import {
 import { motion } from "framer-motion";
 import { createClient } from "@/lib/supabase/client";
 
+function getResetPasswordError(message?: string) {
+  const lower = message?.toLowerCase() ?? "";
+
+  if (lower.includes("expired") || lower.includes("invalid")) {
+    return "Your reset link may be expired. Request a new password reset link and try again.";
+  }
+
+  if (lower.includes("rate limit") || lower.includes("too many")) {
+    return "Too many reset attempts. Please wait a moment and try again.";
+  }
+
+  if (lower.includes("password")) {
+    return "Choose a stronger password and try again.";
+  }
+
+  if (lower.includes("network") || lower.includes("fetch")) {
+    return "Network connection failed. Check your internet and try again.";
+  }
+
+  return "We could not update your password. Please try again.";
+}
+
 export default function ResetPasswordPage() {
   const supabase = useMemo(() => createClient(), []);
   const router = useRouter();
@@ -23,7 +45,7 @@ export default function ResetPasswordPage() {
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
 
-  async function handleReset(e: React.FormEvent) {
+  async function handleReset(e: FormEvent) {
     e.preventDefault();
     if (password.length < 6) {
       setError("Password must be at least 6 characters.");
@@ -42,7 +64,7 @@ export default function ResetPasswordPage() {
     setLoading(false);
 
     if (updateError) {
-      setError(updateError.message);
+      setError(getResetPasswordError(updateError.message));
       return;
     }
 
@@ -98,11 +120,13 @@ export default function ResetPasswordPage() {
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Min. 6 characters"
                   autoComplete="new-password"
+                  disabled={loading}
                   className="jf-auth-input pr-12"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword((value) => !value)}
+                  disabled={loading}
                   className="absolute right-1 top-1/2 grid h-11 w-11 -translate-y-1/2 place-items-center rounded-xl text-[rgba(248,251,255,0.52)] transition-colors hover:bg-[rgba(255,255,255,0.1)] hover:text-[#f8fbff] focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-active/30"
                   aria-label={showPassword ? "Hide password" : "Show password"}
                 >
@@ -125,6 +149,7 @@ export default function ResetPasswordPage() {
                 onChange={(e) => setConfirm(e.target.value)}
                 placeholder="Repeat password"
                 autoComplete="new-password"
+                disabled={loading}
                 className="jf-auth-input"
               />
             </div>

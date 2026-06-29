@@ -40,10 +40,58 @@ function getOAuthError(provider: OAuthProvider, message?: string) {
     lower.includes("unsupported provider") ||
     lower.includes("provider is not enabled")
   ) {
-    return `${providerLabel} is not enabled in Supabase. Open Authentication > Providers, enable ${providerLabel}, and add your callback URL to the redirect allow list.`;
+    return `${providerLabel} sign-in is not available right now. Use email and password instead.`;
   }
 
-  return message || `${providerLabel} sign-in could not be completed.`;
+  if (lower.includes("rate limit") || lower.includes("too many")) {
+    return `Too many ${providerLabel} sign-in attempts. Please wait a moment and try again.`;
+  }
+
+  if (lower.includes("network") || lower.includes("fetch")) {
+    return "Network connection failed. Check your internet and try again.";
+  }
+
+  return `${providerLabel} sign-in could not be completed. Please try again.`;
+}
+
+function getSignupError(message?: string) {
+  const lower = message?.toLowerCase() ?? "";
+
+  if (lower.includes("already") || lower.includes("registered")) {
+    return "An account already exists for this email. Log in with your password.";
+  }
+
+  if (lower.includes("rate limit") || lower.includes("too many")) {
+    return "Too many signup attempts. Please wait a moment and try again.";
+  }
+
+  if (lower.includes("password")) {
+    return "Choose a stronger password and try again.";
+  }
+
+  if (lower.includes("network") || lower.includes("fetch")) {
+    return "Network connection failed. Check your internet and try again.";
+  }
+
+  return "We could not create your account. Check your details and try again.";
+}
+
+function getForgotPasswordError(message?: string) {
+  const lower = message?.toLowerCase() ?? "";
+
+  if (lower.includes("rate limit") || lower.includes("too many")) {
+    return "Too many reset requests. Please wait a moment and try again.";
+  }
+
+  if (lower.includes("invalid") && lower.includes("email")) {
+    return "Enter a valid email address.";
+  }
+
+  if (lower.includes("network") || lower.includes("fetch")) {
+    return "Network connection failed. Check your internet and try again.";
+  }
+
+  return "We could not send the reset link. Please try again.";
 }
 
 function GoogleLogo() {
@@ -192,7 +240,8 @@ function Feedback({
 export default function LoginPage() {
   const router = useRouter();
   const supabase = useMemo(() => createClient(), []);
-  const isGoogleAuthEnabled = true;
+  const isGoogleAuthEnabled =
+    process.env.NEXT_PUBLIC_ENABLE_GOOGLE_AUTH === "true";
 
   const [step, setStep] = useState<Step>("login");
   const [email, setEmail] = useState("");
@@ -311,15 +360,16 @@ export default function LoginPage() {
     if (signUpError) {
       setLoadingMode(null);
 
-      if (signUpError.message.toLowerCase().includes("already")) {
+      if (
+        signUpError.message.toLowerCase().includes("already") ||
+        signUpError.message.toLowerCase().includes("registered")
+      ) {
         setStep("login");
-        setError(
-          "An account already exists for this email. Log in with your password.",
-        );
+        setError(getSignupError(signUpError.message));
         return;
       }
 
-      setError(signUpError.message || "We could not create your account.");
+      setError(getSignupError(signUpError.message));
       return;
     }
 
@@ -372,7 +422,7 @@ export default function LoginPage() {
     setLoadingMode(null);
 
     if (resetError) {
-      setError(resetError.message || "We could not send the reset link.");
+      setError(getForgotPasswordError(resetError.message));
       return;
     }
 

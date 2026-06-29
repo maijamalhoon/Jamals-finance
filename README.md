@@ -183,6 +183,17 @@ Only enable Google authentication when the provider is fully configured in Supab
 NEXT_PUBLIC_ENABLE_GOOGLE_AUTH=true
 ```
 
+### Manual auth QA checklist
+
+Before shipping auth changes, manually verify:
+
+* Email/password login succeeds and incorrect-password errors are readable.
+* Signup validation, confirmation email, and duplicate-account states are readable.
+* Forgot-password email delivery and reset-password link flow work end to end.
+* Google OAuth is hidden when `NEXT_PUBLIC_ENABLE_GOOGLE_AUTH=false`.
+* Google OAuth appears and completes only when the Supabase provider and redirect allowlist are configured.
+* Production redirect URLs are present in the Supabase auth allowlist.
+
 ### 4. Run the development server
 
 ```bash

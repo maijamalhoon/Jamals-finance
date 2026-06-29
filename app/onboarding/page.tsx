@@ -193,6 +193,7 @@ export default function OnboardingPage() {
 
         <motion.form
           onSubmit={handleSubmit}
+          aria-busy={saving}
           initial={{ opacity: 0, x: 18, scale: 0.985 }}
           animate={{ opacity: 1, x: 0, scale: 1 }}
           transition={{ duration: 0.45, ease: "easeOut" }}
@@ -226,6 +227,7 @@ export default function OnboardingPage() {
                     value={fullName}
                     onChange={(event) => setFullName(event.target.value)}
                     placeholder="Enter your name"
+                    disabled={saving}
                     className="field-input h-12 px-11 text-[15px] font-medium"
                   />
                 </div>
@@ -244,13 +246,17 @@ export default function OnboardingPage() {
                     }
                     placeholder="Enter your age"
                     inputMode="numeric"
+                    disabled={saving}
                     className="field-input h-12 px-11 text-[15px] font-medium"
                   />
                 </div>
               </label>
 
               {error ? (
-                <p className="rounded-[var(--oneui-control-radius)] border border-danger/25 bg-danger/10 px-4 py-3 text-sm font-medium leading-6 text-danger">
+                <p
+                  role="alert"
+                  className="rounded-[var(--oneui-control-radius)] border border-danger/25 bg-danger/10 px-4 py-3 text-sm font-medium leading-6 text-danger"
+                >
                   {error}
                 </p>
               ) : null}
