@@ -5,6 +5,9 @@ const shouldBypassCache = (pathname) => {
   return (
     pathname.startsWith("/dashboard") ||
     pathname.startsWith("/auth") ||
+    pathname.startsWith("/login") ||
+    pathname.startsWith("/reset-password") ||
+    pathname.startsWith("/onboarding") ||
     pathname.startsWith("/api/ai-insights") ||
     (pathname.startsWith("/api/") && !pathname.startsWith("/api/exchange-rate"))
   );
@@ -33,15 +36,22 @@ self.addEventListener("fetch", (event) => {
   const url = new URL(request.url);
   if (url.origin !== self.location.origin) return;
 
+  if (shouldBypassCache(url.pathname)) {
+    if (request.mode === "navigate") {
+      event.respondWith(
+        fetch(request).catch(() => caches.match(OFFLINE_URL, { ignoreSearch: true }))
+      );
+      return;
+    }
+
+    event.respondWith(fetch(request));
+    return;
+  }
+
   if (request.mode === "navigate") {
     event.respondWith(
       fetch(request).catch(() => caches.match(OFFLINE_URL, { ignoreSearch: true }))
     );
-    return;
-  }
-
-  if (shouldBypassCache(url.pathname)) {
-    event.respondWith(fetch(request));
     return;
   }
 

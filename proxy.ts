@@ -1,16 +1,27 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
-const PUBLIC_ROUTES = [
+const PUBLIC_PAGE_ROUTES = [
   "/",
   "/login",
   "/reset-password",
   "/auth/callback",
+];
+
+const PUBLIC_ASSET_ROUTES = [
+  "/manifest.webmanifest",
+  "/manifest.json",
+  "/sw.js",
+  "/offline.html",
+  "/favicon.ico",
+  "/apple-touch-icon.png",
   "/robots.txt",
   "/sitemap.xml",
   "/opengraph-image",
   "/twitter-image",
 ];
+
+const PUBLIC_ASSET_PREFIXES = ["/icons/"];
 
 const PUBLIC_API_ROUTES = [
   "/api/exchange-rate",
@@ -25,6 +36,10 @@ function matchesPath(pathname: string, routes: string[]) {
     if (route === "/") return pathname === "/";
     return pathname === route || pathname.startsWith(`${route}/`);
   });
+}
+
+function matchesPrefix(pathname: string, prefixes: string[]) {
+  return prefixes.some((prefix) => pathname.startsWith(prefix));
 }
 
 function jsonUnauthorized() {
@@ -51,7 +66,10 @@ export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const isApiRoute = pathname.startsWith("/api/");
   const isPublicApiRoute = matchesPath(pathname, PUBLIC_API_ROUTES);
-  const isPublicPageRoute = matchesPath(pathname, PUBLIC_ROUTES);
+  const isPublicPageRoute = matchesPath(pathname, PUBLIC_PAGE_ROUTES);
+  const isPublicAssetRoute =
+    matchesPath(pathname, PUBLIC_ASSET_ROUTES) ||
+    matchesPrefix(pathname, PUBLIC_ASSET_PREFIXES);
 
   if (
     process.env.NODE_ENV === "production" &&
@@ -61,6 +79,10 @@ export async function proxy(request: NextRequest) {
   }
 
   if (isPublicApiRoute) {
+    return NextResponse.next();
+  }
+
+  if (isPublicAssetRoute) {
     return NextResponse.next();
   }
 
