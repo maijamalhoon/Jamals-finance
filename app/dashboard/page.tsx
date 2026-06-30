@@ -9,6 +9,7 @@ import InvestmentOverviewWidget from "@/components/dashboard/InvestmentOverviewW
 import SpendRecordWidget from "@/components/dashboard/SpendRecordWidget";
 import ChartCard from "@/components/dashboard/ChartCard";
 import QuickActionsBalance from "@/components/dashboard/QuickActionsBalance";
+import NewUserSetupGuide from "@/components/dashboard/NewUserSetupGuide";
 import {
   formatAppMonth,
   formatAppMonthYear,
@@ -59,6 +60,16 @@ type DashboardGoal = {
   current_amount: number;
   target_amount: number;
   icon: string | null;
+};
+
+type SetupCounts = {
+  accounts: number;
+  incomeTransactions: number;
+  expenseTransactions: number;
+  incomeCategories: number;
+  expenseCategories: number;
+  goals: number;
+  investments: number;
 };
 
 function isDateInRange(
@@ -118,6 +129,13 @@ export default async function DashboardPage() {
     { data: investments },
     { data: goals },
     { data: accounts },
+    { count: setupAccountsCount },
+    { count: setupIncomeCount },
+    { count: setupExpenseCount },
+    { count: setupIncomeCategoriesCount },
+    { count: setupExpenseCategoriesCount },
+    { count: setupGoalsCount },
+    { count: setupInvestmentsCount },
   ] = await Promise.all([
     supabase
       .from("transactions")
@@ -147,7 +165,36 @@ export default async function DashboardPage() {
 
     supabase.from("goals").select("*").order("created_at").limit(6),
     supabase.from("accounts").select("id, balance"),
+    supabase.from("accounts").select("id", { count: "exact", head: true }),
+    supabase
+      .from("transactions")
+      .select("id", { count: "exact", head: true })
+      .eq("type", "income"),
+    supabase
+      .from("transactions")
+      .select("id", { count: "exact", head: true })
+      .eq("type", "expense"),
+    supabase
+      .from("categories")
+      .select("id", { count: "exact", head: true })
+      .eq("type", "income"),
+    supabase
+      .from("categories")
+      .select("id", { count: "exact", head: true })
+      .eq("type", "expense"),
+    supabase.from("goals").select("id", { count: "exact", head: true }),
+    supabase.from("investments").select("id", { count: "exact", head: true }),
   ]);
+
+  const setupCounts: SetupCounts = {
+    accounts: setupAccountsCount ?? 0,
+    incomeTransactions: setupIncomeCount ?? 0,
+    expenseTransactions: setupExpenseCount ?? 0,
+    incomeCategories: setupIncomeCategoriesCount ?? 0,
+    expenseCategories: setupExpenseCategoriesCount ?? 0,
+    goals: setupGoalsCount ?? 0,
+    investments: setupInvestmentsCount ?? 0,
+  };
 
   const txns = (thisTxns ?? []) as DashboardTransaction[];
   const recentTransactions = (recentTxns ?? []) as DashboardTransaction[];
@@ -306,6 +353,10 @@ export default async function DashboardPage() {
     <DashboardMotion className="w-full space-y-6 pb-12">
       <DashboardMotionItem>
         <QuickActionsBalance totalBalance={fmtBalance(totalNetBalance)} />
+      </DashboardMotionItem>
+
+      <DashboardMotionItem>
+        <NewUserSetupGuide counts={setupCounts} />
       </DashboardMotionItem>
 
       <div className="grid w-full grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
