@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import {
   Bell,
+  Check,
   CheckCircle2,
   ChevronRight,
   Download,
@@ -17,6 +18,7 @@ import {
   Monitor,
   Moon,
   Palette,
+  Pencil,
   Plus,
   Save,
   ShieldCheck,
@@ -26,9 +28,9 @@ import {
   Trash2,
   UserRound,
   WalletCards,
+  X,
 } from "lucide-react";
 import { toast } from "sonner";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -61,6 +63,7 @@ export interface SettingsCategory {
   name: string;
   type: CategoryKind;
   color: string | null;
+  parent_id: string | null;
 }
 
 export interface AccountStats {
@@ -75,6 +78,7 @@ interface SettingsOneUIProps {
   userId: string;
   displayName: string;
   categories: SettingsCategory[];
+  categoryUsage: Record<string, number>;
   stats: AccountStats;
 }
 
@@ -90,6 +94,21 @@ const CATEGORY_COLORS: Record<CategoryKind, string> = {
   income: "#22c55e",
   expense: "#f59e0b",
 };
+
+const CATEGORY_PALETTE = [
+  "#22c55e",
+  "#ef4444",
+  "#6366f1",
+  "#f59e0b",
+  "#ec4899",
+  "#3b82f6",
+  "#8b5cf6",
+  "#14b8a6",
+  "#f97316",
+  "#06b6d4",
+  "#84cc16",
+  "#6b7280",
+];
 
 const THEME_OPTIONS: Array<{
   value: ThemeMode;
@@ -537,9 +556,11 @@ function SecurityDialog({ email }: { email: string }) {
 
 function CategoriesDialog({
   initialCategories,
+  initialUsage,
   userId,
 }: {
   initialCategories: SettingsCategory[];
+  initialUsage: Record<string, number>;
   userId: string;
 }) {
   const router = useRouter();
@@ -548,27 +569,99 @@ function CategoriesDialog({
   const [activeTab, setActiveTab] = useState<CategoryKind>("income");
   const [categories, setCategories] =
     useState<SettingsCategory[]>(initialCategories);
+  const [usage, setUsage] = useState<Record<string, number>>(initialUsage);
   const [draftName, setDraftName] = useState("");
+  const [draftColor, setDraftColor] = useState(CATEGORY_COLORS.income);
+  const [draftParentId, setDraftParentId] = useState("");
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editName, setEditName] = useState("");
+  const [editType, setEditType] = useState<CategoryKind>("income");
+  const [editColor, setEditColor] = useState(CATEGORY_COLORS.income);
+  const [editParentId, setEditParentId] = useState("");
   const [savingId, setSavingId] = useState<string | null>(null);
 
   useEffect(() => {
     setCategories(initialCategories);
   }, [initialCategories]);
 
-  const activeCategories = useMemo(
-    () => categories.filter((category) => category.type === activeTab),
-    [activeTab, categories],
+  useEffect(() => {
+    setUsage(initialUsage);
+  }, [initialUsage]);
+
+  const categoryById = useMemo(
+    () => new Map(categories.map((category) => [category.id, category])),
+    [categories],
   );
+
+  const childCountByParent = useMemo(
+    () =>
+      categories.reduce<Record<string, number>>((counts, category) => {
+        if (!category.parent_id) return counts;
+        counts[category.parent_id] = (counts[category.parent_id] ?? 0) + 1;
+        return counts;
+      }, {}),
+    [categories],
+  );
+
+  const expenseRoots = useMemo(
+    () =>
+      categories.filter(
+        (category) => category.type === "expense" && !category.parent_id,
+      ),
+    [categories],
+  );
+
+  function getUsageCount(categoryId: string) {
+    return usage[categoryId] ?? 0;
+  }
+
+  function hasChildren(categoryId: string) {
+    return (childCountByParent[categoryId] ?? 0) > 0;
+  }
+
+  function hasDuplicateName(
+    name: string,
+    type: CategoryKind,
+    excludeId?: string,
+  ) {
+    const normalized = name.trim().toLowerCase();
+    return categories.some(
+      (category) =>
+        category.id !== excludeId &&
+        category.type === type &&
+        category.name.trim().toLowerCase() === normalized,
+    );
+  }
+
+  function resetDraft(nextType = activeTab) {
+    setDraftName("");
+    setDraftColor(CATEGORY_COLORS[nextType]);
+    setDraftParentId("");
+  }
+
+  function startEdit(category: SettingsCategory) {
+    setEditingId(category.id);
+    setEditName(category.name);
+    setEditType(category.type);
+    setEditColor(category.color ?? CATEGORY_COLORS[category.type]);
+    setEditParentId(category.parent_id ?? "");
+  }
+
+  function cancelEdit() {
+    setEditingId(null);
+    setEditName("");
+    setEditParentId("");
+  }
 
   async function addCategory(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const name = draftName.trim();
-    if (!name) return;
-    const exists = activeCategories.some(
-      (category) => category.name.toLowerCase() === name.toLowerCase(),
-    );
-    if (exists) {
-      toast.error(`${name} already exists.`);
+    if (!name) {
+      toast.error("Enter a category name.");
+      return;
+    }
+    if (hasDuplicateName(name, activeTab)) {
+      toast.error(`${name} already exists in ${activeTab} categories.`);
       return;
     }
 
@@ -579,9 +672,11 @@ function CategoriesDialog({
         user_id: userId,
         name,
         type: activeTab,
-        color: CATEGORY_COLORS[activeTab],
+        color: draftColor,
+        parent_id:
+          activeTab === "expense" && draftParentId ? draftParentId : null,
       })
-      .select("id, name, type, color")
+      .select("id, name, type, color, parent_id")
       .single();
     setSavingId(null);
 
@@ -591,17 +686,82 @@ function CategoriesDialog({
     }
 
     setCategories((current) => [...current, data as SettingsCategory]);
-    setDraftName("");
+    resetDraft(activeTab);
     toast.success(`${name} added.`);
     router.refresh();
   }
 
+  async function updateCategory(category: SettingsCategory) {
+    const name = editName.trim();
+    const usageCount = getUsageCount(category.id);
+    const categoryHasChildren = hasChildren(category.id);
+    const canEditStructure = usageCount === 0 && !categoryHasChildren;
+    const nextType = canEditStructure ? editType : category.type;
+    const nextParentId =
+      !canEditStructure ? category.parent_id
+      : nextType === "expense" && editParentId ? editParentId
+      : null;
+
+    if (!name) {
+      toast.error("Enter a category name.");
+      return;
+    }
+
+    if (hasDuplicateName(name, nextType, category.id)) {
+      toast.error(`${name} already exists in ${nextType} categories.`);
+      return;
+    }
+
+    if (nextParentId === category.id) {
+      toast.error("A category cannot be its own parent.");
+      return;
+    }
+
+    setSavingId(category.id);
+    const { data, error } = await supabase
+      .from("categories")
+      .update({
+        name,
+        type: nextType,
+        color: editColor,
+        parent_id: nextParentId,
+      })
+      .eq("id", category.id)
+      .select("id, name, type, color, parent_id")
+      .single();
+    setSavingId(null);
+
+    if (error || !data) {
+      toast.error(error?.message || "Could not update category.");
+      return;
+    }
+
+    setCategories((current) =>
+      current.map((item) =>
+        item.id === category.id ? (data as SettingsCategory) : item,
+      ),
+    );
+    cancelEdit();
+    setActiveTab((data as SettingsCategory).type);
+    toast.success(`${name} updated.`);
+    router.refresh();
+  }
+
   async function removeCategory(category: SettingsCategory) {
-    if (
-      !confirm(
-        `Delete "${category.name}"? Existing transactions may still use it.`,
-      )
-    ) {
+    const usageCount = getUsageCount(category.id);
+    const childCount = childCountByParent[category.id] ?? 0;
+
+    if (usageCount > 0) {
+      toast.error(`Used by ${usageCount} transactions.`);
+      return;
+    }
+
+    if (childCount > 0) {
+      toast.error(`Move ${childCount} subcategories before deleting.`);
+      return;
+    }
+
+    if (!confirm(`Delete "${category.name}"? This cannot be undone.`)) {
       return;
     }
 
@@ -620,8 +780,363 @@ function CategoriesDialog({
     setCategories((current) =>
       current.filter((item) => item.id !== category.id),
     );
+    setUsage((current) => {
+      const next = { ...current };
+      delete next[category.id];
+      return next;
+    });
     toast.success(`${category.name} removed.`);
     router.refresh();
+  }
+
+  function ColorPicker({
+    value,
+    onChange,
+    label,
+  }: {
+    value: string;
+    onChange: (color: string) => void;
+    label: string;
+  }) {
+    return (
+      <div>
+        <p className="field-label">{label}</p>
+        <div className="flex flex-wrap gap-2">
+          {CATEGORY_PALETTE.map((color) => (
+            <button
+              key={color}
+              type="button"
+              onClick={() => onChange(color)}
+              aria-label={`Pick ${color}`}
+              aria-pressed={value === color}
+              className="finance-focus grid h-8 w-8 place-items-center rounded-full border border-border transition-transform hover:scale-105"
+              style={{
+                backgroundColor: color,
+                boxShadow:
+                  value === color ?
+                    "0 0 0 3px var(--card), 0 0 0 5px var(--active)"
+                  : "0 0 0 3px color-mix(in srgb, var(--card), transparent 18%)",
+              }}
+            >
+              {value === color && (
+                <Check
+                  size={14}
+                  className="text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.55)]"
+                />
+              )}
+            </button>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  function ParentSelect({
+    id,
+    type,
+    value,
+    onChange,
+    excludeId,
+    disabled,
+  }: {
+    id: string;
+    type: CategoryKind;
+    value: string;
+    onChange: (value: string) => void;
+    excludeId?: string;
+    disabled?: boolean;
+  }) {
+    if (type === "income") {
+      return (
+        <div>
+          <label className="field-label" htmlFor={id}>
+            Parent/root
+          </label>
+          <select id={id} defaultValue="" disabled className="field-input">
+            <option value="">Root category</option>
+          </select>
+        </div>
+      );
+    }
+
+    return (
+      <div>
+        <label className="field-label" htmlFor={id}>
+          Parent/root
+        </label>
+        <select
+          id={id}
+          value={value}
+          onChange={(event) => onChange(event.target.value)}
+          disabled={disabled}
+          className="field-input"
+        >
+          <option value="">Root category</option>
+          {expenseRoots
+            .filter((root) => root.id !== excludeId)
+            .map((root) => (
+              <option key={root.id} value={root.id}>
+                {root.name}
+              </option>
+            ))}
+        </select>
+      </div>
+    );
+  }
+
+  function CategoryEditor({ category }: { category: SettingsCategory }) {
+    const usageCount = getUsageCount(category.id);
+    const categoryHasChildren = hasChildren(category.id);
+    const canEditStructure = usageCount === 0 && !categoryHasChildren;
+
+    return (
+      <div className="rounded-[24px] border border-active/25 bg-card p-3 shadow-theme">
+        <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_10rem]">
+          <div>
+            <label className="field-label" htmlFor={`edit-name-${category.id}`}>
+              Name
+            </label>
+            <Input
+              id={`edit-name-${category.id}`}
+              value={editName}
+              onChange={(event) => setEditName(event.target.value)}
+              placeholder="Category name"
+            />
+          </div>
+          <div>
+            <label className="field-label" htmlFor={`edit-type-${category.id}`}>
+              Type
+            </label>
+            <select
+              id={`edit-type-${category.id}`}
+              value={editType}
+              disabled={!canEditStructure}
+              onChange={(event) => {
+                const nextType = event.target.value as CategoryKind;
+                setEditType(nextType);
+                if (nextType === "income") setEditParentId("");
+              }}
+              className="field-input"
+            >
+              <option value="income">Income</option>
+              <option value="expense">Expense</option>
+            </select>
+          </div>
+        </div>
+
+        <div className="mt-3">
+          <ParentSelect
+            id={`edit-parent-${category.id}`}
+            type={editType}
+            value={editParentId}
+            onChange={setEditParentId}
+            excludeId={category.id}
+            disabled={!canEditStructure}
+          />
+        </div>
+
+        <div className="mt-3">
+          <ColorPicker
+            value={editColor}
+            onChange={setEditColor}
+            label="Color"
+          />
+        </div>
+
+        {!canEditStructure && (
+          <p className="mt-3 rounded-[16px] border border-border bg-surface-secondary px-3 py-2 text-xs leading-5 text-text-secondary">
+            {usageCount > 0 ?
+              `Type and parent are locked because this category is used by ${usageCount} transactions.`
+            : "Type and parent are locked until subcategories are moved."}
+          </p>
+        )}
+
+        <div className="mt-3 flex flex-col gap-2 sm:flex-row">
+          <Button
+            type="button"
+            onClick={() => updateCategory(category)}
+            disabled={savingId === category.id || !editName.trim()}
+            size="sm"
+            className="sm:w-auto"
+          >
+            {savingId === category.id ?
+              <Loader2 className="animate-spin" size={14} />
+            : <Save size={14} />}
+            Save
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={cancelEdit}
+            disabled={savingId === category.id}
+            size="sm"
+            className="sm:w-auto"
+          >
+            <X size={14} />
+            Cancel
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  function CategoryRow({
+    category,
+    nested = false,
+  }: {
+    category: SettingsCategory;
+    nested?: boolean;
+  }) {
+    const usageCount = getUsageCount(category.id);
+    const childCount = childCountByParent[category.id] ?? 0;
+    const parent = category.parent_id ? categoryById.get(category.parent_id) : null;
+    const deleteDisabled = savingId === category.id;
+
+    if (editingId === category.id) {
+      return (
+        <div className={nested ? "ml-3 sm:ml-6" : ""}>
+          <CategoryEditor category={category} />
+        </div>
+      );
+    }
+
+    return (
+      <div
+        className={`rounded-[22px] border border-border bg-card p-3 transition-colors hover:bg-hover ${
+          nested ? "ml-3 sm:ml-6" : ""
+        }`}
+      >
+        <div className="flex min-w-0 items-start gap-3">
+          <span
+            className="mt-1.5 h-3 w-3 shrink-0 rounded-full"
+            style={{
+              backgroundColor: category.color ?? CATEGORY_COLORS[category.type],
+            }}
+          />
+          <div className="min-w-0 flex-1">
+            <div className="flex min-w-0 flex-wrap items-center gap-2">
+              <p className="min-w-0 truncate text-sm font-bold text-text-primary">
+                {category.name}
+              </p>
+              <span
+                className={`finance-state-pill ${
+                  category.type === "income" ?
+                    "finance-status-success"
+                  : "finance-status-warning"
+                }`}
+              >
+                {category.type}
+              </span>
+            </div>
+            <p className="mt-1 text-[11px] leading-5 text-text-secondary">
+              {parent ? `${parent.name} / ${category.name}` : "Root category"}
+              {" - "}
+              {usageCount > 0 ?
+                `Used by ${usageCount} transactions`
+              : "No transactions"}
+              {childCount > 0 ? ` - ${childCount} subcategories` : ""}
+            </p>
+          </div>
+          <div className="flex shrink-0 items-center gap-1">
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon-sm"
+              onClick={() => startEdit(category)}
+              disabled={savingId === category.id}
+              aria-label={`Edit ${category.name}`}
+            >
+              <Pencil size={14} />
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon-sm"
+              onClick={() => removeCategory(category)}
+              disabled={deleteDisabled}
+              title={
+                usageCount > 0 ?
+                  `Used by ${usageCount} transactions`
+                : childCount > 0 ?
+                  `Move ${childCount} subcategories first`
+                : `Delete ${category.name}`
+              }
+              aria-label={`Delete ${category.name}`}
+              className="text-danger hover:text-danger"
+            >
+              {savingId === category.id ?
+                <Loader2 className="animate-spin" size={14} />
+              : <Trash2 size={14} />}
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  function CategorySection({
+    title,
+    type,
+  }: {
+    title: string;
+    type: CategoryKind;
+  }) {
+    const items = categories.filter((category) => category.type === type);
+    const roots = items.filter((category) => {
+      if (!category.parent_id) return true;
+      const parent = categoryById.get(category.parent_id);
+      return !parent || parent.type !== type;
+    });
+    const childrenByParent = items.reduce<Record<string, SettingsCategory[]>>(
+      (grouped, category) => {
+        if (!category.parent_id) return grouped;
+        const parent = categoryById.get(category.parent_id);
+        if (!parent || parent.type !== type) return grouped;
+        grouped[category.parent_id] = [
+          ...(grouped[category.parent_id] ?? []),
+          category,
+        ];
+        return grouped;
+      },
+      {},
+    );
+
+    return (
+      <div className="space-y-2">
+        <div className="flex items-center justify-between gap-3">
+          <div>
+            <p className="text-xs font-bold uppercase tracking-[0.14em] text-text-secondary">
+              {title}
+            </p>
+            <p className="mt-0.5 text-[11px] text-text-secondary">
+              {items.length} total,{" "}
+              {items.reduce((sum, category) => sum + getUsageCount(category.id), 0)}{" "}
+              linked transactions
+            </p>
+          </div>
+          <span className="finance-state-pill">{items.length}</span>
+        </div>
+
+        {roots.length === 0 ?
+          <div className="rounded-[22px] border border-dashed border-border bg-card p-5 text-center">
+            <p className="text-sm font-semibold text-text-primary">
+              No {type} categories yet
+            </p>
+            <p className="mt-1 text-xs text-text-secondary">
+              Add one below and it will appear in transaction forms.
+            </p>
+          </div>
+        : roots.map((category) => (
+            <div key={category.id} className="space-y-2">
+              <CategoryRow category={category} />
+              {(childrenByParent[category.id] ?? []).map((child) => (
+                <CategoryRow key={child.id} category={child} nested />
+              ))}
+            </div>
+          ))
+        }
+      </div>
+    );
   }
 
   return (
@@ -640,18 +1155,20 @@ function CategoriesDialog({
         <DialogHeader>
           <DialogTitle className="text-xl font-bold">Categories</DialogTitle>
           <DialogDescription>
-            Add and remove labels used across income and expense tracking.
+            Add, edit, recolor, organize, and safely delete categories.
           </DialogDescription>
         </DialogHeader>
 
         <Tabs
           value={activeTab}
           onValueChange={(value) => {
-            setActiveTab(value as CategoryKind);
-            setDraftName("");
+            const nextType = value as CategoryKind;
+            setActiveTab(nextType);
+            resetDraft(nextType);
+            cancelEdit();
           }}
         >
-          <TabsList>
+          <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="income">Income</TabsTrigger>
             <TabsTrigger value="expense">Expense</TabsTrigger>
           </TabsList>
@@ -663,85 +1180,76 @@ function CategoriesDialog({
               transition={{ duration: 0.18 }}
               className="rounded-3xl border border-border bg-surface-secondary p-4"
             >
-              <div className="mb-3 flex items-center justify-between">
-                <p className="text-xs font-bold uppercase tracking-[0.14em] text-text-secondary">
-                  {activeTab === "income" ?
+              <CategorySection
+                title={
+                  activeTab === "income" ?
                     "Income Categories"
-                  : "Expense Categories"}
-                </p>
-                <span className="finance-state-pill">
-                  {activeCategories.length}
-                </span>
-              </div>
-
-              {activeCategories.length === 0 ?
-                <div className="rounded-[22px] border border-dashed border-border bg-card p-5 text-center">
-                  <p className="text-sm font-semibold text-text-primary">
-                    No {activeTab} categories yet
-                  </p>
-                  <p className="mt-1 text-xs text-text-secondary">
-                    Add one below and it will be available in transaction forms.
-                  </p>
-                </div>
-              : <div className="flex min-h-28 flex-wrap content-start gap-2">
-                  {activeCategories.map((category) => (
-                    <Badge
-                      key={category.id}
-                      variant="outline"
-                      className="h-9 gap-2 rounded-full bg-card px-3 text-sm font-semibold"
-                    >
-                      <span
-                        className="h-2 w-2 rounded-full"
-                        style={{
-                          backgroundColor:
-                            category.color ?? CATEGORY_COLORS[category.type],
-                        }}
-                      />
-                      {category.name}
-                      <button
-                        type="button"
-                        onClick={() => removeCategory(category)}
-                        disabled={savingId === category.id}
-                        className="grid h-5 w-5 place-items-center rounded-full text-text-secondary hover:bg-hover hover:text-text-primary disabled:opacity-50"
-                        aria-label={`Remove ${category.name}`}
-                      >
-                        {savingId === category.id ?
-                          <Loader2 className="animate-spin" size={13} />
-                        : <Trash2 size={13} />}
-                      </button>
-                    </Badge>
-                  ))}
-                </div>
-              }
+                  : "Expense Categories"
+                }
+                type={activeTab}
+              />
             </motion.div>
           </TabsContent>
         </Tabs>
 
         <form
           onSubmit={addCategory}
-          className="flex flex-col gap-2 rounded-3xl border border-border bg-card p-3 sm:flex-row sm:items-end"
+          className="space-y-3 rounded-3xl border border-border bg-card p-3"
         >
-          <div className="min-w-0 flex-1">
-            <label className="field-label" htmlFor="category-name">
-              Add custom category
-            </label>
-            <Input
-              id="category-name"
-              value={draftName}
-              onChange={(event) => setDraftName(event.target.value)}
-              placeholder={`New ${activeTab} category`}
-            />
+          <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_10rem]">
+            <div className="min-w-0">
+              <label className="field-label" htmlFor="category-name">
+                Add custom category
+              </label>
+              <Input
+                id="category-name"
+                value={draftName}
+                onChange={(event) => setDraftName(event.target.value)}
+                placeholder={`New ${activeTab} category`}
+              />
+            </div>
+            <div>
+              <label className="field-label" htmlFor="category-type">
+                Type
+              </label>
+              <select
+                id="category-type"
+                value={activeTab}
+                onChange={(event) => {
+                  const nextType = event.target.value as CategoryKind;
+                  setActiveTab(nextType);
+                  resetDraft(nextType);
+                }}
+                className="field-input"
+              >
+                <option value="income">Income</option>
+                <option value="expense">Expense</option>
+              </select>
+            </div>
           </div>
-          <Button
-            type="submit"
-            disabled={!draftName.trim() || savingId === "new"}
-            size="lg"
-          >
-            {savingId === "new" ?
-              <Loader2 className="animate-spin" size={16} />
-            : <Plus size={16} />}
-            {savingId === "new" ? "Adding..." : "Add"}
-          </Button>
+          <ParentSelect
+            id="category-parent"
+            type={activeTab}
+            value={draftParentId}
+            onChange={setDraftParentId}
+          />
+          <ColorPicker
+            value={draftColor}
+            onChange={setDraftColor}
+            label="Color"
+          />
+          <div className="flex flex-col gap-2 sm:flex-row sm:justify-end">
+            <Button
+              type="submit"
+              disabled={!draftName.trim() || savingId === "new"}
+              size="lg"
+            >
+              {savingId === "new" ?
+                <Loader2 className="animate-spin" size={16} />
+              : <Plus size={16} />}
+              {savingId === "new" ? "Adding..." : "Add Category"}
+            </Button>
+          </div>
         </form>
       </DialogContent>
     </Dialog>
@@ -875,6 +1383,7 @@ export default function SettingsOneUI({
   userId,
   displayName,
   categories,
+  categoryUsage,
   stats,
 }: SettingsOneUIProps) {
   const router = useRouter();
@@ -1097,7 +1606,11 @@ export default function SettingsOneUI({
               right={<span className="finance-state-pill">Synced</span>}
             />
             <Divider />
-            <CategoriesDialog initialCategories={categories} userId={userId} />
+            <CategoriesDialog
+              initialCategories={categories}
+              initialUsage={categoryUsage}
+              userId={userId}
+            />
           </SettingsCard>
         </section>
 
