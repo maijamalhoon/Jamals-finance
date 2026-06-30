@@ -652,7 +652,7 @@ function IncomeExpenseChart({
           height="100%"
           minWidth={1}
           minHeight={1}
-          initialDimension={{ width: 720, height: 280 }}
+          initialDimension={{ width: 280, height: 230 }}
         >
           <BarChart
             key={chartKey}
@@ -741,7 +741,7 @@ function NetWorthChart({
           height="100%"
           minWidth={1}
           minHeight={1}
-          initialDimension={{ width: 720, height: 280 }}
+          initialDimension={{ width: 280, height: 200 }}
         >
           <AreaChart key={chartKey} data={data}>
             <defs>
@@ -833,7 +833,7 @@ function SpendingBreakdown({
     >
       <div className="grid min-h-[310px] min-w-0 grid-cols-1 items-center gap-3 sm:h-[200px] sm:min-h-0 sm:grid-cols-[0.95fr_1.25fr]">
         <div className="h-[170px] min-w-0 overflow-hidden">
-          <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1} initialDimension={{ width: 720, height: 280 }}>
+          <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1} initialDimension={{ width: 170, height: 170 }}>
             <PieChart key={chartKey}>
               <Pie
                 data={chartData}

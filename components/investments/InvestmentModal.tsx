@@ -218,7 +218,7 @@ export default function InvestmentModal({
               id="investment-purchased-at"
               value={purchasedAt}
               onChange={setPurchasedAt}
-              placeholder="Select purchase date"
+              placeholder="DD/MM/YYYY"
               ariaLabel="Investment purchase date"
             />
           </div>

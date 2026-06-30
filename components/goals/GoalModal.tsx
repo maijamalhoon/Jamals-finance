@@ -184,7 +184,7 @@ export default function GoalModal({ open, onClose, onSuccess, goal }: Props) {
               id="goal-deadline"
               value={deadline}
               onChange={setDeadline}
-              placeholder="Select deadline"
+              placeholder="DD/MM/YYYY"
               ariaLabel="Goal deadline"
             />
           </div>

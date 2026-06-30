@@ -193,7 +193,7 @@ export default function PayableModal({ open, onClose, payable }: Props) {
                 id="payable-due-date"
                 value={dueDate}
                 onChange={setDueDate}
-                placeholder="Select due date"
+                placeholder="DD/MM/YYYY"
                 ariaLabel="Payable due date"
               />
             </div>

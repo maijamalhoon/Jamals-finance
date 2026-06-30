@@ -337,7 +337,7 @@ function PortfolioSummary({
           </p>
         </div>
 
-        <div className="grid gap-3 sm:grid-cols-3 lg:min-w-[560px]">
+        <div className="grid min-w-0 gap-3 sm:grid-cols-3">
           <div className="rounded-[22px] border border-border bg-surface-secondary p-4">
             <p className="text-[11px] font-medium text-text-secondary">Total invested</p>
             <p className="mt-2 break-words text-lg font-bold text-text-primary [overflow-wrap:anywhere]">

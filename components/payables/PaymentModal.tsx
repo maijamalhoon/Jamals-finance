@@ -228,7 +228,7 @@ export default function PaymentModal({ open, onClose, payable, accounts }: Props
               id="payment-paid-at"
               value={paidAt}
               onChange={setPaidAt}
-              placeholder="Select payment date"
+              placeholder="DD/MM/YYYY"
               ariaLabel="Payment date"
             />
           </div>

@@ -112,7 +112,7 @@ export default function InvestmentOverviewWidget({
       >
         <div className="flex h-full min-h-[142px] items-center justify-center">
           <div className="relative h-[128px] w-[128px]">
-            <ResponsiveContainer width="100%" height="100%" initialDimension={{ width: 720, height: 280 }}>
+            <ResponsiveContainer width="100%" height="100%" initialDimension={{ width: 128, height: 128 }}>
               <PieChart key={chartKey}>
                 <Pie
                   data={allocationData}
