@@ -11,6 +11,7 @@ import { panelVariants } from "@/components/motion/animation-config";
 type JamalMenuProps = {
   align?: "left" | "right";
   placement?: "bottom" | "top";
+  variant?: "card" | "avatar";
 };
 
 function applyTheme(nextDark: boolean) {
@@ -21,6 +22,7 @@ function applyTheme(nextDark: boolean) {
 export default function JamalMenu({
   align = "right",
   placement = "bottom",
+  variant = "card",
 }: JamalMenuProps) {
   const router = useRouter();
   const supabase = useMemo(() => createClient(), []);
@@ -82,27 +84,38 @@ export default function JamalMenu({
     router.push("/login");
   }
 
+  const compact = variant === "avatar";
+
   return (
     <div className="relative" ref={menuRef}>
       <button
         type="button"
         onClick={() => setOpen((current) => !current)}
-        className="finance-focus finance-interactive-tile flex w-full items-center gap-3 border-border bg-card px-3 py-2.5 text-left shadow-theme"
+        className={
+          compact
+            ? "finance-focus finance-control relative grid h-10 w-10 place-items-center overflow-visible rounded-[15px] p-0 shadow-theme"
+            : "finance-focus finance-interactive-tile flex w-full items-center gap-3 border-border bg-card px-3 py-2.5 text-left shadow-theme"
+        }
         aria-expanded={open}
         aria-haspopup="menu"
         aria-label="Open profile menu"
       >
-        <Avatar className="size-10">
+        <Avatar className={compact ? "size-8" : "size-10"}>
           {avatarUrl && <AvatarImage src={avatarUrl} alt={displayName} />}
           <AvatarFallback className="bg-active text-sm font-bold text-background">
             <BarChart3 size={15} />
           </AvatarFallback>
         </Avatar>
-        <span className="min-w-0 flex-1">
-          <span className="block truncate text-sm font-bold text-text-primary">
-            {displayName}
+
+        {compact ? (
+          <span className="sr-only">{displayName}</span>
+        ) : (
+          <span className="min-w-0 flex-1">
+            <span className="block truncate text-sm font-bold text-text-primary">
+              {displayName}
+            </span>
           </span>
-        </span>
+        )}
       </button>
 
       <AnimatePresence>

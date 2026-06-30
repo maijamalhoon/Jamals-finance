@@ -79,47 +79,51 @@ export default function MobileHeader() {
           </span>
         </div>
 
-        <div className="relative flex items-center gap-2" ref={bellRef}>
-          <button
-            type="button"
-            onClick={() => setBellOpen((current) => !current)}
-            className="finance-focus finance-control relative flex h-10 w-10 items-center justify-center"
-            aria-label="Open notifications"
-            aria-haspopup="dialog"
-            aria-expanded={bellOpen}
-          >
-            <Bell size={14} className="text-text-secondary" />
-            <span className="absolute right-1.5 top-1.5 h-1.5 w-1.5 rounded-full bg-active" />
-          </button>
+        <div className="relative flex items-center gap-2">
+          <div className="relative" ref={bellRef}>
+            <button
+              type="button"
+              onClick={() => setBellOpen((current) => !current)}
+              className="finance-focus finance-control relative flex h-10 w-10 items-center justify-center"
+              aria-label="Open notifications"
+              aria-haspopup="dialog"
+              aria-expanded={bellOpen}
+            >
+              <Bell size={14} className="text-text-secondary" />
+              <span className="absolute right-1.5 top-1.5 h-1.5 w-1.5 rounded-full bg-active" />
+            </button>
 
-          <AnimatePresence>
-            {bellOpen && (
-              <motion.div
-                variants={panelVariants}
-                initial="initial"
-                animate="animate"
-                exit="exit"
-                role="dialog"
-                aria-label="Notifications"
-                className="finance-surface absolute right-0 top-12 z-[80] w-[min(82vw,288px)] overflow-hidden"
-              >
-                <div className="border-b border-border p-4">
-                  <p className="text-sm font-semibold text-text-primary">
-                    Notifications
-                  </p>
-                </div>
-                <div className="motion-empty p-5 py-8 text-center">
-                  <Bell size={23} className="mx-auto mb-2 text-text-secondary" />
-                  <p className="text-sm font-semibold text-text-primary">
-                    All clear
-                  </p>
-                  <p className="mt-1 text-xs text-text-secondary">
-                    No finance alerts need attention.
-                  </p>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
+            <AnimatePresence>
+              {bellOpen && (
+                <motion.div
+                  variants={panelVariants}
+                  initial="initial"
+                  animate="animate"
+                  exit="exit"
+                  role="dialog"
+                  aria-label="Notifications"
+                  className="finance-surface absolute right-0 top-12 z-[80] w-[min(82vw,288px)] overflow-hidden"
+                >
+                  <div className="border-b border-border p-4">
+                    <p className="text-sm font-semibold text-text-primary">
+                      Notifications
+                    </p>
+                  </div>
+                  <div className="motion-empty p-5 py-8 text-center">
+                    <Bell size={23} className="mx-auto mb-2 text-text-secondary" />
+                    <p className="text-sm font-semibold text-text-primary">
+                      All clear
+                    </p>
+                    <p className="mt-1 text-xs text-text-secondary">
+                      No finance alerts need attention.
+                    </p>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+
+          <JamalMenu align="right" placement="bottom" variant="avatar" />
         </div>
       </header>
 
@@ -163,7 +167,7 @@ export default function MobileHeader() {
                   </button>
                 </div>
 
-                <div className="min-h-0 flex-1 overflow-y-auto px-1 pb-3 pt-2">
+                <div className="min-h-0 flex-1 overflow-y-auto px-1 py-3">
                   <motion.nav
                     aria-label="Mobile navigation"
                     className="space-y-1"
@@ -220,11 +224,6 @@ export default function MobileHeader() {
                       </div>
                     ))}
                   </motion.nav>
-
-                </div>
-
-                <div className="relative border-t border-border px-1.5 pt-3">
-                  <JamalMenu align="left" placement="top" />
                 </div>
               </div>
             </motion.aside>

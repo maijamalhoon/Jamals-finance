@@ -19,7 +19,10 @@ export default function Sidebar() {
   const pathname = usePathname();
 
   return (
-    <aside className="motion-fade-slide relative z-50 flex h-full w-[280px] flex-shrink-0 flex-col border-r border-border bg-card">
+    <aside
+      data-desktop-sidebar
+      className="motion-fade-slide relative z-50 hidden h-full w-[280px] flex-shrink-0 flex-col border-r border-border bg-card lg:flex"
+    >
       <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
         <div className="flex items-center gap-3 border-b border-border/70 px-5 py-5">
           <div className="grid h-12 w-12 place-items-center rounded-2xl border border-border bg-active/10 text-active shadow-sm">
