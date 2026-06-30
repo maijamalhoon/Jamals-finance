@@ -121,13 +121,13 @@ export default function ResetPasswordPage() {
                   placeholder="Min. 6 characters"
                   autoComplete="new-password"
                   disabled={loading}
-                  className="jf-auth-input pr-12"
+                  className="jf-auth-input jf-auth-input-with-end"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword((value) => !value)}
                   disabled={loading}
-                  className="absolute right-1 top-1/2 grid h-11 w-11 -translate-y-1/2 place-items-center rounded-xl text-[var(--jf-auth-subtle)] transition-colors hover:bg-[var(--jf-auth-panel-hover)] hover:text-[var(--jf-auth-text)] focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-active/30"
+                  className="jf-auth-password-toggle absolute right-1 top-1/2 grid h-11 w-11 -translate-y-1/2 place-items-center rounded-xl text-[var(--jf-auth-subtle)] transition-colors hover:bg-[var(--jf-auth-panel-hover)] hover:text-[var(--jf-auth-text)] focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-active/30"
                   aria-label={showPassword ? "Hide password" : "Show password"}
                 >
                   {showPassword ? <EyeOff size={15} /> : <Eye size={15} />}

@@ -26,7 +26,9 @@ type OAuthProvider = "google";
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-const inputBaseClass = "jf-auth-input";
+const inputBaseClass = "jf-auth-input jf-auth-input-with-start";
+const passwordInputClass =
+  "jf-auth-input jf-auth-input-with-start jf-auth-input-with-end";
 
 function cleanEmail(value: string) {
   return value.trim().toLowerCase();
@@ -205,7 +207,7 @@ function Field({
 
       <div className="jf-auth-input-glow relative">
         {icon ?
-          <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[var(--jf-auth-subtle)]">
+          <span className="jf-auth-field-icon pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[var(--jf-auth-subtle)]">
             {icon}
           </span>
         : null}
@@ -554,7 +556,7 @@ export default function LoginPage() {
                     autoComplete="email"
                     inputMode="email"
                     disabled={isLoading}
-                    className={`${inputBaseClass} pl-11 disabled:cursor-not-allowed disabled:opacity-70`}
+                    className={`${inputBaseClass} disabled:cursor-not-allowed disabled:opacity-70`}
                   />
                 </Field>
 
@@ -569,13 +571,13 @@ export default function LoginPage() {
                     placeholder="Enter your password"
                     autoComplete="current-password"
                     disabled={isLoading}
-                    className={`${inputBaseClass} pl-11 pr-12 disabled:cursor-not-allowed disabled:opacity-70`}
+                    className={`${passwordInputClass} disabled:cursor-not-allowed disabled:opacity-70`}
                   />
 
                   <button
                     type="button"
                     onClick={() => setShowPassword((value) => !value)}
-                    className="absolute right-1 top-1/2 grid h-11 w-11 -translate-y-1/2 place-items-center rounded-2xl text-[var(--jf-auth-subtle)] transition hover:bg-[var(--jf-auth-panel-hover)] hover:text-[var(--jf-auth-text)]"
+                    className="jf-auth-password-toggle absolute right-1 top-1/2 grid h-11 w-11 -translate-y-1/2 place-items-center rounded-2xl text-[var(--jf-auth-subtle)] transition hover:bg-[var(--jf-auth-panel-hover)] hover:text-[var(--jf-auth-text)]"
                     aria-label={
                       showPassword ? "Hide password" : "Show password"
                     }
@@ -652,7 +654,7 @@ export default function LoginPage() {
                     placeholder="Enter your name"
                     autoComplete="name"
                     disabled={isLoading}
-                    className={`${inputBaseClass} pl-11 disabled:cursor-not-allowed disabled:opacity-70`}
+                    className={`${inputBaseClass} disabled:cursor-not-allowed disabled:opacity-70`}
                   />
                 </Field>
 
@@ -665,7 +667,7 @@ export default function LoginPage() {
                     placeholder="Enter your age"
                     inputMode="numeric"
                     disabled={isLoading}
-                    className={`${inputBaseClass} pl-11 disabled:cursor-not-allowed disabled:opacity-70`}
+                    className={`${inputBaseClass} disabled:cursor-not-allowed disabled:opacity-70`}
                   />
                 </Field>
 
@@ -680,7 +682,7 @@ export default function LoginPage() {
                     autoComplete="email"
                     inputMode="email"
                     disabled={isLoading}
-                    className={`${inputBaseClass} pl-11 disabled:cursor-not-allowed disabled:opacity-70`}
+                    className={`${inputBaseClass} disabled:cursor-not-allowed disabled:opacity-70`}
                   />
                 </Field>
 
@@ -695,13 +697,13 @@ export default function LoginPage() {
                     placeholder="Create a password"
                     autoComplete="new-password"
                     disabled={isLoading}
-                    className={`${inputBaseClass} pl-11 pr-12 disabled:cursor-not-allowed disabled:opacity-70`}
+                    className={`${passwordInputClass} disabled:cursor-not-allowed disabled:opacity-70`}
                   />
 
                   <button
                     type="button"
                     onClick={() => setShowPassword((value) => !value)}
-                    className="absolute right-1 top-1/2 grid h-11 w-11 -translate-y-1/2 place-items-center rounded-2xl text-[var(--jf-auth-subtle)] transition hover:bg-[var(--jf-auth-panel-hover)] hover:text-[var(--jf-auth-text)]"
+                    className="jf-auth-password-toggle absolute right-1 top-1/2 grid h-11 w-11 -translate-y-1/2 place-items-center rounded-2xl text-[var(--jf-auth-subtle)] transition hover:bg-[var(--jf-auth-panel-hover)] hover:text-[var(--jf-auth-text)]"
                     aria-label={
                       showPassword ? "Hide password" : "Show password"
                     }
@@ -712,7 +714,7 @@ export default function LoginPage() {
                   </button>
                 </Field>
 
-                <div className="flex items-center gap-2 rounded-2xl border border-[rgba(52,211,153,0.18)] bg-[rgba(16,185,129,0.1)] px-4 py-3 text-xs font-semibold text-[#bbf7d0]">
+                <div className="jf-auth-security-note flex items-center gap-2 rounded-2xl border border-[rgba(52,211,153,0.18)] bg-[rgba(16,185,129,0.1)] px-4 py-3 text-xs font-semibold text-[#bbf7d0]">
                   <ShieldCheck className="h-4 w-4 shrink-0" />
                   Your profile will be stored securely with Supabase Auth.
                 </div>
@@ -761,7 +763,7 @@ export default function LoginPage() {
                     autoComplete="email"
                     inputMode="email"
                     disabled={isLoading}
-                    className={`${inputBaseClass} pl-11 disabled:cursor-not-allowed disabled:opacity-70`}
+                    className={`${inputBaseClass} disabled:cursor-not-allowed disabled:opacity-70`}
                   />
                 </Field>
 

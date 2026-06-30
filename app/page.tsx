@@ -392,23 +392,31 @@ function LandingPageStyles() {
   --jf-blue: #7cc7ff;
   --jf-gold: #ffd35a;
   --jf-rose: #ff8db3;
+  --jf-cta-from: #37f1a5;
+  --jf-cta-to: #7cc7ff;
+  --jf-cta-text: #04100b;
+  --jf-cta-shadow: rgba(55, 241, 165, 0.24);
 }
 
 :root:not(.dark) .jf-landing {
-  --jf-bg: #f8fafc;
-  --jf-bg-start: #f3f8ff;
+  --jf-bg: #f5f8fc;
+  --jf-bg-start: #eef6ff;
   --jf-bg-mid: #f8fafc;
-  --jf-bg-end: #eef4fb;
-  --jf-panel: rgba(255, 255, 255, 0.78);
-  --jf-panel-strong: rgba(255, 255, 255, 0.92);
-  --jf-border: rgba(15, 23, 42, 0.12);
-  --jf-text: #101828;
-  --jf-muted: rgba(71, 84, 103, 0.82);
-  --jf-soft: rgba(102, 112, 133, 0.7);
-  --jf-green: #168a53;
-  --jf-blue: #2563eb;
-  --jf-gold: #b76a00;
-  --jf-rose: #dc2626;
+  --jf-bg-end: #edf3fa;
+  --jf-panel: rgba(255, 255, 255, 0.9);
+  --jf-panel-strong: rgba(255, 255, 255, 0.98);
+  --jf-border: rgba(15, 23, 42, 0.14);
+  --jf-text: #0b1220;
+  --jf-muted: #475467;
+  --jf-soft: #667085;
+  --jf-green: #047857;
+  --jf-blue: #1d4ed8;
+  --jf-gold: #a15c00;
+  --jf-rose: #be123c;
+  --jf-cta-from: #1d4ed8;
+  --jf-cta-to: #0f766e;
+  --jf-cta-text: #ffffff;
+  --jf-cta-shadow: rgba(37, 99, 235, 0.18);
 }
 
 html {
@@ -428,8 +436,8 @@ html {
 
 :root:not(.dark) .jf-landing {
   background:
-    radial-gradient(circle at 15% 10%, rgba(22, 138, 83, 0.1), transparent 28rem),
-    radial-gradient(circle at 82% 20%, rgba(37, 99, 235, 0.1), transparent 30rem),
+    radial-gradient(circle at 15% 10%, rgba(4, 120, 87, 0.07), transparent 28rem),
+    radial-gradient(circle at 82% 20%, rgba(29, 78, 216, 0.09), transparent 30rem),
     linear-gradient(180deg, var(--jf-bg-start) 0%, var(--jf-bg-mid) 42%, var(--jf-bg-end) 100%);
 }
 
@@ -481,6 +489,11 @@ html {
   background: rgba(124, 199, 255, 0.18);
 }
 
+:root:not(.dark) .jf-orb {
+  opacity: 0.45;
+  filter: blur(44px);
+}
+
 .jf-nav {
   position: relative;
   z-index: 10;
@@ -499,8 +512,8 @@ html {
 
 :root:not(.dark) .jf-nav {
   border-color: var(--jf-border);
-  background: rgba(255, 255, 255, 0.78);
-  box-shadow: 0 20px 70px rgba(15, 23, 42, 0.1);
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 18px 60px rgba(15, 23, 42, 0.11);
 }
 
 .jf-brand,
@@ -517,7 +530,7 @@ html {
   gap: 0.65rem;
   color: var(--jf-text);
   font-weight: 800;
-  letter-spacing: -0.02em;
+  letter-spacing: 0;
 }
 
 .jf-brand-mark {
@@ -567,13 +580,13 @@ html {
 }
 
 .jf-nav-cta {
-  color: #06101c;
+  color: var(--jf-cta-text);
   font-size: 0.9rem;
   font-weight: 900;
   padding: 0.72rem 1rem;
   border-radius: 999px;
-  background: linear-gradient(135deg, var(--jf-green), var(--jf-gold));
-  box-shadow: 0 16px 40px rgba(55, 241, 165, 0.2);
+  background: linear-gradient(135deg, var(--jf-cta-from), var(--jf-cta-to));
+  box-shadow: 0 16px 40px var(--jf-cta-shadow);
 }
 
 .jf-hero {
@@ -599,11 +612,11 @@ html {
   width: fit-content;
   border: 1px solid rgba(255,255,255,0.14);
   background: rgba(255,255,255,0.075);
-  color: rgba(245,248,255,0.86);
+  color: var(--jf-muted);
   border-radius: 999px;
   font-size: 0.82rem;
   font-weight: 900;
-  letter-spacing: 0.01em;
+  letter-spacing: 0;
 }
 
 :root:not(.dark) .jf-badge,
@@ -629,7 +642,7 @@ html {
   color: var(--jf-text);
   font-size: clamp(3rem, 7vw, 6.7rem);
   line-height: 0.94;
-  letter-spacing: -0.075em;
+  letter-spacing: 0;
   text-wrap: balance;
 }
 
@@ -662,9 +675,9 @@ html {
 }
 
 .jf-primary-btn {
-  color: #04100b;
-  background: linear-gradient(135deg, var(--jf-green), var(--jf-gold));
-  box-shadow: 0 18px 48px rgba(55, 241, 165, 0.24);
+  color: var(--jf-cta-text);
+  background: linear-gradient(135deg, var(--jf-cta-from), var(--jf-cta-to));
+  box-shadow: 0 18px 48px var(--jf-cta-shadow);
 }
 
 .jf-secondary-btn {
@@ -700,7 +713,7 @@ html {
   display: inline-flex;
   align-items: center;
   gap: 0.45rem;
-  color: rgba(245,248,255,0.76);
+  color: var(--jf-muted);
   font-size: 0.92rem;
   font-weight: 800;
 }
@@ -828,7 +841,7 @@ html {
   display: block;
   margin-top: 0.35rem;
   font-size: 3rem;
-  letter-spacing: -0.06em;
+  letter-spacing: 0;
 }
 
 .jf-live-pill {
@@ -880,7 +893,7 @@ html {
   display: block;
   margin-top: 0.15rem;
   font-size: 1.85rem;
-  letter-spacing: -0.055em;
+  letter-spacing: 0;
 }
 
 .jf-chart-card {
@@ -986,7 +999,7 @@ html {
 .jf-stat-card strong {
   display: block;
   font-size: clamp(2rem, 4vw, 3.3rem);
-  letter-spacing: -0.06em;
+  letter-spacing: 0;
 }
 
 .jf-stat-card span {
@@ -1019,7 +1032,7 @@ html {
   color: var(--jf-text);
   font-size: clamp(2.2rem, 5vw, 4.5rem);
   line-height: 1;
-  letter-spacing: -0.065em;
+  letter-spacing: 0;
   text-wrap: balance;
 }
 
@@ -1082,12 +1095,12 @@ html {
   margin: 1.3rem 0 0.65rem;
   color: var(--jf-text);
   font-size: 1.2rem;
-  letter-spacing: -0.035em;
+  letter-spacing: 0;
 }
 
 .jf-feature-card p,
 .jf-step-card p {
-  color: rgba(235,242,255,0.68);
+  color: var(--jf-muted);
 }
 
 .jf-workflow-section {
@@ -1112,7 +1125,7 @@ html {
   display: inline-flex;
   color: var(--jf-green);
   font-weight: 950;
-  letter-spacing: -0.04em;
+  letter-spacing: 0;
 }
 
 .jf-module-grid {
@@ -1174,7 +1187,7 @@ html {
   border-radius: 1.1rem;
   padding: 0.9rem;
   background: rgba(255,255,255,0.055);
-  color: rgba(245,248,255,0.84);
+  color: var(--jf-muted);
   font-weight: 800;
 }
 
