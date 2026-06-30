@@ -39,7 +39,6 @@ const securityHeaders = [
       "script-src 'self' 'unsafe-inline' 'unsafe-eval' https:",
       "connect-src 'self' https: wss:",
       "worker-src 'self' blob:",
-      "upgrade-insecure-requests",
     ].join("; "),
   },
 ];
