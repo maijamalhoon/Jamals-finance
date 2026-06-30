@@ -14,12 +14,14 @@ import {
   Loader2,
   LockKeyhole,
   LogOut,
+  Monitor,
   Moon,
   Palette,
   Plus,
   Save,
   ShieldCheck,
   SlidersHorizontal,
+  Sun,
   Tags,
   Trash2,
   UserRound,
@@ -42,9 +44,15 @@ import {
   useCurrency,
 } from "@/components/currency/CurrencyProvider";
 import { createClient } from "@/lib/supabase/client";
+import {
+  applyThemePreference,
+  getStoredThemePreference,
+  type ResolvedTheme,
+  type ThemePreference,
+} from "@/lib/theme";
 
 type CategoryKind = "income" | "expense";
-type ThemeMode = "light" | "dark";
+type ThemeMode = ThemePreference;
 type DateFormat = "MMM d, yyyy" | "dd MMM yyyy" | "yyyy-MM-dd";
 type CurrencyCode = "PKR" | "USD";
 
@@ -82,6 +90,32 @@ const CATEGORY_COLORS: Record<CategoryKind, string> = {
   income: "#22c55e",
   expense: "#f59e0b",
 };
+
+const THEME_OPTIONS: Array<{
+  value: ThemeMode;
+  label: string;
+  description: string;
+  icon: ReactNode;
+}> = [
+  {
+    value: "system",
+    label: "System",
+    description: "Follow browser and OS",
+    icon: <Monitor size={16} />,
+  },
+  {
+    value: "light",
+    label: "Light",
+    description: "Bright finance workspace",
+    icon: <Sun size={16} />,
+  },
+  {
+    value: "dark",
+    label: "Dark",
+    description: "Dim finance workspace",
+    icon: <Moon size={16} />,
+  },
+];
 
 function SectionTitle({ children }: { children: ReactNode }) {
   return (
@@ -195,6 +229,74 @@ function SoftSwitch({
         }`}
       />
     </button>
+  );
+}
+
+function ThemeSelector({
+  value,
+  resolvedTheme,
+  onChange,
+}: {
+  value: ThemeMode;
+  resolvedTheme: ResolvedTheme;
+  onChange: (value: ThemeMode) => void;
+}) {
+  return (
+    <div className="px-4 py-4 sm:px-5">
+      <div className="flex min-w-0 items-start gap-3">
+        <IconBubble tone="blue">
+          <Palette size={21} />
+        </IconBubble>
+        <div className="min-w-0 flex-1">
+          <p className="text-[15px] font-semibold leading-5 text-text-primary">
+            Theme
+          </p>
+          <p className="mt-0.5 text-xs leading-5 text-text-secondary">
+            {value === "system" ?
+              `Following system: ${resolvedTheme}`
+            : `${value === "dark" ? "Dark" : "Light"} mode is active`}
+          </p>
+        </div>
+        <span className="finance-state-pill hidden sm:inline-flex">
+          {resolvedTheme}
+        </span>
+      </div>
+
+      <div
+        className="mt-4 grid gap-2 sm:grid-cols-3"
+        role="radiogroup"
+        aria-label="Theme preference"
+      >
+        {THEME_OPTIONS.map((option) => {
+          const active = value === option.value;
+
+          return (
+            <button
+              key={option.value}
+              type="button"
+              role="radio"
+              aria-checked={active}
+              onClick={() => onChange(option.value)}
+              className={`finance-focus flex min-w-0 items-center gap-3 rounded-[var(--oneui-control-radius)] border px-3 py-3 text-left transition-colors ${
+                active ?
+                  "border-active bg-active/10 text-active"
+                : "border-border bg-surface-secondary text-text-secondary hover:bg-hover hover:text-text-primary"
+              }`}
+            >
+              <span className="grid h-8 w-8 shrink-0 place-items-center rounded-[12px] border border-current/20 bg-card">
+                {option.icon}
+              </span>
+              <span className="min-w-0">
+                <span className="block text-sm font-bold">{option.label}</span>
+                <span className="block truncate text-[11px] font-semibold opacity-75">
+                  {option.description}
+                </span>
+              </span>
+            </button>
+          );
+        })}
+      </div>
+    </div>
   );
 }
 
@@ -777,7 +879,9 @@ export default function SettingsOneUI({
 }: SettingsOneUIProps) {
   const router = useRouter();
   const supabase = createClient();
-  const [themeMode, setThemeMode] = useState<ThemeMode>("light");
+  const [themeMode, setThemeMode] = useState<ThemeMode>("system");
+  const [resolvedTheme, setResolvedTheme] = useState<ResolvedTheme>("light");
+  const [themeReady, setThemeReady] = useState(false);
   const [pushNotifications, setPushNotifications] = useState(true);
   const [biometricLogin, setBiometricLogin] = useState(false);
   const [currency, setCurrency] = useState<CurrencyCode>("PKR");
@@ -789,13 +893,10 @@ export default function SettingsOneUI({
   );
 
   useEffect(() => {
-    const savedTheme = window.localStorage.getItem("jamal-theme");
-    const prefersDark = window.matchMedia(
-      "(prefers-color-scheme: dark)",
-    ).matches;
-    setThemeMode(
-      savedTheme === "dark" || (!savedTheme && prefersDark) ? "dark" : "light",
-    );
+    const savedTheme = getStoredThemePreference();
+    setThemeMode(savedTheme);
+    setResolvedTheme(applyThemePreference(savedTheme, { persist: false }));
+    setThemeReady(true);
     setPushNotifications(
       window.localStorage.getItem("jamal-push-notifications") !== "false",
     );
@@ -820,16 +921,28 @@ export default function SettingsOneUI({
   }, [displayName, email]);
 
   useEffect(() => {
-    const root = document.documentElement;
-    const shouldUseDark = themeMode === "dark";
-    root.classList.toggle("dark", shouldUseDark);
-    root.style.colorScheme = shouldUseDark ? "dark" : "light";
-    window.localStorage.setItem("jamal-theme", themeMode);
-  }, [themeMode]);
+    if (!themeReady) return;
+
+    setResolvedTheme(applyThemePreference(themeMode));
+
+    if (themeMode !== "system") return;
+
+    const media = window.matchMedia("(prefers-color-scheme: dark)");
+    const handleSystemThemeChange = () => {
+      setResolvedTheme(applyThemePreference("system", { persist: false }));
+    };
+
+    media.addEventListener("change", handleSystemThemeChange);
+    return () => media.removeEventListener("change", handleSystemThemeChange);
+  }, [themeMode, themeReady]);
 
   function handleThemeChange(nextTheme: ThemeMode) {
     setThemeMode(nextTheme);
-    toast.success(`${nextTheme === "dark" ? "Dark" : "Light"} mode enabled.`);
+    toast.success(
+      nextTheme === "system" ?
+        "Theme now follows your system."
+      : `${nextTheme === "dark" ? "Dark" : "Light"} mode enabled.`,
+    );
   }
 
   function handlePushChange(next: boolean) {
@@ -967,27 +1080,10 @@ export default function SettingsOneUI({
         <section>
           <SectionTitle>Appearance</SectionTitle>
           <SettingsCard>
-            <SettingsRow
-              icon={
-                <IconBubble tone="blue">
-                  <Moon size={21} />
-                </IconBubble>
-              }
-              title="Dark Mode"
-              description={
-                themeMode === "dark" ?
-                  "Dark theme is active"
-                : "Light theme is active"
-              }
-              right={
-                <SoftSwitch
-                  checked={themeMode === "dark"}
-                  onCheckedChange={(checked) =>
-                    handleThemeChange(checked ? "dark" : "light")
-                  }
-                  label="Toggle dark mode"
-                />
-              }
+            <ThemeSelector
+              value={themeMode}
+              resolvedTheme={resolvedTheme}
+              onChange={handleThemeChange}
             />
             <Divider />
             <SettingsRow

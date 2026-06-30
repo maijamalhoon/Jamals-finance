@@ -73,7 +73,7 @@ export default function ResetPasswordPage() {
   }
 
   return (
-    <main className="jf-auth-page jf-login-polish relative grid min-h-dvh place-items-center overflow-hidden px-4 py-8 text-[#f8fbff]">
+    <main className="jf-auth-page jf-login-polish relative grid min-h-dvh place-items-center overflow-hidden px-4 py-8 text-[var(--jf-auth-text)]">
       <div className="jf-auth-grid pointer-events-none absolute inset-0" />
       <div className="jf-auth-accent-line pointer-events-none absolute inset-x-0 top-0 h-1" />
 
@@ -87,10 +87,10 @@ export default function ResetPasswordPage() {
           <div className="jf-auth-icon mb-5 h-14 w-14 rounded-[22px]">
             <LockKeyhole size={24} />
           </div>
-          <h1 className="text-[28px] font-semibold text-[#f8fbff]">
+          <h1 className="text-[28px] font-semibold text-[var(--jf-auth-text)]">
             Set new password
           </h1>
-          <p className="mt-2 text-sm leading-6 text-[rgba(248,251,255,0.62)]">
+          <p className="mt-2 text-sm leading-6 text-[var(--jf-auth-muted)]">
             Choose a new password for Jamal's Finance.
           </p>
         </div>
@@ -127,7 +127,7 @@ export default function ResetPasswordPage() {
                   type="button"
                   onClick={() => setShowPassword((value) => !value)}
                   disabled={loading}
-                  className="absolute right-1 top-1/2 grid h-11 w-11 -translate-y-1/2 place-items-center rounded-xl text-[rgba(248,251,255,0.52)] transition-colors hover:bg-[rgba(255,255,255,0.1)] hover:text-[#f8fbff] focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-active/30"
+                  className="absolute right-1 top-1/2 grid h-11 w-11 -translate-y-1/2 place-items-center rounded-xl text-[var(--jf-auth-subtle)] transition-colors hover:bg-[var(--jf-auth-panel-hover)] hover:text-[var(--jf-auth-text)] focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-active/30"
                   aria-label={showPassword ? "Hide password" : "Show password"}
                 >
                   {showPassword ? <EyeOff size={15} /> : <Eye size={15} />}
@@ -183,7 +183,7 @@ export default function ResetPasswordPage() {
               {!loading ? <ArrowRight className="h-4 w-4" /> : null}
             </button>
 
-            <div className="flex items-center justify-center gap-2 text-center text-[11px] leading-5 text-[rgba(248,251,255,0.42)]">
+            <div className="flex items-center justify-center gap-2 text-center text-[11px] leading-5 text-[var(--jf-auth-subtle)]">
               <CheckCircle2 className="h-3.5 w-3.5 text-[#86efac]" />
               <span>Protected by Supabase Auth and secure sessions.</span>
             </div>

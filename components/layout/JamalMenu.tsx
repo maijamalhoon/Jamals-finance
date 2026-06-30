@@ -7,17 +7,18 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { panelVariants } from "@/components/motion/animation-config";
+import {
+  applyThemePreference,
+  THEME_CHANGE_EVENT,
+  getStoredThemePreference,
+  type ResolvedTheme,
+} from "@/lib/theme";
 
 type JamalMenuProps = {
   align?: "left" | "right";
   placement?: "bottom" | "top";
   variant?: "card" | "avatar";
 };
-
-function applyTheme(nextDark: boolean) {
-  document.documentElement.classList.toggle("dark", nextDark);
-  document.documentElement.style.colorScheme = nextDark ? "dark" : "light";
-}
 
 export default function JamalMenu({
   align = "right",
@@ -27,18 +28,29 @@ export default function JamalMenu({
   const router = useRouter();
   const supabase = useMemo(() => createClient(), []);
   const [open, setOpen] = useState(false);
-  const [isDark, setIsDark] = useState(false);
+  const [resolvedTheme, setResolvedTheme] = useState<ResolvedTheme>("light");
   const [displayName, setDisplayName] = useState("Jamal");
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const savedTheme = localStorage.getItem("jamal-theme");
-    const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-    const shouldUseDark = savedTheme ? savedTheme === "dark" : prefersDark;
+    function syncThemeFromPreference() {
+      const preference = getStoredThemePreference();
+      setResolvedTheme(applyThemePreference(preference, { persist: false }));
+    }
 
-    applyTheme(shouldUseDark);
-    setIsDark(shouldUseDark);
+    syncThemeFromPreference();
+
+    const media = window.matchMedia("(prefers-color-scheme: dark)");
+    media.addEventListener("change", syncThemeFromPreference);
+    window.addEventListener(THEME_CHANGE_EVENT, syncThemeFromPreference);
+    window.addEventListener("storage", syncThemeFromPreference);
+
+    return () => {
+      media.removeEventListener("change", syncThemeFromPreference);
+      window.removeEventListener(THEME_CHANGE_EVENT, syncThemeFromPreference);
+      window.removeEventListener("storage", syncThemeFromPreference);
+    };
   }, []);
 
   useEffect(() => {
@@ -72,10 +84,8 @@ export default function JamalMenu({
   }, []);
 
   function toggleTheme() {
-    const nextDark = !isDark;
-    applyTheme(nextDark);
-    localStorage.setItem("jamal-theme", nextDark ? "dark" : "light");
-    setIsDark(nextDark);
+    const nextPreference = resolvedTheme === "dark" ? "light" : "dark";
+    setResolvedTheme(applyThemePreference(nextPreference));
     setOpen(false);
   }
 
@@ -152,8 +162,10 @@ export default function JamalMenu({
               className="finance-focus finance-interactive-tile flex w-full items-center gap-3 px-3 py-2 text-left text-sm font-semibold"
               role="menuitem"
             >
-              {isDark ? <Sun size={15} /> : <Moon size={15} />}
-              {isDark ? "Light Mode" : "Dark Mode"}
+              {resolvedTheme === "dark" ?
+                <Sun size={15} />
+              : <Moon size={15} />}
+              {resolvedTheme === "dark" ? "Light Mode" : "Dark Mode"}
             </button>
             <button
               type="button"

@@ -205,7 +205,7 @@ function Field({
 
       <div className="jf-auth-input-glow relative">
         {icon ?
-          <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[rgba(248,251,255,0.46)]">
+          <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[var(--jf-auth-subtle)]">
             {icon}
           </span>
         : null}
@@ -445,7 +445,7 @@ export default function LoginPage() {
     : message || "Open your inbox and follow the secure link.";
 
   return (
-    <main className="jf-auth-page jf-login-polish relative flex min-h-dvh items-center justify-center overflow-hidden px-4 py-8 text-[#f8fbff] sm:px-6 lg:px-8">
+    <main className="jf-auth-page jf-login-polish relative flex min-h-dvh items-center justify-center overflow-hidden px-4 py-8 text-[var(--jf-auth-text)] sm:px-6 lg:px-8">
       <div className="jf-auth-grid pointer-events-none absolute inset-0" />
       <div className="jf-auth-accent-line pointer-events-none absolute inset-x-0 top-0 h-1" />
 
@@ -461,14 +461,14 @@ export default function LoginPage() {
           <button
             type="button"
             onClick={() => router.push("/")}
-            className="absolute right-0 top-0 grid h-11 w-11 place-items-center rounded-2xl text-[rgba(248,251,255,0.48)] transition hover:bg-[rgba(255,255,255,0.1)] hover:text-[#f8fbff] active:scale-95"
+            className="absolute right-0 top-0 grid h-11 w-11 place-items-center rounded-2xl text-[var(--jf-auth-subtle)] transition hover:bg-[var(--jf-auth-panel-hover)] hover:text-[var(--jf-auth-text)] active:scale-95"
             aria-label="Close"
           >
             <X className="h-5 w-5" />
           </button>
 
           <div className="mb-7 text-center">
-            <div className="mx-auto mb-4 inline-flex items-center gap-2 rounded-2xl border border-[rgba(255,255,255,0.12)] bg-[rgba(255,255,255,0.08)] px-3.5 py-2 text-sm font-semibold text-[rgba(248,251,255,0.72)]">
+            <div className="mx-auto mb-4 inline-flex items-center gap-2 rounded-2xl border border-[var(--jf-auth-border)] bg-[var(--jf-auth-panel)] px-3.5 py-2 text-sm font-semibold text-[var(--jf-auth-muted)]">
               <Sparkles className="h-4 w-4 text-[#fef3c7]" />
               Jamals Finance
             </div>
@@ -477,11 +477,11 @@ export default function LoginPage() {
               <ShieldCheck className="h-6 w-6 text-[#bfdbfe]" />
             </div>
 
-            <h1 className="text-[30px] font-semibold leading-tight text-[#f8fbff] sm:text-[36px]">
+            <h1 className="text-[30px] font-semibold leading-tight text-[var(--jf-auth-text)] sm:text-[36px]">
               {title}
             </h1>
 
-            <p className="mx-auto mt-3 max-w-[350px] text-[15px] leading-7 text-[rgba(248,251,255,0.62)]">
+            <p className="mx-auto mt-3 max-w-[350px] text-[15px] leading-7 text-[var(--jf-auth-muted)]">
               {subtitle}
             </p>
           </div>
@@ -575,7 +575,7 @@ export default function LoginPage() {
                   <button
                     type="button"
                     onClick={() => setShowPassword((value) => !value)}
-                    className="absolute right-1 top-1/2 grid h-11 w-11 -translate-y-1/2 place-items-center rounded-2xl text-[rgba(248,251,255,0.44)] transition hover:bg-[rgba(255,255,255,0.1)] hover:text-[#f8fbff]"
+                    className="absolute right-1 top-1/2 grid h-11 w-11 -translate-y-1/2 place-items-center rounded-2xl text-[var(--jf-auth-subtle)] transition hover:bg-[var(--jf-auth-panel-hover)] hover:text-[var(--jf-auth-text)]"
                     aria-label={
                       showPassword ? "Hide password" : "Show password"
                     }
@@ -602,7 +602,7 @@ export default function LoginPage() {
                   type="button"
                   onClick={() => switchStep("forgot")}
                   disabled={isLoading}
-                  className="flex h-11 w-full items-center justify-center rounded-2xl text-sm font-semibold text-[rgba(248,251,255,0.6)] transition hover:bg-[rgba(255,255,255,0.1)] hover:text-[#f8fbff] disabled:cursor-not-allowed disabled:opacity-60"
+                  className="flex h-11 w-full items-center justify-center rounded-2xl text-sm font-semibold text-[var(--jf-auth-muted)] transition hover:bg-[var(--jf-auth-panel-hover)] hover:text-[var(--jf-auth-text)] disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   Forgot password?
                 </button>
@@ -701,7 +701,7 @@ export default function LoginPage() {
                   <button
                     type="button"
                     onClick={() => setShowPassword((value) => !value)}
-                    className="absolute right-1 top-1/2 grid h-11 w-11 -translate-y-1/2 place-items-center rounded-2xl text-[rgba(248,251,255,0.44)] transition hover:bg-[rgba(255,255,255,0.1)] hover:text-[#f8fbff]"
+                    className="absolute right-1 top-1/2 grid h-11 w-11 -translate-y-1/2 place-items-center rounded-2xl text-[var(--jf-auth-subtle)] transition hover:bg-[var(--jf-auth-panel-hover)] hover:text-[var(--jf-auth-text)]"
                     aria-label={
                       showPassword ? "Hide password" : "Show password"
                     }
@@ -744,7 +744,7 @@ export default function LoginPage() {
                 <button
                   type="button"
                   onClick={() => switchStep("login")}
-                  className="inline-flex h-11 items-center gap-2 rounded-2xl px-2 text-sm font-semibold text-[rgba(248,251,255,0.58)] transition hover:bg-[rgba(255,255,255,0.1)] hover:text-[#f8fbff]"
+                  className="inline-flex h-11 items-center gap-2 rounded-2xl px-2 text-sm font-semibold text-[var(--jf-auth-muted)] transition hover:bg-[var(--jf-auth-panel-hover)] hover:text-[var(--jf-auth-text)]"
                 >
                   <ArrowLeft className="h-4 w-4" />
                   Back to login
@@ -795,7 +795,7 @@ export default function LoginPage() {
                   <Feedback tone="success">{message}</Feedback>
                 : null}
 
-                <p className="text-sm leading-6 text-[rgba(248,251,255,0.62)]">
+                <p className="text-sm leading-6 text-[var(--jf-auth-muted)]">
                   Open your email and follow the secure link. You will be
                   redirected back after verification.
                 </p>
@@ -807,7 +807,7 @@ export default function LoginPage() {
             : null}
           </AnimatePresence>
 
-          <div className="mt-7 flex items-center justify-center gap-2 text-center text-[11px] leading-5 text-[rgba(248,251,255,0.42)]">
+          <div className="mt-7 flex items-center justify-center gap-2 text-center text-[11px] leading-5 text-[var(--jf-auth-subtle)]">
             <CheckCircle2 className="h-3.5 w-3.5 text-[#86efac]" />
             <span>Protected by Supabase Auth and secure sessions.</span>
           </div>

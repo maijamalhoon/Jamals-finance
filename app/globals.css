@@ -2253,6 +2253,37 @@ textarea:focus {
   color: var(--jf-auth-text);
 }
 
+:root:not(.dark) .jf-login-polish {
+  --jf-auth-text: var(--text-primary);
+  --jf-auth-muted: var(--text-secondary);
+  --jf-auth-subtle: var(--text-tertiary);
+  --jf-auth-border: color-mix(in srgb, var(--border), transparent 12%);
+  --jf-auth-border-strong: color-mix(in srgb, var(--active), var(--border) 58%);
+  --jf-auth-panel: color-mix(in srgb, var(--card), transparent 6%);
+  --jf-auth-panel-hover: color-mix(in srgb, var(--hover), var(--card) 26%);
+  --jf-auth-control: color-mix(in srgb, var(--input), transparent 2%);
+  --jf-auth-control-hover: var(--surface);
+  --jf-auth-primary: var(--active);
+  --jf-auth-primary-hover: color-mix(in srgb, var(--active), black 8%);
+  --jf-auth-primary-text: #ffffff;
+  background:
+    radial-gradient(
+      circle at 18% 12%,
+      color-mix(in srgb, var(--success), transparent 88%),
+      transparent 30rem
+    ),
+    radial-gradient(
+      circle at 82% 18%,
+      color-mix(in srgb, var(--info), transparent 88%),
+      transparent 34rem
+    ),
+    linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--background), var(--surface-secondary) 38%) 0%,
+      var(--background) 100%
+    );
+}
+
 .jf-login-polish ::selection {
   background: rgb(147 197 253 / 0.28);
 }
@@ -2263,6 +2294,13 @@ textarea:focus {
     linear-gradient(0deg, rgb(255 255 255 / 0.04) 1px, transparent 1px);
   background-size: 52px 52px;
   opacity: 0.2;
+}
+
+:root:not(.dark) .jf-auth-grid {
+  background:
+    linear-gradient(90deg, rgb(15 23 42 / 0.055) 1px, transparent 1px),
+    linear-gradient(0deg, rgb(15 23 42 / 0.045) 1px, transparent 1px);
+  opacity: 0.32;
 }
 
 .jf-auth-accent-line {
@@ -2277,6 +2315,12 @@ textarea:focus {
     0 32px 96px rgb(0 0 0 / 0.34),
     inset 0 1px 0 rgb(255 255 255 / 0.08);
   transform: translateZ(0);
+}
+
+:root:not(.dark) .jf-auth-card {
+  box-shadow:
+    0 28px 80px rgb(15 23 42 / 0.12),
+    inset 0 1px 0 rgb(255 255 255 / 0.72);
 }
 
 @supports (
@@ -2311,10 +2355,15 @@ textarea:focus {
   box-shadow: 0 16px 36px rgb(59 130 246 / 0.16);
 }
 
+:root:not(.dark) .jf-auth-icon {
+  background: color-mix(in srgb, var(--active), transparent 90%);
+  color: var(--active);
+}
+
 .jf-auth-label {
   display: block;
   margin-bottom: 0.5rem;
-  color: rgb(248 251 255 / 0.58);
+  color: var(--jf-auth-muted);
   font-size: 0.75rem;
   font-weight: 650;
 }
@@ -2325,7 +2374,7 @@ textarea:focus {
   border: 1px solid var(--jf-auth-border);
   border-radius: 1rem;
   background: var(--jf-auth-control);
-  color: rgb(248 251 255 / 0.96);
+  color: var(--jf-auth-text);
   padding-inline: 1rem;
   font-size: 0.9375rem;
   font-weight: 650;
@@ -2338,7 +2387,7 @@ textarea:focus {
 }
 
 .jf-auth-input::placeholder {
-  color: rgb(248 251 255 / 0.36);
+  color: var(--jf-auth-subtle);
 }
 
 .jf-auth-input:hover {
@@ -2348,9 +2397,9 @@ textarea:focus {
 
 .jf-auth-input:focus,
 .jf-auth-input:focus-visible {
-  border-color: #8ec5ff;
-  background: rgb(255 255 255 / 0.11);
-  box-shadow: 0 0 0 4px rgb(96 165 250 / 0.18);
+  border-color: var(--jf-auth-border-strong);
+  background: var(--jf-auth-control-hover);
+  box-shadow: var(--focus-ring);
 }
 
 .jf-auth-input:disabled {
@@ -2393,14 +2442,14 @@ textarea:focus {
 }
 
 .jf-auth-social {
-  border: 1px solid rgb(255 255 255 / 0.13);
+  border: 1px solid var(--jf-auth-border);
   background: var(--jf-auth-control);
-  color: rgb(248 251 255 / 0.94);
+  color: var(--jf-auth-text);
   box-shadow: 0 10px 24px rgb(0 0 0 / 0.12);
 }
 
 .jf-auth-social:hover {
-  border-color: rgb(255 255 255 / 0.22);
+  border-color: var(--jf-auth-border-strong);
   background: var(--jf-auth-panel-hover);
 }
 
@@ -2433,16 +2482,16 @@ textarea:focus {
 .jf-auth-tab-list {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  border: 1px solid rgb(255 255 255 / 0.12);
+  border: 1px solid var(--jf-auth-border);
   border-radius: 1rem;
-  background: rgb(255 255 255 / 0.065);
+  background: var(--jf-auth-control);
   padding: 0.25rem;
 }
 
 .jf-auth-tab {
   height: 2.75rem;
   border-radius: 0.75rem;
-  color: rgb(248 251 255 / 0.58);
+  color: var(--jf-auth-muted);
   font-size: 0.875rem;
   font-weight: 750;
   transition:
@@ -2452,7 +2501,7 @@ textarea:focus {
 }
 
 .jf-auth-tab:hover {
-  background: rgb(255 255 255 / 0.08);
+  background: var(--jf-auth-panel-hover);
   color: var(--jf-auth-text);
 }
 

@@ -5,6 +5,7 @@ import { Toaster } from "sonner";
 import MotionProvider from "@/components/motion/MotionProvider";
 import { CurrencyProvider } from "@/components/currency/CurrencyProvider";
 import PWARegister from "./pwa-register";
+import { THEME_STORAGE_KEY } from "@/lib/theme";
 
 const geistSans = Geist({
   subsets: ["latin"],
@@ -103,11 +104,14 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{
             __html: `
 try {
-  var savedTheme = localStorage.getItem("jamal-theme");
+  var savedTheme = localStorage.getItem("${THEME_STORAGE_KEY}");
+  var theme = savedTheme === "light" || savedTheme === "dark" || savedTheme === "system" ? savedTheme : "system";
   var prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-  var shouldUseDark = (savedTheme && savedTheme === "dark") || (!savedTheme && prefersDark);
+  var shouldUseDark = theme === "dark" || (theme === "system" && prefersDark);
   document.documentElement.classList.toggle("dark", shouldUseDark);
   document.documentElement.style.colorScheme = shouldUseDark ? "dark" : "light";
+  document.documentElement.dataset.themePreference = theme;
+  document.documentElement.dataset.theme = shouldUseDark ? "dark" : "light";
 } catch (_) {}
             `,
           }}

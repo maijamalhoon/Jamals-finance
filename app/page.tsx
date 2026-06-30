@@ -377,8 +377,11 @@ function LandingPageStyles() {
     <style
       dangerouslySetInnerHTML={{
         __html: `
-:root {
+.jf-landing {
   --jf-bg: #050b14;
+  --jf-bg-start: #06101c;
+  --jf-bg-mid: #050b14;
+  --jf-bg-end: #03070d;
   --jf-panel: rgba(255, 255, 255, 0.075);
   --jf-panel-strong: rgba(255, 255, 255, 0.11);
   --jf-border: rgba(255, 255, 255, 0.14);
@@ -391,6 +394,23 @@ function LandingPageStyles() {
   --jf-rose: #ff8db3;
 }
 
+:root:not(.dark) .jf-landing {
+  --jf-bg: #f8fafc;
+  --jf-bg-start: #f3f8ff;
+  --jf-bg-mid: #f8fafc;
+  --jf-bg-end: #eef4fb;
+  --jf-panel: rgba(255, 255, 255, 0.78);
+  --jf-panel-strong: rgba(255, 255, 255, 0.92);
+  --jf-border: rgba(15, 23, 42, 0.12);
+  --jf-text: #101828;
+  --jf-muted: rgba(71, 84, 103, 0.82);
+  --jf-soft: rgba(102, 112, 133, 0.7);
+  --jf-green: #168a53;
+  --jf-blue: #2563eb;
+  --jf-gold: #b76a00;
+  --jf-rose: #dc2626;
+}
+
 html {
   scroll-behavior: smooth;
 }
@@ -401,9 +421,16 @@ html {
   background:
     radial-gradient(circle at 15% 10%, rgba(55, 241, 165, 0.16), transparent 28rem),
     radial-gradient(circle at 82% 20%, rgba(124, 199, 255, 0.16), transparent 30rem),
-    linear-gradient(180deg, #06101c 0%, #050b14 42%, #03070d 100%);
+    linear-gradient(180deg, var(--jf-bg-start) 0%, var(--jf-bg-mid) 42%, var(--jf-bg-end) 100%);
   color: var(--jf-text);
   font-family: inherit;
+}
+
+:root:not(.dark) .jf-landing {
+  background:
+    radial-gradient(circle at 15% 10%, rgba(22, 138, 83, 0.1), transparent 28rem),
+    radial-gradient(circle at 82% 20%, rgba(37, 99, 235, 0.1), transparent 30rem),
+    linear-gradient(180deg, var(--jf-bg-start) 0%, var(--jf-bg-mid) 42%, var(--jf-bg-end) 100%);
 }
 
 .jf-hero-shell {
@@ -422,6 +449,12 @@ html {
     linear-gradient(90deg, rgba(255,255,255,0.035) 1px, transparent 1px);
   background-size: 42px 42px;
   mask-image: linear-gradient(to bottom, black, transparent 88%);
+}
+
+:root:not(.dark) .jf-grid-overlay {
+  background-image:
+    linear-gradient(rgba(15,23,42,0.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(15,23,42,0.045) 1px, transparent 1px);
 }
 
 .jf-orb {
@@ -462,6 +495,12 @@ html {
   background: rgba(5, 11, 20, 0.72);
   box-shadow: 0 20px 80px rgba(0, 0, 0, 0.28);
   backdrop-filter: blur(18px);
+}
+
+:root:not(.dark) .jf-nav {
+  border-color: var(--jf-border);
+  background: rgba(255, 255, 255, 0.78);
+  box-shadow: 0 20px 70px rgba(15, 23, 42, 0.1);
 }
 
 .jf-brand,
@@ -505,6 +544,10 @@ html {
   background: rgba(255, 255, 255, 0.055);
 }
 
+:root:not(.dark) .jf-nav-links {
+  background: rgba(15, 23, 42, 0.055);
+}
+
 .jf-nav-links a {
   color: var(--jf-muted);
   font-size: 0.9rem;
@@ -517,6 +560,10 @@ html {
 .jf-nav-links a:hover {
   color: var(--jf-text);
   background: rgba(255,255,255,0.08);
+}
+
+:root:not(.dark) .jf-nav-links a:hover {
+  background: rgba(15, 23, 42, 0.07);
 }
 
 .jf-nav-cta {
@@ -557,6 +604,13 @@ html {
   font-size: 0.82rem;
   font-weight: 900;
   letter-spacing: 0.01em;
+}
+
+:root:not(.dark) .jf-badge,
+:root:not(.dark) .jf-eyebrow {
+  border-color: var(--jf-border);
+  background: rgba(255, 255, 255, 0.72);
+  color: var(--jf-muted);
 }
 
 .jf-badge {
@@ -619,6 +673,11 @@ html {
   background: rgba(255,255,255,0.075);
 }
 
+:root:not(.dark) .jf-secondary-btn {
+  border-color: var(--jf-border);
+  background: rgba(255, 255, 255, 0.76);
+}
+
 .jf-primary-btn:hover,
 .jf-secondary-btn:hover,
 .jf-nav-cta:hover {
@@ -673,6 +732,14 @@ html {
   animation: jfFloat 7s ease-in-out infinite;
 }
 
+:root:not(.dark) .jf-device-card {
+  border-color: var(--jf-border);
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.96), rgba(255,255,255,0.72)),
+    rgba(255, 255, 255, 0.84);
+  box-shadow: 0 34px 100px rgba(15, 23, 42, 0.14);
+}
+
 .jf-device-card::before {
   content: "";
   position: absolute;
@@ -717,6 +784,21 @@ html {
   border: 1px solid var(--jf-border);
   background: var(--jf-panel);
   box-shadow: inset 0 1px 0 rgba(255,255,255,0.08);
+}
+
+:root:not(.dark) .jf-balance-panel,
+:root:not(.dark) .jf-mini-card,
+:root:not(.dark) .jf-chart-card,
+:root:not(.dark) .jf-floating-card,
+:root:not(.dark) .jf-feature-card,
+:root:not(.dark) .jf-step-card,
+:root:not(.dark) .jf-stat-card,
+:root:not(.dark) .jf-security-card {
+  border-color: var(--jf-border);
+  background: var(--jf-panel);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.78),
+    0 18px 48px rgba(15, 23, 42, 0.06);
 }
 
 .jf-balance-panel {
@@ -853,6 +935,10 @@ html {
   backdrop-filter: blur(18px);
 }
 
+:root:not(.dark) .jf-floating-card {
+  background: rgba(255, 255, 255, 0.84);
+}
+
 .jf-floating-left {
   left: -1rem;
   bottom: 5rem;
@@ -981,6 +1067,11 @@ html {
   border: 1px solid rgba(255,255,255,0.14);
 }
 
+:root:not(.dark) .jf-feature-icon-wrap {
+  border-color: var(--jf-border);
+  background: rgba(15, 23, 42, 0.045);
+}
+
 .jf-feature-icon {
   width: 1.45rem;
   height: 1.45rem;
@@ -1043,6 +1134,11 @@ html {
   font-weight: 900;
 }
 
+:root:not(.dark) .jf-module-pill {
+  border-color: var(--jf-border);
+  background: rgba(255, 255, 255, 0.72);
+}
+
 .jf-module-icon {
   width: 1.2rem;
   height: 1.2rem;
@@ -1082,6 +1178,12 @@ html {
   font-weight: 800;
 }
 
+:root:not(.dark) .jf-security-list div {
+  border-color: var(--jf-border);
+  background: rgba(255, 255, 255, 0.7);
+  color: var(--jf-text);
+}
+
 .jf-security-icon {
   flex: 0 0 auto;
   width: 1.15rem;
@@ -1100,6 +1202,12 @@ html {
   text-align: center;
   background: rgba(255,255,255,0.075);
   box-shadow: 0 30px 100px rgba(0,0,0,0.28);
+}
+
+:root:not(.dark) .jf-final-cta {
+  border-color: var(--jf-border);
+  background: rgba(255, 255, 255, 0.78);
+  box-shadow: 0 28px 80px rgba(15, 23, 42, 0.12);
 }
 
 .jf-final-glow {
