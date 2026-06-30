@@ -1,36 +1,15 @@
 "use client";
 
-import Link from "next/link";
-import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { BarChart3, Bell, Menu, X } from "lucide-react";
-import {
-  isNavItemActive,
-  NAV_GROUPS,
-} from "@/lib/navigation";
+import { BarChart3, Bell } from "lucide-react";
 import JamalMenu from "@/components/layout/JamalMenu";
-import {
-  drawerVariants,
-  listContainerVariants,
-  listItemVariants,
-  overlayVariants,
-  panelVariants,
-} from "@/components/motion/animation-config";
-import { useBodyScrollLock } from "@/components/motion/useBodyScrollLock";
+import { panelVariants } from "@/components/motion/animation-config";
 
 export default function MobileHeader() {
-  const pathname = usePathname();
-  const [open, setOpen] = useState(false);
   const [bellOpen, setBellOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const bellRef = useRef<HTMLDivElement>(null);
-
-  useBodyScrollLock(open);
-
-  useEffect(() => {
-    setOpen(false);
-  }, [pathname]);
 
   useEffect(() => {
     function handleClick(e: MouseEvent) {
@@ -64,13 +43,6 @@ export default function MobileHeader() {
         }`}
       >
         <div className="flex min-w-0 items-center gap-2">
-          <button
-            onClick={() => setOpen(true)}
-            className="finance-focus finance-interactive-tile grid h-10 w-10 min-h-0 place-items-center p-0 text-text-secondary"
-            aria-label="Open navigation"
-          >
-            <Menu size={17} />
-          </button>
           <div className="grid h-10 w-10 flex-shrink-0 place-items-center rounded-[15px] border border-active/30 bg-active text-background shadow-theme">
             <BarChart3 size={16} />
           </div>
@@ -126,110 +98,6 @@ export default function MobileHeader() {
           <JamalMenu align="right" placement="bottom" variant="avatar" />
         </div>
       </header>
-
-      <AnimatePresence>
-        {open && (
-          <motion.div
-            className="fixed inset-0 z-[80] lg:hidden"
-            variants={overlayVariants}
-            initial="initial"
-            animate="animate"
-            exit="exit"
-          >
-            <button
-              className="absolute inset-0 h-full w-full bg-background/80"
-              onClick={() => setOpen(false)}
-              aria-label="Close navigation"
-            />
-            <motion.aside
-              className="motion-drawer-surface absolute left-0 top-0 flex h-full w-[min(88vw,380px)] flex-col border-r border-border bg-sidebar p-3 shadow-theme"
-              variants={drawerVariants}
-              initial="initial"
-              animate="animate"
-              exit="exit"
-            >
-              <div className="finance-surface-soft flex min-h-0 flex-1 flex-col overflow-hidden p-2">
-                <div className="flex min-h-14 items-center justify-between gap-3 px-2 py-1.5">
-                  <div className="flex min-w-0 items-center gap-2.5">
-                    <div className="grid h-10 w-10 flex-shrink-0 place-items-center rounded-[15px] border border-active/30 bg-active text-background shadow-theme">
-                      <BarChart3 size={17} />
-                    </div>
-                    <p className="truncate text-sm font-bold text-text-primary">
-                      Finance
-                    </p>
-                  </div>
-                  <button
-                    onClick={() => setOpen(false)}
-                    className="finance-focus finance-interactive-tile grid h-9 w-9 min-h-0 place-items-center p-0 text-text-secondary"
-                    aria-label="Close navigation"
-                  >
-                    <X size={17} />
-                  </button>
-                </div>
-
-                <div className="min-h-0 flex-1 overflow-y-auto px-1 py-3">
-                  <motion.nav
-                    aria-label="Mobile navigation"
-                    className="space-y-1"
-                    variants={listContainerVariants}
-                    initial="initial"
-                    animate="animate"
-                  >
-                    {NAV_GROUPS.map((group) => (
-                      <div key={group.label} className="space-y-1.5">
-                        <p className="px-3 pt-2 text-[10px] font-bold uppercase tracking-[0.14em] text-text-tertiary first:pt-0">
-                          {group.label}
-                        </p>
-
-                        {group.items.map(({ label, href, icon: Icon }) => {
-                          const active = isNavItemActive(pathname, href);
-                          return (
-                            <motion.div key={href} variants={listItemVariants}>
-                              <Link
-                                href={href}
-                                aria-current={active ? "page" : undefined}
-                                title={label}
-                                className={`finance-focus finance-interactive-tile group isolate flex items-center gap-3 overflow-visible px-3 py-2.5 text-sm ${
-                                  active
-                                    ? "border-border bg-hover text-active shadow-[var(--shadow)]"
-                                    : "text-text-secondary"
-                                }`}
-                              >
-                                {active && (
-                                  <motion.span
-                                    layoutId="drawer-active-indicator"
-                                    className="finance-active-indicator"
-                                    transition={{
-                                      duration: 0.24,
-                                      ease: [0.16, 1, 0.3, 1],
-                                    }}
-                                  />
-                                )}
-                                <span
-                                  className={`relative z-10 grid h-8 w-8 shrink-0 place-items-center rounded-[13px] border transition-all duration-200 ${
-                                    active
-                                      ? "border-active/30 bg-card text-active"
-                                      : "border-border bg-surface-secondary text-text-secondary group-hover:text-text-primary"
-                                  }`}
-                                >
-                                  <Icon size={16} strokeWidth={2.15} />
-                                </span>
-                                <span className="relative z-10 min-w-0 flex-1 truncate font-semibold">
-                                  {label}
-                                </span>
-                              </Link>
-                            </motion.div>
-                          );
-                        })}
-                      </div>
-                    ))}
-                  </motion.nav>
-                </div>
-              </div>
-            </motion.aside>
-          </motion.div>
-        )}
-      </AnimatePresence>
     </>
   );
 }

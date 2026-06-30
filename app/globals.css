@@ -1845,11 +1845,6 @@ button svg {
     both;
 }
 
-.motion-drawer-surface {
-  transform: translateZ(0);
-  contain: layout paint;
-}
-
 a:hover svg:not(.recharts-surface),
 button:hover svg:not(.recharts-surface) {
   transform: translateY(-0.5px);
