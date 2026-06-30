@@ -201,9 +201,7 @@ function Field({
 }) {
   return (
     <label className="block">
-      <span className="jf-auth-label">
-        {label}
-      </span>
+      <span className="jf-auth-label">{label}</span>
 
       <div className="jf-auth-input-glow relative">
         {icon ?
@@ -242,8 +240,7 @@ function Feedback({
 export default function LoginPage() {
   const router = useRouter();
   const supabase = useMemo(() => createClient(), []);
-  const isGoogleAuthEnabled =
-    process.env.NEXT_PUBLIC_ENABLE_GOOGLE_AUTH === "true";
+  const isGoogleAuthEnabled = true;
 
   const [step, setStep] = useState<Step>("login");
   const [email, setEmail] = useState("");
