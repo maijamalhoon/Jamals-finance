@@ -8,6 +8,16 @@ import { formatDateKey, getAppDateParts } from "@/lib/dates";
 
 export const dynamic = "force-dynamic";
 
+function isValidCategoryHex(color: string | null | undefined): color is string {
+  return (
+    typeof color === "string" && /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(color)
+  );
+}
+
+function getCategoryColor(color: string | null | undefined) {
+  return isValidCategoryHex(color) ? color : "#ef4444";
+}
+
 export default async function ExpensesPage() {
   const supabase = await createClient();
   const now = getAppDateParts();
@@ -34,23 +44,28 @@ export default async function ExpensesPage() {
   });
   const highestMonth = Math.max(0, ...Object.values(byMonth));
 
-  const categoryMap: Record<
+  const categoryMap = new Map<
     string,
-    { amount: number; color: string; count: number }
-  > = {};
+    { id: string; name: string; amount: number; color: string; count: number }
+  >();
   thisMonthEntries.forEach((t) => {
     const category = t.categories as any;
+    const key = category?.id || "uncategorized";
     const name =
       category?.parent?.name ? `${category.parent.name} / ${category.name}`
       : category?.name || "Other";
-    const color = (t.categories as any)?.color || "#ef4444";
-    if (!categoryMap[name]) categoryMap[name] = { amount: 0, color, count: 0 };
-    categoryMap[name].amount += Number(t.amount);
-    categoryMap[name].count++;
+    const color = getCategoryColor(category?.color);
+    if (!categoryMap.has(key)) {
+      categoryMap.set(key, { id: key, name, amount: 0, color, count: 0 });
+    }
+    const current = categoryMap.get(key);
+    if (current) {
+      current.amount += Number(t.amount);
+      current.count++;
+    }
   });
 
-  const categories = Object.entries(categoryMap)
-    .map(([name, { amount, color, count }]) => ({ name, amount, color, count }))
+  const categories = Array.from(categoryMap.values())
     .sort((a, b) => b.amount - a.amount);
 
   const fmt = (n: number) =>
@@ -132,7 +147,7 @@ export default async function ExpensesPage() {
           </h3>
           <div className="space-y-4">
             {categories.map((category) => (
-              <div key={category.name}>
+              <div key={category.id}>
                 <div className="mb-1.5 flex flex-wrap items-center justify-between gap-2">
                   <div className="flex min-w-0 items-center gap-2">
                     <div

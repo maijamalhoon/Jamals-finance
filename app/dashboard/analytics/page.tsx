@@ -8,6 +8,7 @@ import { createClient } from "@/lib/supabase/server";
 export const dynamic = "force-dynamic";
 
 interface RawCategory {
+  id?: string | null;
   name?: string | null;
   color?: string | null;
 }
@@ -76,6 +77,18 @@ function getCategoryName(
   return selected?.name || "Other";
 }
 
+function getCategoryDetail(
+  category: RawCategory | RawCategory[] | null | undefined,
+) {
+  const selected = Array.isArray(category) ? category[0] : category;
+
+  return {
+    id: selected?.id || "uncategorized",
+    name: selected?.name || "Other",
+    color: selected?.color ?? null,
+  };
+}
+
 export default async function AnalyticsPage() {
   const supabase = await createClient();
 
@@ -89,7 +102,7 @@ export default async function AnalyticsPage() {
   ] = await Promise.all([
     supabase
       .from("transactions")
-      .select("id, amount, date, type, categories(name, color)")
+      .select("id, amount, date, type, categories(id, name, color)")
       .gte("date", oldestNeededDate)
       .lte("date", getAppDateKey()),
     supabase
@@ -108,13 +121,19 @@ export default async function AnalyticsPage() {
       (transaction) =>
         transaction.date && transaction.amount && transaction.type,
     )
-    .map((transaction, index) => ({
-      id: transaction.id || `transaction-${index}`,
-      amount: Number(transaction.amount) || 0,
-      date: transaction.date as string,
-      type: String(transaction.type || "").toLowerCase(),
-      categoryName: getCategoryName(transaction.categories),
-    }));
+    .map((transaction, index) => {
+      const category = getCategoryDetail(transaction.categories);
+
+      return {
+        id: transaction.id || `transaction-${index}`,
+        amount: Number(transaction.amount) || 0,
+        date: transaction.date as string,
+        type: String(transaction.type || "").toLowerCase(),
+        categoryId: category.id,
+        categoryName: getCategoryName(transaction.categories),
+        categoryColor: category.color,
+      };
+    });
 
   const accountsTotal = ((rawAccounts ?? []) as RawAccount[]).reduce(
     (sum, account) => sum + (Number(account.balance) || 0),

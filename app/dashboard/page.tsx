@@ -33,8 +33,9 @@ type DashboardTransaction = {
   note: string | null;
   date: string;
   categories: {
+    id: string;
     name: string;
-    color: string;
+    color: string | null;
     parent?: { name: string } | null;
   } | null;
   accounts: { name: string } | null;
@@ -86,6 +87,17 @@ function fmt(value: number) {
     maximumFractionDigits: 0,
   })}`;
 }
+
+function isValidCategoryHex(color: string | null | undefined): color is string {
+  return (
+    typeof color === "string" && /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(color)
+  );
+}
+
+function getCategoryColor(color: string | null | undefined) {
+  return isValidCategoryHex(color) ? color : "#6b7280";
+}
+
 function fmtBalance(value: number) {
   return `PKR ${value.toLocaleString("en-PK", {
     minimumFractionDigits: 2,
@@ -139,14 +151,14 @@ export default async function DashboardPage() {
   ] = await Promise.all([
     supabase
       .from("transactions")
-      .select("*, categories(name, color), accounts(name)")
+      .select("*, categories(id, name, color), accounts(name)")
       .gte("date", firstDay)
       .lte("date", lastDay)
       .order("date", { ascending: false }),
 
     supabase
       .from("transactions")
-      .select("*, categories(name, color), accounts(name)")
+      .select("*, categories(id, name, color), accounts(name)")
       .order("date", { ascending: false })
       .limit(12),
 
@@ -315,26 +327,35 @@ export default async function DashboardPage() {
     };
   });
 
-  const categoryMap: Record<string, { amount: number; color: string }> = {};
+  const categoryMap = new Map<
+    string,
+    { id: string; name: string; amount: number; color: string }
+  >();
 
   txns
     .filter((transaction) => transaction.type === "expense")
     .forEach((transaction) => {
+      const categoryId = transaction.categories?.id;
+      const key = categoryId ?? "uncategorized";
       const name = transaction.categories?.name || "Other";
-      const color = transaction.categories?.color || "#6b7280";
+      const color = getCategoryColor(transaction.categories?.color);
 
-      if (!categoryMap[name]) {
-        categoryMap[name] = {
+      if (!categoryMap.has(key)) {
+        categoryMap.set(key, {
+          id: key,
+          name,
           amount: 0,
           color,
-        };
+        });
       }
 
-      categoryMap[name].amount += Number(transaction.amount);
+      const current = categoryMap.get(key);
+      if (current) current.amount += Number(transaction.amount);
     });
 
-  const spendingData = Object.entries(categoryMap)
-    .map(([name, { amount, color }]) => ({
+  const spendingData = Array.from(categoryMap.values())
+    .map(({ id, name, amount, color }) => ({
+      id,
       name,
       value: amount,
       color,

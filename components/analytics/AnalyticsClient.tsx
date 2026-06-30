@@ -35,7 +35,9 @@ export interface AnalyticsTransactionData {
   amount: number;
   date: string;
   type: string;
+  categoryId: string;
   categoryName: string;
+  categoryColor: string | null;
 }
 
 export interface AnalyticsInvestmentData {
@@ -69,6 +71,7 @@ interface ChartData {
 }
 
 interface SpendingData {
+  id: string;
   name: string;
   amount: number;
   color: string;
@@ -198,6 +201,12 @@ function formatCompactMoney(value: number) {
 function formatAxis(value: number) {
   if (Math.abs(value) >= 1000) return `${Number(value) / 1000}k`;
   return String(value);
+}
+
+function isUsableColor(color: string | null | undefined): color is string {
+  return (
+    typeof color === "string" && /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(color)
+  );
 }
 
 function pctDiff(current: number, previous: number) {
@@ -453,24 +462,37 @@ function buildSpendingData(
   start: Date,
   end: Date,
 ): SpendingData[] {
-  const map = new Map<string, number>();
+  const map = new Map<
+    string,
+    { id: string; name: string; amount: number; color: string | null }
+  >();
 
   transactions.forEach((transaction) => {
     const date = parseDate(transaction.date);
 
     if (transaction.type !== "expense" || !isBetween(date, start, end)) return;
 
+    const id = transaction.categoryId || "uncategorized";
     const name = transaction.categoryName || "Other";
-    map.set(name, (map.get(name) ?? 0) + transaction.amount);
+    const current = map.get(id) ?? {
+      id,
+      name,
+      amount: 0,
+      color: transaction.categoryColor,
+    };
+
+    current.amount += transaction.amount;
+    map.set(id, current);
   });
 
-  return Array.from(map.entries())
-    .map(([name, amount]) => ({ name, amount }))
+  return Array.from(map.values())
     .sort((a, b) => b.amount - a.amount)
     .slice(0, 5)
     .map((item, index) => ({
       ...item,
-      color: CATEGORY_PALETTE[index % CATEGORY_PALETTE.length],
+      color:
+        isUsableColor(item.color) ? item.color
+        : CATEGORY_PALETTE[index % CATEGORY_PALETTE.length],
     }));
 }
 
@@ -815,11 +837,36 @@ function SpendingBreakdown({
     data.length > 0 ?
       data
     : [
-        { name: "Bills", amount: 3200, color: CATEGORY_PALETTE[0] },
-        { name: "Shopping", amount: 2100, color: CATEGORY_PALETTE[1] },
-        { name: "Fuel", amount: 1200, color: CATEGORY_PALETTE[2] },
-        { name: "Food", amount: 1150, color: CATEGORY_PALETTE[3] },
-        { name: "Health", amount: 800, color: CATEGORY_PALETTE[4] },
+        {
+          id: "demo-bills",
+          name: "Bills",
+          amount: 3200,
+          color: CATEGORY_PALETTE[0],
+        },
+        {
+          id: "demo-shopping",
+          name: "Shopping",
+          amount: 2100,
+          color: CATEGORY_PALETTE[1],
+        },
+        {
+          id: "demo-fuel",
+          name: "Fuel",
+          amount: 1200,
+          color: CATEGORY_PALETTE[2],
+        },
+        {
+          id: "demo-food",
+          name: "Food",
+          amount: 1150,
+          color: CATEGORY_PALETTE[3],
+        },
+        {
+          id: "demo-health",
+          name: "Health",
+          amount: 800,
+          color: CATEGORY_PALETTE[4],
+        },
       ];
 
   const chartKey = `spending-${period}-${chartData.map((item) => `${item.name}-${item.amount}`).join("-")}`;
@@ -847,7 +894,7 @@ function SpendingBreakdown({
                 animationDuration={1150}
               >
                 {chartData.map((entry) => (
-                  <Cell key={entry.name} fill={entry.color} />
+                  <Cell key={entry.id} fill={entry.color} />
                 ))}
               </Pie>
               <Tooltip
@@ -883,7 +930,7 @@ function SpendingBreakdown({
         >
           {chartData.slice(0, 5).map((item) => (
             <motion.div
-              key={item.name}
+              key={item.id}
               variants={{
                 hidden: { opacity: 0, x: 14 },
                 visible: { opacity: 1, x: 0 },

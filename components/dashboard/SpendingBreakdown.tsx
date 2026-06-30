@@ -8,6 +8,7 @@ import { useDashboardAnimationReady } from "@/components/motion/useDashboardAnim
 import EmptyState from "@/components/ui/empty-state";
 
 interface SpendingData {
+  id?: string;
   name: string;
   value: number;
   percentage: number;
@@ -27,8 +28,10 @@ const CATEGORY_PALETTE = [
   "#0d9488",
 ] as const;
 
-function isUsableColor(color: string | null | undefined) {
-  return Boolean(color && /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(color));
+function isUsableColor(color: string | null | undefined): color is string {
+  return (
+    typeof color === "string" && /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(color)
+  );
 }
 
 function getCategoryAccent(item: SpendingData, index: number) {
@@ -39,36 +42,6 @@ function getCategoryAccent(item: SpendingData, index: number) {
     .reduce((total, letter) => total + letter.charCodeAt(0), index);
 
   return CATEGORY_PALETTE[stableSeed % CATEGORY_PALETTE.length];
-}
-
-function getDistinctCategoryAccents(items: SpendingData[]) {
-  const used = new Set<string>();
-  const accents = new Map<string, string>();
-
-  items.forEach((item, index) => {
-    const preferred = getCategoryAccent(item, index);
-
-    if (!used.has(preferred)) {
-      used.add(preferred);
-      accents.set(item.name, preferred);
-      return;
-    }
-
-    const seed = item.name
-      .split("")
-      .reduce((total, letter) => total + letter.charCodeAt(0), index);
-
-    const fallback =
-      CATEGORY_PALETTE.find(
-        (_, offset) =>
-          !used.has(CATEGORY_PALETTE[(seed + offset) % CATEGORY_PALETTE.length]),
-      ) ?? preferred;
-
-    used.add(fallback);
-    accents.set(item.name, fallback);
-  });
-
-  return accents;
 }
 
 function formatCurrency(value: number) {
@@ -104,7 +77,6 @@ export default function SpendingBreakdown({
     }))
     .sort((a, b) => b.value - a.value)
     .slice(0, 5);
-  const categoryAccents = getDistinctCategoryAccents(sortedData);
 
   if (data.length === 0) {
     return (
@@ -159,7 +131,7 @@ export default function SpendingBreakdown({
 
       <div className="dashboard-list-rows">
         {sortedData.map((item, i) => {
-          const accent = categoryAccents.get(item.name) ?? getCategoryAccent(item, i);
+          const accent = getCategoryAccent(item, i);
           const percent = Math.max(0, Math.min(item.percentage, 100));
           const progressWidth =
             safeTotal > 0 && percent > 0 ? Math.max(2, percent) : 0;
@@ -180,8 +152,8 @@ export default function SpendingBreakdown({
 
           return (
             <div
-              key={`${item.name}-${i}`}
-              className="dashboard-list-row motion-card-entry"
+              key={item.id ?? `${item.name}-${i}`}
+              className="dashboard-list-row motion-card-entry overflow-hidden"
               style={rowStyle}
             >
               <div className="mb-2 grid min-w-0 grid-cols-[minmax(0,1fr)_auto_auto] items-center gap-x-2.5 sm:gap-x-3">
@@ -195,7 +167,7 @@ export default function SpendingBreakdown({
                   </span>
                 </div>
                 <span
-                  className="motion-counter-ready whitespace-nowrap text-right text-[12px] font-semibold leading-5 text-text-primary sm:text-[13px]"
+                  className="motion-counter-ready max-w-[7.5rem] break-words text-right text-[12px] font-semibold leading-5 text-text-primary [overflow-wrap:anywhere] sm:max-w-none sm:whitespace-nowrap sm:text-[13px]"
                   style={{ animationDelay: `${i * 65 + 85}ms` }}
                 >
                   <CountedAmount amount={formatCurrency(item.value)} duration={0.82} />
