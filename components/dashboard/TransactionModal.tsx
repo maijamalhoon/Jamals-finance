@@ -2,11 +2,18 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { TrendingDown, TrendingUp } from "lucide-react";
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import DatePicker from "@/components/ui/date-picker";
 import AccountSelect from "@/components/accounts/AccountSelect";
 import { getAppDateKey } from "@/lib/dates";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+} from "@/components/ui/select";
 import {
   FinanceModalBody,
   FinanceModalFooter,
@@ -21,7 +28,7 @@ interface Category {
   id: string;
   name: string;
   type: "income" | "expense";
-  color: string;
+  color: string | null;
   parent_id?: string | null;
 }
 
@@ -51,6 +58,70 @@ interface Props {
   onClose: () => void;
   onSuccess: () => void;
   transaction?: ExistingTransaction;
+}
+
+interface CategoryOption {
+  category: Category;
+  color: string;
+  label: string;
+  parentLabel?: string;
+  depth: number;
+}
+
+const CATEGORY_FALLBACK_COLORS: Record<Category["type"], string> = {
+  income: "#22c55e",
+  expense: "#f59e0b",
+};
+
+function getCategoryColor(category: Category) {
+  return category.color || CATEGORY_FALLBACK_COLORS[category.type];
+}
+
+function CategorySwatch({
+  color,
+  className = "",
+}: {
+  color: string;
+  className?: string;
+}) {
+  return (
+    <span
+      aria-hidden="true"
+      className={`shrink-0 rounded-full border border-white/50 shadow-[0_0_0_1px_rgb(0_0_0_/_0.08)] dark:border-white/10 ${className}`}
+      style={{ backgroundColor: color }}
+    />
+  );
+}
+
+function CategorySummary({
+  option,
+  placeholder,
+}: {
+  option?: CategoryOption;
+  placeholder: string;
+}) {
+  if (!option) {
+    return (
+      <span className="flex min-w-0 flex-1 items-center gap-3 text-text-secondary">
+        <CategorySwatch color="#94a3b8" className="h-3 w-3" />
+        <span className="truncate">{placeholder}</span>
+      </span>
+    );
+  }
+
+  return (
+    <span className="flex min-w-0 flex-1 items-center gap-3 text-left">
+      <CategorySwatch color={option.color} className="h-3 w-3" />
+      <span className="min-w-0 flex-1">
+        <span className="block truncate text-sm font-semibold text-text-primary">
+          {option.label}
+        </span>
+        <span className="block truncate text-[11px] font-medium text-text-secondary">
+          {option.parentLabel ? "Child category" : "Parent category"}
+        </span>
+      </span>
+    </span>
+  );
 }
 
 export default function TransactionModal({
@@ -221,9 +292,55 @@ export default function TransactionModal({
     loading ? "Saving..."
     : isEditing ? `Update ${isIncome ? "Income" : "Expense"}`
     : `Save ${isIncome ? "Income" : "Expense"}`;
-  const categoryById = new Map(categories.map((category) => [category.id, category]));
-  const parentName = (category: Category) =>
-    category.parent_id ? categoryById.get(category.parent_id)?.name : undefined;
+  const categoryById = useMemo(
+    () => new Map(categories.map((category) => [category.id, category])),
+    [categories],
+  );
+  const categoryOptions = useMemo<CategoryOption[]>(() => {
+    const sortedCategories = [...categories].sort((first, second) =>
+      first.name.localeCompare(second.name),
+    );
+    const childrenByParent = sortedCategories.reduce<Record<string, Category[]>>(
+      (grouped, category) => {
+        if (!category.parent_id) return grouped;
+        const parent = categoryById.get(category.parent_id);
+        if (!parent || parent.type !== category.type) return grouped;
+
+        grouped[category.parent_id] = [
+          ...(grouped[category.parent_id] ?? []),
+          category,
+        ];
+        return grouped;
+      },
+      {},
+    );
+    const roots = sortedCategories.filter((category) => {
+      if (!category.parent_id) return true;
+      const parent = categoryById.get(category.parent_id);
+      return !parent || parent.type !== category.type;
+    });
+
+    return roots.flatMap((category) => {
+      const rootOption: CategoryOption = {
+        category,
+        color: getCategoryColor(category),
+        label: category.name,
+        depth: 0,
+      };
+      const childOptions = (childrenByParent[category.id] ?? []).map((child) => ({
+        category: child,
+        color: getCategoryColor(child),
+        label: `${category.name} / ${child.name}`,
+        parentLabel: category.name,
+        depth: 1,
+      }));
+
+      return [rootOption, ...childOptions];
+    });
+  }, [categories, categoryById]);
+  const selectedCategoryOption = categoryOptions.find(
+    (option) => option.category.id === categoryId,
+  );
   const typeLocked = !isEditing;
 
   return (
@@ -301,26 +418,84 @@ export default function TransactionModal({
             <label className="field-label" htmlFor="transaction-category">
               Category
             </label>
-            <select
-              id="transaction-category"
-              value={categoryId}
-              onChange={(event) => setCategoryId(event.target.value)}
-              className="field-input"
+            <Select
+              value={categoryId || undefined}
+              onValueChange={setCategoryId}
+              disabled={loadingOptions || categoryOptions.length === 0}
             >
-              {loadingOptions && <option value="">Loading categories...</option>}
-              {!loadingOptions && categories.length === 0 && (
-                <option value="">
-                  No {isIncome ? "income" : "expense"} categories found
-                </option>
+              <SelectTrigger
+                id="transaction-category"
+                aria-label={`${isIncome ? "Income" : "Expense"} category`}
+                aria-describedby="transaction-category-help"
+                className="field-input h-auto min-h-12 w-full gap-3 px-3 py-2 pr-3 text-left data-placeholder:text-text-secondary [&>svg]:ml-1"
+              >
+                <CategorySummary
+                  option={selectedCategoryOption}
+                  placeholder={
+                    loadingOptions
+                      ? "Loading categories..."
+                      : `Select ${isIncome ? "income" : "expense"} category`
+                  }
+                />
+              </SelectTrigger>
+              <SelectContent
+                position="popper"
+                align="start"
+                sideOffset={8}
+                className="z-[90] max-h-[min(20rem,var(--radix-select-content-available-height))] rounded-[18px] p-1.5"
+                style={{
+                  width: "var(--radix-select-trigger-width)",
+                  maxWidth: "calc(100vw - 1.5rem)",
+                }}
+              >
+                {categoryOptions.map((option) => (
+                  <SelectItem
+                    key={option.category.id}
+                    value={option.category.id}
+                    textValue={option.label}
+                    className="min-h-14 py-2 pr-8 pl-2.5"
+                  >
+                    <span className="flex min-w-0 flex-1 items-center gap-3">
+                      <CategorySwatch color={option.color} className="h-3 w-3" />
+                      <span
+                        className="min-w-0 flex-1"
+                        style={{ paddingLeft: option.depth ? "0.75rem" : 0 }}
+                      >
+                        <span className="block truncate text-sm font-semibold">
+                          {option.label}
+                        </span>
+                        <span className="block truncate text-[11px] text-text-secondary">
+                          {option.parentLabel
+                            ? `Under ${option.parentLabel}`
+                            : "Parent category"}
+                        </span>
+                      </span>
+                    </span>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <div id="transaction-category-help" className="mt-2">
+              {!loadingOptions && categoryOptions.length === 0 ? (
+                <div className="rounded-[var(--oneui-control-radius)] border border-border bg-surface-secondary px-3 py-2.5 text-sm leading-5 text-text-secondary">
+                  <p>
+                    No {isIncome ? "income" : "expense"} categories yet.
+                  </p>
+                  <Link
+                    href="/dashboard/settings"
+                    className="finance-focus mt-1 inline-flex rounded-md text-sm font-semibold text-active hover:underline"
+                    onClick={onClose}
+                  >
+                    Open Settings categories
+                  </Link>
+                </div>
+              ) : (
+                <p className="sr-only">
+                  Category options include color markers and parent or child
+                  labels. Selected items are also marked with a check.
+                </p>
               )}
-              {categories.map((category) => (
-                <option key={category.id} value={category.id}>
-                  {parentName(category)
-                    ? `${parentName(category)} / ${category.name}`
-                    : category.name}
-                </option>
-              ))}
-            </select>
+            </div>
           </div>
 
           <div>
