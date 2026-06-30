@@ -1,9 +1,7 @@
 "use client";
 
 import {
-  useEffect,
   useMemo,
-  useState,
   type CSSProperties,
   type ReactNode,
 } from "react";
@@ -12,7 +10,11 @@ import { CheckCircle2, Target } from "lucide-react";
 
 import { GOAL_ICONS } from "@/components/goals/goal-icons";
 import { getGoalCategoryStyle } from "@/components/goals/goal-styles";
-import { useDashboardAnimationReady } from "@/components/motion/useDashboardAnimationReady";
+import {
+  useAnimatedGoalValue,
+  useProgressReveal,
+  useReducedMotion,
+} from "@/components/goals/use-animated-goal-value";
 import { useCurrency } from "@/components/currency/CurrencyProvider";
 import EmptyState from "@/components/ui/empty-state";
 
@@ -26,63 +28,6 @@ interface Goal {
 
 const DEFAULT_VISIBLE_GOALS = 4;
 
-function useReducedMotion() {
-  const [reduced, setReduced] = useState(false);
-
-  useEffect(() => {
-    const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
-
-    const update = () => setReduced(mediaQuery.matches);
-    update();
-
-    mediaQuery.addEventListener("change", update);
-    return () => mediaQuery.removeEventListener("change", update);
-  }, []);
-
-  return reduced;
-}
-
-function useAnimatedNumber(value: number, delay = 0, duration = 900) {
-  const reducedMotion = useReducedMotion();
-  const [displayValue, setDisplayValue] = useState(reducedMotion ? value : 0);
-
-  useEffect(() => {
-    if (reducedMotion) {
-      setDisplayValue(value);
-      return;
-    }
-
-    setDisplayValue(0);
-
-    let frameId = 0;
-    let startTime: number | null = null;
-
-    const animate = (time: number) => {
-      if (startTime === null) startTime = time;
-
-      const progress = Math.min((time - startTime) / duration, 1);
-      const eased = 1 - Math.pow(1 - progress, 3);
-
-      setDisplayValue(value * eased);
-
-      if (progress < 1) {
-        frameId = requestAnimationFrame(animate);
-      }
-    };
-
-    const timeoutId: ReturnType<typeof setTimeout> = setTimeout(() => {
-      frameId = requestAnimationFrame(animate);
-    }, delay);
-
-    return () => {
-      clearTimeout(timeoutId);
-      cancelAnimationFrame(frameId);
-    };
-  }, [value, delay, duration, reducedMotion]);
-
-  return displayValue;
-}
-
 function AnimatedCurrency({
   value,
   delay = 0,
@@ -90,22 +35,14 @@ function AnimatedCurrency({
   value: number;
   delay?: number;
 }) {
-  const animatedValue = useAnimatedNumber(value, delay, 820);
+  const animatedValue = useAnimatedGoalValue(value, delay, 820);
   const { formatCurrency } = useCurrency();
 
   return <>{formatCurrency(animatedValue)}</>;
 }
 
-function AnimatedPercent({
-  value,
-  delay = 0,
-}: {
-  value: number;
-  delay?: number;
-}) {
-  const animatedValue = useAnimatedNumber(value, delay, 780);
-
-  return <>{Math.round(animatedValue)}%</>;
+function formatPercent(value: number) {
+  return `${Math.round(value)}%`;
 }
 
 function getGoalProgress(goal: Goal) {
@@ -129,15 +66,17 @@ function getGoalProgress(goal: Goal) {
 function GoalRow({
   goal,
   index,
-  animationReady,
   reduceMotion,
 }: {
   goal: Goal;
   index: number;
-  animationReady: boolean;
   reduceMotion: boolean;
 }) {
   const { current, target, percentage, done } = getGoalProgress(goal);
+  const progressReady = useProgressReveal(
+    reduceMotion,
+    `${goal.id}:${percentage}`,
+  );
 
   const entry =
     GOAL_ICONS.find((item) => item.value === goal.icon) ??
@@ -148,7 +87,7 @@ function GoalRow({
 
   const delay = 0;
   const progressScale =
-    animationReady && percentage > 0 ?
+    progressReady && percentage > 0 ?
       Math.max(2, Math.min(percentage, 100)) / 100
     : 0;
 
@@ -158,8 +97,8 @@ function GoalRow({
     "--progress-accent": accent,
   } as CSSProperties;
   const progressStyle = {
-    transform: `scaleX(${progressScale})`,
-    transitionDuration: reduceMotion ? "0ms" : "820ms",
+    "--progress-duration": reduceMotion ? "0ms" : "820ms",
+    "--progress-scale": progressScale,
   } as CSSProperties;
 
   return (
@@ -191,15 +130,12 @@ function GoalRow({
         </div>
 
         <span className="shrink-0 text-right text-[13px] font-bold leading-5 text-[var(--goal-accent)]">
-          <AnimatedPercent value={percentage} delay={delay} />
+          {formatPercent(percentage)}
         </span>
       </div>
 
-      <div className="mt-2 dashboard-progress-track">
-        <div
-          className="dashboard-progress-fill"
-          style={progressStyle}
-        />
+      <div className="mt-2 dashboard-progress-track" style={progressStyle}>
+        <div className="dashboard-progress-fill" />
       </div>
     </article>
   );
@@ -212,7 +148,7 @@ export default function GoalsProgress({
   goals: Goal[];
   maxVisible?: number;
 }) {
-  const { ready: animationReady, reduceMotion } = useDashboardAnimationReady();
+  const reduceMotion = useReducedMotion();
   const visibleGoals = useMemo(() => {
     return goals.slice(0, maxVisible);
   }, [goals, maxVisible]);
@@ -240,7 +176,6 @@ export default function GoalsProgress({
             key={goal.id}
             goal={goal}
             index={index}
-            animationReady={animationReady}
             reduceMotion={reduceMotion}
           />
         ))}

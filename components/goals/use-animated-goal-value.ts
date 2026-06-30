@@ -18,7 +18,10 @@ export function useReducedMotion() {
   return reduced;
 }
 
-export function useProgressReveal(reducedMotion: boolean) {
+export function useProgressReveal(
+  reducedMotion: boolean,
+  resetKey?: string | number,
+) {
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
@@ -31,7 +34,7 @@ export function useProgressReveal(reducedMotion: boolean) {
 
     const frameId = requestAnimationFrame(() => setReady(true));
     return () => cancelAnimationFrame(frameId);
-  }, [reducedMotion]);
+  }, [reducedMotion, resetKey]);
 
   return ready;
 }

@@ -8,11 +8,7 @@ import { createClient } from "@/lib/supabase/client";
 import GoalModal, { ExistingGoal } from "./GoalModal";
 import { GOAL_ICONS } from "./goal-icons";
 import { getGoalCategoryStyle } from "./goal-styles";
-import {
-  useAnimatedGoalValue,
-  useProgressReveal,
-  useReducedMotion,
-} from "./use-animated-goal-value";
+import { useProgressReveal, useReducedMotion } from "./use-animated-goal-value";
 
 export default function GoalCard({ goal }: { goal: ExistingGoal }) {
   const router = useRouter();
@@ -22,7 +18,6 @@ export default function GoalCard({ goal }: { goal: ExistingGoal }) {
   const [deleting, setDeleting] = useState(false);
   const [now] = useState(() => Date.now());
   const reduceMotion = useReducedMotion();
-  const progressReady = useProgressReveal(reduceMotion);
 
   const current = Number(goal.current_amount);
   const target = Number(goal.target_amount);
@@ -31,7 +26,10 @@ export default function GoalCard({ goal }: { goal: ExistingGoal }) {
   const pct =
     safeTarget > 0 ? Math.min((safeCurrent / safeTarget) * 100, 100) : 0;
   const done = safeTarget > 0 && safeCurrent >= safeTarget;
-  const animatedPct = useAnimatedGoalValue(pct, 80, 760);
+  const progressReady = useProgressReveal(
+    reduceMotion,
+    `${goal.id}:${safeCurrent}:${safeTarget}`,
+  );
   const categoryStyle = getGoalCategoryStyle(goal);
   const accent = done ? "var(--success)" : categoryStyle.accent;
 
@@ -61,7 +59,7 @@ export default function GoalCard({ goal }: { goal: ExistingGoal }) {
     "--goal-accent": accent,
     "--progress-accent": accent,
     "--progress-duration": reduceMotion ? "0ms" : "820ms",
-    "--progress-scale": progressReady ? pct / 100 : 0,
+    "--progress-scale": progressReady && pct > 0 ? pct / 100 : 0,
   } as CSSProperties;
 
   const statusText =
@@ -137,7 +135,7 @@ export default function GoalCard({ goal }: { goal: ExistingGoal }) {
                 : "No deadline"}
           </p>
           <span className="shrink-0 text-sm font-bold leading-5 text-[var(--goal-accent)]">
-            {Math.round(animatedPct)}%
+            {Math.round(pct)}%
           </span>
         </div>
 

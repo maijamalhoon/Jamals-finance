@@ -1001,9 +1001,9 @@
     border-radius: inherit;
     background-color: var(--progress-accent, var(--active));
     opacity: 1;
-    transform: scaleX(0);
+    transform: scaleX(var(--progress-scale, 0));
     transform-origin: left center;
-    transition: transform 820ms var(--motion-ease);
+    transition: transform var(--progress-duration, 820ms) var(--motion-ease);
     will-change: transform;
   }
 
@@ -3934,8 +3934,14 @@ tbody tr:hover {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .dashboard-progress-fill {
+    transition: none !important;
+    will-change: auto;
+  }
+
   .motion-progress-fill {
     animation: none !important;
+    transition: none !important;
     transform: none !important;
     will-change: auto;
   }

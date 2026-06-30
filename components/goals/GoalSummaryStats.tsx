@@ -31,11 +31,11 @@ export default function GoalSummaryStats({
   overallPct,
 }: GoalSummaryStatsProps) {
   const reduceMotion = useReducedMotion();
-  const progressReady = useProgressReveal(reduceMotion);
   const animatedTarget = useAnimatedGoalValue(totalTarget, 0, 760);
   const animatedSaved = useAnimatedGoalValue(totalSaved, 80, 820);
-  const animatedPct = useAnimatedGoalValue(overallPct, 120, 760);
-  const cappedPct = Math.min(Math.max(overallPct, 0), 100);
+  const displayPct = Number.isFinite(overallPct) ? overallPct : 0;
+  const cappedPct = Math.min(Math.max(displayPct, 0), 100);
+  const progressReady = useProgressReveal(reduceMotion, cappedPct);
 
   const progressStyle = {
     "--progress-accent": "var(--active)",
@@ -111,7 +111,7 @@ export default function GoalSummaryStats({
               Overall Progress
             </p>
             <p className="mt-1 text-xl font-semibold leading-tight text-active">
-              {animatedPct.toFixed(1)}%
+              {displayPct.toFixed(1)}%
             </p>
           </div>
         </div>
