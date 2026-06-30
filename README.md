@@ -173,9 +173,13 @@ NEXT_PUBLIC_ENABLE_GOOGLE_AUTH=false
 NEXT_PUBLIC_SENTRY_DSN=
 SENTRY_AUTH_TOKEN=
 
+ANTHROPIC_API_KEY=
+
 NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=
 STRIPE_SECRET_KEY=
 ```
+
+`ANTHROPIC_API_KEY` is used only on the server for AI Insights. Do not prefix it with `NEXT_PUBLIC_`, and never commit real secret values.
 
 Only enable Google authentication when the provider is fully configured in Supabase.
 

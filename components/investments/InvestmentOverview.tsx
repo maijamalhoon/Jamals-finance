@@ -1,7 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import CountUp from "react-countup";
 import { motion, useReducedMotion } from "framer-motion";
 import Link from "next/link";
@@ -410,41 +410,47 @@ function PortfolioSummary({
 function EmbeddedInsightCard({ investments }: { investments: ExistingInvestment[] }) {
   const [insight, setInsight] = useState<Insight | null>(null);
   const [loading, setLoading] = useState(true);
-  const cryptoValue = useMemo(
-    () =>
-      investments
-        .filter((investment) => investment.type === "crypto")
-        .reduce(
-          (sum, investment) =>
-            sum + Number(investment.quantity) * Number(investment.current_price),
-          0,
-        ),
-    [investments],
+  const [status, setStatus] = useState<"ready" | "empty" | "unavailable">(
+    "ready",
   );
-  const totalValue = useMemo(
-    () =>
-      investments.reduce(
-        (sum, investment) =>
-          sum + Number(investment.quantity) * Number(investment.current_price),
-        0,
-      ),
-    [investments],
-  );
-  const cryptoPct = totalValue > 0 ? (cryptoValue / totalValue) * 100 : 0;
-  const fallbackSuggestion =
-    cryptoPct > 45
-      ? "Your crypto allocation is high risk. Consider balancing with steadier holdings."
-      : "Your allocation looks balanced. Keep monitoring profit concentration by asset type.";
 
   useEffect(() => {
+    if (investments.length === 0) {
+      setLoading(false);
+      setStatus("empty");
+      return;
+    }
+
     fetch("/api/ai-insights")
-      .then((response) => response.json())
-      .then((json) => {
-        if (!json.error && json.insights?.[0]) setInsight(json.insights[0]);
+      .then(async (response) => {
+        const json = await response.json();
+
+        if (!response.ok || json.error) {
+          setStatus("unavailable");
+          return;
+        }
+
+        if (json.empty) {
+          setStatus("empty");
+          return;
+        }
+
+        if (json.insights?.[0]) {
+          setInsight(json.insights[0]);
+          setStatus("ready");
+        } else {
+          setStatus("empty");
+        }
       })
-      .catch(() => {})
+      .catch(() => setStatus("unavailable"))
       .finally(() => setLoading(false));
-  }, []);
+  }, [investments.length]);
+
+  const message =
+    insight?.message ??
+    (status === "unavailable"
+      ? "AI insights are temporarily unavailable. Try again later."
+      : "Add transactions to unlock personalized AI portfolio guidance.");
 
   return (
     <motion.div
@@ -469,9 +475,9 @@ function EmbeddedInsightCard({ investments }: { investments: ExistingInvestment[
         <p className="text-sm leading-6 text-text-primary">
           {loading
             ? "Reading your latest portfolio and cash-flow signals..."
-            : insight?.message ?? fallbackSuggestion}
+            : message}
         </p>
-        {insight?.title && (
+        {!loading && insight?.title && (
           <p className="mt-2 text-xs font-semibold text-active">
             {insight.title}
           </p>

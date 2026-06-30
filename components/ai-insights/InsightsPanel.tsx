@@ -21,6 +21,15 @@ interface AIData {
   insights: Insight[];
 }
 
+interface AIEmptyData {
+  empty: true;
+  message?: string;
+  insights: [];
+}
+
+const UNAVAILABLE_MESSAGE = "AI insights are temporarily unavailable.";
+const TRY_AGAIN_MESSAGE = "Try again later.";
+
 const INSIGHT_STYLE = {
   positive: {
     icon: TrendingUp,
@@ -96,20 +105,33 @@ export default function InsightsPanel() {
   const [data, setData] = useState<AIData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [emptyMessage, setEmptyMessage] = useState("");
 
   async function load() {
     setLoading(true);
     setError("");
+    setEmptyMessage("");
     try {
       const res = await fetch("/api/ai-insights");
-      if (!res.ok) throw new Error();
-      const json = await res.json();
-      if (json.error) throw new Error();
-      setData(json);
+      const json = (await res.json()) as AIData | AIEmptyData | { error?: string };
+
+      if (!res.ok || "error" in json) throw new Error();
+
+      if ("empty" in json && json.empty) {
+        setData(null);
+        setEmptyMessage(
+          json.message ?? "Add transactions to get personalized AI insights.",
+        );
+        return;
+      }
+
+      setData(json as AIData);
     } catch {
-      setError("Could not load insights. Make sure your API key is set.");
+      setData(null);
+      setError(UNAVAILABLE_MESSAGE);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   }
 
   useEffect(() => {
@@ -166,7 +188,10 @@ export default function InsightsPanel() {
           </div>
         : error ?
           <div className="py-10 text-center">
-            <p className="text-sm text-danger">{error}</p>
+            <p className="text-sm font-semibold text-text-primary">{error}</p>
+            <p className="mt-1 text-xs text-text-secondary">
+              {TRY_AGAIN_MESSAGE}
+            </p>
             <button
               onClick={load}
               className="finance-focus mt-3 rounded-full border border-border bg-surface px-3 py-2 text-xs font-semibold text-text-secondary hover:bg-hover hover:text-text-primary"
@@ -174,6 +199,15 @@ export default function InsightsPanel() {
             >
               Try again
             </button>
+          </div>
+        : emptyMessage ?
+          <div className="py-10 text-center">
+            <p className="text-sm font-semibold text-text-primary">
+              No AI insights yet
+            </p>
+            <p className="mt-1 text-xs text-text-secondary">
+              {emptyMessage}
+            </p>
           </div>
         : data?.insights.length ?
           <div className="space-y-3">
