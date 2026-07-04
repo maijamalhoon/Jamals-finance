@@ -53,6 +53,25 @@ function shortCurrency(value: number) {
   return formatCurrency(value);
 }
 
+function formatUpdatedAt(value: string | null | undefined) {
+  if (!value) return "Not synced yet";
+
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) return "Not synced yet";
+
+  return `Updated ${date.toLocaleString("en-PK", {
+    dateStyle: "medium",
+    timeStyle: "short",
+  })}`;
+}
+
+function formatChange24h(value: number | null | undefined) {
+  if (typeof value !== "number" || !Number.isFinite(value)) return null;
+
+  return `${value >= 0 ? "+" : ""}${value.toFixed(2)}% 24h`;
+}
+
 function AnimatedCurrency({
   value,
   compact = false,
@@ -229,9 +248,22 @@ function InvestmentDonut({
             stroke={10}
           >
             <div className="min-w-0">
+              {investment.image_url ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={investment.image_url}
+                  alt=""
+                  className="mx-auto mb-1.5 h-7 w-7 rounded-full"
+                />
+              ) : null}
               <p className="truncate text-sm font-semibold text-text-primary">
                 {investment.name}
               </p>
+              {investment.symbol ? (
+                <p className="mt-0.5 text-[10px] font-bold uppercase text-text-secondary">
+                  {investment.symbol}
+                </p>
+              ) : null}
               <p className="mt-1 break-words text-[11px] font-medium text-text-secondary [overflow-wrap:anywhere]">
                 {shortCurrency(currentValue)}
               </p>
@@ -251,17 +283,24 @@ function InvestmentDonut({
 
         <div className="mt-4 w-full space-y-3">
           <div className="flex items-center justify-between gap-3">
-            <span
-              className="inline-flex max-w-[58%] min-w-0 items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-semibold"
-              style={{
-                borderColor: `${accent}33`,
-                backgroundColor: `${accent}14`,
-                color: accent,
-              }}
-            >
-              <span className="truncate">
-                {TYPE_META[investment.type]?.label ?? "Other"}
+            <span className="flex min-w-0 items-center gap-1.5">
+              <span
+                className="inline-flex min-w-0 items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-semibold"
+                style={{
+                  borderColor: `${accent}33`,
+                  backgroundColor: `${accent}14`,
+                  color: accent,
+                }}
+              >
+                <span className="truncate">
+                  {TYPE_META[investment.type]?.label ?? "Other"}
+                </span>
               </span>
+              {investment.is_live_priced ? (
+                <span className="rounded-full border border-success/25 bg-success/10 px-2 py-1 text-[10px] font-bold uppercase text-success">
+                  Live
+                </span>
+              ) : null}
             </span>
             <span className="min-w-0 truncate text-xs font-semibold" style={{ color }}>
               {isProfit ? "+" : "-"}
@@ -283,6 +322,23 @@ function InvestmentDonut({
               </p>
             </div>
           </div>
+
+          {investment.is_live_priced ? (
+            <div className="flex items-center justify-between gap-3 rounded-[14px] border border-border bg-surface-secondary px-3 py-2 text-[11px]">
+              <span
+                className={
+                  Number(investment.price_change_24h ?? 0) >= 0
+                    ? "font-semibold text-success"
+                    : "font-semibold text-danger"
+                }
+              >
+                {formatChange24h(investment.price_change_24h) ?? "24h unavailable"}
+              </span>
+              <span className="truncate text-text-secondary">
+                {formatUpdatedAt(investment.price_updated_at)}
+              </span>
+            </div>
+          ) : null}
         </div>
       </motion.div>
 

@@ -54,6 +54,25 @@ const CONFIG: Record<
   },
 };
 
+function formatUpdatedAt(value: string | null | undefined) {
+  if (!value) return "Not synced yet";
+
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) return "Not synced yet";
+
+  return `Updated ${date.toLocaleString("en-PK", {
+    dateStyle: "medium",
+    timeStyle: "short",
+  })}`;
+}
+
+function formatChange24h(value: number | null | undefined) {
+  if (typeof value !== "number" || !Number.isFinite(value)) return null;
+
+  return `${value >= 0 ? "+" : ""}${value.toFixed(2)}%`;
+}
+
 export default function InvestmentCard({ inv }: { inv: ExistingInvestment }) {
   const router = useRouter();
   const supabase = createClient();
@@ -105,16 +124,34 @@ export default function InvestmentCard({ inv }: { inv: ExistingInvestment }) {
         </div>
 
         <div className="mb-4 flex items-center gap-3 pr-16">
-          <div
-            className={`flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg ${cfg.bg}`}
-          >
-            <Icon size={18} className={cfg.color} />
-          </div>
+          {inv.image_url ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={inv.image_url}
+              alt=""
+              className="h-10 w-10 flex-shrink-0 rounded-full"
+            />
+          ) : (
+            <div
+              className={`flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg ${cfg.bg}`}
+            >
+              <Icon size={18} className={cfg.color} />
+            </div>
+          )}
           <div className="min-w-0">
             <p className="truncate text-sm font-semibold text-text-primary">
               {inv.name}
             </p>
-            <p className={`text-xs ${cfg.color}`}>{cfg.label}</p>
+            <div className="mt-0.5 flex min-w-0 items-center gap-1.5">
+              <p className={`truncate text-xs ${cfg.color}`}>
+                {inv.symbol ? inv.symbol.toUpperCase() : cfg.label}
+              </p>
+              {inv.is_live_priced ? (
+                <span className="rounded-full border border-success/25 bg-success/10 px-1.5 py-0.5 text-[9px] font-bold uppercase text-success">
+                  Live
+                </span>
+              ) : null}
+            </div>
           </div>
         </div>
 
@@ -163,6 +200,22 @@ export default function InvestmentCard({ inv }: { inv: ExistingInvestment }) {
               </span>
             </div>
           </div>
+          {inv.is_live_priced ? (
+            <div className="flex items-center justify-between gap-3 rounded-[14px] bg-surface-secondary px-3 py-2 text-[11px]">
+              <span
+                className={
+                  Number(inv.price_change_24h ?? 0) >= 0
+                    ? "font-semibold text-success"
+                    : "font-semibold text-danger"
+                }
+              >
+                {formatChange24h(inv.price_change_24h) ?? "24h unavailable"}
+              </span>
+              <span className="truncate text-text-secondary">
+                {formatUpdatedAt(inv.price_updated_at)}
+              </span>
+            </div>
+          ) : null}
         </div>
       </div>
 

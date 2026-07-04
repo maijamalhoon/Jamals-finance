@@ -3,8 +3,27 @@ import AddInvestmentButton from "@/components/investments/AddInvestmentButton";
 import InvestmentOverview from "@/components/investments/InvestmentOverview";
 import EmptyState from "@/components/ui/empty-state";
 import { AlertTriangle, BarChart2, Sparkles, TrendingUp } from "lucide-react";
+import { getCryptoPrices } from "@/lib/market/crypto";
 
 export const dynamic = "force-dynamic";
+
+type InvestmentRow = {
+  id: string;
+  name: string;
+  type: string;
+  quantity: number | string;
+  purchase_price: number | string;
+  current_price: number | string;
+  purchased_at: string;
+  asset_id?: string | null;
+  symbol?: string | null;
+  image_url?: string | null;
+  price_source?: string | null;
+  price_currency?: string | null;
+  price_updated_at?: string | null;
+  price_change_24h?: number | null;
+  is_live_priced?: boolean | null;
+};
 
 export default async function InvestmentsPage() {
   const supabase = await createClient();
@@ -18,12 +37,59 @@ export default async function InvestmentsPage() {
     console.error("Failed to load investments", investmentsError.message);
   }
 
-  const list = investments ?? [];
+  const list = (investments ?? []) as InvestmentRow[];
+  const liveAssetIds = Array.from(
+    new Set(
+      list
+        .filter(
+          (investment) =>
+            investment.is_live_priced &&
+            investment.price_source === "coingecko" &&
+            investment.asset_id,
+        )
+        .map((investment) => investment.asset_id as string),
+    ),
+  );
+  const emptyLivePrices: Awaited<ReturnType<typeof getCryptoPrices>> = {
+    prices: {},
+    live: false,
+  };
+
+  const livePrices =
+    liveAssetIds.length > 0
+      ? await getCryptoPrices(liveAssetIds).catch((error) => {
+          console.error("Failed to refresh crypto prices", error);
+          return emptyLivePrices;
+        })
+      : emptyLivePrices;
+
+  const pricedList = list.map((investment) => {
+    const livePrice = investment.asset_id
+      ? livePrices.prices[investment.asset_id]
+      : null;
+
+    if (
+      investment.is_live_priced &&
+      investment.price_source === "coingecko" &&
+      typeof livePrice?.pkr === "number"
+    ) {
+      return {
+        ...investment,
+        current_price: livePrice.pkr,
+        price_change_24h: livePrice.change24h,
+        price_updated_at: livePrice.lastUpdatedAt,
+        price_currency: "PKR",
+      };
+    }
+
+    return investment;
+  });
+
   const totalInvested = list.reduce(
     (s, i) => s + Number(i.quantity) * Number(i.purchase_price),
     0,
   );
-  const totalValue = list.reduce(
+  const totalValue = pricedList.reduce(
     (s, i) => s + Number(i.quantity) * Number(i.current_price),
     0,
   );
@@ -73,7 +139,7 @@ export default async function InvestmentsPage() {
         </div>
       ) : (
         <InvestmentOverview
-          investments={list as any}
+          investments={pricedList}
           totalInvested={totalInvested}
           totalValue={totalValue}
           totalPnL={totalPnL}
