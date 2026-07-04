@@ -15,6 +15,33 @@ type CategoryRow = {
   parent_id?: string | null;
 };
 
+type DatedTransaction = {
+  date?: string | null;
+  created_at?: string | null;
+  id?: string | number | null;
+};
+
+function getSortTime(value?: string | null) {
+  if (!value) return 0;
+
+  const time = new Date(value).getTime();
+  return Number.isNaN(time) ? 0 : time;
+}
+
+export function sortTransactionsNewestFirst<T extends DatedTransaction>(
+  transactions: T[],
+) {
+  return [...transactions].sort((a, b) => {
+    const dateDiff = getSortTime(b.date) - getSortTime(a.date);
+    if (dateDiff !== 0) return dateDiff;
+
+    const createdDiff = getSortTime(b.created_at) - getSortTime(a.created_at);
+    if (createdDiff !== 0) return createdDiff;
+
+    return String(b.id ?? "").localeCompare(String(a.id ?? ""));
+  });
+}
+
 export async function loadTransactions(
   supabase: any,
   options: TransactionLoadOptions = {},
@@ -22,7 +49,8 @@ export async function loadTransactions(
   let query = supabase
     .from("transactions")
     .select("*, categories(id, name, color, parent_id), accounts(name)")
-    .order("date", { ascending: false });
+    .order("date", { ascending: false })
+    .order("created_at", { ascending: false });
 
   if (options.type) query = query.eq("type", options.type);
   if (options.from) query = query.gte("date", options.from);
@@ -61,7 +89,7 @@ export async function loadTransactions(
     ),
   );
 
-  if (parentIds.length === 0) return rows;
+  if (parentIds.length === 0) return sortTransactionsNewestFirst(rows);
 
   const { data: parents, error: parentError } = await supabase
     .from("categories")
@@ -70,7 +98,7 @@ export async function loadTransactions(
 
   if (parentError) {
     console.error("Failed to load parent categories", parentError.message);
-    return rows;
+    return sortTransactionsNewestFirst(rows);
   }
 
   const parentById = new Map(
@@ -80,16 +108,18 @@ export async function loadTransactions(
     ]),
   );
 
-  return rows.map((transaction: any) => {
-    const category = transaction.categories as CategoryRow | null;
-    if (!category?.parent_id) return transaction;
+  return sortTransactionsNewestFirst(
+    rows.map((transaction: any) => {
+      const category = transaction.categories as CategoryRow | null;
+      if (!category?.parent_id) return transaction;
 
-    return {
-      ...transaction,
-      categories: {
-        ...category,
-        parent: parentById.get(category.parent_id) ?? null,
-      },
-    };
-  });
+      return {
+        ...transaction,
+        categories: {
+          ...category,
+          parent: parentById.get(category.parent_id) ?? null,
+        },
+      };
+    }),
+  );
 }

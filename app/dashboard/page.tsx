@@ -10,6 +10,7 @@ import SpendRecordWidget from "@/components/dashboard/SpendRecordWidget";
 import ChartCard from "@/components/dashboard/ChartCard";
 import QuickActionsBalance from "@/components/dashboard/QuickActionsBalance";
 import NewUserSetupGuide from "@/components/dashboard/NewUserSetupGuide";
+import { sortTransactionsNewestFirst } from "@/lib/transactions";
 import {
   formatAppMonth,
   formatAppMonthYear,
@@ -32,6 +33,7 @@ type DashboardTransaction = {
   amount: number | string;
   note: string | null;
   date: string;
+  created_at?: string | null;
   categories: {
     id: string;
     name: string;
@@ -160,6 +162,7 @@ export default async function DashboardPage() {
       .from("transactions")
       .select("*, categories(id, name, color), accounts(name)")
       .order("date", { ascending: false })
+      .order("created_at", { ascending: false })
       .limit(12),
 
     supabase
@@ -232,7 +235,9 @@ export default async function DashboardPage() {
   }
 
   const txns = (thisTxns ?? []) as DashboardTransaction[];
-  const recentTransactions = (recentTxns ?? []) as DashboardTransaction[];
+  const recentTransactions = sortTransactionsNewestFirst(
+    (recentTxns ?? []) as DashboardTransaction[],
+  );
   const previousTxns = (lastTxns ?? []) as Array<{
     type: string;
     amount: number | string;
