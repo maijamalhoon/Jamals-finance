@@ -154,6 +154,8 @@ export default function TransactionModal({
     if (transaction) {
       setType(transaction.type);
       setAmount(String(transaction.amount));
+      setCategoryId(transaction.category_id || "");
+      setAccountId(transaction.account_id || "");
       setDate(transaction.date);
       setNote(transaction.note || "");
       setSourceName(transaction.source_name || "");
@@ -162,6 +164,8 @@ export default function TransactionModal({
     } else {
       setType(defaultType);
       setAmount("");
+      setCategoryId("");
+      setAccountId("");
       setDate(getAppDateKey());
       setNote("");
       setSourceName("");
@@ -173,10 +177,13 @@ export default function TransactionModal({
 
   useEffect(() => {
     if (!open) return;
+    let cancelled = false;
 
     async function load() {
       setLoadingOptions(true);
       setError("");
+      setCategories([]);
+      setCategoryId("");
       const [{ data: cats, error: catsError }, { data: accs, error: accsError }] = await Promise.all([
         supabase
           .from("categories")
@@ -186,6 +193,7 @@ export default function TransactionModal({
           .order("name"),
         supabase.from("accounts").select("id, name, type, balance").order("name"),
       ]);
+      if (cancelled) return;
       setLoadingOptions(false);
 
       if (catsError || accsError) {
@@ -197,7 +205,9 @@ export default function TransactionModal({
         return;
       }
 
-      const nextCategories = (cats || []) as Category[];
+      const nextCategories = ((cats || []) as Category[]).filter(
+        (category) => category.type === type,
+      );
       const nextAccounts = (accs || []) as Account[];
       setCategories(nextCategories);
       setAccounts(nextAccounts);
@@ -216,6 +226,9 @@ export default function TransactionModal({
     }
 
     load();
+    return () => {
+      cancelled = true;
+    };
   }, [open, supabase, transaction?.account_id, transaction?.category_id, type]);
 
   async function handleSave() {
@@ -351,19 +364,6 @@ export default function TransactionModal({
           description="Enter amount, account, category, date, and an optional note."
           icon={isIncome ? TrendingUp : TrendingDown}
           tone={isIncome ? "success" : "danger"}
-          badge={
-            typeLocked ? (
-              <span
-                className={`shrink-0 rounded-full border px-2.5 py-1 text-[11px] font-semibold ${
-                  isIncome
-                    ? "border-emerald-500/20 bg-emerald-500/10 text-emerald-700 dark:text-emerald-200"
-                    : "border-rose-500/20 bg-rose-500/10 text-rose-700 dark:text-rose-200"
-                }`}
-              >
-                {isIncome ? "Income only" : "Expense only"}
-              </span>
-            ) : null
-          }
         />
 
         <FinanceModalBody>
