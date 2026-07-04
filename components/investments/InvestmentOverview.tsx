@@ -72,6 +72,21 @@ function formatChange24h(value: number | null | undefined) {
   return `${value >= 0 ? "+" : ""}${value.toFixed(2)}% 24h`;
 }
 
+function toFiniteNumber(value: number | string | null | undefined) {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
+function formatUsd(value: number | string | null | undefined) {
+  const parsed = toFiniteNumber(value);
+
+  if (parsed === null) return null;
+
+  return `$${parsed.toLocaleString("en-US", {
+    maximumFractionDigits: parsed >= 1 ? 2 : 6,
+  })}`;
+}
+
 function AnimatedCurrency({
   value,
   compact = false,
@@ -194,14 +209,26 @@ function InvestmentDonut({
   const [deleting, setDeleting] = useState(false);
 
   const quantity = Number(investment.quantity);
-  const invested = quantity * Number(investment.purchase_price);
-  const currentValue = quantity * Number(investment.current_price);
+  const buyPrice = Number(investment.purchase_price);
+  const currentUnitPrice = Number(investment.current_price);
+  const invested = quantity * buyPrice;
+  const currentValue = quantity * currentUnitPrice;
   const pnl = currentValue - invested;
   const pct = invested > 0 ? (pnl / invested) * 100 : 0;
   const isProfit = pnl >= 0;
   const color = isProfit ? profitColor : lossColor;
   const accent = TYPE_META[investment.type]?.color ?? TYPE_META.other.color;
   const ringProgress = Math.max(0.14, Math.min(0.92, Math.abs(pct) / 100));
+  const originalBuyPrice = toFiniteNumber(investment.purchase_price_original);
+  const purchaseCurrency = investment.purchase_currency === "USD" ? "USD" : "PKR";
+  const liveUsdPrice =
+    investment.current_price_currency === "USD"
+      ? formatUsd(investment.current_price_original)
+      : null;
+  const boughtAtLabel =
+    purchaseCurrency === "USD" && originalBuyPrice !== null
+      ? `Bought at ${formatUsd(originalBuyPrice)}`
+      : `Bought at ${shortCurrency(originalBuyPrice ?? buyPrice)}`;
 
   async function handleDelete() {
     if (!confirm(`Delete "${investment.name}"? This cannot be undone.`)) return;
@@ -310,16 +337,26 @@ function InvestmentDonut({
 
           <div className="grid grid-cols-2 gap-2">
             <div className="finance-panel-soft min-w-0 p-3">
-              <p className="text-[11px] text-text-secondary">Invested</p>
+              <p className="text-[11px] text-text-secondary">Buy Price</p>
               <p className="mt-1 break-words text-xs font-bold text-text-primary [overflow-wrap:anywhere]">
-                {shortCurrency(invested)}
+                {shortCurrency(buyPrice)}
+              </p>
+              <p className="mt-1 break-words text-[10px] text-text-secondary [overflow-wrap:anywhere]">
+                {boughtAtLabel}
               </p>
             </div>
             <div className="finance-panel-soft min-w-0 p-3">
-              <p className="text-[11px] text-text-secondary">Current</p>
-              <p className="mt-1 break-words text-xs font-bold text-text-primary [overflow-wrap:anywhere]">
-                {shortCurrency(currentValue)}
+              <p className="text-[11px] text-text-secondary">
+                {investment.is_live_priced ? "Live Price" : "Current Price"}
               </p>
+              <p className="mt-1 break-words text-sm font-bold text-text-primary [overflow-wrap:anywhere]">
+                {shortCurrency(currentUnitPrice)}
+              </p>
+              {liveUsdPrice ? (
+                <p className="mt-1 break-words text-[10px] text-text-secondary [overflow-wrap:anywhere]">
+                  {liveUsdPrice}
+                </p>
+              ) : null}
             </div>
           </div>
 

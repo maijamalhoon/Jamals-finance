@@ -13,7 +13,11 @@ type InvestmentRow = {
   type: string;
   quantity: number | string;
   purchase_price: number | string;
+  purchase_price_original?: number | string | null;
+  purchase_currency?: string | null;
   current_price: number | string;
+  current_price_original?: number | string | null;
+  current_price_currency?: string | null;
   purchased_at: string;
   asset_id?: string | null;
   symbol?: string | null;
@@ -76,6 +80,8 @@ export default async function InvestmentsPage() {
       return {
         ...investment,
         current_price: livePrice.pkr,
+        current_price_original: livePrice.usd,
+        current_price_currency: "USD",
         price_change_24h: livePrice.change24h,
         price_updated_at: livePrice.lastUpdatedAt,
         price_currency: "PKR",

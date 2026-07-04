@@ -73,6 +73,21 @@ function formatChange24h(value: number | null | undefined) {
   return `${value >= 0 ? "+" : ""}${value.toFixed(2)}%`;
 }
 
+function toFiniteNumber(value: number | string | null | undefined) {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
+function formatUsd(value: number | string | null | undefined) {
+  const parsed = toFiniteNumber(value);
+
+  if (parsed === null) return null;
+
+  return `$${parsed.toLocaleString("en-US", {
+    maximumFractionDigits: parsed >= 1 ? 2 : 6,
+  })}`;
+}
+
 export default function InvestmentCard({ inv }: { inv: ExistingInvestment }) {
   const router = useRouter();
   const supabase = createClient();
@@ -87,6 +102,16 @@ export default function InvestmentCard({ inv }: { inv: ExistingInvestment }) {
   const qty = Number(inv.quantity);
   const buyPrice = Number(inv.purchase_price);
   const curPrice = Number(inv.current_price);
+  const originalBuyPrice = toFiniteNumber(inv.purchase_price_original);
+  const purchaseCurrency = inv.purchase_currency === "USD" ? "USD" : "PKR";
+  const liveUsdPrice =
+    inv.current_price_currency === "USD"
+      ? formatUsd(inv.current_price_original)
+      : null;
+  const boughtAtLabel =
+    purchaseCurrency === "USD" && originalBuyPrice !== null
+      ? `Bought at ${formatUsd(originalBuyPrice)}`
+      : `Bought at ${formatCurrency(originalBuyPrice ?? buyPrice)}`;
   const totalCost = qty * buyPrice;
   const currentValue = qty * curPrice;
   const pnl = currentValue - totalCost;
@@ -168,12 +193,22 @@ export default function InvestmentCard({ inv }: { inv: ExistingInvestment }) {
             <p className="break-words text-xs font-medium text-text-primary [overflow-wrap:anywhere]">
               {formatCurrency(buyPrice)}
             </p>
+            <p className="mt-1 break-words text-[10px] text-text-secondary [overflow-wrap:anywhere]">
+              {boughtAtLabel}
+            </p>
           </div>
           <div className="finance-panel-soft min-w-0 p-2.5">
-            <p className="mb-0.5 text-[10px] text-text-secondary">Current Price</p>
-            <p className="break-words text-xs font-medium text-text-primary [overflow-wrap:anywhere]">
+            <p className="mb-0.5 text-[10px] text-text-secondary">
+              {inv.is_live_priced ? "Live Price" : "Current Price"}
+            </p>
+            <p className="break-words text-sm font-bold text-text-primary [overflow-wrap:anywhere]">
               {formatCurrency(curPrice)}
             </p>
+            {liveUsdPrice ? (
+              <p className="mt-1 break-words text-[10px] text-text-secondary [overflow-wrap:anywhere]">
+                {liveUsdPrice}
+              </p>
+            ) : null}
           </div>
         </div>
 
