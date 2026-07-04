@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowRight, Zap } from "lucide-react";
+import { ArrowRight, Package, Zap } from "lucide-react";
 import {
   Cell,
   Pie,
@@ -11,6 +11,11 @@ import {
 } from "recharts";
 import ChartCard from "@/components/dashboard/ChartCard";
 import CountedAmount from "@/components/motion/CountedAmount";
+import {
+  aggregateInvestmentHoldings,
+  getAssetInitials,
+} from "@/lib/investments/aggregation";
+import type { AggregatedInvestment } from "@/lib/investments/aggregation";
 
 interface Investment {
   id: string;
@@ -19,9 +24,17 @@ interface Investment {
   quantity: number | string;
   purchase_price: number | string;
   current_price: number | string;
+  asset_id?: string | null;
+  symbol?: string | null;
+  image_url?: string | null;
+  price_source?: string | null;
+  current_price_original?: number | string | null;
+  current_price_currency?: string | null;
+  price_updated_at?: string | null;
+  price_change_24h?: number | null;
+  is_live_priced?: boolean | null;
 }
 
-const colors = ["#3b82f6", "#f59e0b", "#34d399", "#a855f7", "#64748b"];
 const profitColor = "var(--success)";
 const lossColor = "var(--danger)";
 
@@ -38,26 +51,71 @@ function formatCurrency(value: number) {
 }
 
 function buildAllocationData(investments: Investment[]) {
-  const rows = investments
-    .map((investment, index) => {
-      const value = Number(investment.quantity) * Number(investment.current_price);
-
-      return {
-        id: investment.id,
-        name: investment.name,
-        value: Number.isFinite(value) && value > 0 ? value : 0,
-        color: colors[index % colors.length],
-      };
-    })
-    .filter((investment) => investment.value > 0);
+  const rows = aggregateInvestmentHoldings(investments)
+    .map((holding) => ({
+      id: holding.groupKey,
+      name: holding.name,
+      symbol: holding.symbol,
+      imageUrl: holding.image_url,
+      value: Number.isFinite(holding.currentValue) ? holding.currentValue : 0,
+      color: holding.color,
+      holding,
+    }))
+    .filter((holding) => holding.value > 0);
 
   if (rows.length > 0) return rows;
 
   return [
-    { id: "cash", name: "Cash", value: 42, color: colors[0] },
-    { id: "stocks", name: "Stocks", value: 34, color: colors[1] },
-    { id: "funds", name: "Funds", value: 24, color: colors[2] },
+    {
+      id: "unpriced",
+      name: "Unpriced",
+      symbol: null,
+      imageUrl: null,
+      value: 1,
+      color: "#64748b",
+      holding: null,
+    },
   ];
+}
+
+function LegendIcon({
+  entry,
+}: {
+  entry: {
+    name: string;
+    symbol: string | null;
+    imageUrl: string | null;
+    color: string;
+    holding: AggregatedInvestment | null;
+  };
+}) {
+  if (entry.imageUrl) {
+    return (
+      // eslint-disable-next-line @next/next/no-img-element
+      <img
+        src={entry.imageUrl}
+        alt=""
+        className="h-5 w-5 flex-shrink-0 rounded-full"
+      />
+    );
+  }
+
+  if (!entry.holding) {
+    return (
+      <span className="grid h-5 w-5 flex-shrink-0 place-items-center rounded-full bg-surface-secondary text-text-secondary">
+        <Package size={11} />
+      </span>
+    );
+  }
+
+  return (
+    <span
+      className="grid h-5 w-5 flex-shrink-0 place-items-center rounded-full text-[8.5px] font-bold text-white"
+      style={{ backgroundColor: entry.color }}
+    >
+      {getAssetInitials(entry.name, entry.symbol)}
+    </span>
+  );
 }
 
 export default function InvestmentOverviewWidget({
@@ -92,16 +150,13 @@ export default function InvestmentOverviewWidget({
           </Link>
         }
         legend={
-          <div className="grid grid-cols-3 gap-2">
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
             {visibleInvestments.map((investment) => (
               <div
                 key={investment.id}
-                className="flex min-w-0 items-center gap-1.5"
+                className="flex min-w-0 items-center gap-1.5 rounded-full bg-surface-secondary/60 px-1.5 py-1"
               >
-                <span
-                  className="h-1.5 w-1.5 flex-shrink-0 rounded-full"
-                  style={{ backgroundColor: investment.color }}
-                />
+                <LegendIcon entry={investment} />
                 <span className="truncate text-[9.5px] font-medium text-[#8d96a8] dark:text-text-secondary">
                   {shortName(investment.name)}
                 </span>

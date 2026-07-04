@@ -55,11 +55,11 @@ const CONFIG: Record<
 };
 
 function formatUpdatedAt(value: string | null | undefined) {
-  if (!value) return "Not synced yet";
+  if (!value) return "Manual price";
 
   const date = new Date(value);
 
-  if (Number.isNaN(date.getTime())) return "Not synced yet";
+  if (Number.isNaN(date.getTime())) return "Manual price";
 
   return `Updated ${date.toLocaleString("en-PK", {
     dateStyle: "medium",
@@ -70,7 +70,7 @@ function formatUpdatedAt(value: string | null | undefined) {
 function formatChange24h(value: number | null | undefined) {
   if (typeof value !== "number" || !Number.isFinite(value)) return null;
 
-  return `${value >= 0 ? "+" : ""}${value.toFixed(2)}%`;
+  return `${value >= 0 ? "+" : ""}${value.toFixed(2)}% 24h`;
 }
 
 function toFiniteNumber(value: number | string | null | undefined) {
@@ -86,6 +86,12 @@ function formatUsd(value: number | string | null | undefined) {
   return `$${parsed.toLocaleString("en-US", {
     maximumFractionDigits: parsed >= 1 ? 2 : 6,
   })}`;
+}
+
+function formatQuantity(value: number) {
+  return value.toLocaleString("en-US", {
+    maximumFractionDigits: value >= 1 ? 4 : 8,
+  });
 }
 
 export default function InvestmentCard({ inv }: { inv: ExistingInvestment }) {
@@ -108,15 +114,20 @@ export default function InvestmentCard({ inv }: { inv: ExistingInvestment }) {
     inv.current_price_currency === "USD"
       ? formatUsd(inv.current_price_original)
       : null;
-  const boughtAtLabel =
+  const currentUsdValue =
+    inv.current_price_currency === "USD" && toFiniteNumber(inv.current_price_original) !== null
+      ? formatUsd((toFiniteNumber(inv.current_price_original) ?? 0) * qty)
+      : null;
+  const purchaseSecondary =
     purchaseCurrency === "USD" && originalBuyPrice !== null
-      ? `Bought at ${formatUsd(originalBuyPrice)}`
-      : `Bought at ${formatCurrency(originalBuyPrice ?? buyPrice)}`;
+      ? `Original ${formatUsd(originalBuyPrice)}`
+      : "PKR cost basis";
   const totalCost = qty * buyPrice;
   const currentValue = qty * curPrice;
   const pnl = currentValue - totalCost;
   const pnlPct = totalCost > 0 ? (pnl / totalCost) * 100 : 0;
   const isProfit = pnl >= 0;
+  const change24h = formatChange24h(inv.price_change_24h);
 
   async function handleDelete() {
     if (!confirm(`Delete "${inv.name}"? This cannot be undone.`)) return;
@@ -127,12 +138,12 @@ export default function InvestmentCard({ inv }: { inv: ExistingInvestment }) {
 
   return (
     <>
-      <div className="finance-panel card-hover group relative p-5 hover:border-border">
+      <article className="finance-reference-card finance-hover-lift group relative flex h-full min-h-[342px] min-w-0 flex-col p-5">
         <div className="absolute right-4 top-4 flex gap-1 opacity-100 transition-opacity sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100">
           <button
             type="button"
             onClick={() => setEditOpen(true)}
-            className="icon-button"
+            className="icon-button h-8 w-8"
             aria-label="Edit investment"
           >
             <Pencil size={12} />
@@ -141,38 +152,39 @@ export default function InvestmentCard({ inv }: { inv: ExistingInvestment }) {
             type="button"
             onClick={handleDelete}
             disabled={deleting}
-            className="icon-button hover:border-danger/30 hover:bg-danger/10 hover:text-danger"
+            className="icon-button h-8 w-8 hover:border-danger/30 hover:bg-danger/10 hover:text-danger"
             aria-label="Delete investment"
           >
             <Trash2 size={12} />
           </button>
         </div>
 
-        <div className="mb-4 flex items-center gap-3 pr-16">
+        <div className="flex min-w-0 items-start gap-3 pr-16">
           {inv.image_url ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img
               src={inv.image_url}
               alt=""
-              className="h-10 w-10 flex-shrink-0 rounded-full"
+              className="h-11 w-11 flex-shrink-0 rounded-full"
             />
           ) : (
             <div
-              className={`flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg ${cfg.bg}`}
+              className={`flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-[16px] ${cfg.bg}`}
             >
               <Icon size={18} className={cfg.color} />
             </div>
           )}
-          <div className="min-w-0">
+
+          <div className="min-w-0 flex-1">
             <p className="truncate text-sm font-semibold text-text-primary">
               {inv.name}
             </p>
-            <div className="mt-0.5 flex min-w-0 items-center gap-1.5">
-              <p className={`truncate text-xs ${cfg.color}`}>
+            <div className="mt-1 flex min-w-0 flex-wrap items-center gap-1.5">
+              <span className={`truncate text-xs font-bold uppercase ${cfg.color}`}>
                 {inv.symbol ? inv.symbol.toUpperCase() : cfg.label}
-              </p>
+              </span>
               {inv.is_live_priced ? (
-                <span className="rounded-full border border-success/25 bg-success/10 px-1.5 py-0.5 text-[9px] font-bold uppercase text-success">
+                <span className="rounded-full border border-success/25 bg-success/10 px-2 py-0.5 text-[10px] font-bold uppercase text-success">
                   Live
                 </span>
               ) : null}
@@ -180,28 +192,67 @@ export default function InvestmentCard({ inv }: { inv: ExistingInvestment }) {
           </div>
         </div>
 
-        <p className="mb-3 text-xs text-text-secondary">
-          Qty:{" "}
-          <span className="font-medium text-text-primary">
-            {qty.toLocaleString()}
+        <div className="mt-4 flex flex-wrap items-center gap-2">
+          <span
+            className={`rounded-full px-2.5 py-1 text-[11px] font-semibold ${cfg.bg} ${cfg.color}`}
+          >
+            {cfg.label}
           </span>
-        </p>
+          {change24h ? (
+            <span
+              className={`rounded-full border px-2.5 py-1 text-[11px] font-bold ${
+                Number(inv.price_change_24h ?? 0) >= 0
+                  ? "border-success/25 bg-success/10 text-success"
+                  : "border-danger/25 bg-danger/10 text-danger"
+              }`}
+            >
+              {change24h}
+            </span>
+          ) : null}
+        </div>
 
-        <div className="mb-4 grid grid-cols-2 gap-2">
-          <div className="finance-panel-soft min-w-0 p-2.5">
-            <p className="mb-0.5 text-[10px] text-text-secondary">Buy Price</p>
-            <p className="break-words text-xs font-medium text-text-primary [overflow-wrap:anywhere]">
+        <div className="mt-5 min-w-0">
+          <p className="text-xs font-medium text-text-secondary">Current Value</p>
+          <p className="mt-1 break-words text-2xl font-bold tracking-normal text-text-primary [overflow-wrap:anywhere]">
+            {formatCurrency(currentValue)}
+          </p>
+          {currentUsdValue ? (
+            <p className="mt-1 text-xs text-text-secondary">{currentUsdValue}</p>
+          ) : null}
+        </div>
+
+        <div
+          className={`mt-4 flex min-w-0 items-center justify-between gap-3 rounded-[16px] border px-3 py-2.5 ${
+            isProfit
+              ? "border-success/25 bg-success/10 text-success"
+              : "border-danger/25 bg-danger/10 text-danger"
+          }`}
+        >
+          <span className="flex items-center gap-1.5 text-xs font-semibold">
+            {isProfit ? <ArrowUpRight size={14} /> : <ArrowDownRight size={14} />}
+            P/L
+          </span>
+          <span className="min-w-0 truncate text-right text-sm font-bold">
+            {isProfit ? "+" : "-"}
+            {formatCurrency(Math.abs(pnl))} ({Math.abs(pnlPct).toFixed(1)}%)
+          </span>
+        </div>
+
+        <div className="mt-4 grid gap-2 sm:grid-cols-2">
+          <div className="finance-panel-soft min-w-0 p-3">
+            <p className="text-[11px] text-text-secondary">Buy Price</p>
+            <p className="mt-1 break-words text-sm font-bold text-text-primary [overflow-wrap:anywhere]">
               {formatCurrency(buyPrice)}
             </p>
             <p className="mt-1 break-words text-[10px] text-text-secondary [overflow-wrap:anywhere]">
-              {boughtAtLabel}
+              {purchaseSecondary}
             </p>
           </div>
-          <div className="finance-panel-soft min-w-0 p-2.5">
-            <p className="mb-0.5 text-[10px] text-text-secondary">
+          <div className="finance-panel-soft min-w-0 p-3">
+            <p className="text-[11px] text-text-secondary">
               {inv.is_live_priced ? "Live Price" : "Current Price"}
             </p>
-            <p className="break-words text-sm font-bold text-text-primary [overflow-wrap:anywhere]">
+            <p className="mt-1 break-words text-sm font-bold text-text-primary [overflow-wrap:anywhere]">
               {formatCurrency(curPrice)}
             </p>
             {liveUsdPrice ? (
@@ -212,47 +263,20 @@ export default function InvestmentCard({ inv }: { inv: ExistingInvestment }) {
           </div>
         </div>
 
-        <div className="space-y-2 border-t border-border pt-3">
-          <div className="flex items-center justify-between gap-3">
-            <p className="text-xs text-text-secondary">Current Value</p>
-            <p className="break-words text-right text-sm font-bold text-text-primary [overflow-wrap:anywhere]">
-              {formatCurrency(currentValue)}
-            </p>
-          </div>
-          <div className="flex items-center justify-between gap-3">
-            <p className="text-xs text-text-secondary">P&L</p>
-            <div
-              className={`flex min-w-0 items-center justify-end gap-1 text-right ${
-                isProfit ? "text-success" : "text-danger"
-              }`}
-            >
-              {isProfit ? <ArrowUpRight size={13} /> : <ArrowDownRight size={13} />}
-              <span className="truncate text-sm font-semibold">
-                {formatCurrency(Math.abs(pnl))}
-              </span>
-              <span className="text-xs opacity-80">
-                ({Math.abs(pnlPct).toFixed(1)}%)
-              </span>
-            </div>
-          </div>
-          {inv.is_live_priced ? (
-            <div className="flex items-center justify-between gap-3 rounded-[14px] bg-surface-secondary px-3 py-2 text-[11px]">
-              <span
-                className={
-                  Number(inv.price_change_24h ?? 0) >= 0
-                    ? "font-semibold text-success"
-                    : "font-semibold text-danger"
-                }
-              >
-                {formatChange24h(inv.price_change_24h) ?? "24h unavailable"}
-              </span>
-              <span className="truncate text-text-secondary">
-                {formatUpdatedAt(inv.price_updated_at)}
-              </span>
-            </div>
-          ) : null}
+        <div className="mt-auto flex flex-wrap items-center justify-between gap-2 border-t border-border pt-4 text-[11px] text-text-secondary">
+          <span>
+            Qty{" "}
+            <span className="font-semibold text-text-primary">
+              {formatQuantity(qty)}
+            </span>
+          </span>
+          <span className="truncate">
+            {inv.is_live_priced
+              ? formatUpdatedAt(inv.price_updated_at)
+              : "Manual asset"}
+          </span>
         </div>
-      </div>
+      </article>
 
       <InvestmentModal
         open={editOpen}

@@ -1,37 +1,36 @@
 "use client";
 
-import type { ReactNode } from "react";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import CountUp from "react-countup";
-import { motion, useReducedMotion } from "framer-motion";
+import { motion } from "framer-motion";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import {
   ArrowDownRight,
   ArrowRight,
   ArrowUpRight,
   Brain,
-  Pencil,
+  Coins,
+  LucideIcon,
+  PieChart,
   Sparkles,
-  Trash2,
   TrendingUp,
   WalletCards,
 } from "lucide-react";
-import { createClient } from "@/lib/supabase/client";
 import { useCurrency } from "@/components/currency/CurrencyProvider";
-import InvestmentModal, { ExistingInvestment } from "./InvestmentModal";
+import {
+  getAssetInitials,
+} from "@/lib/investments/aggregation";
+import type { AggregatedInvestment } from "@/lib/investments/aggregation";
+import InvestmentCard from "./InvestmentCard";
+import { ExistingInvestment } from "./InvestmentModal";
 
 const TYPE_META: Record<string, { label: string; color: string }> = {
-  crypto: { label: "Crypto", color: "#f59e0b" },
-  stocks: { label: "Stocks", color: "#3b82f6" },
-  savings: { label: "Savings", color: "#22c55e" },
-  real_estate: { label: "Real Estate", color: "#a855f7" },
-  other: { label: "Other", color: "#64748b" },
+  crypto: { label: "Crypto", color: "var(--warning)" },
+  stocks: { label: "Stocks", color: "var(--info)" },
+  savings: { label: "Savings", color: "var(--success)" },
+  real_estate: { label: "Real Estate", color: "var(--investment)" },
+  other: { label: "Other", color: "var(--text-secondary)" },
 };
-
-const ringTrack = "color-mix(in srgb, var(--border), transparent 12%)";
-const profitColor = "#16a34a";
-const lossColor = "#dc2626";
 
 interface Insight {
   type: "positive" | "warning" | "tip";
@@ -39,360 +38,78 @@ interface Insight {
   message: string;
 }
 
-function formatCurrency(value: number) {
-  return `PKR ${value.toLocaleString("en-PK", { maximumFractionDigits: 0 })}`;
+function getTypeLabel(type: string) {
+  return TYPE_META[type]?.label ?? TYPE_META.other.label;
 }
 
-function shortCurrency(value: number) {
-  if (Math.abs(value) >= 1_000_000) {
-    return `PKR ${(value / 1_000_000).toFixed(1)}M`;
-  }
-  if (Math.abs(value) >= 1_000) {
-    return `PKR ${(value / 1_000).toFixed(0)}K`;
-  }
-  return formatCurrency(value);
-}
-
-function formatUpdatedAt(value: string | null | undefined) {
-  if (!value) return "Not synced yet";
-
-  const date = new Date(value);
-
-  if (Number.isNaN(date.getTime())) return "Not synced yet";
-
-  return `Updated ${date.toLocaleString("en-PK", {
-    dateStyle: "medium",
-    timeStyle: "short",
-  })}`;
-}
-
-function formatChange24h(value: number | null | undefined) {
-  if (typeof value !== "number" || !Number.isFinite(value)) return null;
-
-  return `${value >= 0 ? "+" : ""}${value.toFixed(2)}% 24h`;
-}
-
-function toFiniteNumber(value: number | string | null | undefined) {
-  const parsed = Number(value);
-  return Number.isFinite(parsed) ? parsed : null;
-}
-
-function formatUsd(value: number | string | null | undefined) {
-  const parsed = toFiniteNumber(value);
-
-  if (parsed === null) return null;
-
-  return `$${parsed.toLocaleString("en-US", {
-    maximumFractionDigits: parsed >= 1 ? 2 : 6,
-  })}`;
-}
-
-function AnimatedCurrency({
-  value,
-  compact = false,
-}: {
-  value: number;
-  compact?: boolean;
-}) {
-  const absValue = Math.abs(value);
-  const { formatCurrency } = useCurrency();
-
-  if (compact && absValue >= 1_000_000) {
-    return <>{formatCurrency(value, { compact: true })}</>;
-  }
-
-  if (compact && absValue >= 1_000) {
-    return <>{formatCurrency(value, { compact: true })}</>;
-  }
-
-  return (
-    <>
-      {formatCurrency(value)}
-    </>
-  );
-}
-
-function ProgressRing({
-  size = 160,
-  stroke = 10,
-  progress,
-  color,
-  accent,
-  children,
-}: {
-  size?: number;
-  stroke?: number;
-  progress: number;
-  color: string;
-  accent: string;
-  children: ReactNode;
-}) {
-  const reduceMotion = useReducedMotion();
-  const radius = (size - stroke) / 2;
-  const circumference = 2 * Math.PI * radius;
-  const normalizedProgress = Math.max(0.08, Math.min(0.94, progress));
-
-  return (
-    <div
-      className="relative grid place-items-center rounded-full"
-      style={{ width: size, height: size }}
-    >
-      <svg
-        aria-hidden="true"
-        className="absolute inset-0 -rotate-90 overflow-visible"
-        width={size}
-        height={size}
-        viewBox={`0 0 ${size} ${size}`}
-      >
-        <circle
-          cx={size / 2}
-          cy={size / 2}
-          r={radius}
-          fill="none"
-          stroke={ringTrack}
-          strokeWidth={stroke}
-        />
-        <motion.circle
-          cx={size / 2}
-          cy={size / 2}
-          r={radius}
-          fill="none"
-          stroke={accent}
-          strokeWidth={Math.max(3, stroke - 5)}
-          strokeLinecap="round"
-          strokeDasharray={circumference}
-          initial={{ strokeDashoffset: circumference }}
-          animate={{
-            strokeDashoffset: reduceMotion
-              ? circumference * 0.72
-              : circumference * 0.72,
-          }}
-          transition={{ duration: reduceMotion ? 0 : 0.75, delay: 0.12 }}
-          opacity={0.35}
-        />
-        <motion.circle
-          cx={size / 2}
-          cy={size / 2}
-          r={radius}
-          fill="none"
-          stroke={color}
-          strokeWidth={stroke}
-          strokeLinecap="round"
-          strokeDasharray={circumference}
-          initial={{ strokeDashoffset: circumference }}
-          animate={{
-            strokeDashoffset: circumference * (1 - normalizedProgress),
-          }}
-          transition={{
-            duration: reduceMotion ? 0 : 1.05,
-            ease: [0.16, 1, 0.3, 1],
-          }}
-        />
-      </svg>
-      <div className="grid h-[calc(100%-28px)] w-[calc(100%-28px)] place-items-center rounded-full border border-border bg-card/95 p-4 text-center shadow-[var(--surface-highlight)]">
-        {children}
-      </div>
-    </div>
-  );
-}
-
-function InvestmentDonut({
-  investment,
-  index,
-}: {
-  investment: ExistingInvestment;
-  index: number;
-}) {
-  const router = useRouter();
-  const supabase = createClient();
-  const [editOpen, setEditOpen] = useState(false);
-  const [deleting, setDeleting] = useState(false);
-
-  const quantity = Number(investment.quantity);
-  const buyPrice = Number(investment.purchase_price);
-  const currentUnitPrice = Number(investment.current_price);
-  const invested = quantity * buyPrice;
-  const currentValue = quantity * currentUnitPrice;
-  const pnl = currentValue - invested;
-  const pct = invested > 0 ? (pnl / invested) * 100 : 0;
-  const isProfit = pnl >= 0;
-  const color = isProfit ? profitColor : lossColor;
-  const accent = TYPE_META[investment.type]?.color ?? TYPE_META.other.color;
-  const ringProgress = Math.max(0.14, Math.min(0.92, Math.abs(pct) / 100));
-  const originalBuyPrice = toFiniteNumber(investment.purchase_price_original);
-  const purchaseCurrency = investment.purchase_currency === "USD" ? "USD" : "PKR";
-  const liveUsdPrice =
-    investment.current_price_currency === "USD"
-      ? formatUsd(investment.current_price_original)
-      : null;
-  const boughtAtLabel =
-    purchaseCurrency === "USD" && originalBuyPrice !== null
-      ? `Bought at ${formatUsd(originalBuyPrice)}`
-      : `Bought at ${shortCurrency(originalBuyPrice ?? buyPrice)}`;
-
-  async function handleDelete() {
-    if (!confirm(`Delete "${investment.name}"? This cannot be undone.`)) return;
-    setDeleting(true);
-    await supabase.from("investments").delete().eq("id", investment.id);
-    router.refresh();
-  }
-
-  return (
-    <>
-      <motion.div
-        initial={{ opacity: 0, y: 18, scale: 0.96 }}
-        animate={{ opacity: 1, y: 0, scale: 1 }}
-        transition={{ duration: 0.42, delay: index * 0.04, ease: [0.16, 1, 0.3, 1] }}
-        whileHover={{ y: -5 }}
-        className="finance-reference-card finance-hover-lift group relative flex min-h-[286px] min-w-0 flex-col p-5"
-      >
-        <div className="absolute right-4 top-4 flex gap-1 opacity-100 transition-opacity sm:opacity-0 sm:group-hover:opacity-100">
-          <button
-            type="button"
-            onClick={() => setEditOpen(true)}
-            className="icon-button h-8 w-8"
-            aria-label="Edit investment"
-          >
-            <Pencil size={12} />
-          </button>
-          <button
-            type="button"
-            onClick={handleDelete}
-            disabled={deleting}
-            className="icon-button h-8 w-8 hover:border-danger/30 hover:bg-danger/10 hover:text-danger"
-            aria-label="Delete investment"
-          >
-            <Trash2 size={12} />
-          </button>
-        </div>
-
-        <div className="flex flex-1 flex-col items-center justify-center text-center">
-          <ProgressRing
-            progress={ringProgress}
-            color={color}
-            accent={accent}
-            size={150}
-            stroke={10}
-          >
-            <div className="min-w-0">
-              {investment.image_url ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={investment.image_url}
-                  alt=""
-                  className="mx-auto mb-1.5 h-7 w-7 rounded-full"
-                />
-              ) : null}
-              <p className="truncate text-sm font-semibold text-text-primary">
-                {investment.name}
-              </p>
-              {investment.symbol ? (
-                <p className="mt-0.5 text-[10px] font-bold uppercase text-text-secondary">
-                  {investment.symbol}
-                </p>
-              ) : null}
-              <p className="mt-1 break-words text-[11px] font-medium text-text-secondary [overflow-wrap:anywhere]">
-                {shortCurrency(currentValue)}
-              </p>
-              <div
-                className="mt-2 flex items-center justify-center gap-1 text-sm font-bold"
-                style={{ color }}
-              >
-                {isProfit ? <ArrowUpRight size={14} /> : <ArrowDownRight size={14} />}
-                <span>
-                  {isProfit ? "+" : "-"}
-                  <CountUp end={Math.abs(pct)} duration={1.1} decimals={1} />%
-                </span>
-              </div>
-            </div>
-          </ProgressRing>
-        </div>
-
-        <div className="mt-4 w-full space-y-3">
-          <div className="flex items-center justify-between gap-3">
-            <span className="flex min-w-0 items-center gap-1.5">
-              <span
-                className="inline-flex min-w-0 items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-semibold"
-                style={{
-                  borderColor: `${accent}33`,
-                  backgroundColor: `${accent}14`,
-                  color: accent,
-                }}
-              >
-                <span className="truncate">
-                  {TYPE_META[investment.type]?.label ?? "Other"}
-                </span>
-              </span>
-              {investment.is_live_priced ? (
-                <span className="rounded-full border border-success/25 bg-success/10 px-2 py-1 text-[10px] font-bold uppercase text-success">
-                  Live
-                </span>
-              ) : null}
-            </span>
-            <span className="min-w-0 truncate text-xs font-semibold" style={{ color }}>
-              {isProfit ? "+" : "-"}
-              {shortCurrency(Math.abs(pnl)).replace("PKR ", "")}
-            </span>
-          </div>
-
-          <div className="grid grid-cols-2 gap-2">
-            <div className="finance-panel-soft min-w-0 p-3">
-              <p className="text-[11px] text-text-secondary">Buy Price</p>
-              <p className="mt-1 break-words text-xs font-bold text-text-primary [overflow-wrap:anywhere]">
-                {shortCurrency(buyPrice)}
-              </p>
-              <p className="mt-1 break-words text-[10px] text-text-secondary [overflow-wrap:anywhere]">
-                {boughtAtLabel}
-              </p>
-            </div>
-            <div className="finance-panel-soft min-w-0 p-3">
-              <p className="text-[11px] text-text-secondary">
-                {investment.is_live_priced ? "Live Price" : "Current Price"}
-              </p>
-              <p className="mt-1 break-words text-sm font-bold text-text-primary [overflow-wrap:anywhere]">
-                {shortCurrency(currentUnitPrice)}
-              </p>
-              {liveUsdPrice ? (
-                <p className="mt-1 break-words text-[10px] text-text-secondary [overflow-wrap:anywhere]">
-                  {liveUsdPrice}
-                </p>
-              ) : null}
-            </div>
-          </div>
-
-          {investment.is_live_priced ? (
-            <div className="flex items-center justify-between gap-3 rounded-[14px] border border-border bg-surface-secondary px-3 py-2 text-[11px]">
-              <span
-                className={
-                  Number(investment.price_change_24h ?? 0) >= 0
-                    ? "font-semibold text-success"
-                    : "font-semibold text-danger"
-                }
-              >
-                {formatChange24h(investment.price_change_24h) ?? "24h unavailable"}
-              </span>
-              <span className="truncate text-text-secondary">
-                {formatUpdatedAt(investment.price_updated_at)}
-              </span>
-            </div>
-          ) : null}
-        </div>
-      </motion.div>
-
-      <InvestmentModal
-        open={editOpen}
-        investment={investment}
-        onClose={() => setEditOpen(false)}
-        onSuccess={() => {
-          setEditOpen(false);
-          router.refresh();
-        }}
+function HoldingAvatar({ holding }: { holding: AggregatedInvestment }) {
+  if (holding.image_url) {
+    return (
+      // eslint-disable-next-line @next/next/no-img-element
+      <img
+        src={holding.image_url}
+        alt=""
+        className="h-8 w-8 flex-shrink-0 rounded-full"
       />
-    </>
+    );
+  }
+
+  return (
+    <span
+      className="grid h-8 w-8 flex-shrink-0 place-items-center rounded-full text-[10px] font-bold text-white"
+      style={{ backgroundColor: holding.color }}
+    >
+      {getAssetInitials(holding.name, holding.symbol)}
+    </span>
   );
 }
 
-function PortfolioSummary({
+function SummaryMetric({
+  label,
+  value,
+  helper,
+  icon: Icon,
+  tone = "default",
+}: {
+  label: string;
+  value: string;
+  helper: string;
+  icon: LucideIcon;
+  tone?: "default" | "profit" | "loss";
+}) {
+  const toneClass =
+    tone === "profit"
+      ? "text-success"
+      : tone === "loss"
+        ? "text-danger"
+        : "text-text-primary";
+
+  return (
+    <motion.article
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.36, ease: [0.16, 1, 0.3, 1] }}
+      className="summary-card flex min-h-[118px] min-w-0 flex-col justify-between"
+    >
+      <div className="flex items-start justify-between gap-3">
+        <p className="text-xs font-medium text-text-secondary">{label}</p>
+        <span className="grid h-9 w-9 flex-shrink-0 place-items-center rounded-[14px] bg-surface-secondary text-active">
+          <Icon size={16} />
+        </span>
+      </div>
+      <div className="min-w-0">
+        <p
+          className={`break-words text-xl font-bold tracking-normal [overflow-wrap:anywhere] ${toneClass}`}
+        >
+          {value}
+        </p>
+        <p className="mt-1 text-xs leading-5 text-text-secondary">{helper}</p>
+      </div>
+    </motion.article>
+  );
+}
+
+function PortfolioSummaryGrid({
   totalInvested,
   totalValue,
   totalPnL,
@@ -405,98 +122,201 @@ function PortfolioSummary({
   totalPnLPct: number;
   count: number;
 }) {
+  const { formatCurrency } = useCurrency();
   const isProfit = totalPnL >= 0;
-  const color = isProfit ? profitColor : lossColor;
-  const ringProgress = Math.max(0.1, Math.min(0.92, Math.abs(totalPnLPct) / 100));
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 16 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.48, ease: [0.16, 1, 0.3, 1] }}
-      className="finance-reference-card overflow-hidden p-5"
+    <section
+      aria-label="Portfolio summary"
+      className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4"
     >
-      <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
-        <div>
-          <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.22em] text-active">
-            <Sparkles size={13} />
-            Investment Overview
-          </div>
-          <h2 className="mt-2 text-2xl font-semibold tracking-normal text-text-primary sm:text-3xl">
-            Portfolio Overview
-          </h2>
-          <p className="mt-1 text-sm text-text-secondary">
-            {count} holding{count === 1 ? "" : "s"} tracked with live value and profit signals.
-          </p>
-        </div>
+      <SummaryMetric
+        label="Total Invested"
+        value={formatCurrency(totalInvested)}
+        helper="Cost basis"
+        icon={WalletCards}
+      />
+      <SummaryMetric
+        label="Current Value"
+        value={formatCurrency(totalValue)}
+        helper="Latest PKR value"
+        icon={TrendingUp}
+      />
+      <SummaryMetric
+        label="Total Profit/Loss"
+        value={`${isProfit ? "+" : "-"}${formatCurrency(Math.abs(totalPnL))}`}
+        helper={`${isProfit ? "+" : "-"}${Math.abs(totalPnLPct).toFixed(1)}% overall`}
+        icon={isProfit ? ArrowUpRight : ArrowDownRight}
+        tone={isProfit ? "profit" : "loss"}
+      />
+      <SummaryMetric
+        label="Total Holdings"
+        value={String(count)}
+        helper={count === 1 ? "Tracked asset" : "Tracked assets"}
+        icon={Coins}
+      />
+    </section>
+  );
+}
 
-        <div className="grid min-w-0 gap-3 sm:grid-cols-3">
-          <div className="rounded-[22px] border border-border bg-surface-secondary p-4">
-            <p className="text-[11px] font-medium text-text-secondary">Total invested</p>
-            <p className="mt-2 break-words text-lg font-bold text-text-primary [overflow-wrap:anywhere]">
-              <AnimatedCurrency value={totalInvested} />
-            </p>
-          </div>
-          <div className="rounded-[22px] border border-border bg-surface-secondary p-4">
-            <p className="text-[11px] font-medium text-text-secondary">Current value</p>
-            <p className="mt-2 break-words text-lg font-bold text-text-primary [overflow-wrap:anywhere]">
-              <AnimatedCurrency value={totalValue} />
-            </p>
-          </div>
-          <div className="rounded-[22px] border border-border bg-surface-secondary p-4">
-            <p className="text-[11px] font-medium text-text-secondary">Total profit/loss</p>
-            <p className="mt-2 flex min-w-0 items-center gap-1 break-words text-lg font-bold [overflow-wrap:anywhere]" style={{ color }}>
-              {isProfit ? <ArrowUpRight size={18} /> : <ArrowDownRight size={18} />}
+function PerformanceSection({
+  groupedHoldings,
+  totalInvested,
+  totalValue,
+  totalPnL,
+  totalPnLPct,
+}: {
+  groupedHoldings: AggregatedInvestment[];
+  totalInvested: number;
+  totalValue: number;
+  totalPnL: number;
+  totalPnLPct: number;
+}) {
+  const { formatCurrency } = useCurrency();
+  const isProfit = totalPnL >= 0;
+  const liveCount = groupedHoldings.filter((holding) => holding.is_live_priced)
+    .length;
+  const manualCount = groupedHoldings.length - liveCount;
+  const allocation = useMemo(() => {
+    return groupedHoldings
+      .map((holding) => ({
+        ...holding,
+        percent: totalValue > 0 ? (holding.currentValue / totalValue) * 100 : 0,
+      }))
+      .slice(0, 4);
+  }, [groupedHoldings, totalValue]);
+  const largestHolding = groupedHoldings[0];
+  const performanceMessage = isProfit
+    ? "Portfolio is ahead of cost basis. Keep an eye on concentration before adding more exposure."
+    : "Portfolio is below cost basis. Review position sizing and fresh entries before increasing risk.";
+
+  return (
+    <section className="grid gap-4 lg:grid-cols-2" aria-label="Portfolio performance">
+      <motion.article
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.42, ease: [0.16, 1, 0.3, 1] }}
+        className="finance-reference-card min-h-[230px] p-5"
+      >
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-active">
+              <Sparkles size={13} />
+              Portfolio Performance
+            </div>
+            <p
+              className={`mt-4 flex items-center gap-2 text-4xl font-bold tracking-normal ${
+                isProfit ? "text-success" : "text-danger"
+              }`}
+            >
+              {isProfit ? <ArrowUpRight size={26} /> : <ArrowDownRight size={26} />}
               {isProfit ? "+" : "-"}
-              <AnimatedCurrency value={Math.abs(totalPnL)} />
+              <CountUp end={Math.abs(totalPnLPct)} duration={1} decimals={1} />%
             </p>
           </div>
-        </div>
-      </div>
-
-      <div className="mt-5 flex flex-col gap-5 border-t border-border pt-5 lg:flex-row lg:items-center">
-        <div className="mx-auto flex-shrink-0 lg:mx-0">
-          <ProgressRing
-            progress={ringProgress}
-            color={color}
-            accent="var(--active)"
-            size={144}
-            stroke={11}
+          <span
+            className={`rounded-full border px-3 py-1 text-xs font-bold ${
+              isProfit
+                ? "border-success/25 bg-success/10 text-success"
+                : "border-danger/25 bg-danger/10 text-danger"
+            }`}
           >
-            <div className="text-center">
-              <p className="text-2xl font-bold" style={{ color }}>
-                {isProfit ? "+" : "-"}
-                <CountUp end={Math.abs(totalPnLPct)} duration={1.25} decimals={1} />%
-              </p>
-              <p className="text-[11px] text-text-secondary">overall</p>
-            </div>
-          </ProgressRing>
+            {isProfit ? "In profit" : "Below cost"}
+          </span>
         </div>
 
-        <div className="grid flex-1 gap-3 sm:grid-cols-2">
-          <div className="finance-panel-soft p-4">
-            <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-[18px] bg-surface-secondary text-active">
-              <WalletCards size={18} />
-            </div>
-            <p className="text-sm font-semibold text-text-primary">Portfolio value</p>
-            <p className="mt-1 text-xs leading-5 text-text-secondary">
-              Current value is {formatCurrency(totalValue)} against {formatCurrency(totalInvested)} invested.
+        <div className="mt-5 grid gap-3 sm:grid-cols-2">
+          <div className="finance-panel-soft min-w-0 p-4">
+            <p className="text-xs text-text-secondary">Total P/L</p>
+            <p
+              className={`mt-1 break-words text-lg font-bold [overflow-wrap:anywhere] ${
+                isProfit ? "text-success" : "text-danger"
+              }`}
+            >
+              {isProfit ? "+" : "-"}
+              {formatCurrency(Math.abs(totalPnL))}
             </p>
           </div>
-          <div className="finance-panel-soft p-4">
-            <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-[18px] bg-surface-secondary text-active">
-              <TrendingUp size={18} />
-            </div>
-            <p className="text-sm font-semibold text-text-primary">Momentum</p>
-            <p className="mt-1 text-xs leading-5 text-text-secondary">
-              {isProfit
-                ? "Portfolio is currently in profit. Keep checking concentrated positions."
-                : "Portfolio is below cost basis. Review entries before adding more exposure."}
+          <div className="finance-panel-soft min-w-0 p-4">
+            <p className="text-xs text-text-secondary">Current vs invested</p>
+            <p className="mt-1 break-words text-lg font-bold text-text-primary [overflow-wrap:anywhere]">
+              {formatCurrency(totalValue)}
+            </p>
+            <p className="mt-1 text-xs text-text-secondary">
+              against {formatCurrency(totalInvested)}
             </p>
           </div>
         </div>
-      </div>
-    </motion.div>
+
+        <p className="mt-4 text-sm leading-6 text-text-secondary">
+          {performanceMessage}
+        </p>
+      </motion.article>
+
+      <motion.article
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.42, delay: 0.04, ease: [0.16, 1, 0.3, 1] }}
+        className="finance-reference-card min-h-[230px] p-5"
+      >
+        <div className="flex items-center justify-between gap-3">
+          <div>
+            <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-active">
+              <PieChart size={13} />
+              Allocation
+            </div>
+            <p className="mt-2 text-sm text-text-secondary">
+              {liveCount} live priced, {manualCount} manual
+            </p>
+          </div>
+          {largestHolding ? (
+            <div className="min-w-0 text-right">
+              <p className="text-[11px] text-text-secondary">Largest holding</p>
+              <p className="truncate text-sm font-semibold text-text-primary">
+                {largestHolding.name}
+              </p>
+            </div>
+          ) : null}
+        </div>
+
+        <div className="mt-5 space-y-3">
+          {allocation.map((item) => {
+            return (
+              <div key={item.groupKey} className="space-y-2">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex min-w-0 items-center gap-2">
+                    <HoldingAvatar holding={item} />
+                    <div className="min-w-0">
+                      <p className="truncate text-xs font-semibold text-text-primary">
+                        {item.name}
+                      </p>
+                      <p className="text-[10px] uppercase text-text-secondary">
+                        {item.symbol ?? getTypeLabel(item.type)}
+                      </p>
+                    </div>
+                  </div>
+                  <span className="text-xs text-text-secondary">
+                    {item.percent.toFixed(0)}%
+                  </span>
+                </div>
+                <div className="h-2 overflow-hidden rounded-full bg-surface-secondary">
+                  <div
+                    className="h-full rounded-full"
+                    style={{
+                      width: `${Math.max(4, Math.min(100, item.percent))}%`,
+                      backgroundColor: item.color,
+                    }}
+                  />
+                </div>
+                <p className="text-xs text-text-secondary">
+                  {formatCurrency(item.currentValue)}
+                </p>
+              </div>
+            );
+          })}
+        </div>
+      </motion.article>
+    </section>
   );
 }
 
@@ -508,13 +328,19 @@ function EmbeddedInsightCard({ investments }: { investments: ExistingInvestment[
   );
 
   useEffect(() => {
+    setLoading(true);
+    setStatus("ready");
+    setInsight(null);
+
     if (investments.length === 0) {
       setLoading(false);
       setStatus("empty");
       return;
     }
 
-    fetch("/api/ai-insights")
+    const controller = new AbortController();
+
+    fetch("/api/ai-insights", { signal: controller.signal })
       .then(async (response) => {
         const json = await response.json();
 
@@ -535,66 +361,81 @@ function EmbeddedInsightCard({ investments }: { investments: ExistingInvestment[
           setStatus("empty");
         }
       })
-      .catch(() => setStatus("unavailable"))
-      .finally(() => setLoading(false));
+      .catch((error) => {
+        if (error instanceof DOMException && error.name === "AbortError") {
+          return;
+        }
+
+        setStatus("unavailable");
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) {
+          setLoading(false);
+        }
+      });
+
+    return () => controller.abort();
   }, [investments.length]);
 
   const message =
     insight?.message ??
     (status === "unavailable"
-      ? "AI insights are temporarily unavailable. Try again later."
-      : "Add transactions to unlock personalized AI portfolio guidance.");
+      ? "AI insights are temporarily unavailable."
+      : "Add more activity to unlock personalized portfolio guidance.");
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 18 }}
+    <motion.article
+      initial={{ opacity: 0, y: 14 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.42, delay: 0.08, ease: [0.16, 1, 0.3, 1] }}
-      className="space-y-4"
+      transition={{ duration: 0.38, delay: 0.06, ease: [0.16, 1, 0.3, 1] }}
+      className="finance-panel flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between"
     >
-      <div className="finance-reference-card p-5">
-        <div className="mb-3 flex items-center justify-between gap-3">
-          <div className="flex items-center gap-2.5">
-            <div className="grid h-9 w-9 place-items-center rounded-[18px] bg-surface-secondary text-active">
-              <Brain size={16} />
-            </div>
-            <div>
-              <p className="text-sm font-semibold text-text-primary">AI Insights</p>
-              <p className="text-[11px] text-text-secondary">Portfolio suggestion</p>
-            </div>
-          </div>
-          <ArrowRight size={15} className="text-text-secondary" />
+      <div className="flex min-w-0 items-start gap-3">
+        <div className="grid h-10 w-10 flex-shrink-0 place-items-center rounded-[16px] bg-surface-secondary text-active">
+          <Brain size={17} />
         </div>
-        <p className="text-sm leading-6 text-text-primary">
-          {loading
-            ? "Reading your latest portfolio and cash-flow signals..."
-            : message}
-        </p>
-        {!loading && insight?.title && (
-          <p className="mt-2 text-xs font-semibold text-active">
-            {insight.title}
+        <div className="min-w-0">
+          <div className="flex flex-wrap items-center gap-2">
+            <p className="text-sm font-semibold text-text-primary">AI Insights</p>
+            {!loading && status === "unavailable" ? (
+              <span className="rounded-full bg-surface-secondary px-2 py-1 text-[10px] font-semibold text-text-secondary">
+                Unavailable
+              </span>
+            ) : null}
+          </div>
+          <p className="mt-1 text-sm leading-6 text-text-secondary">
+            {loading
+              ? "Reading your latest portfolio and cash-flow signals..."
+              : message}
           </p>
-        )}
-        <Link
-          href="/dashboard/ai-insights"
-          className="mt-4 inline-flex min-h-9 items-center justify-center gap-2 rounded-[16px] border border-border bg-surface-secondary px-3 text-xs font-semibold text-text-primary transition-colors hover:bg-hover"
-        >
-          View more
-          <ArrowRight size={12} />
-        </Link>
+          {!loading && insight?.title ? (
+            <p className="mt-1 text-xs font-semibold text-active">
+              {insight.title}
+            </p>
+          ) : null}
+        </div>
       </div>
-    </motion.div>
+      <Link
+        href="/dashboard/ai-insights"
+        className="inline-flex min-h-10 items-center justify-center gap-2 rounded-[16px] border border-border bg-surface-secondary px-3 text-xs font-semibold text-text-primary transition-colors hover:bg-hover"
+      >
+        View more
+        <ArrowRight size={12} />
+      </Link>
+    </motion.article>
   );
 }
 
 export default function InvestmentOverview({
   investments,
+  groupedHoldings,
   totalInvested,
   totalValue,
   totalPnL,
   totalPnLPct,
 }: {
   investments: ExistingInvestment[];
+  groupedHoldings: AggregatedInvestment[];
   totalInvested: number;
   totalValue: number;
   totalPnL: number;
@@ -602,26 +443,45 @@ export default function InvestmentOverview({
 }) {
   return (
     <div className="space-y-5">
-      <PortfolioSummary
+      <PortfolioSummaryGrid
         totalInvested={totalInvested}
         totalValue={totalValue}
         totalPnL={totalPnL}
         totalPnLPct={totalPnLPct}
-        count={investments.length}
+        count={groupedHoldings.length}
       />
 
-      <div className="grid grid-cols-1 gap-4 xl:grid-cols-[1fr_320px]">
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 2xl:grid-cols-3">
-          {investments.map((investment, index) => (
-            <InvestmentDonut
-              key={investment.id}
-              investment={investment}
-              index={index}
-            />
+      <PerformanceSection
+        groupedHoldings={groupedHoldings}
+        totalInvested={totalInvested}
+        totalValue={totalValue}
+        totalPnL={totalPnL}
+        totalPnLPct={totalPnLPct}
+      />
+
+      <EmbeddedInsightCard investments={investments} />
+
+      <section className="space-y-3" aria-label="Investment holdings">
+        <div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <h3 className="text-base font-semibold text-text-primary">
+              Investment Holdings
+            </h3>
+            <p className="text-sm text-text-secondary">
+              Live crypto and manual assets in one aligned view.
+            </p>
+          </div>
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-text-secondary">
+            {groupedHoldings.length} grouped
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+          {investments.map((investment) => (
+            <InvestmentCard key={investment.id} inv={investment} />
           ))}
         </div>
-        <EmbeddedInsightCard investments={investments} />
-      </div>
+      </section>
     </div>
   );
 }

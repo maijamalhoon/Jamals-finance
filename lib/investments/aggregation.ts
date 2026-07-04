@@ -1,0 +1,270 @@
+export type InvestmentLike = {
+  id: string;
+  name: string;
+  type: string;
+  quantity: number | string;
+  purchase_price: number | string;
+  current_price: number | string;
+  purchase_price_original?: number | string | null;
+  purchase_currency?: string | null;
+  current_price_original?: number | string | null;
+  current_price_currency?: string | null;
+  purchased_at?: string | null;
+  asset_id?: string | null;
+  symbol?: string | null;
+  image_url?: string | null;
+  price_source?: string | null;
+  price_currency?: string | null;
+  price_updated_at?: string | null;
+  price_change_24h?: number | null;
+  is_live_priced?: boolean | null;
+};
+
+export type AggregatedInvestment = {
+  id: string;
+  groupKey: string;
+  name: string;
+  type: string;
+  quantity: number;
+  purchase_price: number;
+  current_price: number;
+  current_price_original: number | null;
+  current_price_currency: string | null;
+  totalInvested: number;
+  currentValue: number;
+  totalPnL: number;
+  totalPnLPct: number;
+  asset_id: string | null;
+  symbol: string | null;
+  image_url: string | null;
+  price_source: string | null;
+  price_updated_at: string | null;
+  price_change_24h: number | null;
+  is_live_priced: boolean;
+  itemCount: number;
+  color: string;
+};
+
+const ASSET_COLORS = [
+  "#3b82f6",
+  "#f59e0b",
+  "#34d399",
+  "#a855f7",
+  "#ef4444",
+  "#14b8a6",
+  "#f97316",
+  "#64748b",
+  "#06b6d4",
+  "#84cc16",
+];
+
+function toFiniteNumber(value: number | string | null | undefined) {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : 0;
+}
+
+function normalizeText(value: string | null | undefined) {
+  return (value ?? "").trim().replace(/\s+/g, " ");
+}
+
+function normalizeKeyText(value: string | null | undefined) {
+  return normalizeText(value).toLowerCase();
+}
+
+export function getInvestmentGroupKey(investment: InvestmentLike) {
+  const assetId = normalizeKeyText(investment.asset_id);
+  const symbol = normalizeKeyText(investment.symbol);
+  const type = normalizeKeyText(investment.type) || "other";
+
+  if (assetId) {
+    return `${normalizeKeyText(investment.price_source) || "manual"}:${assetId}`;
+  }
+
+  if (symbol) {
+    return `${type}:${symbol}`;
+  }
+
+  return `${type}:${normalizeKeyText(investment.name) || investment.id}`;
+}
+
+export function getStableAssetColor(groupKey: string) {
+  let hash = 0;
+
+  for (let index = 0; index < groupKey.length; index += 1) {
+    hash = (hash * 31 + groupKey.charCodeAt(index)) >>> 0;
+  }
+
+  return ASSET_COLORS[hash % ASSET_COLORS.length];
+}
+
+export function getAssetInitials(name: string, symbol?: string | null) {
+  const cleanSymbol = normalizeText(symbol).toUpperCase();
+
+  if (cleanSymbol) return cleanSymbol.slice(0, 2);
+
+  const words = normalizeText(name).split(" ").filter(Boolean);
+
+  if (words.length === 0) return "IN";
+  if (words.length === 1) return words[0].slice(0, 2).toUpperCase();
+
+  return `${words[0][0] ?? ""}${words[1][0] ?? ""}`.toUpperCase();
+}
+
+export function aggregateInvestmentHoldings(investments: InvestmentLike[]) {
+  const groups = new Map<
+    string,
+    {
+      firstId: string;
+      name: string;
+      type: string;
+      quantity: number;
+      totalInvested: number;
+      weightedCurrentValue: number;
+      latestCurrentPrice: number | null;
+      liveCurrentPrice: number | null;
+      liveCurrentOriginal: number | null;
+      currentPriceCurrency: string | null;
+      assetId: string | null;
+      symbol: string | null;
+      imageUrl: string | null;
+      priceSource: string | null;
+      priceUpdatedAt: string | null;
+      priceChange24h: number | null;
+      isLivePriced: boolean;
+      itemCount: number;
+    }
+  >();
+
+  investments.forEach((investment) => {
+    const groupKey = getInvestmentGroupKey(investment);
+    const quantity = toFiniteNumber(investment.quantity);
+    const purchasePrice = toFiniteNumber(investment.purchase_price);
+    const currentPrice = toFiniteNumber(investment.current_price);
+    const currentOriginal = Number(investment.current_price_original);
+    const existing = groups.get(groupKey);
+    const current =
+      existing ??
+      {
+        firstId: investment.id,
+        name: normalizeText(investment.name) || "Investment",
+        type: normalizeText(investment.type) || "other",
+        quantity: 0,
+        totalInvested: 0,
+        weightedCurrentValue: 0,
+        latestCurrentPrice: null,
+        liveCurrentPrice: null,
+        liveCurrentOriginal: null,
+        currentPriceCurrency: investment.current_price_currency ?? null,
+        assetId: normalizeText(investment.asset_id) || null,
+        symbol: normalizeText(investment.symbol).toUpperCase() || null,
+        imageUrl: normalizeText(investment.image_url) || null,
+        priceSource: normalizeText(investment.price_source) || null,
+        priceUpdatedAt: investment.price_updated_at ?? null,
+        priceChange24h: investment.price_change_24h ?? null,
+        isLivePriced: false,
+        itemCount: 0,
+      };
+
+    current.quantity += quantity;
+    current.totalInvested += quantity * purchasePrice;
+    current.weightedCurrentValue += quantity * currentPrice;
+    current.itemCount += 1;
+
+    if (current.latestCurrentPrice === null && currentPrice > 0) {
+      current.latestCurrentPrice = currentPrice;
+    }
+
+    if (!current.imageUrl && investment.image_url) {
+      current.imageUrl = normalizeText(investment.image_url);
+    }
+
+    if (!current.symbol && investment.symbol) {
+      current.symbol = normalizeText(investment.symbol).toUpperCase();
+    }
+
+    if (!current.assetId && investment.asset_id) {
+      current.assetId = normalizeText(investment.asset_id);
+    }
+
+    if (!current.priceSource && investment.price_source) {
+      current.priceSource = normalizeText(investment.price_source);
+    }
+
+    if (investment.is_live_priced && currentPrice > 0) {
+      current.isLivePriced = true;
+
+      if (current.liveCurrentPrice === null) {
+        current.liveCurrentPrice = currentPrice;
+        current.liveCurrentOriginal = Number.isFinite(currentOriginal)
+          ? currentOriginal
+          : null;
+        current.currentPriceCurrency = investment.current_price_currency ?? null;
+        current.priceUpdatedAt = investment.price_updated_at ?? null;
+        current.priceChange24h = investment.price_change_24h ?? null;
+      }
+    }
+
+    groups.set(groupKey, current);
+  });
+
+  return Array.from(groups.entries())
+    .map(([groupKey, group]) => {
+      const averageBuyPrice =
+        group.quantity > 0 ? group.totalInvested / group.quantity : 0;
+      const currentPrice =
+        group.liveCurrentPrice ??
+        (group.quantity > 0
+          ? group.weightedCurrentValue / group.quantity
+          : group.latestCurrentPrice ?? 0);
+      const currentValue = group.quantity * currentPrice;
+      const totalPnL = currentValue - group.totalInvested;
+
+      return {
+        id: group.firstId,
+        groupKey,
+        name: group.name,
+        type: group.type,
+        quantity: group.quantity,
+        purchase_price: averageBuyPrice,
+        current_price: currentPrice,
+        current_price_original: group.liveCurrentOriginal,
+        current_price_currency: group.currentPriceCurrency,
+        totalInvested: group.totalInvested,
+        currentValue,
+        totalPnL,
+        totalPnLPct:
+          group.totalInvested > 0 ? (totalPnL / group.totalInvested) * 100 : 0,
+        asset_id: group.assetId,
+        symbol: group.symbol,
+        image_url: group.imageUrl,
+        price_source: group.priceSource,
+        price_updated_at: group.priceUpdatedAt,
+        price_change_24h: group.priceChange24h,
+        is_live_priced: group.isLivePriced,
+        itemCount: group.itemCount,
+        color: getStableAssetColor(groupKey),
+      };
+    })
+    .sort((a, b) => b.currentValue - a.currentValue);
+}
+
+export function getAggregatedPortfolioTotals(
+  holdings: Pick<AggregatedInvestment, "totalInvested" | "currentValue">[],
+) {
+  const totalInvested = holdings.reduce(
+    (sum, holding) => sum + holding.totalInvested,
+    0,
+  );
+  const totalValue = holdings.reduce(
+    (sum, holding) => sum + holding.currentValue,
+    0,
+  );
+  const totalPnL = totalValue - totalInvested;
+
+  return {
+    totalInvested,
+    totalValue,
+    totalPnL,
+    totalPnLPct: totalInvested > 0 ? (totalPnL / totalInvested) * 100 : 0,
+  };
+}

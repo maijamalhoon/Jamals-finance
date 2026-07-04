@@ -4,6 +4,10 @@ import InvestmentOverview from "@/components/investments/InvestmentOverview";
 import EmptyState from "@/components/ui/empty-state";
 import { AlertTriangle, BarChart2, Sparkles, TrendingUp } from "lucide-react";
 import { getCryptoPrices } from "@/lib/market/crypto";
+import {
+  aggregateInvestmentHoldings,
+  getAggregatedPortfolioTotals,
+} from "@/lib/investments/aggregation";
 
 export const dynamic = "force-dynamic";
 
@@ -91,16 +95,9 @@ export default async function InvestmentsPage() {
     return investment;
   });
 
-  const totalInvested = list.reduce(
-    (s, i) => s + Number(i.quantity) * Number(i.purchase_price),
-    0,
-  );
-  const totalValue = pricedList.reduce(
-    (s, i) => s + Number(i.quantity) * Number(i.current_price),
-    0,
-  );
-  const totalPnL = totalValue - totalInvested;
-  const totalPnLPct = totalInvested > 0 ? (totalPnL / totalInvested) * 100 : 0;
+  const groupedHoldings = aggregateInvestmentHoldings(pricedList);
+  const { totalInvested, totalValue, totalPnL, totalPnLPct } =
+    getAggregatedPortfolioTotals(groupedHoldings);
 
   return (
     <div className="space-y-5">
@@ -118,9 +115,9 @@ export default async function InvestmentsPage() {
               <Sparkles size={14} />
               Investments
             </div>
-            <h2 className="page-title mt-2">Investment Overview</h2>
+            <h2 className="page-title mt-2">Investments</h2>
             <p className="page-subtitle break-words">
-              Portfolio value, profit/loss momentum, allocation signals, and compact AI guidance.
+              Track live crypto, manual assets, portfolio value, and profit/loss.
             </p>
           </div>
         </div>
@@ -140,12 +137,16 @@ export default async function InvestmentsPage() {
           <EmptyState
             icon={BarChart2}
             title="No investments yet"
-            description="Add your first holding to track invested value and profit or loss."
+            description="Add crypto or manual assets to start tracking portfolio performance."
           />
+          <div className="-mt-8 flex justify-center pb-6 sm:-mt-9">
+            <AddInvestmentButton />
+          </div>
         </div>
       ) : (
         <InvestmentOverview
           investments={pricedList}
+          groupedHoldings={groupedHoldings}
           totalInvested={totalInvested}
           totalValue={totalValue}
           totalPnL={totalPnL}

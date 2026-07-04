@@ -14,7 +14,7 @@ export default function AddInvestmentButton() {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="investment-action"
+        className="investment-action w-full sm:w-auto"
       >
         <BriefcaseBusiness size={16} />
         Add Investment

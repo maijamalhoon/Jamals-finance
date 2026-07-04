@@ -10,6 +10,10 @@ import SpendRecordWidget from "@/components/dashboard/SpendRecordWidget";
 import ChartCard from "@/components/dashboard/ChartCard";
 import QuickActionsBalance from "@/components/dashboard/QuickActionsBalance";
 import NewUserSetupGuide from "@/components/dashboard/NewUserSetupGuide";
+import {
+  aggregateInvestmentHoldings,
+  getAggregatedPortfolioTotals,
+} from "@/lib/investments/aggregation";
 import { sortTransactionsNewestFirst } from "@/lib/transactions";
 import {
   formatAppMonth,
@@ -55,6 +59,15 @@ type DashboardInvestment = {
   purchase_price: number | string;
   current_price: number | string;
   purchased_at?: string | null;
+  asset_id?: string | null;
+  symbol?: string | null;
+  image_url?: string | null;
+  price_source?: string | null;
+  current_price_original?: number | string | null;
+  current_price_currency?: string | null;
+  price_updated_at?: string | null;
+  price_change_24h?: number | null;
+  is_live_priced?: boolean | null;
 };
 
 type DashboardGoal = {
@@ -174,7 +187,7 @@ export default async function DashboardPage() {
     supabase
       .from("investments")
       .select(
-        "id, name, type, quantity, purchase_price, current_price, purchased_at",
+        "id, name, type, quantity, purchase_price, current_price, purchased_at, asset_id, symbol, image_url, price_source, current_price_original, current_price_currency, price_updated_at, price_change_24h, is_live_priced",
       )
       .order("created_at", { ascending: false }),
 
@@ -243,6 +256,7 @@ export default async function DashboardPage() {
     amount: number | string;
   }>;
   const investmentRows = (investments ?? []) as DashboardInvestment[];
+  const groupedInvestmentRows = aggregateInvestmentHoldings(investmentRows);
   const goalRows = (goals ?? []) as DashboardGoal[];
 
   const accountRows = (accounts ?? []) as DashboardAccount[];
@@ -261,11 +275,8 @@ export default async function DashboardPage() {
 
   const netProfit = income - expenses;
 
-  const investmentsValue = investmentRows.reduce(
-    (sum, investment) =>
-      sum + Number(investment.current_price) * Number(investment.quantity),
-    0,
-  );
+  const investmentTotals = getAggregatedPortfolioTotals(groupedInvestmentRows);
+  const investmentsValue = investmentTotals.totalValue;
   const totalNetBalance = cashBalance + investmentsValue;
 
   const monthlyInvestmentsValue = investmentRows
@@ -288,14 +299,7 @@ export default async function DashboardPage() {
       0,
     );
 
-  const totalInvested = investmentRows.reduce(
-    (sum, investment) =>
-      sum + Number(investment.quantity) * Number(investment.purchase_price),
-    0,
-  );
-
-  const totalPnL = investmentsValue - totalInvested;
-  const totalPnLPct = totalInvested > 0 ? (totalPnL / totalInvested) * 100 : 0;
+  const totalPnLPct = investmentTotals.totalPnLPct;
 
   const lastIncome = previousTxns
     .filter((transaction) => transaction.type === "income")
