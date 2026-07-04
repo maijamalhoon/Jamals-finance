@@ -22,7 +22,7 @@ import {
   DashboardMotion,
   DashboardMotionItem,
 } from "@/components/dashboard/DashboardMotion";
-import { Zap } from "lucide-react";
+import { AlertTriangle, Zap } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -135,19 +135,19 @@ export default async function DashboardPage() {
   } = getAppMonthRange(now);
 
   const [
-    { data: thisTxns },
-    { data: recentTxns },
-    { data: lastTxns },
-    { data: investments },
-    { data: goals },
-    { data: accounts },
-    { count: setupAccountsCount },
-    { count: setupIncomeCount },
-    { count: setupExpenseCount },
-    { count: setupIncomeCategoriesCount },
-    { count: setupExpenseCategoriesCount },
-    { count: setupGoalsCount },
-    { count: setupInvestmentsCount },
+    { data: thisTxns, error: thisTxnsError },
+    { data: recentTxns, error: recentTxnsError },
+    { data: lastTxns, error: lastTxnsError },
+    { data: investments, error: investmentsError },
+    { data: goals, error: goalsError },
+    { data: accounts, error: accountsError },
+    { count: setupAccountsCount, error: setupAccountsError },
+    { count: setupIncomeCount, error: setupIncomeError },
+    { count: setupExpenseCount, error: setupExpenseError },
+    { count: setupIncomeCategoriesCount, error: setupIncomeCategoriesError },
+    { count: setupExpenseCategoriesCount, error: setupExpenseCategoriesError },
+    { count: setupGoalsCount, error: setupGoalsError },
+    { count: setupInvestmentsCount, error: setupInvestmentsError },
   ] = await Promise.all([
     supabase
       .from("transactions")
@@ -207,6 +207,29 @@ export default async function DashboardPage() {
     goals: setupGoalsCount ?? 0,
     investments: setupInvestmentsCount ?? 0,
   };
+
+  const dashboardErrors = [
+    thisTxnsError,
+    recentTxnsError,
+    lastTxnsError,
+    investmentsError,
+    goalsError,
+    accountsError,
+    setupAccountsError,
+    setupIncomeError,
+    setupExpenseError,
+    setupIncomeCategoriesError,
+    setupExpenseCategoriesError,
+    setupGoalsError,
+    setupInvestmentsError,
+  ].filter(Boolean);
+
+  if (dashboardErrors.length > 0) {
+    console.error(
+      "Failed to load some dashboard data",
+      dashboardErrors.map((error) => error?.message),
+    );
+  }
 
   const txns = (thisTxns ?? []) as DashboardTransaction[];
   const recentTransactions = (recentTxns ?? []) as DashboardTransaction[];
@@ -372,6 +395,22 @@ export default async function DashboardPage() {
 
   return (
     <DashboardMotion className="w-full space-y-6 pb-12">
+      {dashboardErrors.length > 0 ? (
+        <DashboardMotionItem>
+          <div className="finance-panel border-warning/30 bg-warning/10 p-4 text-sm text-text-primary">
+            <div className="flex items-start gap-3">
+              <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-warning" />
+              <div>
+                <p className="font-semibold">Some dashboard data could not be loaded.</p>
+                <p className="mt-1 text-xs leading-5 text-text-secondary">
+                  Refresh the page or try again after checking your connection.
+                </p>
+              </div>
+            </div>
+          </div>
+        </DashboardMotionItem>
+      ) : null}
+
       <DashboardMotionItem>
         <QuickActionsBalance totalBalance={fmtBalance(totalNetBalance)} />
       </DashboardMotionItem>

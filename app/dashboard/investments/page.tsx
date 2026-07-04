@@ -2,17 +2,21 @@ import { createClient } from "@/lib/supabase/server";
 import AddInvestmentButton from "@/components/investments/AddInvestmentButton";
 import InvestmentOverview from "@/components/investments/InvestmentOverview";
 import EmptyState from "@/components/ui/empty-state";
-import { BarChart2, Sparkles, TrendingUp } from "lucide-react";
+import { AlertTriangle, BarChart2, Sparkles, TrendingUp } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
 export default async function InvestmentsPage() {
   const supabase = await createClient();
 
-  const { data: investments } = await supabase
+  const { data: investments, error: investmentsError } = await supabase
     .from("investments")
     .select("*")
     .order("created_at", { ascending: false });
+
+  if (investmentsError) {
+    console.error("Failed to load investments", investmentsError.message);
+  }
 
   const list = investments ?? [];
   const totalInvested = list.reduce(
@@ -51,7 +55,15 @@ export default async function InvestmentsPage() {
         <AddInvestmentButton />
       </div>
 
-      {list.length === 0 ? (
+      {investmentsError ? (
+        <div className="finance-panel px-5">
+          <EmptyState
+            icon={AlertTriangle}
+            title="Could not load investments"
+            description="Refresh the page or try again after checking your connection."
+          />
+        </div>
+      ) : list.length === 0 ? (
         <div className="finance-panel px-5">
           <EmptyState
             icon={BarChart2}

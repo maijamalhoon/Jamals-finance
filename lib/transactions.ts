@@ -33,10 +33,16 @@ export async function loadTransactions(
   if (options.account && options.account !== "all") {
     query = query.eq("account_id", options.account);
   }
-  if (Number.isFinite(options.minAmount)) {
+  if (
+    typeof options.minAmount === "number" &&
+    Number.isFinite(options.minAmount)
+  ) {
     query = query.gte("amount", options.minAmount);
   }
-  if (Number.isFinite(options.maxAmount)) {
+  if (
+    typeof options.maxAmount === "number" &&
+    Number.isFinite(options.maxAmount)
+  ) {
     query = query.lte("amount", options.maxAmount);
   }
 

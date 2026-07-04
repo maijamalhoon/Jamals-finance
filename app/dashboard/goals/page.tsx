@@ -3,17 +3,21 @@ import GoalCard from "@/components/goals/GoalCard";
 import AddGoalButton from "@/components/goals/AddGoalButton";
 import GoalSummaryStats from "@/components/goals/GoalSummaryStats";
 import EmptyState from "@/components/ui/empty-state";
-import { Target } from "lucide-react";
+import { AlertTriangle, Target } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
 export default async function GoalsPage() {
   const supabase = await createClient();
 
-  const { data: goals } = await supabase
+  const { data: goals, error: goalsError } = await supabase
     .from("goals")
     .select("*")
     .order("created_at", { ascending: false });
+
+  if (goalsError) {
+    console.error("Failed to load goals", goalsError.message);
+  }
 
   const list = goals ?? [];
   const completed = list.filter(
@@ -53,7 +57,15 @@ export default async function GoalsPage() {
         />
       )}
 
-      {list.length === 0 ? (
+      {goalsError ? (
+        <div className="finance-panel min-h-[280px] px-5">
+          <EmptyState
+            icon={AlertTriangle}
+            title="Could not load goals"
+            description="Refresh the page or try again after checking your connection."
+          />
+        </div>
+      ) : list.length === 0 ? (
         <div className="finance-panel min-h-[280px] px-5">
           <EmptyState
             icon={Target}

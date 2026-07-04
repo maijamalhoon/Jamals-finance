@@ -39,6 +39,13 @@ function cleanLimit(value?: string) {
   return Math.min(Math.max(DEFAULT_LIMIT, parsed), MAX_LIMIT);
 }
 
+function cleanAmount(value?: string) {
+  if (!value || value.trim() === "") return null;
+
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
 function addParam(params: URLSearchParams, key: string, value?: string) {
   if (value && value.trim() !== "") {
     params.set(key, value);
@@ -73,8 +80,8 @@ export default async function TransactionsPage({
   const personTerm = person?.trim().toLowerCase();
   const itemTerm = item?.trim().toLowerCase();
 
-  const minAmount = min ? Number(min) : null;
-  const maxAmount = max ? Number(max) : null;
+  const minAmount = cleanAmount(min);
+  const maxAmount = cleanAmount(max);
 
   const rawTransactions = await loadTransactions(supabase, {
     type: type === "income" || type === "expense" ? type : undefined,
@@ -172,8 +179,16 @@ export default async function TransactionsPage({
   addParam(nextParams, "account", account);
   addParam(nextParams, "person", person);
   addParam(nextParams, "item", item);
-  addParam(nextParams, "min", min);
-  addParam(nextParams, "max", max);
+  addParam(
+    nextParams,
+    "min",
+    minAmount === null ? undefined : String(minAmount),
+  );
+  addParam(
+    nextParams,
+    "max",
+    maxAmount === null ? undefined : String(maxAmount),
+  );
 
   nextParams.set("limit", String(nextLimit));
 

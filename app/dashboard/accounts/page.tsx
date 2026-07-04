@@ -3,7 +3,7 @@ import AccountCard from "@/components/accounts/AccountCard";
 import AddAccountButton from "@/components/accounts/AddAccountButton";
 import EmptyState from "@/components/ui/empty-state";
 import { formatPKR } from "@/lib/finance-options";
-import { Landmark, WalletCards } from "lucide-react";
+import { AlertTriangle, Landmark, WalletCards } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -15,13 +15,25 @@ type AccountTotals = {
 export default async function AccountsPage() {
   const supabase = await createClient();
 
-  const [{ data: accounts }, { data: transactions }] = await Promise.all([
+  const [
+    { data: accounts, error: accountsError },
+    { data: transactions, error: transactionsError },
+  ] = await Promise.all([
     supabase
       .from("accounts")
       .select("*")
       .order("created_at", { ascending: true }),
     supabase.from("transactions").select("account_id, type, amount"),
   ]);
+
+  const pageErrors = [accountsError, transactionsError].filter(Boolean);
+
+  if (pageErrors.length > 0) {
+    console.error(
+      "Failed to load accounts page data",
+      pageErrors.map((error) => error?.message),
+    );
+  }
 
   const safeAccounts = accounts ?? [];
 
@@ -98,7 +110,15 @@ export default async function AccountsPage() {
         </div>
       </section>
 
-      {!safeAccounts.length ? (
+      {accountsError ? (
+        <div className="finance-panel px-5">
+          <EmptyState
+            icon={AlertTriangle}
+            title="Could not load accounts"
+            description="Refresh the page or try again after checking your connection."
+          />
+        </div>
+      ) : !safeAccounts.length ? (
         <div className="finance-panel px-5">
           <EmptyState
             icon={Landmark}

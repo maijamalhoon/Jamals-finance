@@ -24,6 +24,21 @@ const TYPES = [
   { value: "other", label: "Other" },
 ];
 
+function parseNumber(value: string) {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
+function isValidDateKey(value: string) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+
+  const parsed = new Date(`${value}T00:00:00`);
+  return (
+    !Number.isNaN(parsed.getTime()) &&
+    parsed.toISOString().slice(0, 10) === value
+  );
+}
+
 export interface ExistingInvestment {
   id: string;
   name: string;
@@ -80,27 +95,59 @@ export default function InvestmentModal({
   }, [open, investment]);
 
   async function handleSave() {
-    if (!name.trim() || !purchasePrice) {
-      setError("Asset name and buy price are required.");
+    const assetName = name.trim();
+    const parsedQuantity = parseNumber(quantity);
+    const parsedPurchasePrice = parseNumber(purchasePrice);
+    const parsedCurrentPrice = currentPrice ? parseNumber(currentPrice) : null;
+    const purchaseDate = purchasedAt.trim();
+
+    if (!assetName) {
+      setError("Enter an asset name.");
       return;
     }
+
+    if (parsedQuantity === null || parsedQuantity <= 0) {
+      setError("Enter a quantity greater than 0.");
+      return;
+    }
+
+    if (parsedPurchasePrice === null || parsedPurchasePrice <= 0) {
+      setError("Enter a buy price greater than 0.");
+      return;
+    }
+
+    if (parsedCurrentPrice !== null && parsedCurrentPrice < 0) {
+      setError("Current price cannot be negative.");
+      return;
+    }
+
+    if (!isValidDateKey(purchaseDate)) {
+      setError("Enter a valid purchase date.");
+      return;
+    }
+
     setLoading(true);
     setError("");
 
     const {
       data: { user },
+      error: userError,
     } = await supabase.auth.getUser();
 
-    const buyPrice = parseFloat(purchasePrice);
+    if (userError || !user) {
+      setLoading(false);
+      setError("Please sign in again before saving this investment.");
+      return;
+    }
 
     const payload = {
-      user_id: user!.id,
-      name: name.trim(),
+      user_id: user.id,
+      name: assetName,
       type,
-      quantity: parseFloat(quantity) || 1,
-      purchase_price: buyPrice,
-      current_price: parseFloat(currentPrice) || buyPrice,
-      purchased_at: purchasedAt,
+      quantity: parsedQuantity,
+      purchase_price: parsedPurchasePrice,
+      current_price: parsedCurrentPrice ?? parsedPurchasePrice,
+      purchased_at: purchaseDate,
     };
 
     const { error: e } = isEditing

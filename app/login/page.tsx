@@ -240,7 +240,8 @@ function Feedback({
 export default function LoginPage() {
   const router = useRouter();
   const supabase = useMemo(() => createClient(), []);
-  const isGoogleAuthEnabled = true;
+  const isGoogleAuthEnabled =
+    process.env.NEXT_PUBLIC_ENABLE_GOOGLE_AUTH === "true";
 
   const [step, setStep] = useState<Step>("login");
   const [email, setEmail] = useState("");
