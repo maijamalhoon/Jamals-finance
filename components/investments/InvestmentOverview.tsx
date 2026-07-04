@@ -441,6 +441,27 @@ export default function InvestmentOverview({
   totalPnL: number;
   totalPnLPct: number;
 }) {
+  const groupedCards: ExistingInvestment[] = groupedHoldings.map((holding) => ({
+    id: holding.id,
+    name: holding.name,
+    type: holding.type,
+    quantity: holding.quantity,
+    purchase_price: holding.purchase_price,
+    current_price: holding.current_price,
+    current_price_original: holding.current_price_original,
+    current_price_currency: holding.current_price_currency,
+    purchased_at: "",
+    asset_id: holding.asset_id,
+    symbol: holding.symbol,
+    image_url: holding.image_url,
+    price_source: holding.price_source,
+    price_currency: "PKR",
+    price_updated_at: holding.price_updated_at,
+    price_change_24h: holding.price_change_24h,
+    is_live_priced: holding.is_live_priced,
+    item_count: holding.itemCount,
+  }));
+
   return (
     <div className="space-y-5">
       <PortfolioSummaryGrid
@@ -468,7 +489,7 @@ export default function InvestmentOverview({
               Investment Holdings
             </h3>
             <p className="text-sm text-text-secondary">
-              Live crypto and manual assets in one aligned view.
+              Crypto, international stocks, and manual assets in one aligned view.
             </p>
           </div>
           <p className="text-xs font-semibold uppercase tracking-[0.16em] text-text-secondary">
@@ -477,7 +498,7 @@ export default function InvestmentOverview({
         </div>
 
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
-          {investments.map((investment) => (
+          {groupedCards.map((investment) => (
             <InvestmentCard key={investment.id} inv={investment} />
           ))}
         </div>

@@ -3,11 +3,11 @@ import AddInvestmentButton from "@/components/investments/AddInvestmentButton";
 import InvestmentOverview from "@/components/investments/InvestmentOverview";
 import EmptyState from "@/components/ui/empty-state";
 import { AlertTriangle, BarChart2, Sparkles, TrendingUp } from "lucide-react";
-import { getCryptoPrices } from "@/lib/market/crypto";
 import {
   aggregateInvestmentHoldings,
   getAggregatedPortfolioTotals,
 } from "@/lib/investments/aggregation";
+import { refreshInvestmentMarketPrices } from "@/lib/investments/pricing";
 
 export const dynamic = "force-dynamic";
 
@@ -46,54 +46,7 @@ export default async function InvestmentsPage() {
   }
 
   const list = (investments ?? []) as InvestmentRow[];
-  const liveAssetIds = Array.from(
-    new Set(
-      list
-        .filter(
-          (investment) =>
-            investment.is_live_priced &&
-            investment.price_source === "coingecko" &&
-            investment.asset_id,
-        )
-        .map((investment) => investment.asset_id as string),
-    ),
-  );
-  const emptyLivePrices: Awaited<ReturnType<typeof getCryptoPrices>> = {
-    prices: {},
-    live: false,
-  };
-
-  const livePrices =
-    liveAssetIds.length > 0
-      ? await getCryptoPrices(liveAssetIds).catch((error) => {
-          console.error("Failed to refresh crypto prices", error);
-          return emptyLivePrices;
-        })
-      : emptyLivePrices;
-
-  const pricedList = list.map((investment) => {
-    const livePrice = investment.asset_id
-      ? livePrices.prices[investment.asset_id]
-      : null;
-
-    if (
-      investment.is_live_priced &&
-      investment.price_source === "coingecko" &&
-      typeof livePrice?.pkr === "number"
-    ) {
-      return {
-        ...investment,
-        current_price: livePrice.pkr,
-        current_price_original: livePrice.usd,
-        current_price_currency: "USD",
-        price_change_24h: livePrice.change24h,
-        price_updated_at: livePrice.lastUpdatedAt,
-        price_currency: "PKR",
-      };
-    }
-
-    return investment;
-  });
+  const pricedList = await refreshInvestmentMarketPrices(list);
 
   const groupedHoldings = aggregateInvestmentHoldings(pricedList);
   const { totalInvested, totalValue, totalPnL, totalPnLPct } =

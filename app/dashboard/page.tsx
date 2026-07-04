@@ -14,6 +14,7 @@ import {
   aggregateInvestmentHoldings,
   getAggregatedPortfolioTotals,
 } from "@/lib/investments/aggregation";
+import { refreshInvestmentMarketPrices } from "@/lib/investments/pricing";
 import { sortTransactionsNewestFirst } from "@/lib/transactions";
 import {
   formatAppMonth,
@@ -255,7 +256,9 @@ export default async function DashboardPage() {
     type: string;
     amount: number | string;
   }>;
-  const investmentRows = (investments ?? []) as DashboardInvestment[];
+  const investmentRows = await refreshInvestmentMarketPrices(
+    (investments ?? []) as DashboardInvestment[],
+  );
   const groupedInvestmentRows = aggregateInvestmentHoldings(investmentRows);
   const goalRows = (goals ?? []) as DashboardGoal[];
 

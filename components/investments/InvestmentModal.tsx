@@ -15,7 +15,6 @@ import {
   financeErrorClass,
   financeModalContentClass,
 } from "@/components/ui/finance-modal";
-import type { CryptoPrice, CryptoSearchResult } from "@/lib/market/crypto";
 
 const TYPES = [
   { value: "crypto", label: "Crypto" },
@@ -25,13 +24,31 @@ const TYPES = [
   { value: "other", label: "Other" },
 ];
 
-type SearchResponse = {
-  results?: CryptoSearchResult[];
-  error?: string;
+type MarketKind = "crypto" | "stock";
+type MarketProvider = "coingecko" | "alpha_vantage";
+
+type MarketSearchResult = {
+  id: string;
+  kind: MarketKind;
+  provider: MarketProvider;
+  symbol: string;
+  name: string;
+  subtitle?: string;
+  logoUrl?: string | null;
+  currency: string;
+  pricePkr?: number | null;
+  priceUsd?: number | null;
+  change24h?: number | null;
+  changePercent?: number | null;
+  lastUpdatedAt?: string | null;
+  live: boolean;
+  sourceLabel: string;
 };
 
-type PriceResponse = {
-  prices?: Record<string, CryptoPrice>;
+type SearchResponse = {
+  results?: MarketSearchResult[];
+  warnings?: string[];
+  error?: string;
 };
 
 type ExchangeRateResponse = {
@@ -64,7 +81,9 @@ function isValidDateKey(value: string) {
 }
 
 function formatPkr(value: number | null | undefined) {
-  if (typeof value !== "number" || !Number.isFinite(value)) return "Price unavailable";
+  if (typeof value !== "number" || !Number.isFinite(value)) {
+    return "PKR unavailable";
+  }
 
   return `PKR ${value.toLocaleString("en-PK", {
     maximumFractionDigits: value >= 100 ? 0 : 4,
@@ -72,21 +91,47 @@ function formatPkr(value: number | null | undefined) {
 }
 
 function formatUsd(value: number | null | undefined) {
-  if (typeof value !== "number" || !Number.isFinite(value)) return "USD unavailable";
+  if (typeof value !== "number" || !Number.isFinite(value)) {
+    return "USD unavailable";
+  }
 
   return `$${value.toLocaleString("en-US", {
     maximumFractionDigits: value >= 1 ? 2 : 6,
   })}`;
 }
 
-function formatChange(value: number | null | undefined) {
-  if (typeof value !== "number" || !Number.isFinite(value)) return "24h unavailable";
+function formatMarketChange(asset: MarketSearchResult | null) {
+  const value =
+    asset?.kind === "crypto" ? asset.change24h : asset?.changePercent;
 
-  return `${value >= 0 ? "+" : ""}${value.toFixed(2)}% 24h`;
+  if (typeof value !== "number" || !Number.isFinite(value)) return null;
+
+  return `${value >= 0 ? "+" : ""}${value.toFixed(2)}%${
+    asset?.kind === "crypto" ? " 24h" : ""
+  }`;
 }
 
 function normalizeCurrency(value: string | null | undefined): CurrencyCode {
   return value === "USD" ? "USD" : "PKR";
+}
+
+function hasPkrPrice(asset: MarketSearchResult | null) {
+  return (
+    typeof asset?.pricePkr === "number" &&
+    Number.isFinite(asset.pricePkr) &&
+    asset.pricePkr > 0
+  );
+}
+
+function getAssetInitials(name: string, symbol?: string | null) {
+  const cleanSymbol = (symbol ?? "").trim().toUpperCase();
+  if (cleanSymbol) return cleanSymbol.slice(0, 2);
+
+  const words = name.trim().split(/\s+/).filter(Boolean);
+  if (words.length === 0) return "IN";
+  if (words.length === 1) return words[0].slice(0, 2).toUpperCase();
+
+  return `${words[0][0] ?? ""}${words[1][0] ?? ""}`.toUpperCase();
 }
 
 export interface ExistingInvestment {
@@ -109,6 +154,7 @@ export interface ExistingInvestment {
   price_updated_at?: string | null;
   price_change_24h?: number | null;
   is_live_priced?: boolean | null;
+  item_count?: number;
 }
 
 interface Props {
@@ -149,9 +195,8 @@ export default function InvestmentModal({
   const [isLivePriced, setIsLivePriced] = useState(false);
   const [manualMode, setManualMode] = useState(false);
   const [query, setQuery] = useState("");
-  const [results, setResults] = useState<CryptoSearchResult[]>([]);
-  const [resultPrices, setResultPrices] = useState<Record<string, CryptoPrice>>({});
-  const [selectedAsset, setSelectedAsset] = useState<CryptoSearchResult | null>(
+  const [results, setResults] = useState<MarketSearchResult[]>([]);
+  const [selectedAsset, setSelectedAsset] = useState<MarketSearchResult | null>(
     null,
   );
   const [searchFocused, setSearchFocused] = useState(false);
@@ -160,10 +205,6 @@ export default function InvestmentModal({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const selectedPrice = useMemo(
-    () => (selectedAsset ? resultPrices[selectedAsset.id] : null),
-    [resultPrices, selectedAsset],
-  );
   const cleanQuery = query.trim();
   const isTypingAfterSelection = selectedAsset
     ? cleanQuery.toLowerCase() !== selectedAsset.name.toLowerCase()
@@ -174,14 +215,34 @@ export default function InvestmentModal({
     searchFocused &&
     cleanQuery.length >= 2 &&
     (!selectedAsset || isTypingAfterSelection);
-  const liveCryptoSelected =
-    type === "crypto" &&
+  const marketPricedSelected =
     isLivePriced &&
-    priceSource === "coingecko" &&
+    (priceSource === "coingecko" || priceSource === "alpha_vantage") &&
     Boolean(assetId) &&
     !manualMode;
-  const livePricePkr = selectedPrice?.pkr ?? parseNumber(currentPrice);
-  const livePriceUsd = selectedPrice?.usd ?? currentPriceOriginal;
+  const marketPricePkr = selectedAsset?.pricePkr ?? parseNumber(currentPrice);
+  const marketPriceUsd = selectedAsset?.priceUsd ?? currentPriceOriginal;
+  const marketSourceLabel =
+    priceSource === "alpha_vantage"
+      ? "Latest quote via Alpha Vantage"
+      : "Live via CoinGecko";
+  const marketPriceLabel =
+    priceSource === "alpha_vantage"
+      ? "Current market quote"
+      : "Current live price";
+  const groupedResults = useMemo(
+    () => [
+      {
+        label: "Crypto",
+        items: results.filter((result) => result.kind === "crypto"),
+      },
+      {
+        label: "International Stocks",
+        items: results.filter((result) => result.kind === "stock"),
+      },
+    ],
+    [results],
+  );
 
   useEffect(() => {
     if (!open) return;
@@ -239,7 +300,6 @@ export default function InvestmentModal({
       setSelectedAsset(null);
     }
     setResults([]);
-    setResultPrices({});
     setSearchFocused(false);
     setSearchError("");
     setError("");
@@ -262,43 +322,30 @@ export default function InvestmentModal({
 
       try {
         const response = await fetch(
-          `/api/market/crypto/search?q=${encodeURIComponent(cleanQuery)}`,
+          `/api/market/search?q=${encodeURIComponent(cleanQuery)}`,
           { signal: controller.signal },
         );
         const data = (await response.json()) as SearchResponse;
 
         if (!response.ok) {
-          throw new Error(data.error ?? "Crypto search is unavailable.");
+          throw new Error(data.error ?? "Asset search is unavailable.");
         }
 
-        const nextResults = data.results ?? [];
-        setResults(nextResults);
-
-        if (nextResults.length === 0) {
-          setResultPrices({});
-          return;
-        }
-
-        const priceResponse = await fetch(
-          `/api/market/crypto/price?ids=${encodeURIComponent(
-            nextResults.map((asset) => asset.id).join(","),
-          )}`,
-          { signal: controller.signal },
-        );
-        const priceData = (await priceResponse.json()) as PriceResponse;
-
-        setResultPrices(priceResponse.ok ? priceData.prices ?? {} : {});
+        setResults(data.results ?? []);
+        setSearchError((data.warnings ?? []).join(" "));
       } catch (searchException) {
-        if (searchException instanceof DOMException && searchException.name === "AbortError") {
+        if (
+          searchException instanceof DOMException &&
+          searchException.name === "AbortError"
+        ) {
           return;
         }
 
         setResults([]);
-        setResultPrices({});
         setSearchError(
           searchException instanceof Error
             ? searchException.message
-            : "Crypto search is unavailable.",
+            : "Asset search is unavailable.",
         );
       } finally {
         if (!controller.signal.aborted) {
@@ -346,7 +393,7 @@ export default function InvestmentModal({
     return data.rate;
   }
 
-  function clearLivePricing() {
+  function clearMarketSelection() {
     setAssetId(null);
     setSymbol(null);
     setImageUrl(null);
@@ -362,37 +409,49 @@ export default function InvestmentModal({
   function handleManualMode() {
     setManualMode(true);
     setName((current) => current || query.trim());
-    clearLivePricing();
+    setPurchaseCurrency("PKR");
+    setCurrentPriceCurrency("PKR");
+    clearMarketSelection();
     setResults([]);
-    setResultPrices({});
     setSearchFocused(false);
     setSearchError("");
   }
 
-  function handleSelectAsset(asset: CryptoSearchResult) {
-    const price = resultPrices[asset.id];
+  function handleSelectAsset(asset: MarketSearchResult) {
+    const hasQuote = hasPkrPrice(asset);
+    const nextType = asset.kind === "stock" ? "stocks" : "crypto";
+    const nextAssetId = asset.kind === "stock" ? asset.symbol : asset.id;
 
     setSelectedAsset(asset);
     setName(asset.name);
-    setType("crypto");
-    setAssetId(asset.id);
+    setType(nextType);
+    setAssetId(nextAssetId);
     setSymbol(asset.symbol);
-    setImageUrl(asset.large ?? asset.thumb);
-    setPriceSource("coingecko");
-    setPriceUpdatedAt(price?.lastUpdatedAt ?? null);
-    setPriceChange24h(price?.change24h ?? null);
-    setIsLivePriced(true);
+    setImageUrl(asset.logoUrl ?? null);
+    setPriceSource(asset.provider);
+    setPriceUpdatedAt(
+      hasQuote ? asset.lastUpdatedAt ?? new Date().toISOString() : null,
+    );
+    setPriceChange24h(
+      typeof asset.change24h === "number"
+        ? asset.change24h
+        : typeof asset.changePercent === "number"
+          ? asset.changePercent
+          : null,
+    );
+    setIsLivePriced(hasQuote);
     setCurrentPriceOriginal(
-      typeof price?.usd === "number" && Number.isFinite(price.usd)
-        ? price.usd
+      typeof asset.priceUsd === "number" && Number.isFinite(asset.priceUsd)
+        ? asset.priceUsd
         : null,
     );
-    setCurrentPriceCurrency("USD");
-    setCurrentPrice(
-      typeof price?.pkr === "number" && Number.isFinite(price.pkr)
-        ? price.pkr.toFixed(2)
-        : "",
+    setCurrentPriceCurrency(
+      typeof asset.priceUsd === "number" && Number.isFinite(asset.priceUsd)
+        ? "USD"
+        : "PKR",
     );
+    setCurrentPrice(hasQuote && asset.pricePkr ? asset.pricePkr.toFixed(2) : "");
+    setPurchaseCurrency(asset.kind === "stock" ? "USD" : purchaseCurrency);
     setQuery(asset.name);
     setSearchFocused(false);
     setResults([]);
@@ -401,9 +460,8 @@ export default function InvestmentModal({
 
   function handleClearSearch() {
     setQuery("");
-    clearLivePricing();
+    clearMarketSelection();
     setResults([]);
-    setResultPrices({});
     setSearchError("");
     setSearchFocused(false);
   }
@@ -412,7 +470,7 @@ export default function InvestmentModal({
     setType(nextType);
 
     if (!isEditing || nextType !== "crypto") {
-      clearLivePricing();
+      clearMarketSelection();
     }
   }
 
@@ -438,7 +496,7 @@ export default function InvestmentModal({
       return;
     }
 
-    if (!liveCryptoSelected && parsedCurrentPrice !== null && parsedCurrentPrice <= 0) {
+    if (!marketPricedSelected && parsedCurrentPrice !== null && parsedCurrentPrice <= 0) {
       setError("Enter a current price greater than 0, or leave it blank.");
       return;
     }
@@ -449,13 +507,13 @@ export default function InvestmentModal({
     }
 
     if (
-      liveCryptoSelected &&
-      (typeof livePricePkr !== "number" ||
-        !Number.isFinite(livePricePkr) ||
-        livePricePkr <= 0)
+      marketPricedSelected &&
+      (typeof marketPricePkr !== "number" ||
+        !Number.isFinite(marketPricePkr) ||
+        marketPricePkr <= 0)
     ) {
       setError(
-        "Live price is unavailable for this coin. Use manual pricing or choose another asset.",
+        "Market price is unavailable for this asset. Enter a manual current price or choose another asset.",
       );
       return;
     }
@@ -465,7 +523,7 @@ export default function InvestmentModal({
 
     const needsUsdConversion =
       purchaseCurrency === "USD" ||
-      (!liveCryptoSelected &&
+      (!marketPricedSelected &&
         parsedCurrentPrice !== null &&
         currentPriceCurrency === "USD");
 
@@ -500,11 +558,11 @@ export default function InvestmentModal({
     let currentOriginalPrice: number | null = parsedPurchasePrice;
     let savedCurrentCurrency: CurrencyCode = purchaseCurrency;
 
-    if (liveCryptoSelected) {
-      currentPricePkr = livePricePkr as number;
+    if (marketPricedSelected) {
+      currentPricePkr = marketPricePkr as number;
       currentOriginalPrice =
-        typeof livePriceUsd === "number" && Number.isFinite(livePriceUsd)
-          ? livePriceUsd
+        typeof marketPriceUsd === "number" && Number.isFinite(marketPriceUsd)
+          ? marketPriceUsd
           : null;
       savedCurrentCurrency = currentOriginalPrice === null ? "PKR" : "USD";
     } else if (parsedCurrentPrice !== null) {
@@ -574,6 +632,21 @@ export default function InvestmentModal({
     onClose();
   }
 
+  function renderAssetAvatar(asset: MarketSearchResult) {
+    if (asset.logoUrl) {
+      return (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={asset.logoUrl} alt="" className="h-8 w-8 rounded-full" />
+      );
+    }
+
+    return (
+      <span className="grid h-8 w-8 place-items-center rounded-full bg-surface-secondary text-xs font-bold text-active">
+        {getAssetInitials(asset.name, asset.symbol)}
+      </span>
+    );
+  }
+
   return (
     <Dialog open={open} onOpenChange={(nextOpen) => !nextOpen && onClose()}>
       <DialogContent className={`${financeModalContentClass} sm:max-w-lg`}>
@@ -589,7 +662,7 @@ export default function InvestmentModal({
             <div className="space-y-3">
               <div ref={searchContainerRef} className="relative">
                 <label className="field-label" htmlFor="investment-asset-search">
-                  Search Crypto Asset
+                  Search Asset
                 </label>
                 <div className="relative">
                   <Search
@@ -602,7 +675,7 @@ export default function InvestmentModal({
                     onChange={(event) => {
                       setQuery(event.target.value);
                       setSearchFocused(true);
-                      if (selectedAsset || assetId) clearLivePricing();
+                      if (selectedAsset || assetId) clearMarketSelection();
                     }}
                     onFocus={() => setSearchFocused(true)}
                     onKeyDown={(event) => {
@@ -610,7 +683,7 @@ export default function InvestmentModal({
                         setSearchFocused(false);
                       }
                     }}
-                    placeholder="Search bitcoin, ethereum..."
+                    placeholder="Search crypto or stocks e.g. Bitcoin, Apple, AAPL"
                     className="field-input pl-9 pr-10"
                     autoComplete="off"
                   />
@@ -619,7 +692,7 @@ export default function InvestmentModal({
                       type="button"
                       onClick={handleClearSearch}
                       className="finance-focus absolute right-2 top-1/2 grid h-7 w-7 -translate-y-1/2 place-items-center rounded-full text-text-secondary transition-colors hover:bg-hover hover:text-text-primary"
-                      aria-label="Clear crypto search"
+                      aria-label="Clear asset search"
                     >
                       <X className="h-3.5 w-3.5" />
                     </button>
@@ -631,69 +704,80 @@ export default function InvestmentModal({
                     {searchLoading ? (
                       <div className="flex items-center justify-center gap-2 px-2 py-4 text-xs font-medium text-text-secondary">
                         <Loader2 className="h-4 w-4 animate-spin" />
-                        Searching live assets...
+                        Searching assets...
                       </div>
-                    ) : searchError ? (
-                      <p className="px-2 py-4 text-center text-xs text-danger">
-                        {searchError}
-                      </p>
                     ) : results.length === 0 ? (
-                      <p className="px-2 py-4 text-center text-xs text-text-secondary">
-                        No crypto assets found.
-                      </p>
+                      <div className="px-2 py-4 text-center text-xs">
+                        <p className="text-text-secondary">No assets found.</p>
+                        {searchError ? (
+                          <p className="mt-1 text-danger">{searchError}</p>
+                        ) : null}
+                      </div>
                     ) : (
-                      <div className="max-h-[240px] overflow-y-auto pr-1">
-                        {results.map((asset) => {
-                          const price = resultPrices[asset.id];
-                          const change = price?.change24h;
-                          const isPositive =
-                            typeof change === "number" && change >= 0;
+                      <div className="max-h-[286px] overflow-y-auto pr-1">
+                        {groupedResults.map((group) =>
+                          group.items.length > 0 ? (
+                            <div key={group.label} className="py-1">
+                              <p className="px-2 pb-1 text-[10px] font-bold uppercase tracking-[0.16em] text-text-secondary">
+                                {group.label}
+                              </p>
+                              {group.items.map((asset) => {
+                                const changeText = formatMarketChange(asset);
+                                const changeValue =
+                                  asset.kind === "crypto"
+                                    ? asset.change24h
+                                    : asset.changePercent;
+                                const isPositive =
+                                  typeof changeValue === "number" &&
+                                  changeValue >= 0;
 
-                          return (
-                            <button
-                              key={asset.id}
-                              type="button"
-                              onClick={() => handleSelectAsset(asset)}
-                              className="finance-focus flex w-full items-center gap-3 rounded-[12px] px-2.5 py-2.5 text-left transition-colors hover:bg-hover"
-                            >
-                              {asset.thumb ? (
-                                // eslint-disable-next-line @next/next/no-img-element
-                                <img
-                                  src={asset.thumb}
-                                  alt=""
-                                  className="h-8 w-8 rounded-full"
-                                />
-                              ) : (
-                                <span className="grid h-8 w-8 place-items-center rounded-full bg-surface-secondary text-xs font-bold text-active">
-                                  {asset.symbol.slice(0, 1)}
-                                </span>
-                              )}
-                              <span className="min-w-0 flex-1">
-                                <span className="flex min-w-0 items-center gap-2">
-                                  <span className="truncate text-sm font-semibold text-text-primary">
-                                    {asset.name}
-                                  </span>
-                                  <span className="text-[11px] font-bold uppercase text-text-secondary">
-                                    {asset.symbol}
-                                  </span>
-                                </span>
-                                <span className="mt-0.5 flex items-center gap-2 text-[11px] text-text-secondary">
-                                  <span>{formatPkr(price?.pkr)}</span>
-                                  {typeof change === "number" ? (
-                                    <span
-                                      className={
-                                        isPositive ? "text-success" : "text-danger"
-                                      }
-                                    >
-                                      {isPositive ? "+" : ""}
-                                      {change.toFixed(2)}%
+                                return (
+                                  <button
+                                    key={`${asset.kind}-${asset.id}`}
+                                    type="button"
+                                    onClick={() => handleSelectAsset(asset)}
+                                    className="finance-focus flex w-full items-center gap-3 rounded-[12px] px-2.5 py-2.5 text-left transition-colors hover:bg-hover"
+                                  >
+                                    {renderAssetAvatar(asset)}
+                                    <span className="min-w-0 flex-1">
+                                      <span className="flex min-w-0 items-center gap-2">
+                                        <span className="truncate text-sm font-semibold text-text-primary">
+                                          {asset.name}
+                                        </span>
+                                        <span className="text-[11px] font-bold uppercase text-text-secondary">
+                                          {asset.symbol}
+                                        </span>
+                                      </span>
+                                      <span className="mt-0.5 flex flex-wrap items-center gap-2 text-[11px] text-text-secondary">
+                                        <span>{formatPkr(asset.pricePkr)}</span>
+                                        <span>{formatUsd(asset.priceUsd)}</span>
+                                        {changeText ? (
+                                          <span
+                                            className={
+                                              isPositive
+                                                ? "text-success"
+                                                : "text-danger"
+                                            }
+                                          >
+                                            {changeText}
+                                          </span>
+                                        ) : null}
+                                      </span>
                                     </span>
-                                  ) : null}
-                                </span>
-                              </span>
-                            </button>
-                          );
-                        })}
+                                    <span className="rounded-full border border-border bg-surface-secondary px-2 py-0.5 text-[10px] font-bold uppercase text-text-secondary">
+                                      {asset.kind === "crypto" ? "Crypto" : "Stock"}
+                                    </span>
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          ) : null,
+                        )}
+                        {searchError ? (
+                          <p className="px-2 py-2 text-[11px] text-warning">
+                            {searchError}
+                          </p>
+                        ) : null}
                       </div>
                     )}
                   </div>
@@ -718,7 +802,7 @@ export default function InvestmentModal({
                 value={name}
                 onChange={(event) => {
                   setName(event.target.value);
-                  if (!isEditing) clearLivePricing();
+                  if (!isEditing) clearMarketSelection();
                 }}
                 placeholder="e.g. Bitcoin, Apple Stock"
                 className="field-input"
@@ -729,11 +813,11 @@ export default function InvestmentModal({
                   onClick={() => {
                     setManualMode(false);
                     setQuery("");
-                    clearLivePricing();
+                    clearMarketSelection();
                   }}
                   className="mt-2 text-xs font-semibold text-active transition-colors hover:text-active-hover"
                 >
-                  Search live crypto instead
+                  Search crypto or stocks instead
                 </button>
               ) : null}
             </div>
@@ -742,15 +826,19 @@ export default function InvestmentModal({
           {selectedAsset ? (
             <div className="rounded-[18px] border border-success/25 bg-success/10 p-3">
               <div className="flex items-start gap-3">
-              {selectedAsset.large ?? selectedAsset.thumb ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={selectedAsset.large ?? selectedAsset.thumb ?? ""}
-                  alt=""
-                  className="h-10 w-10 flex-shrink-0 rounded-full"
-                />
-              ) : null}
-              <div className="min-w-0 flex-1">
+                {selectedAsset.logoUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={selectedAsset.logoUrl}
+                    alt=""
+                    className="h-10 w-10 flex-shrink-0 rounded-full"
+                  />
+                ) : (
+                  <span className="grid h-10 w-10 flex-shrink-0 place-items-center rounded-full bg-surface-secondary text-xs font-bold text-active">
+                    {getAssetInitials(selectedAsset.name, selectedAsset.symbol)}
+                  </span>
+                )}
+                <div className="min-w-0 flex-1">
                   <div className="flex min-w-0 items-start justify-between gap-3">
                     <div className="min-w-0">
                       <p className="truncate text-sm font-semibold text-text-primary">
@@ -759,16 +847,21 @@ export default function InvestmentModal({
                           {selectedAsset.symbol}
                         </span>
                       </p>
-                      <p className="mt-0.5 text-[11px] font-medium text-text-secondary">
-                        Live via CoinGecko
-                      </p>
+                      <div className="mt-1 flex flex-wrap items-center gap-2">
+                        <span className="rounded-full border border-border bg-card px-2 py-0.5 text-[10px] font-bold uppercase text-text-secondary">
+                          {selectedAsset.kind === "crypto" ? "Crypto" : "Stock"}
+                        </span>
+                        <p className="text-[11px] font-medium text-text-secondary">
+                          {selectedAsset.sourceLabel}
+                        </p>
+                      </div>
                     </div>
                     <button
                       type="button"
                       onClick={() => {
                         setSearchFocused(true);
                         setQuery("");
-                        clearLivePricing();
+                        clearMarketSelection();
                       }}
                       className="finance-focus rounded-full border border-border bg-card px-2.5 py-1 text-[11px] font-semibold text-text-primary transition-colors hover:bg-hover"
                     >
@@ -777,32 +870,31 @@ export default function InvestmentModal({
                   </div>
                   <div className="mt-2 flex flex-wrap items-end gap-x-3 gap-y-1">
                     <span className="text-sm font-bold text-text-primary">
-                      {formatPkr(selectedPrice?.pkr)}
+                      {formatPkr(selectedAsset.pricePkr)}
                     </span>
                     <span className="text-[11px] text-text-secondary">
-                      {formatUsd(selectedPrice?.usd)}
+                      {formatUsd(selectedAsset.priceUsd)}
                     </span>
-                    <span
-                      className={`text-[11px] font-semibold ${
-                        Number(selectedPrice?.change24h ?? 0) >= 0
-                          ? "text-success"
-                          : "text-danger"
-                      }`}
-                    >
-                      {formatChange(selectedPrice?.change24h)}
-                    </span>
-                  </div>
-                  {typeof selectedPrice?.pkr !== "number" ? (
-                    <div className="mt-2 flex flex-wrap items-center gap-2 text-[11px] text-danger">
-                      <span>Live price is unavailable for this coin.</span>
-                      <button
-                        type="button"
-                        onClick={handleManualMode}
-                        className="font-semibold text-active transition-colors hover:text-active-hover"
+                    {formatMarketChange(selectedAsset) ? (
+                      <span
+                        className={`text-[11px] font-semibold ${
+                          Number(
+                            selectedAsset.change24h ??
+                              selectedAsset.changePercent ??
+                              0,
+                          ) >= 0
+                            ? "text-success"
+                            : "text-danger"
+                        }`}
                       >
-                        Use manual pricing
-                      </button>
-                    </div>
+                        {formatMarketChange(selectedAsset)}
+                      </span>
+                    ) : null}
+                  </div>
+                  {!hasPkrPrice(selectedAsset) ? (
+                    <p className="mt-2 text-[11px] text-warning">
+                      Quote unavailable. Enter a manual current price below.
+                    </p>
                   ) : null}
                 </div>
               </div>
@@ -880,32 +972,36 @@ export default function InvestmentModal({
             </div>
           </div>
 
-          {liveCryptoSelected ? (
+          {marketPricedSelected ? (
             <div className="rounded-[18px] border border-border bg-surface-secondary p-3">
               <div className="flex items-center justify-between gap-3">
                 <div>
                   <p className="text-[11px] font-medium text-text-secondary">
-                    Current live price
+                    {marketPriceLabel}
                   </p>
                   <p className="mt-1 text-sm font-bold text-text-primary">
-                    {formatPkr(livePricePkr)}
+                    {formatPkr(marketPricePkr)}
                   </p>
                   <p className="mt-0.5 text-[11px] text-text-secondary">
-                    {formatUsd(livePriceUsd)}
+                    {formatUsd(marketPriceUsd)}
                   </p>
                 </div>
-                <span
-                  className={`rounded-full border px-2.5 py-1 text-[11px] font-bold ${
-                    Number(priceChange24h ?? selectedPrice?.change24h ?? 0) >= 0
-                      ? "border-success/25 bg-success/10 text-success"
-                      : "border-danger/25 bg-danger/10 text-danger"
-                  }`}
-                >
-                  {formatChange(priceChange24h ?? selectedPrice?.change24h)}
-                </span>
+                {priceChange24h !== null ? (
+                  <span
+                    className={`rounded-full border px-2.5 py-1 text-[11px] font-bold ${
+                      Number(priceChange24h) >= 0
+                        ? "border-success/25 bg-success/10 text-success"
+                        : "border-danger/25 bg-danger/10 text-danger"
+                    }`}
+                  >
+                    {priceChange24h >= 0 ? "+" : ""}
+                    {priceChange24h.toFixed(2)}%
+                    {priceSource === "coingecko" ? " 24h" : ""}
+                  </span>
+                ) : null}
               </div>
               <p className="mt-2 text-[11px] text-text-secondary">
-                Live via CoinGecko. This value is saved in PKR for portfolio math.
+                {marketSourceLabel}. This value is saved in PKR for portfolio math.
               </p>
             </div>
           ) : (
@@ -938,7 +1034,7 @@ export default function InvestmentModal({
                 value={currentPrice}
                 onChange={(event) => {
                   setCurrentPrice(event.target.value);
-                  if (!isEditing && manualMode) clearLivePricing();
+                  if (!isEditing && manualMode) clearMarketSelection();
                 }}
                 placeholder="Leave blank to match buy price"
                 className="field-input"

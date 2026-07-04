@@ -174,12 +174,14 @@ NEXT_PUBLIC_SENTRY_DSN=
 SENTRY_AUTH_TOKEN=
 
 ANTHROPIC_API_KEY=
+ALPHA_VANTAGE_API_KEY=
 
 NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=
 STRIPE_SECRET_KEY=
 ```
 
 `ANTHROPIC_API_KEY` is used only on the server for AI Insights. Do not prefix it with `NEXT_PUBLIC_`, and never commit real secret values.
+`ALPHA_VANTAGE_API_KEY` is used only on the server for international stock search and latest quotes. Do not prefix it with `NEXT_PUBLIC_`.
 
 Only enable Google authentication when the provider is fully configured in Supabase.
 

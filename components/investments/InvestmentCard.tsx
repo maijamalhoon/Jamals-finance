@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { useCurrency } from "@/components/currency/CurrencyProvider";
+import { getAssetInitials } from "@/lib/investments/aggregation";
 import InvestmentModal, { ExistingInvestment } from "./InvestmentModal";
 
 const CONFIG: Record<
@@ -67,10 +68,15 @@ function formatUpdatedAt(value: string | null | undefined) {
   })}`;
 }
 
-function formatChange24h(value: number | null | undefined) {
+function formatPriceChange(
+  value: number | null | undefined,
+  source: string | null | undefined,
+) {
   if (typeof value !== "number" || !Number.isFinite(value)) return null;
 
-  return `${value >= 0 ? "+" : ""}${value.toFixed(2)}% 24h`;
+  return `${value >= 0 ? "+" : ""}${value.toFixed(2)}%${
+    source === "coingecko" ? " 24h" : ""
+  }`;
 }
 
 function toFiniteNumber(value: number | string | null | undefined) {
@@ -104,6 +110,19 @@ export default function InvestmentCard({ inv }: { inv: ExistingInvestment }) {
 
   const cfg = CONFIG[inv.type] || CONFIG.other;
   const Icon = cfg.icon;
+  const isGrouped = Number(inv.item_count ?? 1) > 1;
+  const quoteLabel =
+    inv.price_source === "alpha_vantage"
+      ? "Latest quote"
+      : inv.is_live_priced
+        ? "Live"
+        : null;
+  const priceSourceText =
+    inv.price_source === "alpha_vantage"
+      ? "Latest quote via Alpha Vantage"
+      : inv.price_source === "coingecko"
+        ? "Live via CoinGecko"
+        : "Manual asset";
 
   const qty = Number(inv.quantity);
   const buyPrice = Number(inv.purchase_price);
@@ -127,7 +146,7 @@ export default function InvestmentCard({ inv }: { inv: ExistingInvestment }) {
   const pnl = currentValue - totalCost;
   const pnlPct = totalCost > 0 ? (pnl / totalCost) * 100 : 0;
   const isProfit = pnl >= 0;
-  const change24h = formatChange24h(inv.price_change_24h);
+  const change24h = formatPriceChange(inv.price_change_24h, inv.price_source);
 
   async function handleDelete() {
     if (!confirm(`Delete "${inv.name}"? This cannot be undone.`)) return;
@@ -139,25 +158,27 @@ export default function InvestmentCard({ inv }: { inv: ExistingInvestment }) {
   return (
     <>
       <article className="finance-reference-card finance-hover-lift group relative flex h-full min-h-[342px] min-w-0 flex-col p-5">
-        <div className="absolute right-4 top-4 flex gap-1 opacity-100 transition-opacity sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100">
-          <button
-            type="button"
-            onClick={() => setEditOpen(true)}
-            className="icon-button h-8 w-8"
-            aria-label="Edit investment"
-          >
-            <Pencil size={12} />
-          </button>
-          <button
-            type="button"
-            onClick={handleDelete}
-            disabled={deleting}
-            className="icon-button h-8 w-8 hover:border-danger/30 hover:bg-danger/10 hover:text-danger"
-            aria-label="Delete investment"
-          >
-            <Trash2 size={12} />
-          </button>
-        </div>
+        {!isGrouped ? (
+          <div className="absolute right-4 top-4 flex gap-1 opacity-100 transition-opacity sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100">
+            <button
+              type="button"
+              onClick={() => setEditOpen(true)}
+              className="icon-button h-8 w-8"
+              aria-label="Edit investment"
+            >
+              <Pencil size={12} />
+            </button>
+            <button
+              type="button"
+              onClick={handleDelete}
+              disabled={deleting}
+              className="icon-button h-8 w-8 hover:border-danger/30 hover:bg-danger/10 hover:text-danger"
+              aria-label="Delete investment"
+            >
+              <Trash2 size={12} />
+            </button>
+          </div>
+        ) : null}
 
         <div className="flex min-w-0 items-start gap-3 pr-16">
           {inv.image_url ? (
@@ -167,6 +188,12 @@ export default function InvestmentCard({ inv }: { inv: ExistingInvestment }) {
               alt=""
               className="h-11 w-11 flex-shrink-0 rounded-full"
             />
+          ) : inv.symbol ? (
+            <span
+              className={`flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-[16px] text-xs font-bold ${cfg.bg} ${cfg.color}`}
+            >
+              {getAssetInitials(inv.name, inv.symbol)}
+            </span>
           ) : (
             <div
               className={`flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-[16px] ${cfg.bg}`}
@@ -183,9 +210,14 @@ export default function InvestmentCard({ inv }: { inv: ExistingInvestment }) {
               <span className={`truncate text-xs font-bold uppercase ${cfg.color}`}>
                 {inv.symbol ? inv.symbol.toUpperCase() : cfg.label}
               </span>
-              {inv.is_live_priced ? (
+              {quoteLabel ? (
                 <span className="rounded-full border border-success/25 bg-success/10 px-2 py-0.5 text-[10px] font-bold uppercase text-success">
-                  Live
+                  {quoteLabel}
+                </span>
+              ) : null}
+              {isGrouped ? (
+                <span className="rounded-full border border-border bg-surface-secondary px-2 py-0.5 text-[10px] font-bold uppercase text-text-secondary">
+                  {inv.item_count} buys
                 </span>
               ) : null}
             </div>
@@ -250,7 +282,11 @@ export default function InvestmentCard({ inv }: { inv: ExistingInvestment }) {
           </div>
           <div className="finance-panel-soft min-w-0 p-3">
             <p className="text-[11px] text-text-secondary">
-              {inv.is_live_priced ? "Live Price" : "Current Price"}
+              {inv.price_source === "alpha_vantage"
+                ? "Latest Quote"
+                : inv.is_live_priced
+                  ? "Live Price"
+                  : "Current Price"}
             </p>
             <p className="mt-1 break-words text-sm font-bold text-text-primary [overflow-wrap:anywhere]">
               {formatCurrency(curPrice)}
@@ -272,7 +308,7 @@ export default function InvestmentCard({ inv }: { inv: ExistingInvestment }) {
           </span>
           <span className="truncate">
             {inv.is_live_priced
-              ? formatUpdatedAt(inv.price_updated_at)
+              ? `${priceSourceText} | ${formatUpdatedAt(inv.price_updated_at)}`
               : "Manual asset"}
           </span>
         </div>
