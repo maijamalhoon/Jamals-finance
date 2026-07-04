@@ -2,7 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import TransactionRow from "@/components/transactions/TransactionRow";
 import AddIncomeButton from "@/components/income/AddIncomeButton";
 import EmptyState from "@/components/ui/empty-state";
-import { TrendingUp } from "lucide-react";
+import { Landmark, TrendingUp } from "lucide-react";
 import { loadTransactions } from "@/lib/transactions";
 import { formatDateKey, getAppDateParts } from "@/lib/dates";
 
@@ -99,27 +99,36 @@ export default async function IncomePage() {
         <h3 className="mb-4 text-sm font-semibold text-text-primary">
           Income by Account
         </h3>
-        <div className="grid gap-2 md:grid-cols-2 xl:grid-cols-4">
-          {Object.entries(
-            income.reduce<Record<string, number>>((acc, tx) => {
-              const account = (tx.accounts as any)?.name || "No account";
-              acc[account] = (acc[account] ?? 0) + Number(tx.amount);
-              return acc;
-            }, {}),
-          ).map(([account, amount]) => (
-            <div
-              key={account}
-              className="finance-panel-soft min-w-0 p-3"
-            >
-              <p className="truncate text-xs font-medium text-text-secondary">
-                {account}
-              </p>
-              <p className="mt-1 break-words text-sm font-bold text-success">
-                {fmt(amount)}
-              </p>
-            </div>
-          ))}
-        </div>
+        {income.length === 0 ? (
+          <EmptyState
+            compact
+            icon={Landmark}
+            title="No account income yet"
+            description="Income totals by account will appear after your first earning is recorded."
+          />
+        ) : (
+          <div className="grid gap-2 md:grid-cols-2 xl:grid-cols-4">
+            {Object.entries(
+              income.reduce<Record<string, number>>((acc, tx) => {
+                const account = (tx.accounts as any)?.name || "No account";
+                acc[account] = (acc[account] ?? 0) + Number(tx.amount);
+                return acc;
+              }, {}),
+            ).map(([account, amount]) => (
+              <div
+                key={account}
+                className="finance-panel-soft min-w-0 p-3"
+              >
+                <p className="truncate text-xs font-medium text-text-secondary">
+                  {account}
+                </p>
+                <p className="mt-1 break-words text-sm font-bold text-success">
+                  {fmt(amount)}
+                </p>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {sources.length > 0 && (

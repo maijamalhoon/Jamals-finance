@@ -146,7 +146,7 @@ export default function ChartFrame({
         </div>
       : <div
           aria-hidden="true"
-          className="h-full min-h-[160px] w-full animate-pulse rounded-[24px] bg-surface-secondary/70"
+          className="finance-skeleton h-full min-h-[160px] w-full rounded-[var(--oneui-card-radius)]"
         />
       }
     </div>

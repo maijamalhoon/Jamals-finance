@@ -34,6 +34,7 @@ function Panel({
 }) {
   return (
     <div
+      data-loading="true"
       className={`finance-loading-panel motion-reveal ${className}`}
       style={{ animationDelay: `${delay}ms` }}
     >
@@ -49,7 +50,12 @@ export default function DashboardRouteLoading({
 }) {
   if (variant === "analytics") {
     return (
-      <div className="space-y-6 pb-10">
+      <div
+        role="status"
+        aria-label="Loading analytics"
+        aria-busy="true"
+        className="space-y-6 pb-10"
+      >
         <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">
           {Array.from({ length: 3 }).map((_, index) => (
             <Panel key={index} className="min-h-[118px]" delay={index * 40}>
@@ -92,7 +98,12 @@ export default function DashboardRouteLoading({
 
   if (variant === "table") {
     return (
-      <div className="space-y-6 pb-10">
+      <div
+        role="status"
+        aria-label="Loading transactions"
+        aria-busy="true"
+        className="space-y-6 pb-10"
+      >
         <div className="space-y-3">
           <SkeletonLine className="h-7 w-48" />
           <SkeletonLine className="h-4 w-72 max-w-full" />
@@ -130,7 +141,12 @@ export default function DashboardRouteLoading({
 
   if (variant === "cards") {
     return (
-      <div className="space-y-6 pb-10">
+      <div
+        role="status"
+        aria-label="Loading cards"
+        aria-busy="true"
+        className="space-y-6 pb-10"
+      >
         <div className="space-y-3">
           <SkeletonLine className="h-7 w-52" />
           <SkeletonLine className="h-4 w-72 max-w-full" />
@@ -165,7 +181,12 @@ export default function DashboardRouteLoading({
 
   if (variant === "settings") {
     return (
-      <div className="space-y-6 pb-10">
+      <div
+        role="status"
+        aria-label="Loading settings"
+        aria-busy="true"
+        className="space-y-6 pb-10"
+      >
         <div className="space-y-3">
           <SkeletonLine className="h-7 w-52" />
           <SkeletonLine className="h-4 w-80 max-w-full" />
@@ -205,7 +226,12 @@ export default function DashboardRouteLoading({
 
   if (variant === "ai") {
     return (
-      <div className="space-y-6 pb-10">
+      <div
+        role="status"
+        aria-label="Loading AI insights"
+        aria-busy="true"
+        className="space-y-6 pb-10"
+      >
         <div className="space-y-3">
           <SkeletonLine className="h-7 w-56" />
           <SkeletonLine className="h-4 w-72 max-w-full" />
@@ -225,7 +251,12 @@ export default function DashboardRouteLoading({
   }
 
   return (
-    <div className="space-y-6 pb-10">
+    <div
+      role="status"
+      aria-label="Loading dashboard"
+      aria-busy="true"
+      className="space-y-6 pb-10"
+    >
       <Panel
         className="min-h-[176px] overflow-hidden px-4 py-4 sm:px-5 sm:py-5 lg:px-6"
         delay={0}

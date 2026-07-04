@@ -2,7 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import TransactionRow from "@/components/transactions/TransactionRow";
 import AddExpenseButton from "@/components/expenses/AddExpenseButton";
 import EmptyState from "@/components/ui/empty-state";
-import { TrendingDown } from "lucide-react";
+import { Landmark, TrendingDown } from "lucide-react";
 import { loadTransactions } from "@/lib/transactions";
 import { formatDateKey, getAppDateParts } from "@/lib/dates";
 
@@ -85,27 +85,36 @@ export default async function ExpensesPage() {
         <h3 className="mb-4 text-sm font-semibold text-text-primary">
           Expenses by Account
         </h3>
-        <div className="grid gap-2 md:grid-cols-2 xl:grid-cols-4">
-          {Object.entries(
-            expenses.reduce<Record<string, number>>((acc, tx) => {
-              const account = (tx.accounts as any)?.name || "No account";
-              acc[account] = (acc[account] ?? 0) + Number(tx.amount);
-              return acc;
-            }, {}),
-          ).map(([account, amount]) => (
-            <div
-              key={account}
-              className="finance-panel-soft min-w-0 p-3"
-            >
-              <p className="truncate text-xs font-medium text-text-secondary">
-                {account}
-              </p>
-              <p className="mt-1 break-words text-sm font-bold text-danger">
-                {fmt(amount)}
-              </p>
-            </div>
-          ))}
-        </div>
+        {expenses.length === 0 ? (
+          <EmptyState
+            compact
+            icon={Landmark}
+            title="No account spending yet"
+            description="Expense totals by account will appear after your first spend is recorded."
+          />
+        ) : (
+          <div className="grid gap-2 md:grid-cols-2 xl:grid-cols-4">
+            {Object.entries(
+              expenses.reduce<Record<string, number>>((acc, tx) => {
+                const account = (tx.accounts as any)?.name || "No account";
+                acc[account] = (acc[account] ?? 0) + Number(tx.amount);
+                return acc;
+              }, {}),
+            ).map(([account, amount]) => (
+              <div
+                key={account}
+                className="finance-panel-soft min-w-0 p-3"
+              >
+                <p className="truncate text-xs font-medium text-text-secondary">
+                  {account}
+                </p>
+                <p className="mt-1 break-words text-sm font-bold text-danger">
+                  {fmt(amount)}
+                </p>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">

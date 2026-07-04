@@ -16,15 +16,17 @@ export default function EmptyState({
   return (
     <div
       data-empty-state
-      className={`motion-empty flex flex-col items-center justify-center text-center ${
-        compact ? "py-7" : "py-14 sm:py-16"
+      className={`motion-empty mx-auto flex w-full max-w-xl flex-col items-center justify-center px-4 text-center ${
+        compact ? "min-h-[168px] py-7" : "min-h-[240px] py-12 sm:py-14"
       }`}
     >
-      <div className="finance-icon-bubble mb-3 h-12 w-12">
+      <div className="finance-icon-bubble mb-3 h-12 w-12 shadow-[var(--shadow)]">
         <Icon size={18} />
       </div>
-      <p className="text-sm font-semibold text-text-primary">{title}</p>
-      <p className="mt-1 max-w-xs text-xs leading-5 text-text-secondary">
+      <p className="max-w-full text-balance text-sm font-semibold text-text-primary">
+        {title}
+      </p>
+      <p className="mt-1 max-w-sm text-pretty text-xs leading-5 text-text-secondary">
         {description}
       </p>
     </div>
