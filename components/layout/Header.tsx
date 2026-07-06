@@ -85,6 +85,8 @@ export default function Header() {
         >
           <Search size={14} className="flex-shrink-0 text-text-secondary" />
           <input
+            type="search"
+            autoComplete="off"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search transactions..."
@@ -95,6 +97,7 @@ export default function Header() {
 
         <div className="relative" ref={bellRef}>
           <button
+            type="button"
             onClick={() => setBellOpen((current) => !current)}
             className="finance-control finance-focus relative flex h-10 w-10 items-center justify-center"
             aria-label="Open notifications"
