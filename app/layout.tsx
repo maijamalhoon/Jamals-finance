@@ -26,12 +26,7 @@ export const metadata: Metadata = {
     template: "%s — Jamal's Finance",
   },
   verification: {
-    google: (
-      <meta
-        name="google-site-verification"
-        content="W-UmHqy2sJyd2xbsdPdPeqJLOhLS2cf_aszWJf15aMk"
-      />
-    ),
+    google: "W-UmHqy2sJyd2xbsdPdPeqJLOhLS2cf_aszWJf15aMk",
   },
   description:
     "Track accounts, expenses, income, goals, liabilities, investments, and savings in one secure personal finance workspace.",
