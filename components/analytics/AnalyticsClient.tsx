@@ -1132,7 +1132,7 @@ export default function AnalyticsClient({
             </p>
           </motion.div>
 
-          <div className="inline-flex w-full min-w-0 overflow-x-auto rounded-full border border-border bg-card p-1 shadow-theme sm:w-fit">
+          <div className="grid w-full min-w-0 grid-cols-4 rounded-full border border-border bg-card p-1 shadow-theme sm:inline-flex sm:w-fit">
             {PERIODS.map((item) => {
               const active = item.value === period;
 
@@ -1141,7 +1141,7 @@ export default function AnalyticsClient({
                   key={item.value}
                   type="button"
                   onClick={() => setPeriod(item.value)}
-                  className={`finance-focus relative min-w-max rounded-full px-4 py-2 text-xs font-bold transition-all ${
+                  className={`finance-focus relative min-h-10 min-w-0 rounded-full px-2 py-2 text-[11px] font-bold transition-all sm:min-w-max sm:px-4 sm:text-xs ${
                     active ? "text-background" : (
                       "text-text-secondary hover:bg-hover hover:text-text-primary"
                     )

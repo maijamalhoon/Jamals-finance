@@ -99,7 +99,11 @@ export default function AccountSelect({
   return (
     <Select
       value={value || undefined}
-      onValueChange={onValueChange}
+      onValueChange={(nextValue) => {
+        if (typeof nextValue === "string") {
+          onValueChange(nextValue);
+        }
+      }}
       disabled={unavailable}
     >
       <SelectTrigger
@@ -116,14 +120,10 @@ export default function AccountSelect({
         />
       </SelectTrigger>
       <SelectContent
-        position="popper"
         align="start"
         sideOffset={8}
-        className="z-[90] max-h-[min(18rem,var(--radix-select-content-available-height))] rounded-[18px] p-1.5"
-        style={{
-          width: "var(--radix-select-trigger-width)",
-          maxWidth: "calc(100vw - 1.5rem)",
-        }}
+        alignItemWithTrigger={false}
+        className="z-[90] max-h-[min(18rem,var(--available-height))] max-w-[calc(100vw_-_1.5rem)] rounded-[18px] p-1.5"
       >
         {accounts.length === 0 ? (
           <div className="px-3 py-2 text-sm text-text-secondary">

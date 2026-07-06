@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AnimatePresence, motion, type Variants } from "framer-motion";
 import {
@@ -141,7 +141,29 @@ export default function FloatingActions() {
   const [transferOpen, setTransferOpen] = useState(false);
   const [goalOpen, setGoalOpen] = useState(false);
   const [investmentOpen, setInvestmentOpen] = useState(false);
+  const [externalDialogOpen, setExternalDialogOpen] = useState(false);
   const [txType, setTxType] = useState<"income" | "expense">("income");
+  const modalOpen =
+    transactionOpen || transferOpen || goalOpen || investmentOpen || externalDialogOpen;
+
+  useEffect(() => {
+    const updateDialogState = () => {
+      setExternalDialogOpen(
+        Boolean(document.querySelector('[data-slot="dialog-content"], [role="dialog"]')),
+      );
+    };
+
+    updateDialogState();
+
+    const observer = new MutationObserver(updateDialogState);
+    observer.observe(document.body, { childList: true, subtree: true });
+
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    if (modalOpen) setOpen(false);
+  }, [modalOpen]);
 
   function handleAction(key: ActionKey) {
     setOpen(false);
@@ -171,7 +193,12 @@ export default function FloatingActions() {
 
   return (
     <>
-      <div className="fixed bottom-24 right-4 z-50 flex flex-col items-end gap-3 sm:right-6 lg:bottom-8 lg:right-8">
+      <div
+        className={`jf-floating-actions fixed bottom-[calc(6.85rem+env(safe-area-inset-bottom))] right-3 z-[55] flex flex-col items-end gap-3 transition-all duration-200 sm:right-5 lg:bottom-8 lg:right-8 ${
+          modalOpen ? "pointer-events-none translate-y-2 opacity-0" : ""
+        }`}
+        aria-hidden={modalOpen ? "true" : undefined}
+      >
         <AnimatePresence>
           {open && (
             <>
@@ -285,7 +312,7 @@ export default function FloatingActions() {
             damping: 22,
           }}
           className={[
-            "finance-focus relative grid h-[58px] w-[58px] place-items-center overflow-hidden rounded-[21px]",
+            "finance-focus relative grid h-[56px] w-[56px] place-items-center overflow-hidden rounded-[21px] sm:h-[58px] sm:w-[58px]",
             "bg-active text-background ring-1 ring-active/25",
             "shadow-[0_18px_42px_color-mix(in_srgb,var(--active),transparent_68%)]",
             "transition-[filter,box-shadow] duration-200 hover:brightness-105",

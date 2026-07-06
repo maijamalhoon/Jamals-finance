@@ -396,6 +396,9 @@ export default function TransactionModal({
             <input
               id="transaction-amount"
               type="number"
+              inputMode="decimal"
+              min="0"
+              step="0.01"
               value={amount}
               onChange={(event) => setAmount(event.target.value)}
               placeholder="0"
@@ -420,7 +423,9 @@ export default function TransactionModal({
             </label>
             <Select
               value={categoryId || undefined}
-              onValueChange={setCategoryId}
+              onValueChange={(nextValue) => {
+                if (nextValue) setCategoryId(nextValue);
+              }}
               disabled={loadingOptions || categoryOptions.length === 0}
             >
               <SelectTrigger
@@ -439,20 +444,14 @@ export default function TransactionModal({
                 />
               </SelectTrigger>
               <SelectContent
-                position="popper"
                 align="start"
                 sideOffset={8}
-                className="z-[90] max-h-[min(20rem,var(--radix-select-content-available-height))] rounded-[18px] p-1.5"
-                style={{
-                  width: "var(--radix-select-trigger-width)",
-                  maxWidth: "calc(100vw - 1.5rem)",
-                }}
+                className="z-[90] max-h-[min(20rem,var(--available-height))] max-w-[calc(100vw-1.5rem)] rounded-[18px] p-1.5"
               >
                 {categoryOptions.map((option) => (
                   <SelectItem
                     key={option.category.id}
                     value={option.category.id}
-                    textValue={option.label}
                     className="min-h-14 py-2 pr-8 pl-2.5"
                   >
                     <span className="flex min-w-0 flex-1 items-center gap-3">

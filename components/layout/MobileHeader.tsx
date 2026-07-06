@@ -3,13 +3,19 @@
 import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { BarChart3, Bell } from "lucide-react";
+import { usePathname } from "next/navigation";
 import JamalMenu from "@/components/layout/JamalMenu";
 import { panelVariants } from "@/components/motion/animation-config";
+import { NAV_ITEMS, isNavItemActive } from "@/lib/navigation";
 
 export default function MobileHeader() {
+  const pathname = usePathname();
   const [bellOpen, setBellOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const bellRef = useRef<HTMLDivElement>(null);
+  const currentPage =
+    NAV_ITEMS.find((item) => isNavItemActive(pathname, item.href))?.label ??
+    "Dashboard";
 
   useEffect(() => {
     function handleClick(e: MouseEvent) {
@@ -46,8 +52,13 @@ export default function MobileHeader() {
           <div className="grid h-10 w-10 flex-shrink-0 place-items-center rounded-[15px] border border-active/30 bg-active text-background shadow-theme">
             <BarChart3 size={16} />
           </div>
-          <span className="truncate text-sm font-semibold text-text-primary">
-            Finance
+          <span className="min-w-0">
+            <span className="block truncate text-sm font-semibold leading-4 text-text-primary">
+              Finance
+            </span>
+            <span className="block truncate text-[11px] font-medium leading-4 text-text-secondary">
+              {currentPage}
+            </span>
           </span>
         </div>
 

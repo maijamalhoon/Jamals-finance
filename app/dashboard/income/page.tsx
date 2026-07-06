@@ -132,20 +132,20 @@ export default async function IncomePage() {
       </div>
 
       {sources.length > 0 && (
-        <div className="finance-panel p-5">
+        <div className="finance-panel p-4 sm:p-5">
           <h3 className="mb-4 text-sm font-semibold text-text-primary">
             This Month by Source
           </h3>
           <div className="space-y-4">
             {sources.map((source) => (
               <div key={source.name}>
-                <div className="mb-1.5 flex flex-wrap items-center justify-between gap-2">
+                <div className="mb-1.5 grid min-w-0 grid-cols-[minmax(0,1fr)_minmax(5rem,auto)] items-start gap-2">
                   <div className="flex min-w-0 items-center gap-2">
                     <div
                       className="h-2 w-2 flex-shrink-0 rounded-full"
                       style={{ background: source.color }}
                     />
-                    <span className="truncate text-sm font-medium text-text-primary">
+                    <span className="min-w-0 break-words text-sm font-medium text-text-primary [overflow-wrap:anywhere]">
                       {source.name}
                     </span>
                     <span className="shrink-0 text-xs text-text-secondary">
@@ -153,7 +153,7 @@ export default async function IncomePage() {
                       {source.count === 1 ? "entry" : "entries"}
                     </span>
                   </div>
-                  <span className="min-w-0 break-words text-right text-sm font-semibold text-success">
+                  <span className="min-w-0 break-words text-right text-[13px] font-semibold leading-tight text-success [overflow-wrap:anywhere] sm:text-sm">
                     {fmt(source.amount)}
                   </span>
                 </div>

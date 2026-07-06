@@ -12,7 +12,7 @@ import { cn } from "@/lib/utils";
 type FinanceTone = "default" | "success" | "danger" | "info" | "investment" | "warning";
 
 export const financeModalContentClass =
-  "finance-panel flex max-h-[calc(100dvh-1rem)] w-[calc(100vw-1rem)] max-w-md flex-col gap-0 overflow-hidden p-0 text-text-primary shadow-premium sm:max-h-[min(90dvh,760px)] sm:w-full";
+  "finance-modal-content finance-panel flex max-h-[90dvh] w-[calc(100vw-1rem)] max-w-md flex-col gap-0 overflow-hidden p-0 text-text-primary shadow-premium sm:w-full";
 
 export const financeCancelButtonClass =
   "finance-focus inline-flex min-h-[var(--oneui-control-height-lg)] items-center justify-center rounded-[var(--oneui-button-radius)] border border-border bg-surface-secondary px-4 py-2 text-sm font-semibold text-text-primary transition-all hover:bg-hover active:scale-[0.985] disabled:opacity-50";
@@ -63,7 +63,7 @@ export function FinanceModalBody({
   return (
     <div
       className={cn(
-        "min-h-0 flex-1 space-y-4 overflow-y-auto overscroll-contain px-4 py-4 sm:px-5",
+        "min-h-0 flex-1 space-y-4 overflow-y-auto overscroll-contain px-4 py-4 pb-[calc(1rem+env(safe-area-inset-bottom))] sm:px-5",
         className,
       )}
       {...props}
@@ -79,7 +79,7 @@ export function FinanceModalFooter({
     <div
       data-slot="dialog-footer"
       className={cn(
-        "grid shrink-0 grid-cols-1 gap-2 border-t border-border bg-card px-4 py-3.5 sm:grid-cols-2",
+        "grid shrink-0 grid-cols-1 gap-2 border-t border-border bg-card px-4 py-3.5 pb-[calc(0.875rem+env(safe-area-inset-bottom))] sm:grid-cols-2",
         className,
       )}
       {...props}

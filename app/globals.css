@@ -60,18 +60,24 @@
   --radius-2xl: 1.25rem;
   --radius-3xl: 1.45rem;
   --radius-4xl: 1.8rem;
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
 }
 
 :root {
   color-scheme: light;
-  --background: #f8fafc;
   --surface: #ffffff;
   --surface-secondary: #f1f5f9;
   --surface-elevated: #ffffff;
   --surface-glass: color-mix(in srgb, #ffffff, transparent 8%);
-  --card: #ffffff;
-  --sidebar: #ffffff;
-  --border: #e2e8f0;
+  --card: oklch(1 0 0);
+  --sidebar: oklch(0.985 0 0);
+  --border: oklch(0.922 0 0);
   --border-strong: #cbd5e1;
   --text-primary: #101828;
   --text-secondary: #667085;
@@ -83,8 +89,8 @@
   --warning: #b76a00;
   --info: #0284c7;
   --investment: #7c3aed;
-  --muted: #f8fafc;
-  --input: #ffffff;
+  --muted: oklch(0.97 0 0);
+  --input: oklch(0.922 0 0);
   --loader: #f1f5f9;
   --skeleton: #e9eef5;
   --shadow: 0 1px 2px rgb(16 24 40 / 0.05);
@@ -106,43 +112,78 @@
   --oneui-icon-size-sm: 2rem;
   --oneui-icon-size: 2.5rem;
   --oneui-icon-size-lg: 3rem;
+  --jf-mobile-nav-height: 5.35rem;
+  --jf-mobile-nav-gap: 0.75rem;
+  --jf-mobile-content-bottom: calc(
+    var(--jf-mobile-nav-height) + var(--jf-mobile-nav-gap) + 2.25rem +
+      env(safe-area-inset-bottom)
+  );
   --motion-ease: cubic-bezier(0.16, 1, 0.3, 1);
   --motion-duration-fast: 160ms;
   --motion-duration-base: 220ms;
   --motion-duration-slow: 320ms;
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.145 0 0);
+  --card-foreground: oklch(0.145 0 0);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.145 0 0);
+  --primary: oklch(0.205 0 0);
+  --primary-foreground: oklch(0.985 0 0);
+  --secondary: oklch(0.97 0 0);
+  --secondary-foreground: oklch(0.205 0 0);
+  --muted-foreground: oklch(0.556 0 0);
+  --accent: oklch(0.97 0 0);
+  --accent-foreground: oklch(0.205 0 0);
+  --destructive: oklch(0.577 0.245 27.325);
+  --ring: oklch(0.708 0 0);
+  --chart-1: oklch(0.87 0 0);
+  --chart-2: oklch(0.556 0 0);
+  --chart-3: oklch(0.439 0 0);
+  --chart-4: oklch(0.371 0 0);
+  --chart-5: oklch(0.269 0 0);
+  --radius: 0.625rem;
+  --sidebar-foreground: oklch(0.145 0 0);
+  --sidebar-primary: oklch(0.205 0 0);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.97 0 0);
+  --sidebar-accent-foreground: oklch(0.205 0 0);
+  --sidebar-border: oklch(0.922 0 0);
+  --sidebar-ring: oklch(0.708 0 0);
 }
 
 .dark {
   color-scheme: dark;
-  --background: #0f141b;
-  --surface: #151b23;
-  --surface-secondary: #1a222d;
-  --surface-elevated: #192231;
-  --surface-glass: color-mix(in srgb, #151b23, transparent 10%);
-  --card: #151b23;
-  --sidebar: #121820;
-  --border: #263241;
-  --border-strong: #344256;
-  --text-primary: #f2f5f8;
-  --text-secondary: #a3adba;
-  --text-tertiary: #768394;
-  --hover: #1d2632;
-  --active: #74a7ff;
+  --background: #0b1118;
+  --surface: #101821;
+  --surface-secondary: #162231;
+  --surface-elevated: #1b2736;
+  --surface-glass: color-mix(in srgb, #101821, transparent 8%);
+  --card: #111a24;
+  --sidebar: #101821;
+  --border: rgb(148 163 184 / 0.22);
+  --border-strong: #536171;
+  --text-primary: #f5f7fb;
+  --text-secondary: #c3cad6;
+  --text-tertiary: #98a4b5;
+  --hover: #1d2a3a;
+  --active: #c9a44c;
   --success: #5ee2a0;
   --danger: #ff8a8a;
   --warning: #f6c76d;
   --info: #67d5ff;
   --investment: #c4b5fd;
-  --muted: #111820;
-  --input: #121a24;
+  --muted: #182230;
+  --input: #172331;
   --loader: #18212c;
   --skeleton: #202a36;
-  --shadow: 0 1px 2px rgb(0 0 0 / 0.24);
-  --shadow-soft: 0 14px 38px rgb(0 0 0 / 0.24);
-  --shadow-premium: 0 22px 58px rgb(0 0 0 / 0.34);
-  --glow-soft: 0 0 0 1px color-mix(in srgb, var(--active), transparent 82%);
-  --focus-ring: 0 0 0 3px color-mix(in srgb, var(--active), transparent 76%);
-  --surface-highlight: inset 0 1px 0 rgb(255 255 255 / 0.04);
+  --shadow: 0 1px 2px rgb(0 0 0 / 0.32);
+  --shadow-soft: 0 16px 40px rgb(0 0 0 / 0.34);
+  --shadow-premium: 0 24px 70px rgb(0 0 0 / 0.46);
+  --glow-soft: 0 0 0 1px color-mix(in srgb, var(--active), transparent 70%);
+  --focus-ring:
+    0 0 0 1px color-mix(in srgb, var(--active), transparent 34%),
+    0 0 0 4px color-mix(in srgb, var(--active), transparent 76%);
+  --surface-highlight: inset 0 1px 0 rgb(255 255 255 / 0.07);
   --oneui-page-gutter: clamp(0.875rem, 1.7vw, 1.75rem);
   --oneui-card-radius: 1.25rem;
   --oneui-tile-radius: 1rem;
@@ -156,15 +197,46 @@
   --oneui-icon-size-sm: 2rem;
   --oneui-icon-size: 2.5rem;
   --oneui-icon-size-lg: 3rem;
+  --jf-mobile-nav-height: 5.35rem;
+  --jf-mobile-nav-gap: 0.75rem;
+  --jf-mobile-content-bottom: calc(
+    var(--jf-mobile-nav-height) + var(--jf-mobile-nav-gap) + 2.25rem +
+      env(safe-area-inset-bottom)
+  );
   --motion-ease: cubic-bezier(0.16, 1, 0.3, 1);
   --motion-duration-fast: 160ms;
   --motion-duration-base: 220ms;
   --motion-duration-slow: 320ms;
+  --foreground: oklch(0.985 0 0);
+  --card-foreground: oklch(0.985 0 0);
+  --popover: var(--surface-elevated);
+  --popover-foreground: oklch(0.985 0 0);
+  --primary: oklch(0.922 0 0);
+  --primary-foreground: oklch(0.205 0 0);
+  --secondary: oklch(0.269 0 0);
+  --secondary-foreground: oklch(0.985 0 0);
+  --muted-foreground: oklch(0.708 0 0);
+  --accent: oklch(0.269 0 0);
+  --accent-foreground: oklch(0.985 0 0);
+  --destructive: oklch(0.704 0.191 22.216);
+  --ring: var(--active);
+  --chart-1: oklch(0.87 0 0);
+  --chart-2: oklch(0.556 0 0);
+  --chart-3: oklch(0.439 0 0);
+  --chart-4: oklch(0.371 0 0);
+  --chart-5: oklch(0.269 0 0);
+  --sidebar-foreground: oklch(0.985 0 0);
+  --sidebar-primary: oklch(0.488 0.243 264.376);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: var(--hover);
+  --sidebar-accent-foreground: oklch(0.985 0 0);
+  --sidebar-border: var(--border);
+  --sidebar-ring: var(--active);
 }
 
 @layer base {
   * {
-    @apply border-border outline-ring/40;
+    @apply border-border outline-ring/50;
   }
 
   html {
@@ -174,7 +246,7 @@
   }
 
   body {
-    @apply bg-background text-text-primary;
+    @apply bg-background text-foreground;
     min-height: 100dvh;
     overflow-x: hidden;
     background:
@@ -710,6 +782,34 @@
     color: var(--text-primary);
   }
 
+  .success-action {
+    border-color: color-mix(in srgb, var(--success), transparent 22%);
+    background-color: var(--success);
+    color: color-mix(in srgb, var(--background), white 8%);
+    box-shadow: 0 14px 30px color-mix(in srgb, var(--success), transparent 78%);
+  }
+
+  .danger-action {
+    border-color: color-mix(in srgb, var(--danger), transparent 22%);
+    background-color: var(--danger);
+    color: color-mix(in srgb, var(--background), white 8%);
+    box-shadow: 0 14px 30px color-mix(in srgb, var(--danger), transparent 80%);
+  }
+
+  .investment-action {
+    border-color: color-mix(in srgb, var(--investment), transparent 24%);
+    background-color: var(--investment);
+    color: color-mix(in srgb, var(--background), white 8%);
+    box-shadow: 0 14px 30px color-mix(in srgb, var(--investment), transparent 80%);
+  }
+
+  .warning-action {
+    border-color: color-mix(in srgb, var(--warning), transparent 28%);
+    background-color: var(--warning);
+    color: var(--background);
+    box-shadow: 0 14px 30px color-mix(in srgb, var(--warning), transparent 82%);
+  }
+
   .summary-card:hover {
     border-color: color-mix(in srgb, var(--active), var(--border) 78%);
   }
@@ -718,9 +818,24 @@
   .success-action:hover,
   .investment-action:hover,
   .warning-action:hover {
-    background-color: var(--hover);
     box-shadow: var(--shadow-soft);
     transform: translateY(-1px) scale(1.01);
+  }
+
+  .success-action:hover {
+    background-color: color-mix(in srgb, var(--success), white 8%);
+  }
+
+  .danger-action:hover {
+    background-color: color-mix(in srgb, var(--danger), white 8%);
+  }
+
+  .investment-action:hover {
+    background-color: color-mix(in srgb, var(--investment), white 8%);
+  }
+
+  .warning-action:hover {
+    background-color: color-mix(in srgb, var(--warning), white 8%);
   }
 
   .danger-action:active,
@@ -739,19 +854,19 @@
   }
 
   .success-action svg {
-    color: var(--success);
+    color: currentColor;
   }
 
   .danger-action svg {
-    color: var(--danger);
+    color: currentColor;
   }
 
   .investment-action svg {
-    color: var(--investment);
+    color: currentColor;
   }
 
   .warning-action svg {
-    color: var(--warning);
+    color: currentColor;
   }
 
   .finance-investment-quick-icon {
@@ -835,6 +950,21 @@
     background: transparent !important;
     box-shadow: none !important;
     outline: none !important;
+  }
+
+  .field-input[type="number"],
+  .field-input input[type="number"] {
+    appearance: textfield;
+    -moz-appearance: textfield;
+  }
+
+  .field-input[type="number"]::-webkit-outer-spin-button,
+  .field-input[type="number"]::-webkit-inner-spin-button,
+  .field-input input[type="number"]::-webkit-outer-spin-button,
+  .field-input input[type="number"]::-webkit-inner-spin-button {
+    margin: 0;
+    appearance: none;
+    -webkit-appearance: none;
   }
 
   .widget-link {
@@ -3053,6 +3183,7 @@ textarea:focus {
 .jf-dashboard-scroll {
   scroll-behavior: smooth;
   scrollbar-gutter: stable;
+  scroll-padding-bottom: var(--jf-mobile-content-bottom);
 }
 
 .jf-dashboard-scroll::-webkit-scrollbar {
@@ -3082,6 +3213,10 @@ textarea:focus {
 .jf-mobile-nav-shell {
   padding-bottom: 0;
   animation: jfDashboardMobileNavIn 520ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.jf-floating-actions {
+  max-width: calc(100vw - 1.5rem);
 }
 
 .jf-mobile-nav-shell a,
@@ -3126,6 +3261,7 @@ textarea:focus {
 
 @media (max-width: 1023px) {
   .jf-dashboard-scroll {
+    padding-bottom: var(--jf-mobile-content-bottom) !important;
     scrollbar-width: none;
   }
 
@@ -3153,6 +3289,10 @@ textarea:focus {
 @media (max-width: 639px) {
   .jf-dashboard-content-frame {
     animation-duration: 380ms;
+  }
+
+  .jf-dashboard-scroll {
+    padding-inline: 0.75rem;
   }
 }
 
@@ -3264,6 +3404,13 @@ select {
   border: 1px solid var(--color-border, rgba(148, 163, 184, 0.28));
   background: color-mix(in srgb, var(--color-card, #ffffff) 94%, transparent);
   box-shadow: 0 30px 90px rgba(15, 23, 42, 0.18);
+}
+
+[data-slot="dialog-content"].finance-modal-content,
+[role="dialog"].finance-modal-content {
+  width: min(calc(100vw - 1rem), 28rem);
+  max-width: min(calc(100vw - 1rem), 28rem);
+  max-height: min(90dvh, 47.5rem);
 }
 
 [data-radix-popper-content-wrapper] {
@@ -4861,6 +5008,16 @@ tbody tr:hover {
     width: 100%;
   }
 
+  [data-dashboard-shell]
+    :where(
+      .page-heading .success-action,
+      .page-heading .danger-action,
+      .page-heading .investment-action,
+      .page-heading .warning-action
+    ) {
+    width: 100%;
+  }
+
   [data-dashboard-shell] :where(.summary-card) {
     min-height: 6.25rem;
   }
@@ -4874,4 +5031,344 @@ tbody tr:hover {
   [data-dashboard-shell] :where(.finance-skeleton) {
     will-change: auto;
   }
+}
+
+/* Dark-mode contrast system: shared tokens + component state repairs. */
+.dark body {
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--background), var(--surface-secondary) 28%) 0%,
+      var(--background) 34rem
+    ),
+    var(--background);
+}
+
+.dark :where(.finance-panel, .summary-card, .page-heading) {
+  border-color: color-mix(in srgb, var(--border), white 7%);
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--card), white 3%),
+      var(--card)
+    );
+  box-shadow: var(--shadow), var(--surface-highlight);
+}
+
+.dark :where(.finance-panel-soft, .finance-surface-soft) {
+  border-color: color-mix(in srgb, var(--border), white 6%);
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--surface-secondary), white 3%),
+      var(--surface-secondary)
+    );
+}
+
+.dark :where(.finance-reference-card, .finance-surface, .finance-surface-glass) {
+  border-color: color-mix(in srgb, var(--border), white 8%);
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--surface-elevated), white 3%),
+      var(--card)
+    );
+  box-shadow: var(--shadow-soft), var(--surface-highlight);
+}
+
+.dark :where(.page-subtitle, .text-muted-foreground, .text-text-secondary) {
+  color: var(--text-secondary);
+}
+
+.dark :where(.text-text-tertiary, small, figcaption) {
+  color: var(--text-tertiary);
+}
+
+.dark :where(
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+  textarea,
+  select,
+  [data-slot="input"],
+  [data-slot="select-trigger"],
+  .field-input,
+  .finance-control
+) {
+  border-color: color-mix(in srgb, var(--border), white 5%);
+  background: var(--input);
+  color: var(--text-primary);
+}
+
+.dark :where(
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+  textarea,
+  .field-input
+)::placeholder {
+  color: color-mix(in srgb, var(--text-secondary), white 8%);
+  opacity: 1;
+}
+
+.dark :where(
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+  textarea,
+  select,
+  [data-slot="select-trigger"],
+  [role="combobox"],
+  .field-input,
+  .finance-control,
+  .finance-focus
+):focus-visible,
+.dark :where(.finance-control, .finance-focus, .field-input):focus-within,
+.dark :where(.field-input):focus {
+  outline: none;
+  border-color: color-mix(in srgb, var(--active), white 12%);
+  box-shadow: var(--focus-ring);
+}
+
+.dark :where(
+  button,
+  [role="button"],
+  [data-slot="button"],
+  .primary-action,
+  .danger-action,
+  .success-action,
+  .investment-action,
+  .warning-action,
+  .icon-button
+):disabled,
+.dark :where(
+  button,
+  [role="button"],
+  [data-slot="button"],
+  .primary-action,
+  .danger-action,
+  .success-action,
+  .investment-action,
+  .warning-action,
+  .icon-button
+)[aria-disabled="true"] {
+  cursor: not-allowed;
+  border-color: color-mix(in srgb, var(--border), transparent 18%);
+  background: color-mix(in srgb, var(--surface-secondary), transparent 12%);
+  color: color-mix(in srgb, var(--text-tertiary), transparent 10%);
+  opacity: 0.58;
+  box-shadow: none;
+  filter: saturate(0.72);
+  transform: none;
+}
+
+.dark .primary-action {
+  border-color: color-mix(in srgb, var(--active), white 12%);
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--active), white 8%),
+      color-mix(in srgb, var(--active), black 8%)
+    );
+  color: #111827;
+  box-shadow:
+    0 14px 30px color-mix(in srgb, var(--active), transparent 78%),
+    var(--surface-highlight);
+}
+
+.dark .primary-action:hover {
+  border-color: color-mix(in srgb, var(--active), white 20%);
+  box-shadow:
+    0 18px 42px color-mix(in srgb, var(--active), transparent 72%),
+    0 0 0 1px color-mix(in srgb, var(--active), transparent 64%);
+}
+
+.dark :where(.icon-button, .danger-action, .success-action, .investment-action, .warning-action):hover {
+  border-color: color-mix(in srgb, var(--active), transparent 48%);
+  background: color-mix(in srgb, var(--hover), white 4%);
+}
+
+.dark [data-desktop-sidebar] {
+  border-color: color-mix(in srgb, var(--border), white 7%);
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--sidebar), white 2%),
+      var(--sidebar)
+    );
+}
+
+.dark [data-desktop-sidebar] nav a {
+  border: 1px solid transparent;
+}
+
+.dark [data-desktop-sidebar] nav a:hover {
+  border-color: color-mix(in srgb, var(--border), white 5%);
+  background: color-mix(in srgb, var(--hover), transparent 8%);
+  color: var(--text-primary);
+}
+
+.dark [data-desktop-sidebar] nav a[aria-current="page"],
+.dark [data-desktop-sidebar] nav a[data-active="true"] {
+  border-color: color-mix(in srgb, var(--active), transparent 44%);
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--active), transparent 83%),
+      color-mix(in srgb, var(--active), transparent 91%)
+    );
+  color: color-mix(in srgb, var(--active), white 14%);
+  box-shadow:
+    0 12px 28px color-mix(in srgb, var(--active), transparent 84%),
+    inset 0 1px 0 rgb(255 255 255 / 0.08);
+}
+
+.dark [data-desktop-sidebar] nav a[aria-current="page"] span:first-of-type,
+.dark [data-desktop-sidebar] nav a[data-active="true"] span:first-of-type {
+  border-color: color-mix(in srgb, var(--active), transparent 36%);
+  background: color-mix(in srgb, var(--active), transparent 82%);
+  color: color-mix(in srgb, var(--active), white 18%);
+}
+
+.dark :where(table thead, [data-slot="table-header"]) {
+  background: color-mix(in srgb, var(--surface-secondary), transparent 12%);
+}
+
+.dark :where(table th, [data-slot="table-head"]) {
+  border-color: color-mix(in srgb, var(--border), white 8%);
+  color: color-mix(in srgb, var(--text-secondary), white 12%);
+  font-weight: 750;
+}
+
+.dark :where(table td, [data-slot="table-cell"]) {
+  color: var(--text-primary);
+}
+
+.dark :where(table tbody tr, [data-slot="table-row"]) {
+  border-color: color-mix(in srgb, var(--border), white 5%);
+}
+
+.dark :where(table tbody tr, [data-slot="table-row"]):hover {
+  background: color-mix(in srgb, var(--active), transparent 88%);
+}
+
+.dark :where(
+  [data-slot="badge"],
+  .finance-state-pill,
+  span[class*="rounded-full"][class*="text-"],
+  div[class*="rounded-full"][class*="text-"]
+) {
+  border-color: color-mix(in srgb, currentColor, var(--border) 54%);
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, currentColor, transparent 84%),
+      color-mix(in srgb, currentColor, transparent 91%)
+    );
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.12),
+    0 1px 0 rgb(0 0 0 / 0.2);
+}
+
+.dark :where(.finance-status-success, span[class*="text-emerald"], span[class*="text-green"]) {
+  color: #79f0b4;
+}
+
+.dark :where(.finance-status-danger, span[class*="text-red"], span[class*="text-rose"]) {
+  color: #ff9a9a;
+}
+
+.dark :where(.finance-status-warning, span[class*="text-amber"], span[class*="text-yellow"], span[class*="text-orange"]) {
+  color: #ffd27a;
+}
+
+.dark :where(.finance-status-info, span[class*="text-blue"], span[class*="text-sky"], span[class*="text-cyan"], span[class*="text-indigo"]) {
+  color: color-mix(in srgb, var(--active), white 16%);
+}
+
+.dark :where(
+  [data-slot="dialog-overlay"],
+  [data-slot="sheet-overlay"]
+) {
+  background: rgb(0 0 0 / 0.58);
+  backdrop-filter: blur(7px) saturate(1.05);
+  -webkit-backdrop-filter: blur(7px) saturate(1.05);
+}
+
+.dark :where(
+  [data-slot="dialog-content"],
+  [data-slot="sheet-content"],
+  [data-slot="dropdown-menu-content"],
+  [data-slot="dropdown-menu-sub-content"],
+  [data-slot="select-content"]
+) {
+  border: 1px solid color-mix(in srgb, var(--border), white 8%);
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--surface-elevated), white 5%),
+      var(--surface-elevated)
+    );
+  color: var(--text-primary);
+  box-shadow:
+    0 30px 88px rgb(0 0 0 / 0.58),
+    0 0 0 1px rgb(255 255 255 / 0.04),
+    var(--surface-highlight);
+}
+
+.dark :where(
+  [data-slot="dropdown-menu-item"],
+  [data-slot="dropdown-menu-checkbox-item"],
+  [data-slot="dropdown-menu-radio-item"],
+  [data-slot="dropdown-menu-sub-trigger"],
+  [data-slot="select-item"]
+) {
+  color: var(--text-secondary);
+}
+
+.dark :where(
+  [data-slot="dropdown-menu-item"],
+  [data-slot="dropdown-menu-checkbox-item"],
+  [data-slot="dropdown-menu-radio-item"],
+  [data-slot="dropdown-menu-sub-trigger"],
+  [data-slot="select-item"]
+):focus,
+.dark :where(
+  [data-slot="dropdown-menu-item"],
+  [data-slot="dropdown-menu-checkbox-item"],
+  [data-slot="dropdown-menu-radio-item"],
+  [data-slot="dropdown-menu-sub-trigger"],
+  [data-slot="select-item"]
+)[data-highlighted] {
+  background: color-mix(in srgb, var(--active), transparent 84%);
+  color: var(--text-primary);
+}
+
+.dark :where(
+  [data-dashboard-shell] svg,
+  [data-desktop-sidebar] svg,
+  [data-slot="button"] svg,
+  .icon-button svg
+) {
+  color: currentColor;
+  opacity: 0.96;
+}
+
+.dark ::-webkit-scrollbar {
+  width: 0.75rem;
+  height: 0.75rem;
+}
+
+.dark ::-webkit-scrollbar-track {
+  background: color-mix(in srgb, var(--background), black 10%);
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  border: 3px solid color-mix(in srgb, var(--background), black 10%);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--border-strong), var(--active) 12%);
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: color-mix(in srgb, var(--active), var(--border-strong) 55%);
+}
+
+.dark {
+  scrollbar-color:
+    color-mix(in srgb, var(--border-strong), var(--active) 12%)
+    color-mix(in srgb, var(--background), black 10%);
 }
