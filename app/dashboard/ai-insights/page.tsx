@@ -9,12 +9,12 @@ export default function AIInsightsPage() {
         <div className="min-w-0">
           <h2 className="page-title">AI Insights</h2>
           <p className="page-subtitle">
-            Powered by Claude, based on your latest transactions
+            Powered by Gemini, based on your summarized finance data
           </p>
         </div>
       </div>
 
-      <div className="max-w-4xl min-w-0">
+      <div className="min-w-0">
         <InsightsPanel />
       </div>
     </div>

@@ -173,14 +173,15 @@ NEXT_PUBLIC_ENABLE_GOOGLE_AUTH=false
 NEXT_PUBLIC_SENTRY_DSN=
 SENTRY_AUTH_TOKEN=
 
-ANTHROPIC_API_KEY=
+GEMINI_API_KEY=
+GEMINI_MODEL=gemini-2.5-flash
 ALPHA_VANTAGE_API_KEY=
 
 NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=
 STRIPE_SECRET_KEY=
 ```
 
-`ANTHROPIC_API_KEY` is used only on the server for AI Insights. Do not prefix it with `NEXT_PUBLIC_`, and never commit real secret values.
+`GEMINI_API_KEY` is used only on the server for AI Insights and finance chat. Do not prefix it with `NEXT_PUBLIC_`, and never commit real secret values. `GEMINI_MODEL` is optional and defaults to `gemini-2.5-flash`.
 `ALPHA_VANTAGE_API_KEY` is used only on the server for international stock search and latest quotes. Do not prefix it with `NEXT_PUBLIC_`.
 
 Only enable Google authentication when the provider is fully configured in Supabase.
