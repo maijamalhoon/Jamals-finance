@@ -19,6 +19,7 @@ import {
 import { useCurrency } from "@/components/currency/CurrencyProvider";
 import {
   getAssetInitials,
+  getInvestmentGroupKey,
 } from "@/lib/investments/aggregation";
 import type { AggregatedInvestment } from "@/lib/investments/aggregation";
 import InvestmentCard from "./InvestmentCard";
@@ -441,6 +442,18 @@ export default function InvestmentOverview({
   totalPnL: number;
   totalPnLPct: number;
 }) {
+  const lotsByGroup = useMemo(() => {
+    return investments.reduce((groups, investment) => {
+      const groupKey = getInvestmentGroupKey(investment);
+      const current = groups.get(groupKey) ?? [];
+
+      current.push(investment);
+      groups.set(groupKey, current);
+
+      return groups;
+    }, new Map<string, ExistingInvestment[]>());
+  }, [investments]);
+
   const groupedCards: ExistingInvestment[] = groupedHoldings.map((holding) => ({
     id: holding.id,
     name: holding.name,
@@ -499,7 +512,11 @@ export default function InvestmentOverview({
 
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
           {groupedCards.map((investment) => (
-            <InvestmentCard key={investment.id} inv={investment} />
+            <InvestmentCard
+              key={investment.id}
+              inv={investment}
+              lots={lotsByGroup.get(getInvestmentGroupKey(investment)) ?? []}
+            />
           ))}
         </div>
       </section>

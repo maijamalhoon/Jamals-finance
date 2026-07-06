@@ -245,14 +245,35 @@ export async function getInternationalStockPrices(symbols: string[]) {
   }
 
   const exchangeRate = await getUsdToPkrRate();
-  const rows = await Promise.all(
+  const rows = await Promise.allSettled(
     normalizedSymbols.map(async (symbol) => ({
       symbol,
       price: await getSingleStockPrice(symbol, exchangeRate.rate),
     })),
   );
 
-  return rows.reduce<{ prices: Record<string, StockPrice> }>(
+  const fulfilledRows = rows
+    .filter(
+      (
+        row,
+      ): row is PromiseFulfilledResult<{
+        symbol: string;
+        price: StockPrice | null;
+      }> => row.status === "fulfilled",
+    )
+    .map((row) => row.value);
+
+  if (fulfilledRows.length === 0) {
+    const rejected = rows.find(
+      (row): row is PromiseRejectedResult => row.status === "rejected",
+    );
+
+    if (rejected) {
+      throw rejected.reason;
+    }
+  }
+
+  return fulfilledRows.reduce<{ prices: Record<string, StockPrice> }>(
     (acc, row) => {
       if (row.price) {
         acc.prices[row.symbol] = row.price;

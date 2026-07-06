@@ -100,13 +100,34 @@ function formatQuantity(value: number) {
   });
 }
 
-export default function InvestmentCard({ inv }: { inv: ExistingInvestment }) {
+function formatPurchaseDate(value: string | null | undefined) {
+  if (!value) return "No date";
+
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) return value;
+
+  return date.toLocaleDateString("en-PK", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
+}
+
+export default function InvestmentCard({
+  inv,
+  lots,
+}: {
+  inv: ExistingInvestment;
+  lots?: ExistingInvestment[];
+}) {
   const router = useRouter();
   const supabase = createClient();
   const { formatCurrency } = useCurrency();
 
-  const [editOpen, setEditOpen] = useState(false);
-  const [deleting, setDeleting] = useState(false);
+  const [editingInvestment, setEditingInvestment] =
+    useState<ExistingInvestment | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   const cfg = CONFIG[inv.type] || CONFIG.other;
   const Icon = cfg.icon;
@@ -147,11 +168,24 @@ export default function InvestmentCard({ inv }: { inv: ExistingInvestment }) {
   const pnlPct = totalCost > 0 ? (pnl / totalCost) * 100 : 0;
   const isProfit = pnl >= 0;
   const change24h = formatPriceChange(inv.price_change_24h, inv.price_source);
+  const purchaseLots = lots?.length ? lots : [inv];
 
-  async function handleDelete() {
-    if (!confirm(`Delete "${inv.name}"? This cannot be undone.`)) return;
-    setDeleting(true);
-    await supabase.from("investments").delete().eq("id", inv.id);
+  async function handleDelete(target: ExistingInvestment) {
+    if (!confirm(`Delete "${target.name}"? This cannot be undone.`)) return;
+    setDeletingId(target.id);
+
+    const { error } = await supabase
+      .from("investments")
+      .delete()
+      .eq("id", target.id);
+
+    setDeletingId(null);
+
+    if (error) {
+      alert(error.message);
+      return;
+    }
+
     router.refresh();
   }
 
@@ -162,7 +196,7 @@ export default function InvestmentCard({ inv }: { inv: ExistingInvestment }) {
           <div className="absolute right-4 top-4 flex gap-1 opacity-100 transition-opacity sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100">
             <button
               type="button"
-              onClick={() => setEditOpen(true)}
+              onClick={() => setEditingInvestment(inv)}
               className="icon-button h-8 w-8"
               aria-label="Edit investment"
             >
@@ -170,8 +204,8 @@ export default function InvestmentCard({ inv }: { inv: ExistingInvestment }) {
             </button>
             <button
               type="button"
-              onClick={handleDelete}
-              disabled={deleting}
+              onClick={() => handleDelete(inv)}
+              disabled={deletingId === inv.id}
               className="icon-button h-8 w-8 hover:border-danger/30 hover:bg-danger/10 hover:text-danger"
               aria-label="Delete investment"
             >
@@ -299,6 +333,62 @@ export default function InvestmentCard({ inv }: { inv: ExistingInvestment }) {
           </div>
         </div>
 
+        {isGrouped && purchaseLots.length > 0 ? (
+          <div className="mt-4 border-t border-border pt-4">
+            <div className="mb-2 flex items-center justify-between gap-2">
+              <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-text-secondary">
+                Individual buys
+              </p>
+              <span className="text-[11px] font-semibold text-text-secondary">
+                {purchaseLots.length}
+              </span>
+            </div>
+            <div className="space-y-2">
+              {purchaseLots.map((lot) => {
+                const lotQuantity = Number(lot.quantity);
+                const lotBuyPrice = Number(lot.purchase_price);
+                const lotTotal =
+                  Number.isFinite(lotQuantity) && Number.isFinite(lotBuyPrice)
+                    ? lotQuantity * lotBuyPrice
+                    : 0;
+
+                return (
+                  <div
+                    key={lot.id}
+                    className="flex min-w-0 items-center gap-2 rounded-[14px] border border-border bg-surface-secondary px-3 py-2"
+                  >
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-xs font-bold text-text-primary">
+                        {formatPurchaseDate(lot.purchased_at)}
+                      </p>
+                      <p className="mt-0.5 truncate text-[11px] text-text-secondary">
+                        Qty {formatQuantity(lotQuantity)} - {formatCurrency(lotTotal)}
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setEditingInvestment(lot)}
+                      className="icon-button h-8 w-8"
+                      aria-label={`Edit ${lot.name} buy`}
+                    >
+                      <Pencil size={12} />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleDelete(lot)}
+                      disabled={deletingId === lot.id}
+                      className="icon-button h-8 w-8 hover:border-danger/30 hover:bg-danger/10 hover:text-danger"
+                      aria-label={`Delete ${lot.name} buy`}
+                    >
+                      <Trash2 size={12} />
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        ) : null}
+
         <div className="mt-auto flex flex-wrap items-center justify-between gap-2 border-t border-border pt-4 text-[11px] text-text-secondary">
           <span>
             Qty{" "}
@@ -315,11 +405,11 @@ export default function InvestmentCard({ inv }: { inv: ExistingInvestment }) {
       </article>
 
       <InvestmentModal
-        open={editOpen}
-        investment={inv}
-        onClose={() => setEditOpen(false)}
+        open={Boolean(editingInvestment)}
+        investment={editingInvestment ?? undefined}
+        onClose={() => setEditingInvestment(null)}
         onSuccess={() => {
-          setEditOpen(false);
+          setEditingInvestment(null);
           router.refresh();
         }}
       />

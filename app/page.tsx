@@ -1,277 +1,304 @@
-import type { ComponentType } from "react";
+import type { ComponentType, CSSProperties } from "react";
 import Link from "next/link";
 import {
   ArrowRight,
   BadgeCheck,
   BarChart3,
-  BellRing,
-  CircleCheck,
+  BrainCircuit,
+  CheckCircle2,
+  ChevronDown,
+  CircleDollarSign,
   CreditCard,
-  Earth,
+  Gauge,
   Goal,
   Landmark,
-  Layers3,
+  LineChart,
   LockKeyhole,
   PieChart,
   ReceiptText,
   ShieldCheck,
   Smartphone,
-  Sparkles,
+  TrendingDown,
   TrendingUp,
   WalletCards,
-  Zap,
 } from "lucide-react";
 
 type IconType = ComponentType<{ className?: string }>;
+
+type ValueSignal = {
+  label: string;
+  detail: string;
+  icon: IconType;
+};
 
 type Feature = {
   title: string;
   description: string;
   icon: IconType;
-  accent: "mint" | "blue" | "gold" | "rose";
+  tone: "mint" | "blue" | "gold" | "rose" | "violet" | "cyan";
 };
 
-const features: Feature[] = [
+const valueSignals: ValueSignal[] = [
   {
-    title: "All money in one place",
-    description:
-      "Track bank, cash, wallets, savings, business money, and transfers from one clean workspace.",
-    icon: WalletCards,
-    accent: "mint",
+    label: "Track income",
+    detail: "Know what came in this month.",
+    icon: TrendingUp,
   },
   {
-    title: "Fast daily entries",
-    description:
-      "Add income, expenses, liabilities, payables, and payments quickly without spreadsheet clutter.",
-    icon: ReceiptText,
-    accent: "blue",
+    label: "Track expenses",
+    detail: "See where money is going.",
+    icon: TrendingDown,
   },
   {
-    title: "Clear visual reports",
-    description:
-      "Readable cards, charts, categories, and summaries help users understand where money is moving.",
-    icon: PieChart,
-    accent: "gold",
+    label: "Set goals",
+    detail: "Build progress with clarity.",
+    icon: Goal,
   },
   {
-    title: "Private finance workspace",
-    description:
-      "Dashboard routes stay protected with login, RLS-backed data access, and user-specific records.",
+    label: "Manage investments",
+    detail: "Watch movement in one view.",
+    icon: LineChart,
+  },
+  {
+    label: "View reports",
+    detail: "Understand patterns faster.",
+    icon: BarChart3,
+  },
+  {
+    label: "AI insights",
+    detail: "Get smarter finance prompts.",
+    icon: BrainCircuit,
+  },
+  {
+    label: "Mobile friendly",
+    detail: "Thumb-ready daily tracking.",
+    icon: Smartphone,
+  },
+  {
+    label: "Private workspace",
+    detail: "Protected app routes and sessions.",
     icon: ShieldCheck,
-    accent: "rose",
   },
 ];
 
-const modules = [
-  { label: "Accounts", icon: Landmark },
-  { label: "Income", icon: TrendingUp },
-  { label: "Expenses", icon: CreditCard },
-  { label: "Transactions", icon: ReceiptText },
-  { label: "Goals", icon: Goal },
-  { label: "Investments", icon: BarChart3 },
-  { label: "Payables", icon: BellRing },
-  { label: "Reports", icon: Layers3 },
+const features: Feature[] = [
+  {
+    title: "Your balance stays obvious",
+    description:
+      "Accounts, cash, savings, and wallet totals are presented clearly so you can understand your position in seconds.",
+    icon: WalletCards,
+    tone: "mint",
+  },
+  {
+    title: "Daily entries feel fast",
+    description:
+      "Income and expenses are built around quick action flows, not spreadsheet-style friction.",
+    icon: ReceiptText,
+    tone: "blue",
+  },
+  {
+    title: "Goals show real progress",
+    description:
+      "Savings targets become visible milestones with progress, remaining amounts, and momentum.",
+    icon: Goal,
+    tone: "gold",
+  },
+  {
+    title: "Investments stay connected",
+    description:
+      "Keep investment tracking next to the rest of your financial life instead of in a separate mental drawer.",
+    icon: LineChart,
+    tone: "violet",
+  },
+  {
+    title: "Reports explain the pattern",
+    description:
+      "Categories, charts, and summaries help you spot habits before they become surprises.",
+    icon: PieChart,
+    tone: "rose",
+  },
+  {
+    title: "Insights point to decisions",
+    description:
+      "The AI insights area is designed to turn your finance activity into clearer next steps.",
+    icon: BrainCircuit,
+    tone: "cyan",
+  },
 ];
 
 const workflow = [
   {
-    title: "Start secure",
+    title: "Add your money data",
     description:
-      "Create your workspace and keep private finance data behind protected dashboard routes.",
+      "Create accounts, add income, record expenses, and set goals from protected app screens.",
   },
   {
-    title: "Record activity",
+    title: "Track and understand",
     description:
-      "Add accounts, income, expenses, transfers, goals, investments, and payables in one flow.",
+      "Review balances, transactions, reports, goals, investments, and trends in one connected dashboard.",
   },
   {
-    title: "Review progress",
+    title: "Improve your decisions",
     description:
-      "Use clean summaries and charts to make better daily money decisions.",
+      "Use the patterns you see to adjust spending, save with purpose, and plan the next move.",
   },
 ];
 
-const previewBars = [42, 62, 48, 76, 58, 88, 70, 94] as const;
+const previewTransactions = [
+  { name: "Salary received", amount: "+$4,200", tone: "income" },
+  { name: "Groceries", amount: "-$86", tone: "expense" },
+  { name: "Goal transfer", amount: "+$300", tone: "goal" },
+  { name: "Investment update", amount: "+2.8%", tone: "investment" },
+];
+
+const chartBars = [42, 66, 54, 78, 61, 88, 72, 96, 82, 104] as const;
+
+function delayStyle(delay: number) {
+  return { "--jf-lp-delay": `${delay}ms` } as CSSProperties;
+}
+
+function barStyle(height: number, delay: number) {
+  return {
+    "--jf-lp-bar-height": `${height}px`,
+    "--jf-lp-delay": `${delay}ms`,
+  } as CSSProperties;
+}
 
 export default function HomePage() {
   return (
-    <main className="jf-landing">
-      <section className="jf-hero-shell" id="top">
-        <div className="jf-orb jf-orb-one" />
-        <div className="jf-orb jf-orb-two" />
-        <div className="jf-grid-overlay" />
+    <main className="jf-lp">
+      <header className="jf-lp-nav" aria-label="Primary navigation">
+        <Link href="/" className="jf-lp-brand" aria-label="Jamals Finance home">
+          <span className="jf-lp-brand-mark" aria-hidden="true">
+            <CircleDollarSign className="jf-lp-brand-icon" />
+          </span>
+          <span>Jamals Finance</span>
+        </Link>
 
-        <nav className="jf-nav" aria-label="Main navigation">
-          <Link
-            href="#top"
-            className="jf-brand"
-            aria-label="Jamal's Finance home"
-          >
-            <span className="jf-brand-mark">
-              <Sparkles className="jf-brand-icon" />
-            </span>
-            <span>Jamals Finance</span>
-          </Link>
-
-          <div className="jf-nav-links">
-            <a href="#features">Features</a>
-            <a href="#workflow">Workflow</a>
-            <a href="#security">Security</a>
-          </div>
-
-          <Link href="/login" className="jf-nav-cta">
-            Login / Sign up
-          </Link>
+        <nav className="jf-lp-nav-links" aria-label="Landing sections">
+          <a href="#value">Value</a>
+          <a href="#features">Features</a>
+          <a href="#preview">Preview</a>
+          <a href="#trust">Trust</a>
         </nav>
 
-        <div className="jf-hero">
-          <div className="jf-hero-copy">
-            <div className="jf-badge">
-              <BadgeCheck className="jf-badge-icon" />
-              Premium finance dashboard
-            </div>
+        <Link href="/login" className="jf-lp-nav-cta">
+          Open app
+          <ArrowRight className="jf-lp-inline-icon" />
+        </Link>
+      </header>
 
-            <h1>Manage your money with clarity, speed, and confidence.</h1>
+      <section className="jf-lp-hero" aria-labelledby="landing-title">
+        <div className="jf-lp-ledger" aria-hidden="true" />
 
-            <p className="jf-hero-text">
-              Jamal&apos;s Finance brings accounts, expenses, income, goals,
-              liabilities, investments, and savings into one smooth workspace
-              made for daily use.
-            </p>
+        <div className="jf-lp-hero-copy">
+          <div className="jf-lp-proof-badge">
+            <BadgeCheck className="jf-lp-badge-icon" />
+            Daily finance clarity
+          </div>
 
-            <div className="jf-hero-actions">
-              <Link href="/login" className="jf-primary-btn">
-                Start your workspace
-                <ArrowRight className="jf-btn-icon" />
-              </Link>
-              <a href="#features" className="jf-secondary-btn">
-                Explore features
-              </a>
-            </div>
+          <h1 id="landing-title">Jamals Finance</h1>
 
-            <div className="jf-trust-row" aria-label="Product highlights">
-              {[
-                "No spreadsheet mess",
-                "Mobile-first UI",
-                "Secure private login",
-              ].map((item) => (
-                <span key={item}>
-                  <CircleCheck className="jf-trust-icon" />
-                  {item}
+          <p className="jf-lp-hero-lead">
+            Track income, expenses, goals, reports, and smarter decisions in
+            one clean workspace on phone or desktop.
+          </p>
+
+          <div className="jf-lp-hero-actions">
+            <Link href="/login" className="jf-lp-primary-action">
+              Start using the app
+              <ArrowRight className="jf-lp-action-icon" />
+            </Link>
+            <a href="#features" className="jf-lp-secondary-action">
+              Explore features
+              <ChevronDown className="jf-lp-action-icon" />
+            </a>
+          </div>
+
+          <div className="jf-lp-trust-strip" aria-label="Product highlights">
+            <span>
+              <CheckCircle2 className="jf-lp-check-icon" />
+              Clear total balance
+            </span>
+            <span>
+              <CheckCircle2 className="jf-lp-check-icon" />
+              Reports and insights
+            </span>
+            <span>
+              <CheckCircle2 className="jf-lp-check-icon" />
+              Protected workspace
+            </span>
+          </div>
+        </div>
+
+        <div className="jf-lp-hero-stage" aria-label="Animated app preview">
+          <FinancePreview />
+        </div>
+      </section>
+
+      <section className="jf-lp-value" id="value" aria-labelledby="value-title">
+        <div className="jf-lp-section-head jf-lp-section-head-row">
+          <div>
+            <span className="jf-lp-eyebrow">5-second value</span>
+            <h2 id="value-title">A visitor should understand it immediately.</h2>
+          </div>
+          <p>
+            Jamals Finance is for seeing your money clearly, recording daily
+            movement quickly, and making better decisions without clutter.
+          </p>
+        </div>
+
+        <div className="jf-lp-value-grid">
+          {valueSignals.map((item, index) => {
+            const Icon = item.icon;
+
+            return (
+              <article
+                className="jf-lp-value-card"
+                key={item.label}
+                style={delayStyle(index * 55)}
+              >
+                <span className="jf-lp-value-icon">
+                  <Icon className="jf-lp-card-icon" />
                 </span>
-              ))}
-            </div>
-          </div>
-
-          <div className="jf-hero-visual" aria-label="Dashboard preview">
-            <div className="jf-device-card">
-              <div className="jf-device-topbar">
-                <span />
-                <span />
-                <span />
-                <p>Live workspace</p>
-              </div>
-
-              <div className="jf-balance-panel">
                 <div>
-                  <p>Net balance</p>
-                  <strong>$24,850</strong>
+                  <h3>{item.label}</h3>
+                  <p>{item.detail}</p>
                 </div>
-                <span className="jf-live-pill">Live</span>
-              </div>
-
-              <div className="jf-metric-grid">
-                <div className="jf-mini-card">
-                  <span className="jf-icon-dot jf-mint">
-                    <TrendingUp className="jf-mini-icon" />
-                  </span>
-                  <p>Growth</p>
-                  <strong>+18.4%</strong>
-                </div>
-                <div className="jf-mini-card">
-                  <span className="jf-icon-dot jf-blue">
-                    <Zap className="jf-mini-icon" />
-                  </span>
-                  <p>Saved time</p>
-                  <strong>4.8h</strong>
-                </div>
-              </div>
-
-              <div className="jf-chart-card">
-                <div className="jf-chart-head">
-                  <div>
-                    <strong>Cash flow</strong>
-                    <p>Monthly rhythm</p>
-                  </div>
-                  <LockKeyhole className="jf-chart-lock" />
-                </div>
-                <div className="jf-bars" aria-hidden="true">
-                  {previewBars.map((height, index) => (
-                    <span
-                      key={`${height}-${index}`}
-                      style={{ height: `${height}%` }}
-                    />
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            <div className="jf-floating-card jf-floating-left">
-              <Smartphone className="jf-floating-icon" />
-              <div>
-                <strong>Mobile ready</strong>
-                <p>Fast thumb-friendly screens</p>
-              </div>
-            </div>
-
-            <div className="jf-floating-card jf-floating-right">
-              <Earth className="jf-floating-icon" />
-              <div>
-                <strong>Global polish</strong>
-                <p>Clean, scalable product base</p>
-              </div>
-            </div>
-          </div>
+              </article>
+            );
+          })}
         </div>
       </section>
 
       <section
-        className="jf-section jf-stats-section"
-        aria-label="Product stats"
+        className="jf-lp-section"
+        id="features"
+        aria-labelledby="features-title"
       >
-        {[
-          ["8+", "Finance modules"],
-          ["24/7", "Secure access"],
-          ["100%", "Private workspace focus"],
-          ["Fast", "Mobile experience"],
-        ].map(([value, label]) => (
-          <div className="jf-stat-card" key={label}>
-            <strong>{value}</strong>
-            <span>{label}</span>
-          </div>
-        ))}
-      </section>
-
-      <section className="jf-section" id="features">
-        <div className="jf-section-heading">
-          <span className="jf-eyebrow">Built for daily money control</span>
-          <h2>Everything important, without the clutter.</h2>
+        <div className="jf-lp-section-head">
+          <span className="jf-lp-eyebrow">Feature showcase</span>
+          <h2 id="features-title">Built around the real app experience.</h2>
           <p>
-            A finance experience that feels simple for beginners and still
-            powerful enough for serious users.
+            Every section points to product concepts already present in the
+            dashboard: balances, transactions, goals, investments, reports, and
+            AI insights.
           </p>
         </div>
 
-        <div className="jf-feature-grid">
-          {features.map((feature) => {
+        <div className="jf-lp-feature-grid">
+          {features.map((feature, index) => {
             const Icon = feature.icon;
+
             return (
               <article
-                className={`jf-feature-card jf-accent-${feature.accent}`}
+                className="jf-lp-feature-card"
+                data-tone={feature.tone}
                 key={feature.title}
+                style={delayStyle(index * 65)}
               >
-                <span className="jf-feature-icon-wrap">
-                  <Icon className="jf-feature-icon" />
+                <span className="jf-lp-feature-icon">
+                  <Icon className="jf-lp-card-icon" />
                 </span>
                 <h3>{feature.title}</h3>
                 <p>{feature.description}</p>
@@ -281,20 +308,26 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="jf-section jf-workflow-section" id="workflow">
-        <div className="jf-section-heading jf-left-heading">
-          <span className="jf-eyebrow">How it works</span>
-          <h2>A smoother routine for daily money decisions.</h2>
+      <section className="jf-lp-flow" aria-labelledby="flow-title">
+        <div className="jf-lp-section-head jf-lp-flow-copy">
+          <span className="jf-lp-eyebrow">How it works</span>
+          <h2 id="flow-title">Three simple moves, repeated whenever life changes.</h2>
           <p>
-            The goal is not just to store numbers. The goal is to help users
-            understand their financial life quickly on mobile and desktop.
+            The app keeps the routine simple: record the activity, understand
+            the pattern, then adjust with confidence.
           </p>
         </div>
 
-        <div className="jf-workflow-grid">
+        <div className="jf-lp-flow-steps">
           {workflow.map((step, index) => (
-            <article className="jf-step-card" key={step.title}>
-              <span>{String(index + 1).padStart(2, "0")}</span>
+            <article
+              className="jf-lp-step-card"
+              key={step.title}
+              style={delayStyle(index * 90)}
+            >
+              <span className="jf-lp-step-number">
+                {String(index + 1).padStart(2, "0")}
+              </span>
               <h3>{step.title}</h3>
               <p>{step.description}</p>
             </article>
@@ -302,68 +335,61 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="jf-section jf-modules-section">
-        <div className="jf-section-heading">
-          <span className="jf-eyebrow">Finance modules</span>
-          <h2>One connected workspace for every money area.</h2>
+      <section
+        className="jf-lp-preview-section"
+        id="preview"
+        aria-labelledby="preview-title"
+      >
+        <div className="jf-lp-preview-copy">
+          <span className="jf-lp-eyebrow">Dashboard preview</span>
+          <h2 id="preview-title">The landing page now previews the product, not a generic SaaS graphic.</h2>
           <p>
-            Every module should feel connected, fast, and easy to understand,
-            especially on mobile screens.
+            The visual language mirrors the finance workspace: balance, income,
+            expenses, transactions, goals, investments, and monthly reports.
           </p>
         </div>
 
-        <div className="jf-module-grid">
-          {modules.map((module) => {
-            const Icon = module.icon;
-            return (
-              <div className="jf-module-pill" key={module.label}>
-                <Icon className="jf-module-icon" />
-                {module.label}
-              </div>
-            );
-          })}
+        <div className="jf-lp-wide-preview" aria-label="Jamals Finance app mockup">
+          <FinancePreview variant="wide" />
         </div>
       </section>
 
-      <section className="jf-section jf-security-section" id="security">
-        <div className="jf-security-card">
-          <div>
-            <span className="jf-eyebrow">Security and trust</span>
-            <h2>Premium look, protected workspace.</h2>
-            <p>
-              The public landing page explains the product clearly, while
-              private finance data stays behind secure authentication and
-              user-specific access.
-            </p>
-          </div>
+      <section className="jf-lp-trust" id="trust" aria-labelledby="trust-title">
+        <div>
+          <span className="jf-lp-eyebrow">Trust and clarity</span>
+          <h2 id="trust-title">Private by design, clear by default.</h2>
+          <p>
+            The public page stays open for visitors. Personal data stays inside
+            protected dashboard routes backed by the existing authentication
+            flow and user-specific records.
+          </p>
+        </div>
 
-          <div className="jf-security-list">
-            {[
-              "Dashboard stays protected for signed-in users only",
-              "Landing page remains public for visitors and search engines",
-              "Login and signup flow stays clean and focused",
-              "Design system is ready for full UI polish",
-            ].map((item) => (
-              <div key={item}>
-                <ShieldCheck className="jf-security-icon" />
-                <span>{item}</span>
-              </div>
-            ))}
-          </div>
+        <div className="jf-lp-trust-list">
+          {[
+            "Start from the existing login and signup flow.",
+            "Keep dashboard routes protected behind authentication.",
+            "Stay in control of what you add and review.",
+            "Use the app comfortably on phone, tablet, or desktop.",
+          ].map((item) => (
+            <div className="jf-lp-trust-item" key={item}>
+              <LockKeyhole className="jf-lp-trust-icon" />
+              <span>{item}</span>
+            </div>
+          ))}
         </div>
       </section>
 
-      <section className="jf-final-cta">
-        <div className="jf-final-glow" />
-        <span className="jf-eyebrow">Ready for the next phase</span>
-        <h2>Start building better money habits today.</h2>
+      <section className="jf-lp-final" aria-labelledby="final-title">
+        <span className="jf-lp-eyebrow">Ready when you are</span>
+        <h2 id="final-title">Open Jamals Finance and make your next money decision clearer.</h2>
         <p>
-          Create your workspace, connect your finance routine, and turn daily
-          money tracking into a clean premium experience.
+          Start with one account, one expense, or one savings goal. The
+          dashboard gets more useful with every clean entry.
         </p>
-        <Link href="/login" className="jf-primary-btn">
-          Open Jamal&apos;s Finance
-          <ArrowRight className="jf-btn-icon" />
+        <Link href="/login" className="jf-lp-primary-action">
+          Get started
+          <ArrowRight className="jf-lp-action-icon" />
         </Link>
       </section>
 
@@ -372,1032 +398,1280 @@ export default function HomePage() {
   );
 }
 
+function FinancePreview({ variant = "hero" }: { variant?: "hero" | "wide" }) {
+  return (
+    <div className="jf-lp-preview" data-variant={variant}>
+      <div className="jf-lp-preview-top">
+        <div>
+          <span>Dashboard</span>
+          <strong>Monthly clarity</strong>
+        </div>
+        <span className="jf-lp-live-pill">Live</span>
+      </div>
+
+      <div className="jf-lp-balance-card">
+        <div>
+          <span>Total balance</span>
+          <strong>$24,850</strong>
+        </div>
+        <div className="jf-lp-balance-meter" aria-hidden="true">
+          <span />
+        </div>
+      </div>
+
+      <div className="jf-lp-mini-grid">
+        <div className="jf-lp-mini-card" data-tone="income">
+          <TrendingUp className="jf-lp-mini-icon" />
+          <span>Income</span>
+          <strong>$6,420</strong>
+        </div>
+        <div className="jf-lp-mini-card" data-tone="expense">
+          <CreditCard className="jf-lp-mini-icon" />
+          <span>Expenses</span>
+          <strong>$2,180</strong>
+        </div>
+        <div className="jf-lp-mini-card" data-tone="goal">
+          <Goal className="jf-lp-mini-icon" />
+          <span>Goals</span>
+          <strong>72%</strong>
+        </div>
+        <div className="jf-lp-mini-card" data-tone="invest">
+          <Gauge className="jf-lp-mini-icon" />
+          <span>Investments</span>
+          <strong>+4.6%</strong>
+        </div>
+      </div>
+
+      <div className="jf-lp-chart-panel">
+        <div className="jf-lp-chart-head">
+          <div>
+            <span>Reports</span>
+            <strong>Cash flow rhythm</strong>
+          </div>
+          <BarChart3 className="jf-lp-chart-icon" />
+        </div>
+        <div className="jf-lp-chart" aria-hidden="true">
+          {chartBars.map((height, index) => (
+            <span
+              key={`${height}-${index}`}
+              style={barStyle(height, index * 70)}
+            />
+          ))}
+        </div>
+      </div>
+
+      <div className="jf-lp-transaction-panel">
+        <div className="jf-lp-chart-head">
+          <div>
+            <span>Transactions</span>
+            <strong>Recent movement</strong>
+          </div>
+          <Landmark className="jf-lp-chart-icon" />
+        </div>
+
+        <div className="jf-lp-transaction-list">
+          {previewTransactions.map((transaction, index) => (
+            <div
+              className="jf-lp-transaction"
+              data-tone={transaction.tone}
+              key={transaction.name}
+              style={delayStyle(index * 95)}
+            >
+              <span className="jf-lp-transaction-dot" />
+              <span>{transaction.name}</span>
+              <strong>{transaction.amount}</strong>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function LandingPageStyles() {
   return (
     <style
       dangerouslySetInnerHTML={{
         __html: `
-.jf-landing {
-  --jf-bg: #050b14;
-  --jf-bg-start: #06101c;
-  --jf-bg-mid: #050b14;
-  --jf-bg-end: #03070d;
-  --jf-panel: rgba(255, 255, 255, 0.075);
-  --jf-panel-strong: rgba(255, 255, 255, 0.11);
-  --jf-border: rgba(255, 255, 255, 0.14);
-  --jf-text: #f5f8ff;
-  --jf-muted: rgba(235, 242, 255, 0.72);
-  --jf-soft: rgba(235, 242, 255, 0.52);
-  --jf-green: #37f1a5;
-  --jf-blue: #7cc7ff;
-  --jf-gold: #ffd35a;
-  --jf-rose: #ff8db3;
-  --jf-cta-from: #37f1a5;
-  --jf-cta-to: #7cc7ff;
-  --jf-cta-text: #04100b;
-  --jf-cta-shadow: rgba(55, 241, 165, 0.24);
-}
-
-:root:not(.dark) .jf-landing {
-  --jf-bg: #f5f8fc;
-  --jf-bg-start: #eef6ff;
-  --jf-bg-mid: #f8fafc;
-  --jf-bg-end: #edf3fa;
-  --jf-panel: rgba(255, 255, 255, 0.9);
-  --jf-panel-strong: rgba(255, 255, 255, 0.98);
-  --jf-border: rgba(15, 23, 42, 0.14);
-  --jf-text: #0b1220;
-  --jf-muted: #475467;
-  --jf-soft: #667085;
-  --jf-green: #047857;
-  --jf-blue: #1d4ed8;
-  --jf-gold: #a15c00;
-  --jf-rose: #be123c;
-  --jf-cta-from: #1d4ed8;
-  --jf-cta-to: #0f766e;
-  --jf-cta-text: #ffffff;
-  --jf-cta-shadow: rgba(37, 99, 235, 0.18);
-}
-
-html {
-  scroll-behavior: smooth;
-}
-
-.jf-landing {
-  min-height: 100vh;
-  overflow: hidden;
+.jf-lp {
+  --jf-lp-bg: #f6f8fb;
+  --jf-lp-ink: #0b1220;
+  --jf-lp-muted: #526070;
+  --jf-lp-soft: #718096;
+  --jf-lp-panel: rgba(255, 255, 255, 0.88);
+  --jf-lp-panel-strong: #ffffff;
+  --jf-lp-line: rgba(15, 23, 42, 0.13);
+  --jf-lp-line-soft: rgba(15, 23, 42, 0.08);
+  --jf-lp-blue: #2563eb;
+  --jf-lp-teal: #0f766e;
+  --jf-lp-mint: #0f9f6e;
+  --jf-lp-gold: #b7791f;
+  --jf-lp-rose: #be3455;
+  --jf-lp-violet: #6d5bd0;
+  --jf-lp-cyan: #0284c7;
+  --jf-lp-radius: 1rem;
+  --jf-lp-shadow: 0 24px 70px rgba(15, 23, 42, 0.12);
+  --jf-lp-ease: cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+  min-height: 100svh;
+  overflow-x: clip;
   background:
-    radial-gradient(circle at 15% 10%, rgba(55, 241, 165, 0.16), transparent 28rem),
-    radial-gradient(circle at 82% 20%, rgba(124, 199, 255, 0.16), transparent 30rem),
-    linear-gradient(180deg, var(--jf-bg-start) 0%, var(--jf-bg-mid) 42%, var(--jf-bg-end) 100%);
-  color: var(--jf-text);
+    linear-gradient(90deg, rgba(15, 23, 42, 0.045) 1px, transparent 1px),
+    linear-gradient(180deg, rgba(15, 23, 42, 0.04) 1px, transparent 1px),
+    var(--jf-lp-bg);
+  background-size: 64px 64px;
+  color: var(--jf-lp-ink);
   font-family: inherit;
 }
 
-:root:not(.dark) .jf-landing {
+.dark .jf-lp {
+  --jf-lp-bg: #080d13;
+  --jf-lp-ink: #f7fafc;
+  --jf-lp-muted: #bac6d4;
+  --jf-lp-soft: #8fa0b4;
+  --jf-lp-panel: rgba(15, 23, 42, 0.76);
+  --jf-lp-panel-strong: #111a24;
+  --jf-lp-line: rgba(226, 232, 240, 0.16);
+  --jf-lp-line-soft: rgba(226, 232, 240, 0.09);
+  --jf-lp-blue: #78a8ff;
+  --jf-lp-teal: #5eead4;
+  --jf-lp-mint: #72f0b6;
+  --jf-lp-gold: #f6c76d;
+  --jf-lp-rose: #fb8da7;
+  --jf-lp-violet: #c4b5fd;
+  --jf-lp-cyan: #67d5ff;
+  --jf-lp-shadow: 0 28px 80px rgba(0, 0, 0, 0.34);
   background:
-    radial-gradient(circle at 15% 10%, rgba(4, 120, 87, 0.07), transparent 28rem),
-    radial-gradient(circle at 82% 20%, rgba(29, 78, 216, 0.09), transparent 30rem),
-    linear-gradient(180deg, var(--jf-bg-start) 0%, var(--jf-bg-mid) 42%, var(--jf-bg-end) 100%);
+    linear-gradient(90deg, rgba(226, 232, 240, 0.045) 1px, transparent 1px),
+    linear-gradient(180deg, rgba(226, 232, 240, 0.04) 1px, transparent 1px),
+    var(--jf-lp-bg);
+  background-size: 64px 64px;
 }
 
-.jf-hero-shell {
-  position: relative;
-  min-height: 100vh;
-  padding: 1.25rem clamp(1rem, 3vw, 2rem) 5rem;
-  isolation: isolate;
+.jf-lp *,
+.jf-lp *::before,
+.jf-lp *::after {
+  box-sizing: border-box;
 }
 
-.jf-grid-overlay {
-  position: absolute;
-  inset: 0;
-  z-index: -3;
-  background-image:
-    linear-gradient(rgba(255,255,255,0.035) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255,255,255,0.035) 1px, transparent 1px);
-  background-size: 42px 42px;
-  mask-image: linear-gradient(to bottom, black, transparent 88%);
-}
-
-:root:not(.dark) .jf-grid-overlay {
-  background-image:
-    linear-gradient(rgba(15,23,42,0.045) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(15,23,42,0.045) 1px, transparent 1px);
-}
-
-.jf-orb {
-  position: absolute;
-  z-index: -2;
-  border-radius: 999px;
-  filter: blur(36px);
-  opacity: 0.9;
-}
-
-.jf-orb-one {
-  left: -8rem;
-  top: 12rem;
-  width: 22rem;
-  height: 22rem;
-  background: rgba(55, 241, 165, 0.22);
-}
-
-.jf-orb-two {
-  right: -9rem;
-  top: 8rem;
-  width: 28rem;
-  height: 28rem;
-  background: rgba(124, 199, 255, 0.18);
-}
-
-:root:not(.dark) .jf-orb {
-  opacity: 0.45;
-  filter: blur(44px);
-}
-
-.jf-nav {
-  position: relative;
-  z-index: 10;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  width: min(1180px, 100%);
-  margin: 0 auto;
-  padding: 0.75rem;
-  border: 1px solid rgba(255, 255, 255, 0.11);
-  border-radius: 999px;
-  background: rgba(5, 11, 20, 0.72);
-  box-shadow: 0 20px 80px rgba(0, 0, 0, 0.28);
-  backdrop-filter: blur(18px);
-}
-
-:root:not(.dark) .jf-nav {
-  border-color: var(--jf-border);
-  background: rgba(255, 255, 255, 0.9);
-  box-shadow: 0 18px 60px rgba(15, 23, 42, 0.11);
-}
-
-.jf-brand,
-.jf-nav-links a,
-.jf-nav-cta,
-.jf-primary-btn,
-.jf-secondary-btn {
+.jf-lp a {
   text-decoration: none;
 }
 
-.jf-brand {
-  display: inline-flex;
+.jf-lp-nav {
+  position: sticky;
+  top: 0.75rem;
+  z-index: 20;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
   align-items: center;
-  gap: 0.65rem;
-  color: var(--jf-text);
-  font-weight: 800;
-  letter-spacing: 0;
+  gap: 1rem;
+  width: min(1180px, calc(100% - 2rem));
+  margin: 0 auto;
+  padding: 0.55rem;
+  border: 1px solid var(--jf-lp-line);
+  border-radius: var(--jf-lp-radius);
+  background: color-mix(in srgb, var(--jf-lp-panel-strong), transparent 12%);
+  box-shadow: 0 14px 40px rgba(15, 23, 42, 0.08);
+  backdrop-filter: blur(18px) saturate(1.08);
 }
 
-.jf-brand-mark {
+.dark .jf-lp-nav {
+  background: color-mix(in srgb, var(--jf-lp-panel-strong), transparent 8%);
+  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.28);
+}
+
+.jf-lp-brand,
+.jf-lp-nav-cta,
+.jf-lp-nav-links a,
+.jf-lp-primary-action,
+.jf-lp-secondary-action {
+  -webkit-tap-highlight-color: transparent;
+}
+
+.jf-lp-brand {
+  display: inline-flex;
+  min-width: 0;
+  align-items: center;
+  gap: 0.65rem;
+  color: var(--jf-lp-ink);
+  font-size: 0.98rem;
+  font-weight: 850;
+}
+
+.jf-lp-brand-mark {
   display: grid;
   width: 2.35rem;
   height: 2.35rem;
+  flex: 0 0 auto;
   place-items: center;
-  border-radius: 999px;
-  background: linear-gradient(135deg, rgba(55,241,165,0.2), rgba(124,199,255,0.18));
-  border: 1px solid rgba(255,255,255,0.14);
+  border: 1px solid color-mix(in srgb, var(--jf-lp-mint), transparent 68%);
+  border-radius: 0.85rem;
+  background: color-mix(in srgb, var(--jf-lp-mint), transparent 88%);
+  color: var(--jf-lp-mint);
 }
 
-.jf-brand-icon {
-  width: 1.1rem;
-  height: 1.1rem;
-  color: var(--jf-gold);
-}
-
-.jf-nav-links {
-  display: flex;
-  gap: 0.35rem;
-  padding: 0.25rem;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.055);
-}
-
-:root:not(.dark) .jf-nav-links {
-  background: rgba(15, 23, 42, 0.055);
-}
-
-.jf-nav-links a {
-  color: var(--jf-muted);
-  font-size: 0.9rem;
-  font-weight: 700;
-  padding: 0.65rem 0.9rem;
-  border-radius: 999px;
-  transition: 180ms ease;
-}
-
-.jf-nav-links a:hover {
-  color: var(--jf-text);
-  background: rgba(255,255,255,0.08);
-}
-
-:root:not(.dark) .jf-nav-links a:hover {
-  background: rgba(15, 23, 42, 0.07);
-}
-
-.jf-nav-cta {
-  color: var(--jf-cta-text);
-  font-size: 0.9rem;
-  font-weight: 900;
-  padding: 0.72rem 1rem;
-  border-radius: 999px;
-  background: linear-gradient(135deg, var(--jf-cta-from), var(--jf-cta-to));
-  box-shadow: 0 16px 40px var(--jf-cta-shadow);
-}
-
-.jf-hero {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(420px, 0.92fr);
-  align-items: center;
-  gap: clamp(2rem, 5vw, 4.5rem);
-  width: min(1180px, 100%);
-  min-height: calc(100vh - 6.5rem);
-  margin: 0 auto;
-  padding-top: clamp(2.5rem, 5vh, 5rem);
-}
-
-.jf-hero-copy {
-  max-width: 650px;
-}
-
-.jf-badge,
-.jf-eyebrow {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.55rem;
-  width: fit-content;
-  border: 1px solid rgba(255,255,255,0.14);
-  background: rgba(255,255,255,0.075);
-  color: var(--jf-muted);
-  border-radius: 999px;
-  font-size: 0.82rem;
-  font-weight: 900;
-  letter-spacing: 0;
-}
-
-:root:not(.dark) .jf-badge,
-:root:not(.dark) .jf-eyebrow {
-  border-color: var(--jf-border);
-  background: rgba(255, 255, 255, 0.72);
-  color: var(--jf-muted);
-}
-
-.jf-badge {
-  padding: 0.55rem 0.75rem;
-  margin-bottom: 1.4rem;
-}
-
-.jf-badge-icon {
+.jf-lp-brand-icon,
+.jf-lp-inline-icon,
+.jf-lp-action-icon,
+.jf-lp-badge-icon,
+.jf-lp-check-icon,
+.jf-lp-card-icon,
+.jf-lp-mini-icon,
+.jf-lp-chart-icon,
+.jf-lp-trust-icon {
   width: 1rem;
   height: 1rem;
-  color: var(--jf-green);
+  flex: 0 0 auto;
 }
 
-.jf-hero h1 {
-  margin: 0;
-  color: var(--jf-text);
-  font-size: clamp(3rem, 7vw, 6.7rem);
-  line-height: 0.94;
-  letter-spacing: 0;
-  text-wrap: balance;
+.jf-lp-brand-icon {
+  width: 1.2rem;
+  height: 1.2rem;
 }
 
-.jf-hero-text {
-  max-width: 610px;
-  margin: 1.5rem 0 0;
-  color: var(--jf-muted);
-  font-size: clamp(1.04rem, 1.8vw, 1.28rem);
-  line-height: 1.75;
-}
-
-.jf-hero-actions {
+.jf-lp-nav-links {
   display: flex;
-  flex-wrap: wrap;
-  gap: 0.9rem;
-  margin-top: 2rem;
+  align-items: center;
+  gap: 0.2rem;
+  padding: 0.2rem;
+  border: 1px solid var(--jf-lp-line-soft);
+  border-radius: 0.9rem;
+  background: color-mix(in srgb, var(--jf-lp-bg), var(--jf-lp-panel-strong) 46%);
 }
 
-.jf-primary-btn,
-.jf-secondary-btn {
+.jf-lp-nav-links a {
+  border-radius: 0.7rem;
+  color: var(--jf-lp-muted);
+  font-size: 0.88rem;
+  font-weight: 750;
+  padding: 0.55rem 0.75rem;
+  transition:
+    color 180ms var(--jf-lp-ease),
+    background-color 180ms var(--jf-lp-ease);
+}
+
+.jf-lp-nav-links a:hover {
+  background: color-mix(in srgb, var(--jf-lp-blue), transparent 90%);
+  color: var(--jf-lp-ink);
+}
+
+.jf-lp-nav-cta {
+  justify-self: end;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 0.65rem;
-  min-height: 3.35rem;
-  border-radius: 999px;
-  padding: 0.95rem 1.25rem;
-  font-weight: 950;
-  transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
+  gap: 0.45rem;
+  min-height: 2.35rem;
+  border-radius: 0.85rem;
+  padding: 0.62rem 0.85rem;
+  background: var(--jf-lp-ink);
+  color: var(--jf-lp-bg);
+  font-size: 0.88rem;
+  font-weight: 850;
+  transition:
+    transform 180ms var(--jf-lp-ease),
+    box-shadow 180ms var(--jf-lp-ease);
 }
 
-.jf-primary-btn {
-  color: var(--jf-cta-text);
-  background: linear-gradient(135deg, var(--jf-cta-from), var(--jf-cta-to));
-  box-shadow: 0 18px 48px var(--jf-cta-shadow);
+.jf-lp-nav-cta:hover {
+  box-shadow: 0 14px 30px rgba(37, 99, 235, 0.18);
+  transform: translateY(-1px);
 }
 
-.jf-secondary-btn {
-  color: var(--jf-text);
-  border: 1px solid rgba(255,255,255,0.16);
-  background: rgba(255,255,255,0.075);
+.jf-lp-hero {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 0.95fr) minmax(380px, 1.05fr);
+  align-items: center;
+  gap: clamp(1.5rem, 4vw, 4rem);
+  width: min(1180px, calc(100% - 2rem));
+  min-height: min(820px, calc(100svh - 2.25rem));
+  margin: 0 auto;
+  padding: clamp(2rem, 5vw, 4.5rem) 0 clamp(1.7rem, 4vw, 3rem);
 }
 
-:root:not(.dark) .jf-secondary-btn {
-  border-color: var(--jf-border);
-  background: rgba(255, 255, 255, 0.76);
+.jf-lp-ledger {
+  position: absolute;
+  inset: 9% 46% auto auto;
+  width: min(36rem, 50vw);
+  height: min(36rem, 50vw);
+  border: 1px solid var(--jf-lp-line-soft);
+  border-radius: 1.4rem;
+  opacity: 0.45;
+  pointer-events: none;
+  transform: rotate(-6deg);
 }
 
-.jf-primary-btn:hover,
-.jf-secondary-btn:hover,
-.jf-nav-cta:hover {
+.jf-lp-ledger::before,
+.jf-lp-ledger::after {
+  content: "";
+  position: absolute;
+  inset: 12%;
+  border: 1px solid var(--jf-lp-line-soft);
+  border-radius: 1rem;
+}
+
+.jf-lp-ledger::after {
+  inset: 24%;
+  border-radius: 0.8rem;
+}
+
+.jf-lp-hero-copy,
+.jf-lp-hero-stage,
+.jf-lp-value-card,
+.jf-lp-feature-card,
+.jf-lp-step-card,
+.jf-lp-trust,
+.jf-lp-final {
+  animation: jfLpReveal 680ms var(--jf-lp-ease) both;
+}
+
+.jf-lp-hero-copy {
+  position: relative;
+  z-index: 1;
+  max-width: 640px;
+}
+
+.jf-lp-proof-badge,
+.jf-lp-eyebrow {
+  display: inline-flex;
+  width: fit-content;
+  max-width: 100%;
+  align-items: center;
+  gap: 0.5rem;
+  border: 1px solid var(--jf-lp-line);
+  border-radius: 0.85rem;
+  background: var(--jf-lp-panel);
+  color: var(--jf-lp-muted);
+  font-size: 0.8rem;
+  font-weight: 850;
+  line-height: 1.3;
+  padding: 0.48rem 0.65rem;
+  white-space: normal;
+}
+
+.jf-lp-badge-icon {
+  color: var(--jf-lp-mint);
+}
+
+.jf-lp-hero h1 {
+  max-width: 11ch;
+  margin: 1rem 0 0;
+  color: var(--jf-lp-ink);
+  font-size: clamp(3.2rem, 8vw, 7rem);
+  font-weight: 850;
+  letter-spacing: 0;
+  line-height: 0.88;
+  text-wrap: balance;
+}
+
+.jf-lp-hero-lead {
+  max-width: 620px;
+  margin: 1.15rem 0 0;
+  color: var(--jf-lp-muted);
+  font-size: clamp(1rem, 1.55vw, 1.2rem);
+  font-weight: 520;
+  line-height: 1.7;
+}
+
+.jf-lp-hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 1.55rem;
+}
+
+.jf-lp-primary-action,
+.jf-lp-secondary-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.55rem;
+  min-height: 3.15rem;
+  border-radius: 0.95rem;
+  padding: 0.9rem 1rem;
+  font-size: 0.98rem;
+  font-weight: 900;
+  transition:
+    transform 180ms var(--jf-lp-ease),
+    border-color 180ms var(--jf-lp-ease),
+    box-shadow 180ms var(--jf-lp-ease),
+    background-color 180ms var(--jf-lp-ease);
+}
+
+.jf-lp-primary-action {
+  border: 1px solid color-mix(in srgb, var(--jf-lp-blue), transparent 38%);
+  background: linear-gradient(135deg, var(--jf-lp-blue), var(--jf-lp-teal));
+  color: #ffffff;
+  box-shadow: 0 18px 42px color-mix(in srgb, var(--jf-lp-blue), transparent 76%);
+}
+
+.jf-lp-secondary-action {
+  border: 1px solid var(--jf-lp-line);
+  background: var(--jf-lp-panel);
+  color: var(--jf-lp-ink);
+}
+
+.jf-lp-primary-action:hover,
+.jf-lp-secondary-action:hover {
   transform: translateY(-2px);
 }
 
-.jf-btn-icon {
-  width: 1.05rem;
-  height: 1.05rem;
+.jf-lp-secondary-action:hover {
+  border-color: color-mix(in srgb, var(--jf-lp-blue), var(--jf-lp-line) 48%);
+  box-shadow: 0 14px 34px rgba(15, 23, 42, 0.1);
 }
 
-.jf-trust-row {
+.jf-lp-trust-strip {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.7rem;
-  margin-top: 1.35rem;
+  gap: 0.55rem;
+  margin-top: 1rem;
 }
 
-.jf-trust-row span {
+.jf-lp-trust-strip span {
   display: inline-flex;
   align-items: center;
-  gap: 0.45rem;
-  color: var(--jf-muted);
-  font-size: 0.92rem;
-  font-weight: 800;
+  gap: 0.4rem;
+  color: var(--jf-lp-muted);
+  font-size: 0.88rem;
+  font-weight: 760;
 }
 
-.jf-trust-icon {
-  width: 1rem;
-  height: 1rem;
-  color: var(--jf-green);
+.jf-lp-check-icon {
+  color: var(--jf-lp-mint);
 }
 
-.jf-hero-visual {
+.jf-lp-hero-stage {
+  animation-delay: 110ms;
+}
+
+.jf-lp-preview {
   position: relative;
-  min-height: 640px;
-}
-
-.jf-device-card {
-  position: absolute;
-  inset: 4rem 0 auto auto;
-  width: min(100%, 520px);
-  min-height: 560px;
-  border: 1px solid rgba(255,255,255,0.16);
-  border-radius: 2.1rem;
-  padding: 1.05rem;
+  overflow: hidden;
+  border: 1px solid var(--jf-lp-line);
+  border-radius: 1.15rem;
   background:
-    linear-gradient(180deg, rgba(255,255,255,0.13), rgba(255,255,255,0.06)),
-    rgba(6, 14, 26, 0.82);
-  box-shadow: 0 40px 120px rgba(0,0,0,0.42);
-  backdrop-filter: blur(22px);
-  animation: jfFloat 7s ease-in-out infinite;
+    linear-gradient(180deg, color-mix(in srgb, var(--jf-lp-panel-strong), transparent 6%), var(--jf-lp-panel)),
+    var(--jf-lp-panel-strong);
+  box-shadow: var(--jf-lp-shadow);
+  padding: clamp(0.8rem, 2vw, 1.05rem);
+  transform: translateZ(0);
 }
 
-:root:not(.dark) .jf-device-card {
-  border-color: var(--jf-border);
-  background:
-    linear-gradient(180deg, rgba(255,255,255,0.96), rgba(255,255,255,0.72)),
-    rgba(255, 255, 255, 0.84);
-  box-shadow: 0 34px 100px rgba(15, 23, 42, 0.14);
-}
-
-.jf-device-card::before {
+.jf-lp-preview::before {
   content: "";
   position: absolute;
-  inset: -1px;
-  border-radius: inherit;
-  padding: 1px;
-  background: linear-gradient(135deg, rgba(55,241,165,0.7), transparent 36%, rgba(255,211,90,0.62));
-  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-  mask-composite: exclude;
-  pointer-events: none;
+  inset: 0 0 auto 0;
+  height: 0.28rem;
+  background: linear-gradient(90deg, var(--jf-lp-mint), var(--jf-lp-blue), var(--jf-lp-gold), var(--jf-lp-rose));
 }
 
-.jf-device-topbar {
+.jf-lp-preview[data-variant="hero"] {
+  max-width: 560px;
+  margin-left: auto;
+  animation: jfLpFloat 7600ms ease-in-out infinite;
+}
+
+.jf-lp-preview[data-variant="hero"] .jf-lp-transaction-panel {
+  display: none;
+}
+
+.jf-lp-preview[data-variant="wide"] {
+  display: grid;
+  grid-template-columns: minmax(260px, 0.9fr) minmax(320px, 1.1fr);
+  gap: 0.9rem;
+}
+
+.jf-lp-preview-top,
+.jf-lp-balance-card,
+.jf-lp-mini-card,
+.jf-lp-chart-panel,
+.jf-lp-transaction-panel,
+.jf-lp-value-card,
+.jf-lp-feature-card,
+.jf-lp-step-card,
+.jf-lp-trust,
+.jf-lp-final {
+  border: 1px solid var(--jf-lp-line);
+  background: var(--jf-lp-panel);
+}
+
+.jf-lp-preview-top {
   display: flex;
   align-items: center;
-  gap: 0.45rem;
-  padding: 0.6rem 0.65rem 1rem;
-  color: var(--jf-soft);
+  justify-content: space-between;
+  gap: 0.75rem;
+  border-radius: 0.9rem;
+  padding: 0.75rem;
+}
+
+.jf-lp-preview-top span,
+.jf-lp-balance-card span,
+.jf-lp-mini-card span,
+.jf-lp-chart-head span {
+  display: block;
+  color: var(--jf-lp-soft);
   font-size: 0.78rem;
   font-weight: 800;
 }
 
-.jf-device-topbar span {
-  width: 0.62rem;
-  height: 0.62rem;
-  border-radius: 999px;
-  background: rgba(255,255,255,0.22);
-}
-
-.jf-device-topbar p {
-  margin: 0 0 0 auto;
-}
-
-.jf-balance-panel,
-.jf-mini-card,
-.jf-chart-card,
-.jf-floating-card,
-.jf-feature-card,
-.jf-step-card,
-.jf-stat-card,
-.jf-security-card {
-  border: 1px solid var(--jf-border);
-  background: var(--jf-panel);
-  box-shadow: inset 0 1px 0 rgba(255,255,255,0.08);
-}
-
-:root:not(.dark) .jf-balance-panel,
-:root:not(.dark) .jf-mini-card,
-:root:not(.dark) .jf-chart-card,
-:root:not(.dark) .jf-floating-card,
-:root:not(.dark) .jf-feature-card,
-:root:not(.dark) .jf-step-card,
-:root:not(.dark) .jf-stat-card,
-:root:not(.dark) .jf-security-card {
-  border-color: var(--jf-border);
-  background: var(--jf-panel);
-  box-shadow:
-    inset 0 1px 0 rgba(255,255,255,0.78),
-    0 18px 48px rgba(15, 23, 42, 0.06);
-}
-
-.jf-balance-panel {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  min-height: 145px;
-  padding: 1.15rem;
-  border-radius: 1.5rem;
-}
-
-.jf-balance-panel p,
-.jf-mini-card p,
-.jf-chart-head p,
-.jf-floating-card p,
-.jf-feature-card p,
-.jf-step-card p,
-.jf-section-heading p,
-.jf-security-card p,
-.jf-final-cta p {
-  margin: 0;
-  color: var(--jf-muted);
-  line-height: 1.65;
-}
-
-.jf-balance-panel strong {
+.jf-lp-preview-top strong,
+.jf-lp-chart-head strong {
   display: block;
-  margin-top: 0.35rem;
-  font-size: 3rem;
-  letter-spacing: 0;
+  margin-top: 0.08rem;
+  color: var(--jf-lp-ink);
+  font-size: 0.96rem;
 }
 
-.jf-live-pill {
-  color: #052016;
-  background: var(--jf-green);
+.jf-lp-live-pill {
   border-radius: 999px;
-  padding: 0.35rem 0.55rem;
-  font-size: 0.72rem;
-  font-weight: 950;
+  background: color-mix(in srgb, var(--jf-lp-mint), transparent 84%);
+  color: var(--jf-lp-mint) !important;
+  padding: 0.38rem 0.55rem;
 }
 
-.jf-metric-grid {
+.jf-lp-balance-card {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0.85rem;
-  margin-top: 0.85rem;
-}
-
-.jf-mini-card {
-  min-height: 150px;
-  border-radius: 1.35rem;
+  gap: 0.9rem;
+  margin-top: 0.75rem;
+  border-radius: 1rem;
   padding: 1rem;
 }
 
-.jf-icon-dot {
-  display: grid;
-  width: 2.5rem;
-  height: 2.5rem;
-  place-items: center;
-  border-radius: 999px;
-  border: 1px solid rgba(255,255,255,0.16);
-}
-
-.jf-mint { background: rgba(55,241,165,0.14); color: var(--jf-green); }
-.jf-blue { background: rgba(124,199,255,0.14); color: var(--jf-blue); }
-
-.jf-mini-icon {
-  width: 1.15rem;
-  height: 1.15rem;
-}
-
-.jf-mini-card p {
-  margin-top: 1.05rem;
-  font-size: 0.85rem;
-  font-weight: 800;
-}
-
-.jf-mini-card strong {
+.jf-lp-balance-card strong {
   display: block;
   margin-top: 0.15rem;
-  font-size: 1.85rem;
+  color: var(--jf-lp-ink);
+  font-size: clamp(2.2rem, 5vw, 3.6rem);
+  letter-spacing: 0;
+  line-height: 1;
+}
+
+.jf-lp-balance-meter {
+  height: 0.65rem;
+  overflow: hidden;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--jf-lp-line), transparent 54%);
+}
+
+.jf-lp-balance-meter span {
+  display: block;
+  width: 78%;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--jf-lp-mint), var(--jf-lp-blue));
+  transform-origin: left center;
+  animation: jfLpMeter 1800ms var(--jf-lp-ease) both;
+}
+
+.jf-lp-mini-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.65rem;
+  margin-top: 0.75rem;
+}
+
+.jf-lp-mini-card {
+  min-width: 0;
+  border-radius: 0.95rem;
+  padding: 0.8rem;
+  transition:
+    transform 180ms var(--jf-lp-ease),
+    border-color 180ms var(--jf-lp-ease);
+}
+
+.jf-lp-mini-card:hover {
+  border-color: color-mix(in srgb, currentColor, var(--jf-lp-line) 54%);
+  transform: translateY(-2px);
+}
+
+.jf-lp-mini-card[data-tone="income"] { color: var(--jf-lp-mint); }
+.jf-lp-mini-card[data-tone="expense"] { color: var(--jf-lp-rose); }
+.jf-lp-mini-card[data-tone="goal"] { color: var(--jf-lp-gold); }
+.jf-lp-mini-card[data-tone="invest"] { color: var(--jf-lp-violet); }
+
+.jf-lp-mini-icon {
+  width: 1.1rem;
+  height: 1.1rem;
+  color: currentColor;
+}
+
+.jf-lp-mini-card span {
+  margin-top: 0.55rem;
+}
+
+.jf-lp-mini-card strong {
+  display: block;
+  margin-top: 0.12rem;
+  color: var(--jf-lp-ink);
+  font-size: clamp(1rem, 2vw, 1.2rem);
   letter-spacing: 0;
 }
 
-.jf-chart-card {
-  margin-top: 0.85rem;
-  border-radius: 1.5rem;
-  padding: 1rem;
+.jf-lp-chart-panel,
+.jf-lp-transaction-panel {
+  margin-top: 0.75rem;
+  border-radius: 1rem;
+  padding: 0.85rem;
 }
 
-.jf-chart-head {
+.jf-lp-preview[data-variant="wide"] .jf-lp-chart-panel,
+.jf-lp-preview[data-variant="wide"] .jf-lp-transaction-panel {
+  margin-top: 0;
+}
+
+.jf-lp-preview[data-variant="wide"] .jf-lp-preview-top,
+.jf-lp-preview[data-variant="wide"] .jf-lp-balance-card,
+.jf-lp-preview[data-variant="wide"] .jf-lp-mini-grid {
+  grid-column: 1;
+}
+
+.jf-lp-preview[data-variant="wide"] .jf-lp-chart-panel {
+  grid-column: 2;
+  grid-row: 1 / span 3;
+}
+
+.jf-lp-preview[data-variant="wide"] .jf-lp-transaction-panel {
+  grid-column: 1 / -1;
+}
+
+.jf-lp-chart-head {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
+  gap: 1rem;
 }
 
-.jf-chart-head strong {
-  font-size: 1rem;
+.jf-lp-chart-icon {
+  color: var(--jf-lp-blue);
 }
 
-.jf-chart-lock {
-  width: 1.15rem;
-  height: 1.15rem;
-  color: var(--jf-green);
-}
-
-.jf-bars {
+.jf-lp-chart {
   display: flex;
   align-items: end;
-  gap: 0.55rem;
-  height: 150px;
-  padding-top: 1.1rem;
+  gap: clamp(0.3rem, 1vw, 0.52rem);
+  height: 132px;
+  margin-top: 0.9rem;
+  padding: 0.15rem 0.1rem 0;
 }
 
-.jf-bars span {
+.jf-lp-preview[data-variant="wide"] .jf-lp-chart {
+  height: 255px;
+}
+
+.jf-lp-chart span {
   flex: 1;
   min-width: 0;
-  border-radius: 999px 999px 0.55rem 0.55rem;
-  background: linear-gradient(180deg, #eef7ff, #7dbdff);
-  box-shadow: 0 10px 30px rgba(124,199,255,0.22);
+  height: var(--jf-lp-bar-height);
+  border-radius: 0.55rem 0.55rem 0.22rem 0.22rem;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--jf-lp-blue), white 24%), var(--jf-lp-blue));
+  box-shadow: 0 12px 28px color-mix(in srgb, var(--jf-lp-blue), transparent 78%);
+  transform-origin: bottom center;
+  animation: jfLpBar 900ms var(--jf-lp-ease) both;
+  animation-delay: var(--jf-lp-delay);
 }
 
-.jf-floating-card {
-  position: absolute;
-  z-index: 2;
-  display: flex;
+.jf-lp-transaction-list {
+  display: grid;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+
+.jf-lp-transaction {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: center;
-  gap: 0.8rem;
-  width: max-content;
-  max-width: 280px;
-  padding: 0.85rem 1rem;
-  border-radius: 1.2rem;
-  background: rgba(8, 18, 32, 0.78);
-  backdrop-filter: blur(18px);
+  gap: 0.55rem;
+  min-height: 2.55rem;
+  border: 1px solid var(--jf-lp-line-soft);
+  border-radius: 0.8rem;
+  padding: 0.55rem 0.65rem;
+  color: var(--jf-lp-muted);
+  font-size: 0.86rem;
+  font-weight: 760;
+  opacity: 0;
+  transform: translateY(8px);
+  animation: jfLpTransaction 640ms var(--jf-lp-ease) both;
+  animation-delay: calc(520ms + var(--jf-lp-delay));
 }
 
-:root:not(.dark) .jf-floating-card {
-  background: rgba(255, 255, 255, 0.84);
+.jf-lp-transaction strong {
+  color: var(--jf-lp-ink);
+  font-variant-numeric: tabular-nums;
 }
 
-.jf-floating-left {
-  left: -1rem;
-  bottom: 5rem;
+.jf-lp-transaction-dot {
+  width: 0.58rem;
+  height: 0.58rem;
+  border-radius: 999px;
+  background: currentColor;
 }
 
-.jf-floating-right {
-  right: -1rem;
-  top: 1rem;
-}
+.jf-lp-transaction[data-tone="income"] { color: var(--jf-lp-mint); }
+.jf-lp-transaction[data-tone="expense"] { color: var(--jf-lp-rose); }
+.jf-lp-transaction[data-tone="goal"] { color: var(--jf-lp-gold); }
+.jf-lp-transaction[data-tone="investment"] { color: var(--jf-lp-violet); }
 
-.jf-floating-icon {
-  width: 1.35rem;
-  height: 1.35rem;
-  color: var(--jf-gold);
-}
-
-.jf-floating-card strong {
-  display: block;
-  font-size: 0.92rem;
-}
-
-.jf-floating-card p {
-  font-size: 0.8rem;
-}
-
-.jf-section {
+.jf-lp-value,
+.jf-lp-section,
+.jf-lp-flow,
+.jf-lp-preview-section,
+.jf-lp-trust,
+.jf-lp-final {
   width: min(1180px, calc(100% - 2rem));
   margin: 0 auto;
-  padding: clamp(4rem, 8vw, 7rem) 0;
 }
 
-.jf-stats-section {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 0.9rem;
-  padding-top: 0;
+.jf-lp-value,
+.jf-lp-section,
+.jf-lp-flow,
+.jf-lp-preview-section {
+  padding: clamp(3.5rem, 8vw, 6.5rem) 0;
 }
 
-.jf-stat-card {
-  border-radius: 1.35rem;
-  padding: 1.35rem;
-  background: rgba(255,255,255,0.06);
-}
-
-.jf-stat-card strong {
-  display: block;
-  font-size: clamp(2rem, 4vw, 3.3rem);
-  letter-spacing: 0;
-}
-
-.jf-stat-card span {
-  color: var(--jf-muted);
-  font-size: 0.92rem;
-  font-weight: 800;
-}
-
-.jf-section-heading {
-  max-width: 720px;
-  margin: 0 auto 2.3rem;
+.jf-lp-section-head {
+  max-width: 760px;
+  margin: 0 auto 1.9rem;
   text-align: center;
 }
 
-.jf-left-heading {
-  margin-left: 0;
+.jf-lp-section-head-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(240px, 0.74fr);
+  align-items: end;
+  max-width: none;
+  gap: 1.5rem;
   text-align: left;
 }
 
-.jf-eyebrow {
-  padding: 0.45rem 0.68rem;
-  margin-bottom: 0.95rem;
-  color: var(--jf-green);
-}
-
-.jf-section-heading h2,
-.jf-security-card h2,
-.jf-final-cta h2 {
-  margin: 0;
-  color: var(--jf-text);
-  font-size: clamp(2.2rem, 5vw, 4.5rem);
-  line-height: 1;
+.jf-lp-section-head h2,
+.jf-lp-preview-copy h2,
+.jf-lp-trust h2,
+.jf-lp-final h2 {
+  margin: 0.85rem 0 0;
+  color: var(--jf-lp-ink);
+  font-size: clamp(2rem, 4.8vw, 4rem);
+  font-weight: 820;
   letter-spacing: 0;
+  line-height: 1.02;
   text-wrap: balance;
 }
 
-.jf-section-heading p {
-  margin-top: 1rem;
-  font-size: 1.05rem;
+.jf-lp-section-head p,
+.jf-lp-preview-copy p,
+.jf-lp-trust p,
+.jf-lp-final p,
+.jf-lp-value-card p,
+.jf-lp-feature-card p,
+.jf-lp-step-card p {
+  margin: 0;
+  color: var(--jf-lp-muted);
+  line-height: 1.65;
 }
 
-.jf-feature-grid {
+.jf-lp-section-head p {
+  margin-top: 0.9rem;
+  font-size: 1rem;
+}
+
+.jf-lp-section-head-row > p {
+  margin-top: 0;
+}
+
+.jf-lp-value-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 0.9rem;
+  gap: 0.75rem;
 }
 
-.jf-feature-card {
-  position: relative;
-  min-height: 310px;
-  overflow: hidden;
-  border-radius: 1.6rem;
-  padding: 1.25rem;
-  background: rgba(255,255,255,0.065);
+.jf-lp-value-card,
+.jf-lp-feature-card,
+.jf-lp-step-card {
+  animation-delay: var(--jf-lp-delay);
 }
 
-.jf-feature-card::after {
-  content: "";
-  position: absolute;
-  inset: auto -30% -35% -30%;
-  height: 55%;
-  opacity: 0.18;
-  background: radial-gradient(circle, currentColor, transparent 62%);
-}
-
-.jf-accent-mint { color: var(--jf-green); }
-.jf-accent-blue { color: var(--jf-blue); }
-.jf-accent-gold { color: var(--jf-gold); }
-.jf-accent-rose { color: var(--jf-rose); }
-
-.jf-feature-icon-wrap {
-  display: grid;
-  width: 3.1rem;
-  height: 3.1rem;
-  place-items: center;
+.jf-lp-value-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  min-height: 7.6rem;
   border-radius: 1rem;
-  background: rgba(255,255,255,0.08);
-  border: 1px solid rgba(255,255,255,0.14);
+  padding: 0.95rem;
+  transition:
+    transform 180ms var(--jf-lp-ease),
+    border-color 180ms var(--jf-lp-ease),
+    box-shadow 180ms var(--jf-lp-ease);
 }
 
-:root:not(.dark) .jf-feature-icon-wrap {
-  border-color: var(--jf-border);
-  background: rgba(15, 23, 42, 0.045);
+.jf-lp-value-card:hover,
+.jf-lp-feature-card:hover,
+.jf-lp-step-card:hover {
+  border-color: color-mix(in srgb, var(--jf-lp-blue), var(--jf-lp-line) 48%);
+  box-shadow: 0 18px 42px rgba(15, 23, 42, 0.1);
+  transform: translateY(-2px);
 }
 
-.jf-feature-icon {
-  width: 1.45rem;
-  height: 1.45rem;
+.jf-lp-value-icon,
+.jf-lp-feature-icon {
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+  border: 1px solid color-mix(in srgb, var(--jf-lp-blue), transparent 72%);
+  border-radius: 0.85rem;
+  background: color-mix(in srgb, var(--jf-lp-blue), transparent 91%);
+  color: var(--jf-lp-blue);
 }
 
-.jf-feature-card h3,
-.jf-step-card h3 {
-  margin: 1.3rem 0 0.65rem;
-  color: var(--jf-text);
-  font-size: 1.2rem;
+.jf-lp-value-icon {
+  width: 2.5rem;
+  height: 2.5rem;
+}
+
+.jf-lp-value-card h3,
+.jf-lp-feature-card h3,
+.jf-lp-step-card h3 {
+  margin: 0;
+  color: var(--jf-lp-ink);
+  font-size: 1rem;
+  font-weight: 850;
   letter-spacing: 0;
 }
 
-.jf-feature-card p,
-.jf-step-card p {
-  color: var(--jf-muted);
+.jf-lp-value-card p {
+  margin-top: 0.25rem;
+  font-size: 0.9rem;
 }
 
-.jf-workflow-section {
+.jf-lp-feature-grid {
   display: grid;
-  grid-template-columns: 0.82fr 1.18fr;
-  gap: clamp(1.5rem, 4vw, 3rem);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.8rem;
+}
+
+.jf-lp-feature-card {
+  position: relative;
+  min-height: 15rem;
+  overflow: hidden;
+  border-radius: 1rem;
+  padding: 1rem;
+}
+
+.jf-lp-feature-card::after {
+  content: "";
+  position: absolute;
+  inset: auto 1rem 1rem 1rem;
+  height: 0.26rem;
+  border-radius: 999px;
+  background: currentColor;
+  opacity: 0.22;
+  transform: scaleX(0.42);
+  transform-origin: left center;
+  transition: transform 220ms var(--jf-lp-ease);
+}
+
+.jf-lp-feature-card:hover::after {
+  transform: scaleX(1);
+}
+
+.jf-lp-feature-card[data-tone="mint"] { color: var(--jf-lp-mint); }
+.jf-lp-feature-card[data-tone="blue"] { color: var(--jf-lp-blue); }
+.jf-lp-feature-card[data-tone="gold"] { color: var(--jf-lp-gold); }
+.jf-lp-feature-card[data-tone="rose"] { color: var(--jf-lp-rose); }
+.jf-lp-feature-card[data-tone="violet"] { color: var(--jf-lp-violet); }
+.jf-lp-feature-card[data-tone="cyan"] { color: var(--jf-lp-cyan); }
+
+.jf-lp-feature-icon {
+  width: 3rem;
+  height: 3rem;
+  border-color: color-mix(in srgb, currentColor, transparent 72%);
+  background: color-mix(in srgb, currentColor, transparent 90%);
+}
+
+.jf-lp-feature-card h3 {
+  margin-top: 1.2rem;
+  font-size: 1.15rem;
+}
+
+.jf-lp-feature-card p {
+  margin-top: 0.6rem;
+}
+
+.jf-lp-flow {
+  display: grid;
+  grid-template-columns: minmax(0, 0.82fr) minmax(320px, 1fr);
+  gap: clamp(1.25rem, 4vw, 3rem);
   align-items: start;
 }
 
-.jf-workflow-grid {
+.jf-lp-flow-copy {
+  margin: 0;
+  text-align: left;
+}
+
+.jf-lp-flow-steps {
   display: grid;
-  gap: 0.9rem;
+  gap: 0.75rem;
 }
 
-.jf-step-card {
-  border-radius: 1.45rem;
-  padding: 1.15rem;
-  background: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.055));
+.jf-lp-step-card {
+  border-radius: 1rem;
+  padding: 1rem;
 }
 
-.jf-step-card span {
+.jf-lp-step-number {
   display: inline-flex;
-  color: var(--jf-green);
+  color: var(--jf-lp-blue);
+  font-size: 0.9rem;
   font-weight: 950;
-  letter-spacing: 0;
 }
 
-.jf-module-grid {
+.jf-lp-step-card h3 {
+  margin-top: 0.65rem;
+}
+
+.jf-lp-step-card p {
+  margin-top: 0.4rem;
+}
+
+.jf-lp-preview-section {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 0.9rem;
+  grid-template-columns: minmax(0, 0.75fr) minmax(420px, 1.25fr);
+  gap: clamp(1.2rem, 4vw, 3rem);
+  align-items: center;
 }
 
-.jf-module-pill {
+.jf-lp-preview-copy p {
+  margin-top: 0.9rem;
+}
+
+.jf-lp-wide-preview {
+  min-width: 0;
+}
+
+.jf-lp-trust {
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(280px, 1fr);
+  gap: clamp(1.25rem, 4vw, 3rem);
+  align-items: center;
+  border-radius: 1rem;
+  padding: clamp(1.2rem, 4vw, 2.2rem);
+}
+
+.jf-lp-trust p {
+  margin-top: 0.9rem;
+}
+
+.jf-lp-trust-list {
+  display: grid;
+  gap: 0.65rem;
+}
+
+.jf-lp-trust-item {
   display: flex;
   align-items: center;
   gap: 0.7rem;
-  min-height: 4.4rem;
-  border: 1px solid rgba(255,255,255,0.13);
-  border-radius: 1.25rem;
-  padding: 0.95rem 1rem;
-  background: rgba(255,255,255,0.06);
-  color: var(--jf-text);
-  font-weight: 900;
+  min-height: 3.2rem;
+  border: 1px solid var(--jf-lp-line-soft);
+  border-radius: 0.85rem;
+  background: color-mix(in srgb, var(--jf-lp-panel-strong), transparent 28%);
+  color: var(--jf-lp-muted);
+  font-weight: 760;
+  padding: 0.75rem;
 }
 
-:root:not(.dark) .jf-module-pill {
-  border-color: var(--jf-border);
-  background: rgba(255, 255, 255, 0.72);
+.jf-lp-trust-icon {
+  color: var(--jf-lp-mint);
 }
 
-.jf-module-icon {
-  width: 1.2rem;
-  height: 1.2rem;
-  color: var(--jf-blue);
-}
-
-.jf-security-card {
+.jf-lp-final {
   display: grid;
-  grid-template-columns: 0.95fr 1.05fr;
-  gap: clamp(1.5rem, 4vw, 3rem);
-  align-items: center;
-  border-radius: 2rem;
-  padding: clamp(1.4rem, 4vw, 3rem);
-  background:
-    radial-gradient(circle at top left, rgba(55,241,165,0.12), transparent 28rem),
-    rgba(255,255,255,0.065);
-}
-
-.jf-security-card p {
-  margin-top: 1rem;
-}
-
-.jf-security-list {
-  display: grid;
-  gap: 0.85rem;
-}
-
-.jf-security-list div {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  border: 1px solid rgba(255,255,255,0.12);
-  border-radius: 1.1rem;
-  padding: 0.9rem;
-  background: rgba(255,255,255,0.055);
-  color: var(--jf-muted);
-  font-weight: 800;
-}
-
-:root:not(.dark) .jf-security-list div {
-  border-color: var(--jf-border);
-  background: rgba(255, 255, 255, 0.7);
-  color: var(--jf-text);
-}
-
-.jf-security-icon {
-  flex: 0 0 auto;
-  width: 1.15rem;
-  height: 1.15rem;
-  color: var(--jf-green);
-}
-
-.jf-final-cta {
-  position: relative;
-  width: min(980px, calc(100% - 2rem));
-  margin: 0 auto 5rem;
-  overflow: hidden;
-  border: 1px solid rgba(255,255,255,0.14);
-  border-radius: 2rem;
-  padding: clamp(2rem, 6vw, 4rem);
+  justify-items: center;
+  gap: 0.95rem;
+  margin-top: clamp(3.5rem, 8vw, 6.5rem);
+  margin-bottom: clamp(2rem, 6vw, 4rem);
+  border-radius: 1rem;
+  padding: clamp(1.4rem, 6vw, 3.2rem);
   text-align: center;
-  background: rgba(255,255,255,0.075);
-  box-shadow: 0 30px 100px rgba(0,0,0,0.28);
 }
 
-:root:not(.dark) .jf-final-cta {
-  border-color: var(--jf-border);
-  background: rgba(255, 255, 255, 0.78);
-  box-shadow: 0 28px 80px rgba(15, 23, 42, 0.12);
+.jf-lp-final h2 {
+  max-width: 850px;
+  margin-top: 0;
 }
 
-.jf-final-glow {
-  position: absolute;
-  inset: -70% 15% auto;
-  height: 16rem;
-  border-radius: 999px;
-  background: rgba(55,241,165,0.18);
-  filter: blur(38px);
-}
-
-.jf-final-cta .jf-eyebrow,
-.jf-final-cta .jf-primary-btn {
-  position: relative;
-}
-
-.jf-final-cta h2,
-.jf-final-cta p {
-  position: relative;
-}
-
-.jf-final-cta p {
+.jf-lp-final p {
   max-width: 620px;
-  margin: 1rem auto 1.5rem;
 }
 
-@keyframes jfFloat {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-12px); }
+@keyframes jfLpReveal {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes jfLpFloat {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes jfLpMeter {
+  from {
+    transform: scaleX(0.18);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+@keyframes jfLpBar {
+  from {
+    opacity: 0.45;
+    transform: scaleY(0.24);
+  }
+  to {
+    opacity: 1;
+    transform: scaleY(1);
+  }
+}
+
+@keyframes jfLpTransaction {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @media (max-width: 1050px) {
-  .jf-hero {
-    grid-template-columns: 1fr;
-    min-height: auto;
+  .jf-lp-nav {
+    grid-template-columns: minmax(0, 1fr) auto;
   }
 
-  .jf-hero-copy {
-    max-width: 850px;
+  .jf-lp-nav-links {
+    display: none;
+  }
+
+  .jf-lp-hero,
+  .jf-lp-preview-section,
+  .jf-lp-flow,
+  .jf-lp-trust {
+    grid-template-columns: 1fr;
+  }
+
+  .jf-lp-hero {
+    min-height: auto;
+    padding-top: clamp(2rem, 5vw, 3rem);
+  }
+
+  .jf-lp-hero-copy {
+    max-width: 820px;
     text-align: center;
     margin: 0 auto;
   }
 
-  .jf-badge,
-  .jf-hero-actions,
-  .jf-trust-row {
+  .jf-lp-hero h1 {
+    max-width: none;
+  }
+
+  .jf-lp-proof-badge,
+  .jf-lp-hero-actions,
+  .jf-lp-trust-strip {
     justify-content: center;
     margin-left: auto;
     margin-right: auto;
   }
 
-  .jf-hero-visual {
-    min-height: 590px;
+  .jf-lp-preview[data-variant="hero"] {
+    margin: 0 auto;
   }
 
-  .jf-device-card {
-    inset: 1rem 50% auto auto;
-    transform: translateX(50%);
-    animation: none;
-  }
-
-  .jf-floating-left {
-    left: calc(50% - 290px);
-  }
-
-  .jf-floating-right {
-    right: calc(50% - 290px);
-  }
-
-  .jf-feature-grid,
-  .jf-module-grid {
+  .jf-lp-value-grid,
+  .jf-lp-feature-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .jf-workflow-section,
-  .jf-security-card {
-    grid-template-columns: 1fr;
   }
 }
 
 @media (max-width: 760px) {
-  .jf-hero-shell {
-    min-height: auto;
-    padding-bottom: 3rem;
+  .jf-lp {
+    background-size: 42px 42px;
   }
 
-  .jf-nav {
-    border-radius: 1.3rem;
+  .jf-lp-nav {
+    top: 0.5rem;
+    width: calc(100% - 1rem);
+    max-width: 1180px;
+    gap: 0.5rem;
   }
 
-  .jf-nav-links {
+  .jf-lp-brand {
+    gap: 0.5rem;
+    font-size: 0.92rem;
+  }
+
+  .jf-lp-brand-mark {
+    width: 2.15rem;
+    height: 2.15rem;
+    border-radius: 0.75rem;
+  }
+
+  .jf-lp-nav-cta {
+    min-height: 2.25rem;
+    padding-inline: 0.65rem;
+    font-size: 0.82rem;
+  }
+
+  .jf-lp-nav-cta .jf-lp-inline-icon {
     display: none;
   }
 
-  .jf-nav-cta {
-    padding-inline: 0.8rem;
-    font-size: 0.8rem;
+  .jf-lp-hero,
+  .jf-lp-value,
+  .jf-lp-section,
+  .jf-lp-flow,
+  .jf-lp-preview-section,
+  .jf-lp-trust,
+  .jf-lp-final {
+    width: calc(100% - 1.35rem);
+    max-width: 1180px;
   }
 
-  .jf-hero {
-    padding-top: 2.25rem;
-    gap: 1.7rem;
+  .jf-lp-hero {
+    gap: 1.25rem;
+    padding-top: 1.55rem;
   }
 
-  .jf-hero h1 {
-    font-size: clamp(2.65rem, 15vw, 4.5rem);
+  .jf-lp-proof-badge {
+    max-width: 100%;
+    justify-content: center;
+    text-align: center;
   }
 
-  .jf-hero-actions {
-    flex-direction: column;
+  .jf-lp-hero h1 {
+    font-size: clamp(2.35rem, 14.5vw, 3.65rem);
+    line-height: 0.94;
   }
 
-  .jf-primary-btn,
-  .jf-secondary-btn {
-    width: 100%;
+  .jf-lp-hero-lead {
+    font-size: 0.98rem;
+    line-height: 1.58;
+    overflow-wrap: anywhere;
   }
 
-  .jf-trust-row {
-    align-items: center;
-    flex-direction: column;
-  }
-
-  .jf-hero-visual {
-    min-height: auto;
-  }
-
-  .jf-device-card {
-    position: relative;
-    inset: auto;
-    width: 100%;
-    min-height: auto;
-    transform: none;
-  }
-
-  .jf-floating-card {
-    display: none;
-  }
-
-  .jf-balance-panel strong {
-    font-size: 2.3rem;
-  }
-
-  .jf-bars {
-    height: 115px;
-  }
-
-  .jf-stats-section,
-  .jf-feature-grid,
-  .jf-module-grid {
+  .jf-lp-hero-actions {
+    display: grid;
     grid-template-columns: 1fr;
+    margin-top: 1.15rem;
   }
 
-  .jf-section {
-    width: min(100% - 1rem, 1180px);
-    padding-block: 3.6rem;
+  .jf-lp-primary-action,
+  .jf-lp-secondary-action {
+    width: 100%;
+    min-height: 3.1rem;
   }
 
-  .jf-section-heading,
-  .jf-left-heading {
+  .jf-lp-trust-strip {
+    justify-content: flex-start;
     text-align: left;
   }
 
-  .jf-section-heading {
-    margin-left: 0;
+  .jf-lp-trust-strip span {
+    width: 100%;
   }
 
-  .jf-feature-card {
-    min-height: 245px;
+  .jf-lp-ledger {
+    display: none;
   }
 
-  .jf-security-list div {
+  .jf-lp-preview[data-variant="hero"] {
+    animation: none;
+  }
+
+  .jf-lp-mini-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .jf-lp-chart {
+    height: 112px;
+  }
+
+  .jf-lp-section-head,
+  .jf-lp-section-head-row,
+  .jf-lp-flow-copy,
+  .jf-lp-preview-copy {
+    display: block;
+    text-align: left;
+  }
+
+  .jf-lp-section-head-row > p {
+    margin-top: 0.9rem;
+  }
+
+  .jf-lp-section-head h2,
+  .jf-lp-preview-copy h2,
+  .jf-lp-trust h2,
+  .jf-lp-final h2 {
+    font-size: clamp(2rem, 11vw, 3rem);
+    line-height: 1.04;
+  }
+
+  .jf-lp-value-grid,
+  .jf-lp-feature-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .jf-lp-value-card {
+    min-height: auto;
+  }
+
+  .jf-lp-feature-card {
+    min-height: 12.5rem;
+  }
+
+  .jf-lp-preview[data-variant="wide"] {
+    display: block;
+  }
+
+  .jf-lp-preview[data-variant="wide"] .jf-lp-chart-panel,
+  .jf-lp-preview[data-variant="wide"] .jf-lp-transaction-panel {
+    margin-top: 0.75rem;
+  }
+
+  .jf-lp-preview[data-variant="wide"] .jf-lp-chart {
+    height: 140px;
+  }
+
+  .jf-lp-trust-item {
     align-items: flex-start;
   }
 }
 
+@media (max-width: 380px) {
+  .jf-lp-brand span:last-child {
+    max-width: 7.8rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .jf-lp-nav-cta {
+    padding-inline: 0.55rem;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
+  .jf-lp *,
+  .jf-lp *::before,
+  .jf-lp *::after {
     animation-duration: 0.001ms !important;
     animation-iteration-count: 1 !important;
     scroll-behavior: auto !important;

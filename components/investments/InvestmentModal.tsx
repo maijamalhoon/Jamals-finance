@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { BriefcaseBusiness, Loader2, Search, X } from "lucide-react";
 import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
+import AccountSelect from "@/components/accounts/AccountSelect";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import DatePicker from "@/components/ui/date-picker";
 import { getAppDateKey } from "@/lib/dates";
@@ -56,6 +57,13 @@ type ExchangeRateResponse = {
 };
 
 type CurrencyCode = "PKR" | "USD";
+
+type Account = {
+  id: string;
+  name: string;
+  type: string;
+  balance: number | string | null;
+};
 
 function parseNumber(value: string) {
   const parsed = Number(value);
@@ -170,7 +178,7 @@ export default function InvestmentModal({
   onSuccess,
   investment,
 }: Props) {
-  const supabase = createClient();
+  const supabase = useMemo(() => createClient(), []);
   const isEditing = !!investment;
   const searchContainerRef = useRef<HTMLDivElement>(null);
 
@@ -193,6 +201,9 @@ export default function InvestmentModal({
   const [priceUpdatedAt, setPriceUpdatedAt] = useState<string | null>(null);
   const [priceChange24h, setPriceChange24h] = useState<number | null>(null);
   const [isLivePriced, setIsLivePriced] = useState(false);
+  const [accountId, setAccountId] = useState("");
+  const [accounts, setAccounts] = useState<Account[]>([]);
+  const [loadingOptions, setLoadingOptions] = useState(false);
   const [manualMode, setManualMode] = useState(false);
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<MarketSearchResult[]>([]);
@@ -275,6 +286,7 @@ export default function InvestmentModal({
       setPriceUpdatedAt(investment.price_updated_at ?? null);
       setPriceChange24h(investment.price_change_24h ?? null);
       setIsLivePriced(Boolean(investment.is_live_priced));
+      setAccountId("");
       setManualMode(!investment.is_live_priced);
       setQuery("");
       setSelectedAsset(null);
@@ -295,6 +307,7 @@ export default function InvestmentModal({
       setPriceUpdatedAt(null);
       setPriceChange24h(null);
       setIsLivePriced(false);
+      setAccountId("");
       setManualMode(false);
       setQuery("");
       setSelectedAsset(null);
@@ -304,6 +317,68 @@ export default function InvestmentModal({
     setSearchError("");
     setError("");
   }, [open, investment]);
+
+  useEffect(() => {
+    if (!open) return;
+
+    let cancelled = false;
+
+    async function loadOptions() {
+      setLoadingOptions(true);
+
+      const accountsRequest = supabase
+        .from("accounts")
+        .select("id, name, type, balance")
+        .order("name");
+
+      const linkedTransactionRequest =
+        investment?.id
+          ? supabase
+              .from("transactions")
+              .select("account_id")
+              .eq("investment_id", investment.id)
+              .maybeSingle()
+          : Promise.resolve({ data: null, error: null });
+
+      const [{ data: accountRows, error: accountsError }, linkedTransaction] =
+        await Promise.all([accountsRequest, linkedTransactionRequest]);
+
+      if (cancelled) return;
+
+      setLoadingOptions(false);
+
+      if (accountsError) {
+        setAccounts([]);
+        setAccountId("");
+        setError(accountsError.message || "Could not load accounts.");
+        return;
+      }
+
+      const nextAccounts = (accountRows ?? []) as Account[];
+      const linkedAccountId =
+        linkedTransaction.data &&
+        typeof linkedTransaction.data.account_id === "string"
+          ? linkedTransaction.data.account_id
+          : "";
+
+      setAccounts(nextAccounts);
+      setAccountId((current) => {
+        const preferred = linkedAccountId || current;
+
+        if (nextAccounts.some((account) => account.id === preferred)) {
+          return preferred;
+        }
+
+        return nextAccounts[0]?.id ?? "";
+      });
+    }
+
+    loadOptions();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [investment?.id, open, supabase]);
 
   useEffect(() => {
     if (!open || isEditing || manualMode) return;
@@ -501,6 +576,11 @@ export default function InvestmentModal({
       return;
     }
 
+    if (!accountId) {
+      setError("Choose the account used to buy this investment.");
+      return;
+    }
+
     if (!isValidDateKey(purchaseDate)) {
       setError("Enter a valid purchase date.");
       return;
@@ -580,50 +660,36 @@ export default function InvestmentModal({
       return;
     }
 
-    const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth.getUser();
-
-    if (userError || !user) {
-      setLoading(false);
-      setError("Please sign in again before saving this investment.");
-      return;
-    }
-
-    const payload = {
-      user_id: user.id,
-      name: assetName,
-      type,
-      quantity: parsedQuantity,
-      purchase_price: purchasePricePkr,
-      purchase_price_original: parsedPurchasePrice,
-      purchase_currency: purchaseCurrency,
-      current_price: currentPricePkr,
-      current_price_original: currentOriginalPrice,
-      current_price_currency: savedCurrentCurrency,
-      purchased_at: purchaseDate,
-      asset_id: assetId,
-      symbol,
-      image_url: imageUrl,
-      price_source: priceSource,
-      price_currency: "PKR",
-      price_updated_at: priceUpdatedAt,
-      price_change_24h: priceChange24h,
-      is_live_priced: isLivePriced,
-    };
-
-    const { error: saveError } = isEditing
-      ? await supabase
-          .from("investments")
-          .update(payload)
-          .eq("id", investment!.id)
-      : await supabase.from("investments").insert(payload);
+    const { error: saveError } = await supabase.rpc(
+      "save_investment_purchase",
+      {
+        p_investment_id: investment?.id ?? null,
+        p_name: assetName,
+        p_type: type,
+        p_quantity: parsedQuantity,
+        p_purchase_price: purchasePricePkr,
+        p_purchase_price_original: parsedPurchasePrice,
+        p_purchase_currency: purchaseCurrency,
+        p_current_price: currentPricePkr,
+        p_current_price_original: currentOriginalPrice,
+        p_current_price_currency: savedCurrentCurrency,
+        p_purchased_at: purchaseDate,
+        p_asset_id: assetId,
+        p_symbol: symbol,
+        p_image_url: imageUrl,
+        p_price_source: priceSource,
+        p_price_currency: "PKR",
+        p_price_updated_at: priceUpdatedAt,
+        p_price_change_24h: priceChange24h,
+        p_is_live_priced: isLivePriced,
+        p_account_id: accountId,
+      },
+    );
 
     setLoading(false);
 
     if (saveError) {
-      setError("Failed to save. Try again.");
+      setError(saveError.message || "Failed to save. Try again.");
       toast.error("Failed to save investment");
       return;
     }
@@ -1043,6 +1109,23 @@ export default function InvestmentModal({
           )}
 
           <div>
+            <label className="field-label">Paid From Account</label>
+            <AccountSelect
+              value={accountId}
+              onValueChange={setAccountId}
+              accounts={accounts}
+              loading={loadingOptions}
+              placeholder="Select account"
+              emptyText="Add an account before buying investments"
+            />
+            {isEditing ? (
+              <p className="mt-2 text-[11px] leading-4 text-text-secondary">
+                This keeps the linked purchase transaction and account balance in sync.
+              </p>
+            ) : null}
+          </div>
+
+          <div>
             <label className="field-label" htmlFor="investment-purchased-at">
               Purchase Date
             </label>
@@ -1070,10 +1153,16 @@ export default function InvestmentModal({
           <button
             type="button"
             onClick={handleSave}
-            disabled={loading}
+            disabled={loading || loadingOptions}
             className="primary-action py-3"
           >
-            {loading ? "Saving..." : isEditing ? "Update Investment" : "Add Investment"}
+            {loading || loadingOptions
+              ? loadingOptions
+                ? "Loading..."
+                : "Saving..."
+              : isEditing
+                ? "Update Investment"
+                : "Add Investment"}
           </button>
         </FinanceModalFooter>
       </DialogContent>
