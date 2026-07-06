@@ -175,6 +175,17 @@ function logSafeError(context: string, error: unknown) {
   console.error(context, { name: "UnknownError" });
 }
 
+function getSupabaseErrorSummary(error: unknown) {
+  if (!isRecord(error)) return { name: "UnknownError" };
+
+  return {
+    code: typeof error.code === "string" ? error.code : undefined,
+    message: typeof error.message === "string" ? error.message : undefined,
+    details: typeof error.details === "string" ? error.details : undefined,
+    hint: typeof error.hint === "string" ? error.hint : undefined,
+  };
+}
+
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;
 }
@@ -411,6 +422,53 @@ async function callGemini({
   return text;
 }
 
+async function readSummaryRows<T>(
+  label: string,
+  request: PromiseLike<{ data: T[] | null; error: unknown }>,
+) {
+  const { data, error } = await request;
+
+  if (error) {
+    console.error(
+      `AI insights ${label} query failed`,
+      getSupabaseErrorSummary(error),
+    );
+    return [];
+  }
+
+  return data ?? [];
+}
+
+async function readTransactionRows(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  oldestTrendStart: string,
+  lastDay: string,
+) {
+  const joined = await supabase
+    .from("transactions")
+    .select("amount, date, type, categories(name)")
+    .gte("date", oldestTrendStart)
+    .lte("date", lastDay);
+
+  if (!joined.error) {
+    return ((joined.data ?? []) as RawTransaction[]);
+  }
+
+  console.error(
+    "AI insights transactions query failed",
+    getSupabaseErrorSummary(joined.error),
+  );
+
+  return readSummaryRows<RawTransaction>(
+    "transactions fallback",
+    supabase
+      .from("transactions")
+      .select("amount, date, type")
+      .gte("date", oldestTrendStart)
+      .lte("date", lastDay),
+  );
+}
+
 async function getFinanceSummary() {
   const supabase = await createClient();
 
@@ -435,61 +493,40 @@ async function getFinanceSummary() {
   const oldestTrendStart = recentRanges[0]?.firstDay ?? firstDay;
 
   const [
-    { data: rawTransactions, error: transactionsError },
-    { data: rawGoals, error: goalsError },
-    { data: rawInvestments, error: investmentsError },
-    { data: rawPayables, error: payablesError },
-    { data: rawAccounts, error: accountsError },
+    rawTransactions,
+    rawGoals,
+    rawInvestments,
+    rawPayables,
+    rawAccounts,
   ] = await Promise.all([
-    supabase
-      .from("transactions")
-      .select("amount, date, type, categories(name)")
-      .gte("date", oldestTrendStart)
-      .lte("date", lastDay),
-    supabase.from("goals").select("current_amount, target_amount, status"),
-    supabase.from("investments").select("type, quantity, purchase_price, current_price"),
-    supabase
-      .from("liabilities")
-      .select("original_value, paid_amount, remaining_amount, due_date, status"),
-    supabase.from("accounts").select("balance"),
+    readTransactionRows(supabase, oldestTrendStart, lastDay),
+    readSummaryRows<RawGoal>(
+      "goals",
+      supabase.from("goals").select("current_amount, target_amount, status"),
+    ),
+    readSummaryRows<RawInvestment>(
+      "investments",
+      supabase
+        .from("investments")
+        .select("type, quantity, purchase_price, current_price"),
+    ),
+    readSummaryRows<RawPayable>(
+      "payables",
+      supabase
+        .from("liabilities")
+        .select("original_value, paid_amount, remaining_amount, due_date, status"),
+    ),
+    readSummaryRows<RawAccount>(
+      "accounts",
+      supabase.from("accounts").select("balance"),
+    ),
   ]);
 
-  if (
-    transactionsError ||
-    goalsError ||
-    investmentsError ||
-    payablesError ||
-    accountsError
-  ) {
-    console.error("AI insights data query failed", {
-      transactions: transactionsError
-        ? { code: transactionsError.code, message: transactionsError.message }
-        : null,
-      goals: goalsError
-        ? { code: goalsError.code, message: goalsError.message }
-        : null,
-      investments: investmentsError
-        ? { code: investmentsError.code, message: investmentsError.message }
-        : null,
-      payables: payablesError
-        ? { code: payablesError.code, message: payablesError.message }
-        : null,
-      accounts: accountsError
-        ? { code: accountsError.code, message: accountsError.message }
-        : null,
-    });
-
-    return {
-      ok: false as const,
-      response: errorResponse("data_unavailable", 500),
-    };
-  }
-
-  const transactions = (rawTransactions ?? []) as RawTransaction[];
-  const goals = (rawGoals ?? []) as RawGoal[];
-  const investments = (rawInvestments ?? []) as RawInvestment[];
-  const payables = (rawPayables ?? []) as RawPayable[];
-  const accounts = (rawAccounts ?? []) as RawAccount[];
+  const transactions = rawTransactions as RawTransaction[];
+  const goals = rawGoals as RawGoal[];
+  const investments = rawInvestments as RawInvestment[];
+  const payables = rawPayables as RawPayable[];
+  const accounts = rawAccounts as RawAccount[];
 
   const currentMonthTransactions = transactions.filter(
     (transaction) =>
