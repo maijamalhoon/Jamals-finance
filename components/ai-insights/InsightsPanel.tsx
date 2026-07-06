@@ -140,13 +140,10 @@ const PRIORITY_STYLE = {
 
 function HealthMeter({ score, label }: { score: number; label: string }) {
   const color =
-    score >= 80
-      ? "var(--success)"
-      : score >= 60
-        ? "var(--warning)"
-        : score >= 40
-          ? "var(--warning)"
-          : "var(--danger)";
+    score >= 80 ? "var(--success)"
+    : score >= 60 ? "var(--warning)"
+    : score >= 40 ? "var(--warning)"
+    : "var(--danger)";
   const radius = 54;
   const circumference = 2 * Math.PI * radius;
   const offset = circumference - (score / 100) * circumference;
@@ -253,7 +250,8 @@ export default function InsightsPanel() {
       if ("empty" in json && json.empty) {
         setData(null);
         setEmptyMessage(
-          json.message ?? "Add finance records to get personalized Gemini insights.",
+          json.message ??
+            "Add finance records to get personalized Gemini insights.",
         );
         return;
       }
@@ -304,9 +302,9 @@ export default function InsightsPanel() {
       ]);
     } catch (chatSubmitError) {
       setChatError(
-        chatSubmitError instanceof Error
-          ? chatSubmitError.message
-          : UNAVAILABLE_MESSAGE,
+        chatSubmitError instanceof Error ?
+          chatSubmitError.message
+        : UNAVAILABLE_MESSAGE,
       );
     } finally {
       setChatLoading(false);
@@ -319,12 +317,15 @@ export default function InsightsPanel() {
 
   return (
     <div className="min-w-0 space-y-5">
-      {loading ? (
+      {loading ?
         <SummarySkeleton />
-      ) : summaryCards.length > 0 ? (
+      : summaryCards.length > 0 ?
         <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4">
           {summaryCards.map((card) => (
-            <div key={card.label} className="summary-card min-h-[118px] min-w-0">
+            <div
+              key={card.label}
+              className="summary-card min-h-[118px] min-w-0"
+            >
               <div className="flex min-w-0 items-start justify-between gap-3">
                 <div className="min-w-0">
                   <p className="text-xs font-semibold text-text-secondary">
@@ -346,23 +347,27 @@ export default function InsightsPanel() {
             </div>
           ))}
         </div>
-      ) : null}
+      : null}
 
       <div className="grid grid-cols-1 gap-5 xl:grid-cols-[320px_minmax(0,1fr)]">
         <div className="min-w-0 space-y-5">
-          {data && !loading ? (
+          {data && !loading ?
             <HealthMeter score={data.healthScore} label={data.healthLabel} />
-          ) : loading ? (
+          : loading ?
             <div className="finance-panel flex flex-col items-center gap-3 p-6">
               <div className="h-36 w-36 animate-pulse rounded-full bg-surface-secondary" />
               <div className="h-4 w-24 animate-pulse rounded bg-surface-secondary" />
             </div>
-          ) : null}
+          : null}
 
-          {summary ? (
+          {summary ?
             <div className="finance-panel min-w-0 p-5">
               <div className="mb-4 flex min-w-0 items-center gap-2.5">
-                <span className="finance-icon-container" data-size="sm" data-tone="info">
+                <span
+                  className="finance-icon-container"
+                  data-size="sm"
+                  data-tone="info"
+                >
                   <ArrowUpRight size={15} />
                 </span>
                 <h3 className="text-sm font-semibold text-text-primary">
@@ -399,7 +404,7 @@ export default function InsightsPanel() {
                 ))}
               </div>
             </div>
-          ) : null}
+          : null}
         </div>
 
         <div className="min-w-0 space-y-5">
@@ -433,7 +438,7 @@ export default function InsightsPanel() {
               </button>
             </div>
 
-            {data && !data.aiAvailable ? (
+            {data && !data.aiAvailable ?
               <div className="mb-4 rounded-[var(--oneui-tile-radius)] border border-warning/25 bg-warning/10 px-4 py-3">
                 <p className="text-xs font-semibold text-warning">
                   Gemini response unavailable
@@ -442,9 +447,9 @@ export default function InsightsPanel() {
                   Showing safe local finance guidance for now.
                 </p>
               </div>
-            ) : null}
+            : null}
 
-            {loading ? (
+            {loading ?
               <div className="space-y-3">
                 {[1, 2, 3, 4].map((item) => (
                   <div
@@ -453,7 +458,7 @@ export default function InsightsPanel() {
                   />
                 ))}
               </div>
-            ) : error ? (
+            : error ?
               <div className="py-10 text-center">
                 <p className="text-sm font-semibold text-text-primary">
                   {error}
@@ -469,7 +474,7 @@ export default function InsightsPanel() {
                   Try again
                 </button>
               </div>
-            ) : emptyMessage ? (
+            : emptyMessage ?
               <div className="py-10 text-center">
                 <p className="text-sm font-semibold text-text-primary">
                   No Gemini insights yet
@@ -478,7 +483,7 @@ export default function InsightsPanel() {
                   {emptyMessage}
                 </p>
               </div>
-            ) : data?.insights.length ? (
+            : data?.insights.length ?
               <div className="space-y-3">
                 {data.insights.map((insight) => {
                   const cfg = INSIGHT_STYLE[insight.type] || INSIGHT_STYLE.tip;
@@ -509,8 +514,7 @@ export default function InsightsPanel() {
                   );
                 })}
               </div>
-            ) : (
-              <div className="py-10 text-center">
+            : <div className="py-10 text-center">
                 <p className="text-sm font-semibold text-text-primary">
                   No insights yet
                 </p>
@@ -518,13 +522,17 @@ export default function InsightsPanel() {
                   Add finance records and refresh this panel.
                 </p>
               </div>
-            )}
+            }
           </div>
 
           <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
             <div className="finance-panel min-w-0 p-5">
               <div className="mb-4 flex min-w-0 items-center gap-2.5">
-                <span className="finance-icon-container" data-size="sm" data-tone="success">
+                <span
+                  className="finance-icon-container"
+                  data-size="sm"
+                  data-tone="success"
+                >
                   <CheckCircle2 size={15} />
                 </span>
                 <h3 className="text-sm font-semibold text-text-primary">
@@ -532,7 +540,7 @@ export default function InsightsPanel() {
                 </h3>
               </div>
 
-              {loading ? (
+              {loading ?
                 <div className="space-y-3">
                   {[1, 2, 3].map((item) => (
                     <div
@@ -541,7 +549,7 @@ export default function InsightsPanel() {
                     />
                   ))}
                 </div>
-              ) : data?.suggestedActions.length ? (
+              : data?.suggestedActions.length ?
                 <div className="space-y-3">
                   {data.suggestedActions.map((action) => (
                     <div
@@ -564,16 +572,20 @@ export default function InsightsPanel() {
                     </div>
                   ))}
                 </div>
-              ) : (
-                <p className="py-8 text-center text-xs text-text-secondary">
-                  Suggested actions will appear after Gemini reviews your summary.
+              : <p className="py-8 text-center text-xs text-text-secondary">
+                  Suggested actions will appear after Gemini reviews your
+                  summary.
                 </p>
-              )}
+              }
             </div>
 
             <div className="finance-panel min-w-0 p-5">
               <div className="mb-4 flex min-w-0 items-center gap-2.5">
-                <span className="finance-icon-container" data-size="sm" data-tone="info">
+                <span
+                  className="finance-icon-container"
+                  data-size="sm"
+                  data-tone="info"
+                >
                   <Sparkles size={15} />
                 </span>
                 <h3 className="text-sm font-semibold text-text-primary">
@@ -581,7 +593,7 @@ export default function InsightsPanel() {
                 </h3>
               </div>
 
-              {topCategories.length ? (
+              {topCategories.length ?
                 <div className="space-y-3">
                   {topCategories.map((category) => (
                     <div
@@ -597,11 +609,10 @@ export default function InsightsPanel() {
                     </div>
                   ))}
                 </div>
-              ) : (
-                <p className="py-8 text-center text-xs text-text-secondary">
+              : <p className="py-8 text-center text-xs text-text-secondary">
                   Category totals appear after expenses are categorized.
                 </p>
-              )}
+              }
             </div>
           </div>
         </div>
@@ -609,7 +620,11 @@ export default function InsightsPanel() {
 
       <div className="finance-panel min-w-0 p-5">
         <div className="mb-4 flex min-w-0 items-center gap-2.5">
-          <span className="finance-icon-container" data-size="sm" data-tone="info">
+          <span
+            className="finance-icon-container"
+            data-size="sm"
+            data-tone="info"
+          >
             <MessageCircle size={15} />
           </span>
           <div className="min-w-0">
@@ -621,45 +636,45 @@ export default function InsightsPanel() {
         </div>
 
         <div className="mb-4 max-h-[360px] min-h-[180px] space-y-3 overflow-y-auto rounded-[var(--oneui-tile-radius)] border border-border bg-surface-secondary p-3">
-          {chatMessages.length === 0 ? (
+          {chatMessages.length === 0 ?
             <div className="flex h-full min-h-[150px] items-center justify-center text-center">
               <p className="max-w-sm text-xs leading-relaxed text-text-secondary">
-                Ask about this month&apos;s spending, payables, goals, investments, or trend totals.
+                Ask about this month&apos;s spending, payables, goals,
+                investments, or trend totals.
               </p>
             </div>
-          ) : (
-            chatMessages.map((message, index) => (
+          : chatMessages.map((message, index) => (
               <div
                 key={`${message.role}-${index}`}
                 className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}
               >
                 <div
                   className={`max-w-[88%] rounded-[18px] px-3.5 py-2.5 text-xs leading-relaxed ${
-                    message.role === "user"
-                      ? "bg-active text-white"
-                      : "bg-card text-text-secondary ring-1 ring-border"
+                    message.role === "user" ?
+                      "bg-active text-white"
+                    : "bg-card text-text-secondary ring-1 ring-border"
                   }`}
                 >
                   {message.content}
                 </div>
               </div>
             ))
-          )}
-          {chatLoading ? (
+          }
+          {chatLoading ?
             <div className="flex justify-start">
               <div className="flex items-center gap-2 rounded-[18px] bg-card px-3.5 py-2.5 text-xs text-text-secondary ring-1 ring-border">
                 <Loader2 size={13} className="animate-spin" />
                 Thinking
               </div>
             </div>
-          ) : null}
+          : null}
         </div>
 
-        {chatError ? (
+        {chatError ?
           <div className="mb-3 rounded-[var(--oneui-tile-radius)] border border-danger/25 bg-danger/10 px-3 py-2 text-xs font-semibold text-danger">
             {chatError}
           </div>
-        ) : null}
+        : null}
 
         <form onSubmit={submitQuestion} className="flex min-w-0 gap-2">
           <input
@@ -676,11 +691,9 @@ export default function InsightsPanel() {
             className="primary-action min-h-11 px-3"
             aria-label="Send finance question"
           >
-            {chatLoading ? (
+            {chatLoading ?
               <Loader2 size={15} className="animate-spin" />
-            ) : (
-              <Send size={15} />
-            )}
+            : <Send size={15} />}
           </button>
         </form>
       </div>

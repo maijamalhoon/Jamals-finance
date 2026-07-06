@@ -2,6 +2,7 @@ import { getAppMonthRange, getDaysInMonth, formatDateKey } from "@/lib/dates";
 import { getPayableStatus } from "@/lib/finance-options";
 import { createClient } from "@/lib/supabase/server";
 import { NextRequest, NextResponse } from "next/server";
+export const dynamic = "force-dynamic";
 
 const AI_UNAVAILABLE_MESSAGE =
   "AI insights are temporarily unavailable. Try again later.";
