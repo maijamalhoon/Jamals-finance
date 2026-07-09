@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { useCurrency } from "@/components/currency/CurrencyProvider";
+import { BASE_CURRENCY, formatMoney } from "@/lib/currency";
 import { getAssetInitials } from "@/lib/investments/aggregation";
 import InvestmentModal, { ExistingInvestment } from "./InvestmentModal";
 
@@ -89,9 +90,11 @@ function formatUsd(value: number | string | null | undefined) {
 
   if (parsed === null) return null;
 
-  return `$${parsed.toLocaleString("en-US", {
+  return formatMoney(parsed, {
+    currency: "USD",
+    fromCurrency: "USD",
     maximumFractionDigits: parsed >= 1 ? 2 : 6,
-  })}`;
+  });
 }
 
 function formatQuantity(value: number) {
@@ -161,7 +164,7 @@ export default function InvestmentCard({
   const purchaseSecondary =
     purchaseCurrency === "USD" && originalBuyPrice !== null
       ? `Original ${formatUsd(originalBuyPrice)}`
-      : "PKR cost basis";
+      : `${BASE_CURRENCY} cost basis`;
   const totalCost = qty * buyPrice;
   const currentValue = qty * curPrice;
   const pnl = currentValue - totalCost;

@@ -14,12 +14,12 @@ import CountedAmount from "@/components/motion/CountedAmount";
 import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
 import {
-  formatPKR,
   getPayableStatus,
   PAYABLE_STATUS_META,
 } from "@/lib/finance-options";
 import PayableModal, { ExistingPayable } from "./PayableModal";
 import PaymentModal from "./PaymentModal";
+import { useCurrency } from "@/components/currency/CurrencyProvider";
 
 interface Payment {
   id: string;
@@ -68,6 +68,7 @@ export default function PayableCard({
 }) {
   const supabase = createClient();
   const router = useRouter();
+  const { formatCurrency } = useCurrency();
   const [editOpen, setEditOpen] = useState(false);
   const [paymentOpen, setPaymentOpen] = useState(false);
   const [historyOpen, setHistoryOpen] = useState(false);
@@ -131,7 +132,7 @@ export default function PayableCard({
             <p className="mt-2 break-words text-sm font-semibold text-text-primary [overflow-wrap:anywhere]">
               Paid{" "}
               <span className="text-success">
-                <CountedAmount amount={formatPKR(paid)} />
+                <CountedAmount amount={formatCurrency(paid)} />
               </span>
             </p>
             {payable.notes && (
@@ -145,13 +146,13 @@ export default function PayableCard({
             <div className="finance-panel-soft min-w-0 p-3">
               <p className="text-[11px] font-medium text-text-secondary">Actual Value</p>
               <p className="mt-1 break-words text-sm font-bold text-text-primary [overflow-wrap:anywhere]">
-                <CountedAmount amount={formatPKR(total)} />
+                <CountedAmount amount={formatCurrency(total)} />
               </p>
             </div>
             <div className="finance-panel-soft min-w-0 p-3">
               <p className="text-[11px] font-medium text-text-secondary">Remaining</p>
               <p className="mt-1 break-words text-sm font-bold text-warning [overflow-wrap:anywhere]">
-                <CountedAmount amount={formatPKR(remaining)} />
+                <CountedAmount amount={formatCurrency(remaining)} />
               </p>
             </div>
             <div className="finance-panel-soft col-span-2 min-w-0 p-3">
@@ -244,7 +245,7 @@ export default function PayableCard({
                     >
                       <div>
                         <p className="text-sm font-semibold text-text-primary">
-                          {formatPKR(payment.amount)}
+                          {formatCurrency(payment.amount)}
                         </p>
                         <p className="mt-0.5 text-xs text-text-secondary">
                           {payment.accounts?.name ?? "Account removed"} -{" "}

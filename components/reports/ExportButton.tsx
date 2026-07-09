@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Download } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { getAppDateKey } from "@/lib/dates";
+import { BASE_CURRENCY } from "@/lib/currency";
 
 export default function ExportButton() {
   const supabase = createClient();
@@ -23,7 +24,7 @@ export default function ExportButton() {
     }
 
     const rows = [
-      ["Date", "Type", "Category", "Account", "Amount (PKR)", "Note"],
+      ["Date", "Type", "Category", "Account", `Amount (${BASE_CURRENCY})`, "Note"],
       ...data.map((t) => [
         t.date,
         t.type,

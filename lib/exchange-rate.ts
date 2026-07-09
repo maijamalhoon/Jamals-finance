@@ -1,4 +1,6 @@
-export const FALLBACK_USD_PKR_RATE = 281.2;
+import { FALLBACK_USD_PKR_RATE } from "@/lib/currency";
+
+export { FALLBACK_USD_PKR_RATE };
 
 export async function getUsdToPkrRate() {
   try {

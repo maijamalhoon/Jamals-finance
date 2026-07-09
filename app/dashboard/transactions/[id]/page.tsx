@@ -18,7 +18,7 @@ import {
 } from "lucide-react";
 
 import { createClient } from "@/lib/supabase/server";
-import { formatPKR } from "@/lib/finance-options";
+import { formatMoney } from "@/lib/currency";
 import TransactionReceiptActions from "@/components/transactions/TransactionReceiptActions";
 
 type ReceiptType = "income" | "expense" | "transfer";
@@ -138,7 +138,7 @@ function mapTransactionReceipt(transaction: any): ReceiptData {
       transaction.categories?.name ||
       meta.label,
     amount: Number(transaction.amount ?? 0),
-    amountText: `${meta.amountPrefix}${formatPKR(transaction.amount)}`,
+    amountText: `${meta.amountPrefix}${formatMoney(Number(transaction.amount ?? 0))}`,
     dateText: formatDate(transaction.date),
     createdText: formatDate(transaction.created_at, true),
     accountText: transaction.accounts?.name || "No account",
@@ -167,7 +167,7 @@ function mapTransferReceipt(transfer: any): ReceiptData {
     typeLabel: meta.label,
     title: transfer.note || "Internal transfer",
     amount: Number(transfer.amount ?? 0),
-    amountText: formatPKR(transfer.amount),
+    amountText: formatMoney(Number(transfer.amount ?? 0)),
     dateText: formatDate(transfer.transfer_date),
     createdText: formatDate(transfer.created_at, true),
     accountText: "Internal transfer",

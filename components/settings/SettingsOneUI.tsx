@@ -41,10 +41,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  dispatchCurrencyChange,
-  useCurrency,
-} from "@/components/currency/CurrencyProvider";
+import { useCurrency } from "@/components/currency/CurrencyProvider";
 import { createClient } from "@/lib/supabase/client";
 import {
   applyThemePreference,
@@ -1271,7 +1268,7 @@ function PreferencesDialog({
     compactMode: boolean;
   }) => void;
 }) {
-  const { live, rate } = useCurrency();
+  const { rateLabel } = useCurrency();
   const [open, setOpen] = useState(false);
   const [draftCurrency, setDraftCurrency] = useState<CurrencyCode>(currency);
   const [draftDateFormat, setDraftDateFormat] =
@@ -1331,9 +1328,7 @@ function PreferencesDialog({
               <option value="USD">USD</option>
             </select>
             <p className="mt-2 text-xs text-text-secondary">
-              {live ?
-                `Live rate: 1 USD = ${rate.toFixed(2)} PKR`
-              : `Fallback rate: 1 USD = ${rate.toFixed(2)} PKR`}
+              {rateLabel}
             </p>
           </div>
           <div>
@@ -1393,7 +1388,7 @@ export default function SettingsOneUI({
   const [themeReady, setThemeReady] = useState(false);
   const [pushNotifications, setPushNotifications] = useState(true);
   const [biometricLogin, setBiometricLogin] = useState(false);
-  const [currency, setCurrency] = useState<CurrencyCode>("PKR");
+  const { currency, setCurrency: setGlobalCurrency } = useCurrency();
   const [dateFormat, setDateFormat] = useState<DateFormat>("MMM d, yyyy");
   const [compactMode, setCompactMode] = useState(false);
   const [isSigningOut, setIsSigningOut] = useState(false);
@@ -1412,8 +1407,6 @@ export default function SettingsOneUI({
     setBiometricLogin(
       window.localStorage.getItem("jamal-biometric-login") === "true",
     );
-    const savedCurrency = window.localStorage.getItem("jamal-currency");
-    setCurrency(savedCurrency === "USD" ? "USD" : "PKR");
     setDateFormat(
       (window.localStorage.getItem("jamal-date-format") as DateFormat) ||
         "MMM d, yyyy",
@@ -1473,16 +1466,14 @@ export default function SettingsOneUI({
     dateFormat: DateFormat;
     compactMode: boolean;
   }) {
-    setCurrency(next.currency);
+    setGlobalCurrency(next.currency);
     setDateFormat(next.dateFormat);
     setCompactMode(next.compactMode);
-    window.localStorage.setItem("jamal-currency", next.currency);
     window.localStorage.setItem("jamal-date-format", next.dateFormat);
     window.localStorage.setItem(
       "jamal-compact-dashboard",
       String(next.compactMode),
     );
-    dispatchCurrencyChange(next.currency);
     toast.success("Preferences saved.");
   }
 

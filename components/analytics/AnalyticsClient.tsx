@@ -184,25 +184,6 @@ function isBetween(date: Date, start: Date, end: Date) {
   return date >= start && date <= end;
 }
 
-function formatMoney(value: number) {
-  return `PKR ${Math.round(value).toLocaleString("en-PK")}`;
-}
-
-function formatCompactMoney(value: number) {
-  const rounded = Math.round(value);
-
-  if (Math.abs(rounded) >= 1_000_000) {
-    return `PKR ${(rounded / 1_000_000).toFixed(1)}M`;
-  }
-
-  return formatMoney(rounded);
-}
-
-function formatAxis(value: number) {
-  if (Math.abs(value) >= 1000) return `${Number(value) / 1000}k`;
-  return String(value);
-}
-
 function isUsableColor(color: string | null | undefined): color is string {
   return (
     typeof color === "string" && /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(color)
@@ -253,21 +234,23 @@ function useAnimatedNumber(
 function AnimatedValue({
   value,
   animationKey,
-  prefix = "PKR ",
+  prefix,
   suffix = "",
   decimals = 0,
+  money = true,
 }: {
   value: number;
   animationKey: string;
   prefix?: string;
   suffix?: string;
   decimals?: number;
+  money?: boolean;
 }) {
   const animated = useAnimatedNumber(value, animationKey);
   const safeValue = Number.isFinite(animated) ? animated : 0;
   const { formatCurrency } = useCurrency();
 
-  if (prefix === "PKR ") {
+  if (money) {
     return (
       <>
         {formatCurrency(safeValue, {
@@ -610,6 +593,7 @@ function KpiCard({
               prefix=""
               suffix={suffix}
               decimals={0}
+              money={false}
             />
           : <AnimatedValue value={value} animationKey={animationKey} />}
         </p>
@@ -659,6 +643,7 @@ function IncomeExpenseChart({
   data: ChartData[];
   period: AnalyticsPeriod;
 }) {
+  const { formatCurrency } = useCurrency();
   const chartKey = `income-expense-${period}-${data.map((item) => `${item.income}-${item.expenses}`).join("-")}`;
 
   return (
@@ -698,7 +683,9 @@ function IncomeExpenseChart({
               axisLine={false}
               tickLine={false}
               tick={{ fill: "var(--text-secondary)", fontSize: 11 }}
-              tickFormatter={(value) => formatAxis(Number(value))}
+              tickFormatter={(value) =>
+                formatCurrency(Number(value), { compact: true })
+              }
             />
             <Tooltip
               cursor={{
@@ -712,7 +699,7 @@ function IncomeExpenseChart({
                 boxShadow: "var(--shadow-soft)",
               }}
               formatter={(value, name) => [
-                formatMoney(Number(value ?? 0)),
+                formatCurrency(Number(value ?? 0)),
                 name === "income" ? "Income" : "Expenses",
               ]}
             />
@@ -748,6 +735,7 @@ function NetWorthChart({
   data: ChartData[];
   period: AnalyticsPeriod;
 }) {
+  const { formatCurrency } = useCurrency();
   const chartKey = `net-worth-${period}-${data.map((item) => item.netWorth).join("-")}`;
 
   return (
@@ -794,7 +782,9 @@ function NetWorthChart({
               axisLine={false}
               tickLine={false}
               tick={{ fill: "var(--text-secondary)", fontSize: 11 }}
-              tickFormatter={(value) => formatAxis(Number(value))}
+              tickFormatter={(value) =>
+                formatCurrency(Number(value), { compact: true })
+              }
             />
             <Tooltip
               contentStyle={{
@@ -805,7 +795,7 @@ function NetWorthChart({
                 boxShadow: "var(--shadow-soft)",
               }}
               formatter={(value) => [
-                formatMoney(Number(value ?? 0)),
+                formatCurrency(Number(value ?? 0)),
                 "Net Worth",
               ]}
             />
@@ -833,6 +823,7 @@ function SpendingBreakdown({
   data: SpendingData[];
   period: AnalyticsPeriod;
 }) {
+  const { formatCurrency } = useCurrency();
   const chartData =
     data.length > 0 ?
       data
@@ -906,7 +897,7 @@ function SpendingBreakdown({
                   boxShadow: "var(--shadow-soft)",
                 }}
                 formatter={(value) => [
-                  formatMoney(Number(value ?? 0)),
+                  formatCurrency(Number(value ?? 0)),
                   "Spent",
                 ]}
               />
@@ -947,7 +938,7 @@ function SpendingBreakdown({
                 </span>
               </div>
               <span className="shrink-0 break-words text-right font-bold text-text-primary [overflow-wrap:anywhere]">
-                {formatMoney(item.amount)}
+                {formatCurrency(item.amount)}
               </span>
             </motion.div>
           ))}
@@ -964,6 +955,7 @@ function InvestmentPerformance({
   investments: AnalyticsInvestmentData[];
   period: AnalyticsPeriod;
 }) {
+  const { formatCurrency } = useCurrency();
   const list =
     investments.length ? investments.slice(0, 4) : INVESTMENT_FALLBACKS;
 
@@ -1024,7 +1016,7 @@ function InvestmentPerformance({
                   <ArrowUpRight size={12} />
                 : <ArrowDownRight size={12} />}
                 {isProfit ? "+" : "-"}
-                {formatCompactMoney(Math.abs(item.pnl))} (
+                {formatCurrency(Math.abs(item.pnl), { compact: true })} (
                 {Math.abs(item.pnlPct).toFixed(1)}%)
               </p>
             </motion.div>

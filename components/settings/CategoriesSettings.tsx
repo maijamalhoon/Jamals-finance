@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Check, Pencil, Plus, Trash2, X } from "lucide-react";
+import { useCurrency } from "@/components/currency/CurrencyProvider";
 import { createClient } from "@/lib/supabase/client";
 
 const COLORS = [
@@ -43,6 +44,7 @@ export default function CategoriesSettings({
 }) {
   const router = useRouter();
   const supabase = createClient();
+  const { formatCurrency } = useCurrency();
 
   const [addingFor, setAddingFor] = useState<"income" | "expense" | null>(null);
   const [newName, setNewName] = useState("");
@@ -57,8 +59,7 @@ export default function CategoriesSettings({
   const income = categories.filter((category) => category.type === "income");
   const expense = categories.filter((category) => category.type === "expense");
 
-  const fmt = (amount: number) =>
-    `PKR ${amount.toLocaleString(undefined, { maximumFractionDigits: 0 })}`;
+  const fmt = (amount: number) => formatCurrency(amount);
 
   async function handleAdd() {
     if (!newName.trim() || !addingFor) return;

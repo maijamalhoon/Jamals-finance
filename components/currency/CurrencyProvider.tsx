@@ -9,199 +9,51 @@ import {
   useState,
   type ReactNode,
 } from "react";
-
-type Currency = "PKR" | "USD";
+import {
+  CURRENCY_CHANGE_EVENT,
+  CURRENCY_STORAGE_KEY,
+  FALLBACK_USD_PKR_RATE,
+  formatMoney,
+  getCurrencyLabel,
+  getCurrencySymbol,
+  getDefaultCurrencyFromRegion,
+  isSupportedCurrency,
+  type MoneyFormatOptions,
+  type SupportedCurrency,
+} from "@/lib/currency";
 
 type CurrencyContextValue = {
-  currency: Currency;
+  currency: SupportedCurrency;
   rate: number;
   live: boolean;
-  setCurrency: (currency: Currency) => void;
-  formatCurrency: (value: number, options?: FormatOptions) => string;
+  rateLabel: string;
+  setCurrency: (currency: SupportedCurrency) => void;
+  formatCurrency: (value: number, options?: MoneyFormatOptions) => string;
+  getCurrencySymbol: (currency?: SupportedCurrency) => string;
+  getCurrencyLabel: (currency?: SupportedCurrency) => string;
 };
-
-type FormatOptions = {
-  maximumFractionDigits?: number;
-  minimumFractionDigits?: number;
-  compact?: boolean;
-};
-
-const STORAGE_KEY = "jamal-currency";
-const CHANGE_EVENT = "jamal-currency-change";
-const FALLBACK_RATE = 281.2;
-const originalCurrencyText = new WeakMap<Text, string>();
 
 const CurrencyContext = createContext<CurrencyContextValue | null>(null);
 
-function isCurrency(value: string | null): value is Currency {
-  return value === "PKR" || value === "USD";
-}
-
-function formatNumber(value: number, currency: Currency, options: FormatOptions) {
-  const locale = currency === "PKR" ? "en-PK" : "en-US";
-  const maximumFractionDigits =
-    options.maximumFractionDigits ?? (currency === "USD" ? 2 : 0);
-  const minimumFractionDigits = options.minimumFractionDigits ?? 0;
-
-  return value.toLocaleString(locale, {
-    minimumFractionDigits,
-    maximumFractionDigits,
-  });
-}
-
-function formatCompact(value: number, currency: Currency) {
-  const absValue = Math.abs(value);
-
-  if (absValue >= 1_000_000) {
-    return `${currency} ${(value / 1_000_000).toFixed(1)}M`;
-  }
-
-  if (absValue >= 1_000) {
-    return `${currency} ${(value / 1_000).toFixed(0)}K`;
-  }
-
-  return `${currency} ${formatNumber(value, currency, {
-    maximumFractionDigits: currency === "USD" ? 2 : 0,
-  })}`;
-}
-
-function convertFromPKR(value: number, currency: Currency, rate: number) {
-  if (currency === "PKR") return value;
-
-  return rate > 0 ? value / rate : value / FALLBACK_RATE;
-}
-
-function formatFromPKR(
-  value: number,
-  currency: Currency,
-  rate: number,
-  options: FormatOptions = {},
-) {
-  const safeValue = Number.isFinite(value) ? value : 0;
-  const converted = convertFromPKR(safeValue, currency, rate);
-
-  if (options.compact) return formatCompact(converted, currency);
-
-  return `${currency} ${formatNumber(converted, currency, options)}`;
-}
-
-function convertPlainText(text: string, currency: Currency, rate: number) {
-  if (currency === "PKR") return text;
-
-  return text.replace(
-    /([+-]?)\s*PKR\s+(-?[\d,]+(?:\.\d+)?)([KMB])?/g,
-    (match, sign: string, amount: string, suffix: string | undefined) => {
-      const numeric = Number(amount.replace(/,/g, ""));
-
-      if (!Number.isFinite(numeric)) return match;
-
-      const multiplier =
-        suffix === "B" ? 1_000_000_000
-        : suffix === "M" ? 1_000_000
-        : suffix === "K" ? 1_000
-        : 1;
-
-      const formatted = formatFromPKR(numeric * multiplier, currency, rate, {
-        compact: Boolean(suffix),
-      });
-
-      return `${sign}${formatted}`;
-    },
-  );
-}
-
-function shouldSkipNode(node: Node) {
-  const parent = node.parentElement;
-
-  if (!parent) return true;
-
-  return Boolean(
-    parent.closest(
-      "script,style,noscript,textarea,input,select,[data-currency-ignore]",
-    ),
-  );
-}
-
-function CurrencyDomSync({
-  currency,
-  rate,
-}: {
-  currency: Currency;
-  rate: number;
-}) {
-  useEffect(() => {
-    function syncTextNode(node: Text) {
-      if (shouldSkipNode(node)) return;
-
-      const currentText = node.nodeValue ?? "";
-
-      if (currentText.includes("PKR")) {
-        originalCurrencyText.set(node, currentText);
-      }
-
-      const originalText = originalCurrencyText.get(node);
-
-      if (!originalText) return;
-
-      const nextText = convertPlainText(originalText, currency, rate);
-
-      if (node.nodeValue !== nextText) {
-        node.nodeValue = nextText;
-      }
-    }
-
-    function syncTree(root: Node) {
-      if (root.nodeType === Node.TEXT_NODE) {
-        syncTextNode(root as Text);
-        return;
-      }
-
-      const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
-      let node = walker.nextNode();
-
-      while (node) {
-        syncTextNode(node as Text);
-        node = walker.nextNode();
-      }
-    }
-
-    syncTree(document.body);
-
-    const observer = new MutationObserver((mutations) => {
-      mutations.forEach((mutation) => {
-        mutation.addedNodes.forEach(syncTree);
-
-        if (mutation.type === "characterData") {
-          syncTextNode(mutation.target as Text);
-        }
-      });
-    });
-
-    observer.observe(document.body, {
-      childList: true,
-      characterData: true,
-      subtree: true,
-    });
-
-    return () => observer.disconnect();
-  }, [currency, rate]);
-
-  return null;
-}
+export type Currency = SupportedCurrency;
+export type FormatOptions = MoneyFormatOptions;
 
 export function CurrencyProvider({ children }: { children: ReactNode }) {
-  const [currency, setCurrencyState] = useState<Currency>("PKR");
-  const [rate, setRate] = useState(FALLBACK_RATE);
+  const [currency, setCurrencyState] = useState<SupportedCurrency>("PKR");
+  const [rate, setRate] = useState(FALLBACK_USD_PKR_RATE);
   const [live, setLive] = useState(false);
 
   useEffect(() => {
-    const saved = window.localStorage.getItem(STORAGE_KEY);
+    const saved = window.localStorage.getItem(CURRENCY_STORAGE_KEY);
 
-    if (isCurrency(saved)) {
+    if (isSupportedCurrency(saved)) {
       setCurrencyState(saved);
-    } else {
-      window.localStorage.setItem(STORAGE_KEY, "PKR");
+      return;
     }
+
+    const regionalDefault = getDefaultCurrencyFromRegion();
+    window.localStorage.setItem(CURRENCY_STORAGE_KEY, regionalDefault);
+    setCurrencyState(regionalDefault);
   }, []);
 
   useEffect(() => {
@@ -233,57 +85,75 @@ export function CurrencyProvider({ children }: { children: ReactNode }) {
     function handleCurrencyChange(event: Event) {
       const detail = (event as CustomEvent<{ currency?: string }>).detail;
       const nextCurrency =
-        detail?.currency ?? window.localStorage.getItem(STORAGE_KEY);
+        detail?.currency ?? window.localStorage.getItem(CURRENCY_STORAGE_KEY);
 
-      if (isCurrency(nextCurrency)) {
+      if (isSupportedCurrency(nextCurrency)) {
         setCurrencyState(nextCurrency);
       }
     }
 
     function handleStorage(event: StorageEvent) {
-      if (event.key === STORAGE_KEY && isCurrency(event.newValue)) {
+      if (
+        event.key === CURRENCY_STORAGE_KEY &&
+        isSupportedCurrency(event.newValue)
+      ) {
         setCurrencyState(event.newValue);
       }
     }
 
-    window.addEventListener(CHANGE_EVENT, handleCurrencyChange);
+    window.addEventListener(CURRENCY_CHANGE_EVENT, handleCurrencyChange);
     window.addEventListener("storage", handleStorage);
 
     return () => {
-      window.removeEventListener(CHANGE_EVENT, handleCurrencyChange);
+      window.removeEventListener(CURRENCY_CHANGE_EVENT, handleCurrencyChange);
       window.removeEventListener("storage", handleStorage);
     };
   }, []);
 
-  const setCurrency = useCallback((nextCurrency: Currency) => {
-    window.localStorage.setItem(STORAGE_KEY, nextCurrency);
+  const setCurrency = useCallback((nextCurrency: SupportedCurrency) => {
+    window.localStorage.setItem(CURRENCY_STORAGE_KEY, nextCurrency);
     setCurrencyState(nextCurrency);
     window.dispatchEvent(
-      new CustomEvent(CHANGE_EVENT, { detail: { currency: nextCurrency } }),
+      new CustomEvent(CURRENCY_CHANGE_EVENT, {
+        detail: { currency: nextCurrency },
+      }),
     );
   }, []);
 
   const formatCurrency = useCallback(
-    (value: number, options?: FormatOptions) =>
-      formatFromPKR(value, currency, rate, options),
+    (value: number, options?: MoneyFormatOptions) =>
+      formatMoney(value, {
+        ...options,
+        currency: options?.currency ?? currency,
+        usdToPkrRate: options?.usdToPkrRate ?? rate,
+      }),
     [currency, rate],
   );
+
+  const rateLabel =
+    live ?
+      `Live rate: 1 USD = ${rate.toFixed(2)} PKR`
+    : `Fallback rate: 1 USD = ${rate.toFixed(2)} PKR`;
 
   const value = useMemo(
     () => ({
       currency,
       rate,
       live,
+      rateLabel,
       setCurrency,
       formatCurrency,
+      getCurrencySymbol: (nextCurrency = currency) =>
+        getCurrencySymbol(nextCurrency),
+      getCurrencyLabel: (nextCurrency = currency) =>
+        getCurrencyLabel(nextCurrency),
     }),
-    [currency, formatCurrency, live, rate, setCurrency],
+    [currency, formatCurrency, live, rate, rateLabel, setCurrency],
   );
 
   return (
     <CurrencyContext.Provider value={value}>
       {children}
-      <CurrencyDomSync currency={currency} rate={rate} />
     </CurrencyContext.Provider>
   );
 }
@@ -298,9 +168,9 @@ export function useCurrency() {
   return context;
 }
 
-export function dispatchCurrencyChange(currency: Currency) {
-  window.localStorage.setItem(STORAGE_KEY, currency);
+export function dispatchCurrencyChange(currency: SupportedCurrency) {
+  window.localStorage.setItem(CURRENCY_STORAGE_KEY, currency);
   window.dispatchEvent(
-    new CustomEvent(CHANGE_EVENT, { detail: { currency } }),
+    new CustomEvent(CURRENCY_CHANGE_EVENT, { detail: { currency } }),
   );
 }

@@ -1,3 +1,5 @@
+"use client";
+
 import {
   Activity,
   CalendarDays,
@@ -5,11 +7,12 @@ import {
   Wallet,
 } from "lucide-react";
 import CountedAmount from "@/components/motion/CountedAmount";
+import { useCurrency } from "@/components/currency/CurrencyProvider";
 
 interface FinancePulseCardProps {
-  income: string;
-  expenses: string;
-  net: string;
+  income: number | string;
+  expenses: number | string;
+  net: number | string;
   netTone: "positive" | "negative" | "neutral";
   remainingDays: number;
 }
@@ -21,6 +24,12 @@ export default function FinancePulseCard({
   netTone,
   remainingDays,
 }: FinancePulseCardProps) {
+  const { formatCurrency } = useCurrency();
+  const displayIncome =
+    typeof income === "number" ? formatCurrency(income) : income;
+  const displayExpenses =
+    typeof expenses === "number" ? formatCurrency(expenses) : expenses;
+  const displayNet = typeof net === "number" ? formatCurrency(net) : net;
   const netDetail =
     netTone === "positive" ? "Positive cash flow"
     : netTone === "negative" ? "Expense pressure"
@@ -28,21 +37,21 @@ export default function FinancePulseCard({
   const summaryTiles = [
     {
       label: "Income",
-      value: income,
+      value: displayIncome,
       detail: "Today",
       accent: "var(--success)",
       icon: Wallet,
     },
     {
       label: "Expenses",
-      value: expenses,
+      value: displayExpenses,
       detail: "Today spend",
       accent: "var(--danger)",
       icon: Activity,
     },
     {
       label: "Net Today",
-      value: net,
+      value: displayNet,
       detail: netDetail,
       accent:
         netTone === "positive" ? "var(--success)"

@@ -17,6 +17,7 @@ import {
   financeErrorClass,
   financeModalContentClass,
 } from "@/components/ui/finance-modal";
+import { BASE_CURRENCY } from "@/lib/currency";
 
 interface Account {
   id: string;
@@ -182,7 +183,7 @@ export default function TransferModal({ open, onClose, onSuccess }: Props) {
               <div className="grid gap-3 sm:grid-cols-2">
                 <div>
                   <label className="field-label" htmlFor="transfer-amount">
-                    Amount (PKR)
+                    Amount ({BASE_CURRENCY})
                   </label>
                   <input
                     id="transfer-amount"

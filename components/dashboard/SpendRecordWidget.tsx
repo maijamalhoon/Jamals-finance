@@ -13,16 +13,18 @@ import ChartCard from "@/components/dashboard/ChartCard";
 import ChartFrame from "@/components/ui/chart-frame";
 import { chartMotion } from "@/components/motion/animation-config";
 import CountedAmount from "@/components/motion/CountedAmount";
+import { useCurrency } from "@/components/currency/CurrencyProvider";
 
 export default function SpendRecordWidget({
   monthlySpend,
   dailySpend,
   dailyExpenseTrend,
 }: {
-  monthlySpend: string;
-  dailySpend: string;
+  monthlySpend: number | string;
+  dailySpend: number | string;
   dailyExpenseTrend: number[];
 }) {
+  const { formatCurrency } = useCurrency();
   const data = useMemo(
     () =>
       dailyExpenseTrend.map((value, index) => ({
@@ -32,8 +34,12 @@ export default function SpendRecordWidget({
     [dailyExpenseTrend],
   );
   const hasSpendData = data.some((point) => point.spend > 0);
-  const displaySpend = monthlySpend.replace(/^PKR\s+/, "PKR ");
-  const displayDailyAverage = dailySpend.replace(/^PKR\s+/, "PKR ");
+  const displaySpend =
+    typeof monthlySpend === "number" ?
+      formatCurrency(monthlySpend)
+    : monthlySpend;
+  const displayDailyAverage =
+    typeof dailySpend === "number" ? formatCurrency(dailySpend) : dailySpend;
 
   return (
     <ChartCard
@@ -98,7 +104,7 @@ export default function SpendRecordWidget({
                     boxShadow: "var(--shadow-soft)",
                   }}
                   formatter={(value) => [
-                    `PKR ${Number(value).toLocaleString("en-PK")}`,
+                    formatCurrency(Number(value ?? 0)),
                     "Spend",
                   ]}
                   labelFormatter={(label) => `Day ${label}`}

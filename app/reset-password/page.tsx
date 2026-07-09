@@ -1,6 +1,6 @@
 "use client";
 
-import { type FormEvent, useMemo, useState } from "react";
+import { type FormEvent, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   ArrowRight,
@@ -44,6 +44,36 @@ export default function ResetPasswordPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
+
+  useEffect(() => {
+    async function guardResetRoute() {
+      const hash = new URLSearchParams(window.location.hash.replace(/^#/, ""));
+      const search = new URLSearchParams(window.location.search);
+      const hasRecoveryFlow =
+        hash.get("type") === "recovery" ||
+        hash.has("access_token") ||
+        search.has("code");
+
+      if (search.has("code")) {
+        await supabase.auth.exchangeCodeForSession(search.get("code") ?? "");
+      }
+
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+
+      if (session && !hasRecoveryFlow) {
+        router.replace("/dashboard");
+        return;
+      }
+
+      if (!session && !hasRecoveryFlow) {
+        router.replace("/login");
+      }
+    }
+
+    guardResetRoute();
+  }, [router, supabase]);
 
   async function handleReset(e: FormEvent) {
     e.preventDefault();

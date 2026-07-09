@@ -2,6 +2,12 @@
 
 import { useState, useEffect } from "react";
 import { ArrowLeftRight, RefreshCw } from "lucide-react";
+import {
+  convertMoney,
+  FALLBACK_USD_PKR_RATE,
+  formatMoney,
+  SupportedCurrency,
+} from "@/lib/currency";
 
 export default function CurrencyConverter() {
   const [rate, setRate] = useState<number | null>(null);
@@ -18,7 +24,7 @@ export default function CurrencyConverter() {
       setRate(data.rate);
       setLive(data.live);
     } catch {
-      setRate(281.2);
+      setRate(FALLBACK_USD_PKR_RATE);
       setLive(false);
     }
     setLoading(false);
@@ -29,11 +35,16 @@ export default function CurrencyConverter() {
   }, []);
 
   const num = parseFloat(amount) || 0;
+  const fromCurrency: SupportedCurrency = fromUSD ? "USD" : "PKR";
+  const toCurrency: SupportedCurrency = fromUSD ? "PKR" : "USD";
   const converted =
     rate ?
-      fromUSD ?
-        (num * rate).toLocaleString(undefined, { maximumFractionDigits: 2 })
-      : (num / rate).toLocaleString(undefined, { maximumFractionDigits: 4 })
+      formatMoney(convertMoney(num, fromCurrency, toCurrency, rate), {
+        currency: toCurrency,
+        fromCurrency: toCurrency,
+        usdToPkrRate: rate,
+        maximumFractionDigits: toCurrency === "USD" ? 4 : 2,
+      })
     : "...";
 
   return (

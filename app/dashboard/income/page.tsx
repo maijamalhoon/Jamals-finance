@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import TransactionRow from "@/components/transactions/TransactionRow";
 import AddIncomeButton from "@/components/income/AddIncomeButton";
 import EmptyState from "@/components/ui/empty-state";
+import Money from "@/components/currency/Money";
 import { Landmark, TrendingUp } from "lucide-react";
 import { loadTransactions } from "@/lib/transactions";
 import { formatDateKey, getAppDateParts } from "@/lib/dates";
@@ -50,9 +51,6 @@ export default async function IncomePage() {
     .map(([name, { amount, color, count }]) => ({ name, amount, color, count }))
     .sort((a, b) => b.amount - a.amount);
 
-  const fmt = (n: number) =>
-    `PKR ${n.toLocaleString(undefined, { maximumFractionDigits: 0 })}`;
-
   return (
     <div className="space-y-5">
       <div className="page-heading finance-surface-glass">
@@ -69,7 +67,7 @@ export default async function IncomePage() {
             This Month
           </p>
           <p className="break-words text-xl font-bold text-text-primary">
-            {fmt(thisMonth)}
+            <Money amount={thisMonth} />
           </p>
         </div>
 
@@ -78,7 +76,7 @@ export default async function IncomePage() {
             This Year
           </p>
           <p className="break-words text-xl font-bold text-text-primary">
-            {fmt(thisYear)}
+            <Money amount={thisYear} />
           </p>
         </div>
 
@@ -87,7 +85,7 @@ export default async function IncomePage() {
             Best Month Ever
           </p>
           <p className="break-words text-xl font-bold text-success">
-            {fmt(bestMonth)}
+            <Money amount={bestMonth} />
           </p>
           <p className="mt-0.5 text-xs text-text-secondary">
             Your highest earning month
@@ -123,7 +121,7 @@ export default async function IncomePage() {
                   {account}
                 </p>
                 <p className="mt-1 break-words text-sm font-bold text-success">
-                  {fmt(amount)}
+                  <Money amount={amount} />
                 </p>
               </div>
             ))}
@@ -154,7 +152,7 @@ export default async function IncomePage() {
                     </span>
                   </div>
                   <span className="min-w-0 break-words text-right text-[13px] font-semibold leading-tight text-success [overflow-wrap:anywhere] sm:text-sm">
-                    {fmt(source.amount)}
+                    <Money amount={source.amount} />
                   </span>
                 </div>
                 <div className="h-1.5 overflow-hidden rounded-full bg-surface-secondary">

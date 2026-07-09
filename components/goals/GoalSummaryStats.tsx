@@ -8,6 +8,7 @@ import {
   useProgressReveal,
   useReducedMotion,
 } from "./use-animated-goal-value";
+import { useCurrency } from "@/components/currency/CurrencyProvider";
 
 type GoalSummaryStatsProps = {
   totalTarget: number;
@@ -17,12 +18,6 @@ type GoalSummaryStatsProps = {
   overallPct: number;
 };
 
-function formatCurrency(value: number) {
-  return `PKR ${Math.round(value).toLocaleString("en-PK", {
-    maximumFractionDigits: 0,
-  })}`;
-}
-
 export default function GoalSummaryStats({
   totalTarget,
   totalSaved,
@@ -30,6 +25,7 @@ export default function GoalSummaryStats({
   totalCount,
   overallPct,
 }: GoalSummaryStatsProps) {
+  const { formatCurrency } = useCurrency();
   const reduceMotion = useReducedMotion();
   const animatedTarget = useAnimatedGoalValue(totalTarget, 0, 760);
   const animatedSaved = useAnimatedGoalValue(totalSaved, 80, 820);

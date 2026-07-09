@@ -1,5 +1,13 @@
 import { getAppMonthRange, getDaysInMonth, formatDateKey } from "@/lib/dates";
 import { getPayableStatus } from "@/lib/finance-options";
+import {
+  BASE_CURRENCY,
+  FALLBACK_USD_PKR_RATE,
+  formatMoney,
+  isSupportedCurrency,
+  normalizeUsdToPkrRate,
+  type SupportedCurrency,
+} from "@/lib/currency";
 import { createClient } from "@/lib/supabase/server";
 import { NextRequest, NextResponse } from "next/server";
 export const dynamic = "force-dynamic";
@@ -93,7 +101,13 @@ type RawAccount = {
 };
 
 type FinanceSummary = {
-  currency: "PKR";
+  currency: SupportedCurrency;
+  baseCurrency: SupportedCurrency;
+  displayCurrency: SupportedCurrency;
+  exchangeRate: {
+    usdToPkr: number;
+    live: boolean;
+  };
   period: {
     currentMonth: string;
     currentMonthStart: string;
@@ -140,6 +154,12 @@ type FinanceSummary = {
     expenses: number;
     net: number;
   }[];
+};
+
+type CurrencyRequestContext = {
+  currency: SupportedCurrency;
+  rate: number;
+  live: boolean;
 };
 
 type GeminiGenerateContentResponse = {
@@ -203,9 +223,47 @@ function roundPct(value: number) {
   return Number.isFinite(value) ? Number(value.toFixed(1)) : 0;
 }
 
-function formatPKRValue(value: number) {
-  const absolute = Math.abs(roundCurrency(value)).toLocaleString("en-PK");
-  return `${value < 0 ? "-" : ""}PKR ${absolute}`;
+function formatDisplayMoney(value: number, context: CurrencyRequestContext) {
+  return formatMoney(value, {
+    currency: context.currency,
+    usdToPkrRate: context.rate,
+  });
+}
+
+function getCurrencyRequestContext(request?: NextRequest) {
+  const currencyParam =
+    request?.nextUrl.searchParams.get("currency") ??
+    request?.headers.get("x-jf-currency");
+  const rateParam =
+    request?.nextUrl.searchParams.get("rate") ??
+    request?.headers.get("x-jf-rate");
+  const liveParam =
+    request?.nextUrl.searchParams.get("rateLive") ??
+    request?.headers.get("x-jf-rate-live");
+
+  const currency =
+    isSupportedCurrency(currencyParam) ? currencyParam : BASE_CURRENCY;
+  const rate = normalizeUsdToPkrRate(Number(rateParam));
+  const live = liveParam === "true";
+
+  return { currency, rate, live };
+}
+
+function getCurrencyContextFromBody(body: unknown) {
+  if (!isRecord(body)) return getCurrencyRequestContext();
+
+  const currency =
+    typeof body.currency === "string" && isSupportedCurrency(body.currency) ?
+      body.currency
+    : BASE_CURRENCY;
+  const rate = normalizeUsdToPkrRate(
+    typeof body.rate === "number" || typeof body.rate === "string" ?
+      Number(body.rate)
+    : undefined,
+  );
+  const live = body.rateLive === true;
+
+  return { currency, rate, live };
 }
 
 function getCategoryName(
@@ -647,7 +705,13 @@ async function getFinanceSummary() {
   );
 
   const summary: FinanceSummary = {
-    currency: "PKR",
+    currency: BASE_CURRENCY,
+    baseCurrency: BASE_CURRENCY,
+    displayCurrency: BASE_CURRENCY,
+    exchangeRate: {
+      usdToPkr: FALLBACK_USD_PKR_RATE,
+      live: false,
+    },
     period: {
       currentMonth: `${year}-${String(month).padStart(2, "0")}`,
       currentMonthStart: firstDay,
@@ -717,7 +781,24 @@ async function getFinanceSummary() {
   return { ok: true as const, summary, hasFinanceData };
 }
 
-function buildSummaryCards(summary: FinanceSummary): SummaryCard[] {
+function withCurrencyContext(
+  summary: FinanceSummary,
+  context: CurrencyRequestContext,
+): FinanceSummary {
+  return {
+    ...summary,
+    displayCurrency: context.currency,
+    exchangeRate: {
+      usdToPkr: context.rate,
+      live: context.live,
+    },
+  };
+}
+
+function buildSummaryCards(
+  summary: FinanceSummary,
+  context: CurrencyRequestContext,
+): SummaryCard[] {
   const trend = summary.recentTrendTotals;
   const previous = trend.length >= 2 ? trend[trend.length - 2] : null;
   const expenseDelta = previous
@@ -727,35 +808,38 @@ function buildSummaryCards(summary: FinanceSummary): SummaryCard[] {
   return [
     {
       label: "Month income",
-      value: formatPKRValue(summary.currentMonth.income),
+      value: formatDisplayMoney(summary.currentMonth.income, context),
       caption: `${summary.currentMonth.savingsRate}% savings rate`,
       tone: summary.currentMonth.income > 0 ? "positive" : "neutral",
     },
     {
       label: "Month expenses",
-      value: formatPKRValue(summary.currentMonth.expenses),
+      value: formatDisplayMoney(summary.currentMonth.expenses, context),
       caption:
         previous && expenseDelta !== 0
-          ? `${formatPKRValue(Math.abs(expenseDelta))} ${expenseDelta > 0 ? "above" : "below"} last month`
+          ? `${formatDisplayMoney(Math.abs(expenseDelta), context)} ${expenseDelta > 0 ? "above" : "below"} last month`
           : "Current month spending",
       tone: expenseDelta > 0 ? "warning" : "info",
     },
     {
       label: "Net balance",
-      value: formatPKRValue(summary.netBalance.estimatedNetWorth),
-      caption: `${formatPKRValue(summary.netBalance.cashBalance)} cash balance`,
+      value: formatDisplayMoney(summary.netBalance.estimatedNetWorth, context),
+      caption: `${formatDisplayMoney(summary.netBalance.cashBalance, context)} cash balance`,
       tone: summary.netBalance.estimatedNetWorth >= 0 ? "positive" : "danger",
     },
     {
       label: "Payables due",
-      value: formatPKRValue(summary.payablesSummary.remaining),
+      value: formatDisplayMoney(summary.payablesSummary.remaining, context),
       caption: `${summary.payablesSummary.overdueCount} overdue record${summary.payablesSummary.overdueCount === 1 ? "" : "s"}`,
       tone: summary.payablesSummary.overdueCount > 0 ? "danger" : "neutral",
     },
   ];
 }
 
-function buildFallbackInsights(summary: FinanceSummary): GeneratedInsights {
+function buildFallbackInsights(
+  summary: FinanceSummary,
+  context: CurrencyRequestContext,
+): GeneratedInsights {
   const scoreFromSavings = Math.max(
     0,
     Math.min(45, 25 + summary.currentMonth.savingsRate),
@@ -777,14 +861,14 @@ function buildFallbackInsights(summary: FinanceSummary): GeneratedInsights {
       title: summary.currentMonth.net >= 0 ? "Positive monthly net" : "Monthly net needs attention",
       message:
         summary.currentMonth.net >= 0
-          ? `This month is ahead by ${formatPKRValue(summary.currentMonth.net)} after expenses.`
-          : `This month is short by ${formatPKRValue(Math.abs(summary.currentMonth.net))}; review flexible spending first.`,
+          ? `This month is ahead by ${formatDisplayMoney(summary.currentMonth.net, context)} after expenses.`
+          : `This month is short by ${formatDisplayMoney(Math.abs(summary.currentMonth.net), context)}; review flexible spending first.`,
     },
     {
       type: topCategory ? "tip" : "warning",
       title: topCategory ? `${topCategory.category} is the top category` : "No category spending yet",
       message: topCategory
-        ? `${topCategory.category} has reached ${formatPKRValue(topCategory.amount)} this month.`
+        ? `${topCategory.category} has reached ${formatDisplayMoney(topCategory.amount, context)} this month.`
         : "Add categorized expenses to get better spending guidance.",
     },
     {
@@ -800,7 +884,7 @@ function buildFallbackInsights(summary: FinanceSummary): GeneratedInsights {
       title: "Payables check",
       message:
         summary.payablesSummary.remaining > 0
-          ? `${formatPKRValue(summary.payablesSummary.remaining)} remains payable, with ${summary.payablesSummary.overdueCount} overdue record${summary.payablesSummary.overdueCount === 1 ? "" : "s"}.`
+          ? `${formatDisplayMoney(summary.payablesSummary.remaining, context)} remains payable, with ${summary.payablesSummary.overdueCount} overdue record${summary.payablesSummary.overdueCount === 1 ? "" : "s"}.`
           : "No outstanding payable balance is currently visible in the summary.",
     },
   ];
@@ -846,10 +930,15 @@ function buildFallbackInsights(summary: FinanceSummary): GeneratedInsights {
   };
 }
 
-function buildInsightPrompt(summary: FinanceSummary) {
+function buildInsightPrompt(
+  summary: FinanceSummary,
+  context: CurrencyRequestContext,
+) {
   return `You are a personal finance assistant for Jamal's Finance.
 Use only this summarized finance data. Do not ask for raw transaction rows.
-Currency is PKR. Be concise, practical, and privacy-aware.
+Stored/base currency is ${summary.baseCurrency}. The user's selected display currency is ${context.currency}.
+Use ${context.currency} for every user-facing money value. Convert stored PKR values with 1 USD = ${context.rate.toFixed(2)} PKR. ${context.live ? "The rate is live." : "The rate is a fallback and should be treated as approximate."}
+Be concise, practical, and privacy-aware.
 
 Summarized finance data:
 ${JSON.stringify(summary, null, 2)}
@@ -868,11 +957,17 @@ Return only valid JSON with this exact shape:
 Use exactly 4 insights and 3 to 5 suggestedActions.`;
 }
 
-function buildChatPrompt(summary: FinanceSummary, question: string) {
+function buildChatPrompt(
+  summary: FinanceSummary,
+  question: string,
+  context: CurrencyRequestContext,
+) {
   return `You are the Gemini finance chat assistant inside Jamal's Finance.
 Answer the user's question using only the summarized finance data below.
 Do not mention raw transaction access. Do not invent account names, transaction descriptions, or people.
-Currency is PKR. If the answer needs data not in the summary, say what is missing.
+Stored/base currency is ${summary.baseCurrency}. The user's selected display currency is ${context.currency}.
+Use ${context.currency} for every user-facing money value. Convert stored PKR values with 1 USD = ${context.rate.toFixed(2)} PKR. ${context.live ? "The rate is live." : "The rate is a fallback and should be treated as approximate."}
+If the answer needs data not in the summary, say what is missing.
 
 Summarized finance data:
 ${JSON.stringify(summary, null, 2)}
@@ -887,16 +982,18 @@ Return only valid JSON:
 }`;
 }
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
     const summaryResult = await getFinanceSummary();
 
     if (!summaryResult.ok) return summaryResult.response;
 
     const { summary, hasFinanceData } = summaryResult;
+    const currencyContext = getCurrencyRequestContext(request);
+    const displaySummary = withCurrencyContext(summary, currencyContext);
     const { apiKey, model } = getGeminiConfig();
-    const summaryCards = buildSummaryCards(summary);
-    const fallback = buildFallbackInsights(summary);
+    const summaryCards = buildSummaryCards(summary, currencyContext);
+    const fallback = buildFallbackInsights(summary, currencyContext);
 
     if (!hasFinanceData) {
       return NextResponse.json({
@@ -907,7 +1004,7 @@ export async function GET() {
         aiAvailable: Boolean(apiKey),
         generatedAt: new Date().toISOString(),
         summaryCards,
-        financeSummary: summary,
+        financeSummary: displaySummary,
         insights: [],
         suggestedActions: [],
       });
@@ -921,7 +1018,7 @@ export async function GET() {
         model,
         generatedAt: new Date().toISOString(),
         summaryCards,
-        financeSummary: summary,
+        financeSummary: displaySummary,
         aiAvailable: false,
         message: AI_UNAVAILABLE_MESSAGE,
       } satisfies AIInsightsResponse);
@@ -931,7 +1028,7 @@ export async function GET() {
       const text = await callGemini({
         apiKey,
         model,
-        prompt: buildInsightPrompt(summary),
+        prompt: buildInsightPrompt(displaySummary, currencyContext),
       });
       const generated = parseGeneratedInsights(text);
 
@@ -943,7 +1040,7 @@ export async function GET() {
           model,
           generatedAt: new Date().toISOString(),
           summaryCards,
-          financeSummary: summary,
+          financeSummary: displaySummary,
           aiAvailable: false,
           message: AI_UNAVAILABLE_MESSAGE,
         } satisfies AIInsightsResponse);
@@ -955,7 +1052,7 @@ export async function GET() {
         model,
         generatedAt: new Date().toISOString(),
         summaryCards,
-        financeSummary: summary,
+        financeSummary: displaySummary,
         aiAvailable: true,
       } satisfies AIInsightsResponse);
     } catch (error) {
@@ -967,7 +1064,7 @@ export async function GET() {
         model,
         generatedAt: new Date().toISOString(),
         summaryCards,
-        financeSummary: summary,
+        financeSummary: displaySummary,
         aiAvailable: false,
         message: AI_UNAVAILABLE_MESSAGE,
       } satisfies AIInsightsResponse);
@@ -980,11 +1077,12 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
+    const body = (await request.json().catch(() => null)) as unknown;
+    const currencyContext = getCurrencyContextFromBody(body);
     const summaryResult = await getFinanceSummary();
 
     if (!summaryResult.ok) return summaryResult.response;
 
-    const body = (await request.json().catch(() => null)) as unknown;
     const question =
       isRecord(body) && typeof body.question === "string"
         ? body.question.replace(/\s+/g, " ").trim().slice(0, 500)
@@ -1008,7 +1106,11 @@ export async function POST(request: NextRequest) {
     const text = await callGemini({
       apiKey,
       model,
-      prompt: buildChatPrompt(summaryResult.summary, question),
+      prompt: buildChatPrompt(
+        withCurrencyContext(summaryResult.summary, currencyContext),
+        question,
+        currencyContext,
+      ),
     });
     const chat = parseChatResponse(text);
 

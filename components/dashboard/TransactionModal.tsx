@@ -23,6 +23,7 @@ import {
   financeModalContentClass,
 } from "@/components/ui/finance-modal";
 import { toast } from "sonner";
+import { BASE_CURRENCY } from "@/lib/currency";
 
 interface Category {
   id: string;
@@ -391,7 +392,7 @@ export default function TransactionModal({
 
           <div>
             <label className="field-label" htmlFor="transaction-amount">
-              Amount (PKR)
+              Amount ({BASE_CURRENCY})
             </label>
             <input
               id="transaction-amount"

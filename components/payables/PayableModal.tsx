@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/finance-modal";
 import { PAYABLE_QUICK_REASONS } from "@/lib/finance-options";
 import { HandCoins } from "lucide-react";
+import { BASE_CURRENCY } from "@/lib/currency";
 
 export interface ExistingPayable {
   id: string;
@@ -174,7 +175,7 @@ export default function PayableModal({ open, onClose, payable }: Props) {
           <div className="grid gap-3 sm:grid-cols-2">
             <div>
               <label className="field-label" htmlFor="payable-original-value">
-                Actual Value (PKR)
+                Actual Value ({BASE_CURRENCY})
               </label>
               <input
                 id="payable-original-value"

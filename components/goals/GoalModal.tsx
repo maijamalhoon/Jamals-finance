@@ -15,6 +15,7 @@ import {
   financeModalContentClass,
 } from "@/components/ui/finance-modal";
 import { GOAL_ICONS } from "./goal-icons";
+import { BASE_CURRENCY } from "@/lib/currency";
 
 export interface ExistingGoal {
   id: string;
@@ -149,7 +150,7 @@ export default function GoalModal({ open, onClose, onSuccess, goal }: Props) {
           <div className="grid gap-3 sm:grid-cols-2">
             <div>
               <label className="field-label" htmlFor="goal-target-amount">
-                Target Amount (PKR)
+                Target Amount ({BASE_CURRENCY})
               </label>
               <input
                 id="goal-target-amount"
@@ -163,7 +164,7 @@ export default function GoalModal({ open, onClose, onSuccess, goal }: Props) {
 
             <div>
               <label className="field-label" htmlFor="goal-current-amount">
-                Saved So Far (PKR)
+                Saved So Far ({BASE_CURRENCY})
               </label>
               <input
                 id="goal-current-amount"

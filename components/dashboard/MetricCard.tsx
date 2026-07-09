@@ -10,13 +10,14 @@ import {
 } from "lucide-react";
 import { motion } from "framer-motion";
 import CountedAmount from "@/components/motion/CountedAmount";
+import { useCurrency } from "@/components/currency/CurrencyProvider";
 
 type MetricIconName = "wallet" | "income" | "expenses" | "investments";
 
 interface MetricCardProps {
   title: string;
   subtitle?: string;
-  amount: string;
+  amount: number | string;
   change: number;
   iconName: MetricIconName;
   accentColor: string;
@@ -39,10 +40,12 @@ export default function MetricCard({
   accentColor,
   progress,
 }: MetricCardProps) {
+  const { formatCurrency } = useCurrency();
   const Icon = ICONS[iconName];
   const positive = change >= 0;
   const lineWidth = Math.min(100, Math.max(8, progress));
-  const displayAmount = amount.replace(/^PKR\s+/, "PKR");
+  const displayAmount =
+    typeof amount === "number" ? formatCurrency(amount) : amount;
 
   return (
     <motion.article

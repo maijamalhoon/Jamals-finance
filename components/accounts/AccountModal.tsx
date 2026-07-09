@@ -22,6 +22,7 @@ import {
   financeErrorClass,
   financeModalContentClass,
 } from "@/components/ui/finance-modal";
+import { BASE_CURRENCY } from "@/lib/currency";
 
 export interface ExistingAccount {
   id: string;
@@ -371,7 +372,9 @@ export default function AccountModal({
 
           <div>
             <label className="field-label" htmlFor="account-balance">
-              {isEditing ? "Current Balance (PKR)" : "Opening Balance (PKR)"}
+              {isEditing ?
+                `Current Balance (${BASE_CURRENCY})`
+              : `Opening Balance (${BASE_CURRENCY})`}
             </label>
 
             <input

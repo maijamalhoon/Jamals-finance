@@ -8,6 +8,11 @@ const PUBLIC_PAGE_ROUTES = [
   "/auth/callback",
 ];
 
+const AUTH_ONLY_PAGE_ROUTES = [
+  "/",
+  "/login",
+];
+
 const PUBLIC_ASSET_ROUTES = [
   "/manifest.webmanifest",
   "/manifest.json",
@@ -60,6 +65,10 @@ function jsonNotFound() {
     },
     { status: 404 }
   );
+}
+
+function getOriginalPath(request: NextRequest) {
+  return `${request.nextUrl.pathname}${request.nextUrl.search}`;
 }
 
 export async function proxy(request: NextRequest) {
@@ -122,13 +131,15 @@ export async function proxy(request: NextRequest) {
   if (!user && !isPublicPageRoute) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
-    url.searchParams.set("next", pathname);
+    url.search = "";
+    url.searchParams.set("next", getOriginalPath(request));
     return NextResponse.redirect(url);
   }
 
-  if (user && pathname === "/login") {
+  if (user && matchesPath(pathname, AUTH_ONLY_PAGE_ROUTES)) {
     const url = request.nextUrl.clone();
     url.pathname = "/dashboard";
+    url.search = "";
     return NextResponse.redirect(url);
   }
 

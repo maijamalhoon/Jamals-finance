@@ -1,3 +1,5 @@
+import Money from "@/components/currency/Money";
+
 interface CategoryData {
   name: string;
   amount: number;
@@ -42,9 +44,7 @@ export default function CategoryBreakdown({ data }: { data: CategoryData[] }) {
                   </div>
                   <div className="min-w-0 shrink text-right">
                     <span className="block break-words text-sm font-semibold text-text-primary [overflow-wrap:anywhere]">
-                      {`PKR ${cat.amount.toLocaleString(undefined, {
-                        maximumFractionDigits: 0,
-                      })}`}
+                      <Money amount={cat.amount} />
                     </span>
                     <span className="text-xs text-text-secondary">
                       {cat.pct.toFixed(0)}%

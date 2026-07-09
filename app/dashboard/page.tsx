@@ -98,12 +98,6 @@ function isDateInRange(
   return Boolean(dateKey && dateKey >= start && dateKey <= end);
 }
 
-function fmt(value: number) {
-  return `PKR ${value.toLocaleString("en-PK", {
-    maximumFractionDigits: 0,
-  })}`;
-}
-
 function isValidCategoryHex(color: string | null | undefined): color is string {
   return (
     typeof color === "string" && /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(color)
@@ -112,13 +106,6 @@ function isValidCategoryHex(color: string | null | undefined): color is string {
 
 function getCategoryColor(color: string | null | undefined) {
   return isValidCategoryHex(color) ? color : "#6b7280";
-}
-
-function fmtBalance(value: number) {
-  return `PKR ${value.toLocaleString("en-PK", {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  })}`;
 }
 
 function pct(current: number, previous: number) {
@@ -424,7 +411,7 @@ export default async function DashboardPage() {
       ) : null}
 
       <DashboardMotionItem>
-        <QuickActionsBalance totalBalance={fmtBalance(totalNetBalance)} />
+        <QuickActionsBalance totalBalance={totalNetBalance} />
       </DashboardMotionItem>
 
       <DashboardMotionItem>
@@ -436,7 +423,7 @@ export default async function DashboardPage() {
           <MetricCard
             title="Month Balance"
             subtitle={currentMonthLabel}
-            amount={fmt(netProfit)}
+            amount={netProfit}
             change={pct(netProfit, lastNetProfit)}
             iconName="wallet"
             accentColor="#3b82f6"
@@ -448,7 +435,7 @@ export default async function DashboardPage() {
           <MetricCard
             title="Monthly Income"
             subtitle={currentMonthLabel}
-            amount={fmt(income)}
+            amount={income}
             change={pct(income, lastIncome)}
             iconName="income"
             accentColor="#22c55e"
@@ -460,7 +447,7 @@ export default async function DashboardPage() {
           <MetricCard
             title="Monthly Expenses"
             subtitle={currentMonthLabel}
-            amount={fmt(expenses)}
+            amount={expenses}
             change={pct(expenses, lastExpenses)}
             iconName="expenses"
             accentColor="#ef4444"
@@ -472,7 +459,7 @@ export default async function DashboardPage() {
           <MetricCard
             title="Investments This Month"
             subtitle={currentMonthLabel}
-            amount={fmt(monthlyInvestmentsValue)}
+            amount={monthlyInvestmentsValue}
             change={pct(
               monthlyInvestmentsValue,
               previousMonthlyInvestmentsValue,
@@ -486,9 +473,9 @@ export default async function DashboardPage() {
 
       <DashboardMotionItem>
         <FinancePulseCard
-          income={fmt(todayTotals.income)}
-          expenses={fmt(todayTotals.expenses)}
-          net={fmt(netToday)}
+          income={todayTotals.income}
+          expenses={todayTotals.expenses}
+          net={netToday}
           netTone={netTodayTone}
           remainingDays={remainingDays}
         />
@@ -497,8 +484,8 @@ export default async function DashboardPage() {
       <div className="grid w-full grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,2fr)]">
         <DashboardMotionItem className="min-w-0">
           <SpendRecordWidget
-            monthlySpend={fmt(expenses)}
-            dailySpend={fmt(dailySpend)}
+            monthlySpend={expenses}
+            dailySpend={dailySpend}
             dailyExpenseTrend={dailyExpenseTrend}
           />
         </DashboardMotionItem>

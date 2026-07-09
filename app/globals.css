@@ -72,30 +72,30 @@
 :root {
   color-scheme: light;
   --surface: #ffffff;
-  --surface-secondary: #f1f5f9;
+  --surface-secondary: #f4f7fb;
   --surface-elevated: #ffffff;
-  --surface-glass: color-mix(in srgb, #ffffff, transparent 8%);
+  --surface-glass: color-mix(in srgb, #ffffff, transparent 10%);
   --card: oklch(1 0 0);
-  --sidebar: oklch(0.985 0 0);
-  --border: oklch(0.922 0 0);
-  --border-strong: #cbd5e1;
-  --text-primary: #101828;
-  --text-secondary: #667085;
-  --text-tertiary: #98a2b3;
-  --hover: #f1f5f9;
+  --sidebar: #f8fafc;
+  --border: #dbe3ee;
+  --border-strong: #b9c6d6;
+  --text-primary: #111827;
+  --text-secondary: #5d6b7d;
+  --text-tertiary: #8a98aa;
+  --hover: #eef4fb;
   --active: #2563eb;
-  --success: #168a53;
-  --danger: #dc2626;
-  --warning: #b76a00;
-  --info: #0284c7;
-  --investment: #7c3aed;
+  --success: #0f8f5f;
+  --danger: #d93444;
+  --warning: #b87503;
+  --info: #087ea4;
+  --investment: #7257d6;
   --muted: oklch(0.97 0 0);
   --input: oklch(0.922 0 0);
   --loader: #f1f5f9;
   --skeleton: #e9eef5;
-  --shadow: 0 1px 2px rgb(16 24 40 / 0.05);
-  --shadow-soft: 0 12px 32px rgb(16 24 40 / 0.07);
-  --shadow-premium: 0 18px 46px rgb(16 24 40 / 0.09);
+  --shadow: 0 1px 2px rgb(16 24 40 / 0.045);
+  --shadow-soft: 0 12px 32px rgb(16 24 40 / 0.065);
+  --shadow-premium: 0 18px 48px rgb(16 24 40 / 0.085);
   --glow-soft: 0 0 0 1px color-mix(in srgb, var(--active), transparent 88%);
   --focus-ring: 0 0 0 3px color-mix(in srgb, var(--active), transparent 80%);
   --surface-highlight: inset 0 1px 0 rgb(255 255 255 / 0.68);
@@ -153,37 +153,37 @@
 
 .dark {
   color-scheme: dark;
-  --background: #0b1118;
-  --surface: #101821;
-  --surface-secondary: #162231;
-  --surface-elevated: #1b2736;
-  --surface-glass: color-mix(in srgb, #101821, transparent 8%);
-  --card: #111a24;
-  --sidebar: #101821;
-  --border: rgb(148 163 184 / 0.22);
-  --border-strong: #536171;
-  --text-primary: #f5f7fb;
-  --text-secondary: #c3cad6;
-  --text-tertiary: #98a4b5;
-  --hover: #1d2a3a;
-  --active: #c9a44c;
-  --success: #5ee2a0;
-  --danger: #ff8a8a;
-  --warning: #f6c76d;
-  --info: #67d5ff;
-  --investment: #c4b5fd;
-  --muted: #182230;
-  --input: #172331;
-  --loader: #18212c;
-  --skeleton: #202a36;
-  --shadow: 0 1px 2px rgb(0 0 0 / 0.32);
-  --shadow-soft: 0 16px 40px rgb(0 0 0 / 0.34);
-  --shadow-premium: 0 24px 70px rgb(0 0 0 / 0.46);
-  --glow-soft: 0 0 0 1px color-mix(in srgb, var(--active), transparent 70%);
+  --background: #0c121b;
+  --surface: #111a25;
+  --surface-secondary: #172231;
+  --surface-elevated: #1d2a3a;
+  --surface-glass: color-mix(in srgb, #111a25, transparent 10%);
+  --card: #131d29;
+  --sidebar: #0f1722;
+  --border: rgb(154 171 194 / 0.2);
+  --border-strong: #627188;
+  --text-primary: #f7f9fd;
+  --text-secondary: #c6d0de;
+  --text-tertiary: #93a3b8;
+  --hover: #213045;
+  --active: #d2ad55;
+  --success: #65d99c;
+  --danger: #ff8b98;
+  --warning: #f3c263;
+  --info: #74d4f5;
+  --investment: #bfa9ff;
+  --muted: #1a2534;
+  --input: #182434;
+  --loader: #1a2635;
+  --skeleton: #233044;
+  --shadow: 0 1px 2px rgb(0 0 0 / 0.34);
+  --shadow-soft: 0 16px 42px rgb(0 0 0 / 0.36);
+  --shadow-premium: 0 26px 78px rgb(0 0 0 / 0.48);
+  --glow-soft: 0 0 0 1px color-mix(in srgb, var(--active), transparent 72%);
   --focus-ring:
     0 0 0 1px color-mix(in srgb, var(--active), transparent 34%),
     0 0 0 4px color-mix(in srgb, var(--active), transparent 76%);
-  --surface-highlight: inset 0 1px 0 rgb(255 255 255 / 0.07);
+  --surface-highlight: inset 0 1px 0 rgb(255 255 255 / 0.08);
   --oneui-page-gutter: clamp(0.875rem, 1.7vw, 1.75rem);
   --oneui-card-radius: 1.25rem;
   --oneui-tile-radius: 1rem;
@@ -1139,9 +1139,9 @@
 
   .dashboard-graph-card {
     @apply rounded-[21px] border px-5 pb-4 pt-4;
-    --dashboard-chart-spend: #ff9700;
-    --dashboard-chart-income: #19c76f;
-    --dashboard-chart-expense: #ff3b35;
+    --dashboard-chart-spend: var(--warning);
+    --dashboard-chart-income: var(--success);
+    --dashboard-chart-expense: var(--danger);
     --dashboard-chart-grid: color-mix(in srgb, var(--border), transparent 20%);
     --dashboard-chart-muted: color-mix(
       in srgb,

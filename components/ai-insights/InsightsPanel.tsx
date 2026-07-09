@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useEffect, useMemo, useState } from "react";
+import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
 import {
   AlertTriangle,
   ArrowUpRight,
@@ -15,6 +15,7 @@ import {
   TrendingUp,
   WalletCards,
 } from "lucide-react";
+import { useCurrency } from "@/components/currency/CurrencyProvider";
 
 type InsightType = "positive" | "warning" | "tip";
 type SummaryTone = "positive" | "warning" | "danger" | "info" | "neutral";
@@ -201,12 +202,8 @@ function SummarySkeleton() {
   );
 }
 
-function formatPKR(value: number) {
-  const absolute = Math.abs(Math.round(value)).toLocaleString("en-PK");
-  return `${value < 0 ? "-" : ""}PKR ${absolute}`;
-}
-
 export default function InsightsPanel() {
+  const { currency, formatCurrency, live, rate } = useCurrency();
   const [data, setData] = useState<AIData | null>(null);
   const [summaryCards, setSummaryCards] = useState<SummaryCard[]>([]);
   const [summary, setSummary] = useState<FinanceSummary | null>(null);
@@ -224,7 +221,7 @@ export default function InsightsPanel() {
     [summary],
   );
 
-  async function load({ regenerate = false } = {}) {
+  const load = useCallback(async ({ regenerate = false } = {}) => {
     if (regenerate) setRegenerating(true);
     else setLoading(true);
 
@@ -232,7 +229,12 @@ export default function InsightsPanel() {
     setEmptyMessage("");
 
     try {
-      const res = await fetch("/api/ai-insights", {
+      const params = new URLSearchParams({
+        currency,
+        rate: String(rate),
+        rateLive: String(live),
+      });
+      const res = await fetch(`/api/ai-insights?${params.toString()}`, {
         cache: "no-store",
       });
       const json = (await res.json()) as
@@ -266,7 +268,7 @@ export default function InsightsPanel() {
       setLoading(false);
       setRegenerating(false);
     }
-  }
+  }, [currency, live, rate]);
 
   async function submitQuestion(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -286,7 +288,12 @@ export default function InsightsPanel() {
       const res = await fetch("/api/ai-insights", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ question: trimmed }),
+        body: JSON.stringify({
+          question: trimmed,
+          currency,
+          rate,
+          rateLive: live,
+        }),
       });
       const json = (await res.json()) as
         | { answer?: string; followUps?: string[]; message?: string }
@@ -313,7 +320,7 @@ export default function InsightsPanel() {
 
   useEffect(() => {
     load();
-  }, []);
+  }, [load]);
 
   return (
     <div className="min-w-0 space-y-5">
@@ -385,7 +392,7 @@ export default function InsightsPanel() {
                         {trend.month}
                       </p>
                       <p className="text-[11px] text-text-secondary">
-                        Income {formatPKR(trend.income)}
+                        Income {formatCurrency(trend.income)}
                       </p>
                     </div>
                     <div className="text-right">
@@ -394,10 +401,10 @@ export default function InsightsPanel() {
                           trend.net >= 0 ? "text-success" : "text-danger"
                         }`}
                       >
-                        {formatPKR(trend.net)}
+                        {formatCurrency(trend.net)}
                       </p>
                       <p className="text-[11px] text-text-secondary">
-                        Expense {formatPKR(trend.expenses)}
+                        Expense {formatCurrency(trend.expenses)}
                       </p>
                     </div>
                   </div>
@@ -604,7 +611,7 @@ export default function InsightsPanel() {
                         {category.category}
                       </p>
                       <p className="shrink-0 text-xs font-bold text-text-secondary">
-                        {formatPKR(category.amount)}
+                        {formatCurrency(category.amount)}
                       </p>
                     </div>
                   ))}

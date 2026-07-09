@@ -140,7 +140,7 @@ function PortfolioSummaryGrid({
       <SummaryMetric
         label="Current Value"
         value={formatCurrency(totalValue)}
-        helper="Latest PKR value"
+        helper="Latest portfolio value"
         icon={TrendingUp}
       />
       <SummaryMetric

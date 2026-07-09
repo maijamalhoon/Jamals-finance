@@ -13,6 +13,7 @@ import {
 import TransferModal from "@/components/accounts/TransferModal";
 import TransactionModal from "@/components/dashboard/TransactionModal";
 import InvestmentModal from "@/components/investments/InvestmentModal";
+import { useCurrency } from "@/components/currency/CurrencyProvider";
 
 type TransactionType = "income" | "expense";
 type QuickAction = TransactionType | "transfer" | "invest";
@@ -61,9 +62,12 @@ const actions: Array<{
 export default function QuickActionsBalance({
   totalBalance,
 }: {
-  totalBalance: string;
+  totalBalance: number | string;
 }) {
   const router = useRouter();
+  const { formatCurrency } = useCurrency();
+  const displayTotalBalance =
+    typeof totalBalance === "number" ? formatCurrency(totalBalance) : totalBalance;
 
   const [transactionType, setTransactionType] =
     useState<TransactionType>("income");
@@ -110,7 +114,7 @@ export default function QuickActionsBalance({
             </p>
 
             <h1 className="break-words text-[clamp(2.25rem,4.6vw,4.15rem)] font-black leading-[0.96] tracking-[-0.045em] text-text-primary [font-variant-numeric:tabular-nums] [overflow-wrap:anywhere]">
-              {totalBalance}
+              {displayTotalBalance}
             </h1>
           </div>
 

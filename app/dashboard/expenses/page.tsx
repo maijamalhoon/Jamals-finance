@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import TransactionRow from "@/components/transactions/TransactionRow";
 import AddExpenseButton from "@/components/expenses/AddExpenseButton";
 import EmptyState from "@/components/ui/empty-state";
+import Money from "@/components/currency/Money";
 import { Landmark, TrendingDown } from "lucide-react";
 import { loadTransactions } from "@/lib/transactions";
 import { formatDateKey, getAppDateParts } from "@/lib/dates";
@@ -68,9 +69,6 @@ export default async function ExpensesPage() {
   const categories = Array.from(categoryMap.values())
     .sort((a, b) => b.amount - a.amount);
 
-  const fmt = (n: number) =>
-    `PKR ${n.toLocaleString(undefined, { maximumFractionDigits: 0 })}`;
-
   return (
     <div className="space-y-5">
       <div className="page-heading finance-surface-glass">
@@ -109,7 +107,7 @@ export default async function ExpensesPage() {
                   {account}
                 </p>
                 <p className="mt-1 break-words text-sm font-bold text-danger">
-                  {fmt(amount)}
+                  <Money amount={amount} />
                 </p>
               </div>
             ))}
@@ -123,7 +121,7 @@ export default async function ExpensesPage() {
             This Month
           </p>
           <p className="break-words text-xl font-bold text-text-primary">
-            {fmt(thisMonth)}
+            <Money amount={thisMonth} />
           </p>
         </div>
 
@@ -132,7 +130,7 @@ export default async function ExpensesPage() {
             This Year
           </p>
           <p className="break-words text-xl font-bold text-text-primary">
-            {fmt(thisYear)}
+            <Money amount={thisYear} />
           </p>
         </div>
 
@@ -141,7 +139,7 @@ export default async function ExpensesPage() {
             Highest Month Ever
           </p>
           <p className="break-words text-xl font-bold text-danger">
-            {fmt(highestMonth)}
+            <Money amount={highestMonth} />
           </p>
           <p className="mt-0.5 text-xs text-text-secondary">
             Your most expensive month
@@ -172,7 +170,7 @@ export default async function ExpensesPage() {
                     </span>
                   </div>
                   <span className="min-w-0 break-words text-right text-[13px] font-semibold leading-tight text-danger [overflow-wrap:anywhere] sm:text-sm">
-                    {fmt(category.amount)}
+                    <Money amount={category.amount} />
                   </span>
                 </div>
                 <div className="h-1.5 overflow-hidden rounded-full bg-surface-secondary">

@@ -8,6 +8,7 @@ import AccountSelect from "@/components/accounts/AccountSelect";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import DatePicker from "@/components/ui/date-picker";
 import { getAppDateKey } from "@/lib/dates";
+import { BASE_CURRENCY, formatMoney } from "@/lib/currency";
 import {
   FinanceModalBody,
   FinanceModalFooter,
@@ -90,12 +91,14 @@ function isValidDateKey(value: string) {
 
 function formatPkr(value: number | null | undefined) {
   if (typeof value !== "number" || !Number.isFinite(value)) {
-    return "PKR unavailable";
+    return `${BASE_CURRENCY} unavailable`;
   }
 
-  return `PKR ${value.toLocaleString("en-PK", {
+  return formatMoney(value, {
+    currency: BASE_CURRENCY,
+    fromCurrency: BASE_CURRENCY,
     maximumFractionDigits: value >= 100 ? 0 : 4,
-  })}`;
+  });
 }
 
 function formatUsd(value: number | null | undefined) {
@@ -103,9 +106,11 @@ function formatUsd(value: number | null | undefined) {
     return "USD unavailable";
   }
 
-  return `$${value.toLocaleString("en-US", {
+  return formatMoney(value, {
+    currency: "USD",
+    fromCurrency: "USD",
     maximumFractionDigits: value >= 1 ? 2 : 6,
-  })}`;
+  });
 }
 
 function formatMarketChange(asset: MarketSearchResult | null) {
@@ -1067,7 +1072,7 @@ export default function InvestmentModal({
                 ) : null}
               </div>
               <p className="mt-2 text-[11px] text-text-secondary">
-                {marketSourceLabel}. This value is saved in PKR for portfolio math.
+                {marketSourceLabel}. This value is saved in {BASE_CURRENCY} for portfolio math.
               </p>
             </div>
           ) : (

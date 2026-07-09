@@ -2,12 +2,9 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import AddPayableButton from "@/components/payables/AddPayableButton";
 import PayableCard, { Payable } from "@/components/payables/PayableCard";
-import CountedAmount from "@/components/motion/CountedAmount";
+import Money from "@/components/currency/Money";
 import EmptyState from "@/components/ui/empty-state";
-import {
-  formatPKR,
-  getPayableStatus,
-} from "@/lib/finance-options";
+import { getPayableStatus } from "@/lib/finance-options";
 import {
   Banknote,
   CheckCircle2,
@@ -148,7 +145,7 @@ export default async function PayablesPage({
               <div className="min-w-0">
                 <p className="text-xs font-semibold text-text-secondary">{label}</p>
                 <p className={`mt-2 break-words text-xl font-bold [overflow-wrap:anywhere] ${valueClassName}`}>
-                  <CountedAmount amount={formatPKR(value)} />
+                  <Money amount={value} counted />
                 </p>
               </div>
               <span className="finance-icon-container" data-size="sm" data-tone={tone}>

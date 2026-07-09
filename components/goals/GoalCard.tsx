@@ -9,10 +9,12 @@ import GoalModal, { ExistingGoal } from "./GoalModal";
 import { GOAL_ICONS } from "./goal-icons";
 import { getGoalCategoryStyle } from "./goal-styles";
 import { useProgressReveal, useReducedMotion } from "./use-animated-goal-value";
+import { useCurrency } from "@/components/currency/CurrencyProvider";
 
 export default function GoalCard({ goal }: { goal: ExistingGoal }) {
   const router = useRouter();
   const supabase = createClient();
+  const { formatCurrency } = useCurrency();
 
   const [editOpen, setEditOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -51,9 +53,6 @@ export default function GoalCard({ goal }: { goal: ExistingGoal }) {
     await supabase.from("goals").delete().eq("id", goal.id);
     router.refresh();
   }
-
-  const fmt = (n: number) =>
-    `PKR ${n.toLocaleString(undefined, { maximumFractionDigits: 0 })}`;
 
   const cardStyle = {
     "--goal-accent": accent,
@@ -146,15 +145,15 @@ export default function GoalCard({ goal }: { goal: ExistingGoal }) {
         <div className="mt-auto flex min-w-0 items-end justify-between gap-3 border-t border-border pt-4">
           <div className="min-w-0">
             <p className="break-words text-sm font-bold text-text-primary [overflow-wrap:anywhere]">
-              {fmt(safeCurrent)}
+              {formatCurrency(safeCurrent)}
             </p>
             <p className="mt-0.5 break-words text-xs text-text-secondary [overflow-wrap:anywhere]">
-              of {fmt(safeTarget)}
+              of {formatCurrency(safeTarget)}
             </p>
           </div>
           <div className="min-w-0 max-w-[48%] text-right">
             <p className="break-words text-sm font-bold text-[var(--goal-accent)] [overflow-wrap:anywhere]">
-              {fmt(Math.max(safeTarget - safeCurrent, 0))}
+              {formatCurrency(Math.max(safeTarget - safeCurrent, 0))}
             </p>
             {!done && (
               <p className="break-words text-xs text-text-secondary">

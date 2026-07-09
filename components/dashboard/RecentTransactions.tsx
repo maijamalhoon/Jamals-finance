@@ -1,9 +1,12 @@
+"use client";
+
 import type { CSSProperties } from "react";
 import Link from "next/link";
 import { ArrowLeftRight } from "lucide-react";
 
 import CountedAmount from "@/components/motion/CountedAmount";
 import EmptyState from "@/components/ui/empty-state";
+import { useCurrency } from "@/components/currency/CurrencyProvider";
 import {
   getTransactionIconMeta,
   getTransactionPrefix,
@@ -26,15 +29,6 @@ interface Transaction {
     parent?: { name: string } | null;
   } | null;
   accounts: { name: string } | null;
-}
-
-function formatCurrency(value: number | string) {
-  const numericValue = Number(value);
-  const safeValue = Number.isFinite(numericValue) ? Math.abs(numericValue) : 0;
-
-  return `PKR ${safeValue.toLocaleString("en-PK", {
-    maximumFractionDigits: 0,
-  })}`;
 }
 
 function formatDate(value: string) {
@@ -75,6 +69,7 @@ export default function RecentTransactions({
 }: {
   transactions: Transaction[];
 }) {
+  const { formatCurrency } = useCurrency();
   const visibleTransactions = transactions.slice(0, 5);
 
   return (
@@ -158,7 +153,11 @@ export default function RecentTransactions({
                     )}`}
                   >
                     {getTransactionPrefix(tx.type)}
-                    <CountedAmount amount={formatCurrency(tx.amount)} />
+                    <CountedAmount
+                      amount={formatCurrency(Number(tx.amount ?? 0), {
+                        absolute: true,
+                      })}
+                    />
                   </p>
                 </article>
               );

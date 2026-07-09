@@ -15,7 +15,8 @@ import {
   financeModalContentClass,
 } from "@/components/ui/finance-modal";
 import { getAppDateKey } from "@/lib/dates";
-import { formatPKR } from "@/lib/finance-options";
+import { BASE_CURRENCY } from "@/lib/currency";
+import { useCurrency } from "@/components/currency/CurrencyProvider";
 import { CircleDollarSign } from "lucide-react";
 
 interface Account {
@@ -42,6 +43,7 @@ interface Props {
 export default function PaymentModal({ open, onClose, payable, accounts }: Props) {
   const supabase = useMemo(() => createClient(), []);
   const router = useRouter();
+  const { formatCurrency } = useCurrency();
   const [amount, setAmount] = useState("");
   const [accountId, setAccountId] = useState(accounts[0]?.id ?? "");
   const [paidAt, setPaidAt] = useState(getAppDateKey());
@@ -83,7 +85,9 @@ export default function PaymentModal({ open, onClose, payable, accounts }: Props
     }
 
     if (parsedAmount > Number(payable.remaining_amount)) {
-      setError(`Payment cannot be more than ${formatPKR(payable.remaining_amount)}.`);
+      setError(
+        `Payment cannot be more than ${formatCurrency(payable.remaining_amount)}.`,
+      );
       return;
     }
 
@@ -171,14 +175,14 @@ export default function PaymentModal({ open, onClose, payable, accounts }: Props
             <p className="mt-2 break-words text-xs text-text-secondary [overflow-wrap:anywhere]">
               Remaining:{" "}
               <span className="font-semibold text-warning">
-                {formatPKR(payable.remaining_amount)}
+                {formatCurrency(payable.remaining_amount)}
               </span>
             </p>
           </div>
 
           <div>
             <label className="field-label" htmlFor="payment-amount">
-              Payment Amount (PKR)
+              Payment Amount ({BASE_CURRENCY})
             </label>
             <input
               id="payment-amount"

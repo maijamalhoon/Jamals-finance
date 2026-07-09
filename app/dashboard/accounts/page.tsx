@@ -2,7 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import AccountCard from "@/components/accounts/AccountCard";
 import AddAccountButton from "@/components/accounts/AddAccountButton";
 import EmptyState from "@/components/ui/empty-state";
-import { formatPKR } from "@/lib/finance-options";
+import Money from "@/components/currency/Money";
 import { AlertTriangle, Landmark, WalletCards } from "lucide-react";
 
 export const dynamic = "force-dynamic";
@@ -80,7 +80,7 @@ export default async function AccountsPage() {
             <h2 className="page-title">Accounts</h2>
 
             <p className="page-subtitle break-words">
-              {safeAccounts.length} accounts - Total {formatPKR(totalBalance)}
+              {safeAccounts.length} accounts - Total <Money amount={totalBalance} />
             </p>
           </div>
 
@@ -91,7 +91,7 @@ export default async function AccountsPage() {
                   Total Balance
                 </p>
                 <p className="break-words text-sm font-bold text-text-primary">
-                  {formatPKR(totalBalance)}
+                  <Money amount={totalBalance} />
                 </p>
               </div>
 

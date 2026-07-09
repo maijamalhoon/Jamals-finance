@@ -8,6 +8,7 @@ import {
   SelectTrigger,
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
+import { useCurrency } from "@/components/currency/CurrencyProvider";
 
 export interface AccountOption {
   id: string;
@@ -27,14 +28,6 @@ interface AccountSelectProps {
   className?: string;
 }
 
-function formatPKR(value: number | string | null | undefined) {
-  if (value === null || value === undefined) return null;
-
-  return `PKR ${Number(value || 0).toLocaleString("en-PK", {
-    maximumFractionDigits: 0,
-  })}`;
-}
-
 function formatType(value: string) {
   return value
     .replace(/_/g, " ")
@@ -48,6 +41,8 @@ function AccountSummary({
   account?: AccountOption;
   placeholder: string;
 }) {
+  const { formatCurrency } = useCurrency();
+
   if (!account) {
     return (
       <span className="flex min-w-0 flex-1 items-center gap-3 text-text-secondary">
@@ -59,7 +54,10 @@ function AccountSummary({
     );
   }
 
-  const balance = formatPKR(account.balance);
+  const balance =
+    account.balance === null || account.balance === undefined ?
+      null
+    : formatCurrency(Number(account.balance || 0));
 
   return (
     <span className="flex min-w-0 flex-1 items-center gap-3 text-left">
@@ -93,6 +91,7 @@ export default function AccountSelect({
   emptyText = "No accounts found",
   className,
 }: AccountSelectProps) {
+  const { formatCurrency } = useCurrency();
   const selectedAccount = accounts.find((account) => account.id === value);
   const unavailable = disabled || loading || accounts.length === 0;
 
@@ -131,7 +130,10 @@ export default function AccountSelect({
           </div>
         ) : (
           accounts.map((account) => {
-            const balance = formatPKR(account.balance);
+            const balance =
+              account.balance === null || account.balance === undefined ?
+                null
+              : formatCurrency(Number(account.balance || 0));
 
             return (
               <SelectItem

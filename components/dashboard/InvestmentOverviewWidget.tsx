@@ -11,6 +11,7 @@ import {
 } from "recharts";
 import ChartCard from "@/components/dashboard/ChartCard";
 import CountedAmount from "@/components/motion/CountedAmount";
+import { useCurrency } from "@/components/currency/CurrencyProvider";
 import {
   aggregateInvestmentHoldings,
   getAssetInitials,
@@ -40,14 +41,6 @@ const lossColor = "var(--danger)";
 
 function shortName(name: string) {
   return name.length > 11 ? `${name.slice(0, 9)}...` : name;
-}
-
-function formatCurrency(value: number) {
-  const safeValue = Number.isFinite(value) ? Math.max(value, 0) : 0;
-
-  return `PKR ${safeValue.toLocaleString("en-PK", {
-    maximumFractionDigits: 0,
-  })}`;
 }
 
 function buildAllocationData(investments: Investment[]) {
@@ -125,6 +118,7 @@ export default function InvestmentOverviewWidget({
   investments: Investment[];
   totalPnLPct: number;
 }) {
+  const { formatCurrency } = useCurrency();
   const isProfit = totalPnLPct >= 0;
   const pnlColor = isProfit ? profitColor : lossColor;
   const allocationData = buildAllocationData(investments);

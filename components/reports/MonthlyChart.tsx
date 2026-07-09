@@ -53,6 +53,8 @@ function CustomTooltip({
 }
 
 export default function MonthlyChart({ data }: Props) {
+  const { formatCurrency } = useCurrency();
+
   return (
     <div className="finance-panel min-w-0 overflow-hidden p-4 sm:p-5">
       <h3 className="mb-5 text-sm font-semibold text-text-primary">
@@ -85,7 +87,9 @@ export default function MonthlyChart({ data }: Props) {
               tick={{ fill: "var(--text-secondary)", fontSize: 11 }}
               axisLine={false}
               tickLine={false}
-              tickFormatter={(v) => `${v / 1000}k`}
+              tickFormatter={(value) =>
+                formatCurrency(Number(value), { compact: true })
+              }
             />
             <Tooltip content={<CustomTooltip />} />
             <Bar

@@ -6,6 +6,7 @@ import { PieChart } from "lucide-react";
 import CountedAmount from "@/components/motion/CountedAmount";
 import { useDashboardAnimationReady } from "@/components/motion/useDashboardAnimationReady";
 import EmptyState from "@/components/ui/empty-state";
+import { useCurrency } from "@/components/currency/CurrencyProvider";
 
 interface SpendingData {
   id?: string;
@@ -44,11 +45,6 @@ function getCategoryAccent(item: SpendingData, index: number) {
   return CATEGORY_PALETTE[stableSeed % CATEGORY_PALETTE.length];
 }
 
-function formatCurrency(value: number) {
-  const safeValue = Number.isFinite(value) ? Math.max(value, 0) : 0;
-  return `PKR ${safeValue.toLocaleString("en-PK", { maximumFractionDigits: 0 })}`;
-}
-
 function formatPercentage(value: number) {
   const safeValue = Number.isFinite(value) ? Math.max(value, 0) : 0;
   return `${Math.round(safeValue)}%`;
@@ -67,6 +63,7 @@ export default function SpendingBreakdown({
   periodLabel?: string;
 }) {
   const { ready, reduceMotion } = useDashboardAnimationReady();
+  const { formatCurrency } = useCurrency();
   const safeTotal = Number.isFinite(total) ? Math.max(total, 0) : 0;
   const sortedData = [...data]
     .map((item) => ({
@@ -170,7 +167,10 @@ export default function SpendingBreakdown({
                   className="motion-counter-ready max-w-[7.5rem] break-words text-right text-[12px] font-semibold leading-5 text-text-primary [overflow-wrap:anywhere] sm:max-w-none sm:whitespace-nowrap sm:text-[13px]"
                   style={{ animationDelay: `${i * 65 + 85}ms` }}
                 >
-                  <CountedAmount amount={formatCurrency(item.value)} duration={0.82} />
+                  <CountedAmount
+                    amount={formatCurrency(item.value)}
+                    duration={0.82}
+                  />
                 </span>
                 <span
                   className="motion-counter-ready w-10 whitespace-nowrap text-right text-[12px] font-bold leading-5 text-[var(--category-accent)] sm:text-[13px]"

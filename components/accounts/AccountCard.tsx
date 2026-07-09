@@ -18,7 +18,7 @@ import {
 
 import { createClient } from "@/lib/supabase/client";
 import AccountModal, { ExistingAccount } from "./AccountModal";
-import { formatPKR } from "@/lib/finance-options";
+import { useCurrency } from "@/components/currency/CurrencyProvider";
 
 type AccountWithTotals = ExistingAccount & {
   inflow?: number;
@@ -81,6 +81,7 @@ type AccountCardProps = {
 export default function AccountCard({ account }: AccountCardProps) {
   const router = useRouter();
   const supabase = createClient();
+  const { formatCurrency } = useCurrency();
 
   const [editOpen, setEditOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -174,11 +175,7 @@ export default function AccountCard({ account }: AccountCardProps) {
           </p>
 
           <p className="mt-1 break-words text-2xl font-black tracking-normal text-text-primary [overflow-wrap:anywhere]">
-            {formatPKR(account.balance)}
-          </p>
-
-          <p className="mt-1 text-xs font-medium text-text-secondary">
-            Approx. ${(Number(account.balance) / 281.2).toFixed(2)} USD
+            {formatCurrency(Number(account.balance ?? 0))}
           </p>
         </div>
 
@@ -190,7 +187,7 @@ export default function AccountCard({ account }: AccountCardProps) {
             </div>
 
             <p className="break-words text-sm font-black text-success [overflow-wrap:anywhere]">
-              {formatPKR(account.inflow ?? 0)}
+              {formatCurrency(Number(account.inflow ?? 0))}
             </p>
           </div>
 
@@ -201,7 +198,7 @@ export default function AccountCard({ account }: AccountCardProps) {
             </div>
 
             <p className="break-words text-sm font-black text-danger [overflow-wrap:anywhere]">
-              {formatPKR(account.outflow ?? 0)}
+              {formatCurrency(Number(account.outflow ?? 0))}
             </p>
           </div>
         </div>

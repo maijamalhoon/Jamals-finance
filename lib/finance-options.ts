@@ -12,6 +12,7 @@ import {
   Wallet,
 } from "lucide-react";
 import { getAppDateKey } from "@/lib/dates";
+import { formatMoney } from "@/lib/currency";
 
 export const INCOME_SOURCE_SUGGESTIONS = [
   "inDrive rides",
@@ -81,9 +82,7 @@ export const PAYABLE_STATUS_META: Record<
 };
 
 export function formatPKR(value: number | string | null | undefined) {
-  return `PKR ${Number(value ?? 0).toLocaleString("en-PK", {
-    maximumFractionDigits: 0,
-  })}`;
+  return formatMoney(Number(value ?? 0));
 }
 
 export function getPayableStatus(payable: {
