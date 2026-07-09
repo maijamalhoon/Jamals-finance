@@ -2,7 +2,7 @@
   "name": "Jamal's Finance",
   "short_name": "Jamal Finance",
   "description": "A secure personal finance dashboard for accounts, expenses, goals, investments, payables, and reports.",
-  "start_url": "/dashboard?source=pwa",
+  "start_url": "/?source=pwa",
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait-primary",

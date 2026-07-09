@@ -1,4 +1,4 @@
-const CACHE_NAME = "jamals-finance-shell-v3";
+const CACHE_NAME = "jamals-finance-shell-v4";
 const OFFLINE_URL = "/offline.html";
 
 const shouldBypassCache = (pathname) => {

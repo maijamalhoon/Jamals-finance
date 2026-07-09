@@ -11,7 +11,6 @@ declare global {
 
 function canUseServiceWorker() {
   if (!("serviceWorker" in navigator)) return false;
-  if (!window.location.pathname.startsWith("/dashboard")) return false;
 
   const isLocalhost =
     window.location.hostname === "localhost" ||

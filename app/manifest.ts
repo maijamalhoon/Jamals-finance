@@ -6,7 +6,7 @@ export default function manifest(): MetadataRoute.Manifest {
     short_name: "Jamal Finance",
     description:
       "A secure personal finance dashboard for accounts, expenses, goals, investments, payables, and reports.",
-    start_url: "/dashboard?source=pwa",
+    start_url: "/?source=pwa",
     scope: "/",
     display: "standalone",
     background_color: "#090c11",
