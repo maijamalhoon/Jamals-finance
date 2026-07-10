@@ -108,17 +108,28 @@ function getCategoryColor(color: string | null | undefined) {
   return isValidCategoryHex(color) ? color : "#6b7280";
 }
 
-function pct(current: number, previous: number) {
-  if (previous !== 0) {
-    return Number(
-      (((current - previous) / Math.abs(previous)) * 100).toFixed(2),
-    );
+function getMetricTrend(current: number, previous: number) {
+  const safeCurrent = Number.isFinite(current) ? current : 0;
+  const safePrevious = Number.isFinite(previous) ? previous : 0;
+
+  if (safePrevious === 0) {
+    return {
+      label: safeCurrent === 0 ? "No prior data" : "New",
+      tone: "neutral" as const,
+    };
   }
 
-  if (current > 0) return 100;
-  if (current < 0) return -100;
+  const value = Number(
+    (((safeCurrent - safePrevious) / Math.abs(safePrevious)) * 100).toFixed(2),
+  );
 
-  return 0;
+  return {
+    label: `${value >= 0 ? "+" : "-"}${Math.abs(value).toFixed(1)}%`,
+    tone:
+      value > 0 ? "positive" as const
+      : value < 0 ? "negative" as const
+      : "neutral" as const,
+  };
 }
 
 export default async function DashboardPage() {
@@ -424,7 +435,7 @@ export default async function DashboardPage() {
             title="Month Balance"
             subtitle={currentMonthLabel}
             amount={netProfit}
-            change={pct(netProfit, lastNetProfit)}
+            trend={getMetricTrend(netProfit, lastNetProfit)}
             iconName="wallet"
             accentColor="#3b82f6"
             progress={62}
@@ -436,7 +447,7 @@ export default async function DashboardPage() {
             title="Monthly Income"
             subtitle={currentMonthLabel}
             amount={income}
-            change={pct(income, lastIncome)}
+            trend={getMetricTrend(income, lastIncome)}
             iconName="income"
             accentColor="#22c55e"
             progress={64}
@@ -448,7 +459,7 @@ export default async function DashboardPage() {
             title="Monthly Expenses"
             subtitle={currentMonthLabel}
             amount={expenses}
-            change={pct(expenses, lastExpenses)}
+            trend={getMetricTrend(expenses, lastExpenses)}
             iconName="expenses"
             accentColor="#ef4444"
             progress={38}
@@ -460,7 +471,7 @@ export default async function DashboardPage() {
             title="Investments This Month"
             subtitle={currentMonthLabel}
             amount={monthlyInvestmentsValue}
-            change={pct(
+            trend={getMetricTrend(
               monthlyInvestmentsValue,
               previousMonthlyInvestmentsValue,
             )}

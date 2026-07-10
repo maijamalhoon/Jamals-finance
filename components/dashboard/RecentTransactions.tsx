@@ -58,10 +58,10 @@ function getFlowSubtitle(tx: Transaction) {
   const account = tx.accounts?.name || "No account";
   const date = formatDate(tx.date);
 
-  if (tx.type === "income") return `Came to ${account} • ${date}`;
-  if (tx.type === "expense") return `Paid from ${account} • ${date}`;
+  if (tx.type === "income") return `Came to ${account} - ${date}`;
+  if (tx.type === "expense") return `Paid from ${account} - ${date}`;
 
-  return `${account} • ${date}`;
+  return `${account} - ${date}`;
 }
 
 export default function RecentTransactions({
@@ -128,10 +128,10 @@ export default function RecentTransactions({
                 <article
                   key={tx.id}
                   style={rowStyle}
-                  className="motion-table-row grid grid-cols-[36px_minmax(0,1fr)_auto] items-center gap-3 rounded-2xl border border-transparent px-2.5 py-2.5 transition-all duration-200 hover:-translate-y-0.5 hover:border-border hover:bg-hover/70 hover:shadow-sm"
+                  className="group motion-table-row grid grid-cols-[38px_minmax(0,1fr)_auto] items-center gap-3 rounded-2xl border border-transparent px-2.5 py-2.5 transition-all duration-200 hover:-translate-y-0.5 hover:border-border hover:bg-hover/70 hover:shadow-sm"
                 >
                   <span
-                    className="grid h-9 w-9 shrink-0 place-items-center rounded-2xl border transition-transform duration-200 group-hover:scale-105"
+                    className="grid h-9 w-9 shrink-0 place-items-center rounded-[14px] border shadow-[inset_0_1px_0_rgb(255_255_255_/_0.4)] transition-transform duration-200 group-hover:scale-105"
                     style={getTransactionSoftStyle(iconMeta.accent)}
                   >
                     <Icon size={16} strokeWidth={2.35} />
@@ -148,7 +148,7 @@ export default function RecentTransactions({
                   </div>
 
                   <p
-                    className={`shrink-0 whitespace-nowrap text-right text-[13px] font-black leading-5 tabular-nums ${getTransactionToneClass(
+                    className={`max-w-[8.5rem] shrink-0 break-words text-right text-[13px] font-black leading-5 tabular-nums [overflow-wrap:anywhere] sm:max-w-none sm:whitespace-nowrap ${getTransactionToneClass(
                       tx.type,
                     )}`}
                   >

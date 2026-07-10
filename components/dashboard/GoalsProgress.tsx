@@ -84,6 +84,10 @@ function GoalRow({
 
   const GoalIcon = done ? CheckCircle2 : entry.icon;
   const accent = done ? "var(--success)" : getGoalCategoryStyle(goal).accent;
+  const statusLabel =
+    done ? "Complete"
+    : percentage === 0 ? "Not started"
+    : formatPercent(percentage);
 
   const delay = 0;
   const progressScale =
@@ -106,9 +110,9 @@ function GoalRow({
       className="dashboard-list-row motion-card-entry"
       style={rowStyle}
     >
-      <div className="grid min-w-0 grid-cols-[36px_minmax(0,1fr)_auto] items-center gap-3">
+      <div className="grid min-w-0 grid-cols-[38px_minmax(0,1fr)_auto] items-center gap-3">
         <span
-          className="grid h-9 w-9 shrink-0 place-items-center rounded-full border"
+          className="grid h-9 w-9 shrink-0 place-items-center rounded-[14px] border shadow-[inset_0_1px_0_rgb(255_255_255_/_0.4)]"
           style={{
             color: accent,
             borderColor: `color-mix(in srgb, ${accent}, transparent 76%)`,
@@ -129,12 +133,12 @@ function GoalRow({
           </p>
         </div>
 
-        <span className="shrink-0 text-right text-[13px] font-bold leading-5 text-[var(--goal-accent)]">
-          {formatPercent(percentage)}
+        <span className="shrink-0 rounded-full border px-2 py-1 text-right text-[11px] font-bold leading-none text-[var(--goal-accent)]">
+          {statusLabel}
         </span>
       </div>
 
-      <div className="mt-2 dashboard-progress-track" style={progressStyle}>
+      <div className="mt-2.5 dashboard-progress-track" style={progressStyle}>
         <div className="dashboard-progress-fill" />
       </div>
     </article>

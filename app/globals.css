@@ -976,11 +976,17 @@
     @apply border;
     border-radius: var(--oneui-card-radius);
     border-color: color-mix(in srgb, var(--border), white 18%);
-    background: linear-gradient(
-      180deg,
-      color-mix(in srgb, var(--card), white 8%),
-      var(--card)
-    );
+    background:
+      radial-gradient(
+        circle at 16% 0%,
+        color-mix(in srgb, var(--active), transparent 92%),
+        transparent 30%
+      ),
+      linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--card), white 8%),
+        var(--card)
+      );
     color: var(--text-primary);
     box-shadow:
       0 18px 45px rgb(16 24 40 / 0.08),
@@ -995,11 +1001,17 @@
 
   .dark .finance-reference-card {
     border-color: color-mix(in srgb, var(--border), white 6%);
-    background: linear-gradient(
-      180deg,
-      color-mix(in srgb, var(--card), white 6%),
-      color-mix(in srgb, var(--card), black 8%)
-    );
+    background:
+      radial-gradient(
+        circle at 18% 0%,
+        color-mix(in srgb, var(--active), transparent 90%),
+        transparent 32%
+      ),
+      linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--card), white 6%),
+        color-mix(in srgb, var(--card), black 8%)
+      );
     box-shadow:
       0 22px 58px rgb(0 0 0 / 0.32),
       inset 0 1px 0 rgb(255 255 255 / 0.04);
@@ -1074,9 +1086,10 @@
   }
 
   .dashboard-list-card-kicker-icon {
-    @apply grid h-6 w-6 shrink-0 place-items-center rounded-full border text-text-tertiary [&>svg]:h-3.5 [&>svg]:w-3.5;
-    border-color: var(--border);
-    background-color: var(--surface-secondary);
+    @apply grid h-6 w-6 shrink-0 place-items-center rounded-[10px] border text-active [&>svg]:h-3.5 [&>svg]:w-3.5;
+    border-color: color-mix(in srgb, var(--active), transparent 72%);
+    background-color: color-mix(in srgb, var(--active), transparent 91%);
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.34);
   }
 
   .dashboard-list-card-title {
@@ -1095,7 +1108,9 @@
   }
 
   .dashboard-list-card-action:hover {
+    border-color: color-mix(in srgb, var(--active), transparent 58%);
     background-color: var(--hover);
+    box-shadow: var(--shadow);
   }
 
   .dashboard-list-card-action:focus-visible {
@@ -1113,11 +1128,32 @@
   }
 
   .dashboard-list-row {
-    @apply min-w-0 border-b border-border/60 py-3 first:pt-0 last:border-b-0 last:pb-0;
+    @apply min-w-0 border-b border-border/60 py-3.5 first:pt-0 last:border-b-0 last:pb-0;
+    border-color: color-mix(in srgb, var(--border), transparent 22%);
+    transition:
+      background-color var(--motion-duration-base) var(--motion-ease),
+      border-color var(--motion-duration-base) var(--motion-ease),
+      transform var(--motion-duration-fast) var(--motion-ease);
+  }
+
+  .dashboard-list-row[data-rank="1"] {
+    margin-inline: -0.5rem;
+    border-radius: 1rem;
+    padding-inline: 0.5rem;
+    background:
+      linear-gradient(
+        90deg,
+        color-mix(in srgb, var(--category-accent, var(--active)), transparent 92%),
+        transparent 72%
+      );
+  }
+
+  .dashboard-list-row:hover {
+    background-color: color-mix(in srgb, var(--hover), transparent 36%);
   }
 
   .dashboard-progress-track {
-    @apply h-1.5 overflow-hidden rounded-full;
+    @apply h-2 overflow-hidden rounded-full;
     background-color: color-mix(
       in srgb,
       var(--progress-accent, var(--active)),
@@ -1130,6 +1166,7 @@
     height: 100%;
     border-radius: inherit;
     background-color: var(--progress-accent, var(--active));
+    box-shadow: 0 0 16px color-mix(in srgb, var(--progress-accent, var(--active)), transparent 68%);
     opacity: 1;
     transform: scaleX(var(--progress-scale, 0));
     transform-origin: left center;
@@ -1166,6 +1203,15 @@
       box-shadow 0.2s var(--motion-ease),
       background-color 0.2s var(--motion-ease);
     will-change: transform;
+  }
+
+  .dashboard-graph-card:hover {
+    border-color: color-mix(in srgb, var(--active), var(--border) 72%);
+    box-shadow:
+      0 20px 48px rgb(16 24 40 / 0.095),
+      0 2px 8px rgb(16 24 40 / 0.04),
+      inset 0 1px 0 rgb(255 255 255 / 0.42);
+    transform: translate3d(0, -1px, 0);
   }
 
   .dark .dashboard-graph-card {
@@ -3646,6 +3692,45 @@ tbody tr:hover {
 .jf-dashboard-header-wrap {
   position: relative;
   z-index: 30;
+  padding-bottom: 0.75rem;
+}
+
+.jf-desktop-header {
+  isolation: isolate;
+  box-shadow:
+    0 18px 44px rgb(16 24 40 / 0.09),
+    0 1px 0 rgb(255 255 255 / 0.48) inset;
+}
+
+.jf-desktop-header::before {
+  content: "";
+  pointer-events: none;
+  position: absolute;
+  inset: 1px;
+  z-index: -1;
+  border-radius: inherit;
+  background:
+    linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--active), transparent 92%),
+      transparent 38%,
+      color-mix(in srgb, var(--success), transparent 94%)
+    );
+  opacity: 0.75;
+}
+
+.dark .jf-desktop-header {
+  border-color: color-mix(in srgb, var(--border), white 8%);
+  box-shadow:
+    0 22px 62px rgb(0 0 0 / 0.42),
+    0 1px 0 rgb(255 255 255 / 0.08) inset;
+}
+
+.jf-balance-card {
+  box-shadow:
+    0 24px 62px rgb(16 24 40 / 0.1),
+    0 2px 9px rgb(16 24 40 / 0.04),
+    inset 0 1px 0 rgb(255 255 255 / 0.44);
 }
 
 .jf-dashboard-header-wrap::after {

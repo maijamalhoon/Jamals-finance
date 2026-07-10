@@ -5,10 +5,13 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
 import DatePicker from "@/components/ui/date-picker";
+import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 import {
   FinanceModalBody,
   FinanceModalFooter,
+  FinanceFormField,
   FinanceModalHeader,
   financeCancelButtonClass,
   financeErrorClass,
@@ -180,19 +183,19 @@ export default function PaymentModal({ open, onClose, payable, accounts }: Props
             </p>
           </div>
 
-          <div>
-            <label className="field-label" htmlFor="payment-amount">
-              Payment Amount ({BASE_CURRENCY})
-            </label>
-            <input
+          <FinanceFormField
+            label={`Payment Amount (${BASE_CURRENCY})`}
+            htmlFor="payment-amount"
+          >
+            <Input
               id="payment-amount"
               type="number"
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
               placeholder="0"
-              className="field-input font-semibold"
+              className="font-semibold"
             />
-          </div>
+          </FinanceFormField>
 
           <div>
             <label className="field-label">Paid From Account</label>
@@ -224,10 +227,7 @@ export default function PaymentModal({ open, onClose, payable, accounts }: Props
             </div>
           </div>
 
-          <div>
-            <label className="field-label" htmlFor="payment-paid-at">
-              Payment Date
-            </label>
+          <FinanceFormField label="Payment Date" htmlFor="payment-paid-at">
             <DatePicker
               id="payment-paid-at"
               value={paidAt}
@@ -235,20 +235,16 @@ export default function PaymentModal({ open, onClose, payable, accounts }: Props
               placeholder="DD/MM/YYYY"
               ariaLabel="Payment date"
             />
-          </div>
+          </FinanceFormField>
 
-          <div>
-            <label className="field-label" htmlFor="payment-note">
-              Payment Note
-            </label>
-            <input
+          <FinanceFormField label="Payment Note" htmlFor="payment-note">
+            <Input
               id="payment-note"
               value={note}
               onChange={(e) => setNote(e.target.value)}
               placeholder="Receipt, method, or short note"
-              className="field-input"
             />
-          </div>
+          </FinanceFormField>
 
           {error && (
             <p className={financeErrorClass}>
@@ -258,22 +254,22 @@ export default function PaymentModal({ open, onClose, payable, accounts }: Props
         </FinanceModalBody>
 
         <FinanceModalFooter>
-          <button
+          <Button
             type="button"
             onClick={onClose}
             disabled={loading}
             className={financeCancelButtonClass}
           >
             Cancel
-          </button>
-          <button
+          </Button>
+          <Button
             type="button"
             onClick={handleSave}
             disabled={loading || !accounts.length}
             className="primary-action w-full py-3"
           >
             {loading ? "Recording..." : "Record Payment"}
-          </button>
+          </Button>
         </FinanceModalFooter>
       </DialogContent>
     </Dialog>

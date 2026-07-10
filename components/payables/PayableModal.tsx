@@ -5,10 +5,13 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
 import DatePicker from "@/components/ui/date-picker";
+import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 import {
   FinanceModalBody,
   FinanceModalFooter,
+  FinanceFormField,
   FinanceModalHeader,
   financeCancelButtonClass,
   financeErrorClass,
@@ -120,42 +123,30 @@ export default function PayableModal({ open, onClose, payable }: Props) {
 
         <FinanceModalBody>
           <div className="grid gap-3 sm:grid-cols-2">
-            <div>
-              <label className="field-label" htmlFor="payable-person-name">
-                Person Name
-              </label>
-              <input
+            <FinanceFormField label="Person Name" htmlFor="payable-person-name">
+              <Input
                 id="payable-person-name"
                 value={personName}
                 onChange={(e) => setPersonName(e.target.value)}
                 placeholder="Who do you need to pay?"
-                className="field-input"
               />
-            </div>
-            <div>
-              <label className="field-label" htmlFor="payable-item-name">
-                Item / Amount Name
-              </label>
-              <input
+            </FinanceFormField>
+            <FinanceFormField label="Item / Amount Name" htmlFor="payable-item-name">
+              <Input
                 id="payable-item-name"
                 value={itemName}
                 onChange={(e) => setItemName(e.target.value)}
                 placeholder="Phone, cash, loan, etc."
-                className="field-input"
               />
-            </div>
+            </FinanceFormField>
           </div>
 
-          <div>
-            <label className="field-label" htmlFor="payable-reason">
-              Reason
-            </label>
-            <input
+          <FinanceFormField label="Reason" htmlFor="payable-reason">
+            <Input
               id="payable-reason"
               value={reason}
               onChange={(e) => setReason(e.target.value)}
               placeholder="Why was this taken?"
-              className="field-input"
             />
             <div className="mt-2 flex flex-wrap gap-2">
               {PAYABLE_QUICK_REASONS.map(({ label, icon: Icon }) => (
@@ -170,26 +161,23 @@ export default function PayableModal({ open, onClose, payable }: Props) {
                 </button>
               ))}
             </div>
-          </div>
+          </FinanceFormField>
 
           <div className="grid gap-3 sm:grid-cols-2">
-            <div>
-              <label className="field-label" htmlFor="payable-original-value">
-                Actual Value ({BASE_CURRENCY})
-              </label>
-              <input
+            <FinanceFormField
+              label={`Actual Value (${BASE_CURRENCY})`}
+              htmlFor="payable-original-value"
+            >
+              <Input
                 id="payable-original-value"
                 type="number"
                 value={originalValue}
                 onChange={(e) => setOriginalValue(e.target.value)}
                 placeholder="0"
-                className="field-input font-semibold"
+                className="font-semibold"
               />
-            </div>
-            <div>
-              <label className="field-label" htmlFor="payable-due-date">
-                Due Date
-              </label>
+            </FinanceFormField>
+            <FinanceFormField label="Due Date" htmlFor="payable-due-date">
               <DatePicker
                 id="payable-due-date"
                 value={dueDate}
@@ -197,13 +185,10 @@ export default function PayableModal({ open, onClose, payable }: Props) {
                 placeholder="DD/MM/YYYY"
                 ariaLabel="Payable due date"
               />
-            </div>
+            </FinanceFormField>
           </div>
 
-          <div>
-            <label className="field-label" htmlFor="payable-notes">
-              Notes
-            </label>
+          <FinanceFormField label="Notes" htmlFor="payable-notes">
             <textarea
               id="payable-notes"
               value={notes}
@@ -211,7 +196,7 @@ export default function PayableModal({ open, onClose, payable }: Props) {
               placeholder="Agreement details, reminders, or partial payment notes"
               className="field-input min-h-24 resize-none"
             />
-          </div>
+          </FinanceFormField>
 
           {error && (
             <p className={financeErrorClass}>
@@ -221,22 +206,22 @@ export default function PayableModal({ open, onClose, payable }: Props) {
         </FinanceModalBody>
 
         <FinanceModalFooter>
-          <button
+          <Button
             type="button"
             onClick={onClose}
             disabled={loading}
             className={financeCancelButtonClass}
           >
             Cancel
-          </button>
-          <button
+          </Button>
+          <Button
             type="button"
             onClick={handleSave}
             disabled={loading}
             className="primary-action w-full py-3"
           >
             {loading ? "Saving..." : isEditing ? "Update Payable" : "Save Payable"}
-          </button>
+          </Button>
         </FinanceModalFooter>
       </DialogContent>
     </Dialog>

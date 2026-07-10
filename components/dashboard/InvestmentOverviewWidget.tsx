@@ -43,6 +43,10 @@ function shortName(name: string) {
   return name.length > 11 ? `${name.slice(0, 9)}...` : name;
 }
 
+function formatAllocation(value: number) {
+  return `${Math.round(value)}%`;
+}
+
 function buildAllocationData(investments: Investment[]) {
   const rows = aggregateInvestmentHoldings(investments)
     .map((holding) => ({
@@ -123,6 +127,15 @@ export default function InvestmentOverviewWidget({
   const pnlColor = isProfit ? profitColor : lossColor;
   const allocationData = buildAllocationData(investments);
   const visibleInvestments = allocationData.slice(0, 3);
+  const allocationTotalValue = allocationData.reduce(
+    (sum, investment) => sum + investment.value,
+    0,
+  );
+  const realPortfolioValue = allocationData.reduce(
+    (sum, investment) =>
+      investment.holding ? sum + investment.value : sum,
+    0,
+  );
   const chartKey = allocationData
     .map((investment) => `${investment.id}-${investment.value}`)
     .join("-");
@@ -148,28 +161,39 @@ export default function InvestmentOverviewWidget({
             {visibleInvestments.map((investment) => (
               <div
                 key={investment.id}
-                className="flex min-w-0 items-center gap-1.5 rounded-full bg-surface-secondary/60 px-1.5 py-1"
+                className="flex min-w-0 items-center gap-1.5 rounded-full border bg-surface-secondary/60 px-1.5 py-1 transition-all hover:-translate-y-0.5 hover:bg-hover/70 hover:shadow-sm"
+                style={{
+                  borderColor: `color-mix(in srgb, ${investment.color}, transparent 72%)`,
+                }}
               >
                 <LegendIcon entry={investment} />
                 <span className="truncate text-[9.5px] font-medium text-[#8d96a8] dark:text-text-secondary">
                   {shortName(investment.name)}
                 </span>
+                {allocationTotalValue > 0 && investment.holding ? (
+                  <span
+                    className="ml-auto shrink-0 text-[9px] font-bold tabular-nums"
+                    style={{ color: investment.color }}
+                  >
+                    {formatAllocation((investment.value / allocationTotalValue) * 100)}
+                  </span>
+                ) : null}
               </div>
             ))}
           </div>
         }
       >
         <div className="flex h-full min-h-[142px] items-center justify-center">
-          <div className="relative h-[128px] w-[128px]">
+          <div className="relative h-[132px] w-[132px]">
             <ResponsiveContainer width="100%" height="100%" initialDimension={{ width: 128, height: 128 }}>
               <PieChart key={chartKey}>
                 <Pie
                   data={allocationData}
                   dataKey="value"
                   nameKey="name"
-                  innerRadius={42}
-                  outerRadius={58}
-                  paddingAngle={2}
+                  innerRadius={43}
+                  outerRadius={60}
+                  paddingAngle={3}
                   isAnimationActive
                   animationBegin={160}
                   animationDuration={1150}
@@ -188,25 +212,48 @@ export default function InvestmentOverviewWidget({
                     color: "var(--text-primary)",
                     boxShadow: "var(--shadow-soft)",
                   }}
-                  formatter={(value) => [
-                    formatCurrency(Number(value ?? 0)),
-                    "Value",
-                  ]}
+                  formatter={(value, name) => {
+                    const item = allocationData.find((entry) => entry.name === name);
+                    if (!item?.holding) return ["Pending price", "Status"];
+
+                    return [
+                      formatCurrency(Number(value ?? 0)),
+                      "Value",
+                    ];
+                  }}
+                  labelFormatter={(label) => {
+                    const item = allocationData.find((entry) => entry.name === label);
+                    if (!item?.holding || allocationTotalValue <= 0) return String(label);
+                    return `${label} - ${formatAllocation((item.value / allocationTotalValue) * 100)}`;
+                  }}
                 />
               </PieChart>
             </ResponsiveContainer>
-            <div className="absolute inset-[25px] grid place-items-center rounded-full bg-card text-center shadow-[inset_0_1px_0_rgb(255_255_255_/_0.55)] dark:shadow-[inset_0_1px_0_rgb(255_255_255_/_0.05)]">
+            <div className="absolute inset-[24px] grid place-items-center rounded-full border border-border/60 bg-card text-center shadow-[inset_0_1px_0_rgb(255_255_255_/_0.55)] dark:shadow-[inset_0_1px_0_rgb(255_255_255_/_0.05)]">
               <div>
-                <p
-                  className="text-[19px] font-bold leading-none"
-                  style={{ color: pnlColor }}
-                >
-                  <CountedAmount
-                    amount={`${isProfit ? "+" : "-"}${Math.abs(totalPnLPct).toFixed(1)}%`}
-                  />
-                </p>
-                <p className="mt-1 text-[9.5px] font-semibold leading-none tracking-[0.12em] text-[#9aa3b5]">
-                  {isProfit ? "total gain" : "total loss"}
+                {realPortfolioValue > 0 ? (
+                  <>
+                    <p className="max-w-[4.8rem] truncate text-[13px] font-black leading-none text-text-primary">
+                      <CountedAmount
+                        amount={formatCurrency(realPortfolioValue, { compact: true })}
+                      />
+                    </p>
+                    <p
+                      className="mt-1 text-[10px] font-bold leading-none"
+                      style={{ color: pnlColor }}
+                    >
+                      <CountedAmount
+                        amount={`${isProfit ? "+" : "-"}${Math.abs(totalPnLPct).toFixed(1)}%`}
+                      />
+                    </p>
+                  </>
+                ) : (
+                  <p className="max-w-[4.8rem] truncate text-[12px] font-black leading-none text-text-primary">
+                    Unpriced
+                  </p>
+                )}
+                <p className="mt-1 text-[8.5px] font-semibold leading-none tracking-[0.12em] text-[#9aa3b5]">
+                  portfolio
                 </p>
               </div>
             </div>

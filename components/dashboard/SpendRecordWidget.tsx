@@ -5,6 +5,7 @@ import { Activity } from "lucide-react";
 import {
   Area,
   AreaChart,
+  ReferenceDot,
   Tooltip,
   XAxis,
   YAxis,
@@ -34,6 +35,15 @@ export default function SpendRecordWidget({
     [dailyExpenseTrend],
   );
   const hasSpendData = data.some((point) => point.spend > 0);
+  const peakPoint = useMemo(() => {
+    const peak = data.reduce(
+      (best, point) => (point.spend > best.spend ? point : best),
+      data[0] ?? { day: 1, spend: 0 },
+    );
+    const uniqueValues = new Set(data.map((point) => point.spend));
+
+    return peak.spend > 0 && uniqueValues.size > 1 ? peak : null;
+  }, [data]);
   const displaySpend =
     typeof monthlySpend === "number" ?
       formatCurrency(monthlySpend)
@@ -80,7 +90,7 @@ export default function SpendRecordWidget({
                     <stop
                       offset="0%"
                       stopColor="var(--dashboard-chart-spend)"
-                      stopOpacity={0.2}
+                      stopOpacity={0.24}
                     />
                     <stop
                       offset="100%"
@@ -102,6 +112,7 @@ export default function SpendRecordWidget({
                     background: "var(--card)",
                     color: "var(--text-primary)",
                     boxShadow: "var(--shadow-soft)",
+                    backdropFilter: "blur(10px)",
                   }}
                   formatter={(value) => [
                     formatCurrency(Number(value ?? 0)),
@@ -109,15 +120,22 @@ export default function SpendRecordWidget({
                   ]}
                   labelFormatter={(label) => `Day ${label}`}
                 />
+                {peakPoint ? (
+                  <ReferenceDot
+                    x={peakPoint.day}
+                    y={peakPoint.spend}
+                    r={4.5}
+                    fill="var(--dashboard-chart-spend)"
+                    stroke="var(--card)"
+                    strokeWidth={2.5}
+                    ifOverflow="extendDomain"
+                  />
+                ) : null}
                 <Area
                   type="monotone"
                   dataKey="spend"
-                  activeDot={{
-                    r: 4,
-                    stroke: "var(--card)",
-                    strokeWidth: 2,
-                    fill: "var(--dashboard-chart-spend)",
-                  }}
+                  activeDot={false}
+                  dot={false}
                   stroke="var(--dashboard-chart-spend)"
                   strokeLinecap="round"
                   strokeWidth={2.7}

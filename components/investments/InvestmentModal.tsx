@@ -5,13 +5,16 @@ import { BriefcaseBusiness, Loader2, Search, X } from "lucide-react";
 import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
 import AccountSelect from "@/components/accounts/AccountSelect";
+import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import DatePicker from "@/components/ui/date-picker";
+import { Input } from "@/components/ui/input";
 import { getAppDateKey } from "@/lib/dates";
 import { BASE_CURRENCY, formatMoney } from "@/lib/currency";
 import {
   FinanceModalBody,
   FinanceModalFooter,
+  FinanceFormField,
   FinanceModalHeader,
   financeCancelButtonClass,
   financeErrorClass,
@@ -740,7 +743,7 @@ export default function InvestmentModal({
                     aria-hidden="true"
                     className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-text-secondary"
                   />
-                  <input
+                  <Input
                     id="investment-asset-search"
                     value={query}
                     onChange={(event) => {
@@ -864,11 +867,8 @@ export default function InvestmentModal({
               </button>
             </div>
           ) : (
-            <div>
-              <label className="field-label" htmlFor="investment-name">
-                Asset Name
-              </label>
-              <input
+            <FinanceFormField label="Asset Name" htmlFor="investment-name">
+              <Input
                 id="investment-name"
                 value={name}
                 onChange={(event) => {
@@ -876,7 +876,6 @@ export default function InvestmentModal({
                   if (!isEditing) clearMarketSelection();
                 }}
                 placeholder="e.g. Bitcoin, Apple Stock"
-                className="field-input"
               />
               {!isEditing ? (
                 <button
@@ -891,7 +890,7 @@ export default function InvestmentModal({
                   Search crypto or stocks instead
                 </button>
               ) : null}
-            </div>
+            </FinanceFormField>
           )}
 
           {selectedAsset ? (
@@ -996,19 +995,15 @@ export default function InvestmentModal({
           )}
 
           <div className="grid gap-3 sm:grid-cols-2">
-            <div>
-              <label className="field-label" htmlFor="investment-quantity">
-                Quantity
-              </label>
-              <input
+            <FinanceFormField label="Quantity" htmlFor="investment-quantity">
+              <Input
                 id="investment-quantity"
                 type="number"
                 value={quantity}
                 onChange={(e) => setQuantity(e.target.value)}
                 placeholder="1"
-                className="field-input"
               />
-            </div>
+            </FinanceFormField>
             <div>
               <div className="mb-1.5 flex items-center justify-between gap-2">
                 <label className="field-label mb-0" htmlFor="investment-purchase-price">
@@ -1032,13 +1027,12 @@ export default function InvestmentModal({
                   ))}
                 </div>
               </div>
-              <input
+              <Input
                 id="investment-purchase-price"
                 type="number"
                 value={purchasePrice}
                 onChange={(e) => setPurchasePrice(e.target.value)}
                 placeholder="0"
-                className="field-input"
               />
             </div>
           </div>
@@ -1099,7 +1093,7 @@ export default function InvestmentModal({
                   ))}
                 </div>
               </div>
-              <input
+              <Input
                 id="investment-current-price"
                 type="number"
                 value={currentPrice}
@@ -1108,13 +1102,11 @@ export default function InvestmentModal({
                   if (!isEditing && manualMode) clearMarketSelection();
                 }}
                 placeholder="Leave blank to match buy price"
-                className="field-input"
               />
             </div>
           )}
 
-          <div>
-            <label className="field-label">Paid From Account</label>
+          <FinanceFormField label="Paid From Account">
             <AccountSelect
               value={accountId}
               onValueChange={setAccountId}
@@ -1128,12 +1120,9 @@ export default function InvestmentModal({
                 This keeps the linked purchase transaction and account balance in sync.
               </p>
             ) : null}
-          </div>
+          </FinanceFormField>
 
-          <div>
-            <label className="field-label" htmlFor="investment-purchased-at">
-              Purchase Date
-            </label>
+          <FinanceFormField label="Purchase Date" htmlFor="investment-purchased-at">
             <DatePicker
               id="investment-purchased-at"
               value={purchasedAt}
@@ -1141,21 +1130,21 @@ export default function InvestmentModal({
               placeholder="DD/MM/YYYY"
               ariaLabel="Investment purchase date"
             />
-          </div>
+          </FinanceFormField>
 
           {error && <p className={financeErrorClass}>{error}</p>}
         </FinanceModalBody>
 
         <FinanceModalFooter>
-          <button
+          <Button
             type="button"
             onClick={onClose}
             disabled={loading}
             className={financeCancelButtonClass}
           >
             Cancel
-          </button>
-          <button
+          </Button>
+          <Button
             type="button"
             onClick={handleSave}
             disabled={loading || loadingOptions}
@@ -1168,7 +1157,7 @@ export default function InvestmentModal({
               : isEditing
                 ? "Update Investment"
                 : "Add Investment"}
-          </button>
+          </Button>
         </FinanceModalFooter>
       </DialogContent>
     </Dialog>

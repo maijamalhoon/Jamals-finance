@@ -31,7 +31,7 @@ const actions: Array<{
     icon: ArrowUp,
     ariaLabel: "Add income",
     circleClass:
-      "bg-emerald-50 text-emerald-600 border-emerald-100 group-hover:border-emerald-300 group-hover:bg-emerald-100 dark:bg-emerald-500/10 dark:text-emerald-300 dark:border-emerald-500/20",
+      "bg-emerald-50 text-emerald-600 border-emerald-100 group-hover:border-emerald-300 group-hover:bg-emerald-100 group-hover:shadow-emerald-500/15 dark:bg-emerald-500/10 dark:text-emerald-300 dark:border-emerald-500/20",
   },
   {
     key: "expense",
@@ -39,7 +39,7 @@ const actions: Array<{
     icon: ArrowDown,
     ariaLabel: "Add expense",
     circleClass:
-      "bg-rose-50 text-rose-600 border-rose-100 group-hover:border-rose-300 group-hover:bg-rose-100 dark:bg-rose-500/10 dark:text-rose-300 dark:border-rose-500/20",
+      "bg-rose-50 text-rose-600 border-rose-100 group-hover:border-rose-300 group-hover:bg-rose-100 group-hover:shadow-rose-500/15 dark:bg-rose-500/10 dark:text-rose-300 dark:border-rose-500/20",
   },
   {
     key: "transfer",
@@ -47,7 +47,7 @@ const actions: Array<{
     icon: ArrowUpDown,
     ariaLabel: "Transfer money",
     circleClass:
-      "bg-blue-50 text-blue-600 border-blue-100 group-hover:border-blue-300 group-hover:bg-blue-100 dark:bg-blue-500/10 dark:text-blue-300 dark:border-blue-500/20",
+      "bg-blue-50 text-blue-600 border-blue-100 group-hover:border-blue-300 group-hover:bg-blue-100 group-hover:shadow-blue-500/15 dark:bg-blue-500/10 dark:text-blue-300 dark:border-blue-500/20",
   },
   {
     key: "invest",
@@ -55,7 +55,7 @@ const actions: Array<{
     icon: TrendingUp,
     ariaLabel: "Add investment",
     circleClass:
-      "bg-slate-50 text-slate-900 border-slate-200 group-hover:border-slate-300 group-hover:bg-slate-100 dark:bg-white/10 dark:text-white dark:border-white/10",
+      "bg-amber-50 text-amber-700 border-amber-100 group-hover:border-amber-300 group-hover:bg-amber-100 group-hover:shadow-amber-500/15 dark:bg-amber-500/10 dark:text-amber-200 dark:border-amber-500/20",
   },
 ];
 
@@ -95,7 +95,7 @@ export default function QuickActionsBalance({
     <>
       <section
         aria-label="Total net balance and quick actions"
-        className="finance-reference-card relative overflow-hidden px-4 py-4 sm:px-5 sm:py-5 lg:px-6"
+        className="finance-reference-card jf-balance-card relative overflow-hidden px-4 py-4 sm:px-5 sm:py-5 lg:px-6"
       >
         <div
           aria-hidden="true"
@@ -104,16 +104,20 @@ export default function QuickActionsBalance({
 
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute -right-16 -top-20 h-44 w-44 rounded-full bg-blue-500/10 blur-3xl"
+          className="pointer-events-none absolute -right-16 -top-20 h-48 w-48 rounded-full bg-blue-500/10 blur-3xl"
+        />
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute left-1/4 top-0 h-24 w-64 -translate-y-1/2 rounded-full bg-emerald-500/10 blur-3xl"
         />
 
         <div className="relative flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
           <div className="min-w-0 text-center lg:text-left">
-            <p className="mb-2 text-[10px] font-black uppercase tracking-[0.24em] text-text-muted">
+            <p className="mb-2 text-[10px] font-black uppercase tracking-[0.24em] text-text-secondary">
               Total net balance
             </p>
 
-            <h1 className="break-words text-[clamp(2.25rem,4.6vw,4.15rem)] font-black leading-[0.96] tracking-[-0.045em] text-text-primary [font-variant-numeric:tabular-nums] [overflow-wrap:anywhere]">
+            <h1 className="max-w-full break-words text-[clamp(2.05rem,4.1vw,4.15rem)] font-black leading-[0.96] tracking-tight text-text-primary [font-variant-numeric:tabular-nums] [overflow-wrap:anywhere] lg:max-w-[13ch] xl:max-w-[15ch]">
               {displayTotalBalance}
             </h1>
           </div>
@@ -128,10 +132,10 @@ export default function QuickActionsBalance({
                   type="button"
                   aria-label={action.ariaLabel}
                   onClick={() => openAction(action.key)}
-                  className="finance-focus group flex min-w-0 flex-col items-center justify-center gap-2 rounded-[var(--oneui-control-radius)] px-1 py-1.5 transition-transform duration-200 hover:-translate-y-0.5"
+                  className="finance-focus group flex min-w-0 flex-col items-center justify-center gap-2 rounded-[var(--oneui-control-radius)] border border-transparent px-1 py-1.5 transition-all duration-200 hover:-translate-y-0.5 hover:border-border hover:bg-card/60 focus-visible:bg-card/70"
                 >
                   <span
-                    className={`grid h-11 w-11 place-items-center rounded-full border shadow-sm transition-all duration-200 group-hover:shadow-md sm:h-12 sm:w-12 lg:h-14 lg:w-14 ${action.circleClass}`}
+                    className={`grid h-11 w-11 place-items-center rounded-full border shadow-sm transition-all duration-200 group-hover:shadow-lg sm:h-12 sm:w-12 lg:h-14 lg:w-14 ${action.circleClass}`}
                   >
                     <Icon
                       aria-hidden="true"

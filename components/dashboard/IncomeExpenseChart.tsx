@@ -2,8 +2,8 @@
 
 import { useMemo } from "react";
 import {
-  LineChart,
-  Line,
+  Area,
+  ComposedChart,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -41,21 +41,31 @@ function CustomTooltip({
   const income = payload.find((item) => item.dataKey === "income")?.value ?? 0;
   const expenses =
     payload.find((item) => item.dataKey === "expenses")?.value ?? 0;
+  const net = income - expenses;
 
   return (
-    <div className="rounded-[16px] border border-border bg-card/95 p-3 text-xs shadow-[var(--shadow-soft)] backdrop-blur-md">
-      <p className="mb-2 font-semibold text-text-secondary">{label}</p>
-      <p className="font-medium text-success">
-        Income: {formatCurrency(income)}
-      </p>
-      <p className="mt-1 font-medium text-danger">
-        Expenses: {formatCurrency(expenses)}
-      </p>
+    <div className="min-w-[178px] rounded-[16px] border border-border bg-card/95 p-3 text-xs shadow-[var(--shadow-soft)] backdrop-blur-md">
+      <p className="mb-2 font-semibold text-text-primary">{label}</p>
+      <div className="space-y-1.5">
+        <p className="flex items-center justify-between gap-5 font-medium text-success">
+          <span>Income</span>
+          <span className="font-bold tabular-nums">{formatCurrency(income)}</span>
+        </p>
+        <p className="flex items-center justify-between gap-5 font-medium text-danger">
+          <span>Expenses</span>
+          <span className="font-bold tabular-nums">{formatCurrency(expenses)}</span>
+        </p>
+        <p className="flex items-center justify-between gap-5 border-t border-border/70 pt-1.5 font-medium text-text-primary">
+          <span>Net</span>
+          <span className="font-bold tabular-nums">{formatCurrency(net)}</span>
+        </p>
+      </div>
     </div>
   );
 }
 
 export default function IncomeExpenseChart({ data }: { data: ChartData[] }) {
+  const { formatCurrency } = useCurrency();
   const chartRows = useMemo(
     () =>
       data.map((point, index) => ({
@@ -108,14 +118,24 @@ export default function IncomeExpenseChart({ data }: { data: ChartData[] }) {
           tone="green"
         >
           {({ width, height }) => (
-            <LineChart
+            <ComposedChart
               data={chartRows}
               height={height}
-              margin={{ top: 10, right: 8, left: -6, bottom: 0 }}
+              margin={{ top: 10, right: 10, left: 16, bottom: 0 }}
               width={width}
             >
+              <defs>
+                <linearGradient id="dailyIncomeFill" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="var(--dashboard-chart-income)" stopOpacity={0.2} />
+                  <stop offset="100%" stopColor="var(--dashboard-chart-income)" stopOpacity={0.02} />
+                </linearGradient>
+                <linearGradient id="dailyExpenseFill" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="var(--dashboard-chart-expense)" stopOpacity={0.16} />
+                  <stop offset="100%" stopColor="var(--dashboard-chart-expense)" stopOpacity={0.02} />
+                </linearGradient>
+              </defs>
               <CartesianGrid
-                strokeDasharray="2 7"
+                strokeDasharray="2 8"
                 stroke="var(--dashboard-chart-grid)"
                 vertical={false}
               />
@@ -138,32 +158,39 @@ export default function IncomeExpenseChart({ data }: { data: ChartData[] }) {
                 tick={{ fill: "var(--dashboard-chart-muted)", fontSize: 11 }}
                 axisLine={false}
                 tickLine={false}
-                width={36}
-                tickFormatter={(value) => String(value)}
+                width={64}
+                tickMargin={8}
+                tickFormatter={(value) =>
+                  formatCurrency(Number(value), { compact: true })
+                }
               />
               <Tooltip content={<CustomTooltip />} />
-              <Line
+              <Area
                 type="monotone"
                 dataKey="income"
                 dot={false}
+                activeDot={{ r: 4, strokeWidth: 2, stroke: "var(--card)" }}
                 isAnimationActive
                 stroke="var(--dashboard-chart-income)"
                 strokeLinecap="round"
                 strokeWidth={2.35}
+                fill="url(#dailyIncomeFill)"
                 {...chartMotion}
               />
-              <Line
+              <Area
                 type="monotone"
                 dataKey="expenses"
                 dot={false}
+                activeDot={{ r: 4, strokeWidth: 2, stroke: "var(--card)" }}
                 isAnimationActive
                 stroke="var(--dashboard-chart-expense)"
                 strokeDasharray="4 4"
                 strokeLinecap="round"
                 strokeWidth={2.25}
+                fill="url(#dailyExpenseFill)"
                 {...chartMotion}
               />
-            </LineChart>
+            </ComposedChart>
           )}
         </ChartFrame>
       ) : (

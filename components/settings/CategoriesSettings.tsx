@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import { Check, Pencil, Plus, Trash2, X } from "lucide-react";
 import { useCurrency } from "@/components/currency/CurrencyProvider";
 import { createClient } from "@/lib/supabase/client";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 const COLORS = [
   "#22c55e",
@@ -231,11 +233,10 @@ export default function CategoriesSettings({
 
     const renderEditor = (category: Category) => (
       <div className="rounded-[24px] border border-border bg-surface-secondary p-3">
-        <input
+        <Input
           value={editName}
           onChange={(event) => setEditName(event.target.value)}
           placeholder="Category name"
-          className="field-input py-2.5"
         />
         {category.type === "expense" && (
           <div className="mt-3">
@@ -251,22 +252,23 @@ export default function CategoriesSettings({
           <ColorPicker value={editColor} onChange={setEditColor} />
         </div>
         <div className="mt-3 flex gap-2">
-          <button
+          <Button
             type="button"
             onClick={() => handleUpdate(category)}
             disabled={saving || !editName.trim()}
             className="primary-action min-h-0 rounded-[14px] px-3 py-2 text-xs"
           >
             {saving ? "Saving..." : "Save changes"}
-          </button>
-          <button
+          </Button>
+          <Button
             type="button"
+            variant="outline"
             onClick={() => setEditingId(null)}
             className="finance-focus inline-flex items-center gap-1 rounded-[14px] border border-border bg-surface-secondary px-3 py-2 text-xs font-semibold text-text-secondary hover:bg-hover hover:text-text-primary"
           >
             <X size={12} />
             Cancel
-          </button>
+          </Button>
         </div>
       </div>
     );
@@ -381,11 +383,10 @@ export default function CategoriesSettings({
 
         {addingFor === type && (
           <div className="mt-3 space-y-3 rounded-[24px] border border-border bg-surface-secondary p-3">
-            <input
+            <Input
               value={newName}
               onChange={(event) => setNewName(event.target.value)}
               placeholder="Category name"
-              className="field-input py-2.5"
             />
             {type === "expense" && (
               <ParentPicker
@@ -396,21 +397,22 @@ export default function CategoriesSettings({
             )}
             <ColorPicker value={newColor} onChange={setNewColor} />
             <div className="flex gap-2">
-              <button
+              <Button
                 type="button"
                 onClick={handleAdd}
                 disabled={saving || !newName.trim()}
                 className="primary-action min-h-0 rounded-[14px] px-3 py-2 text-xs"
               >
                 {saving ? "Saving..." : "Save category"}
-              </button>
-              <button
+              </Button>
+              <Button
                 type="button"
+                variant="outline"
                 onClick={() => setAddingFor(null)}
                 className="finance-focus rounded-[14px] border border-border bg-surface-secondary px-3 py-2 text-xs font-semibold text-text-secondary transition-colors hover:bg-hover hover:text-text-primary"
               >
                 Cancel
-              </button>
+              </Button>
             </div>
           </div>
         )}

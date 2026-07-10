@@ -123,6 +123,8 @@ const CATEGORY_PALETTE = [
   "#6b7280",
 ];
 
+const ROOT_CATEGORY_VALUE = "__root__";
+
 const THEME_OPTIONS: Array<{
   value: ThemeMode;
   label: string;
@@ -859,41 +861,49 @@ function CategoriesDialog({
     excludeId?: string;
     disabled?: boolean;
   }) {
+    const selectValue =
+      type === "income" ? ROOT_CATEGORY_VALUE : value || ROOT_CATEGORY_VALUE;
+
     if (type === "income") {
       return (
-        <div>
-          <label className="field-label" htmlFor={id}>
-            Parent/root
-          </label>
-          <select id={id} defaultValue="" disabled className="field-input">
-            <option value="">Root category</option>
-          </select>
-        </div>
+        <FinanceFormField label="Parent/root" htmlFor={id}>
+          <Select value={ROOT_CATEGORY_VALUE} disabled>
+            <SelectTrigger id={id} className="w-full">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent align="start" sideOffset={8} className="z-[90] p-1.5">
+              <SelectItem value={ROOT_CATEGORY_VALUE}>Root category</SelectItem>
+            </SelectContent>
+          </Select>
+        </FinanceFormField>
       );
     }
 
     return (
-      <div>
-        <label className="field-label" htmlFor={id}>
-          Parent/root
-        </label>
-        <select
-          id={id}
-          value={value}
-          onChange={(event) => onChange(event.target.value)}
+      <FinanceFormField label="Parent/root" htmlFor={id}>
+        <Select
+          value={selectValue}
+          onValueChange={(nextValue) => {
+            if (!nextValue) return;
+            onChange(nextValue === ROOT_CATEGORY_VALUE ? "" : nextValue);
+          }}
           disabled={disabled}
-          className="field-input"
         >
-          <option value="">Root category</option>
-          {expenseRoots
-            .filter((root) => root.id !== excludeId)
-            .map((root) => (
-              <option key={root.id} value={root.id}>
-                {root.name}
-              </option>
-            ))}
-        </select>
-      </div>
+          <SelectTrigger id={id} className="w-full">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent align="start" sideOffset={8} className="z-[90] p-1.5">
+            <SelectItem value={ROOT_CATEGORY_VALUE}>Root category</SelectItem>
+            {expenseRoots
+              .filter((root) => root.id !== excludeId)
+              .map((root) => (
+                <SelectItem key={root.id} value={root.id}>
+                  {root.name}
+                </SelectItem>
+              ))}
+          </SelectContent>
+        </Select>
+      </FinanceFormField>
     );
   }
 
@@ -916,25 +926,26 @@ function CategoriesDialog({
               placeholder="Category name"
             />
           </div>
-          <div>
-            <label className="field-label" htmlFor={`edit-type-${category.id}`}>
-              Type
-            </label>
-            <select
-              id={`edit-type-${category.id}`}
+          <FinanceFormField label="Type" htmlFor={`edit-type-${category.id}`}>
+            <Select
               value={editType}
               disabled={!canEditStructure}
-              onChange={(event) => {
-                const nextType = event.target.value as CategoryKind;
+              onValueChange={(value) => {
+                if (!value) return;
+                const nextType = value as CategoryKind;
                 setEditType(nextType);
                 if (nextType === "income") setEditParentId("");
               }}
-              className="field-input"
             >
-              <option value="income">Income</option>
-              <option value="expense">Expense</option>
-            </select>
-          </div>
+              <SelectTrigger id={`edit-type-${category.id}`} className="w-full">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent align="start" sideOffset={8} className="z-[90] p-1.5">
+                <SelectItem value="income">Income</SelectItem>
+                <SelectItem value="expense">Expense</SelectItem>
+              </SelectContent>
+            </Select>
+          </FinanceFormField>
         </div>
 
         <div className="mt-3">
@@ -1164,106 +1175,110 @@ function CategoriesDialog({
         description="Manage income and expense categories"
         onClick={() => setOpen(true)}
       />
-      <DialogContent className="max-h-[88dvh] overflow-y-auto rounded-3xl p-5 sm:max-w-2xl">
-        <DialogHeader>
-          <DialogTitle className="text-xl font-bold">Categories</DialogTitle>
-          <DialogDescription>
-            Add, edit, recolor, organize, and safely delete categories.
-          </DialogDescription>
-        </DialogHeader>
+      <DialogContent className={`${financeModalContentClass} sm:max-w-2xl`}>
+        <FinanceModalHeader
+          title="Categories"
+          description="Add, edit, recolor, organize, and safely delete categories."
+          icon={Tags}
+          tone="info"
+        />
 
-        <Tabs
-          value={activeTab}
-          onValueChange={(value) => {
-            const nextType = value as CategoryKind;
-            setActiveTab(nextType);
-            resetDraft(nextType);
-            cancelEdit();
-          }}
-        >
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="income">Income</TabsTrigger>
-            <TabsTrigger value="expense">Expense</TabsTrigger>
-          </TabsList>
-          <TabsContent value={activeTab}>
-            <motion.div
-              key={activeTab}
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.18 }}
-              className="rounded-3xl border border-border bg-surface-secondary p-4"
-            >
-              <CategorySection
-                title={
-                  activeTab === "income" ?
-                    "Income Categories"
-                  : "Expense Categories"
-                }
-                type={activeTab}
-              />
-            </motion.div>
-          </TabsContent>
-        </Tabs>
-
-        <form
-          onSubmit={addCategory}
-          className="space-y-3 rounded-3xl border border-border bg-card p-3"
-        >
-          <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_10rem]">
-            <div className="min-w-0">
-              <label className="field-label" htmlFor="category-name">
-                Add custom category
-              </label>
-              <Input
-                id="category-name"
-                value={draftName}
-                onChange={(event) => setDraftName(event.target.value)}
-                placeholder={`New ${activeTab} category`}
-              />
-            </div>
-            <div>
-              <label className="field-label" htmlFor="category-type">
-                Type
-              </label>
-              <select
-                id="category-type"
-                value={activeTab}
-                onChange={(event) => {
-                  const nextType = event.target.value as CategoryKind;
-                  setActiveTab(nextType);
-                  resetDraft(nextType);
-                }}
-                className="field-input"
+        <FinanceModalBody>
+          <Tabs
+            value={activeTab}
+            onValueChange={(value) => {
+              const nextType = value as CategoryKind;
+              setActiveTab(nextType);
+              resetDraft(nextType);
+              cancelEdit();
+            }}
+          >
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="income">Income</TabsTrigger>
+              <TabsTrigger value="expense">Expense</TabsTrigger>
+            </TabsList>
+            <TabsContent value={activeTab}>
+              <motion.div
+                key={activeTab}
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.18 }}
+                className="rounded-[var(--oneui-card-radius)] border border-border bg-surface-secondary p-4"
               >
-                <option value="income">Income</option>
-                <option value="expense">Expense</option>
-              </select>
+                <CategorySection
+                  title={
+                    activeTab === "income" ?
+                      "Income Categories"
+                    : "Expense Categories"
+                  }
+                  type={activeTab}
+                />
+              </motion.div>
+            </TabsContent>
+          </Tabs>
+
+          <form
+            onSubmit={addCategory}
+            className="space-y-3 rounded-[var(--oneui-card-radius)] border border-border bg-card p-3"
+          >
+            <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_10rem]">
+              <FinanceFormField
+                label="Add custom category"
+                htmlFor="category-name"
+                className="min-w-0"
+              >
+                <Input
+                  id="category-name"
+                  value={draftName}
+                  onChange={(event) => setDraftName(event.target.value)}
+                  placeholder={`New ${activeTab} category`}
+                />
+              </FinanceFormField>
+              <FinanceFormField label="Type" htmlFor="category-type">
+                <Select
+                  value={activeTab}
+                  onValueChange={(value) => {
+                    if (!value) return;
+                    const nextType = value as CategoryKind;
+                    setActiveTab(nextType);
+                    resetDraft(nextType);
+                  }}
+                >
+                  <SelectTrigger id="category-type" className="w-full">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent align="start" sideOffset={8} className="z-[90] p-1.5">
+                    <SelectItem value="income">Income</SelectItem>
+                    <SelectItem value="expense">Expense</SelectItem>
+                  </SelectContent>
+                </Select>
+              </FinanceFormField>
             </div>
-          </div>
-          <ParentSelect
-            id="category-parent"
-            type={activeTab}
-            value={draftParentId}
-            onChange={setDraftParentId}
-          />
-          <ColorPicker
-            value={draftColor}
-            onChange={setDraftColor}
-            label="Color"
-          />
-          <div className="flex flex-col gap-2 sm:flex-row sm:justify-end">
-            <Button
-              type="submit"
-              disabled={!draftName.trim() || savingId === "new"}
-              size="lg"
-            >
-              {savingId === "new" ?
-                <Loader2 className="animate-spin" size={16} />
-              : <Plus size={16} />}
-              {savingId === "new" ? "Adding..." : "Add Category"}
-            </Button>
-          </div>
-        </form>
+            <ParentSelect
+              id="category-parent"
+              type={activeTab}
+              value={draftParentId}
+              onChange={setDraftParentId}
+            />
+            <ColorPicker
+              value={draftColor}
+              onChange={setDraftColor}
+              label="Color"
+            />
+            <div className="flex flex-col gap-2 sm:flex-row sm:justify-end">
+              <Button
+                type="submit"
+                disabled={!draftName.trim() || savingId === "new"}
+                size="lg"
+              >
+                {savingId === "new" ?
+                  <Loader2 className="animate-spin" size={16} />
+                : <Plus size={16} />}
+                {savingId === "new" ? "Adding..." : "Add Category"}
+              </Button>
+            </div>
+          </form>
+        </FinanceModalBody>
       </DialogContent>
     </Dialog>
   );

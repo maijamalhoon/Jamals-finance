@@ -69,12 +69,17 @@ export default function FinancePulseCard({
   ];
 
   return (
-    <div className="grid gap-2.5 sm:grid-cols-2 xl:grid-cols-4">
+    <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
       {summaryTiles.map(({ label, value, detail, accent, icon: Icon }) => (
         <article
           key={label}
-          className="relative overflow-hidden rounded-[16px] border border-border/70 bg-card/72 px-3 py-2.5 shadow-[0_1px_2px_rgb(16_24_40_/_0.035)]"
+          className="finance-hover-lift relative min-h-[104px] overflow-hidden rounded-[18px] border border-border/70 bg-card/76 px-3.5 py-3 shadow-[0_1px_2px_rgb(16_24_40_/_0.035)]"
         >
+          <span
+            aria-hidden="true"
+            className="absolute -right-5 -top-6 h-16 w-16 rounded-full blur-2xl"
+            style={{ backgroundColor: `color-mix(in srgb, ${accent}, transparent 84%)` }}
+          />
           <span
             className="absolute inset-y-2 left-0 w-1 rounded-r-full"
             style={{ backgroundColor: accent }}
@@ -84,14 +89,15 @@ export default function FinancePulseCard({
               <p className="text-[10px] font-bold uppercase tracking-[0.1em] text-text-secondary">
                 {label}
               </p>
-              <p className="mt-1 truncate text-sm font-bold text-text-primary sm:text-[15px]">
+              <p className="mt-1.5 break-words text-[15px] font-black leading-tight text-text-primary [overflow-wrap:anywhere]">
                 <CountedAmount amount={value} />
               </p>
             </div>
             <span
-              className="grid h-7 w-7 shrink-0 place-items-center rounded-full"
+              className="grid h-8 w-8 shrink-0 place-items-center rounded-[13px] border"
               style={{
                 color: accent,
+                borderColor: `color-mix(in srgb, ${accent}, transparent 74%)`,
                 backgroundColor: `color-mix(in srgb, ${accent}, transparent 90%)`,
               }}
             >
