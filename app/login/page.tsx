@@ -240,8 +240,6 @@ function Feedback({
 export default function LoginPage() {
   const router = useRouter();
   const supabase = useMemo(() => createClient(), []);
-  const isGoogleAuthEnabled =
-    process.env.NEXT_PUBLIC_ENABLE_GOOGLE_AUTH === "true";
 
   const [step, setStep] = useState<Step>("login");
   const [email, setEmail] = useState("");
@@ -501,7 +499,7 @@ export default function LoginPage() {
             </div>
           : null}
 
-          {isAuthEntryStep && isGoogleAuthEnabled ?
+          {isAuthEntryStep ?
             <div className="jf-auth-social-block mb-3 space-y-2.5">
               <SocialButton
                 icon={<GoogleLogo />}
