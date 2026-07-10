@@ -1,4 +1,4 @@
-import type { CSSProperties, ReactNode } from "react";
+import type { ReactNode } from "react";
 
 type DashboardRouteLoadingVariant =
   | "dashboard"
@@ -8,27 +8,17 @@ type DashboardRouteLoadingVariant =
   | "settings"
   | "ai";
 
-const loadingLabels: Record<DashboardRouteLoadingVariant, string> = {
-  dashboard: "Loading dashboard",
-  analytics: "Loading analytics",
-  table: "Loading records",
-  cards: "Loading overview",
-  settings: "Loading settings",
-  ai: "Loading AI insights",
-};
-
-function Skeleton({
+function SkeletonLine({
   className,
-  style,
+  delay = 0,
 }: {
   className: string;
-  style?: CSSProperties;
+  delay?: number;
 }) {
   return (
     <div
-      aria-hidden="true"
       className={`finance-skeleton ${className}`}
-      style={style}
+      style={{ animationDelay: `${delay}ms` }}
     />
   );
 }
@@ -36,223 +26,20 @@ function Skeleton({
 function Panel({
   children,
   className = "",
+  delay = 0,
 }: {
   children: ReactNode;
   className?: string;
+  delay?: number;
 }) {
   return (
-    <div data-loading="true" className={`finance-loading-panel p-5 sm:p-6 ${className}`}>
+    <div
+      data-loading="true"
+      className={`finance-loading-panel motion-reveal ${className}`}
+      style={{ animationDelay: `${delay}ms` }}
+    >
       {children}
     </div>
-  );
-}
-
-function PageHeading() {
-  return (
-    <div className="space-y-2.5">
-      <Skeleton className="h-7 w-48 rounded-xl" />
-      <Skeleton className="h-4 w-full max-w-sm rounded-lg" />
-    </div>
-  );
-}
-
-function MetricGrid({ count = 4 }: { count?: number }) {
-  return (
-    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-      {Array.from({ length: count }).map((_, index) => (
-        <Panel key={index} className="min-h-[122px]">
-          <div className="flex items-start justify-between gap-4">
-            <div className="min-w-0 flex-1 space-y-3">
-              <Skeleton className="h-3.5 w-24 rounded-lg" />
-              <Skeleton className="h-8 w-36 max-w-full rounded-xl" />
-              <Skeleton className="h-3.5 w-20 rounded-lg" />
-            </div>
-            <Skeleton className="h-10 w-10 shrink-0 rounded-2xl" />
-          </div>
-        </Panel>
-      ))}
-    </div>
-  );
-}
-
-function ChartSkeleton({ compact = false }: { compact?: boolean }) {
-  return (
-    <Panel className={compact ? "min-h-[260px]" : "min-h-[340px]"}>
-      <div className="flex items-center justify-between gap-4">
-        <div className="space-y-2">
-          <Skeleton className="h-4 w-32 rounded-lg" />
-          <Skeleton className="h-3.5 w-24 rounded-lg" />
-        </div>
-        <Skeleton className="h-9 w-24 rounded-xl" />
-      </div>
-      <div className="mt-8 flex h-44 items-end gap-2 sm:h-52">
-        {[42, 68, 54, 82, 62, 91, 72, 100].map((height, index) => (
-          <Skeleton
-            key={`${height}-${index}`}
-            className="min-w-0 flex-1 rounded-t-xl rounded-b-md"
-            style={{ height: `${height}%` }}
-          />
-        ))}
-      </div>
-    </Panel>
-  );
-}
-
-function DashboardLoading() {
-  return (
-    <>
-      <Panel className="min-h-[176px]">
-        <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
-          <div className="min-w-0 flex-1 space-y-3">
-            <Skeleton className="h-3.5 w-32 rounded-lg" />
-            <Skeleton className="h-12 w-full max-w-lg rounded-2xl" />
-            <Skeleton className="h-4 w-64 max-w-full rounded-lg" />
-          </div>
-          <div className="grid grid-cols-4 gap-3">
-            {Array.from({ length: 4 }).map((_, index) => (
-              <div key={index} className="grid justify-items-center gap-2">
-                <Skeleton className="h-11 w-11 rounded-2xl" />
-                <Skeleton className="h-3 w-12 rounded-lg" />
-              </div>
-            ))}
-          </div>
-        </div>
-      </Panel>
-      <MetricGrid />
-      <div className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1.35fr)_minmax(0,0.65fr)]">
-        <ChartSkeleton />
-        <Panel className="min-h-[340px]">
-          <Skeleton className="h-4 w-36 rounded-lg" />
-          <div className="mt-6 grid gap-3">
-            {Array.from({ length: 5 }).map((_, index) => (
-              <div key={index} className="flex items-center gap-3 rounded-2xl border border-border/70 p-3">
-                <Skeleton className="h-10 w-10 shrink-0 rounded-2xl" />
-                <div className="min-w-0 flex-1 space-y-2">
-                  <Skeleton className="h-3.5 w-32 max-w-full rounded-lg" />
-                  <Skeleton className="h-3 w-20 rounded-lg" />
-                </div>
-                <Skeleton className="h-4 w-16 rounded-lg" />
-              </div>
-            ))}
-          </div>
-        </Panel>
-      </div>
-    </>
-  );
-}
-
-function TableLoading() {
-  return (
-    <>
-      <PageHeading />
-      <Panel>
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <Skeleton className="h-[42px] w-full max-w-sm rounded-[var(--jf-control-radius)]" />
-          <Skeleton className="h-[42px] w-32 rounded-[var(--jf-control-radius)]" />
-        </div>
-        <div className="mt-5 grid gap-2.5">
-          {Array.from({ length: 6 }).map((_, index) => (
-            <div
-              key={index}
-              className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 rounded-2xl border border-border/70 p-3 sm:grid-cols-[auto_minmax(0,1fr)_7rem_6rem]"
-            >
-              <Skeleton className="h-10 w-10 rounded-2xl" />
-              <div className="min-w-0 space-y-2">
-                <Skeleton className="h-3.5 w-40 max-w-full rounded-lg" />
-                <Skeleton className="h-3 w-24 rounded-lg" />
-              </div>
-              <Skeleton className="hidden h-4 w-20 rounded-lg sm:block" />
-              <Skeleton className="h-4 w-16 rounded-lg" />
-            </div>
-          ))}
-        </div>
-      </Panel>
-    </>
-  );
-}
-
-function CardsLoading() {
-  return (
-    <>
-      <PageHeading />
-      <MetricGrid count={3} />
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        {Array.from({ length: 4 }).map((_, index) => (
-          <Panel key={index} className="min-h-[244px]">
-            <div className="flex items-center justify-between gap-3">
-              <Skeleton className="h-11 w-11 rounded-2xl" />
-              <Skeleton className="h-7 w-16 rounded-full" />
-            </div>
-            <div className="mt-8 space-y-3">
-              <Skeleton className="h-4 w-32 rounded-lg" />
-              <Skeleton className="h-8 w-40 max-w-full rounded-xl" />
-              <Skeleton className="h-3.5 w-full rounded-lg" />
-              <Skeleton className="h-3.5 w-4/5 rounded-lg" />
-            </div>
-          </Panel>
-        ))}
-      </div>
-    </>
-  );
-}
-
-function SettingsLoading() {
-  return (
-    <>
-      <PageHeading />
-      <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
-        {Array.from({ length: 2 }).map((_, index) => (
-          <Panel key={index} className="min-h-[320px]">
-            <Skeleton className="h-5 w-40 rounded-lg" />
-            <Skeleton className="mt-2 h-3.5 w-64 max-w-full rounded-lg" />
-            <div className="mt-7 grid gap-5">
-              {Array.from({ length: 3 }).map((__, fieldIndex) => (
-                <div key={fieldIndex} className="space-y-2">
-                  <Skeleton className="h-3.5 w-24 rounded-lg" />
-                  <Skeleton className="h-[42px] w-full rounded-[var(--jf-control-radius)]" />
-                </div>
-              ))}
-            </div>
-          </Panel>
-        ))}
-      </div>
-    </>
-  );
-}
-
-function AnalyticsLoading() {
-  return (
-    <>
-      <PageHeading />
-      <MetricGrid count={3} />
-      <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
-        <ChartSkeleton />
-        <ChartSkeleton />
-      </div>
-    </>
-  );
-}
-
-function AiLoading() {
-  return (
-    <>
-      <PageHeading />
-      <div className="grid gap-4 lg:grid-cols-3">
-        {Array.from({ length: 3 }).map((_, index) => (
-          <Panel key={index} className="min-h-[210px]">
-            <div className="flex items-center gap-3">
-              <Skeleton className="h-11 w-11 rounded-2xl" />
-              <Skeleton className="h-4 w-32 rounded-lg" />
-            </div>
-            <div className="mt-6 space-y-3">
-              <Skeleton className="h-4 w-full rounded-lg" />
-              <Skeleton className="h-4 w-11/12 rounded-lg" />
-              <Skeleton className="h-4 w-4/5 rounded-lg" />
-            </div>
-          </Panel>
-        ))}
-      </div>
-    </>
   );
 }
 
@@ -261,20 +48,309 @@ export default function DashboardRouteLoading({
 }: {
   variant?: DashboardRouteLoadingVariant;
 }) {
+  if (variant === "analytics") {
+    return (
+      <div
+        role="status"
+        aria-label="Loading analytics"
+        aria-busy="true"
+        className="space-y-6 pb-10"
+      >
+        <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">
+          {Array.from({ length: 3 }).map((_, index) => (
+            <Panel key={index} className="min-h-[118px]" delay={index * 40}>
+              <div className="space-y-3">
+                <SkeletonLine className="h-4 w-32" delay={index * 20} />
+                <SkeletonLine className="h-8 w-40" delay={index * 25} />
+                <SkeletonLine className="h-4 w-24" delay={index * 30} />
+              </div>
+            </Panel>
+          ))}
+        </div>
+
+        <div className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,2fr)_minmax(0,1.3fr)]">
+          <Panel className="min-h-[360px]" delay={120}>
+            <div className="space-y-4">
+              <SkeletonLine className="h-5 w-48" />
+              <SkeletonLine className="h-10 w-full rounded-[var(--oneui-control-radius)]" />
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                {Array.from({ length: 4 }).map((_, index) => (
+                  <SkeletonLine
+                    key={index}
+                    className="h-20 rounded-[var(--oneui-control-radius)]"
+                    delay={index * 20}
+                  />
+                ))}
+              </div>
+            </div>
+          </Panel>
+
+          <Panel className="min-h-[360px]" delay={160}>
+            <div className="space-y-4">
+              <SkeletonLine className="h-5 w-32" />
+              <SkeletonLine className="h-56 rounded-[var(--oneui-card-radius)]" />
+            </div>
+          </Panel>
+        </div>
+      </div>
+    );
+  }
+
+  if (variant === "table") {
+    return (
+      <div
+        role="status"
+        aria-label="Loading transactions"
+        aria-busy="true"
+        className="space-y-6 pb-10"
+      >
+        <div className="space-y-3">
+          <SkeletonLine className="h-7 w-48" />
+          <SkeletonLine className="h-4 w-72 max-w-full" />
+        </div>
+
+        <Panel className="space-y-5" delay={40}>
+          <SkeletonLine className="h-12 w-full max-w-[420px] rounded-[var(--oneui-control-radius)]" />
+          <div className="hidden grid-cols-[auto_1fr_112px_88px_120px_88px] items-center gap-4 border-b border-border pb-3 text-xs font-semibold uppercase tracking-wide text-text-secondary md:grid">
+            {Array.from({ length: 6 }).map((_, index) => (
+              <SkeletonLine key={index} className="h-3 w-full rounded-full" />
+            ))}
+          </div>
+          <div className="space-y-3">
+            {Array.from({ length: 7 }).map((_, index) => (
+              <div
+                key={index}
+                className="grid gap-3 rounded-[var(--oneui-card-radius)] border border-border p-4 sm:grid-cols-[auto_1fr_112px_88px_120px_88px]"
+              >
+                <SkeletonLine className="h-12 w-12 rounded-[var(--oneui-control-radius)]" />
+                <div className="space-y-2 py-1">
+                  <SkeletonLine className="h-4 w-36" />
+                  <SkeletonLine className="h-3 w-24" />
+                </div>
+                <SkeletonLine className="h-4 w-full rounded-full" />
+                <SkeletonLine className="h-4 w-full rounded-full mx-auto" />
+                <SkeletonLine className="h-4 w-full rounded-full" />
+                <SkeletonLine className="h-4 w-24 rounded-full ml-auto" />
+              </div>
+            ))}
+          </div>
+        </Panel>
+      </div>
+    );
+  }
+
+  if (variant === "cards") {
+    return (
+      <div
+        role="status"
+        aria-label="Loading cards"
+        aria-busy="true"
+        className="space-y-6 pb-10"
+      >
+        <div className="space-y-3">
+          <SkeletonLine className="h-7 w-52" />
+          <SkeletonLine className="h-4 w-72 max-w-full" />
+        </div>
+
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+          {Array.from({ length: 3 }).map((_, index) => (
+            <Panel key={index} className="min-h-[118px]" delay={index * 30}>
+              <div className="space-y-3">
+                <SkeletonLine className="h-4 w-28" />
+                <SkeletonLine className="h-8 w-40" />
+                <SkeletonLine className="h-4 w-24" />
+              </div>
+            </Panel>
+          ))}
+        </div>
+
+        <div className="grid grid-cols-1 gap-4 xl:grid-cols-4">
+          {Array.from({ length: 4 }).map((_, index) => (
+            <Panel key={index} className="h-64" delay={index * 35}>
+              <div className="space-y-4">
+                <SkeletonLine className="h-5 w-24" />
+                <SkeletonLine className="h-4 w-40" />
+                <SkeletonLine className="h-48 w-full rounded-[var(--oneui-card-radius)]" />
+              </div>
+            </Panel>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (variant === "settings") {
+    return (
+      <div
+        role="status"
+        aria-label="Loading settings"
+        aria-busy="true"
+        className="space-y-6 pb-10"
+      >
+        <div className="space-y-3">
+          <SkeletonLine className="h-7 w-52" />
+          <SkeletonLine className="h-4 w-80 max-w-full" />
+        </div>
+
+        <Panel className="space-y-5" delay={40}>
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="space-y-3">
+              <SkeletonLine className="h-5 w-40" />
+              <SkeletonLine className="h-4 w-56" />
+            </div>
+            <SkeletonLine className="h-10 w-28 rounded-full" />
+          </div>
+          <div className="grid gap-3 sm:grid-cols-2">
+            {Array.from({ length: 4 }).map((_, index) => (
+              <div key={index} className="space-y-3">
+                <SkeletonLine className="h-4 w-32" />
+                <SkeletonLine className="h-12 w-full" />
+              </div>
+            ))}
+          </div>
+        </Panel>
+
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+          {Array.from({ length: 2 }).map((_, index) => (
+            <Panel key={index} className="space-y-4" delay={index * 30}>
+              <SkeletonLine className="h-4 w-36" />
+              <SkeletonLine className="h-4 w-48" />
+              <SkeletonLine className="h-12 w-full" />
+              <SkeletonLine className="h-12 w-full" />
+            </Panel>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (variant === "ai") {
+    return (
+      <div
+        role="status"
+        aria-label="Loading AI insights"
+        aria-busy="true"
+        className="space-y-6 pb-10"
+      >
+        <div className="space-y-3">
+          <SkeletonLine className="h-7 w-56" />
+          <SkeletonLine className="h-4 w-72 max-w-full" />
+        </div>
+
+        <div className="space-y-4">
+          {Array.from({ length: 3 }).map((_, index) => (
+            <Panel key={index} className="space-y-4" delay={index * 30}>
+              <SkeletonLine className="h-4 w-36" />
+              <SkeletonLine className="h-14 w-full" />
+              <SkeletonLine className="h-4 w-24" />
+            </Panel>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div
       role="status"
-      aria-live="polite"
+      aria-label="Loading dashboard"
       aria-busy="true"
-      className="space-y-5 pb-10 sm:space-y-6"
+      className="space-y-6 pb-10"
     >
-      <span className="sr-only">{loadingLabels[variant]}</span>
-      {variant === "dashboard" ? <DashboardLoading /> : null}
-      {variant === "analytics" ? <AnalyticsLoading /> : null}
-      {variant === "table" ? <TableLoading /> : null}
-      {variant === "cards" ? <CardsLoading /> : null}
-      {variant === "settings" ? <SettingsLoading /> : null}
-      {variant === "ai" ? <AiLoading /> : null}
+      <Panel
+        className="min-h-[176px] overflow-hidden px-4 py-4 sm:px-5 sm:py-5 lg:px-6"
+        delay={0}
+      >
+        <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+          <div className="min-w-0 space-y-3 text-center lg:text-left">
+            <SkeletonLine className="mx-auto h-3 w-36 lg:mx-0" />
+            <SkeletonLine className="mx-auto h-14 w-full max-w-[520px] lg:mx-0 lg:h-16" />
+          </div>
+
+          <div className="mx-auto grid w-full max-w-[480px] grid-cols-4 gap-2.5 lg:mx-0 lg:w-auto lg:min-w-[392px] lg:gap-3">
+            {Array.from({ length: 4 }).map((_, index) => (
+              <div
+                key={index}
+                className="flex min-w-0 flex-col items-center justify-center gap-2 px-1 py-1.5"
+              >
+                <SkeletonLine
+                  className="h-11 w-11 rounded-full sm:h-12 sm:w-12 lg:h-14 lg:w-14"
+                  delay={index * 25}
+                />
+                <SkeletonLine className="h-3 w-14" delay={index * 30} />
+              </div>
+            ))}
+          </div>
+        </div>
+      </Panel>
+
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        {Array.from({ length: 4 }).map((_, index) => (
+          <Panel key={index} className="min-h-[112px]" delay={80 + index * 35}>
+            <div className="space-y-3">
+              <SkeletonLine className="h-4 w-28" delay={index * 20} />
+              <SkeletonLine
+                className="h-7 w-40 max-w-full"
+                delay={index * 25}
+              />
+              <SkeletonLine className="h-4 w-24" delay={index * 30} />
+            </div>
+          </Panel>
+        ))}
+      </div>
+
+      <Panel className="min-h-[170px]" delay={220}>
+        <div className="grid gap-4 sm:grid-cols-3">
+          {Array.from({ length: 3 }).map((_, index) => (
+            <div
+              key={index}
+              className="space-y-3 rounded-[var(--oneui-control-radius)] border border-border/70 p-3"
+            >
+              <SkeletonLine className="h-3 w-20" delay={index * 25} />
+              <SkeletonLine className="h-5 w-28" delay={index * 30} />
+              <SkeletonLine
+                className="h-3 w-full max-w-[160px]"
+                delay={index * 35}
+              />
+            </div>
+          ))}
+        </div>
+        <div className="mt-4">
+          <SkeletonLine className="h-3 w-52 max-w-full" />
+        </div>
+      </Panel>
+
+      <div className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,2fr)]">
+        {Array.from({ length: 3 }).map((_, index) => (
+          <Panel key={index} className="min-h-[220px]" delay={280 + index * 35}>
+            <div className="space-y-4">
+              <SkeletonLine className="h-4 w-32" />
+              <SkeletonLine className="h-3 w-24" />
+              <SkeletonLine className="h-28 w-full rounded-[var(--oneui-card-radius)]" />
+            </div>
+          </Panel>
+        ))}
+      </div>
+
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-3 lg:items-stretch">
+        {Array.from({ length: 3 }).map((_, index) => (
+          <Panel key={index} className="min-h-[260px]" delay={400 + index * 40}>
+            <div className="space-y-4">
+              <SkeletonLine className="h-4 w-36" />
+              <SkeletonLine className="h-3 w-28" />
+              <div className="space-y-3">
+                {Array.from({ length: 4 }).map((_, rowIndex) => (
+                  <SkeletonLine
+                    key={rowIndex}
+                    className="h-9 w-full rounded-[var(--oneui-control-radius)]"
+                    delay={rowIndex * 25}
+                  />
+                ))}
+              </div>
+            </div>
+          </Panel>
+        ))}
+      </div>
     </div>
   );
 }
