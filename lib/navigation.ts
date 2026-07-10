@@ -132,6 +132,24 @@ export const NAV_GROUPS: NavGroup[] = [
 
 export const NAV_ITEMS: NavItem[] = NAV_GROUPS.flatMap((group) => group.items);
 
+export const DESKTOP_PRIMARY_NAV_ITEMS = NAV_ITEMS.filter((item) =>
+  ["Dashboard", "Transactions", "Analytics", "AI Insights", "Investments"].includes(
+    item.label,
+  ),
+);
+
+export const DESKTOP_SECONDARY_NAV_ITEMS = NAV_ITEMS.filter((item) =>
+  [
+    "Accounts",
+    "Income",
+    "Expenses",
+    "Payables",
+    "Goals",
+    "Reports",
+    "Settings",
+  ].includes(item.label),
+);
+
 export const MOBILE_PRIMARY_NAV_ITEMS = NAV_ITEMS.filter(
   (item) => item.mobilePrimary,
 );

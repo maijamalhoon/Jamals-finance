@@ -1,4 +1,3 @@
-import Sidebar from "@/components/layout/Sidebar";
 import Header from "@/components/layout/Header";
 import MobileHeader from "@/components/layout/MobileHeader";
 import MobileNav from "@/components/layout/MobileNav";
@@ -34,10 +33,6 @@ export default function DashboardLayout({
         className="jf-dashboard-orb jf-dashboard-orb-two pointer-events-none absolute z-0"
       />
 
-      <div className="jf-dashboard-sidebar-wrap relative z-10 hidden flex-shrink-0 lg:flex">
-        <Sidebar />
-      </div>
-
       <div className="relative z-10 flex min-w-0 flex-1 flex-col overflow-hidden">
         <div className="jf-dashboard-header-wrap hidden lg:block">
           <Header />
@@ -50,7 +45,7 @@ export default function DashboardLayout({
           data-dashboard-scroll
           className="jf-dashboard-scroll relative flex-1 overflow-y-auto overscroll-contain px-3 pb-[var(--jf-mobile-content-bottom)] pt-4 sm:px-5 sm:pb-[calc(var(--jf-mobile-content-bottom)+0.5rem)] sm:pt-5 lg:px-6 lg:pb-10 lg:pt-6 xl:px-7"
         >
-          <div className="jf-dashboard-content-frame mx-auto w-full max-w-[1360px] min-w-0">
+          <div className="jf-dashboard-content-frame mx-auto w-full max-w-[1480px] min-w-0">
             {children}
           </div>
         </main>
