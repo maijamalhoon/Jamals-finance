@@ -20,6 +20,12 @@ export const financeCancelButtonClass =
 export const financeErrorClass =
   "rounded-[var(--oneui-control-radius)] border border-danger/20 bg-danger/10 px-3 py-2.5 text-sm font-medium leading-5 text-danger";
 
+export const financeFieldHintClass =
+  "mt-1.5 text-xs font-medium leading-5 text-text-secondary";
+
+export const financeFieldErrorClass =
+  "mt-1.5 text-xs font-semibold leading-5 text-danger";
+
 interface FinanceModalHeaderProps {
   title: string;
   description: string;
@@ -84,5 +90,35 @@ export function FinanceModalFooter({
       )}
       {...props}
     />
+  );
+}
+
+export function FinanceFormField({
+  label,
+  htmlFor,
+  error,
+  hint,
+  children,
+  className,
+}: {
+  label: React.ReactNode;
+  htmlFor?: string;
+  error?: React.ReactNode;
+  hint?: React.ReactNode;
+  children: React.ReactNode;
+  className?: string;
+}) {
+  return (
+    <div className={cn("min-w-0", className)}>
+      <label className="field-label" htmlFor={htmlFor}>
+        {label}
+      </label>
+      {children}
+      {error ? (
+        <p className={financeFieldErrorClass}>{error}</p>
+      ) : hint ? (
+        <p className={financeFieldHintClass}>{hint}</p>
+      ) : null}
+    </div>
   );
 }

@@ -40,7 +40,23 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  FinanceModalBody,
+  FinanceModalFooter,
+  FinanceFormField,
+  FinanceModalHeader,
+  financeCancelButtonClass,
+  financeModalContentClass,
+  financeFieldHintClass,
+} from "@/components/ui/finance-modal";
 import { useCurrency } from "@/components/currency/CurrencyProvider";
 import { createClient } from "@/lib/supabase/client";
 import {
@@ -1303,51 +1319,60 @@ function PreferencesDialog({
         description={`${currency} currency, ${compactMode ? "compact" : "comfortable"} density`}
         onClick={() => setOpen(true)}
       />
-      <DialogContent className="max-h-[88dvh] overflow-y-auto rounded-3xl p-5 sm:max-w-lg">
-        <DialogHeader>
-          <DialogTitle className="text-xl font-bold">Preferences</DialogTitle>
-          <DialogDescription>
-            Control display defaults for this device.
-          </DialogDescription>
-        </DialogHeader>
+      <DialogContent className={financeModalContentClass}>
+        <FinanceModalHeader
+          title="Preferences"
+          description="Control display defaults for this device."
+          icon={SlidersHorizontal}
+          tone="success"
+        />
 
-        <div className="space-y-4">
-          <div>
-            <label className="field-label" htmlFor="currency">
-              Currency
-            </label>
-            <select
-              id="currency"
+        <FinanceModalBody>
+          <FinanceFormField
+            label="Currency"
+            htmlFor="preferences-currency"
+            hint={rateLabel}
+          >
+            <Select
               value={draftCurrency}
-              onChange={(event) =>
-                setDraftCurrency(event.target.value as CurrencyCode)
-              }
-              className="field-input"
+              onValueChange={(value) => setDraftCurrency(value as CurrencyCode)}
             >
-              <option value="PKR">PKR</option>
-              <option value="USD">USD</option>
-            </select>
-            <p className="mt-2 text-xs text-text-secondary">
-              {rateLabel}
-            </p>
-          </div>
-          <div>
-            <label className="field-label" htmlFor="date-format">
-              Date format
-            </label>
-            <select
-              id="date-format"
+              <SelectTrigger
+                id="preferences-currency"
+                aria-label="Currency"
+                className="w-full"
+              >
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent align="start" sideOffset={8} className="z-[90] p-1.5">
+                <SelectItem value="PKR">PKR</SelectItem>
+                <SelectItem value="USD">USD</SelectItem>
+              </SelectContent>
+            </Select>
+          </FinanceFormField>
+
+          <FinanceFormField label="Date format" htmlFor="preferences-date-format">
+            <Select
               value={draftDateFormat}
-              onChange={(event) =>
-                setDraftDateFormat(event.target.value as DateFormat)
+              onValueChange={(value) =>
+                setDraftDateFormat(value as DateFormat)
               }
-              className="field-input"
             >
-              <option value="MMM d, yyyy">Jun 22, 2026</option>
-              <option value="dd MMM yyyy">22 Jun 2026</option>
-              <option value="yyyy-MM-dd">2026-06-22</option>
-            </select>
-          </div>
+              <SelectTrigger
+                id="preferences-date-format"
+                aria-label="Date format"
+                className="w-full"
+              >
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent align="start" sideOffset={8} className="z-[90] p-1.5">
+                <SelectItem value="MMM d, yyyy">Jun 22, 2026</SelectItem>
+                <SelectItem value="dd MMM yyyy">22 Jun 2026</SelectItem>
+                <SelectItem value="yyyy-MM-dd">2026-06-22</SelectItem>
+              </SelectContent>
+            </Select>
+          </FinanceFormField>
+
           <div className="flex items-center justify-between gap-3 rounded-3xl border border-border bg-surface-secondary px-4 py-4">
             <div>
               <p className="text-sm font-bold text-text-primary">
@@ -1363,11 +1388,24 @@ function PreferencesDialog({
               label="Toggle compact dashboard preference"
             />
           </div>
-          <Button onClick={handleSave} className="w-full" size="lg">
+          <p className={financeFieldHintClass}>
+            These preferences are saved on this device.
+          </p>
+        </FinanceModalBody>
+
+        <FinanceModalFooter>
+          <button
+            type="button"
+            onClick={() => setOpen(false)}
+            className={financeCancelButtonClass}
+          >
+            Cancel
+          </button>
+          <Button onClick={handleSave} className="min-h-[var(--oneui-control-height-lg)] w-full" size="lg">
             <Save size={16} />
             Save Preferences
           </Button>
-        </div>
+        </FinanceModalFooter>
       </DialogContent>
     </Dialog>
   );

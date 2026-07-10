@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 
 import { cn } from "@/lib/utils";
+import { financeFieldErrorClass } from "@/components/ui/finance-modal";
 
 interface DatePickerProps {
   id?: string;
@@ -130,11 +131,11 @@ export default function DatePicker({
         maxLength={10}
         onChange={(event) => handleChange(event.target.value)}
         onBlur={() => setTouched(true)}
-        className="field-input"
+        className="field-input aria-invalid:border-danger aria-invalid:ring-3 aria-invalid:ring-danger/20"
       />
 
       {touched && error ? (
-        <p className="mt-1.5 text-xs font-medium text-danger">{error}</p>
+        <p className={financeFieldErrorClass}>{error}</p>
       ) : null}
     </div>
   );

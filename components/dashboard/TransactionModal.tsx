@@ -17,6 +17,7 @@ import {
 import {
   FinanceModalBody,
   FinanceModalFooter,
+  FinanceFormField,
   FinanceModalHeader,
   financeCancelButtonClass,
   financeErrorClass,
@@ -390,10 +391,10 @@ export default function TransactionModal({
             </div>
           )}
 
-          <div>
-            <label className="field-label" htmlFor="transaction-amount">
-              Amount ({BASE_CURRENCY})
-            </label>
+          <FinanceFormField
+            label={`Amount (${BASE_CURRENCY})`}
+            htmlFor="transaction-amount"
+          >
             <input
               id="transaction-amount"
               type="number"
@@ -405,10 +406,9 @@ export default function TransactionModal({
               placeholder="0"
               className="field-input text-lg font-semibold"
             />
-          </div>
+          </FinanceFormField>
 
-          <div>
-            <label className="field-label">Account</label>
+          <FinanceFormField label="Account">
             <AccountSelect
               value={accountId}
               onValueChange={setAccountId}
@@ -416,12 +416,9 @@ export default function TransactionModal({
               loading={loadingOptions}
               placeholder="Select account"
             />
-          </div>
+          </FinanceFormField>
 
-          <div>
-            <label className="field-label" htmlFor="transaction-category">
-              Category
-            </label>
+          <FinanceFormField label="Category" htmlFor="transaction-category">
             <Select
               value={categoryId || undefined}
               onValueChange={(nextValue) => {
@@ -496,12 +493,9 @@ export default function TransactionModal({
                 </p>
               )}
             </div>
-          </div>
+          </FinanceFormField>
 
-          <div>
-            <label className="field-label" htmlFor="transaction-date">
-              Date
-            </label>
+          <FinanceFormField label="Date" htmlFor="transaction-date">
             <DatePicker
               id="transaction-date"
               value={date}
@@ -509,21 +503,18 @@ export default function TransactionModal({
               placeholder="DD/MM/YYYY"
               ariaLabel="Transaction date"
             />
-          </div>
+          </FinanceFormField>
 
-          <div>
-            <label className="field-label" htmlFor="transaction-note">
-              Note (Optional)
-            </label>
-            <input
+          <FinanceFormField label="Note (Optional)" htmlFor="transaction-note">
+            <textarea
               id="transaction-note"
-              type="text"
               value={note}
               onChange={(event) => setNote(event.target.value)}
               placeholder="What was this for?"
-              className="field-input"
+              rows={3}
+              className="field-input min-h-[5.5rem]"
             />
-          </div>
+          </FinanceFormField>
 
           {error && (
             <p className={financeErrorClass}>
