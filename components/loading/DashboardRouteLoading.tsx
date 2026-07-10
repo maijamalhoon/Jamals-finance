@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import type { CSSProperties, ReactNode } from "react";
 
 type DashboardRouteLoadingVariant =
   | "dashboard"
@@ -17,8 +17,20 @@ const loadingLabels: Record<DashboardRouteLoadingVariant, string> = {
   ai: "Loading AI insights",
 };
 
-function Skeleton({ className }: { className: string }) {
-  return <div aria-hidden="true" className={`finance-skeleton ${className}`} />;
+function Skeleton({
+  className,
+  style,
+}: {
+  className: string;
+  style?: CSSProperties;
+}) {
+  return (
+    <div
+      aria-hidden="true"
+      className={`finance-skeleton ${className}`}
+      style={style}
+    />
+  );
 }
 
 function Panel({
@@ -78,6 +90,7 @@ function ChartSkeleton({ compact = false }: { compact?: boolean }) {
           <Skeleton
             key={`${height}-${index}`}
             className="min-w-0 flex-1 rounded-t-xl rounded-b-md"
+            style={{ height: `${height}%` }}
           />
         ))}
       </div>
