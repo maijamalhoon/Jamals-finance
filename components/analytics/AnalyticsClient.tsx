@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState, type ReactNode } from "react";
+import Link from "next/link";
 import { motion } from "framer-motion";
 import {
   Area,
@@ -17,64 +18,41 @@ import {
   YAxis,
 } from "recharts";
 import {
+  AlertTriangle,
   ArrowDownRight,
   ArrowUpRight,
   BarChart3,
   CircleDollarSign,
+  CircleOff,
   PiggyBank,
   Sparkles,
   TrendingDown,
   TrendingUp,
 } from "lucide-react";
 import { useCurrency } from "@/components/currency/CurrencyProvider";
+import {
+  buildCashFlowSeries,
+  buildSpendingData,
+  calculateKpis,
+  getCurrentAndPreviousRange,
+  summarizeInvestmentPortfolio,
+  type AnalyticsInvestmentData,
+  type AnalyticsPeriod,
+  type AnalyticsTransactionData,
+  type CashFlowPoint,
+  type ChangeResult,
+  type ChangeSentiment,
+  type SpendingData,
+} from "@/lib/analytics/calculations";
 
-type AnalyticsPeriod = "week" | "month" | "sixMonth" | "year";
-
-export interface AnalyticsTransactionData {
-  id: string;
-  amount: number;
-  date: string;
-  type: string;
-  categoryId: string;
-  categoryName: string;
-  categoryColor: string | null;
-}
-
-export interface AnalyticsInvestmentData {
-  id: string;
-  name: string;
-  ticker: string;
-  type: string;
-  value: number;
-  pnl: number;
-  pnlPct: number;
-  color: string;
-}
+type AnalyticsDataStatus = "available" | "error";
 
 interface AnalyticsClientProps {
   transactions: AnalyticsTransactionData[];
   investments: AnalyticsInvestmentData[];
-  accountsTotal: number;
-}
-
-interface BucketData {
-  label: string;
-  start: Date;
-  end: Date;
-}
-
-interface ChartData {
-  label: string;
-  income: number;
-  expenses: number;
-  netWorth: number;
-}
-
-interface SpendingData {
-  id: string;
-  name: string;
-  amount: number;
-  color: string;
+  transactionsStatus: AnalyticsDataStatus;
+  investmentsStatus: AnalyticsDataStatus;
+  now: string;
 }
 
 const PERIODS: Array<{ label: string; value: AnalyticsPeriod }> = [
@@ -83,117 +61,6 @@ const PERIODS: Array<{ label: string; value: AnalyticsPeriod }> = [
   { label: "6M", value: "sixMonth" },
   { label: "Year", value: "year" },
 ];
-
-const CATEGORY_PALETTE = [
-  "#ff3b35",
-  "#2ecc71",
-  "#ff9700",
-  "#4f83ff",
-  "#30b8e8",
-  "#a855f7",
-  "#14b8a6",
-  "#f43f5e",
-];
-
-const INVESTMENT_FALLBACKS: AnalyticsInvestmentData[] = [
-  {
-    id: "demo-apple",
-    name: "Apple",
-    ticker: "APPLE",
-    type: "Stocks",
-    value: 20055,
-    pnl: 6050,
-    pnlPct: 30.3,
-    color: "#4f83ff",
-  },
-  {
-    id: "demo-bitcoin",
-    name: "Bitcoin",
-    ticker: "BITCOI",
-    type: "Crypto",
-    value: 16,
-    pnl: 1,
-    pnlPct: 3.7,
-    color: "#ff9700",
-  },
-  {
-    id: "demo-lucky",
-    name: "Lucky climat",
-    ticker: "LC",
-    type: "Stocks",
-    value: 2100,
-    pnl: 1050,
-    pnlPct: 50,
-    color: "#4f83ff",
-  },
-  {
-    id: "demo-solana",
-    name: "Solana",
-    ticker: "SOLANA",
-    type: "Crypto",
-    value: 1800,
-    pnl: 780,
-    pnlPct: 76.5,
-    color: "#ff9700",
-  },
-];
-
-function startOfDay(date: Date) {
-  const next = new Date(date);
-  next.setHours(0, 0, 0, 0);
-  return next;
-}
-
-function endOfDay(date: Date) {
-  const next = new Date(date);
-  next.setHours(23, 59, 59, 999);
-  return next;
-}
-
-function addDays(date: Date, days: number) {
-  const next = new Date(date);
-  next.setDate(next.getDate() + days);
-  return next;
-}
-
-function startOfMonth(date: Date) {
-  return new Date(date.getFullYear(), date.getMonth(), 1);
-}
-
-function endOfMonth(date: Date) {
-  return endOfDay(new Date(date.getFullYear(), date.getMonth() + 1, 0));
-}
-
-function addMonths(date: Date, months: number) {
-  return new Date(date.getFullYear(), date.getMonth() + months, 1);
-}
-
-function startOfYear(date: Date) {
-  return new Date(date.getFullYear(), 0, 1);
-}
-
-function endOfYear(date: Date) {
-  return endOfDay(new Date(date.getFullYear(), 11, 31));
-}
-
-function parseDate(value: string) {
-  return startOfDay(new Date(value));
-}
-
-function isBetween(date: Date, start: Date, end: Date) {
-  return date >= start && date <= end;
-}
-
-function isUsableColor(color: string | null | undefined): color is string {
-  return (
-    typeof color === "string" && /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(color)
-  );
-}
-
-function pctDiff(current: number, previous: number) {
-  if (previous === 0) return current > 0 ? 100 : 0;
-  return Number((((current - previous) / previous) * 100).toFixed(1));
-}
 
 function easeOutCubic(value: number) {
   return 1 - Math.pow(1 - value, 3);
@@ -274,211 +141,6 @@ function AnimatedValue({
   );
 }
 
-function getCurrentAndPreviousRange(period: AnalyticsPeriod) {
-  const now = new Date();
-
-  if (period === "week") {
-    const end = endOfDay(now);
-    const start = startOfDay(addDays(now, -6));
-    const previousEnd = endOfDay(addDays(start, -1));
-    const previousStart = startOfDay(addDays(previousEnd, -6));
-
-    return { start, end, previousStart, previousEnd };
-  }
-
-  if (period === "month") {
-    const start = startOfMonth(now);
-    const end = endOfDay(now);
-    const previousStart = startOfMonth(addMonths(start, -1));
-    const previousEnd = endOfMonth(previousStart);
-
-    return { start, end, previousStart, previousEnd };
-  }
-
-  if (period === "sixMonth") {
-    const start = startOfMonth(addMonths(now, -5));
-    const end = endOfDay(now);
-    const previousStart = startOfMonth(addMonths(start, -6));
-    const previousEnd = endOfDay(addDays(start, -1));
-
-    return { start, end, previousStart, previousEnd };
-  }
-
-  const start = startOfYear(now);
-  const end = endOfDay(now);
-  const previousStart = startOfYear(addMonths(start, -12));
-  const previousEnd = endOfYear(previousStart);
-
-  return { start, end, previousStart, previousEnd };
-}
-
-function getBuckets(period: AnalyticsPeriod): BucketData[] {
-  const now = new Date();
-
-  if (period === "week") {
-    const start = startOfDay(addDays(now, -6));
-
-    return Array.from({ length: 7 }, (_, index) => {
-      const day = addDays(start, index);
-
-      return {
-        label: day.toLocaleDateString("en-US", { weekday: "short" }),
-        start: startOfDay(day),
-        end: endOfDay(day),
-      };
-    });
-  }
-
-  if (period === "month") {
-    const monthStart = startOfMonth(now);
-    const buckets: BucketData[] = [];
-    let cursor = monthStart;
-    let week = 1;
-
-    while (cursor <= now) {
-      const bucketStart = startOfDay(cursor);
-      const bucketEnd = endOfDay(addDays(bucketStart, 6));
-
-      buckets.push({
-        label: `W${week}`,
-        start: bucketStart,
-        end: bucketEnd > now ? endOfDay(now) : bucketEnd,
-      });
-
-      cursor = addDays(bucketStart, 7);
-      week += 1;
-    }
-
-    return buckets;
-  }
-
-  if (period === "sixMonth") {
-    const start = startOfMonth(addMonths(now, -5));
-
-    return Array.from({ length: 6 }, (_, index) => {
-      const month = addMonths(start, index);
-
-      return {
-        label: month.toLocaleDateString("en-US", { month: "short" }),
-        start: startOfMonth(month),
-        end: endOfMonth(month) > now ? endOfDay(now) : endOfMonth(month),
-      };
-    });
-  }
-
-  const currentMonth = now.getMonth();
-
-  return Array.from({ length: currentMonth + 1 }, (_, index) => {
-    const month = new Date(now.getFullYear(), index, 1);
-
-    return {
-      label: month.toLocaleDateString("en-US", { month: "short" }),
-      start: startOfMonth(month),
-      end: endOfMonth(month) > now ? endOfDay(now) : endOfMonth(month),
-    };
-  });
-}
-
-function sumTransactions(
-  transactions: AnalyticsTransactionData[],
-  start: Date,
-  end: Date,
-  type: "income" | "expense",
-) {
-  return transactions
-    .filter((transaction) => {
-      const date = parseDate(transaction.date);
-      return transaction.type === type && isBetween(date, start, end);
-    })
-    .reduce((sum, transaction) => sum + transaction.amount, 0);
-}
-
-function buildChartData({
-  period,
-  transactions,
-  accountsTotal,
-  investmentTotal,
-}: {
-  period: AnalyticsPeriod;
-  transactions: AnalyticsTransactionData[];
-  accountsTotal: number;
-  investmentTotal: number;
-}): ChartData[] {
-  const buckets = getBuckets(period);
-
-  return buckets.map((bucket, index) => {
-    const income = sumTransactions(
-      transactions,
-      bucket.start,
-      bucket.end,
-      "income",
-    );
-    const expenses = sumTransactions(
-      transactions,
-      bucket.start,
-      bucket.end,
-      "expense",
-    );
-
-    const netUntilBucket = transactions
-      .filter((transaction) => parseDate(transaction.date) <= bucket.end)
-      .reduce((sum, transaction) => {
-        if (transaction.type === "income") return sum + transaction.amount;
-        if (transaction.type === "expense") return sum - transaction.amount;
-        return sum;
-      }, 0);
-
-    return {
-      label: bucket.label,
-      income,
-      expenses,
-      netWorth: Math.max(
-        0,
-        accountsTotal + investmentTotal + netUntilBucket + index * 600,
-      ),
-    };
-  });
-}
-
-function buildSpendingData(
-  transactions: AnalyticsTransactionData[],
-  start: Date,
-  end: Date,
-): SpendingData[] {
-  const map = new Map<
-    string,
-    { id: string; name: string; amount: number; color: string | null }
-  >();
-
-  transactions.forEach((transaction) => {
-    const date = parseDate(transaction.date);
-
-    if (transaction.type !== "expense" || !isBetween(date, start, end)) return;
-
-    const id = transaction.categoryId || "uncategorized";
-    const name = transaction.categoryName || "Other";
-    const current = map.get(id) ?? {
-      id,
-      name,
-      amount: 0,
-      color: transaction.categoryColor,
-    };
-
-    current.amount += transaction.amount;
-    map.set(id, current);
-  });
-
-  return Array.from(map.values())
-    .sort((a, b) => b.amount - a.amount)
-    .slice(0, 5)
-    .map((item, index) => ({
-      ...item,
-      color:
-        isUsableColor(item.color) ? item.color
-        : CATEGORY_PALETTE[index % CATEGORY_PALETTE.length],
-    }));
-}
-
 function getPeriodTitle(period: AnalyticsPeriod) {
   if (period === "week") return "Daily Comparison";
   if (period === "month") return "Weekly Comparison";
@@ -486,29 +148,29 @@ function getPeriodTitle(period: AnalyticsPeriod) {
   return "Yearly Comparison";
 }
 
-function getNetWorthTitle(period: AnalyticsPeriod) {
-  if (period === "week") return "7-Day Growth";
-  if (period === "month") return "Monthly Growth";
-  if (period === "sixMonth") return "6-Month Growth";
-  return "Year-to-Date Growth";
+function getCashFlowTitle(period: AnalyticsPeriod) {
+  if (period === "week") return "7-Day Cumulative Flow";
+  if (period === "month") return "Month-to-Date Cumulative Flow";
+  if (period === "sixMonth") return "6-Month Cumulative Flow";
+  return "Year-to-Date Cumulative Flow";
 }
 
 function ChangeBadge({
-  value,
-  tone = "positive",
+  change,
 }: {
-  value: number;
-  tone?: "positive" | "negative" | "warning";
+  change: ChangeResult;
 }) {
-  const isPositive = value >= 0;
-  const color =
-    tone === "warning" ? "var(--warning)"
-    : isPositive ? "var(--success)"
-    : "var(--danger)";
+  const colors: Record<ChangeSentiment, string> = {
+    positive: "var(--success)",
+    negative: "var(--danger)",
+    neutral: "var(--text-secondary)",
+    warning: "var(--warning)",
+  };
+  const color = colors[change.sentiment];
 
   return (
     <motion.span
-      key={`${value}-${tone}`}
+      key={`${change.label}-${change.sentiment}`}
       initial={{ opacity: 0, scale: 0.65 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{ duration: 0.35 }}
@@ -519,8 +181,7 @@ function ChangeBadge({
         backgroundColor: `color-mix(in srgb, ${color}, transparent 90%)`,
       }}
     >
-      {isPositive ? "+" : ""}
-      {value.toFixed(Math.abs(value) % 1 === 0 ? 0 : 1)}%
+      {change.label}
     </motion.span>
   );
 }
@@ -532,16 +193,14 @@ function KpiCard({
   change,
   icon,
   accent,
-  tone,
   animationKey,
 }: {
   title: string;
-  value: number;
+  value: number | null;
   suffix?: string;
-  change: number;
+  change: ChangeResult;
   icon: ReactNode;
   accent: string;
-  tone?: "positive" | "negative" | "warning";
   animationKey: string;
 }) {
   return (
@@ -577,7 +236,7 @@ function KpiCard({
           {icon}
         </motion.div>
 
-        <ChangeBadge value={change} tone={tone} />
+        <ChangeBadge change={change} />
       </div>
 
       <div className="relative mt-3">
@@ -586,7 +245,9 @@ function KpiCard({
           className="mt-1 break-words text-xl font-extrabold tracking-tight [overflow-wrap:anywhere]"
           style={{ color: accent }}
         >
-          {suffix ?
+          {value === null ?
+            <span aria-label="Not available">—</span>
+          : suffix ?
             <AnimatedValue
               value={value}
               animationKey={animationKey}
@@ -605,12 +266,14 @@ function KpiCard({
 function ChartShell({
   eyebrow,
   title,
+  description,
   children,
   className = "",
   animationKey,
 }: {
   eyebrow: string;
   title: string;
+  description?: string;
   children: ReactNode;
   className?: string;
   animationKey: string;
@@ -629,6 +292,9 @@ function ChartShell({
           {eyebrow}
         </p>
         <h3 className="mt-1 text-sm font-bold text-text-primary">{title}</h3>
+        {description ?
+          <p className="mt-1 text-xs text-text-secondary">{description}</p>
+        : null}
       </div>
 
       {children}
@@ -636,15 +302,82 @@ function ChartShell({
   );
 }
 
+function DataState({
+  title,
+  description,
+  kind = "empty",
+  href,
+  linkLabel,
+  className = "min-h-[200px]",
+}: {
+  title: string;
+  description: string;
+  kind?: "empty" | "error";
+  href?: string;
+  linkLabel?: string;
+  className?: string;
+}) {
+  const Icon = kind === "error" ? AlertTriangle : CircleOff;
+
+  return (
+    <div
+      className={`finance-panel-soft grid place-items-center px-5 py-8 text-center ${className}`}
+      role={kind === "error" ? "alert" : "status"}
+    >
+      <div className="max-w-md">
+        <span
+          className={`mx-auto grid h-10 w-10 place-items-center rounded-full border border-border bg-card ${
+            kind === "error" ? "text-warning" : "text-text-secondary"
+          }`}
+        >
+          <Icon size={18} aria-hidden="true" />
+        </span>
+        <p className="mt-3 text-sm font-bold text-text-primary">{title}</p>
+        <p className="mt-1 text-xs leading-5 text-text-secondary">
+          {description}
+        </p>
+        {href && linkLabel ?
+          <Link
+            href={href}
+            className="finance-focus mt-4 inline-flex min-h-9 items-center rounded-full border border-border bg-card px-4 text-xs font-bold text-active hover:bg-hover"
+          >
+            {linkLabel}
+          </Link>
+        : null}
+      </div>
+    </div>
+  );
+}
+
 function IncomeExpenseChart({
   data,
   period,
 }: {
-  data: ChartData[];
+  data: CashFlowPoint[];
   period: AnalyticsPeriod;
 }) {
   const { formatCurrency } = useCurrency();
   const chartKey = `income-expense-${period}-${data.map((item) => `${item.income}-${item.expenses}`).join("-")}`;
+  const hasActivity = data.some(
+    (item) => item.income > 0 || item.expenses > 0,
+  );
+
+  if (!hasActivity) {
+    return (
+      <ChartShell
+        eyebrow="Income vs Expenses"
+        title={getPeriodTitle(period)}
+        className="min-h-[300px]"
+        animationKey={`${chartKey}-empty`}
+      >
+        <DataState
+          title="No transactions in this period"
+          description="Record income or an expense, or choose another period to compare activity."
+          className="min-h-[230px]"
+        />
+      </ChartShell>
+    );
+  }
 
   return (
     <ChartShell
@@ -728,24 +461,38 @@ function IncomeExpenseChart({
   );
 }
 
-function NetWorthChart({
+function CumulativeCashFlowChart({
   data,
   period,
 }: {
-  data: ChartData[];
+  data: CashFlowPoint[];
   period: AnalyticsPeriod;
 }) {
   const { formatCurrency } = useCurrency();
-  const chartKey = `net-worth-${period}-${data.map((item) => item.netWorth).join("-")}`;
+  const chartKey = `cumulative-cash-flow-${period}-${data.map((item) => item.cumulativeNetFlow).join("-")}`;
+  const hasActivity = data.some(
+    (item) => item.income > 0 || item.expenses > 0,
+  );
 
   return (
     <ChartShell
-      eyebrow="Net Worth"
-      title={getNetWorthTitle(period)}
+      eyebrow="Cumulative Net Cash Flow"
+      title={getCashFlowTitle(period)}
+      description="Income minus expenses accumulated during the selected period."
       className="min-h-[270px]"
       animationKey={chartKey}
     >
-      <div className="h-[200px] min-w-0 overflow-hidden">
+      {!hasActivity ?
+        <DataState
+          title="No cash flow in this period"
+          description="Record income or an expense, or choose another period to see cumulative cash flow."
+          className="min-h-[200px]"
+        />
+      : <div
+          className="h-[200px] min-w-0 overflow-hidden"
+          role="img"
+          aria-label="Cumulative net cash flow chart"
+        >
         <ResponsiveContainer
           width="100%"
           height="100%"
@@ -756,7 +503,7 @@ function NetWorthChart({
           <AreaChart key={chartKey} data={data}>
             <defs>
               <linearGradient
-                id={`netWorthGradient-${period}`}
+                id={`cashFlowGradient-${period}`}
                 x1="0"
                 y1="0"
                 x2="0"
@@ -796,22 +543,22 @@ function NetWorthChart({
               }}
               formatter={(value) => [
                 formatCurrency(Number(value ?? 0)),
-                "Net Worth",
+                "Cumulative Net Cash Flow",
               ]}
             />
             <Area
               type="monotone"
-              dataKey="netWorth"
+              dataKey="cumulativeNetFlow"
               stroke="var(--active)"
               strokeWidth={3}
-              fill={`url(#netWorthGradient-${period})`}
+              fill={`url(#cashFlowGradient-${period})`}
               isAnimationActive
               animationBegin={180}
               animationDuration={1250}
             />
           </AreaChart>
         </ResponsiveContainer>
-      </div>
+      </div>}
     </ChartShell>
   );
 }
@@ -824,43 +571,26 @@ function SpendingBreakdown({
   period: AnalyticsPeriod;
 }) {
   const { formatCurrency } = useCurrency();
-  const chartData =
-    data.length > 0 ?
-      data
-    : [
-        {
-          id: "demo-bills",
-          name: "Bills",
-          amount: 3200,
-          color: CATEGORY_PALETTE[0],
-        },
-        {
-          id: "demo-shopping",
-          name: "Shopping",
-          amount: 2100,
-          color: CATEGORY_PALETTE[1],
-        },
-        {
-          id: "demo-fuel",
-          name: "Fuel",
-          amount: 1200,
-          color: CATEGORY_PALETTE[2],
-        },
-        {
-          id: "demo-food",
-          name: "Food",
-          amount: 1150,
-          color: CATEGORY_PALETTE[3],
-        },
-        {
-          id: "demo-health",
-          name: "Health",
-          amount: 800,
-          color: CATEGORY_PALETTE[4],
-        },
-      ];
+  const chartData = data;
 
   const chartKey = `spending-${period}-${chartData.map((item) => `${item.name}-${item.amount}`).join("-")}`;
+
+  if (chartData.length === 0) {
+    return (
+      <ChartShell
+        eyebrow="Spending Breakdown"
+        title="By Category"
+        className="min-h-[270px]"
+        animationKey={`${chartKey}-empty`}
+      >
+        <DataState
+          title="No expenses in this period"
+          description="Record an expense or choose another period to see category spending."
+          className="min-h-[200px]"
+        />
+      </ChartShell>
+    );
+  }
 
   return (
     <ChartShell
@@ -951,13 +681,52 @@ function SpendingBreakdown({
 function InvestmentPerformance({
   investments,
   period,
+  status,
 }: {
   investments: AnalyticsInvestmentData[];
   period: AnalyticsPeriod;
+  status: AnalyticsDataStatus;
 }) {
   const { formatCurrency } = useCurrency();
-  const list =
-    investments.length ? investments.slice(0, 4) : INVESTMENT_FALLBACKS;
+  const portfolio = summarizeInvestmentPortfolio(investments);
+  const list = portfolio.displayedHoldings;
+
+  if (status === "error") {
+    return (
+      <ChartShell
+        eyebrow="Investment Performance"
+        title="Portfolio Breakdown"
+        className="min-h-[195px]"
+        animationKey={`investment-${period}-error`}
+      >
+        <DataState
+          kind="error"
+          title="Investment data could not be loaded"
+          description="Your holdings are unchanged. Please refresh the page to try again."
+          className="min-h-[150px]"
+        />
+      </ChartShell>
+    );
+  }
+
+  if (list.length === 0) {
+    return (
+      <ChartShell
+        eyebrow="Investment Performance"
+        title="Portfolio Breakdown"
+        className="min-h-[195px]"
+        animationKey={`investment-${period}-empty`}
+      >
+        <DataState
+          title="No investments to analyze"
+          description="Add an investment to see portfolio value and profit or loss."
+          href="/dashboard/investments"
+          linkLabel="View investments"
+          className="min-h-[150px]"
+        />
+      </ChartShell>
+    );
+  }
 
   return (
     <ChartShell
@@ -966,11 +735,26 @@ function InvestmentPerformance({
       className="min-h-[195px]"
       animationKey={`investment-${period}`}
     >
+      <div className="mb-3 flex min-w-0 flex-wrap items-center gap-x-4 gap-y-1 text-xs text-text-secondary">
+        <span>
+          Total value{" "}
+          <strong className="text-text-primary">
+            {formatCurrency(portfolio.totalValue)}
+          </strong>
+        </span>
+        <span
+          className={
+            portfolio.totalPnl >= 0 ? "text-success" : "text-danger"
+          }
+        >
+          {portfolio.totalPnl >= 0 ? "+" : "-"}
+          {formatCurrency(Math.abs(portfolio.totalPnl))} total P/L
+        </span>
+      </div>
       <div className="grid min-w-0 grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
         {list.map((item, index) => {
           const isProfit = item.pnl >= 0;
-          const accent =
-            item.color || CATEGORY_PALETTE[index % CATEGORY_PALETTE.length];
+          const accent = item.color;
 
           return (
             <motion.div
@@ -990,11 +774,35 @@ function InvestmentPerformance({
                     {item.name}
                   </p>
                   <p className="mt-0.5 truncate text-[10px] font-medium text-text-secondary">
-                    {item.ticker} · {item.type}
+                    {item.symbol ? `${item.symbol} · ${item.type}` : item.type}
                   </p>
                 </div>
 
-                <ChangeBadge value={item.pnlPct} />
+                <ChangeBadge
+                  change={
+                    item.pnlPct === null ?
+                      {
+                        kind: "status",
+                        label: "No cost basis",
+                        sentiment: "neutral",
+                        value: null,
+                      }
+                    : item.pnlPct === 0 ?
+                      {
+                        kind: "status",
+                        label: "No change",
+                        sentiment: "neutral",
+                        value: null,
+                      }
+                    : {
+                        kind: "percentage",
+                        label: `${item.pnlPct > 0 ? "+" : ""}${item.pnlPct}%`,
+                        sentiment:
+                          item.pnlPct > 0 ? "positive" : "negative",
+                        value: item.pnlPct,
+                      }
+                  }
+                />
               </div>
 
               <p
@@ -1016,8 +824,8 @@ function InvestmentPerformance({
                   <ArrowUpRight size={12} />
                 : <ArrowDownRight size={12} />}
                 {isProfit ? "+" : "-"}
-                {formatCurrency(Math.abs(item.pnl), { compact: true })} (
-                {Math.abs(item.pnlPct).toFixed(1)}%)
+                {formatCurrency(Math.abs(item.pnl), { compact: true })}
+                {item.pnlPct === null ? " · No cost basis" : null}
               </p>
             </motion.div>
           );
@@ -1030,82 +838,32 @@ function InvestmentPerformance({
 export default function AnalyticsClient({
   transactions,
   investments,
-  accountsTotal,
+  transactionsStatus,
+  investmentsStatus,
+  now,
 }: AnalyticsClientProps) {
   const [period, setPeriod] = useState<AnalyticsPeriod>("month");
 
-  const investmentTotal = useMemo(
-    () => investments.reduce((sum, item) => sum + item.value, 0),
-    [investments],
-  );
-
   const periodRange = useMemo(
-    () => getCurrentAndPreviousRange(period),
-    [period],
+    () => getCurrentAndPreviousRange(period, now),
+    [period, now],
   );
+  const currentRange = periodRange.current;
 
   const chartData = useMemo(
-    () =>
-      buildChartData({
-        period,
-        transactions,
-        accountsTotal,
-        investmentTotal,
-      }),
-    [period, transactions, accountsTotal, investmentTotal],
+    () => buildCashFlowSeries(transactions, period, now),
+    [period, transactions, now],
   );
 
   const spendingData = useMemo(
-    () => buildSpendingData(transactions, periodRange.start, periodRange.end),
-    [transactions, periodRange.start, periodRange.end],
+    () => buildSpendingData(transactions, currentRange),
+    [transactions, currentRange],
   );
 
-  const kpis = useMemo(() => {
-    const totalIncome = sumTransactions(
-      transactions,
-      periodRange.start,
-      periodRange.end,
-      "income",
-    );
-    const totalExpenses = sumTransactions(
-      transactions,
-      periodRange.start,
-      periodRange.end,
-      "expense",
-    );
-
-    const previousIncome = sumTransactions(
-      transactions,
-      periodRange.previousStart,
-      periodRange.previousEnd,
-      "income",
-    );
-
-    const previousExpenses = sumTransactions(
-      transactions,
-      periodRange.previousStart,
-      periodRange.previousEnd,
-      "expense",
-    );
-
-    const netSavings = totalIncome - totalExpenses;
-    const previousNetSavings = previousIncome - previousExpenses;
-
-    const savingsRate = totalIncome > 0 ? (netSavings / totalIncome) * 100 : 0;
-    const previousSavingsRate =
-      previousIncome > 0 ? (previousNetSavings / previousIncome) * 100 : 0;
-
-    return {
-      totalIncome,
-      totalExpenses,
-      netSavings,
-      savingsRate: Number(savingsRate.toFixed(0)),
-      incomeChange: pctDiff(totalIncome, previousIncome),
-      expensesChange: pctDiff(totalExpenses, previousExpenses),
-      netSavingsChange: pctDiff(netSavings, previousNetSavings),
-      savingsRateChange: Number((savingsRate - previousSavingsRate).toFixed(1)),
-    };
-  }, [transactions, periodRange]);
+  const kpis = useMemo(
+    () => calculateKpis(transactions, period, now),
+    [transactions, period, now],
+  );
 
   return (
     <div className="min-h-full min-w-0 text-text-primary">
@@ -1157,70 +915,88 @@ export default function AnalyticsClient({
           </div>
         </div>
 
-        <motion.div
-          key={`kpi-grid-${period}`}
-          initial="hidden"
-          animate="visible"
-          variants={{
-            hidden: {},
-            visible: {
-              transition: {
-                staggerChildren: 0.08,
-              },
-            },
-          }}
-          className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4"
-        >
-          <KpiCard
-            title="Total Income"
-            value={kpis.totalIncome}
-            change={kpis.incomeChange}
-            accent="var(--success)"
-            icon={<TrendingUp size={17} />}
-            animationKey={`${period}-income-${kpis.totalIncome}`}
-          />
-          <KpiCard
-            title="Total Expenses"
-            value={kpis.totalExpenses}
-            change={kpis.expensesChange}
-            accent="var(--danger)"
-            tone="negative"
-            icon={<TrendingDown size={17} />}
-            animationKey={`${period}-expenses-${kpis.totalExpenses}`}
-          />
-          <KpiCard
-            title="Net Savings"
-            value={kpis.netSavings}
-            change={kpis.netSavingsChange}
-            accent="var(--success)"
-            icon={<PiggyBank size={17} />}
-            animationKey={`${period}-savings-${kpis.netSavings}`}
-          />
-          <KpiCard
-            title="Savings Rate"
-            value={kpis.savingsRate}
-            suffix="%"
-            change={kpis.savingsRateChange}
-            accent="var(--warning)"
-            tone="warning"
-            icon={<CircleDollarSign size={17} />}
-            animationKey={`${period}-rate-${kpis.savingsRate}`}
-          />
-        </motion.div>
+        {transactionsStatus === "error" ?
+          <ChartShell
+            eyebrow="Transaction Analytics"
+            title="Data unavailable"
+            className="min-h-[300px]"
+            animationKey={`transactions-${period}-error`}
+          >
+            <DataState
+              kind="error"
+              title="Transaction data could not be loaded"
+              description="Your records are unchanged. Please refresh the page to try again."
+              className="min-h-[230px]"
+            />
+          </ChartShell>
+        : <>
+            <motion.div
+              key={`kpi-grid-${period}`}
+              initial="hidden"
+              animate="visible"
+              variants={{
+                hidden: {},
+                visible: {
+                  transition: {
+                    staggerChildren: 0.08,
+                  },
+                },
+              }}
+              className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4"
+            >
+              <KpiCard
+                title="Total Income"
+                value={kpis.totalIncome}
+                change={kpis.incomeChange}
+                accent="var(--success)"
+                icon={<TrendingUp size={17} />}
+                animationKey={`${period}-income-${kpis.totalIncome}`}
+              />
+              <KpiCard
+                title="Total Expenses"
+                value={kpis.totalExpenses}
+                change={kpis.expensesChange}
+                accent="var(--danger)"
+                icon={<TrendingDown size={17} />}
+                animationKey={`${period}-expenses-${kpis.totalExpenses}`}
+              />
+              <KpiCard
+                title="Net Savings"
+                value={kpis.netSavings}
+                change={kpis.netSavingsChange}
+                accent="var(--success)"
+                icon={<PiggyBank size={17} />}
+                animationKey={`${period}-savings-${kpis.netSavings}`}
+              />
+              <KpiCard
+                title="Savings Rate"
+                value={kpis.savingsRate}
+                suffix="%"
+                change={kpis.savingsRateChange}
+                accent="var(--warning)"
+                icon={<CircleDollarSign size={17} />}
+                animationKey={`${period}-rate-${kpis.savingsRate ?? "na"}`}
+              />
+            </motion.div>
 
-        <IncomeExpenseChart data={chartData} period={period} />
+            <IncomeExpenseChart data={chartData} period={period} />
 
-        <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
-          <NetWorthChart data={chartData} period={period} />
-          <SpendingBreakdown data={spendingData} period={period} />
-        </div>
+            <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
+              <CumulativeCashFlowChart data={chartData} period={period} />
+              <SpendingBreakdown data={spendingData} period={period} />
+            </div>
+          </>}
 
-        <InvestmentPerformance investments={investments} period={period} />
+        <InvestmentPerformance
+          investments={investments}
+          period={period}
+          status={investmentsStatus}
+        />
 
         <p className="flex items-center gap-2 px-1 pb-2 text-[11px] text-text-tertiary">
           <Sparkles size={13} />
-          Analytics uses your existing transactions, categories, accounts, and
-          investment data.
+          Analytics uses only your existing transactions, categories, and
+          investment records.
         </p>
       </div>
     </div>

@@ -1,7 +1,11 @@
-import AnalyticsClient, {
+import AnalyticsClient from "@/components/analytics/AnalyticsClient";
+import {
+  calculateInvestmentMetrics,
+  parseDateKey,
+  toFiniteNumber,
   type AnalyticsInvestmentData,
   type AnalyticsTransactionData,
-} from "@/components/analytics/AnalyticsClient";
+} from "@/lib/analytics/calculations";
 import { formatDateKey, getAppDateKey, getAppDateParts } from "@/lib/dates";
 import { createClient } from "@/lib/supabase/server";
 
@@ -24,15 +28,12 @@ interface RawTransaction {
 interface RawInvestment {
   id?: string | null;
   name?: string | null;
+  symbol?: string | null;
   type?: string | null;
   quantity?: number | string | null;
   purchase_price?: number | string | null;
   current_price?: number | string | null;
   created_at?: string | null;
-}
-
-interface RawAccount {
-  balance?: number | string | null;
 }
 
 const INVESTMENT_TYPE_COLORS: Record<string, string> = {
@@ -54,29 +55,6 @@ function titleCase(value: string) {
     .replace(/\b\w/g, (char) => char.toUpperCase());
 }
 
-function tickerFromName(name: string, type: string) {
-  const clean = name.trim();
-
-  if (!clean) return titleCase(type).slice(0, 6).toUpperCase();
-
-  const words = clean.split(/\s+/);
-
-  if (words.length === 1) return words[0].slice(0, 6).toUpperCase();
-
-  return words
-    .map((word) => word[0])
-    .join("")
-    .slice(0, 6)
-    .toUpperCase();
-}
-
-function getCategoryName(
-  category: RawCategory | RawCategory[] | null | undefined,
-) {
-  const selected = Array.isArray(category) ? category[0] : category;
-  return selected?.name || "Other";
-}
-
 function getCategoryDetail(
   category: RawCategory | RawCategory[] | null | undefined,
 ) {
@@ -84,94 +62,104 @@ function getCategoryDetail(
 
   return {
     id: selected?.id || "uncategorized",
-    name: selected?.name || "Other",
+    name: selected?.name?.trim() || "Other",
     color: selected?.color ?? null,
   };
 }
 
 export default async function AnalyticsPage() {
   const supabase = await createClient();
-
+  const nowKey = getAppDateKey();
   const now = getAppDateParts();
   const oldestNeededDate = formatDateKey(now.year - 1, 1, 1);
 
-  const [
-    { data: rawTransactions },
-    { data: rawInvestments },
-    { data: rawAccounts },
-  ] = await Promise.all([
+  const [transactionsResult, investmentsResult] = await Promise.all([
     supabase
       .from("transactions")
       .select("id, amount, date, type, categories(id, name, color)")
       .gte("date", oldestNeededDate)
-      .lte("date", getAppDateKey()),
+      .lte("date", nowKey),
     supabase
       .from("investments")
       .select(
-        "id, name, type, quantity, purchase_price, current_price, created_at",
+        "id, name, symbol, type, quantity, purchase_price, current_price, created_at",
       )
       .order("created_at", { ascending: false }),
-    supabase.from("accounts").select("balance"),
   ]);
 
-  const transactions: AnalyticsTransactionData[] = (
-    (rawTransactions ?? []) as RawTransaction[]
-  )
-    .filter(
-      (transaction) =>
-        transaction.date && transaction.amount && transaction.type,
-    )
-    .map((transaction, index) => {
-      const category = getCategoryDetail(transaction.categories);
-
-      return {
-        id: transaction.id || `transaction-${index}`,
-        amount: Number(transaction.amount) || 0,
-        date: transaction.date as string,
-        type: String(transaction.type || "").toLowerCase(),
-        categoryId: category.id,
-        categoryName: getCategoryName(transaction.categories),
-        categoryColor: category.color,
-      };
+  if (transactionsResult.error) {
+    console.error("[analytics] Transactions query failed", {
+      code: transactionsResult.error.code,
     });
+  }
 
-  const accountsTotal = ((rawAccounts ?? []) as RawAccount[]).reduce(
-    (sum, account) => sum + (Number(account.balance) || 0),
-    0,
-  );
+  if (investmentsResult.error) {
+    console.error("[analytics] Investments query failed", {
+      code: investmentsResult.error.code,
+    });
+  }
+
+  const transactions: AnalyticsTransactionData[] = (
+    (transactionsResult.data ?? []) as RawTransaction[]
+  ).flatMap((transaction, index) => {
+    const date = parseDateKey(transaction.date);
+    const amount = toFiniteNumber(transaction.amount);
+    const type = String(transaction.type || "").toLowerCase();
+
+    if (!date || amount === null || amount <= 0 || !["income", "expense"].includes(type)) {
+      return [];
+    }
+
+    const category = getCategoryDetail(transaction.categories);
+
+    return [
+      {
+        id: transaction.id || `transaction-row-${index}`,
+        amount,
+        date: formatDateKey(date.year, date.month, date.day),
+        type,
+        categoryId: category.id,
+        categoryName: category.name,
+        categoryColor: category.color,
+      },
+    ];
+  });
 
   const investments: AnalyticsInvestmentData[] = (
-    (rawInvestments ?? []) as RawInvestment[]
-  )
-    .slice(0, 4)
-    .map((investment, index) => {
-      const rawType = String(investment.type || "other").toLowerCase();
-      const quantity = Number(investment.quantity) || 0;
-      const purchasePrice = Number(investment.purchase_price) || 0;
-      const currentPrice = Number(investment.current_price) || 0;
-      const invested = quantity * purchasePrice;
-      const value = quantity * currentPrice;
-      const pnl = value - invested;
-      const pnlPct = invested > 0 ? (pnl / invested) * 100 : 0;
-      const name = investment.name || `Investment ${index + 1}`;
+    (investmentsResult.data ?? []) as RawInvestment[]
+  ).flatMap((investment, index) => {
+    const metrics = calculateInvestmentMetrics(
+      investment.quantity,
+      investment.purchase_price,
+      investment.current_price,
+    );
 
-      return {
-        id: investment.id || `investment-${index}`,
-        name,
-        ticker: tickerFromName(name, rawType),
+    if (!metrics) return [];
+
+    const rawType = String(investment.type || "other").toLowerCase();
+    const storedName = investment.name?.trim();
+    const storedSymbol = investment.symbol?.trim();
+
+    return [
+      {
+        id: investment.id || `investment-row-${index}`,
+        name: storedName || "Unnamed investment",
+        symbol: storedSymbol || null,
         type: titleCase(rawType),
-        value,
-        pnl,
-        pnlPct: Number(pnlPct.toFixed(1)),
-        color: INVESTMENT_TYPE_COLORS[rawType] ?? INVESTMENT_TYPE_COLORS.other,
-      };
-    });
+        ...metrics,
+        color:
+          INVESTMENT_TYPE_COLORS[rawType] ?? INVESTMENT_TYPE_COLORS.other,
+      },
+    ];
+  });
 
   return (
     <AnalyticsClient
       transactions={transactions}
       investments={investments}
-      accountsTotal={accountsTotal}
+      transactionsStatus={transactionsResult.error ? "error" : "available"}
+      investmentsStatus={investmentsResult.error ? "error" : "available"}
+      now={nowKey}
     />
   );
 }
