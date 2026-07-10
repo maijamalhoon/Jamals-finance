@@ -1,151 +1,108 @@
 # Jamal's Finance
 
-A premium personal finance dashboard built to help users track accounts, income, expenses, goals, liabilities, investments, and savings from one clean and secure workspace.
+A privacy-minded personal finance workspace for tracking money movement, accounts, goals, investments, payables, and financial trends from one application.
 
-**Live Website:** https://jamals-finance-sable.vercel.app
+[Open the live application](https://jamals-finance-sable.vercel.app) · [Report a security concern](SECURITY.md) · [Contribution guide](CONTRIBUTING.md)
 
----
+> **Project status:** Active development. The product is usable today, while security, reliability, globalisation, reporting, accessibility, and cross-device polish continue to be hardened through scoped roadmap nodes.
 
-## Overview
+## Product direction
 
-Jamal's Finance is a modern finance management web application designed for individuals, freelancers, families, and small business owners who want a clear view of their money without messy spreadsheets.
+Jamal's Finance is being built around four principles:
 
-The app focuses on a smooth user experience, private user data, clean dashboards, and a scalable foundation for a global personal finance product.
+- **Truthful financial data** — no fabricated balances, fallback investments, artificial trends, or failed queries presented as genuine zero values.
+- **Power without clutter** — advanced capability should remain discoverable while default screens stay calm and approachable.
+- **Privacy and ownership** — user-owned records are protected through authenticated access and database Row Level Security.
+- **Cross-device quality** — layouts, forms, charts, dialogs, and navigation are designed for mobile, tablet, laptop, and desktop use.
 
----
+## Current capabilities
 
-## Key Features
+The application currently includes:
 
-* **Public Landing Page**
-  A premium public homepage for visitors, product explanation, and search visibility.
+- Public landing experience and protected dashboard routes
+- Email/password authentication, email verification, password recovery, and optional Google OAuth configuration
+- Account, income, expense, transaction, goal, investment, and payable tracking
+- Category management with parent/child category support
+- Dashboard summaries and financial activity views
+- Period-based analytics for income, expenses, savings, spending categories, cash flow, and investments
+- AI insights endpoints and interface under active reliability hardening
+- Light, dark, and system theme foundations
+- Responsive desktop and mobile navigation
+- Supabase-backed persistence with owner-scoped Row Level Security policies
+- Sentry integration points for production monitoring
+- Vercel production deployment
 
-* **Secure Authentication**
-  Protected dashboard access using Supabase Auth and secure session handling.
+Some visible modules are still evolving. A control is not considered complete merely because it renders; it must also have truthful behavior, safe failure states, accessibility, responsive states, and production verification.
 
-* **Accounts Management**
-  Track cash, bank accounts, wallets, savings, freelance accounts, and other money sources.
+## Roadmap focus
 
-* **Transactions Tracking**
-  Record income, expenses, transfers, categories, and money movement.
+Current development is organised into small, auditable nodes. Major areas include:
 
-* **Goals & Savings**
-  Plan financial goals and track progress toward future targets.
+1. Data, settings, session, and AI reliability
+2. Shared design system, typography, icons, forms, dialogs, motion, and application states
+3. Desktop and mobile application shell
+4. Authentication and onboarding
+5. Dashboard and every finance module
+6. Global locale, currency, and timezone integrity
+7. Budgeting, recurring bills, subscriptions, notifications, and reports
+8. Landing page, trust, legal, and support experience
+9. PWA, offline behavior, performance, accessibility, and production hardening
 
-* **Liabilities Management**
-  Manage debts, payable amounts, due dates, and payment progress.
+The roadmap intentionally separates integrity work from visual redesign so that financial correctness and security are not hidden inside large UI changes.
 
-* **Investments Tracking**
-  Track investment entries and understand portfolio direction.
+## Technology
 
-* **Dashboard Insights**
-  Clean finance summaries, visual cards, charts, and money flow overview.
+| Area | Stack |
+| --- | --- |
+| Application | Next.js 16, React 19, TypeScript |
+| Styling | Tailwind CSS 4, shared design tokens |
+| UI and motion | Base UI, Radix UI, Framer Motion, Lucide React |
+| Charts | Recharts |
+| Backend | Supabase, PostgreSQL, Supabase Auth |
+| Security | Row Level Security, protected server/client data access |
+| Monitoring | Sentry |
+| Testing and quality | Vitest, TypeScript, ESLint, production builds |
+| Deployment | Vercel |
 
-* **Responsive Design**
-  Smooth experience across desktop, tablet, and mobile screens.
+## Repository structure
 
-* **SEO Foundation**
-  Metadata, Open Graph tags, sitemap, robots.txt, and public landing page structure.
-
----
-
-## Tech Stack
-
-### Frontend
-
-* Next.js
-* React
-* TypeScript
-* Tailwind CSS
-* Framer Motion
-* Lucide React
-* Recharts
-* Sonner
-
-### Backend & Data
-
-* Supabase
-* PostgreSQL
-* Supabase Auth
-* Row Level Security
-
-### Monitoring & Payments
-
-* Sentry
-* Stripe
-
-### Deployment
-
-* Vercel
-
----
-
-## Project Structure
-
-```txt
+```text
 app/
-  dashboard/
-  login/
-  accounts/
-  transactions/
-  goals/
-  investments/
-  liabilities/
-  api/
-  layout.tsx
-  page.tsx
-  robots.ts
-  sitemap.ts
+  api/                    Server route handlers
+  auth/                   Authentication callback handling
+  dashboard/              Protected product routes
+  login/                  Login, signup, and reset-request flow
+  reset-password/         Password recovery completion
+  layout.tsx              Root layout and application metadata
+  page.tsx                Public landing page
 
 components/
-  Shared UI and dashboard components
+  analytics/              Analytics presentation
+  currency/               Display-currency context
+  settings/               Settings experience
+  ui/                     Shared UI primitives
+  ...                     Feature-specific components
 
 lib/
-  Supabase clients, helpers, and utility logic
+  analytics/              Deterministic financial calculations and tests
+  market/                 Market-data helpers
+  supabase/               Browser and server Supabase clients
+  ...                     Shared application utilities
 
 supabase/
-  migrations/
+  migrations/             Versioned database schema and security changes
 
-public/
-  Static assets
+public/                    Static public assets
+proxy.ts                  Route/session boundary logic
 ```
 
----
+## Local development
 
-## Security Model
+### Prerequisites
 
-Jamal's Finance is designed with user privacy and secure access in mind.
-
-Current security foundations include:
-
-* Supabase authentication
-* Protected dashboard routes
-* Public landing page separated from private app routes
-* Row Level Security enabled on user data tables
-* Private finance data scoped to authenticated users
-* Public RPC access reviewed and restricted
-* SEO files allowed publicly while private dashboard routes stay protected
-
-Private dashboard sections are not intended to be indexed by search engines.
-
----
-
-## SEO Setup
-
-The project includes:
-
-* Global metadata
-* Open Graph metadata
-* Twitter card metadata
-* Canonical URL
-* `robots.txt`
-* `sitemap.xml`
-* Public homepage indexing
-* Login page noindex
-* Private dashboard routes disallowed from crawling
-
----
-
-## Getting Started
+- Node.js 20 or newer
+- npm
+- A Supabase project for authenticated, persistent data
 
 ### 1. Clone the repository
 
@@ -160,149 +117,130 @@ cd Jamals-finance
 npm install
 ```
 
-### 3. Create environment file
+### 3. Configure environment variables
 
-Create a `.env.local` file in the project root.
+Copy the committed template:
+
+```bash
+cp .env.example .env.local
+```
+
+On Windows Command Prompt:
+
+```bat
+copy .env.example .env.local
+```
+
+Core local authentication and data access require:
 
 ```env
 NEXT_PUBLIC_SUPABASE_URL=
 NEXT_PUBLIC_SUPABASE_ANON_KEY=
+```
 
+Optional integrations are configured only when the related feature is enabled:
+
+```env
 NEXT_PUBLIC_ENABLE_GOOGLE_AUTH=false
 
 NEXT_PUBLIC_SENTRY_DSN=
 SENTRY_AUTH_TOKEN=
 
 GEMINI_API_KEY=
-GEMINI_MODEL=gemini-2.5-flash
+GEMINI_MODEL=
+
 ALPHA_VANTAGE_API_KEY=
+EXCHANGE_RATE_API_KEY=
 
 NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=
 STRIPE_SECRET_KEY=
 ```
 
-`GEMINI_API_KEY` is used only on the server for AI Insights and finance chat. Do not prefix it with `NEXT_PUBLIC_`, and never commit real secret values. `GEMINI_MODEL` is optional and defaults to `gemini-2.5-flash`.
-`ALPHA_VANTAGE_API_KEY` is used only on the server for international stock search and latest quotes. Do not prefix it with `NEXT_PUBLIC_`.
+Never commit real credentials. Server secrets must never use the `NEXT_PUBLIC_` prefix.
 
-Only enable Google authentication when the provider is fully configured in Supabase.
-
-```env
-NEXT_PUBLIC_ENABLE_GOOGLE_AUTH=true
-```
-
-### Manual auth QA checklist
-
-Before shipping auth changes, manually verify:
-
-* Email/password login succeeds and incorrect-password errors are readable.
-* Signup validation, confirmation email, and duplicate-account states are readable.
-* Forgot-password email delivery and reset-password link flow work end to end.
-* Google OAuth is hidden when `NEXT_PUBLIC_ENABLE_GOOGLE_AUTH=false`.
-* Google OAuth appears and completes only when the Supabase provider and redirect allowlist are configured.
-* Production redirect URLs are present in the Supabase auth allowlist.
-
-### 4. Run the development server
+### 4. Start development
 
 ```bash
 npm run dev
 ```
 
-Open:
+Open `http://localhost:3000`.
 
-```txt
-http://localhost:3000
+## Available commands
+
+| Command | Purpose |
+| --- | --- |
+| `npm run dev` | Start the development server |
+| `npm run build` | Create a production build |
+| `npm run start` | Start the built production server |
+| `npm run lint` | Run ESLint |
+| `npm run test:analytics` | Run deterministic analytics tests |
+| `npx tsc --noEmit` | Run TypeScript validation |
+
+Feature nodes may add focused test scripts. Review `package.json` for the authoritative current list.
+
+## Quality workflow
+
+Changes should follow a branch-and-review workflow rather than direct pushes to `main`:
+
+```text
+fresh main
+→ scoped feature branch
+→ focused implementation
+→ targeted tests
+→ typecheck and lint
+→ production build
+→ diff review
+→ pull request
+→ squash merge
+→ production verification
 ```
 
----
-
-## Available Scripts
+Before requesting review, run the checks relevant to the change. For broad application changes, the expected baseline is:
 
 ```bash
-npm run dev
-```
-
-Runs the local development server.
-
-```bash
-npm run build
-```
-
-Creates a production build.
-
-```bash
-npm run start
-```
-
-Starts the production server after build.
-
-```bash
+npm run test:analytics
+npx tsc --noEmit
 npm run lint
+npm run build
+git diff --check
 ```
 
-Runs lint checks.
+A passing build does not replace manual verification of responsive layouts, keyboard behavior, empty/error/loading states, or financial semantics.
 
----
+## Security model
+
+The current security foundation includes:
+
+- Supabase Auth for authenticated access
+- Protected dashboard boundaries
+- Owner-scoped Row Level Security policies on user-owned finance tables
+- Server-only handling for secret integration keys
+- Public landing and SEO routes separated from private product routes
+- Private dashboard routes excluded from search indexing
+- Versioned Supabase migrations for database and policy changes
+
+Security claims are kept deliberately narrow. Local preference toggles are not treated as real authentication factors, and incomplete controls must not imply protection they do not provide.
+
+Please follow [SECURITY.md](SECURITY.md) for responsible disclosure. Do not publish credentials, private financial records, authentication tokens, or exploitable security details in a public issue.
 
 ## Deployment
 
-The project is deployed on Vercel.
+Production is deployed through Vercel from the `main` branch:
 
-Production website:
+- Application: [jamals-finance-sable.vercel.app](https://jamals-finance-sable.vercel.app)
+- Deployment source: reviewed and merged `main` commits
 
-```txt
-https://jamals-finance-sable.vercel.app
-```
+Environment variables must be configured separately for local, preview, and production environments. A deployment is considered complete only after the expected commit SHA is live and the affected flow is manually verified.
 
-Recommended deployment flow:
+## Contributing
 
-```bash
-git add .
-git commit -m "Your commit message"
-git pull --rebase origin main
-git push origin main
-```
-
-Vercel automatically builds and deploys changes from the main branch.
-
----
-
-## Current Status
-
-The project currently includes:
-
-* Premium landing page
-* Clean login page
-* Protected dashboard routes
-* SEO metadata
-* Working sitemap and robots file
-* Supabase security improvements
-* Production deployment on Vercel
-
----
-
-## Roadmap
-
-Planned improvements:
-
-* Add professional product screenshots
-* Improve dashboard mobile polish
-* Add user onboarding flow
-* Add finance reports and exports
-* Add currency and regional settings
-* Improve Sentry production monitoring
-* Add Stripe subscription plans
-* Add product documentation
-* Prepare custom domain and brand assets
-
----
-
-## Author
-
-Built by **Jamal Yaqoob**.
-
----
+This repository is publicly visible, but product direction and merges are maintained by the project owner. Read [CONTRIBUTING.md](CONTRIBUTING.md) before opening a pull request.
 
 ## License
 
-This project is currently private/proprietary in product direction.
-A formal license can be added later if the project is opened for public contribution.
+No open-source license has been granted for this repository. Unless a formal license is added, all rights are reserved and public visibility does not grant permission to copy, redistribute, sublicense, or commercially use the source.
+
+## Author
+
+Built and maintained by **Jamal Yaqoob**.
