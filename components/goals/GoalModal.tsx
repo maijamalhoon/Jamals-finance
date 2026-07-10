@@ -4,11 +4,14 @@ import { useEffect, useState } from "react";
 import { Target } from "lucide-react";
 import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
+import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import DatePicker from "@/components/ui/date-picker";
+import { Input } from "@/components/ui/input";
 import {
   FinanceModalBody,
   FinanceModalFooter,
+  FinanceFormField,
   FinanceModalHeader,
   financeCancelButtonClass,
   financeErrorClass,
@@ -115,13 +118,14 @@ export default function GoalModal({ open, onClose, onSuccess, goal }: Props) {
             <label className="field-label mb-2">Icon</label>
             <div className="grid grid-cols-5 gap-2">
               {GOAL_ICONS.map(({ value, label, icon: Icon }) => (
-                <button
+                <Button
                   key={value}
                   type="button"
+                  variant="ghost"
                   onClick={() => setIcon(value)}
                   title={label}
                   aria-pressed={icon === value}
-                  className={`finance-focus flex min-h-[58px] flex-col items-center justify-center gap-1 rounded-[14px] border p-2 transition-all ${
+                  className={`finance-focus flex h-auto min-h-[58px] flex-col items-center justify-center gap-1 rounded-[14px] border p-2 transition-all ${
                     icon === value
                       ? "border-active bg-active/10 text-active shadow-theme"
                       : "border-border bg-surface-secondary text-text-secondary hover:bg-hover hover:text-text-primary"
@@ -129,58 +133,51 @@ export default function GoalModal({ open, onClose, onSuccess, goal }: Props) {
                 >
                   <Icon size={16} />
                   <span className="max-w-full truncate text-[9px]">{label}</span>
-                </button>
+                </Button>
               ))}
             </div>
           </div>
 
-          <div>
-            <label className="field-label" htmlFor="goal-name">
-              Goal Name
-            </label>
-            <input
+          <FinanceFormField label="Goal Name" htmlFor="goal-name">
+            <Input
               id="goal-name"
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="e.g. New House, Emergency Fund"
-              className="field-input"
             />
-          </div>
+          </FinanceFormField>
 
           <div className="grid gap-3 sm:grid-cols-2">
-            <div>
-              <label className="field-label" htmlFor="goal-target-amount">
-                Target Amount ({BASE_CURRENCY})
-              </label>
-              <input
+            <FinanceFormField
+              label={`Target Amount (${BASE_CURRENCY})`}
+              htmlFor="goal-target-amount"
+            >
+              <Input
                 id="goal-target-amount"
                 type="number"
                 value={targetAmount}
                 onChange={(e) => setTargetAmount(e.target.value)}
                 placeholder="5000000"
-                className="field-input font-semibold"
+                className="font-semibold"
               />
-            </div>
+            </FinanceFormField>
 
-            <div>
-              <label className="field-label" htmlFor="goal-current-amount">
-                Saved So Far ({BASE_CURRENCY})
-              </label>
-              <input
+            <FinanceFormField
+              label={`Saved So Far (${BASE_CURRENCY})`}
+              htmlFor="goal-current-amount"
+            >
+              <Input
                 id="goal-current-amount"
                 type="number"
                 value={currentAmount}
                 onChange={(e) => setCurrentAmount(e.target.value)}
                 placeholder="0"
-                className="field-input font-semibold"
+                className="font-semibold"
               />
-            </div>
+            </FinanceFormField>
           </div>
 
-          <div>
-            <label className="field-label" htmlFor="goal-deadline">
-              Deadline (Optional)
-            </label>
+          <FinanceFormField label="Deadline (Optional)" htmlFor="goal-deadline">
             <DatePicker
               id="goal-deadline"
               value={deadline}
@@ -188,28 +185,28 @@ export default function GoalModal({ open, onClose, onSuccess, goal }: Props) {
               placeholder="DD/MM/YYYY"
               ariaLabel="Goal deadline"
             />
-          </div>
+          </FinanceFormField>
 
           {error && <p className={financeErrorClass}>{error}</p>}
         </FinanceModalBody>
 
         <FinanceModalFooter>
-          <button
+          <Button
             type="button"
             onClick={onClose}
             disabled={loading}
             className={financeCancelButtonClass}
           >
             Cancel
-          </button>
-          <button
+          </Button>
+          <Button
             type="button"
             onClick={handleSave}
             disabled={loading}
             className="primary-action py-3"
           >
             {loading ? "Saving..." : isEditing ? "Update Goal" : "Create Goal"}
-          </button>
+          </Button>
         </FinanceModalFooter>
       </DialogContent>
     </Dialog>

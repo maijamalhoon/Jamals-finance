@@ -5,13 +5,16 @@ import { useRouter } from "next/navigation";
 import { ArrowLeftRight } from "lucide-react";
 import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
+import { Button } from "@/components/ui/button";
 import DatePicker from "@/components/ui/date-picker";
 import { getAppDateKey } from "@/lib/dates";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 import AccountSelect from "@/components/accounts/AccountSelect";
 import {
   FinanceModalBody,
   FinanceModalFooter,
+  FinanceFormField,
   FinanceModalHeader,
   financeCancelButtonClass,
   financeErrorClass,
@@ -146,8 +149,7 @@ export default function TransferModal({ open, onClose, onSuccess }: Props) {
             </div>
           ) : (
             <>
-              <div>
-                <label className="field-label">From Account</label>
+              <FinanceFormField label="From Account">
                 <AccountSelect
                   value={fromAccountId}
                   onValueChange={(nextFromId) => {
@@ -162,7 +164,7 @@ export default function TransferModal({ open, onClose, onSuccess }: Props) {
                   accounts={accounts}
                   placeholder="Select source account"
                 />
-              </div>
+              </FinanceFormField>
 
               <div className="flex justify-center">
                 <span className="grid h-9 w-9 place-items-center rounded-[14px] border border-border bg-surface-secondary text-text-secondary">
@@ -170,34 +172,30 @@ export default function TransferModal({ open, onClose, onSuccess }: Props) {
                 </span>
               </div>
 
-              <div>
-                <label className="field-label">To Account</label>
+              <FinanceFormField label="To Account">
                 <AccountSelect
                   value={toAccountId}
                   onValueChange={setToAccountId}
                   accounts={toAccounts}
                   placeholder="Select destination account"
                 />
-              </div>
+              </FinanceFormField>
 
               <div className="grid gap-3 sm:grid-cols-2">
-                <div>
-                  <label className="field-label" htmlFor="transfer-amount">
-                    Amount ({BASE_CURRENCY})
-                  </label>
-                  <input
+                <FinanceFormField
+                  label={`Amount (${BASE_CURRENCY})`}
+                  htmlFor="transfer-amount"
+                >
+                  <Input
                     id="transfer-amount"
                     type="number"
                     value={amount}
                     onChange={(event) => setAmount(event.target.value)}
                     placeholder="0"
-                    className="field-input font-semibold"
+                    className="font-semibold"
                   />
-                </div>
-                <div>
-                  <label className="field-label" htmlFor="transfer-date">
-                    Transfer Date
-                  </label>
+                </FinanceFormField>
+                <FinanceFormField label="Transfer Date" htmlFor="transfer-date">
                   <DatePicker
                     id="transfer-date"
                     value={transferDate}
@@ -205,21 +203,17 @@ export default function TransferModal({ open, onClose, onSuccess }: Props) {
                     placeholder="Select transfer date"
                     ariaLabel="Transfer date"
                   />
-                </div>
+                </FinanceFormField>
               </div>
 
-              <div>
-                <label className="field-label" htmlFor="transfer-note">
-                  Note (Optional)
-                </label>
-                <input
+              <FinanceFormField label="Note (Optional)" htmlFor="transfer-note">
+                <Input
                   id="transfer-note"
                   value={note}
                   onChange={(event) => setNote(event.target.value)}
                   placeholder="ATM cash withdrawal, bank deposit, wallet move..."
-                  className="field-input"
                 />
-              </div>
+              </FinanceFormField>
             </>
           )}
 
@@ -231,22 +225,22 @@ export default function TransferModal({ open, onClose, onSuccess }: Props) {
         </FinanceModalBody>
 
         <FinanceModalFooter>
-          <button
+          <Button
             type="button"
             onClick={onClose}
             disabled={saving}
             className={financeCancelButtonClass}
           >
             Cancel
-          </button>
-          <button
+          </Button>
+          <Button
             type="button"
             onClick={handleSave}
             disabled={saving || loading || accounts.length < 2}
             className="primary-action py-3"
           >
             {saving ? "Saving..." : "Save Transfer"}
-          </button>
+          </Button>
         </FinanceModalFooter>
       </DialogContent>
     </Dialog>

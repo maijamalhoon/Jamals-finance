@@ -4,8 +4,10 @@ import { useEffect, useMemo, useState } from "react";
 import { TrendingDown, TrendingUp } from "lucide-react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
+import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import DatePicker from "@/components/ui/date-picker";
+import { Input } from "@/components/ui/input";
 import AccountSelect from "@/components/accounts/AccountSelect";
 import { getAppDateKey } from "@/lib/dates";
 import {
@@ -372,12 +374,13 @@ export default function TransactionModal({
           {!typeLocked && (
             <div className="flex gap-1.5 rounded-[16px] border border-border bg-surface-secondary p-1">
               {(["income", "expense"] as const).map((nextType) => (
-                <button
+                <Button
                   key={nextType}
                   type="button"
+                  variant="ghost"
                   onClick={() => setType(nextType)}
                   aria-pressed={type === nextType}
-                  className={`flex-1 rounded-[12px] py-2 text-sm font-semibold transition-colors ${
+                  className={`h-auto flex-1 rounded-[12px] py-2 text-sm font-semibold transition-colors ${
                     type === nextType
                       ? nextType === "income"
                         ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-200"
@@ -386,7 +389,7 @@ export default function TransactionModal({
                   }`}
                 >
                   {nextType === "income" ? "Income" : "Expense"}
-                </button>
+                </Button>
               ))}
             </div>
           )}
@@ -395,7 +398,7 @@ export default function TransactionModal({
             label={`Amount (${BASE_CURRENCY})`}
             htmlFor="transaction-amount"
           >
-            <input
+            <Input
               id="transaction-amount"
               type="number"
               inputMode="decimal"
@@ -404,7 +407,7 @@ export default function TransactionModal({
               value={amount}
               onChange={(event) => setAmount(event.target.value)}
               placeholder="0"
-              className="field-input text-lg font-semibold"
+              className="text-lg font-semibold"
             />
           </FinanceFormField>
 
@@ -524,22 +527,22 @@ export default function TransactionModal({
         </FinanceModalBody>
 
         <FinanceModalFooter>
-          <button
+          <Button
             type="button"
             onClick={onClose}
             disabled={loading}
             className={financeCancelButtonClass}
           >
             Cancel
-          </button>
-          <button
+          </Button>
+          <Button
             type="button"
             onClick={handleSave}
             disabled={loading || loadingOptions}
             className={`py-3 ${isIncome ? "success-action" : "danger-action"}`}
           >
             {loadingOptions ? "Loading..." : btnLabel}
-          </button>
+          </Button>
         </FinanceModalFooter>
       </DialogContent>
     </Dialog>
