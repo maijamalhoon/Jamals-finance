@@ -8,10 +8,7 @@ const PUBLIC_PAGE_ROUTES = [
   "/auth/callback",
 ];
 
-const AUTH_ONLY_PAGE_ROUTES = [
-  "/",
-  "/login",
-];
+const AUTH_ONLY_PAGE_ROUTES = ["/", "/login"];
 
 const PUBLIC_ASSET_ROUTES = [
   "/manifest.webmanifest",
@@ -27,14 +24,8 @@ const PUBLIC_ASSET_ROUTES = [
 ];
 
 const PUBLIC_ASSET_PREFIXES = ["/icons/"];
-
-const PUBLIC_API_ROUTES = [
-  "/api/exchange-rate",
-];
-
-const BLOCKED_PRODUCTION_API_ROUTES = [
-  "/api/sentry-example-api",
-];
+const PUBLIC_API_ROUTES = ["/api/exchange-rate"];
+const BLOCKED_PRODUCTION_API_ROUTES = ["/api/sentry-example-api"];
 
 function matchesPath(pathname: string, routes: string[]) {
   return routes.some((route) => {
@@ -53,7 +44,7 @@ function jsonUnauthorized() {
       error: "Authentication required",
       message: "Please log in before using this API endpoint.",
     },
-    { status: 401 }
+    { status: 401 },
   );
 }
 
@@ -63,12 +54,37 @@ function jsonNotFound() {
       error: "Not found",
       message: "This endpoint is not available in production.",
     },
-    { status: 404 }
+    { status: 404 },
   );
 }
 
 function getOriginalPath(request: NextRequest) {
   return `${request.nextUrl.pathname}${request.nextUrl.search}`;
+}
+
+function isSupabaseAuthCookie(name: string) {
+  return name.startsWith("sb-") && name.includes("auth-token");
+}
+
+function clearStaleAuthCookies(
+  response: NextResponse,
+  request: NextRequest,
+) {
+  request.cookies
+    .getAll()
+    .filter(({ name }) => isSupabaseAuthCookie(name))
+    .forEach(({ name }) => {
+      response.cookies.set({
+        name,
+        value: "",
+        path: "/",
+        expires: new Date(0),
+        maxAge: 0,
+        sameSite: "lax",
+      });
+    });
+
+  return response;
 }
 
 export async function proxy(request: NextRequest) {
@@ -87,11 +103,7 @@ export async function proxy(request: NextRequest) {
     return jsonNotFound();
   }
 
-  if (isPublicApiRoute) {
-    return NextResponse.next();
-  }
-
-  if (isPublicAssetRoute) {
+  if (isPublicApiRoute || isPublicAssetRoute) {
     return NextResponse.next();
   }
 
@@ -117,15 +129,25 @@ export async function proxy(request: NextRequest) {
           });
         },
       },
-    }
+    },
   );
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  let user = null;
+  let authSessionInvalid = false;
+
+  try {
+    const { data, error } = await supabase.auth.getUser();
+    user = data.user;
+    authSessionInvalid = Boolean(error && !data.user);
+  } catch {
+    authSessionInvalid = true;
+  }
 
   if (!user && isApiRoute) {
-    return jsonUnauthorized();
+    const response = jsonUnauthorized();
+    return authSessionInvalid
+      ? clearStaleAuthCookies(response, request)
+      : response;
   }
 
   if (!user && !isPublicPageRoute) {
@@ -133,7 +155,11 @@ export async function proxy(request: NextRequest) {
     url.pathname = "/login";
     url.search = "";
     url.searchParams.set("next", getOriginalPath(request));
-    return NextResponse.redirect(url);
+
+    const response = NextResponse.redirect(url);
+    return authSessionInvalid
+      ? clearStaleAuthCookies(response, request)
+      : response;
   }
 
   if (user && matchesPath(pathname, AUTH_ONLY_PAGE_ROUTES)) {
@@ -143,7 +169,9 @@ export async function proxy(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  return supabaseResponse;
+  return authSessionInvalid
+    ? clearStaleAuthCookies(supabaseResponse, request)
+    : supabaseResponse;
 }
 
 export const config = {

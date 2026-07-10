@@ -1,6 +1,8 @@
 "use client";
 
-import { AlertCircle, RefreshCw } from "lucide-react";
+import { AlertTriangle, RefreshCw } from "lucide-react";
+
+import { Button } from "@/components/ui/button";
 
 export default function DashboardError({
   error,
@@ -10,33 +12,35 @@ export default function DashboardError({
   reset: () => void;
 }) {
   return (
-    <div className="motion-error-shake flex min-h-[min(520px,70dvh)] items-center justify-center px-2 py-8 sm:px-4">
-      <div
+    <div className="flex min-h-[min(560px,72dvh)] items-center justify-center px-2 py-10 sm:px-4">
+      <section
         role="alert"
         aria-live="assertive"
-        className="finance-panel flex w-full max-w-md flex-col items-center gap-4 px-5 py-7 text-center sm:p-7"
+        className="finance-panel flex w-full max-w-lg flex-col items-center px-6 py-8 text-center sm:px-8 sm:py-10"
       >
-        <div className="finance-status-danger flex h-12 w-12 items-center justify-center rounded-[18px] border">
-          <AlertCircle size={23} />
+        <div className="grid h-14 w-14 place-items-center rounded-2xl border border-warning/25 bg-warning/10 text-warning shadow-theme">
+          <AlertTriangle size={25} aria-hidden="true" />
         </div>
-        <div>
-          <p className="text-sm font-semibold text-text-primary">
-            Dashboard could not load
+
+        <div className="mt-5 max-w-sm">
+          <p className="text-lg font-bold tracking-[-0.02em] text-text-primary">
+            This page could not load
           </p>
-          <p className="mt-1 text-xs leading-5 text-text-secondary">
-            Refresh the workspace and try again. Your saved finance data was not changed.
+          <p className="mt-2 text-sm leading-6 text-text-secondary">
+            The workspace hit a temporary connection problem. Your saved finance data was not changed.
           </p>
           {error.digest ? (
-            <p className="mt-2 text-[11px] font-medium text-text-tertiary">
-              Error reference: {error.digest}
+            <p className="mt-3 text-xs font-medium text-text-tertiary">
+              Reference: {error.digest}
             </p>
           ) : null}
         </div>
-        <button onClick={reset} className="primary-action">
-          <RefreshCw size={14} />
+
+        <Button onClick={reset} className="mt-6 min-w-32">
+          <RefreshCw aria-hidden="true" />
           Try again
-        </button>
-      </div>
+        </Button>
+      </section>
     </div>
   );
 }
