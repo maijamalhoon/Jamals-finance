@@ -390,30 +390,30 @@ function HeroPreview() {
         className="relative overflow-hidden rounded-[28px] border border-white/70 bg-white/78 p-3 shadow-[0_32px_110px_rgba(15,23,42,0.18)] backdrop-blur-xl sm:p-4 dark:border-white/12 dark:bg-slate-950/72 dark:shadow-[0_36px_120px_rgba(0,0,0,0.42)]"
       >
         <div className="grid gap-3 lg:grid-cols-[0.86fr_1.14fr]">
-          <div className="rounded-[22px] border border-slate-200/70 bg-slate-950 p-4 text-white shadow-inner dark:border-white/10">
+          <div className="rounded-[22px] border border-blue-700/40 bg-blue-600 p-4 text-white shadow-inner dark:border-amber-200/70 dark:bg-amber-300 dark:text-slate-950">
             <div className="flex items-center justify-between gap-3">
               <div>
-                <p className="text-xs font-bold uppercase text-white/46">
+                <p className="text-xs font-bold uppercase text-white/85 dark:text-slate-900/75">
                   Visual preview
                 </p>
                 <h3 className="mt-1 text-2xl font-black">Monthly clarity</h3>
               </div>
-              <span className="rounded-full border border-emerald-300/20 bg-emerald-300/10 px-3 py-1 text-xs font-black text-emerald-200">
+              <span className="rounded-full border border-white/30 bg-white/15 px-3 py-1 text-xs font-black text-white dark:border-slate-950/20 dark:bg-slate-950/10 dark:text-slate-950">
                 Preview data
               </span>
             </div>
 
-            <div className="mt-6 rounded-[20px] border border-white/10 bg-white/8 p-4">
-              <p className="text-sm font-bold text-white/54">Whole workspace</p>
+            <div className="mt-6 rounded-[20px] border border-white/25 bg-slate-950/12 p-4 dark:border-slate-950/20 dark:bg-white/35">
+              <p className="text-sm font-bold text-white/85 dark:text-slate-900/80">Whole workspace</p>
               <div className="mt-2 flex items-end justify-between gap-4">
                 <strong className="text-4xl font-black tracking-normal">
                   $24,850
                 </strong>
-                <span className="rounded-full bg-emerald-400/12 px-3 py-1 text-xs font-black text-emerald-200">
+                <span className="rounded-full bg-white/15 px-3 py-1 text-xs font-black text-white dark:bg-emerald-950/10 dark:text-emerald-950">
                   +12%
                 </span>
               </div>
-              <div className="mt-5 h-2 overflow-hidden rounded-full bg-white/10">
+              <div className="mt-5 h-2 overflow-hidden rounded-full bg-white/25 dark:bg-slate-950/15">
                 <motion.span
                   initial={false}
                   animate={{ scaleX: 1 }}
@@ -425,20 +425,20 @@ function HeroPreview() {
 
             <div className="mt-3 grid grid-cols-2 gap-3">
               {[
-                ["Income", "$6.4k", TrendingUp, "text-emerald-200"],
-                ["Expenses", "$2.1k", TrendingDown, "text-rose-200"],
-                ["Goals", "72%", Goal, "text-amber-200"],
-                ["AI", "3 notes", BrainCircuit, "text-violet-200"],
+                ["Income", "$6.4k", TrendingUp, "text-emerald-100 dark:text-emerald-950"],
+                ["Expenses", "$2.1k", TrendingDown, "text-rose-100 dark:text-rose-950"],
+                ["Goals", "72%", Goal, "text-amber-100 dark:text-amber-950"],
+                ["AI", "3 notes", BrainCircuit, "text-violet-100 dark:text-violet-950"],
               ].map(([label, value, Icon, tone]) => {
                 const CardIcon = Icon as LucideIcon;
 
                 return (
                   <div
                     key={label as string}
-                    className="rounded-[18px] border border-white/10 bg-white/7 p-3"
+                    className="rounded-[18px] border border-white/25 bg-slate-950/12 p-3 dark:border-slate-950/20 dark:bg-white/30"
                   >
                     <CardIcon className={`h-4 w-4 ${tone}`} />
-                    <p className="mt-4 text-xs font-bold text-white/46">
+                    <p className="mt-4 text-xs font-bold text-white/85 dark:text-slate-900/80">
                       {label as string}
                     </p>
                     <strong className="text-lg font-black">{value as string}</strong>
@@ -557,28 +557,28 @@ export default function PremiumLandingPage() {
       <div className="pointer-events-none fixed inset-0 z-0 bg-[linear-gradient(90deg,rgba(15,23,42,0.055)_1px,transparent_1px),linear-gradient(180deg,rgba(15,23,42,0.045)_1px,transparent_1px)] bg-[size:58px_58px] opacity-70 dark:bg-[linear-gradient(90deg,rgba(226,232,240,0.045)_1px,transparent_1px),linear-gradient(180deg,rgba(226,232,240,0.035)_1px,transparent_1px)]" />
       <div className="pointer-events-none fixed inset-0 z-0 bg-[radial-gradient(circle_at_18%_8%,rgba(45,212,191,0.22),transparent_32%),radial-gradient(circle_at_80%_12%,rgba(59,130,246,0.18),transparent_30%),radial-gradient(circle_at_50%_78%,rgba(168,85,247,0.11),transparent_28%)]" />
 
-      <header className="sticky top-3 z-50 mx-auto w-[calc(100%_-_1rem)] max-w-[1180px] rounded-[24px] border border-white/70 bg-white/74 p-2 shadow-[0_18px_55px_rgba(15,23,42,0.10)] backdrop-blur-xl dark:border-white/10 dark:bg-slate-950/72">
+      <header className="sticky top-2 z-50 mx-auto w-[calc(100%_-_1rem)] max-w-[1180px] rounded-[22px] border border-white/70 bg-white/74 p-1.5 shadow-[0_18px_55px_rgba(15,23,42,0.10)] backdrop-blur-xl sm:top-3 sm:rounded-[24px] sm:p-2 dark:border-white/10 dark:bg-slate-950/72">
         <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 lg:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)]">
           <Link
             href="/"
             aria-label="Jamal's Finance home"
             className="group inline-flex min-w-0 items-center gap-2.5 rounded-[18px] px-2 py-1.5 text-sm font-black focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-blue-500/20"
           >
-            <span className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl border border-emerald-500/20 bg-emerald-500/10 text-emerald-600 dark:text-emerald-300">
+            <span className="grid h-9 w-9 shrink-0 place-items-center rounded-2xl border border-emerald-500/20 bg-emerald-500/10 text-emerald-600 sm:h-10 sm:w-10 dark:text-emerald-300">
               <CircleDollarSign className="h-5 w-5" />
             </span>
-            <span className="truncate">Jamal&apos;s Finance</span>
+            <span className="hidden truncate sm:inline">Jamal&apos;s Finance</span>
           </Link>
 
           <nav
             aria-label="Landing sections"
-            className="order-3 col-span-2 mt-1 flex min-w-0 gap-1 overflow-x-auto rounded-[18px] border border-slate-200/70 bg-slate-50/80 p-1 [scrollbar-width:none] lg:order-none lg:col-span-1 lg:mt-0 dark:border-white/8 dark:bg-white/6"
+            className="order-3 col-span-2 mt-0.5 flex min-w-0 justify-between gap-0 overflow-x-auto rounded-[16px] border border-slate-200/70 bg-slate-50/80 p-0.5 [scrollbar-width:none] sm:mt-1 sm:gap-1 sm:rounded-[18px] sm:p-1 lg:order-none lg:col-span-1 lg:mt-0 dark:border-white/8 dark:bg-white/6"
           >
             {navItems.map((item) => (
               <a
                 key={item.href}
                 href={item.href}
-                className="whitespace-nowrap rounded-2xl px-3 py-2 text-sm font-extrabold text-slate-600 transition hover:bg-white hover:text-slate-950 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-blue-500/20 dark:text-slate-300 dark:hover:bg-white/10 dark:hover:text-white"
+                className="whitespace-nowrap rounded-xl px-2 py-1.5 text-xs font-extrabold text-slate-600 transition hover:bg-white hover:text-slate-950 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-blue-500/20 sm:rounded-2xl sm:px-3 sm:py-2 sm:text-sm dark:text-slate-300 dark:hover:bg-white/10 dark:hover:text-white"
               >
                 {item.label}
               </a>
@@ -588,10 +588,9 @@ export default function PremiumLandingPage() {
           <div className="justify-self-end">
             <Link
               href="/login"
-              className="inline-flex min-h-10 items-center justify-center gap-2 rounded-[18px] bg-slate-950 px-3.5 text-sm font-black text-white transition hover:-translate-y-0.5 hover:bg-slate-900 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-blue-500/20 active:scale-[0.985] dark:bg-white dark:text-slate-950"
+              className="inline-flex min-h-9 items-center justify-center gap-1.5 rounded-[16px] bg-slate-950 px-3 text-xs font-black text-white transition hover:-translate-y-0.5 hover:bg-slate-900 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-blue-500/20 active:scale-[0.985] sm:min-h-10 sm:gap-2 sm:rounded-[18px] sm:px-3.5 sm:text-sm dark:bg-white dark:text-slate-950"
             >
-              <span className="hidden sm:inline">Start workspace</span>
-              <span className="sm:hidden">Start</span>
+              <span>Start your workspace</span>
               <ArrowRight className="h-4 w-4" />
             </Link>
           </div>
@@ -656,8 +655,8 @@ export default function PremiumLandingPage() {
             className="mt-6 flex flex-col justify-center gap-3 sm:flex-row"
           >
             <CTAButton href="/login">Start your workspace</CTAButton>
-            <CTAButton href="/dashboard" variant="secondary">
-              Go to dashboard
+            <CTAButton href="/login" variant="secondary">
+              Login or sign up
             </CTAButton>
           </motion.div>
 
