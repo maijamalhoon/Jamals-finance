@@ -99,6 +99,7 @@ interface Bucket extends DateRange {
 const DATE_KEY_PATTERN = /^(\d{4})-(\d{2})-(\d{2})(?:$|T)/;
 
 export const DEFAULT_CATEGORY_COLOR = "#64748b";
+export const OTHER_CATEGORIES_ID = "other-categories";
 
 function roundTo(value: number, decimals = 1) {
   const rounded = Number(value.toFixed(decimals));
@@ -617,7 +618,7 @@ export function buildSpendingData(
     }
   }
 
-  return Array.from(spending.values())
+  const categories = Array.from(spending.values())
     .map((item) => ({
       id: item.id,
       name: item.name,
@@ -625,6 +626,23 @@ export function buildSpendingData(
       color: isUsableColor(item.color) ? item.color : DEFAULT_CATEGORY_COLOR,
     }))
     .sort((left, right) => right.amount - left.amount);
+
+  if (categories.length <= 5) return categories;
+
+  const topCategories = categories.slice(0, 4);
+  const otherAmount = categories
+    .slice(4)
+    .reduce((sum, category) => sum + category.amount, 0);
+
+  return [
+    ...topCategories,
+    {
+      id: OTHER_CATEGORIES_ID,
+      name: "Other categories",
+      amount: otherAmount,
+      color: DEFAULT_CATEGORY_COLOR,
+    },
+  ];
 }
 
 export function isUsableColor(

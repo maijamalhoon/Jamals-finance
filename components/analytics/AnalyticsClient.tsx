@@ -649,7 +649,7 @@ function SpendingBreakdown({
           }}
           className="min-w-0 space-y-2"
         >
-          {chartData.slice(0, 5).map((item) => (
+          {chartData.map((item) => (
             <motion.div
               key={item.id}
               variants={{
@@ -690,6 +690,14 @@ function InvestmentPerformance({
   const { formatCurrency } = useCurrency();
   const portfolio = summarizeInvestmentPortfolio(investments);
   const list = portfolio.displayedHoldings;
+  const totalPnlClass =
+    portfolio.totalPnl > 0 ? "text-success"
+    : portfolio.totalPnl < 0 ? "text-danger"
+    : "text-text-secondary";
+  const totalPnlSign =
+    portfolio.totalPnl > 0 ? "+"
+    : portfolio.totalPnl < 0 ? "-"
+    : "";
 
   if (status === "error") {
     return (
@@ -742,19 +750,22 @@ function InvestmentPerformance({
             {formatCurrency(portfolio.totalValue)}
           </strong>
         </span>
-        <span
-          className={
-            portfolio.totalPnl >= 0 ? "text-success" : "text-danger"
-          }
-        >
-          {portfolio.totalPnl >= 0 ? "+" : "-"}
+        <span className={totalPnlClass}>
+          {totalPnlSign}
           {formatCurrency(Math.abs(portfolio.totalPnl))} total P/L
         </span>
       </div>
       <div className="grid min-w-0 grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
         {list.map((item, index) => {
-          const isProfit = item.pnl >= 0;
           const accent = item.color;
+          const pnlClass =
+            item.pnl > 0 ? "text-success"
+            : item.pnl < 0 ? "text-danger"
+            : "text-text-secondary";
+          const pnlSign =
+            item.pnl > 0 ? "+"
+            : item.pnl < 0 ? "-"
+            : "";
 
           return (
             <motion.div
@@ -780,17 +791,17 @@ function InvestmentPerformance({
 
                 <ChangeBadge
                   change={
-                    item.pnlPct === null ?
-                      {
-                        kind: "status",
-                        label: "No cost basis",
-                        sentiment: "neutral",
-                        value: null,
-                      }
-                    : item.pnlPct === 0 ?
+                    item.pnl === 0 ?
                       {
                         kind: "status",
                         label: "No change",
+                        sentiment: "neutral",
+                        value: null,
+                      }
+                    : item.pnlPct === null ?
+                      {
+                        kind: "status",
+                        label: "No cost basis",
                         sentiment: "neutral",
                         value: null,
                       }
@@ -816,14 +827,14 @@ function InvestmentPerformance({
               </p>
 
               <p
-                className={`mt-1 flex items-center gap-1 text-[11px] font-bold ${
-                  isProfit ? "text-success" : "text-danger"
-                }`}
+                className={`mt-1 flex items-center gap-1 text-[11px] font-bold ${pnlClass}`}
               >
-                {isProfit ?
+                {item.pnl > 0 ?
                   <ArrowUpRight size={12} />
-                : <ArrowDownRight size={12} />}
-                {isProfit ? "+" : "-"}
+                : item.pnl < 0 ?
+                  <ArrowDownRight size={12} />
+                : null}
+                {pnlSign}
                 {formatCurrency(Math.abs(item.pnl), { compact: true })}
                 {item.pnlPct === null ? " · No cost basis" : null}
               </p>
@@ -864,6 +875,10 @@ export default function AnalyticsClient({
     () => calculateKpis(transactions, period, now),
     [transactions, period, now],
   );
+  const netSavingsAccent =
+    kpis.netSavings > 0 ? "var(--success)"
+    : kpis.netSavings < 0 ? "var(--danger)"
+    : "var(--text-secondary)";
 
   return (
     <div className="min-h-full min-w-0 text-text-primary">
@@ -964,7 +979,7 @@ export default function AnalyticsClient({
                 title="Net Savings"
                 value={kpis.netSavings}
                 change={kpis.netSavingsChange}
-                accent="var(--success)"
+                accent={netSavingsAccent}
                 icon={<PiggyBank size={17} />}
                 animationKey={`${period}-savings-${kpis.netSavings}`}
               />

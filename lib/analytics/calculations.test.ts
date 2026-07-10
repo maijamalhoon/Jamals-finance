@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   DEFAULT_CATEGORY_COLOR,
+  OTHER_CATEGORIES_ID,
   buildCashFlowSeries,
   buildSpendingData,
   calculateKpis,
@@ -9,6 +10,7 @@ import {
   compareNetSavings,
   compareSavingsRate,
   getCurrentAndPreviousRange,
+  parseDateKey,
   summarizeInvestmentPortfolio,
   type AnalyticsInvestmentData,
   type AnalyticsTransactionData,
@@ -47,6 +49,16 @@ function investment(
 }
 
 describe("analytics date ranges", () => {
+  it("parses valid date keys and rejects impossible calendar dates", () => {
+    expect(parseDateKey("2026-02-30")).toBeNull();
+    expect(parseDateKey("2026-13-01")).toBeNull();
+    expect(parseDateKey("2024-02-29")).toEqual({
+      year: 2024,
+      month: 2,
+      day: 29,
+    });
+  });
+
   it("builds the current and previous seven-day ranges", () => {
     expect(getCurrentAndPreviousRange("week", "2026-07-10")).toEqual({
       current: { start: "2026-07-04", end: "2026-07-10" },
@@ -171,6 +183,84 @@ describe("transaction analytics", () => {
     ]);
   });
 
+  it("keeps five or fewer spending categories as individual items", () => {
+    const input = [
+      transaction({ id: "a", amount: 50, type: "expense", categoryId: "a", categoryName: "A", categoryColor: "#111111" }),
+      transaction({ id: "b", amount: 40, type: "expense", categoryId: "b", categoryName: "B", categoryColor: "#222222" }),
+      transaction({ id: "c", amount: 30, type: "expense", categoryId: "c", categoryName: "C", categoryColor: "#333333" }),
+      transaction({ id: "d", amount: 20, type: "expense", categoryId: "d", categoryName: "D", categoryColor: "#444444" }),
+      transaction({ id: "e", amount: 10, type: "expense", categoryId: "e", categoryName: "E", categoryColor: "#555555" }),
+    ];
+
+    const spending = buildSpendingData(input, {
+      start: "2026-07-01",
+      end: "2026-07-10",
+    });
+
+    expect(spending).toEqual([
+      { id: "a", name: "A", amount: 50, color: "#111111" },
+      { id: "b", name: "B", amount: 40, color: "#222222" },
+      { id: "c", name: "C", amount: 30, color: "#333333" },
+      { id: "d", name: "D", amount: 20, color: "#444444" },
+      { id: "e", name: "E", amount: 10, color: "#555555" },
+    ]);
+    expect(spending.find((item) => item.id === OTHER_CATEGORIES_ID)).toBeUndefined();
+  });
+
+  it("keeps the top four categories and preserves all remaining spending in one aggregate", () => {
+    const input = [
+      transaction({ id: "a", amount: 100, type: "expense", categoryId: "a", categoryName: "A" }),
+      transaction({ id: "b", amount: 90, type: "expense", categoryId: "b", categoryName: "B" }),
+      transaction({ id: "c", amount: 80, type: "expense", categoryId: "c", categoryName: "C" }),
+      transaction({ id: "d", amount: 70, type: "expense", categoryId: "d", categoryName: "D" }),
+      transaction({ id: "e", amount: 60, type: "expense", categoryId: "e", categoryName: "E" }),
+      transaction({ id: "f", amount: 50, type: "expense", categoryId: "f", categoryName: "F" }),
+      transaction({ id: "g", amount: 40, type: "expense", categoryId: "g", categoryName: "G" }),
+      transaction({ id: "income", amount: 999, type: "income", categoryId: "income", categoryName: "Income" }),
+      transaction({ id: "old", amount: 999, type: "expense", date: "2026-06-30", categoryId: "old", categoryName: "Old" }),
+    ];
+
+    const spending = buildSpendingData(input, {
+      start: "2026-07-01",
+      end: "2026-07-10",
+    });
+    const aggregate = spending.at(-1);
+
+    expect(spending).toHaveLength(5);
+    expect(spending.slice(0, 4).map((item) => item.id)).toEqual([
+      "a",
+      "b",
+      "c",
+      "d",
+    ]);
+    expect(aggregate).toEqual({
+      id: OTHER_CATEGORIES_ID,
+      name: "Other categories",
+      amount: 150,
+      color: DEFAULT_CATEGORY_COLOR,
+    });
+    expect(spending.reduce((sum, item) => sum + item.amount, 0)).toBe(490);
+  });
+
+  it("does not mutate transaction input while aggregating categories", () => {
+    const input = [
+      transaction({ id: "a", amount: 60, type: "expense", categoryId: "a" }),
+      transaction({ id: "b", amount: 50, type: "expense", categoryId: "b" }),
+      transaction({ id: "c", amount: 40, type: "expense", categoryId: "c" }),
+      transaction({ id: "d", amount: 30, type: "expense", categoryId: "d" }),
+      transaction({ id: "e", amount: 20, type: "expense", categoryId: "e" }),
+      transaction({ id: "f", amount: 10, type: "expense", categoryId: "f" }),
+    ];
+    const snapshot = input.map((item) => ({ ...item }));
+
+    buildSpendingData(input, {
+      start: "2026-07-01",
+      end: "2026-07-10",
+    });
+
+    expect(input).toEqual(snapshot);
+  });
+
   it("uses a neutral color for invalid or missing category colors", () => {
     const spending = buildSpendingData(
       [
@@ -186,11 +276,10 @@ describe("transaction analytics", () => {
     ]);
   });
 
-  it("ignores malformed amounts and invalid date-only values safely", () => {
+  it("ignores malformed and non-positive amounts safely", () => {
     const kpis = calculateKpis(
       [
         transaction({ id: "bad-number", amount: "not-a-number" }),
-        transaction({ id: "bad-date", amount: 100, date: "2026-02-30" }),
         transaction({ id: "negative", amount: -100 }),
       ],
       "month",
