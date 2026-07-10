@@ -247,13 +247,17 @@ export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
-  const [age, setAge] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loadingMode, setLoadingMode] = useState<LoadingMode>(null);
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
 
   const isLoading = Boolean(loadingMode);
+  const isAuthEntryStep = step === "login" || step === "signup";
+  const googleButtonLabel =
+    loadingMode === "google" ? "Opening Google..."
+    : step === "signup" ? "Sign up with Google"
+    : "Continue with Google";
 
   function resetFeedback() {
     setError("");
@@ -319,22 +323,11 @@ export default function LoginPage() {
     resetFeedback();
 
     const nextEmail = validateEmailAddress();
-    const numericAge = Number(age);
 
     if (!nextEmail) return;
 
     if (!fullName.trim()) {
       setError("Enter your full name.");
-      return;
-    }
-
-    if (
-      !age ||
-      Number.isNaN(numericAge) ||
-      numericAge < 10 ||
-      numericAge > 120
-    ) {
-      setError("Enter a valid age.");
       return;
     }
 
@@ -351,7 +344,6 @@ export default function LoginPage() {
       options: {
         data: {
           full_name: fullName.trim(),
-          age: String(numericAge),
         },
         emailRedirectTo: `${window.location.origin}/auth/callback?next=/dashboard`,
       },
@@ -445,7 +437,7 @@ export default function LoginPage() {
     : message || "Open your inbox and follow the secure link.";
 
   return (
-    <main className="jf-auth-page jf-login-polish relative flex min-h-dvh items-center justify-center overflow-hidden px-4 py-8 text-[var(--jf-auth-text)] sm:px-6 lg:px-8">
+    <main className="jf-auth-page jf-login-polish relative flex min-h-dvh items-start justify-center overflow-x-hidden overflow-y-auto px-3 py-5 text-[var(--jf-auth-text)] sm:items-center sm:px-6 lg:px-8">
       <div className="jf-auth-grid pointer-events-none absolute inset-0" />
       <div className="jf-auth-accent-line pointer-events-none absolute inset-x-0 top-0 h-1" />
 
@@ -453,7 +445,7 @@ export default function LoginPage() {
         initial={{ opacity: 0, y: 18, scale: 0.985 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
         transition={{ duration: 0.28, ease: "easeOut" }}
-        className="jf-auth-card relative w-full max-w-[520px] overflow-hidden p-5 sm:p-7"
+        className="jf-auth-card relative w-full max-w-[500px] overflow-hidden p-4 sm:p-5"
       >
         <div className="absolute inset-x-0 top-0 h-px bg-[linear-gradient(90deg,transparent,rgba(255,255,255,0.42),transparent)]" />
 
@@ -467,27 +459,27 @@ export default function LoginPage() {
             <X className="h-5 w-5" />
           </button>
 
-          <div className="mb-7 text-center">
-            <div className="mx-auto mb-4 inline-flex items-center gap-2 rounded-2xl border border-[var(--jf-auth-border)] bg-[var(--jf-auth-panel)] px-3.5 py-2 text-sm font-semibold text-[var(--jf-auth-muted)]">
-              <Sparkles className="h-4 w-4 text-[#fef3c7]" />
-              Jamals Finance
+          <div className="mb-4 text-center">
+            <div className="mx-auto mb-3 inline-flex items-center gap-2 rounded-full border border-[var(--jf-auth-border)] bg-[var(--jf-auth-panel)] px-3.5 py-2 text-xs font-black uppercase text-[var(--jf-auth-muted)]">
+              <Sparkles className="h-4 w-4 text-amber-300" />
+              Jamal&apos;s Finance
             </div>
 
-            <div className="jf-auth-icon mx-auto mb-4">
+            <div className="jf-auth-icon mx-auto mb-3">
               <ShieldCheck className="h-6 w-6 text-[#bfdbfe]" />
             </div>
 
-            <h1 className="text-[30px] font-semibold leading-tight text-[var(--jf-auth-text)] sm:text-[36px]">
+            <h1 className="text-[28px] font-black leading-tight text-[var(--jf-auth-text)] sm:text-[34px]">
               {title}
             </h1>
 
-            <p className="mx-auto mt-3 max-w-[350px] text-[15px] leading-7 text-[var(--jf-auth-muted)]">
+            <p className="mx-auto mt-2 max-w-[340px] text-[14px] font-semibold leading-6 text-[var(--jf-auth-muted)] sm:text-[15px]">
               {subtitle}
             </p>
           </div>
 
-          {step === "login" || step === "signup" ?
-            <div className="jf-auth-tab-list mb-5">
+          {isAuthEntryStep ?
+            <div className="jf-auth-tab-list mb-3">
               <button
                 type="button"
                 onClick={() => switchStep("login")}
@@ -509,40 +501,36 @@ export default function LoginPage() {
             </div>
           : null}
 
+          {isAuthEntryStep && isGoogleAuthEnabled ?
+            <div className="jf-auth-social-block mb-3 space-y-2.5">
+              <SocialButton
+                icon={<GoogleLogo />}
+                onClick={() => handleOAuthSignIn("google")}
+                disabled={isLoading}
+                loading={loadingMode === "google"}
+              >
+                {googleButtonLabel}
+              </SocialButton>
+
+              <div className="jf-auth-divider">
+                <span />
+                <strong>OR</strong>
+                <span />
+              </div>
+            </div>
+          : null}
+
           <AnimatePresence mode="wait">
             {step === "login" ?
               <motion.form
                 key="login"
                 onSubmit={handleLogin}
                 noValidate
-                className="space-y-4"
+                className="jf-auth-form space-y-3.5"
                 initial={{ opacity: 0.96, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -8 }}
               >
-                {isGoogleAuthEnabled ?
-                  <>
-                    <SocialButton
-                      icon={<GoogleLogo />}
-                      onClick={() => handleOAuthSignIn("google")}
-                      disabled={isLoading}
-                      loading={loadingMode === "google"}
-                    >
-                      {loadingMode === "google" ?
-                        "Opening Google..."
-                      : "Continue with Google"}
-                    </SocialButton>
-
-                    <div className="flex items-center gap-5 py-2">
-                      <span className="h-px flex-1 bg-[rgba(255,255,255,0.13)]" />
-                      <span className="text-xs font-semibold text-[rgba(255,255,255,0.46)]">
-                        OR
-                      </span>
-                      <span className="h-px flex-1 bg-[rgba(255,255,255,0.13)]" />
-                    </div>
-                  </>
-                : null}
-
                 <Field
                   label="Email address"
                   icon={<Mail className="h-4 w-4" />}
@@ -614,34 +602,11 @@ export default function LoginPage() {
                 key="signup"
                 onSubmit={handleSignup}
                 noValidate
-                className="space-y-4"
+                className="jf-auth-form space-y-3.5"
                 initial={{ opacity: 0.96, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -8 }}
               >
-                {isGoogleAuthEnabled ?
-                  <>
-                    <SocialButton
-                      icon={<GoogleLogo />}
-                      onClick={() => handleOAuthSignIn("google")}
-                      disabled={isLoading}
-                      loading={loadingMode === "google"}
-                    >
-                      {loadingMode === "google" ?
-                        "Opening Google..."
-                      : "Sign up with Google"}
-                    </SocialButton>
-
-                    <div className="flex items-center gap-5 py-2">
-                      <span className="h-px flex-1 bg-[rgba(255,255,255,0.13)]" />
-                      <span className="text-xs font-semibold text-[rgba(255,255,255,0.46)]">
-                        OR
-                      </span>
-                      <span className="h-px flex-1 bg-[rgba(255,255,255,0.13)]" />
-                    </div>
-                  </>
-                : null}
-
                 <Field
                   label="Full name"
                   icon={<UserRound className="h-4 w-4" />}
@@ -651,19 +616,6 @@ export default function LoginPage() {
                     onChange={(event) => setFullName(event.target.value)}
                     placeholder="Enter your name"
                     autoComplete="name"
-                    disabled={isLoading}
-                    className={`${inputBaseClass} disabled:cursor-not-allowed disabled:opacity-70`}
-                  />
-                </Field>
-
-                <Field label="Age" icon={<Sparkles className="h-4 w-4" />}>
-                  <input
-                    value={age}
-                    onChange={(event) =>
-                      setAge(event.target.value.replace(/\D/g, "").slice(0, 3))
-                    }
-                    placeholder="Enter your age"
-                    inputMode="numeric"
                     disabled={isLoading}
                     className={`${inputBaseClass} disabled:cursor-not-allowed disabled:opacity-70`}
                   />
@@ -712,9 +664,9 @@ export default function LoginPage() {
                   </button>
                 </Field>
 
-                <div className="jf-auth-security-note flex items-center gap-2 rounded-2xl border border-[rgba(52,211,153,0.18)] bg-[rgba(16,185,129,0.1)] px-4 py-3 text-xs font-semibold text-[#bbf7d0]">
+                <div className="jf-auth-security-note flex items-center gap-2 rounded-2xl border border-[rgba(52,211,153,0.18)] bg-[rgba(16,185,129,0.1)] px-4 py-2.5 text-xs font-semibold text-[#bbf7d0]">
                   <ShieldCheck className="h-4 w-4 shrink-0" />
-                  Your profile will be stored securely with Supabase Auth.
+                  Age and personal preferences can be added later in onboarding.
                 </div>
 
                 {error ?
@@ -744,6 +696,7 @@ export default function LoginPage() {
                 <button
                   type="button"
                   onClick={() => switchStep("login")}
+                  disabled={isLoading}
                   className="inline-flex h-11 items-center gap-2 rounded-2xl px-2 text-sm font-semibold text-[var(--jf-auth-muted)] transition hover:bg-[var(--jf-auth-panel-hover)] hover:text-[var(--jf-auth-text)]"
                 >
                   <ArrowLeft className="h-4 w-4" />
@@ -807,7 +760,7 @@ export default function LoginPage() {
             : null}
           </AnimatePresence>
 
-          <div className="mt-7 flex items-center justify-center gap-2 text-center text-[11px] leading-5 text-[var(--jf-auth-subtle)]">
+          <div className="mt-5 flex items-center justify-center gap-2 text-center text-[11px] leading-5 text-[var(--jf-auth-subtle)]">
             <CheckCircle2 className="h-3.5 w-3.5 text-[#86efac]" />
             <span>Protected by Supabase Auth and secure sessions.</span>
           </div>
