@@ -1,7 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import "./design-system.css";
 import { Toaster } from "sonner";
 import MotionProvider from "@/components/motion/MotionProvider";
 import { CurrencyProvider } from "@/components/currency/CurrencyProvider";
@@ -82,14 +81,13 @@ export const metadata: Metadata = {
     telephone: false,
   },
 };
-
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   maximumScale: 5,
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#f5f7fb" },
-    { media: "(prefers-color-scheme: dark)", color: "#071018" },
+    { media: "(prefers-color-scheme: light)", color: "#f7f9fc" },
+    { media: "(prefers-color-scheme: dark)", color: "#090c11" },
   ],
 };
 
@@ -130,10 +128,7 @@ try {
             <PWARegister />
             <Toaster
               position="top-right"
-              closeButton
-              richColors
               toastOptions={{
-                duration: 4500,
                 classNames: {
                   toast: "theme-toast",
                 },
