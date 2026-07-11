@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test:analytics": "vitest run lib/analytics/calculations.test.ts"
+    "test:analytics": "vitest run lib/analytics/calculations.test.ts",
+    "test:settings": "vitest run lib/settings/security.test.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.104.1",

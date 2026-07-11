@@ -5,12 +5,11 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import {
-  Bell,
   Check,
-  CheckCircle2,
   ChevronRight,
   Download,
-  Fingerprint,
+  Eye,
+  EyeOff,
   HandCoins,
   Loader2,
   LockKeyhole,
@@ -60,6 +59,14 @@ import {
 import { useCurrency } from "@/components/currency/CurrencyProvider";
 import { createClient } from "@/lib/supabase/client";
 import {
+  buildSettingsSnapshot,
+  CATEGORY_DELETE_VERIFICATION_ERROR,
+  mapAuthError,
+  validateCategoryDeleteReadiness,
+  validatePasswordChange,
+  validateProfileName,
+} from "@/lib/settings/security";
+import {
   applyThemePreference,
   getStoredThemePreference,
   type ResolvedTheme,
@@ -80,10 +87,10 @@ export interface SettingsCategory {
 }
 
 export interface AccountStats {
-  accounts: number;
-  transactions: number;
-  goals: number;
-  investments: number;
+  accounts: number | null;
+  transactions: number | null;
+  goals: number | null;
+  investments: number | null;
 }
 
 interface SettingsOneUIProps {
@@ -92,6 +99,7 @@ interface SettingsOneUIProps {
   displayName: string;
   categories: SettingsCategory[];
   categoryUsage: Record<string, number>;
+  categoriesAvailable: boolean;
   stats: AccountStats;
 }
 
@@ -354,11 +362,12 @@ function ProfileDialog({
 
   async function handleProfileSave(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const name = draftName.trim();
-    if (!name) {
-      toast.error("Enter a display name.");
+    const validation = validateProfileName(draftName);
+    if (!validation.ok) {
+      toast.error(validation.error);
       return;
     }
+    const name = validation.value;
 
     setSaving(true);
     const { error } = await supabase.auth.updateUser({
@@ -367,7 +376,9 @@ function ProfileDialog({
     setSaving(false);
 
     if (error) {
-      toast.error(error.message);
+      toast.error(
+        mapAuthError(error, "Could not update your profile. Please try again."),
+      );
       return;
     }
 
@@ -420,51 +431,138 @@ function ProfileDialog({
 function SecurityDialog({ email }: { email: string }) {
   const supabase = createClient();
   const [open, setOpen] = useState(false);
-  const [twoFactorEnabled, setTwoFactorEnabled] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [currentPassword, setCurrentPassword] = useState("");
+  const [stage, setStage] = useState<"request" | "verify">("request");
+  const [verificationCode, setVerificationCode] = useState("");
   const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [showPasswords, setShowPasswords] = useState(false);
+  const [isSendingCode, setIsSendingCode] = useState(false);
+  const [isUpdatingPassword, setIsUpdatingPassword] = useState(false);
+  const [passwordFeedback, setPasswordFeedback] = useState<{
+    tone: "error" | "success";
+    message: string;
+  } | null>(null);
+  const [confirmOtherSignOut, setConfirmOtherSignOut] = useState(false);
+  const [isSigningOutOthers, setIsSigningOutOthers] = useState(false);
+  const [sessionFeedback, setSessionFeedback] = useState<string | null>(null);
 
-  useEffect(() => {
-    const saved = window.localStorage.getItem("jamal-2fa-enabled");
-    setTwoFactorEnabled(saved === "true");
-  }, []);
+  function resetSecurityState() {
+    setStage("request");
+    setVerificationCode("");
+    setNewPassword("");
+    setConfirmPassword("");
+    setShowPasswords(false);
+    setPasswordFeedback(null);
+    setSessionFeedback(null);
+    setConfirmOtherSignOut(false);
+  }
 
-  function toggleTwoFactor(next: boolean) {
-    setTwoFactorEnabled(next);
-    window.localStorage.setItem("jamal-2fa-enabled", String(next));
-    toast.success(
-      next ? "2FA preference enabled." : "2FA preference disabled.",
-    );
+  function handleOpenChange(nextOpen: boolean) {
+    if (!nextOpen && (isSendingCode || isUpdatingPassword || isSigningOutOthers)) {
+      return;
+    }
+    setOpen(nextOpen);
+    if (!nextOpen) resetSecurityState();
+  }
+
+  async function sendVerificationCode() {
+    if (isSendingCode) return;
+    setIsSendingCode(true);
+    setPasswordFeedback(null);
+    const { error } = await supabase.auth.reauthenticate();
+    setIsSendingCode(false);
+
+    if (error) {
+      setPasswordFeedback({
+        tone: "error",
+        message: mapAuthError(
+          error,
+          "Could not send a verification code. Please try again.",
+        ),
+      });
+      return;
+    }
+
+    setStage("verify");
+    setPasswordFeedback({
+      tone: "success",
+      message: "Verification code sent. Check your configured email or phone.",
+    });
   }
 
   async function handlePasswordSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!currentPassword.trim() || !newPassword.trim()) {
-      toast.error("Enter your current and new password.");
-      return;
-    }
-    if (newPassword.length < 6) {
-      toast.error("New password must be at least 6 characters.");
+    if (isUpdatingPassword) return;
+
+    const validation = validatePasswordChange({
+      verificationCode,
+      newPassword,
+      confirmPassword,
+    });
+    if (!validation.ok) {
+      setPasswordFeedback({ tone: "error", message: validation.error });
       return;
     }
 
-    setIsSubmitting(true);
-    const { error } = await supabase.auth.updateUser({ password: newPassword });
-    setIsSubmitting(false);
+    setIsUpdatingPassword(true);
+    setPasswordFeedback(null);
+    const { error } = await supabase.auth.updateUser({
+      password: validation.value.newPassword,
+      nonce: validation.value.verificationCode,
+    });
 
     if (error) {
-      toast.error(error.message);
+      setIsUpdatingPassword(false);
+      setPasswordFeedback({
+        tone: "error",
+        message: mapAuthError(
+          error,
+          "Could not update your password. Check the code and try again.",
+        ),
+      });
       return;
     }
 
-    setCurrentPassword("");
-    setNewPassword("");
-    toast.success("Password updated successfully.");
+    const { error: revokeError } = await supabase.auth.signOut({
+      scope: "others",
+    });
+    setIsUpdatingPassword(false);
+    resetSecurityState();
+
+    if (revokeError) {
+      toast.warning(
+        "Password updated, but other sessions could not be revoked. Your current device remains signed in.",
+      );
+      return;
+    }
+
+    toast.success("Password updated and other devices signed out.");
+  }
+
+  async function signOutOtherDevices() {
+    if (isSigningOutOthers) return;
+    setIsSigningOutOthers(true);
+    setSessionFeedback(null);
+    const { error } = await supabase.auth.signOut({ scope: "others" });
+    setIsSigningOutOthers(false);
+
+    if (error) {
+      setSessionFeedback(
+        mapAuthError(
+          error,
+          "Could not sign out other devices. Please try again.",
+        ),
+      );
+      return;
+    }
+
+    setConfirmOtherSignOut(false);
+    setSessionFeedback("Other devices have been signed out.");
+    toast.success("Other devices signed out. This device remains signed in.");
   }
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <SettingsRow
         icon={
           <IconBubble tone="gray">
@@ -472,7 +570,7 @@ function SecurityDialog({ email }: { email: string }) {
           </IconBubble>
         }
         title="Security"
-        description="Password and local 2FA preference"
+        description="Password verification and session controls"
         onClick={() => setOpen(true)}
       />
       <DialogContent className="max-h-[88dvh] overflow-y-auto rounded-3xl p-5 sm:max-w-lg">
@@ -483,11 +581,10 @@ function SecurityDialog({ email }: { email: string }) {
           </DialogDescription>
         </DialogHeader>
 
-        <motion.form
+        <motion.div
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.2 }}
-          onSubmit={handlePasswordSubmit}
           className="space-y-4"
         >
           <div className="rounded-3xl border border-border bg-surface-secondary p-4">
@@ -500,70 +597,185 @@ function SecurityDialog({ email }: { email: string }) {
                   Update Password
                 </p>
                 <p className="text-xs text-text-secondary">
-                  Your active Supabase session authorizes this change.
+                  Verify your identity before choosing a new password.
                 </p>
               </div>
             </div>
-            <div className="space-y-3">
-              <div>
-                <label className="field-label" htmlFor="current-password">
-                  Current Password
-                </label>
-                <Input
-                  id="current-password"
-                  type="password"
-                  autoComplete="current-password"
-                  value={currentPassword}
-                  onChange={(event) => setCurrentPassword(event.target.value)}
-                  placeholder="Enter current password"
-                />
+            {stage === "request" ?
+              <div className="space-y-3">
+                <p className="text-xs leading-5 text-text-secondary">
+                  Supabase will send a verification code to the email or phone
+                  configured for your authenticated account.
+                </p>
+                <Button
+                  type="button"
+                  onClick={sendVerificationCode}
+                  disabled={isSendingCode}
+                  aria-busy={isSendingCode}
+                  className="w-full"
+                  size="lg"
+                >
+                  {isSendingCode && <Loader2 className="animate-spin" size={16} />}
+                  {isSendingCode ? "Sending..." : "Send verification code"}
+                </Button>
               </div>
-              <div>
-                <label className="field-label" htmlFor="new-password">
-                  New Password
-                </label>
-                <Input
-                  id="new-password"
-                  type="password"
-                  autoComplete="new-password"
-                  value={newPassword}
-                  onChange={(event) => setNewPassword(event.target.value)}
-                  placeholder="Minimum 6 characters"
-                />
-              </div>
-            </div>
-            <Button
-              type="submit"
-              disabled={isSubmitting}
-              className="mt-4 w-full"
-              size="lg"
-            >
-              {isSubmitting ?
-                <Loader2 className="animate-spin" size={16} />
-              : <Save size={16} />}
-              {isSubmitting ? "Updating..." : "Update Password"}
-            </Button>
+            : <form onSubmit={handlePasswordSubmit} className="space-y-3">
+                <div>
+                  <label className="field-label" htmlFor="verification-code">
+                    Verification code
+                  </label>
+                  <Input
+                    id="verification-code"
+                    inputMode="numeric"
+                    autoComplete="one-time-code"
+                    pattern="[0-9]*"
+                    maxLength={10}
+                    value={verificationCode}
+                    onChange={(event) =>
+                      setVerificationCode(event.target.value.replace(/\D/g, ""))
+                    }
+                    placeholder="Enter verification code"
+                  />
+                </div>
+                <div>
+                  <label className="field-label" htmlFor="new-password">
+                    New password
+                  </label>
+                  <div className="relative">
+                    <Input
+                      id="new-password"
+                      type={showPasswords ? "text" : "password"}
+                      autoComplete="new-password"
+                      value={newPassword}
+                      onChange={(event) => setNewPassword(event.target.value)}
+                      placeholder="Minimum 8 characters"
+                      className="pr-12"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPasswords((visible) => !visible)}
+                      className="finance-focus absolute right-2 top-1/2 grid h-8 w-8 -translate-y-1/2 place-items-center rounded-full text-text-secondary"
+                      aria-label={showPasswords ? "Hide passwords" : "Show passwords"}
+                    >
+                      {showPasswords ? <EyeOff size={16} /> : <Eye size={16} />}
+                    </button>
+                  </div>
+                </div>
+                <div>
+                  <label className="field-label" htmlFor="confirm-new-password">
+                    Confirm new password
+                  </label>
+                  <Input
+                    id="confirm-new-password"
+                    type={showPasswords ? "text" : "password"}
+                    autoComplete="new-password"
+                    value={confirmPassword}
+                    onChange={(event) => setConfirmPassword(event.target.value)}
+                    placeholder="Repeat new password"
+                  />
+                </div>
+                <div className="flex flex-col gap-2 sm:flex-row">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={sendVerificationCode}
+                    disabled={isSendingCode || isUpdatingPassword}
+                    aria-busy={isSendingCode}
+                    className="flex-1"
+                  >
+                    {isSendingCode ? "Resending..." : "Resend code"}
+                  </Button>
+                  <Button
+                    type="submit"
+                    disabled={isUpdatingPassword || isSendingCode}
+                    aria-busy={isUpdatingPassword}
+                    className="flex-1"
+                  >
+                    {isUpdatingPassword && <Loader2 className="animate-spin" size={16} />}
+                    {isUpdatingPassword ? "Updating..." : "Update password"}
+                  </Button>
+                </div>
+              </form>
+            }
+            {passwordFeedback && (
+              <p
+                role={passwordFeedback.tone === "error" ? "alert" : undefined}
+                aria-live="polite"
+                className={`mt-3 text-xs font-semibold ${
+                  passwordFeedback.tone === "error" ? "text-danger" : "text-success"
+                }`}
+              >
+                {passwordFeedback.message}
+              </p>
+            )}
           </div>
-        </motion.form>
+        </motion.div>
 
-        <div className="flex items-center gap-3 rounded-3xl border border-border bg-card px-4 py-4">
-          <IconBubble tone="green">
-            <CheckCircle2 size={20} />
-          </IconBubble>
-          <div className="min-w-0 flex-1">
-            <p className="text-sm font-bold text-text-primary">
-              Two-Factor Authentication
+        <div className="rounded-3xl border border-border bg-card p-4">
+          <p className="text-sm font-bold text-text-primary">Other sessions</p>
+          <p className="mt-1 text-xs leading-5 text-text-secondary">
+            Sign out every other device while keeping this device signed in.
+          </p>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => {
+              setSessionFeedback(null);
+              setConfirmOtherSignOut(true);
+            }}
+            disabled={isSigningOutOthers || isUpdatingPassword}
+            className="mt-3 w-full"
+          >
+            <LogOut size={16} />
+            Sign out other devices
+          </Button>
+          {sessionFeedback && (
+            <p aria-live="polite" className="mt-3 text-xs font-semibold text-text-secondary">
+              {sessionFeedback}
             </p>
-            <p className="text-xs text-text-secondary">
-              Preference saved locally until backend enrollment is added.
-            </p>
-          </div>
-          <SoftSwitch
-            checked={twoFactorEnabled}
-            onCheckedChange={toggleTwoFactor}
-            label="Toggle two-factor authentication"
-          />
+          )}
         </div>
+
+        <Dialog
+          open={confirmOtherSignOut}
+          onOpenChange={(nextOpen) => {
+            if (!isSigningOutOthers) setConfirmOtherSignOut(nextOpen);
+          }}
+        >
+          <DialogContent className="rounded-3xl p-5 sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>Sign out other devices?</DialogTitle>
+              <DialogDescription>
+                Other sessions will be revoked. This device will remain signed in.
+              </DialogDescription>
+            </DialogHeader>
+            {sessionFeedback && (
+              <p role="alert" className="text-xs font-semibold text-danger">
+                {sessionFeedback}
+              </p>
+            )}
+            <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setConfirmOtherSignOut(false)}
+                disabled={isSigningOutOthers}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="button"
+                onClick={signOutOtherDevices}
+                disabled={isSigningOutOthers}
+                aria-busy={isSigningOutOthers}
+                className="bg-danger text-white hover:bg-danger/90"
+              >
+                {isSigningOutOthers && <Loader2 className="animate-spin" size={16} />}
+                {isSigningOutOthers ? "Signing out..." : "Sign out other devices"}
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
       </DialogContent>
     </Dialog>
   );
@@ -573,10 +785,12 @@ function CategoriesDialog({
   initialCategories,
   initialUsage,
   userId,
+  available,
 }: {
   initialCategories: SettingsCategory[];
   initialUsage: Record<string, number>;
   userId: string;
+  available: boolean;
 }) {
   const router = useRouter();
   const supabase = createClient();
@@ -594,6 +808,10 @@ function CategoriesDialog({
   const [editColor, setEditColor] = useState(CATEGORY_COLORS.income);
   const [editParentId, setEditParentId] = useState("");
   const [savingId, setSavingId] = useState<string | null>(null);
+  const [pendingDelete, setPendingDelete] =
+    useState<SettingsCategory | null>(null);
+  const [isDeletingCategory, setIsDeletingCategory] = useState(false);
+  const [deleteFeedback, setDeleteFeedback] = useState<string | null>(null);
 
   useEffect(() => {
     setCategories(initialCategories);
@@ -696,7 +914,7 @@ function CategoriesDialog({
     setSavingId(null);
 
     if (error || !data) {
-      toast.error(error?.message || "Could not add category.");
+      toast.error("Could not add category. Please try again.");
       return;
     }
 
@@ -742,12 +960,13 @@ function CategoriesDialog({
         parent_id: nextParentId,
       })
       .eq("id", category.id)
+      .eq("user_id", userId)
       .select("id, name, type, color, parent_id")
       .single();
     setSavingId(null);
 
     if (error || !data) {
-      toast.error(error?.message || "Could not update category.");
+      toast.error("Could not update category. Please try again.");
       return;
     }
 
@@ -762,46 +981,104 @@ function CategoriesDialog({
     router.refresh();
   }
 
-  async function removeCategory(category: SettingsCategory) {
-    const usageCount = getUsageCount(category.id);
-    const childCount = childCountByParent[category.id] ?? 0;
-
-    if (usageCount > 0) {
-      toast.error(`Used by ${usageCount} transactions.`);
-      return;
-    }
-
-    if (childCount > 0) {
-      toast.error(`Move ${childCount} subcategories before deleting.`);
-      return;
-    }
-
-    if (!confirm(`Delete "${category.name}"? This cannot be undone.`)) {
-      return;
-    }
-
-    setSavingId(category.id);
-    const { error } = await supabase
-      .from("categories")
-      .delete()
-      .eq("id", category.id);
-    setSavingId(null);
-
-    if (error) {
-      toast.error(error.message);
-      return;
-    }
-
-    setCategories((current) =>
-      current.filter((item) => item.id !== category.id),
-    );
-    setUsage((current) => {
-      const next = { ...current };
-      delete next[category.id];
-      return next;
+  function requestCategoryDelete(category: SettingsCategory) {
+    const readiness = validateCategoryDeleteReadiness({
+      usageCount: getUsageCount(category.id),
+      childCount: childCountByParent[category.id] ?? 0,
     });
-    toast.success(`${category.name} removed.`);
-    router.refresh();
+
+    if (!readiness.ok) {
+      toast.error(readiness.error);
+      return;
+    }
+
+    setDeleteFeedback(null);
+    setPendingDelete(category);
+  }
+
+  async function confirmCategoryDelete() {
+    const category = pendingDelete;
+    if (!category || isDeletingCategory) return;
+
+    setIsDeletingCategory(true);
+    setDeleteFeedback(null);
+
+    try {
+      const [usageResult, childResult] = await Promise.all([
+        supabase
+          .from("transactions")
+          .select("id", { count: "exact", head: true })
+          .eq("user_id", userId)
+          .eq("category_id", category.id),
+        supabase
+          .from("categories")
+          .select("id", { count: "exact", head: true })
+          .eq("user_id", userId)
+          .eq("parent_id", category.id),
+      ]);
+
+      const readiness = validateCategoryDeleteReadiness({
+        usageCount: usageResult.error ? null : usageResult.count,
+        childCount: childResult.error ? null : childResult.count,
+      });
+
+      if (!readiness.ok) {
+        const referencesUnavailable =
+          readiness.error === CATEGORY_DELETE_VERIFICATION_ERROR;
+
+        if (referencesUnavailable) {
+          setDeleteFeedback(CATEGORY_DELETE_VERIFICATION_ERROR);
+          return;
+        }
+
+        toast.error(readiness.error);
+        setPendingDelete(null);
+        setDeleteFeedback(null);
+        router.refresh();
+        return;
+      }
+
+      const { data: deletedCategory, error: deleteError } = await supabase
+        .from("categories")
+        .delete()
+        .eq("id", category.id)
+        .eq("user_id", userId)
+        .select("id")
+        .maybeSingle();
+
+      if (
+        deleteError ||
+        !deletedCategory ||
+        deletedCategory.id !== category.id
+      ) {
+        setDeleteFeedback("Could not delete category. Please try again.");
+        router.refresh();
+        return;
+      }
+
+      setCategories((current) =>
+        current.filter((item) => item.id !== category.id),
+      );
+      setUsage((current) => {
+        const next = { ...current };
+        delete next[category.id];
+        return next;
+      });
+      setPendingDelete(null);
+      setDeleteFeedback(null);
+      toast.success(`${category.name} removed.`);
+      router.refresh();
+    } catch {
+      setDeleteFeedback("Could not verify or delete category. Please try again.");
+    } finally {
+      setIsDeletingCategory(false);
+    }
+  }
+
+  function cancelCategoryDelete() {
+    if (isDeletingCategory) return;
+    setPendingDelete(null);
+    setDeleteFeedback(null);
   }
 
   function ColorPicker({
@@ -1076,7 +1353,7 @@ function CategoriesDialog({
               type="button"
               variant="ghost"
               size="icon-sm"
-              onClick={() => removeCategory(category)}
+              onClick={() => requestCategoryDelete(category)}
               disabled={deleteDisabled}
               title={
                 usageCount > 0 ?
@@ -1163,7 +1440,27 @@ function CategoriesDialog({
     );
   }
 
+  if (!available) {
+    return (
+      <div className="flex min-w-0 items-center gap-3 px-4 py-4 sm:px-5">
+        <IconBubble tone="violet">
+          <Tags size={21} />
+        </IconBubble>
+        <div className="min-w-0 flex-1">
+          <p className="text-[15px] font-semibold text-text-primary">Categories</p>
+          <p role="alert" className="mt-0.5 text-xs leading-5 text-danger">
+            Category management is unavailable because settings data could not be loaded.
+          </p>
+        </div>
+        <Button type="button" variant="outline" size="sm" onClick={() => router.refresh()}>
+          Retry
+        </Button>
+      </div>
+    );
+  }
+
   return (
+    <>
     <Dialog open={open} onOpenChange={setOpen}>
       <SettingsRow
         icon={
@@ -1281,6 +1578,50 @@ function CategoriesDialog({
         </FinanceModalBody>
       </DialogContent>
     </Dialog>
+    <Dialog
+      open={pendingDelete !== null}
+      onOpenChange={(nextOpen) => {
+        if (!nextOpen) cancelCategoryDelete();
+      }}
+    >
+      <DialogContent
+        className="rounded-3xl p-5 sm:max-w-md"
+        showCloseButton={!isDeletingCategory}
+      >
+        <DialogHeader>
+          <DialogTitle>Delete {pendingDelete?.name}?</DialogTitle>
+          <DialogDescription>
+            This category will be permanently deleted. This action cannot be undone.
+          </DialogDescription>
+        </DialogHeader>
+        {deleteFeedback && (
+          <p role="alert" className="text-xs font-semibold text-danger">
+            {deleteFeedback}
+          </p>
+        )}
+        <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={cancelCategoryDelete}
+            disabled={isDeletingCategory}
+          >
+            Cancel
+          </Button>
+          <Button
+            type="button"
+            onClick={confirmCategoryDelete}
+            disabled={isDeletingCategory}
+            aria-busy={isDeletingCategory}
+            className="bg-danger text-white hover:bg-danger/90"
+          >
+            {isDeletingCategory && <Loader2 className="animate-spin" size={16} />}
+            {isDeletingCategory ? "Verifying..." : "Delete"}
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
+    </>
   );
 }
 
@@ -1432,6 +1773,7 @@ export default function SettingsOneUI({
   displayName,
   categories,
   categoryUsage,
+  categoriesAvailable,
   stats,
 }: SettingsOneUIProps) {
   const router = useRouter();
@@ -1439,8 +1781,6 @@ export default function SettingsOneUI({
   const [themeMode, setThemeMode] = useState<ThemeMode>("system");
   const [resolvedTheme, setResolvedTheme] = useState<ResolvedTheme>("light");
   const [themeReady, setThemeReady] = useState(false);
-  const [pushNotifications, setPushNotifications] = useState(true);
-  const [biometricLogin, setBiometricLogin] = useState(false);
   const { currency, setCurrency: setGlobalCurrency } = useCurrency();
   const [dateFormat, setDateFormat] = useState<DateFormat>("MMM d, yyyy");
   const [compactMode, setCompactMode] = useState(false);
@@ -1454,12 +1794,6 @@ export default function SettingsOneUI({
     setThemeMode(savedTheme);
     setResolvedTheme(applyThemePreference(savedTheme, { persist: false }));
     setThemeReady(true);
-    setPushNotifications(
-      window.localStorage.getItem("jamal-push-notifications") !== "false",
-    );
-    setBiometricLogin(
-      window.localStorage.getItem("jamal-biometric-login") === "true",
-    );
     setDateFormat(
       (window.localStorage.getItem("jamal-date-format") as DateFormat) ||
         "MMM d, yyyy",
@@ -1500,20 +1834,6 @@ export default function SettingsOneUI({
     );
   }
 
-  function handlePushChange(next: boolean) {
-    setPushNotifications(next);
-    window.localStorage.setItem("jamal-push-notifications", String(next));
-    toast.success(next ? "Notifications enabled." : "Notifications disabled.");
-  }
-
-  function handleBiometricChange(next: boolean) {
-    setBiometricLogin(next);
-    window.localStorage.setItem("jamal-biometric-login", String(next));
-    toast.success(
-      next ? "Biometric preference enabled." : "Biometric preference disabled.",
-    );
-  }
-
   function handlePreferencesSave(next: {
     currency: CurrencyCode;
     dateFormat: DateFormat;
@@ -1532,11 +1852,11 @@ export default function SettingsOneUI({
 
   async function handleSignOut() {
     setIsSigningOut(true);
-    const { error } = await supabase.auth.signOut();
+    const { error } = await supabase.auth.signOut({ scope: "local" });
     setIsSigningOut(false);
 
     if (error) {
-      toast.error(error.message);
+      toast.error(mapAuthError(error, "Could not sign out this device. Please try again."));
       return;
     }
 
@@ -1545,32 +1865,36 @@ export default function SettingsOneUI({
     router.refresh();
   }
 
-  function handleExportData() {
-    const payload = {
-      userId,
+  function handleExportSettingsSnapshot() {
+    const generatedAt = new Date();
+    const payload = buildSettingsSnapshot({
+      generatedAt: generatedAt.toISOString(),
       email,
-      generatedAt: new Date().toISOString(),
-      stats,
+      displayName: profileName,
       preferences: {
         currency,
         dateFormat,
         compactMode,
-        pushNotifications,
-        biometricLogin,
         themeMode,
       },
-      categories,
-    };
+      categories: categoriesAvailable ? categories : null,
+      stats,
+    });
     const blob = new Blob([JSON.stringify(payload, null, 2)], {
       type: "application/json",
     });
     const url = window.URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = `jamals-finance-export-${new Date().toISOString().slice(0, 10)}.json`;
-    link.click();
-    window.URL.revokeObjectURL(url);
-    toast.success("Export downloaded.");
+    try {
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `jamals-finance-settings-${generatedAt.toISOString().slice(0, 10)}.json`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      toast.success("Settings snapshot downloaded.");
+    } finally {
+      window.URL.revokeObjectURL(url);
+    }
   }
 
   const metricCards = useMemo(
@@ -1654,45 +1978,7 @@ export default function SettingsOneUI({
               initialCategories={categories}
               initialUsage={categoryUsage}
               userId={userId}
-            />
-          </SettingsCard>
-        </section>
-
-        <section>
-          <SectionTitle>Notifications</SectionTitle>
-          <SettingsCard>
-            <SettingsRow
-              icon={
-                <IconBubble tone="blue">
-                  <Bell size={21} />
-                </IconBubble>
-              }
-              title="Push Notifications"
-              description="Budget alerts, goals, insights"
-              right={
-                <SoftSwitch
-                  checked={pushNotifications}
-                  onCheckedChange={handlePushChange}
-                  label="Toggle push notifications"
-                />
-              }
-            />
-            <Divider />
-            <SettingsRow
-              icon={
-                <IconBubble tone="gray">
-                  <Fingerprint size={21} />
-                </IconBubble>
-              }
-              title="Biometric Login"
-              description="Preference saved on this device"
-              right={
-                <SoftSwitch
-                  checked={biometricLogin}
-                  onCheckedChange={handleBiometricChange}
-                  label="Toggle biometric login"
-                />
-              }
+              available={categoriesAvailable}
             />
           </SettingsCard>
         </section>
@@ -1752,9 +2038,9 @@ export default function SettingsOneUI({
                   <Download size={21} />
                 </IconBubble>
               }
-              title="Export Data"
-              description="Download account settings snapshot"
-              onClick={handleExportData}
+              title="Export Settings Snapshot"
+              description="Includes profile email/display information, display preferences, category configuration, and an account statistics summary"
+              onClick={handleExportSettingsSnapshot}
               right={
                 <span className="flex items-center gap-2 text-active">
                   <Download size={18} />
@@ -1771,7 +2057,7 @@ export default function SettingsOneUI({
             {metricCards.map((metric) => (
               <div key={metric.label} className="summary-card min-w-0 text-center">
                 <p className="text-2xl font-black text-active">
-                  {metric.value}
+                  {metric.value ?? "—"}
                 </p>
                 <p className="mt-1 text-xs font-semibold text-text-secondary">
                   {metric.label}
@@ -1785,6 +2071,7 @@ export default function SettingsOneUI({
           type="button"
           onClick={handleSignOut}
           disabled={isSigningOut}
+          aria-busy={isSigningOut}
           className="finance-focus flex w-full items-center justify-center gap-2 rounded-[var(--oneui-control-radius)] border border-danger/30 bg-danger/10 px-4 py-4 text-sm font-bold text-danger hover:bg-hover disabled:opacity-60"
         >
           {isSigningOut ?
@@ -1794,7 +2081,7 @@ export default function SettingsOneUI({
             </>
           : <>
               <LogOut size={18} />
-              Sign Out
+              Sign out this device
             </>
           }
         </button>
