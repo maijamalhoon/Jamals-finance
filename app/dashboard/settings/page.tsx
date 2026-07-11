@@ -6,6 +6,14 @@ import SettingsOneUI, {
 
 export const dynamic = "force-dynamic";
 
+function logSettingsQueryError(
+  context: string,
+  error: { code?: string } | null,
+) {
+  if (!error) return;
+  console.error("Settings query failed", { context, code: error.code ?? "unknown" });
+}
+
 export default async function SettingsPage() {
   const supabase = await createClient();
 
@@ -15,25 +23,54 @@ export default async function SettingsPage() {
   if (!user) redirect("/login");
 
   const [
-    { data: categories },
-    { data: transactionCategoryRows },
-    { count: accountsCount },
-    { count: transactionsCount },
-    { count: goalsCount },
-    { count: investmentsCount },
+    categoriesResult,
+    categoryUsageResult,
+    accountsResult,
+    transactionsResult,
+    goalsResult,
+    investmentsResult,
   ] = await Promise.all([
     supabase
       .from("categories")
       .select("id, name, type, color, parent_id")
+      .eq("user_id", user.id)
       .order("type")
       .order("parent_id", { ascending: true, nullsFirst: true })
       .order("name"),
-    supabase.from("transactions").select("category_id"),
-    supabase.from("accounts").select("id", { count: "exact", head: true }),
-    supabase.from("transactions").select("id", { count: "exact", head: true }),
-    supabase.from("goals").select("id", { count: "exact", head: true }),
-    supabase.from("investments").select("id", { count: "exact", head: true }),
+    supabase
+      .from("transactions")
+      .select("category_id")
+      .eq("user_id", user.id),
+    supabase
+      .from("accounts")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", user.id),
+    supabase
+      .from("transactions")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", user.id),
+    supabase
+      .from("goals")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", user.id),
+    supabase
+      .from("investments")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", user.id),
   ]);
+
+  logSettingsQueryError("categories", categoriesResult.error);
+  logSettingsQueryError("category-usage", categoryUsageResult.error);
+  logSettingsQueryError("accounts-count", accountsResult.error);
+  logSettingsQueryError("transactions-count", transactionsResult.error);
+  logSettingsQueryError("goals-count", goalsResult.error);
+  logSettingsQueryError("investments-count", investmentsResult.error);
+
+  const categoriesAvailable =
+    !categoriesResult.error && !categoryUsageResult.error;
+  const categories = categoriesAvailable ? categoriesResult.data ?? [] : [];
+  const transactionCategoryRows =
+    categoriesAvailable ? categoryUsageResult.data ?? [] : [];
 
   const categoryUsage = (transactionCategoryRows ?? []).reduce<
     Record<string, number>
@@ -64,11 +101,12 @@ export default async function SettingsPage() {
       displayName={displayName}
       categories={(categories ?? []) as SettingsCategory[]}
       categoryUsage={categoryUsage}
+      categoriesAvailable={categoriesAvailable}
       stats={{
-        accounts: accountsCount ?? 0,
-        transactions: transactionsCount ?? 0,
-        goals: goalsCount ?? 0,
-        investments: investmentsCount ?? 0,
+        accounts: accountsResult.error ? null : accountsResult.count,
+        transactions: transactionsResult.error ? null : transactionsResult.count,
+        goals: goalsResult.error ? null : goalsResult.count,
+        investments: investmentsResult.error ? null : investmentsResult.count,
       }}
     />
   );
