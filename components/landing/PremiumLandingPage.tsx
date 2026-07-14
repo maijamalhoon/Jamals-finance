@@ -183,11 +183,11 @@ function CTA({
   );
 }
 
-function ProductPreview() {
+function ProductPreview({ captionId }: { captionId: string }) {
   return (
     <figure
       className="finance-surface relative overflow-hidden p-3 sm:p-4"
-      aria-labelledby="product-preview-caption"
+      aria-labelledby={captionId}
     >
       <div className="grid gap-3 lg:grid-cols-[0.82fr_1.18fr]">
         <div className="rounded-[var(--radius-card)] border border-brand/25 bg-brand p-5 text-primary-foreground">
@@ -283,7 +283,7 @@ function ProductPreview() {
           </div>
         </div>
       </div>
-      <figcaption id="product-preview-caption" className="sr-only">
+      <figcaption id={captionId} className="sr-only">
         A static, illustrative product preview. Values shown are demonstration data, not a live account.
       </figcaption>
     </figure>
@@ -402,7 +402,7 @@ export default function PremiumLandingPage() {
           </div>
         </div>
 
-        <ProductPreview />
+        <ProductPreview captionId="hero-product-preview-caption" />
       </section>
 
       <section aria-label="Product values" className="relative z-10 border-y border-divider bg-surface-primary/70">
@@ -487,7 +487,7 @@ export default function PremiumLandingPage() {
           title="See the shape of activity without mistaking a demo for your data."
           copy="This preview demonstrates hierarchy only. The authenticated product calculates summaries from the finance records available to the signed-in user."
         />
-        <ProductPreview />
+        <ProductPreview captionId="analytics-product-preview-caption" />
       </section>
 
       <section id="privacy" className="relative z-10 border-y border-divider bg-surface-primary/70">

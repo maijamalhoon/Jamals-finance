@@ -25,6 +25,13 @@ import AuthShell from "@/components/auth/AuthShell";
 type Step = "login" | "signup" | "forgot" | "check-email";
 type LoadingMode = "signing" | "creating" | "google" | "sending" | null;
 type OAuthProvider = "google";
+type AuthField = "email" | "password" | "fullName";
+
+const authFieldErrorIds: Record<AuthField, string> = {
+  email: "auth-email-error",
+  password: "auth-password-error",
+  fullName: "auth-full-name-error",
+};
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -257,6 +264,7 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [loadingMode, setLoadingMode] = useState<LoadingMode>(null);
   const [error, setError] = useState("");
+  const [errorField, setErrorField] = useState<AuthField | null>(null);
   const [message, setMessage] = useState("");
   const [safeNext, setSafeNext] = useState("/dashboard");
 
@@ -279,7 +287,25 @@ export default function LoginPage() {
 
   function resetFeedback() {
     setError("");
+    setErrorField(null);
     setMessage("");
+  }
+
+  function setFieldError(field: AuthField, nextError: string) {
+    setError(nextError);
+    setErrorField(field);
+  }
+
+  function setFormError(nextError: string) {
+    setError(nextError);
+    setErrorField(null);
+  }
+
+  function clearFieldError(field: AuthField) {
+    if (errorField !== field) return;
+
+    setError("");
+    setErrorField(null);
   }
 
   function switchStep(nextStep: Step) {
@@ -293,12 +319,12 @@ export default function LoginPage() {
     const nextEmail = cleanEmail(email);
 
     if (!nextEmail) {
-      setError("Enter your email address.");
+      setFieldError("email", "Enter your email address.");
       return null;
     }
 
     if (!emailRegex.test(nextEmail)) {
-      setError("Enter a valid email address.");
+      setFieldError("email", "Enter a valid email address.");
       return null;
     }
 
@@ -315,7 +341,7 @@ export default function LoginPage() {
     if (!nextEmail) return;
 
     if (!password) {
-      setError("Enter your password.");
+      setFieldError("password", "Enter your password.");
       return;
     }
 
@@ -334,7 +360,7 @@ export default function LoginPage() {
         lower.includes("network") ||
         lower.includes("fetch") ||
         lower.includes("timeout");
-      setError(
+      setFormError(
         temporarilyUnavailable
           ? "Authentication is temporarily unavailable. Please try again shortly."
           : "The email or password is incorrect.",
@@ -355,12 +381,12 @@ export default function LoginPage() {
     if (!nextEmail) return;
 
     if (!fullName.trim()) {
-      setError("Enter your full name.");
+      setFieldError("fullName", "Enter your full name.");
       return;
     }
 
     if (!password || password.length < 6) {
-      setError("Password must be at least 6 characters.");
+      setFieldError("password", "Password must be at least 6 characters.");
       return;
     }
 
@@ -385,11 +411,11 @@ export default function LoginPage() {
         signUpError.message.toLowerCase().includes("registered")
       ) {
         setStep("login");
-        setError(getSignupError(signUpError.message));
+        setFormError(getSignupError(signUpError.message));
         return;
       }
 
-      setError(getSignupError(signUpError.message));
+      setFormError(getSignupError(signUpError.message));
       return;
     }
 
@@ -418,7 +444,7 @@ export default function LoginPage() {
 
     if (oauthError) {
       setLoadingMode(null);
-      setError(getOAuthError(provider, oauthError.message));
+      setFormError(getOAuthError(provider, oauthError.message));
     }
   }
 
@@ -442,7 +468,7 @@ export default function LoginPage() {
     setLoadingMode(null);
 
     if (resetError) {
-      setError(getForgotPasswordError(resetError.message));
+      setFormError(getForgotPasswordError(resetError.message));
       return;
     }
 
@@ -529,13 +555,18 @@ export default function LoginPage() {
                   <input
                     type="email"
                     value={email}
-                    onChange={(event) => setEmail(event.target.value)}
+                    onChange={(event) => {
+                      setEmail(event.target.value);
+                      clearFieldError("email");
+                    }}
                     placeholder="you@example.com"
                     autoComplete="email"
                     inputMode="email"
                     disabled={isLoading}
-                    aria-invalid={Boolean(error)}
-                    aria-describedby={error ? "auth-error" : undefined}
+                    aria-invalid={errorField === "email"}
+                    aria-describedby={
+                      errorField === "email" ? authFieldErrorIds.email : undefined
+                    }
                     className={`${inputBaseClass} disabled:cursor-not-allowed disabled:opacity-70`}
                   />
                 </Field>
@@ -547,12 +578,17 @@ export default function LoginPage() {
                   <input
                     type={showPassword ? "text" : "password"}
                     value={password}
-                    onChange={(event) => setPassword(event.target.value)}
+                    onChange={(event) => {
+                      setPassword(event.target.value);
+                      clearFieldError("password");
+                    }}
                     placeholder="Enter your password"
                     autoComplete="current-password"
                     disabled={isLoading}
-                    aria-invalid={Boolean(error)}
-                    aria-describedby={error ? "auth-error" : undefined}
+                    aria-invalid={errorField === "password"}
+                    aria-describedby={
+                      errorField === "password" ? authFieldErrorIds.password : undefined
+                    }
                     className={`${passwordInputClass} disabled:cursor-not-allowed disabled:opacity-70`}
                   />
 
@@ -571,7 +607,12 @@ export default function LoginPage() {
                 </Field>
 
                 {error ?
-                  <Feedback id="auth-error" tone="error">{error}</Feedback>
+                  <Feedback
+                    id={errorField ? authFieldErrorIds[errorField] : "auth-error"}
+                    tone="error"
+                  >
+                    {error}
+                  </Feedback>
                 : null}
 
                 <PrimaryButton
@@ -601,12 +642,17 @@ export default function LoginPage() {
                 >
                   <input
                     value={fullName}
-                    onChange={(event) => setFullName(event.target.value)}
+                    onChange={(event) => {
+                      setFullName(event.target.value);
+                      clearFieldError("fullName");
+                    }}
                     placeholder="Enter your name"
                     autoComplete="name"
                     disabled={isLoading}
-                    aria-invalid={Boolean(error)}
-                    aria-describedby={error ? "auth-error" : undefined}
+                    aria-invalid={errorField === "fullName"}
+                    aria-describedby={
+                      errorField === "fullName" ? authFieldErrorIds.fullName : undefined
+                    }
                     className={`${inputBaseClass} disabled:cursor-not-allowed disabled:opacity-70`}
                   />
                 </Field>
@@ -618,13 +664,18 @@ export default function LoginPage() {
                   <input
                     type="email"
                     value={email}
-                    onChange={(event) => setEmail(event.target.value)}
+                    onChange={(event) => {
+                      setEmail(event.target.value);
+                      clearFieldError("email");
+                    }}
                     placeholder="Email address"
                     autoComplete="email"
                     inputMode="email"
                     disabled={isLoading}
-                    aria-invalid={Boolean(error)}
-                    aria-describedby={error ? "auth-error" : undefined}
+                    aria-invalid={errorField === "email"}
+                    aria-describedby={
+                      errorField === "email" ? authFieldErrorIds.email : undefined
+                    }
                     className={`${inputBaseClass} disabled:cursor-not-allowed disabled:opacity-70`}
                   />
                 </Field>
@@ -636,12 +687,19 @@ export default function LoginPage() {
                   <input
                     type={showPassword ? "text" : "password"}
                     value={password}
-                    onChange={(event) => setPassword(event.target.value)}
+                    onChange={(event) => {
+                      setPassword(event.target.value);
+                      clearFieldError("password");
+                    }}
                     placeholder="Create a password"
                     autoComplete="new-password"
                     disabled={isLoading}
-                    aria-invalid={Boolean(error)}
-                    aria-describedby={error ? "auth-error" : "password-help"}
+                    aria-invalid={errorField === "password"}
+                    aria-describedby={
+                      errorField === "password"
+                        ? `password-help ${authFieldErrorIds.password}`
+                        : "password-help"
+                    }
                     className={`${passwordInputClass} disabled:cursor-not-allowed disabled:opacity-70`}
                   />
 
@@ -665,7 +723,12 @@ export default function LoginPage() {
                 </div>
 
                 {error ?
-                  <Feedback id="auth-error" tone="error">{error}</Feedback>
+                  <Feedback
+                    id={errorField ? authFieldErrorIds[errorField] : "auth-error"}
+                    tone="error"
+                  >
+                    {error}
+                  </Feedback>
                 : null}
 
                 <PrimaryButton
@@ -697,19 +760,29 @@ export default function LoginPage() {
                   <input
                     type="email"
                     value={email}
-                    onChange={(event) => setEmail(event.target.value)}
+                    onChange={(event) => {
+                      setEmail(event.target.value);
+                      clearFieldError("email");
+                    }}
                     placeholder="Email address"
                     autoComplete="email"
                     inputMode="email"
                     disabled={isLoading}
-                    aria-invalid={Boolean(error)}
-                    aria-describedby={error ? "auth-error" : undefined}
+                    aria-invalid={errorField === "email"}
+                    aria-describedby={
+                      errorField === "email" ? authFieldErrorIds.email : undefined
+                    }
                     className={`${inputBaseClass} disabled:cursor-not-allowed disabled:opacity-70`}
                   />
                 </Field>
 
                 {error ?
-                  <Feedback id="auth-error" tone="error">{error}</Feedback>
+                  <Feedback
+                    id={errorField ? authFieldErrorIds[errorField] : "auth-error"}
+                    tone="error"
+                  >
+                    {error}
+                  </Feedback>
                 : null}
 
                 <PrimaryButton
