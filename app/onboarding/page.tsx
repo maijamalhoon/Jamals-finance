@@ -14,6 +14,19 @@ import {
   WalletCards,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import {
+  classifyAuthFailure,
+  isSupabaseSessionCookie,
+  sanitizeInternalRedirect,
+} from "@/lib/supabase/session";
+
+type LoadState = "checking" | "ready" | "temporarily_unavailable";
+
+function loginDestination(next: string, reason?: "session_expired") {
+  const params = new URLSearchParams({ next });
+  if (reason) params.set("reason", reason);
+  return `/login?${params.toString()}`;
+}
 
 export default function OnboardingPage() {
   const supabase = useMemo(() => createClient(), []);
@@ -24,16 +37,56 @@ export default function OnboardingPage() {
   const [fullName, setFullName] = useState("");
   const [age, setAge] = useState("");
   const [provider, setProvider] = useState("email");
-  const [loading, setLoading] = useState(true);
+  const [loadState, setLoadState] = useState<LoadState>("checking");
+  const [retryCount, setRetryCount] = useState(0);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  const [safeNext, setSafeNext] = useState("/dashboard");
 
   useEffect(() => {
     async function loadUser() {
-      const { data } = await supabase.auth.getUser();
+      setLoadState("checking");
+      setError("");
+      const destination = sanitizeInternalRedirect(
+        new URLSearchParams(window.location.search).get("next"),
+      );
+      setSafeNext(destination);
+
+      let userResult;
+
+      try {
+        userResult = await supabase.auth.getUser();
+      } catch {
+        setError("Authentication is temporarily unavailable. Please try again.");
+        setLoadState("temporarily_unavailable");
+        return;
+      }
+
+      const { data, error: userError } = userResult;
+
+      if (userError) {
+        const hasAuthCookies = document.cookie
+          .split(";")
+          .map((cookie) => cookie.trim().split("=")[0] ?? "")
+          .some(isSupabaseSessionCookie);
+        const failure = classifyAuthFailure(userError, hasAuthCookies);
+
+        if (failure === "transient_failure") {
+          setError("Authentication is temporarily unavailable. Please try again.");
+          setLoadState("temporarily_unavailable");
+        } else {
+          router.replace(
+            loginDestination(
+              destination,
+              failure === "stale_session" ? "session_expired" : undefined,
+            ),
+          );
+        }
+        return;
+      }
 
       if (!data.user) {
-        router.replace("/login");
+        router.replace(loginDestination(destination));
         return;
       }
 
@@ -44,25 +97,31 @@ export default function OnboardingPage() {
       setFullName((user.user_metadata?.full_name as string) ?? "");
       setProvider((user.app_metadata?.provider as string) ?? "email");
 
-      const { data: profile } = await supabase
+      const { data: profile, error: profileError } = await supabase
         .from("profiles")
         .select("full_name, age, onboarding_completed")
         .eq("id", user.id)
         .maybeSingle();
 
-      if (profile?.onboarding_completed && profile.full_name && profile.age) {
-        router.replace("/dashboard");
+      if (profileError) {
+        setError("We could not load your profile right now. Please try again.");
+        setLoadState("temporarily_unavailable");
+        return;
+      }
+
+      if (profile?.onboarding_completed) {
+        router.replace(destination);
         return;
       }
 
       if (profile?.full_name) setFullName(profile.full_name);
       if (profile?.age) setAge(String(profile.age));
 
-      setLoading(false);
+      setLoadState("ready");
     }
 
     loadUser();
-  }, [router, supabase]);
+  }, [retryCount, router, supabase]);
 
   async function handleSubmit(event: FormEvent) {
     event.preventDefault();
@@ -103,11 +162,11 @@ export default function OnboardingPage() {
       return;
     }
 
-    router.replace("/dashboard");
+    router.replace(safeNext);
     router.refresh();
   }
 
-  if (loading) {
+  if (loadState !== "ready") {
     return (
       <main className="relative grid min-h-dvh place-items-center overflow-hidden bg-background px-4 text-text-primary">
         <div className="jf-dashboard-grid pointer-events-none absolute inset-0 opacity-30" />
@@ -116,9 +175,22 @@ export default function OnboardingPage() {
           <div className="finance-surface mb-5 grid h-16 w-16 place-items-center rounded-[var(--oneui-card-radius)]">
             <LoaderCircle className="h-8 w-8 animate-spin text-active" />
           </div>
-          <p className="font-semibold text-text-primary">
-            Checking your session...
-          </p>
+          {loadState === "checking" ? (
+            <p aria-live="polite" className="font-semibold text-text-primary">
+              Checking your session...
+            </p>
+          ) : (
+            <div className="max-w-sm space-y-4 text-center">
+              <p role="alert" className="font-semibold text-danger">{error}</p>
+              <button
+                type="button"
+                onClick={() => setRetryCount((value) => value + 1)}
+                className="finance-focus h-12 rounded-[var(--oneui-button-radius)] bg-active px-6 font-bold text-background"
+              >
+                Try again
+              </button>
+            </div>
+          )}
         </div>
       </main>
     );
