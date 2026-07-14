@@ -5718,3 +5718,10 @@ tbody tr:hover {
     color-mix(in srgb, var(--border-strong), var(--active) 12%)
     color-mix(in srgb, var(--background), black 10%);
 }
+
+/* The theme selector owns the visible control shell and focus ring. */
+.dark .theme-selector select {
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
