@@ -18,21 +18,12 @@ export default function DashboardLayout({
     >
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute inset-0 z-0 bg-[radial-gradient(circle_at_12%_12%,rgba(34,197,94,0.10),transparent_30%),radial-gradient(circle_at_88%_8%,rgba(59,130,246,0.12),transparent_32%),linear-gradient(135deg,rgba(15,23,42,0.03),transparent_42%)]"
+        className="jf-node4-dashboard-ambient pointer-events-none absolute inset-0 z-0"
       />
       <div
         aria-hidden="true"
         className="jf-dashboard-grid pointer-events-none absolute inset-0 z-0 opacity-[0.34]"
       />
-      <div
-        aria-hidden="true"
-        className="jf-dashboard-orb jf-dashboard-orb-one pointer-events-none absolute z-0"
-      />
-      <div
-        aria-hidden="true"
-        className="jf-dashboard-orb jf-dashboard-orb-two pointer-events-none absolute z-0"
-      />
-
       <div className="relative z-10 flex min-w-0 flex-1 flex-col overflow-hidden">
         <div className="jf-dashboard-header-wrap hidden lg:block">
           <Header />

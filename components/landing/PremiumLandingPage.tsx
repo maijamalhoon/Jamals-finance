@@ -1,345 +1,139 @@
-"use client";
-
 import Link from "next/link";
-import { motion, type Variants } from "framer-motion";
 import {
+  ArrowLeftRight,
   ArrowRight,
-  BadgeCheck,
   BarChart3,
   BrainCircuit,
-  CheckCircle2,
+  CalendarClock,
+  Check,
   ChevronRight,
   CircleDollarSign,
   CreditCard,
+  Gauge,
   Goal,
   Landmark,
   LineChart,
   LockKeyhole,
-  LucideIcon,
+  Menu,
   PieChart,
   ReceiptText,
+  Settings,
   ShieldCheck,
   Sparkles,
+  Target,
   TrendingDown,
   TrendingUp,
   WalletCards,
+  type LucideIcon,
 } from "lucide-react";
 
-type Tone =
-  | "blue"
-  | "cyan"
-  | "emerald"
-  | "gold"
-  | "purple"
-  | "rose"
-  | "teal";
+import ThemeSelector from "@/components/theme/ThemeSelector";
 
-type FeatureCard = {
+type Capability = {
   title: string;
   copy: string;
   icon: LucideIcon;
-  tone: Tone;
+  tone: "brand" | "success" | "danger" | "warning" | "info" | "investment";
 };
 
-type ModuleCard = {
-  label: string;
-  copy: string;
-  detail: string;
-  icon: LucideIcon;
-  tone: Tone;
-  wide?: boolean;
-};
-
-const navItems = [
-  { label: "Features", href: "#features" },
+const navigation = [
+  { label: "Capabilities", href: "#capabilities" },
   { label: "Workflow", href: "#workflow" },
-  { label: "Security", href: "#security" },
-  { label: "Modules", href: "#modules" },
+  { label: "Preview", href: "#preview" },
+  { label: "Privacy", href: "#privacy" },
 ] as const;
 
-const valueBadges = [
-  "Private workspace",
-  "Daily money clarity",
-  "Mobile-first tracking",
-] as const;
-
-const financeSymbols = [
-  { value: "+", className: "left-[5%] top-[17%] text-emerald-500" },
-  { value: "−", className: "right-[10%] top-[15%] text-rose-500" },
-  { value: "×", className: "left-[12%] bottom-[18%] text-sky-500" },
-  { value: "=", className: "right-[18%] bottom-[14%] text-teal-500" },
-  { value: "%", className: "left-[50%] top-[2%] text-violet-500" },
-  { value: "₨", className: "right-[38%] bottom-[6%] text-amber-500" },
-  { value: "$", className: "left-[38%] bottom-[31%] text-blue-500" },
-] as const;
-
-const features: FeatureCard[] = [
+const capabilities: Capability[] = [
   {
     title: "Accounts",
-    copy: "Keep cash, wallets, savings, and other balances readable in one calm view.",
+    copy: "Keep cash, wallet, savings, and other account balances in one readable view.",
     icon: WalletCards,
-    tone: "emerald",
+    tone: "brand",
+  },
+  {
+    title: "Transactions",
+    copy: "Record daily money movement with account, category, date, and reference context.",
+    icon: ArrowLeftRight,
+    tone: "info",
   },
   {
     title: "Income",
-    copy: "Log what came in and understand the rhythm behind your monthly inflow.",
+    copy: "Log money coming in and review it alongside the rest of your activity.",
     icon: TrendingUp,
-    tone: "teal",
+    tone: "success",
   },
   {
     title: "Expenses",
-    copy: "Record spending without spreadsheet friction and spot where money leaks.",
+    copy: "Capture spending honestly without turning unavailable information into zeroes.",
     icon: TrendingDown,
-    tone: "rose",
+    tone: "danger",
+  },
+  {
+    title: "Budget context",
+    copy: "Use categories, spending views, and reports to understand budget pressure; there is no fake bank-sync claim.",
+    icon: Gauge,
+    tone: "warning",
+  },
+  {
+    title: "Recurring obligations",
+    copy: "Use transaction history and payable due dates to keep recurring bills visible in your review routine.",
+    icon: CalendarClock,
+    tone: "warning",
   },
   {
     title: "Goals",
-    copy: "Turn savings targets into visible progress with simple next-step clarity.",
-    icon: Goal,
-    tone: "gold",
+    copy: "Track savings targets with visible progress and remaining-distance context.",
+    icon: Target,
+    tone: "success",
+  },
+  {
+    title: "Debt and payables",
+    copy: "Record liabilities, repayments, deadlines, and outstanding balances without hiding their meaning.",
+    icon: CreditCard,
+    tone: "danger",
   },
   {
     title: "Investments",
-    copy: "Track long-term positions beside the rest of your money activity.",
+    copy: "Review holdings beside the rest of your personal finance picture.",
     icon: LineChart,
-    tone: "purple",
+    tone: "investment",
   },
   {
-    title: "Payables",
-    copy: "Follow liabilities, borrowed money, deadlines, and repayment movement.",
-    icon: CreditCard,
-    tone: "cyan",
-  },
-  {
-    title: "Reports and charts",
-    copy: "Use visual summaries to understand categories, cash flow, and patterns.",
+    title: "Analytics",
+    copy: "Read existing finance summaries and charts without fabricated trends or unsupported calculations.",
     icon: BarChart3,
-    tone: "blue",
+    tone: "brand",
   },
   {
-    title: "Privacy and security",
-    copy: "Public marketing stays separate from authenticated, user-specific records.",
-    icon: ShieldCheck,
-    tone: "emerald",
-  },
-  {
-    title: "AI Insights",
-    copy: "Let the insights area turn your finance activity into clearer prompts.",
-    icon: BrainCircuit,
-    tone: "purple",
-  },
-];
-
-const workflow = [
-  {
-    title: "Start secure",
-    copy: "Use the existing login or signup flow before entering the private dashboard.",
-  },
-  {
-    title: "Add your money activity",
-    copy: "Record accounts, income, expenses, transfers, goals, payables, and investments.",
-  },
-  {
-    title: "Review insights",
-    copy: "Scan dashboard cards, reports, charts, and AI insights for the pattern.",
-  },
-  {
-    title: "Build better habits",
-    copy: "Use what you learn to spend intentionally, save steadily, and plan the next move.",
-  },
-] as const;
-
-const modules: ModuleCard[] = [
-  {
-    label: "Daily Tracking",
-    copy: "Income, expenses, and transactions stay close to the way money actually moves.",
-    detail: "Fast entries",
-    icon: ReceiptText,
-    tone: "emerald",
-    wide: true,
-  },
-  {
-    label: "Transfers",
-    copy: "Move money between accounts without losing the story of where it went.",
-    detail: "Connected movement",
-    icon: Landmark,
-    tone: "blue",
-  },
-  {
-    label: "Savings Goals",
-    copy: "See progress, remaining distance, and useful motivation without clutter.",
-    detail: "Progress visible",
-    icon: Goal,
-    tone: "gold",
-  },
-  {
-    label: "Liabilities",
-    copy: "Track what needs repayment and keep deadlines from becoming surprises.",
-    detail: "Payables aware",
-    icon: CreditCard,
-    tone: "rose",
-  },
-  {
-    label: "Investments",
-    copy: "Keep holdings and long-term tracking in the same personal workspace.",
-    detail: "Portfolio context",
-    icon: LineChart,
-    tone: "purple",
-  },
-  {
-    label: "Reports",
-    copy: "Charts and summaries make spending patterns easier to act on.",
-    detail: "Pattern reading",
+    title: "Reports",
+    copy: "Move from individual entries to category and cash-flow summaries that support review.",
     icon: PieChart,
-    tone: "cyan",
-    wide: true,
+    tone: "info",
+  },
+  {
+    title: "AI insights",
+    copy: "Use the dedicated insights area to interpret available finance context when the service is available.",
+    icon: BrainCircuit,
+    tone: "investment",
+  },
+  {
+    title: "Settings and security",
+    copy: "Manage profile, preferences, categories, password, and real session actions from authenticated settings.",
+    icon: Settings,
+    tone: "brand",
   },
 ];
 
-const securityNotes = [
-  {
-    title: "Protected entry",
-    copy: "Dashboard routes stay behind the existing Supabase authentication flow.",
-  },
-  {
-    title: "Private records",
-    copy: "User-specific finance data belongs inside the authenticated workspace.",
-  },
-  {
-    title: "Separated surface",
-    copy: "The public landing page stays apart from private dashboard screens.",
-  },
-  {
-    title: "Existing auth links",
-    copy: "Login and signup paths are reused without changing backend logic.",
-  },
-] as const;
-
-const previewRows = [
-  {
-    label: "Income recorded",
-    value: "+$4,200",
-    tone: "text-emerald-500",
-    dot: "bg-emerald-500",
-  },
-  {
-    label: "Groceries",
-    value: "-$86",
-    tone: "text-rose-500",
-    dot: "bg-rose-500",
-  },
-  {
-    label: "Savings goal",
-    value: "+₨12k",
-    tone: "text-amber-500",
-    dot: "bg-amber-500",
-  },
-  {
-    label: "Investment note",
-    value: "+2.8%",
-    tone: "text-violet-500",
-    dot: "bg-violet-500",
-  },
-] as const;
-
-const bars = [44, 72, 58, 86, 66, 98, 80, 112] as const;
-
-const toneClasses: Record<Tone, string> = {
-  blue:
-    "from-blue-500/18 to-sky-500/8 text-blue-600 dark:text-blue-300 border-blue-500/18",
-  cyan:
-    "from-cyan-500/18 to-teal-500/8 text-cyan-700 dark:text-cyan-300 border-cyan-500/18",
-  emerald:
-    "from-emerald-500/18 to-teal-500/8 text-emerald-700 dark:text-emerald-300 border-emerald-500/18",
-  gold:
-    "from-amber-400/22 to-yellow-500/8 text-amber-700 dark:text-amber-300 border-amber-500/20",
-  purple:
-    "from-violet-500/18 to-fuchsia-500/8 text-violet-700 dark:text-violet-300 border-violet-500/18",
-  rose:
-    "from-rose-500/18 to-orange-500/8 text-rose-700 dark:text-rose-300 border-rose-500/18",
-  teal:
-    "from-teal-500/18 to-emerald-500/8 text-teal-700 dark:text-teal-300 border-teal-500/18",
+const toneClasses: Record<Capability["tone"], string> = {
+  brand: "border-brand/20 bg-brand/10 text-brand",
+  success: "border-success/20 bg-success/10 text-success",
+  danger: "border-danger/20 bg-danger/10 text-danger",
+  warning: "border-warning/20 bg-warning/10 text-warning",
+  info: "border-info/20 bg-info/10 text-info",
+  investment: "border-investment/20 bg-investment/10 text-investment",
 };
 
-const toneBorderClasses: Record<Tone, string> = {
-  blue: "from-blue-500/34 via-white/72 to-sky-500/22 dark:via-white/10",
-  cyan: "from-cyan-500/34 via-white/72 to-teal-500/22 dark:via-white/10",
-  emerald:
-    "from-emerald-500/34 via-white/72 to-teal-500/22 dark:via-white/10",
-  gold: "from-amber-400/40 via-white/72 to-yellow-500/22 dark:via-white/10",
-  purple:
-    "from-violet-500/34 via-white/72 to-fuchsia-500/22 dark:via-white/10",
-  rose: "from-rose-500/34 via-white/72 to-orange-500/22 dark:via-white/10",
-  teal: "from-teal-500/34 via-white/72 to-emerald-500/22 dark:via-white/10",
-};
-
-const reveal: Variants = {
-  hidden: { opacity: 0, y: 18, scale: 0.99 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    scale: 1,
-    transition: { duration: 0.55, ease: [0.16, 1, 0.3, 1] },
-  },
-};
-
-const stagger: Variants = {
-  hidden: {},
-  visible: {
-    transition: { staggerChildren: 0.075, delayChildren: 0.05 },
-  },
-};
-
-function MotionSection({
-  id,
-  children,
-  className,
-}: {
-  id?: string;
-  children: React.ReactNode;
-  className?: string;
-}) {
-  return (
-    <motion.section
-      id={id}
-      initial={false}
-      whileInView="visible"
-      viewport={{ once: true, amount: 0.18, margin: "0px 0px -8% 0px" }}
-      variants={stagger}
-      className={className}
-    >
-      {children}
-    </motion.section>
-  );
-}
-
-function CTAButton({
-  href,
-  children,
-  variant = "primary",
-}: {
-  href: string;
-  children: React.ReactNode;
-  variant?: "primary" | "secondary" | "ghost";
-}) {
-  const base =
-    "group inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-[18px] px-5 text-sm font-black tracking-normal transition focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-blue-500/20 active:scale-[0.985] sm:w-auto sm:text-[15px]";
-  const styles =
-    variant === "primary"
-      ? "bg-slate-950 text-white shadow-[0_18px_50px_rgba(15,23,42,0.20)] hover:-translate-y-0.5 hover:bg-slate-900 dark:bg-white dark:text-slate-950 dark:hover:bg-slate-100"
-      : variant === "secondary"
-        ? "border border-slate-200/80 bg-white/74 text-slate-950 shadow-[0_12px_32px_rgba(15,23,42,0.08)] backdrop-blur hover:-translate-y-0.5 hover:border-blue-300 dark:border-white/12 dark:bg-white/8 dark:text-white dark:hover:border-blue-300/40"
-        : "text-slate-700 hover:bg-slate-950/5 dark:text-slate-200 dark:hover:bg-white/8";
-
-  return (
-    <motion.div className="w-full sm:w-auto" whileTap={{ scale: 0.985 }} whileHover={{ y: -2 }}>
-      <Link href={href} className={`${base} ${styles}`}>
-        {children}
-        <ArrowRight className="h-4 w-4 transition group-hover:translate-x-0.5" />
-      </Link>
-    </motion.div>
-  );
-}
+const previewBars = [42, 58, 49, 72, 62, 84, 68, 76] as const;
 
 function SectionHeading({
   eyebrow,
@@ -350,202 +144,149 @@ function SectionHeading({
   eyebrow: string;
   title: string;
   copy: string;
-  align?: "center" | "left";
+  align?: "left" | "center";
 }) {
   return (
-    <motion.div
-      variants={reveal}
-      className={
-        align === "left"
-          ? "max-w-2xl"
-          : "mx-auto max-w-3xl text-center"
-      }
-    >
-      <p className="inline-flex rounded-full border border-slate-200/80 bg-white/70 px-3 py-1.5 text-xs font-black uppercase text-slate-500 shadow-sm backdrop-blur dark:border-white/10 dark:bg-white/8 dark:text-slate-300">
-        {eyebrow}
-      </p>
-      <h2 className="mt-3 text-balance text-3xl font-black leading-[1.04] tracking-normal text-slate-950 sm:text-4xl lg:text-[2.85rem] dark:text-white">
+    <div className={align === "center" ? "mx-auto max-w-3xl text-center" : "max-w-2xl"}>
+      <p className="text-sm font-semibold text-brand">{eyebrow}</p>
+      <h2 className="mt-3 text-balance text-3xl font-semibold leading-tight text-text-primary sm:text-4xl">
         {title}
       </h2>
-      <p className="mt-3 text-pretty text-base leading-7 text-slate-600 sm:text-lg sm:leading-8 dark:text-slate-300">
+      <p className="mt-4 text-pretty text-base leading-7 text-text-secondary sm:text-lg">
         {copy}
       </p>
-    </motion.div>
+    </div>
   );
 }
 
-function HeroPreview() {
+function CTA({
+  href,
+  children,
+  secondary = false,
+}: {
+  href: string;
+  children: React.ReactNode;
+  secondary?: boolean;
+}) {
   return (
-    <motion.div
-      initial={false}
-      animate={{ opacity: 1, y: 0, scale: 1 }}
-      transition={{ duration: 0.75, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
-      className="relative z-10 mx-auto mt-8 w-full max-w-5xl lg:mt-10"
-      aria-label="Illustrative Jamal's Finance dashboard preview"
-      >
-        <div className="absolute -inset-6 rounded-[48px] bg-[radial-gradient(circle_at_20%_20%,rgba(20,184,166,0.20),transparent_36%),radial-gradient(circle_at_78%_8%,rgba(59,130,246,0.20),transparent_34%),radial-gradient(circle_at_50%_95%,rgba(245,158,11,0.14),transparent_34%)] blur-2xl" />
-      <motion.div
-        animate={{ y: [0, -10, 0], rotateX: [0, 1.2, 0] }}
-        transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
-        className="relative overflow-hidden rounded-[28px] border border-white/70 bg-white/78 p-3 shadow-[0_32px_110px_rgba(15,23,42,0.18)] backdrop-blur-xl sm:p-4 dark:border-white/12 dark:bg-slate-950/72 dark:shadow-[0_36px_120px_rgba(0,0,0,0.42)]"
-      >
-        <div className="grid gap-3 lg:grid-cols-[0.86fr_1.14fr]">
-          <div className="rounded-[22px] border border-blue-700/40 bg-blue-600 p-4 text-white shadow-inner dark:border-amber-200/70 dark:bg-amber-300 dark:text-slate-950">
-            <div className="flex items-center justify-between gap-3">
-              <div>
-                <p className="text-xs font-bold uppercase text-white/85 dark:text-slate-900/75">
-                  Visual preview
-                </p>
-                <h3 className="mt-1 text-2xl font-black">Monthly clarity</h3>
-              </div>
-              <span className="rounded-full border border-white/30 bg-white/15 px-3 py-1 text-xs font-black text-white dark:border-slate-950/20 dark:bg-slate-950/10 dark:text-slate-950">
-                Preview data
-              </span>
-            </div>
+    <Link
+      href={href}
+      className={`finance-focus group inline-flex min-h-12 items-center justify-center gap-2 rounded-[var(--radius-button)] px-5 text-sm font-semibold transition-[background-color,border-color,color,box-shadow,transform] duration-[var(--motion-duration-fast)] active:translate-y-px ${
+        secondary
+          ? "border border-border bg-surface-primary text-text-primary shadow-[var(--shadow-xs)] hover:border-border-strong hover:bg-surface-soft"
+          : "border border-brand bg-brand text-primary-foreground shadow-[var(--shadow-soft)] hover:bg-brand-hover"
+      }`}
+    >
+      {children}
+      <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" aria-hidden="true" />
+    </Link>
+  );
+}
 
-            <div className="mt-6 rounded-[20px] border border-white/25 bg-slate-950/12 p-4 dark:border-slate-950/20 dark:bg-white/35">
-              <p className="text-sm font-bold text-white/85 dark:text-slate-900/80">Whole workspace</p>
-              <div className="mt-2 flex items-end justify-between gap-4">
-                <strong className="text-4xl font-black tracking-normal">
-                  $24,850
-                </strong>
-                <span className="rounded-full bg-white/15 px-3 py-1 text-xs font-black text-white dark:bg-emerald-950/10 dark:text-emerald-950">
-                  +12%
-                </span>
-              </div>
-              <div className="mt-5 h-2 overflow-hidden rounded-full bg-white/25 dark:bg-slate-950/15">
-                <motion.span
-                  initial={false}
-                  animate={{ scaleX: 1 }}
-                  transition={{ duration: 1.2, delay: 0.55, ease: [0.16, 1, 0.3, 1] }}
-                  className="block h-full origin-left rounded-full bg-gradient-to-r from-emerald-300 via-teal-300 to-blue-300"
-                />
-              </div>
+function ProductPreview({ captionId }: { captionId: string }) {
+  return (
+    <figure
+      className="finance-surface relative overflow-hidden p-3 sm:p-4"
+      aria-labelledby={captionId}
+    >
+      <div className="grid gap-3 lg:grid-cols-[0.82fr_1.18fr]">
+        <div className="rounded-[var(--radius-card)] border border-brand/25 bg-brand p-5 text-primary-foreground">
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.12em] opacity-80">
+                Illustrative preview
+              </p>
+              <h3 className="mt-2 text-xl font-semibold">Monthly overview</h3>
             </div>
-
-            <div className="mt-3 grid grid-cols-2 gap-3">
-              {[
-                ["Income", "$6.4k", TrendingUp, "text-emerald-100 dark:text-emerald-950"],
-                ["Expenses", "$2.1k", TrendingDown, "text-rose-100 dark:text-rose-950"],
-                ["Goals", "72%", Goal, "text-amber-100 dark:text-amber-950"],
-                ["AI", "3 notes", BrainCircuit, "text-violet-100 dark:text-violet-950"],
-              ].map(([label, value, Icon, tone]) => {
-                const CardIcon = Icon as LucideIcon;
-
-                return (
-                  <div
-                    key={label as string}
-                    className="rounded-[18px] border border-white/25 bg-slate-950/12 p-3 dark:border-slate-950/20 dark:bg-white/30"
-                  >
-                    <CardIcon className={`h-4 w-4 ${tone}`} />
-                    <p className="mt-4 text-xs font-bold text-white/85 dark:text-slate-900/80">
-                      {label as string}
-                    </p>
-                    <strong className="text-lg font-black">{value as string}</strong>
-                  </div>
-                );
-              })}
-            </div>
+            <span className="rounded-full border border-current/20 px-2.5 py-1 text-xs font-semibold">
+              Demo values
+            </span>
           </div>
 
-          <div className="grid min-w-0 gap-3">
-            <div className="grid gap-3 md:grid-cols-[1.05fr_0.95fr]">
-              <div className="rounded-[22px] border border-slate-200/80 bg-white/86 p-4 dark:border-white/10 dark:bg-white/8">
-                <div className="flex items-center justify-between gap-3">
-                  <div>
-                    <p className="text-xs font-black uppercase text-slate-400 dark:text-slate-500">
-                      Reports
-                    </p>
-                    <h3 className="mt-1 font-black text-slate-950 dark:text-white">
-                      Cash flow rhythm
-                    </h3>
-                  </div>
-                  <BarChart3 className="h-5 w-5 text-blue-500" />
-                </div>
-                <div className="mt-5 flex h-44 items-end gap-2">
-                  {bars.map((height, index) => (
-                    <motion.span
-                      key={`${height}-${index}`}
-                      initial={false}
-                      animate={{ scaleY: 1, opacity: 1 }}
-                      transition={{
-                        duration: 0.7,
-                        delay: 0.36 + index * 0.055,
-                        ease: [0.16, 1, 0.3, 1],
-                      }}
-                      style={{ height }}
-                      className="min-w-0 flex-1 origin-bottom rounded-t-xl bg-gradient-to-t from-blue-600 to-cyan-300 shadow-[0_12px_30px_rgba(37,99,235,0.22)]"
-                    />
-                  ))}
-                </div>
-              </div>
+          <div className="mt-8 rounded-[var(--radius-control)] border border-current/15 bg-background/10 p-4">
+            <p className="text-sm opacity-80">Illustrative balance</p>
+            <p className="finance-amount mt-2 text-3xl font-semibold">PKR 248,500</p>
+          </div>
 
-              <div className="rounded-[22px] border border-slate-200/80 bg-white/86 p-4 dark:border-white/10 dark:bg-white/8">
-                <div className="flex items-center justify-between gap-3">
-                  <div>
-                    <p className="text-xs font-black uppercase text-slate-400 dark:text-slate-500">
-                      Activity
-                    </p>
-                    <h3 className="mt-1 font-black text-slate-950 dark:text-white">
-                      Recent movement
-                    </h3>
-                  </div>
-                  <ReceiptText className="h-5 w-5 text-emerald-500" />
-                </div>
-                <div className="mt-4 grid gap-2">
-                  {previewRows.map((row, index) => (
-                    <motion.div
-                      key={row.label}
-                      initial={false}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{
-                        duration: 0.45,
-                        delay: 0.54 + index * 0.08,
-                        ease: [0.16, 1, 0.3, 1],
-                      }}
-                      className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 rounded-2xl border border-slate-200/70 bg-slate-50/80 px-3 py-2.5 text-sm font-bold dark:border-white/8 dark:bg-white/6"
-                    >
-                      <span className={`h-2.5 w-2.5 rounded-full ${row.dot}`} />
-                      <span className="min-w-0 truncate text-slate-600 dark:text-slate-300">
-                        {row.label}
-                      </span>
-                      <strong className={row.tone}>
-                        {row.label === "Savings goal" ? "+Rs12k" : row.value}
-                      </strong>
-                    </motion.div>
-                  ))}
-                </div>
-              </div>
+          <div className="mt-3 grid grid-cols-2 gap-3">
+            <div className="rounded-[var(--radius-control)] border border-current/15 bg-background/10 p-3">
+              <TrendingUp className="h-4 w-4" aria-hidden="true" />
+              <p className="mt-3 text-xs opacity-80">Income</p>
+              <p className="finance-amount mt-1 font-semibold">+ PKR 64,000</p>
             </div>
-
-            <div className="grid gap-3 sm:grid-cols-3">
-              {[
-                ["Accounts", "6 connected", WalletCards],
-                ["Goals", "4 active", Goal],
-                ["Investments", "Tracked", LineChart],
-              ].map(([label, value, Icon]) => {
-                const CardIcon = Icon as LucideIcon;
-
-                return (
-                  <div
-                    key={label as string}
-                    className="rounded-[20px] border border-slate-200/80 bg-white/80 p-4 dark:border-white/10 dark:bg-white/8"
-                  >
-                    <CardIcon className="h-5 w-5 text-teal-500" />
-                    <p className="mt-6 text-xs font-black uppercase text-slate-400 dark:text-slate-500">
-                      {label as string}
-                    </p>
-                    <strong className="text-lg font-black text-slate-950 dark:text-white">
-                      {value as string}
-                    </strong>
-                  </div>
-                );
-              })}
+            <div className="rounded-[var(--radius-control)] border border-current/15 bg-background/10 p-3">
+              <TrendingDown className="h-4 w-4" aria-hidden="true" />
+              <p className="mt-3 text-xs opacity-80">Expenses</p>
+              <p className="finance-amount mt-1 font-semibold">- PKR 21,300</p>
             </div>
           </div>
         </div>
-      </motion.div>
-    </motion.div>
+
+        <div className="grid min-w-0 gap-3 md:grid-cols-[1.05fr_0.95fr]">
+          <div className="rounded-[var(--radius-card)] border border-border bg-surface-secondary p-4">
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <p className="text-xs font-semibold text-text-tertiary">Cash-flow pattern</p>
+                <h3 className="mt-1 font-semibold text-text-primary">Eight-period view</h3>
+              </div>
+              <BarChart3 className="h-5 w-5 text-brand" aria-hidden="true" />
+            </div>
+            <div
+              className="mt-6 flex h-44 items-end gap-2 border-b border-chart-grid"
+              role="img"
+              aria-label="Illustrative cash-flow bars varying between 42 and 84 percent"
+            >
+              {previewBars.map((height, index) => (
+                <span
+                  key={`${height}-${index}`}
+                  className="min-w-0 flex-1 rounded-t-md bg-chart-1"
+                  style={{ height: `${height}%` }}
+                />
+              ))}
+            </div>
+          </div>
+
+          <div className="rounded-[var(--radius-card)] border border-border bg-surface-secondary p-4">
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <p className="text-xs font-semibold text-text-tertiary">Recent activity</p>
+                <h3 className="mt-1 font-semibold text-text-primary">Clear entries</h3>
+              </div>
+              <ReceiptText className="h-5 w-5 text-info" aria-hidden="true" />
+            </div>
+
+            <div className="mt-5 grid gap-2">
+              {[
+                ["Income recorded", "+ PKR 40,000", "success"],
+                ["Household expense", "- PKR 8,600", "danger"],
+                ["Goal contribution", "+ PKR 12,000", "warning"],
+              ].map(([label, value, tone]) => (
+                <div
+                  key={label}
+                  className="grid grid-cols-[minmax(0,1fr)_auto] gap-3 rounded-[var(--radius-control)] border border-border bg-surface-primary px-3 py-3 text-sm"
+                >
+                  <span className="min-w-0 truncate text-text-secondary">{label}</span>
+                  <span
+                    className={`finance-amount font-semibold ${
+                      tone === "success"
+                        ? "text-success"
+                        : tone === "danger"
+                          ? "text-danger"
+                          : "text-warning"
+                    }`}
+                  >
+                    {value}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+      <figcaption id={captionId} className="sr-only">
+        A static, illustrative product preview. Values shown are demonstration data, not a live account.
+      </figcaption>
+    </figure>
   );
 }
 
@@ -553,371 +294,279 @@ export default function PremiumLandingPage() {
   const year = new Date().getFullYear();
 
   return (
-    <main className="relative min-h-dvh overflow-x-clip bg-[#f6f8fb] text-slate-950 dark:bg-[#070b12] dark:text-white">
-      <div className="pointer-events-none fixed inset-0 z-0 bg-[linear-gradient(90deg,rgba(15,23,42,0.055)_1px,transparent_1px),linear-gradient(180deg,rgba(15,23,42,0.045)_1px,transparent_1px)] bg-[size:58px_58px] opacity-70 dark:bg-[linear-gradient(90deg,rgba(226,232,240,0.045)_1px,transparent_1px),linear-gradient(180deg,rgba(226,232,240,0.035)_1px,transparent_1px)]" />
-      <div className="pointer-events-none fixed inset-0 z-0 bg-[radial-gradient(circle_at_18%_8%,rgba(45,212,191,0.22),transparent_32%),radial-gradient(circle_at_80%_12%,rgba(59,130,246,0.18),transparent_30%),radial-gradient(circle_at_50%_78%,rgba(168,85,247,0.11),transparent_28%)]" />
+    <main className="jf-node4-landing relative min-h-dvh overflow-x-clip bg-background text-foreground">
+      <div className="jf-node4-landing-ambient pointer-events-none absolute inset-x-0 top-0 h-[48rem]" aria-hidden="true" />
 
-      <header className="sticky top-2 z-50 mx-auto w-[calc(100%_-_1rem)] max-w-[1180px] rounded-[22px] border border-white/70 bg-white/74 p-1.5 shadow-[0_18px_55px_rgba(15,23,42,0.10)] backdrop-blur-xl sm:top-3 sm:rounded-[24px] sm:p-2 dark:border-white/10 dark:bg-slate-950/72">
-        <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 lg:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)]">
+      <header className="sticky top-0 z-50 border-b border-divider bg-background/90 backdrop-blur-xl">
+        <div className="mx-auto flex min-h-16 w-full max-w-[1180px] items-center gap-3 px-4 sm:px-6">
           <Link
             href="/"
-            aria-label="Jamal's Finance home"
-            className="group inline-flex min-w-0 items-center gap-2.5 rounded-[18px] px-2 py-1.5 text-sm font-black focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-blue-500/20"
+            className="finance-focus inline-flex min-h-11 shrink-0 items-center gap-2 rounded-[var(--radius-control)] px-1 text-sm font-bold text-text-primary"
           >
-            <span className="grid h-9 w-9 shrink-0 place-items-center rounded-2xl border border-emerald-500/20 bg-emerald-500/10 text-emerald-600 sm:h-10 sm:w-10 dark:text-emerald-300">
-              <CircleDollarSign className="h-5 w-5" />
+            <span className="grid h-9 w-9 place-items-center rounded-[var(--radius-control)] border border-brand/20 bg-brand/10 text-brand">
+              <CircleDollarSign className="h-5 w-5" aria-hidden="true" />
             </span>
-            <span className="hidden truncate sm:inline">Jamal&apos;s Finance</span>
+            <span className="hidden min-[360px]:inline">Jamal&apos;s Finance</span>
           </Link>
 
-          <nav
-            aria-label="Landing sections"
-            className="order-3 col-span-2 mt-0.5 flex min-w-0 justify-between gap-0 overflow-x-auto rounded-[16px] border border-slate-200/70 bg-slate-50/80 p-0.5 [scrollbar-width:none] sm:mt-1 sm:gap-1 sm:rounded-[18px] sm:p-1 lg:order-none lg:col-span-1 lg:mt-0 dark:border-white/8 dark:bg-white/6"
-          >
-            {navItems.map((item) => (
+          <nav aria-label="Landing page" className="ml-auto hidden items-center gap-1 lg:flex">
+            {navigation.map((item) => (
               <a
                 key={item.href}
                 href={item.href}
-                className="whitespace-nowrap rounded-xl px-2 py-1.5 text-xs font-extrabold text-slate-600 transition hover:bg-white hover:text-slate-950 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-blue-500/20 sm:rounded-2xl sm:px-3 sm:py-2 sm:text-sm dark:text-slate-300 dark:hover:bg-white/10 dark:hover:text-white"
+                className="finance-focus inline-flex min-h-11 items-center rounded-[var(--radius-control)] px-3 text-sm font-semibold text-text-secondary hover:bg-surface-soft hover:text-text-primary"
               >
                 {item.label}
               </a>
             ))}
           </nav>
 
-          <div className="justify-self-end">
+          <div className="ml-auto flex items-center gap-2 lg:ml-3">
+            <ThemeSelector />
             <Link
               href="/login"
-              className="inline-flex min-h-9 items-center justify-center gap-1.5 rounded-[16px] bg-slate-950 px-3 text-xs font-black text-white transition hover:-translate-y-0.5 hover:bg-slate-900 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-blue-500/20 active:scale-[0.985] sm:min-h-10 sm:gap-2 sm:rounded-[18px] sm:px-3.5 sm:text-sm dark:bg-white dark:text-slate-950"
+              className="finance-focus hidden min-h-11 items-center rounded-[var(--radius-button)] px-3 text-sm font-semibold text-text-secondary hover:bg-surface-soft hover:text-text-primary sm:inline-flex"
             >
-              <span>Start your workspace</span>
-              <ArrowRight className="h-4 w-4" />
+              Log in
             </Link>
+            <Link
+              href="/login"
+              className="finance-focus hidden min-h-11 items-center gap-2 rounded-[var(--radius-button)] bg-brand px-4 text-sm font-semibold text-primary-foreground shadow-[var(--shadow-xs)] hover:bg-brand-hover md:inline-flex"
+            >
+              Start your workspace
+              <ArrowRight className="h-4 w-4" aria-hidden="true" />
+            </Link>
+
+            <details className="relative lg:hidden">
+              <summary className="finance-focus grid h-11 w-11 cursor-pointer list-none place-items-center rounded-[var(--radius-control)] border border-border bg-surface-primary text-text-primary shadow-[var(--shadow-xs)] [&::-webkit-details-marker]:hidden">
+                <Menu className="h-5 w-5" aria-hidden="true" />
+                <span className="sr-only">Open navigation</span>
+              </summary>
+              <nav
+                aria-label="Mobile landing page"
+                className="finance-surface absolute right-0 top-13 grid w-[min(82vw,280px)] gap-1 p-2"
+              >
+                {navigation.map((item) => (
+                  <a
+                    key={item.href}
+                    href={item.href}
+                    className="finance-focus inline-flex min-h-11 items-center justify-between rounded-[var(--radius-control)] px-3 text-sm font-semibold text-text-secondary hover:bg-surface-soft hover:text-text-primary"
+                  >
+                    {item.label}
+                    <ChevronRight className="h-4 w-4" aria-hidden="true" />
+                  </a>
+                ))}
+                <Link
+                  href="/login"
+                  className="finance-focus mt-1 inline-flex min-h-11 items-center justify-center rounded-[var(--radius-button)] bg-brand px-4 text-sm font-semibold text-primary-foreground"
+                >
+                  Login or sign up
+                </Link>
+              </nav>
+            </details>
           </div>
         </div>
       </header>
 
-      <section className="relative z-10 mx-auto flex min-h-[calc(100svh_-_5.5rem)] w-[calc(100%_-_1.25rem)] max-w-[1180px] flex-col justify-center pb-12 pt-10 sm:pb-16 lg:pt-14">
-        <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden" aria-hidden="true">
-          {financeSymbols.map((symbol, index) => (
-            <motion.span
-              key={`${symbol.value}-${index}`}
-              animate={{
-                y: [0, index % 2 === 0 ? -16 : 14, 0],
-                rotate: [0, index % 2 === 0 ? 7 : -7, 0],
-              }}
-              transition={{
-                duration: 7 + index * 0.45,
-                repeat: Infinity,
-                ease: "easeInOut",
-              }}
-              className={`absolute hidden select-none rounded-[18px] border border-current/15 bg-white/60 px-3 py-1 text-3xl font-black shadow-lg backdrop-blur md:block dark:bg-white/8 ${symbol.className}`}
-            >
-              {["+", "-", "x", "=", "%", "Rs", "$"][index] ?? symbol.value}
-            </motion.span>
-          ))}
-        </div>
+      <section className="relative z-10 mx-auto grid w-full max-w-[1180px] gap-10 px-4 pb-16 pt-14 sm:px-6 sm:pb-20 sm:pt-20 lg:grid-cols-[minmax(0,0.88fr)_minmax(520px,1.12fr)] lg:items-center lg:pt-24">
+        <div className="min-w-0">
+          <p className="inline-flex min-h-8 items-center gap-2 rounded-full border border-border bg-surface-primary px-3 text-xs font-semibold text-text-secondary shadow-[var(--shadow-xs)]">
+            <Sparkles className="h-4 w-4 text-warning" aria-hidden="true" />
+            Personal finance, without the noise
+          </p>
+          <h1 className="mt-6 max-w-3xl text-balance text-[clamp(2.5rem,7vw,4.9rem)] font-semibold leading-[0.98] tracking-[-0.04em] text-text-primary">
+            One calm place for your whole money picture.
+          </h1>
+          <p className="mt-6 max-w-2xl text-pretty text-base leading-8 text-text-secondary sm:text-lg">
+            Record income and spending, follow goals and liabilities, review investments,
+            and understand the activity you actually entered—without fake bank connections or fabricated trends.
+          </p>
 
-        <motion.div
-          initial={false}
-          animate="visible"
-          variants={stagger}
-          className="relative z-10 mx-auto max-w-5xl text-center"
-        >
-          <motion.div
-            variants={reveal}
-            className="inline-flex max-w-full items-center justify-center gap-2 rounded-full border border-slate-200/80 bg-white/74 px-3 py-2 text-center text-xs font-black uppercase text-slate-500 shadow-sm backdrop-blur dark:border-white/10 dark:bg-white/8 dark:text-slate-300"
-          >
-            <Sparkles className="h-4 w-4 text-amber-500" />
-            Daily finance clarity
-          </motion.div>
+          <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+            <CTA href="/login">Start your workspace</CTA>
+            <CTA href="/login" secondary>Login or sign up</CTA>
+          </div>
 
-          <motion.h1
-            variants={reveal}
-            className="mx-auto mt-5 max-w-5xl text-balance text-[clamp(2.25rem,10.5vw,3rem)] font-black leading-[0.96] tracking-normal text-slate-950 sm:text-[clamp(3.35rem,6.4vw,5.75rem)] sm:leading-[0.96] dark:text-white"
-          >
-            <span className="block sm:inline">Your whole</span>{" "}
-            <span className="block sm:inline">money life,</span>{" "}
-            <span className="block sm:inline">finally in one</span>{" "}
-            <span className="block sm:inline">calm workspace.</span>
-          </motion.h1>
-
-          <motion.p
-            variants={reveal}
-            className="mx-auto mt-5 max-w-2xl text-pretty text-base font-semibold leading-8 text-slate-600 sm:text-lg sm:leading-8 dark:text-slate-300"
-          >
-            Track income, expenses, savings, debts, goals, investments, reports,
-            transfers, and AI insights without spreadsheet chaos.
-          </motion.p>
-
-          <motion.div
-            variants={reveal}
-            className="mt-6 flex flex-col justify-center gap-3 sm:flex-row"
-          >
-            <CTAButton href="/login">Start your workspace</CTAButton>
-            <CTAButton href="/login" variant="secondary">
-              Login or sign up
-            </CTAButton>
-          </motion.div>
-
-          <motion.div
-            variants={reveal}
-            className="mt-4 flex flex-col items-center justify-center gap-2 sm:flex-row sm:flex-wrap"
-            aria-label="Product highlights"
-          >
-            {valueBadges.map((badge) => (
-              <span
-                key={badge}
-                className="inline-flex w-full max-w-[18rem] items-center justify-center gap-2 rounded-full border border-slate-200/80 bg-white/64 px-3 py-1.5 text-sm font-bold text-slate-600 backdrop-blur sm:w-auto sm:max-w-none dark:border-white/10 dark:bg-white/7 dark:text-slate-300"
-              >
-                <CheckCircle2 className="h-4 w-4 text-emerald-500" />
-                {badge}
+          <div className="mt-6 grid gap-2 text-sm text-text-secondary sm:grid-cols-2">
+            {[
+              "Private authenticated workspace",
+              "System, Light, and Dark themes",
+              "Designed for phone and desktop",
+              "Illustrative previews clearly labeled",
+            ].map((item) => (
+              <span key={item} className="flex items-start gap-2">
+                <Check className="mt-0.5 h-4 w-4 shrink-0 text-success" aria-hidden="true" />
+                {item}
               </span>
             ))}
-          </motion.div>
-        </motion.div>
+          </div>
+        </div>
 
-        <HeroPreview />
+        <ProductPreview captionId="hero-product-preview-caption" />
       </section>
 
-      <MotionSection
-        id="features"
-        className="relative z-10 mx-auto w-[calc(100%_-_1.25rem)] max-w-[1180px] py-12 sm:py-16"
-      >
-        <SectionHeading
-          eyebrow="Features"
-          title="Everything important gets a place, without turning money into noise."
-          copy="The landing page now speaks to the real product modules: accounts, daily activity, liabilities, savings, investments, reports, privacy, and AI-powered interpretation."
-        />
-
-        <div className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {features.map((feature) => {
-            const Icon = feature.icon;
-
+      <section aria-label="Product values" className="relative z-10 border-y border-divider bg-surface-primary/70">
+        <div className="mx-auto grid w-full max-w-[1180px] divide-y divide-divider px-4 sm:grid-cols-3 sm:divide-x sm:divide-y-0 sm:px-6">
+          {[
+            [ShieldCheck, "Private by context", "Public marketing stays separate from authenticated finance records."],
+            [Landmark, "Financially credible", "Unavailable data is not presented as zero or as a fabricated success."],
+            [WalletCards, "Responsive access", "The workspace is shaped for touch, keyboard, narrow screens, and desktop."],
+          ].map(([Icon, title, copy]) => {
+            const ValueIcon = Icon as LucideIcon;
             return (
-              <motion.article
-                key={feature.title}
-                variants={reveal}
-                whileHover={{ y: -3 }}
-                className={`group relative min-h-[206px] overflow-hidden rounded-[24px] border border-transparent bg-gradient-to-br p-px shadow-[0_14px_38px_rgba(15,23,42,0.065)] transition-shadow duration-300 hover:shadow-[0_20px_54px_rgba(15,23,42,0.11)] ${toneBorderClasses[feature.tone]}`}
-              >
-                <div className="relative flex h-full min-h-[204px] flex-col rounded-[23px] bg-white/78 p-5 backdrop-blur-xl dark:bg-slate-950/62">
-                  <div className="pointer-events-none absolute inset-x-6 top-0 h-px bg-gradient-to-r from-transparent via-white/90 to-transparent dark:via-white/18" />
-                  <div
-                    className={`relative grid h-12 w-12 place-items-center overflow-hidden rounded-[18px] border bg-gradient-to-br shadow-[0_12px_26px_rgba(15,23,42,0.08)] ${toneClasses[feature.tone]}`}
-                  >
-                    <span className="absolute inset-1 rounded-[14px] bg-white/52 dark:bg-white/7" />
-                    <Icon className="relative h-5 w-5" />
-                  </div>
-                  <h3 className="mt-6 text-xl font-black text-slate-950 dark:text-white">
-                    {feature.title}
-                  </h3>
-                  <p className="mt-3 text-sm font-medium leading-7 text-slate-600 dark:text-slate-300">
-                    {feature.copy}
-                  </p>
-                  <ChevronRight className="absolute bottom-5 right-5 h-5 w-5 text-slate-300 transition group-hover:translate-x-0.5 group-hover:text-blue-500 dark:text-slate-600" />
-                </div>
-              </motion.article>
+              <div key={title as string} className="flex gap-3 py-5 sm:px-5 sm:first:pl-0 sm:last:pr-0">
+                <span className="finance-icon-container" data-size="sm">
+                  <ValueIcon className="h-4 w-4" aria-hidden="true" />
+                </span>
+                <span>
+                  <strong className="block text-sm font-semibold text-text-primary">{title as string}</strong>
+                  <span className="mt-1 block text-sm leading-6 text-text-secondary">{copy as string}</span>
+                </span>
+              </div>
             );
           })}
         </div>
-      </MotionSection>
+      </section>
 
-      <MotionSection
-        id="workflow"
-        className="relative z-10 mx-auto grid w-[calc(100%_-_1.25rem)] max-w-[1180px] gap-8 py-12 sm:py-16 lg:grid-cols-[0.78fr_1.22fr] lg:items-start"
-      >
+      <section id="capabilities" className="relative z-10 mx-auto w-full max-w-[1180px] px-4 py-16 sm:px-6 sm:py-24">
+        <SectionHeading
+          eyebrow="Product capabilities"
+          title="A connected workspace for daily tracking and thoughtful review."
+          copy="Each area has a clear purpose. Dedicated modules stay honest about what exists today, while categories, payables, and reports provide context for budgets and recurring obligations."
+        />
+
+        <div className="mt-10 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {capabilities.map((capability) => {
+            const Icon = capability.icon;
+            return (
+              <article key={capability.title} className="finance-surface finance-hover-lift min-w-0 p-5">
+                <span className={`grid h-11 w-11 place-items-center rounded-[var(--radius-control)] border ${toneClasses[capability.tone]}`}>
+                  <Icon className="h-5 w-5" aria-hidden="true" />
+                </span>
+                <h3 className="mt-5 text-lg font-semibold text-text-primary">{capability.title}</h3>
+                <p className="mt-2 text-sm leading-6 text-text-secondary">{capability.copy}</p>
+              </article>
+            );
+          })}
+        </div>
+      </section>
+
+      <section id="workflow" className="relative z-10 border-y border-divider bg-surface-secondary/70">
+        <div className="mx-auto grid w-full max-w-[1180px] gap-10 px-4 py-16 sm:px-6 sm:py-24 lg:grid-cols-[0.78fr_1.22fr]">
+          <SectionHeading
+            align="left"
+            eyebrow="Simple workflow"
+            title="Set up, record, and review—without ceremony."
+            copy="The product becomes useful through accurate entries and repeatable review, not through decorative automation claims."
+          />
+
+          <ol className="grid gap-3">
+            {[
+              ["01", "Set up your context", "Complete the existing onboarding flow, then add the accounts and categories that match your life."],
+              ["02", "Record daily activity", "Capture income, expenses, transfers, goals, payables, and investments as they happen."],
+              ["03", "Review what changed", "Use the dashboard, analytics, reports, and available AI insights to understand the recorded pattern."],
+            ].map(([number, title, copy]) => (
+              <li key={number} className="finance-surface grid gap-4 p-5 sm:grid-cols-[auto_minmax(0,1fr)]">
+                <span className="grid h-11 w-11 place-items-center rounded-[var(--radius-control)] border border-brand/20 bg-brand/10 text-sm font-semibold text-brand">
+                  {number}
+                </span>
+                <span>
+                  <strong className="block text-lg font-semibold text-text-primary">{title}</strong>
+                  <span className="mt-2 block text-sm leading-6 text-text-secondary">{copy}</span>
+                </span>
+              </li>
+            ))}
+          </ol>
+        </div>
+      </section>
+
+      <section id="preview" className="relative z-10 mx-auto grid w-full max-w-[1180px] gap-8 px-4 py-16 sm:px-6 sm:py-24 lg:grid-cols-[0.72fr_1.28fr] lg:items-center">
         <SectionHeading
           align="left"
-          eyebrow="Workflow"
-          title="Four moves for a calmer money routine."
-          copy="The product promise is simple: enter real activity, see it clearly, and use the pattern to make the next decision easier."
+          eyebrow="Illustrative analytics preview"
+          title="See the shape of activity without mistaking a demo for your data."
+          copy="This preview demonstrates hierarchy only. The authenticated product calculates summaries from the finance records available to the signed-in user."
         />
+        <ProductPreview captionId="analytics-product-preview-caption" />
+      </section>
 
-        <div className="grid gap-3">
-          {workflow.map((step, index) => (
-            <motion.article
-              key={step.title}
-              variants={reveal}
-              className="grid gap-4 rounded-[24px] border border-slate-200/80 bg-white/72 p-5 shadow-[0_14px_44px_rgba(15,23,42,0.07)] backdrop-blur-xl sm:grid-cols-[auto_minmax(0,1fr)] dark:border-white/10 dark:bg-white/7"
-            >
-              <span className="grid h-12 w-12 place-items-center rounded-[18px] border border-blue-500/20 bg-blue-500/10 text-sm font-black text-blue-600 dark:text-blue-300">
-                {String(index + 1).padStart(2, "0")}
-              </span>
-              <div>
-                <h3 className="text-xl font-black text-slate-950 dark:text-white">
-                  {step.title}
-                </h3>
-                <p className="mt-2 text-sm font-medium leading-7 text-slate-600 dark:text-slate-300">
-                  {step.copy}
-                </p>
-              </div>
-            </motion.article>
-          ))}
-        </div>
-      </MotionSection>
-
-      <MotionSection
-        id="modules"
-        className="relative z-10 mx-auto w-[calc(100%_-_1.25rem)] max-w-[1180px] py-12 sm:py-16"
-      >
-        <SectionHeading
-          eyebrow="Modules"
-          title="A finance workspace shaped around real daily decisions."
-          copy="The bento view below highlights the areas users naturally return to: recording activity, moving money, building goals, handling liabilities, reviewing investments, and reading reports."
-        />
-
-        <div className="mt-8 grid auto-rows-[minmax(210px,auto)] gap-3 md:grid-cols-4">
-          {modules.map((item) => {
-            const Icon = item.icon;
-
-            return (
-              <motion.article
-                key={item.label}
-                variants={reveal}
-                whileHover={{ y: -5 }}
-                className={`relative overflow-hidden rounded-[24px] border border-slate-200/80 bg-white/72 p-5 shadow-[0_14px_44px_rgba(15,23,42,0.07)] backdrop-blur-xl dark:border-white/10 dark:bg-white/7 ${
-                  item.wide ? "md:col-span-2" : ""
-                }`}
-              >
-                <div
-                  className={`absolute -right-10 -top-10 h-32 w-32 rounded-full bg-gradient-to-br blur-2xl ${toneClasses[item.tone]}`}
-                />
-                <div className="relative flex h-full flex-col">
-                  <div
-                    className={`grid h-12 w-12 place-items-center rounded-[18px] border bg-gradient-to-br ${toneClasses[item.tone]}`}
-                  >
-                    <Icon className="h-5 w-5" />
-                  </div>
-                  <div className="mt-auto pt-8">
-                    <p className="text-xs font-black uppercase text-slate-400 dark:text-slate-500">
-                      {item.detail}
-                    </p>
-                    <h3 className="mt-2 text-2xl font-black text-slate-950 dark:text-white">
-                      {item.label}
-                    </h3>
-                    <p className="mt-3 max-w-xl text-sm font-medium leading-7 text-slate-600 dark:text-slate-300">
-                      {item.copy}
-                    </p>
-                  </div>
-                </div>
-              </motion.article>
-            );
-          })}
-        </div>
-      </MotionSection>
-
-      <MotionSection
-        id="security"
-        className="relative z-10 mx-auto grid w-[calc(100%_-_1.25rem)] max-w-[1180px] gap-4 py-12 sm:py-16 lg:grid-cols-[0.96fr_1.04fr] lg:items-center"
-      >
-        <motion.div
-          variants={reveal}
-          className="relative overflow-hidden rounded-[28px] border border-blue-500/16 bg-white/78 p-5 text-slate-950 shadow-[0_20px_58px_rgba(15,23,42,0.10)] backdrop-blur-xl sm:p-6 dark:border-white/10 dark:bg-slate-950/70 dark:text-white"
-        >
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_22%_18%,rgba(16,185,129,0.14),transparent_34%),radial-gradient(circle_at_78%_0%,rgba(59,130,246,0.12),transparent_32%)]" />
-          <div className="relative">
-            <div className="grid h-12 w-12 place-items-center rounded-[20px] border border-emerald-500/20 bg-emerald-500/10 text-emerald-600 shadow-[0_12px_28px_rgba(16,185,129,0.12)] dark:text-emerald-200">
-              <LockKeyhole className="h-6 w-6" />
-            </div>
-            <h2 className="mt-6 max-w-xl text-balance text-3xl font-black leading-tight sm:text-4xl">
-              Public page outside. Private workspace inside.
+      <section id="privacy" className="relative z-10 border-y border-divider bg-surface-primary/70">
+        <div className="mx-auto grid w-full max-w-[1180px] gap-8 px-4 py-16 sm:px-6 sm:py-24 lg:grid-cols-[0.9fr_1.1fr] lg:items-start">
+          <div>
+            <span className="finance-icon-container" data-size="lg">
+              <LockKeyhole className="h-5 w-5" aria-hidden="true" />
+            </span>
+            <h2 className="mt-6 max-w-xl text-balance text-3xl font-semibold leading-tight text-text-primary sm:text-4xl">
+              Trust comes from precise behavior, not oversized badges.
             </h2>
-            <p className="mt-4 max-w-xl text-pretty text-base font-medium leading-8 text-slate-600 dark:text-slate-300">
-              The page is careful about trust: it says what the app does without
-              pretending to be a bank. Supabase Auth protects entry, and the
-              dashboard is where user-specific finance records belong.
+            <p className="mt-4 max-w-xl text-base leading-7 text-text-secondary">
+              Jamal&apos;s Finance uses the existing Supabase authentication flow for protected entry.
+              Recovery, callback, deep-link, and current-device session behavior remain part of that established contract.
             </p>
           </div>
-        </motion.div>
 
-        <motion.div variants={stagger} className="grid gap-3">
-          {securityNotes.map((note) => (
-            <motion.div
-              key={note.title}
-              variants={reveal}
-              className="flex gap-3 rounded-[22px] border border-slate-200/80 bg-white/72 p-4 shadow-[0_10px_30px_rgba(15,23,42,0.055)] backdrop-blur-xl dark:border-white/10 dark:bg-white/7"
-            >
-              <span className="grid h-9 w-9 shrink-0 place-items-center rounded-[15px] border border-emerald-500/16 bg-emerald-500/10 text-emerald-600 dark:text-emerald-300">
-                <ShieldCheck className="h-4 w-4" />
-              </span>
-              <div className="min-w-0">
-                <h3 className="text-sm font-black text-slate-950 dark:text-white">
-                  {note.title}
-                </h3>
-                <p className="mt-1 text-sm font-medium leading-6 text-slate-600 dark:text-slate-300">
-                  {note.copy}
-                </p>
+          <div className="grid gap-3">
+            {[
+              ["Authenticated routes", "Personal dashboard content is loaded after the existing session checks complete."],
+              ["Purpose-bound recovery", "Password recovery keeps its established recovery-event and marker checks before allowing an update."],
+              ["Truthful data states", "Missing or unavailable finance data is not turned into a zero, success state, or invented trend."],
+              ["No unsupported claims", "The product does not claim certifications, automatic bank connections, or offline writes that are not implemented."],
+            ].map(([title, copy]) => (
+              <div key={title} className="finance-surface flex gap-3 p-4">
+                <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-success" aria-hidden="true" />
+                <span>
+                  <strong className="block text-sm font-semibold text-text-primary">{title}</strong>
+                  <span className="mt-1 block text-sm leading-6 text-text-secondary">{copy}</span>
+                </span>
               </div>
-            </motion.div>
-          ))}
-        </motion.div>
-      </MotionSection>
+            ))}
+          </div>
+        </div>
+      </section>
 
-      <MotionSection className="relative z-10 mx-auto w-[calc(100%_-_1.25rem)] max-w-[1180px] py-12 sm:py-16">
-        <motion.div
-          variants={reveal}
-          className="relative overflow-hidden rounded-[32px] border border-slate-200/80 bg-white/78 p-6 text-center shadow-[0_28px_95px_rgba(15,23,42,0.12)] backdrop-blur-xl sm:p-10 lg:p-14 dark:border-white/10 dark:bg-white/7"
-        >
-          <div className="absolute inset-x-8 top-0 h-px bg-gradient-to-r from-transparent via-blue-400/60 to-transparent" />
-          <BadgeCheck className="mx-auto h-10 w-10 text-emerald-500" />
-          <h2 className="mx-auto mt-6 max-w-4xl text-balance text-3xl font-black leading-[1.03] text-slate-950 sm:text-5xl lg:text-6xl dark:text-white">
-            Open Jamal&apos;s Finance and make the next money decision clearer.
+      <section className="relative z-10 mx-auto w-full max-w-[1180px] px-4 py-16 sm:px-6 sm:py-24">
+        <div className="finance-surface jf-node4-cta overflow-hidden p-6 text-center sm:p-10 lg:p-14">
+          <Goal className="mx-auto h-9 w-9 text-brand" aria-hidden="true" />
+          <h2 className="mx-auto mt-5 max-w-3xl text-balance text-3xl font-semibold leading-tight text-text-primary sm:text-5xl">
+            Start with one accurate entry. Build clarity from there.
           </h2>
-          <p className="mx-auto mt-5 max-w-2xl text-pretty text-base font-semibold leading-8 text-slate-600 sm:text-lg dark:text-slate-300">
-            Start with one account, one expense, or one savings goal. The
-            workspace becomes more useful every time your activity is cleanly
-            recorded.
+          <p className="mx-auto mt-5 max-w-2xl text-pretty text-base leading-7 text-text-secondary sm:text-lg">
+            Open your workspace, add the finance context that matters, and let a cleaner record support the next decision.
           </p>
           <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
-            <CTAButton href="/login">Start your workspace</CTAButton>
-            <CTAButton href="/login" variant="secondary">
-              Login or sign up
-            </CTAButton>
+            <CTA href="/login">Start your workspace</CTA>
+            <CTA href="/login" secondary>Login or sign up</CTA>
           </div>
-        </motion.div>
-      </MotionSection>
+        </div>
+      </section>
 
-      <footer className="relative z-10 border-t border-slate-200/80 bg-white/50 backdrop-blur-xl dark:border-white/10 dark:bg-slate-950/50">
-        <div className="mx-auto grid w-[calc(100%_-_1.25rem)] max-w-[1180px] gap-6 py-8 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
+      <footer className="relative z-10 border-t border-divider bg-surface-primary/60">
+        <div className="mx-auto grid w-full max-w-[1180px] gap-6 px-4 py-8 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center sm:px-6">
           <div>
-            <Link
-              href="/"
-              className="inline-flex items-center gap-2 text-sm font-black text-slate-950 dark:text-white"
-            >
-              <CircleDollarSign className="h-5 w-5 text-emerald-500" />
+            <Link href="/" className="finance-focus inline-flex min-h-11 items-center gap-2 rounded-[var(--radius-control)] text-sm font-bold text-text-primary">
+              <CircleDollarSign className="h-5 w-5 text-brand" aria-hidden="true" />
               Jamal&apos;s Finance
             </Link>
-            <p className="mt-2 max-w-xl text-sm font-medium leading-6 text-slate-600 dark:text-slate-300">
-              Built for daily clarity, private tracking, and better money
-              habits.
+            <p className="mt-1 max-w-xl text-sm leading-6 text-text-secondary">
+              A private personal-finance workspace for accurate daily tracking and clearer review.
             </p>
           </div>
 
-          <div className="flex flex-wrap gap-2 sm:justify-end">
+          <nav aria-label="Footer" className="flex flex-wrap gap-1 sm:justify-end">
             {[
-              ["Features", "#features"],
-              ["Security", "#security"],
+              ["Capabilities", "#capabilities"],
+              ["Privacy", "#privacy"],
               ["Login", "/login"],
               ["Dashboard", "/dashboard"],
             ].map(([label, href]) => (
-              <Link
-                key={label}
-                href={href}
-                className="rounded-full px-3 py-2 text-sm font-bold text-slate-600 transition hover:bg-slate-950/5 hover:text-slate-950 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-blue-500/20 dark:text-slate-300 dark:hover:bg-white/8 dark:hover:text-white"
-              >
+              <Link key={label} href={href} className="finance-focus inline-flex min-h-11 items-center rounded-[var(--radius-control)] px-3 text-sm font-semibold text-text-secondary hover:bg-surface-soft hover:text-text-primary">
                 {label}
               </Link>
             ))}
-          </div>
+          </nav>
 
-          <p className="hidden">
-            © {year} Jamal&apos;s Finance. Public landing page, private finance
-            app.
-          </p>
-          <p className="text-xs font-bold text-slate-400 sm:col-span-2 dark:text-slate-500">
-            {"(c)"} {year} Jamal&apos;s Finance. Public landing page, private
-            finance app.
+          <p className="text-xs text-text-tertiary sm:col-span-2">
+            © {year} Jamal&apos;s Finance. Public landing page; authenticated finance workspace.
           </p>
         </div>
       </footer>

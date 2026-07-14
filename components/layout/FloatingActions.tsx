@@ -26,18 +26,16 @@ const actions = [
     label: "Add Income",
     hint: "Record money in",
     icon: TrendingUp,
-    tone: "text-emerald-600 dark:text-emerald-300",
-    iconTone:
-      "bg-emerald-500/10 text-emerald-600 ring-emerald-500/15 dark:bg-emerald-400/10 dark:text-emerald-300 dark:ring-emerald-400/15",
+    tone: "text-success",
+    iconTone: "bg-success/10 text-success ring-success/15",
   },
   {
     key: "expense",
     label: "Add Expense",
     hint: "Track spending",
     icon: TrendingDown,
-    tone: "text-rose-600 dark:text-rose-300",
-    iconTone:
-      "bg-rose-500/10 text-rose-600 ring-rose-500/15 dark:bg-rose-400/10 dark:text-rose-300 dark:ring-rose-400/15",
+    tone: "text-danger",
+    iconTone: "bg-danger/10 text-danger ring-danger/15",
   },
   {
     key: "investment",
@@ -52,18 +50,16 @@ const actions = [
     label: "Transfer Money",
     hint: "Move between accounts",
     icon: ArrowLeftRight,
-    tone: "text-sky-600 dark:text-sky-300",
-    iconTone:
-      "bg-sky-500/10 text-sky-600 ring-sky-500/15 dark:bg-sky-400/10 dark:text-sky-300 dark:ring-sky-400/15",
+    tone: "text-info",
+    iconTone: "bg-info/10 text-info ring-info/15",
   },
   {
     key: "goal",
     label: "Add Goal",
     hint: "Plan savings",
     icon: Target,
-    tone: "text-amber-600 dark:text-amber-300",
-    iconTone:
-      "bg-amber-500/10 text-amber-600 ring-amber-500/15 dark:bg-amber-400/10 dark:text-amber-300 dark:ring-amber-400/15",
+    tone: "text-warning",
+    iconTone: "bg-warning/10 text-warning ring-warning/15",
   },
 ] satisfies Array<{
   key: ActionKey;
@@ -81,13 +77,11 @@ const menuVariants: Variants = {
     opacity: 0,
     y: 12,
     scale: 0.96,
-    filter: "blur(4px)",
   },
   animate: {
     opacity: 1,
     y: 0,
     scale: 1,
-    filter: "blur(0px)",
     transition: {
       duration: 0.2,
       ease: motionEase,
@@ -99,7 +93,6 @@ const menuVariants: Variants = {
     opacity: 0,
     y: 10,
     scale: 0.97,
-    filter: "blur(4px)",
     transition: {
       duration: 0.16,
       ease: motionEase,
@@ -222,8 +215,7 @@ export default function FloatingActions() {
                 className={[
                   "w-[236px] origin-bottom-right overflow-hidden rounded-[22px]",
                   "border border-border/80 bg-card/96 p-2.5 text-card-foreground",
-                  "shadow-[0_20px_55px_rgba(15,23,42,0.14)] backdrop-blur-xl",
-                  "dark:border-white/10 dark:bg-card/92 dark:shadow-[0_20px_55px_rgba(0,0,0,0.32)]",
+                  "shadow-[var(--shadow-premium)] backdrop-blur-xl",
                 ].join(" ")}
               >
                 <div className="mb-2 flex items-center justify-between px-2 pt-1">
@@ -313,14 +305,13 @@ export default function FloatingActions() {
           }}
           className={[
             "finance-focus relative grid h-[56px] w-[56px] place-items-center overflow-hidden rounded-[21px] sm:h-[58px] sm:w-[58px]",
-            "bg-active text-background ring-1 ring-active/25",
+            "bg-active text-primary-foreground ring-1 ring-active/25",
             "shadow-[0_18px_42px_color-mix(in_srgb,var(--active),transparent_68%)]",
             "transition-[filter,box-shadow] duration-200 hover:brightness-105",
-            "dark:shadow-[0_18px_42px_color-mix(in_srgb,var(--active),transparent_78%)]",
           ].join(" ")}
         >
-          <span className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_34%_24%,rgba(255,255,255,0.34),transparent_34%)]" />
-          <span className="pointer-events-none absolute inset-x-2 top-1 h-5 rounded-full bg-white/12 blur-md" />
+          <span className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_34%_24%,color-mix(in_srgb,var(--brand-on-accent),transparent_66%),transparent_34%)]" />
+          <span className="pointer-events-none absolute inset-x-2 top-1 h-5 rounded-full bg-primary-foreground/12 blur-md" />
 
           <motion.span
             animate={{
@@ -334,7 +325,7 @@ export default function FloatingActions() {
             }}
             className={[
               "relative z-10 grid h-8 w-8 place-items-center rounded-full",
-              "bg-white/12 text-background ring-1 ring-white/15 backdrop-blur-sm",
+              "bg-primary-foreground/12 text-primary-foreground ring-1 ring-primary-foreground/15 backdrop-blur-sm",
             ].join(" ")}
           >
             <Plus size={25} strokeWidth={2.55} />

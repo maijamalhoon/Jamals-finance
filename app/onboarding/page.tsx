@@ -2,17 +2,17 @@
 
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { motion } from "framer-motion";
 import {
+  AlertTriangle,
   ArrowRight,
   CheckCircle2,
-  LineChart,
   LoaderCircle,
   ShieldCheck,
-  Sparkles,
   UserRound,
-  WalletCards,
 } from "lucide-react";
+import AuthShell from "@/components/auth/AuthShell";
+import { Button } from "@/components/ui/button";
+import { InlineNotice } from "@/components/ui/inline-notice";
 import { createClient } from "@/lib/supabase/client";
 import {
   classifyAuthFailure,
@@ -168,193 +168,107 @@ export default function OnboardingPage() {
 
   if (loadState !== "ready") {
     return (
-      <main className="relative grid min-h-dvh place-items-center overflow-hidden bg-background px-4 text-text-primary">
-        <div className="jf-dashboard-grid pointer-events-none absolute inset-0 opacity-30" />
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-1 bg-[linear-gradient(90deg,#22c55e,#38bdf8,#fbbf24)]" />
-        <div className="relative flex flex-col items-center text-center">
-          <div className="finance-surface mb-5 grid h-16 w-16 place-items-center rounded-[var(--oneui-card-radius)]">
-            <LoaderCircle className="h-8 w-8 animate-spin text-active" />
+      <AuthShell
+        compact
+        eyebrow={loadState === "checking" ? "Session check" : "Temporary interruption"}
+        title={loadState === "checking" ? "Preparing onboarding" : "Profile setup could not load"}
+        description={
+          loadState === "checking"
+            ? "We are confirming your current session before showing profile fields."
+            : "The temporary failure is retryable. Your profile has not been marked complete."
+        }
+        icon={loadState === "checking" ? LoaderCircle : AlertTriangle}
+      >
+        {loadState === "checking" ? (
+          <InlineNotice tone="info" aria-live="polite" className="flex items-center gap-3">
+            <LoaderCircle className="h-5 w-5 shrink-0 animate-spin" aria-hidden="true" />
+            Checking your session...
+          </InlineNotice>
+        ) : (
+          <div className="space-y-4">
+            <InlineNotice tone="warning" role="alert">
+              {error}
+            </InlineNotice>
+            <Button
+              type="button"
+              onClick={() => setRetryCount((value) => value + 1)}
+              className="w-full"
+            >
+              Try again <ArrowRight className="h-4 w-4" />
+            </Button>
           </div>
-          {loadState === "checking" ? (
-            <p aria-live="polite" className="font-semibold text-text-primary">
-              Checking your session...
-            </p>
-          ) : (
-            <div className="max-w-sm space-y-4 text-center">
-              <p role="alert" className="font-semibold text-danger">{error}</p>
-              <button
-                type="button"
-                onClick={() => setRetryCount((value) => value + 1)}
-                className="finance-focus h-12 rounded-[var(--oneui-button-radius)] bg-active px-6 font-bold text-background"
-              >
-                Try again
-              </button>
-            </div>
-          )}
-        </div>
-      </main>
+        )}
+      </AuthShell>
     );
   }
 
   return (
-    <main className="jf-auth-page relative min-h-dvh overflow-x-hidden bg-background px-4 py-5 text-text-primary sm:px-6 lg:px-8">
-      <div className="jf-dashboard-grid pointer-events-none absolute inset-0 opacity-30" />
-      <div className="pointer-events-none absolute inset-x-0 top-0 h-1 bg-[linear-gradient(90deg,#22c55e,#38bdf8,#fbbf24)]" />
-
-      <div className="relative mx-auto grid min-h-[calc(100dvh-40px)] w-full max-w-[1040px] items-center gap-5 lg:grid-cols-[minmax(0,1fr)_430px] lg:gap-8">
-        <motion.aside
-          initial={{ opacity: 0, x: -18 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.45, ease: "easeOut" }}
-          className="finance-surface-glass relative hidden min-h-[560px] flex-col justify-center overflow-hidden p-8 lg:flex"
-        >
-          <div className="jf-dashboard-grid absolute inset-0 opacity-25" />
-          <div className="absolute inset-x-0 top-0 h-1 bg-[linear-gradient(90deg,#22c55e,#38bdf8,#fbbf24)]" />
-
-          <div className="relative z-10">
-            <div className="inline-flex items-center gap-2 rounded-[var(--oneui-control-radius)] border border-border bg-surface-secondary px-3.5 py-2 text-sm font-semibold text-text-secondary">
-              <Sparkles className="h-4 w-4 text-warning" />
-              Jamals Finance
-            </div>
-
-            <h2 className="mt-8 max-w-[520px] text-[44px] font-semibold leading-[1.06] text-text-primary">
-              One last step before your dashboard opens.
-            </h2>
-
-            <p className="mt-5 max-w-[440px] text-[16px] leading-7 text-text-secondary">
-              We use these details to personalize your profile, reports, and
-              finance workspace.
-            </p>
-
-            <div className="mt-9 grid gap-3">
-              {[
-                {
-                  icon: <ShieldCheck className="h-5 w-5" />,
-                  title: "Secure profile",
-                  copy: "Your profile is linked to your active Supabase session.",
-                },
-                {
-                  icon: <WalletCards className="h-5 w-5" />,
-                  title: "Personal dashboard",
-                  copy: "Your name appears across account and finance views.",
-                },
-                {
-                  icon: <LineChart className="h-5 w-5" />,
-                  title: "Ready to track",
-                  copy: "After this, you can start managing your finances.",
-                },
-              ].map((item) => (
-                <div
-                  key={item.title}
-                  className="flex items-start gap-3 rounded-[var(--oneui-card-radius)] border border-border bg-card p-4 shadow-[var(--shadow)]"
-                >
-                  <div className="finance-icon-container grid h-10 w-10 shrink-0 place-items-center">
-                    {item.icon}
-                  </div>
-                  <div>
-                    <p className="font-semibold text-text-primary">{item.title}</p>
-                    <p className="mt-1 text-sm leading-6 text-text-secondary">
-                      {item.copy}
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </div>
+    <AuthShell
+      eyebrow="Profile setup · Step 1 of 1"
+      title="Complete your profile"
+      description="Add the two required details below before continuing to your finance workspace."
+      icon={ShieldCheck}
+    >
+      <form onSubmit={handleSubmit} aria-busy={saving} className="space-y-4">
+        <div>
+          <label htmlFor="onboarding-full-name" className="field-label">Full name</label>
+          <div className="relative">
+            <UserRound className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-text-tertiary" aria-hidden="true" />
+            <input
+              id="onboarding-full-name"
+              value={fullName}
+              onChange={(event) => setFullName(event.target.value)}
+              placeholder="Enter your name"
+              autoComplete="name"
+              disabled={saving}
+              aria-invalid={Boolean(error)}
+              aria-describedby={error ? "onboarding-error" : undefined}
+              className="field-input min-h-12 pl-11 text-[15px] font-medium"
+            />
           </div>
-        </motion.aside>
+        </div>
 
-        <motion.form
-          onSubmit={handleSubmit}
-          aria-busy={saving}
-          initial={{ opacity: 0, x: 18, scale: 0.985 }}
-          animate={{ opacity: 1, x: 0, scale: 1 }}
-          transition={{ duration: 0.45, ease: "easeOut" }}
-          className="finance-surface relative mx-auto w-full max-w-[460px] overflow-hidden p-5 sm:p-6 lg:mx-0"
+        <div>
+          <label htmlFor="onboarding-age" className="field-label">Age</label>
+          <input
+            id="onboarding-age"
+            value={age}
+            onChange={(event) =>
+              setAge(event.target.value.replace(/\D/g, "").slice(0, 3))
+            }
+            placeholder="Enter your age"
+            inputMode="numeric"
+            autoComplete="off"
+            disabled={saving}
+            aria-invalid={Boolean(error)}
+            aria-describedby={error ? "onboarding-error" : "onboarding-age-help"}
+            className="field-input min-h-12 text-[15px] font-medium"
+          />
+          <p id="onboarding-age-help" className="mt-1.5 text-xs leading-5 text-text-tertiary">
+            Enter a whole number between 10 and 120.
+          </p>
+        </div>
+
+        {error ? (
+          <InlineNotice id="onboarding-error" tone="danger" role="alert">
+            {error}
+          </InlineNotice>
+        ) : null}
+
+        <Button
+          type="submit"
+          loading={saving}
+          loadingLabel="Saving profile..."
+          className="w-full"
         >
-          <div className="absolute inset-x-0 top-0 h-px bg-[linear-gradient(90deg,transparent,color-mix(in_srgb,var(--active),transparent_45%),transparent)]" />
+          Continue to dashboard <ArrowRight className="h-4 w-4" />
+        </Button>
 
-          <div className="relative z-10">
-            <div className="mb-7 flex flex-col items-center text-center">
-              <div className="finance-icon-container mx-auto mb-4 grid h-12 w-12 place-items-center" data-size="lg">
-                <ShieldCheck className="h-6 w-6" />
-              </div>
-
-              <h1 className="text-[30px] font-semibold leading-tight text-text-primary sm:text-[34px]">
-                Complete your profile
-              </h1>
-
-              <p className="mx-auto mt-3 max-w-[330px] text-[15px] leading-7 text-text-secondary">
-                Add your name and age to prepare your Jamals Finance dashboard.
-              </p>
-            </div>
-
-            <div className="space-y-4">
-              <label className="block">
-                <span className="field-label">
-                  Full name
-                </span>
-                <div className="relative">
-                  <UserRound className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-text-secondary" />
-                  <input
-                    value={fullName}
-                    onChange={(event) => setFullName(event.target.value)}
-                    placeholder="Enter your name"
-                    disabled={saving}
-                    className="field-input h-12 px-11 text-[15px] font-medium"
-                  />
-                </div>
-              </label>
-
-              <label className="block">
-                <span className="field-label">
-                  Age
-                </span>
-                <div className="relative">
-                  <Sparkles className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-text-secondary" />
-                  <input
-                    value={age}
-                    onChange={(event) =>
-                      setAge(event.target.value.replace(/\D/g, "").slice(0, 3))
-                    }
-                    placeholder="Enter your age"
-                    inputMode="numeric"
-                    disabled={saving}
-                    className="field-input h-12 px-11 text-[15px] font-medium"
-                  />
-                </div>
-              </label>
-
-              {error ? (
-                <p
-                  role="alert"
-                  className="rounded-[var(--oneui-control-radius)] border border-danger/25 bg-danger/10 px-4 py-3 text-sm font-medium leading-6 text-danger"
-                >
-                  {error}
-                </p>
-              ) : null}
-
-              <button
-                type="submit"
-                disabled={saving}
-                className="finance-focus group flex h-12 w-full items-center justify-center gap-2 rounded-[var(--oneui-button-radius)] bg-active px-5 text-[15px] font-bold text-background shadow-[0_18px_44px_color-mix(in_srgb,var(--active),transparent_72%)] transition hover:brightness-105 active:scale-[0.985] disabled:cursor-not-allowed disabled:opacity-80"
-              >
-                {saving ? (
-                  <LoaderCircle className="h-4 w-4 animate-spin" />
-                ) : null}
-                <span>Continue to dashboard</span>
-                {!saving ? (
-                  <ArrowRight className="h-4 w-4 transition group-hover:translate-x-0.5" />
-                ) : null}
-              </button>
-
-              <div className="flex items-center justify-center gap-2 text-center text-[11px] leading-5 text-text-secondary">
-                <CheckCircle2 className="h-3.5 w-3.5 text-success" />
-                <span>Protected by Supabase Auth and secure sessions.</span>
-              </div>
-            </div>
-          </div>
-        </motion.form>
-      </div>
-    </main>
+        <div className="flex items-center justify-center gap-2 text-center text-xs leading-5 text-text-tertiary">
+          <CheckCircle2 className="h-3.5 w-3.5 text-success" aria-hidden="true" />
+          <span>Your profile is saved only after this form succeeds.</span>
+        </div>
+      </form>
+    </AuthShell>
   );
 }

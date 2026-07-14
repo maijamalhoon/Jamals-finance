@@ -7,6 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
+    "test:ui": "vitest run lib/theme.test.ts",
     "test:analytics": "vitest run lib/analytics/calculations.test.ts",
     "test:settings": "vitest run lib/settings/security.test.ts",
     "test:session": "vitest run lib/supabase/session.test.ts"
