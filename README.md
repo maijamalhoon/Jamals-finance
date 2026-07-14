@@ -1,66 +1,185 @@
+<div align="center">
+
+<img src="./public/readme/jamals-finance-hero.svg" alt="Jamal's Finance product showcase" width="100%" />
+
 # Jamal's Finance
 
-A privacy-minded personal finance workspace for tracking money movement, accounts, goals, investments, payables, and financial trends from one application.
+### Understand your money. Plan with clarity.
 
-[Open the live application](https://jamals-finance-sable.vercel.app) · [Report a security concern](SECURITY.md) · [Contribution guide](CONTRIBUTING.md)
+A privacy-minded personal finance workspace for tracking income, expenses, accounts, goals, payables, investments, and truthful financial trends from one calm dashboard.
 
-> **Project status:** Active development. The product is usable today, while security, reliability, globalisation, reporting, accessibility, and cross-device polish continue to be hardened through scoped roadmap nodes.
+[![Live application](https://img.shields.io/badge/Live%20Application-Open-2457d6?style=for-the-badge)](https://jamals-finance-sable.vercel.app)
+[![Next.js](https://img.shields.io/badge/Next.js-16-111827?style=for-the-badge&logo=nextdotjs)](https://nextjs.org/)
+[![React](https://img.shields.io/badge/React-19-087ea4?style=for-the-badge&logo=react&logoColor=white)](https://react.dev/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-Strict-3178c6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![Supabase](https://img.shields.io/badge/Supabase-PostgreSQL-1f9d73?style=for-the-badge&logo=supabase&logoColor=white)](https://supabase.com/)
+[![Vercel](https://img.shields.io/badge/Deployed%20on-Vercel-111827?style=for-the-badge&logo=vercel)](https://vercel.com/)
 
-## Product direction
+[Live app](https://jamals-finance-sable.vercel.app) · [Security](SECURITY.md) · [Contributing](CONTRIBUTING.md) · [Local setup](#local-development)
 
-Jamal's Finance is being built around four principles:
+</div>
 
-- **Truthful financial data** — no fabricated balances, fallback investments, artificial trends, or failed queries presented as genuine zero values.
-- **Power without clutter** — advanced capability should remain discoverable while default screens stay calm and approachable.
-- **Privacy and ownership** — user-owned records are protected through authenticated access and database Row Level Security.
-- **Cross-device quality** — layouts, forms, charts, dialogs, and navigation are designed for mobile, tablet, laptop, and desktop use.
+> [!IMPORTANT]
+> **Project status: active development.** The product is usable today, while analytics, UI/UX consistency, accessibility, performance, globalisation, reporting, and cross-device polish continue to be hardened through small, auditable roadmap nodes.
 
-## Current capabilities
+## Why this project exists
 
-The application currently includes:
+Personal-finance software should make money clearer without pretending to know more than the data actually says. Jamal's Finance is being built around four product principles:
 
-- Public landing experience and protected dashboard routes
+| Principle | What it means in practice |
+| --- | --- |
+| **Truthful financial data** | No fabricated balances, fake trends, fallback investments, or failed queries displayed as genuine zero values. |
+| **Power without clutter** | Advanced capability stays discoverable while default screens remain calm and approachable. |
+| **Privacy and ownership** | User-owned records remain behind authenticated access and owner-scoped database policies. |
+| **Cross-device quality** | Forms, charts, dialogs, navigation, and states are designed for mobile, tablet, laptop, and desktop use. |
+
+## Product at a glance
+
+| Money tracking | Planning | Financial intelligence |
+| --- | --- | --- |
+| Accounts | Savings goals | Dashboard summaries |
+| Income | Payables | Period-based analytics |
+| Expenses | Investments | Spending breakdowns |
+| Transactions | Category management | Reports and AI surfaces under hardening |
+
+### Current capabilities
+
+- Public landing experience with protected product routes
 - Email/password authentication, email verification, password recovery, and optional Google OAuth configuration
 - Account, income, expense, transaction, goal, investment, and payable tracking
-- Category management with parent/child category support
+- Parent/child category management
 - Dashboard summaries and financial activity views
-- Period-based analytics for income, expenses, savings, spending categories, cash flow, and investments
-- AI insights endpoints and interface under active reliability hardening
+- Period-based income, expense, savings, spending, cash-flow, and investment analytics
 - Light, dark, and system theme foundations
 - Responsive desktop and mobile navigation
-- Supabase-backed persistence with owner-scoped Row Level Security policies
+- Supabase-backed persistence with owner-scoped Row Level Security
 - Sentry integration points for production monitoring
 - Vercel production deployment
 
 Some visible modules are still evolving. A control is not considered complete merely because it renders; it must also have truthful behavior, safe failure states, accessibility, responsive states, and production verification.
 
-## Roadmap focus
+## How the product works
 
-Current development is organised into small, auditable nodes. Major areas include:
+```mermaid
+flowchart LR
+    A[Record financial activity] --> B[Authenticated Supabase data]
+    B --> C[Dashboard summaries]
+    B --> D[Analytics and trends]
+    B --> E[Goals and payables]
+    B --> F[Investment snapshot]
+    C --> G[Clearer financial decisions]
+    D --> G
+    E --> G
+    F --> G
+```
 
-1. Data, settings, session, and AI reliability
-2. Shared design system, typography, icons, forms, dialogs, motion, and application states
-3. Desktop and mobile application shell
-4. Authentication and onboarding
-5. Dashboard and every finance module
-6. Global locale, currency, and timezone integrity
-7. Budgeting, recurring bills, subscriptions, notifications, and reports
-8. Landing page, trust, legal, and support experience
-9. PWA, offline behavior, performance, accessibility, and production hardening
+## Product experience map
 
-The roadmap intentionally separates integrity work from visual redesign so that financial correctness and security are not hidden inside large UI changes.
+```mermaid
+flowchart TB
+    LANDING[Public landing page]
+    AUTH[Login, signup and recovery]
+    ONBOARD[New-user onboarding]
+    SHELL[Protected application shell]
+
+    LANDING --> AUTH
+    AUTH --> ONBOARD
+    AUTH --> SHELL
+    ONBOARD --> SHELL
+
+    SHELL --> DASH[Dashboard]
+    SHELL --> TX[Transactions]
+    SHELL --> FLOW[Income and expenses]
+    SHELL --> PLAN[Goals and payables]
+    SHELL --> INVEST[Investments]
+    SHELL --> ANALYTICS[Analytics]
+    SHELL --> AI[AI insights]
+    SHELL --> SETTINGS[Settings]
+```
+
+## Development status
+
+Development is intentionally split into focused nodes so that financial integrity, security, and UI changes can be audited independently.
+
+| Area | Status |
+| --- | --- |
+| Analytics data integrity | Complete |
+| Settings security integrity | Complete |
+| Supabase session recovery | Complete |
+| Premium experience foundation | Complete; corrective UI work tracked |
+| Analytics Master System | **In progress** |
+| Full page-by-page UI/UX system | Planned next |
+| Theme and mobile critical cleanup | Queued |
+| AI reliability contract | Queued |
+| Global locale, currency, and timezone integrity | Queued |
+| PWA, offline, accessibility, and release hardening | Planned |
+
+The active analytics work is not mixed with unrelated redesign tasks. After it is completed and audited, the application will move through a full page-by-page, device-by-device UI/UX plan.
+
+## Design and quality contract
+
+The project is being held to a stricter standard than "the build passes." A page is complete only when all of the following are true:
+
+```text
+Functionality correct
++ financial calculations truthful
++ UI polished
++ UX clear
++ loading, empty, error, partial and offline states present
++ responsive across mobile, tablet and desktop
++ Light, Dark and System behavior correct
++ keyboard, touch and mouse usable
++ performance acceptable
++ no misleading financial visuals
++ no visual regression
++ production manually verified
+```
+
+Key interface rules:
+
+- One shared design system for buttons, inputs, search, date pickers, dropdowns, cards, dialogs, charts, navigation, skeletons, and feedback states
+- Lucide icons for interface actions; no emoji or mixed icon libraries
+- Geist Sans for the product interface and tabular numbers for financial values
+- Separate premium Light and Dark palettes rather than simple color inversion
+- No browser-default visible controls where a branded accessible control is required
+- No fake progress bars, live indicators, bank connections, or fabricated insights
+- Skeletons should resemble the incoming content and adapt to the device layout
+- Reduced-motion behavior must be respected
+
+## Architecture
+
+```mermaid
+flowchart TB
+    UI[Next.js App Router and React]
+    AUTH[Supabase Auth]
+    DB[(PostgreSQL)]
+    RLS[Row Level Security]
+    CALC[Deterministic financial calculations]
+    MARKET[Optional market-data helpers]
+    MONITOR[Sentry integration points]
+    DEPLOY[Vercel]
+
+    UI --> AUTH
+    UI --> DB
+    DB --> RLS
+    DB --> CALC
+    UI --> CALC
+    UI --> MARKET
+    UI --> MONITOR
+    UI --> DEPLOY
+```
 
 ## Technology
 
 | Area | Stack |
 | --- | --- |
 | Application | Next.js 16, React 19, TypeScript |
-| Styling | Tailwind CSS 4, shared design tokens |
+| Styling | Tailwind CSS 4, shared semantic design tokens |
 | UI and motion | Base UI, Radix UI, Framer Motion, Lucide React |
 | Charts | Recharts |
 | Backend | Supabase, PostgreSQL, Supabase Auth |
 | Security | Row Level Security, protected server/client data access |
-| Monitoring | Sentry |
+| Monitoring | Sentry integration points |
 | Testing and quality | Vitest, TypeScript, ESLint, production builds |
 | Deployment | Vercel |
 
@@ -71,7 +190,7 @@ app/
   api/                    Server route handlers
   auth/                   Authentication callback handling
   dashboard/              Protected product routes
-  login/                  Login, signup, and reset-request flow
+  login/                  Login, signup and reset-request flow
   reset-password/         Password recovery completion
   layout.tsx              Root layout and application metadata
   page.tsx                Public landing page
@@ -79,21 +198,25 @@ app/
 components/
   analytics/              Analytics presentation
   currency/               Display-currency context
+  dashboard/              Dashboard widgets
+  layout/                 Desktop and mobile application shell
   settings/               Settings experience
   ui/                     Shared UI primitives
   ...                     Feature-specific components
 
 lib/
   analytics/              Deterministic financial calculations and tests
+  investments/            Investment aggregation and pricing helpers
   market/                 Market-data helpers
-  supabase/               Browser and server Supabase clients
+  settings/               Settings security helpers
+  supabase/               Browser, server, and session helpers
   ...                     Shared application utilities
 
 supabase/
   migrations/             Versioned database schema and security changes
 
 public/                    Static public assets
-proxy.ts                  Route/session boundary logic
+proxy.ts                  Route and session boundary logic
 ```
 
 ## Local development
@@ -175,9 +298,12 @@ Open `http://localhost:3000`.
 | `npm run start` | Start the built production server |
 | `npm run lint` | Run ESLint |
 | `npm run test:analytics` | Run deterministic analytics tests |
+| `npm run test:settings` | Run settings security tests |
+| `npm run test:session` | Run session and recovery tests |
+| `npm run test:ui` | Run focused UI-foundation tests |
 | `npx tsc --noEmit` | Run TypeScript validation |
 
-Feature nodes may add focused test scripts. Review `package.json` for the authoritative current list.
+Review `package.json` for the authoritative current script list.
 
 ## Quality workflow
 
@@ -196,17 +322,20 @@ fresh main
 → production verification
 ```
 
-Before requesting review, run the checks relevant to the change. For broad application changes, the expected baseline is:
+For broad application changes, the expected validation baseline is:
 
 ```bash
 npm run test:analytics
+npm run test:ui
+npm run test:session
+npm run test:settings
 npx tsc --noEmit
 npm run lint
 npm run build
 git diff --check
 ```
 
-A passing build does not replace manual verification of responsive layouts, keyboard behavior, empty/error/loading states, or financial semantics.
+A passing build does not replace manual verification of responsive layouts, keyboard behavior, loading/empty/error states, financial semantics, or the exact production deployment.
 
 ## Security model
 
@@ -220,18 +349,18 @@ The current security foundation includes:
 - Private dashboard routes excluded from search indexing
 - Versioned Supabase migrations for database and policy changes
 
-Security claims are kept deliberately narrow. Local preference toggles are not treated as real authentication factors, and incomplete controls must not imply protection they do not provide.
+Security claims are deliberately narrow. Local preference toggles are not treated as authentication factors, and incomplete controls must not imply protection they do not provide.
 
 Please follow [SECURITY.md](SECURITY.md) for responsible disclosure. Do not publish credentials, private financial records, authentication tokens, or exploitable security details in a public issue.
 
 ## Deployment
 
-Production is deployed through Vercel from the `main` branch:
+Production is deployed through Vercel from the reviewed `main` branch:
 
-- Application: [jamals-finance-sable.vercel.app](https://jamals-finance-sable.vercel.app)
-- Deployment source: reviewed and merged `main` commits
+- **Application:** [jamals-finance-sable.vercel.app](https://jamals-finance-sable.vercel.app)
+- **Deployment source:** reviewed and merged `main` commits
 
-Environment variables must be configured separately for local, preview, and production environments. A deployment is considered complete only after the expected commit SHA is live and the affected flow is manually verified.
+Environment variables must be configured separately for local, preview, and production environments. A deployment is complete only after the expected commit SHA is live and the affected flow is manually verified.
 
 ## Contributing
 
