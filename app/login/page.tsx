@@ -2,7 +2,6 @@
 
 import { type FormEvent, type ReactNode, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { AnimatePresence, motion } from "framer-motion";
 import {
   ArrowLeft,
   ArrowRight,
@@ -13,9 +12,7 @@ import {
   LockKeyhole,
   Mail,
   ShieldCheck,
-  Sparkles,
   UserRound,
-  X,
 } from "lucide-react";
 
 import { createClient } from "@/lib/supabase/client";
@@ -23,6 +20,7 @@ import {
   normalizeLoginReason,
   sanitizeInternalRedirect,
 } from "@/lib/supabase/session";
+import AuthShell from "@/components/auth/AuthShell";
 
 type Step = "login" | "signup" | "forgot" | "check-email";
 type LoadingMode = "signing" | "creating" | "google" | "sending" | null;
@@ -151,9 +149,7 @@ function PrimaryButton({
   onClick?: () => void;
 }) {
   return (
-    <motion.button
-      whileTap={{ scale: disabled || loading ? 1 : 0.985 }}
-      whileHover={{ y: disabled || loading ? 0 : -1 }}
+    <button
       type={type}
       onClick={onClick}
       disabled={disabled || loading}
@@ -167,7 +163,7 @@ function PrimaryButton({
       {!loading ?
         <ArrowRight className="h-4 w-4 transition group-hover:translate-x-0.5" />
       : null}
-    </motion.button>
+    </button>
   );
 }
 
@@ -185,9 +181,7 @@ function SocialButton({
   loading?: boolean;
 }) {
   return (
-    <motion.button
-      whileTap={{ scale: disabled || loading ? 1 : 0.985 }}
-      whileHover={{ y: disabled || loading ? 0 : -1 }}
+    <button
       type="button"
       onClick={onClick}
       disabled={disabled || loading}
@@ -200,7 +194,7 @@ function SocialButton({
         : icon}
       </span>
       <span>{children}</span>
-    </motion.button>
+    </button>
   );
 }
 
@@ -233,21 +227,22 @@ function Field({
 function Feedback({
   tone,
   children,
+  id,
 }: {
   tone: "error" | "success" | "info";
   children: ReactNode;
+  id?: string;
 }) {
   return (
-    <motion.p
-      initial={{ opacity: 0, y: -5 }}
-      animate={{ opacity: 1, y: 0 }}
+    <p
+      id={id}
       role={tone === "error" ? "alert" : undefined}
       aria-live={tone === "error" ? undefined : "polite"}
       data-tone={tone}
       className="jf-auth-feedback"
     >
       {children}
-    </motion.p>
+    </p>
   );
 }
 
@@ -268,6 +263,8 @@ export default function LoginPage() {
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     setSafeNext(sanitizeInternalRedirect(params.get("next")));
+
+    if (params.get("mode") === "forgot") setStep("forgot");
 
     const reason = normalizeLoginReason(params.get("reason"));
     if (reason) setMessage(loginReasonMessages[reason]);
@@ -468,111 +465,77 @@ export default function LoginPage() {
     : message || "Open your inbox and follow the secure link.";
 
   return (
-    <main className="jf-auth-page jf-login-polish relative flex min-h-dvh items-start justify-center overflow-x-hidden overflow-y-auto px-3 py-5 text-[var(--jf-auth-text)] sm:items-center sm:px-6 lg:px-8">
-      <div className="jf-auth-grid pointer-events-none absolute inset-0" />
-      <div className="jf-auth-accent-line pointer-events-none absolute inset-x-0 top-0 h-1" />
-
-      <motion.section
-        initial={{ opacity: 0, y: 18, scale: 0.985 }}
-        animate={{ opacity: 1, y: 0, scale: 1 }}
-        transition={{ duration: 0.28, ease: "easeOut" }}
-        className="jf-auth-card relative w-full max-w-[500px] overflow-hidden p-4 sm:p-5"
-      >
-        <div className="absolute inset-x-0 top-0 h-px bg-[linear-gradient(90deg,transparent,rgba(255,255,255,0.42),transparent)]" />
-
-        <div className="relative z-10">
+    <AuthShell
+      eyebrow={
+        step === "login" ? "Account access"
+        : step === "signup" ? "New workspace"
+        : step === "forgot" ? "Password recovery"
+        : "Email confirmation"
+      }
+      title={title}
+      description={subtitle}
+      icon={step === "check-email" ? Mail : ShieldCheck}
+    >
+      {isAuthEntryStep ? (
+        <div className="jf-auth-tab-list mb-4" role="group" aria-label="Authentication mode">
           <button
             type="button"
-            onClick={() => router.push("/")}
-            className="absolute right-0 top-0 grid h-11 w-11 place-items-center rounded-2xl text-[var(--jf-auth-subtle)] transition hover:bg-[var(--jf-auth-panel-hover)] hover:text-[var(--jf-auth-text)] active:scale-95"
-            aria-label="Close"
+            onClick={() => switchStep("login")}
+            disabled={isLoading}
+            aria-pressed={step === "login"}
+            data-active={step === "login"}
+            className="jf-auth-tab h-11"
           >
-            <X className="h-5 w-5" />
+            Log in
           </button>
+          <button
+            type="button"
+            onClick={() => switchStep("signup")}
+            disabled={isLoading}
+            aria-pressed={step === "signup"}
+            data-active={step === "signup"}
+            className="jf-auth-tab h-11"
+          >
+            Sign up
+          </button>
+        </div>
+      ) : null}
 
-          <div className="mb-4 text-center">
-            <div className="mx-auto mb-3 inline-flex items-center gap-2 rounded-full border border-[var(--jf-auth-border)] bg-[var(--jf-auth-panel)] px-3.5 py-2 text-xs font-black uppercase text-[var(--jf-auth-muted)]">
-              <Sparkles className="h-4 w-4 text-amber-300" />
-              Jamal&apos;s Finance
-            </div>
+      {isAuthEntryStep ? (
+        <div className="jf-auth-social-block mb-4 space-y-3">
+          <SocialButton
+            icon={<GoogleLogo />}
+            onClick={() => handleOAuthSignIn("google")}
+            disabled={isLoading}
+            loading={loadingMode === "google"}
+          >
+            {googleButtonLabel}
+          </SocialButton>
 
-            <div className="jf-auth-icon mx-auto mb-3">
-              <ShieldCheck className="h-6 w-6 text-[#bfdbfe]" />
-            </div>
-
-            <h1 className="text-[28px] font-black leading-tight text-[var(--jf-auth-text)] sm:text-[34px]">
-              {title}
-            </h1>
-
-            <p className="mx-auto mt-2 max-w-[340px] text-[14px] font-semibold leading-6 text-[var(--jf-auth-muted)] sm:text-[15px]">
-              {subtitle}
-            </p>
+          <div className="jf-auth-divider" aria-hidden="true">
+            <span />
+            <strong>or use email</strong>
+            <span />
           </div>
+        </div>
+      ) : null}
 
-          {isAuthEntryStep ?
-            <div className="jf-auth-tab-list mb-3">
-              <button
-                type="button"
-                onClick={() => switchStep("login")}
-                disabled={isLoading}
-                data-active={step === "login"}
-                className="jf-auth-tab h-11"
-              >
-                Login
-              </button>
-              <button
-                type="button"
-                onClick={() => switchStep("signup")}
-                disabled={isLoading}
-                data-active={step === "signup"}
-                className="jf-auth-tab h-11"
-              >
-                Sign up
-              </button>
-            </div>
-          : null}
-
-          {isAuthEntryStep ?
-            <div className="jf-auth-social-block mb-3 space-y-2.5">
-              <SocialButton
-                icon={<GoogleLogo />}
-                onClick={() => handleOAuthSignIn("google")}
-                disabled={isLoading}
-                loading={loadingMode === "google"}
-              >
-                {googleButtonLabel}
-              </SocialButton>
-
-              <div className="jf-auth-divider">
-                <span />
-                <strong>OR</strong>
-                <span />
-              </div>
-            </div>
-          : null}
-
-          <AnimatePresence mode="wait">
-            {step === "login" ?
-              <motion.form
-                key="login"
-                onSubmit={handleLogin}
-                noValidate
-                className="jf-auth-form space-y-3.5"
-                initial={{ opacity: 0.96, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -8 }}
-              >
+      {step === "login" ? (
+        <form onSubmit={handleLogin} noValidate className="jf-auth-form space-y-4">
                 <Field
                   label="Email address"
                   icon={<Mail className="h-4 w-4" />}
                 >
                   <input
+                    type="email"
                     value={email}
                     onChange={(event) => setEmail(event.target.value)}
-                    placeholder="Email address"
+                    placeholder="you@example.com"
                     autoComplete="email"
                     inputMode="email"
                     disabled={isLoading}
+                    aria-invalid={Boolean(error)}
+                    aria-describedby={error ? "auth-error" : undefined}
                     className={`${inputBaseClass} disabled:cursor-not-allowed disabled:opacity-70`}
                   />
                 </Field>
@@ -588,6 +551,8 @@ export default function LoginPage() {
                     placeholder="Enter your password"
                     autoComplete="current-password"
                     disabled={isLoading}
+                    aria-invalid={Boolean(error)}
+                    aria-describedby={error ? "auth-error" : undefined}
                     className={`${passwordInputClass} disabled:cursor-not-allowed disabled:opacity-70`}
                   />
 
@@ -606,7 +571,7 @@ export default function LoginPage() {
                 </Field>
 
                 {error ?
-                  <Feedback tone="error">{error}</Feedback>
+                  <Feedback id="auth-error" tone="error">{error}</Feedback>
                 : null}
 
                 <PrimaryButton
@@ -614,7 +579,7 @@ export default function LoginPage() {
                   disabled={isLoading}
                   loading={loadingMode === "signing"}
                 >
-                  Log in
+                  {loadingMode === "signing" ? "Logging in..." : "Log in"}
                 </PrimaryButton>
 
                 <button
@@ -625,19 +590,11 @@ export default function LoginPage() {
                 >
                   Forgot password?
                 </button>
-              </motion.form>
-            : null}
+        </form>
+      ) : null}
 
-            {step === "signup" ?
-              <motion.form
-                key="signup"
-                onSubmit={handleSignup}
-                noValidate
-                className="jf-auth-form space-y-3.5"
-                initial={{ opacity: 0.96, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -8 }}
-              >
+      {step === "signup" ? (
+        <form onSubmit={handleSignup} noValidate className="jf-auth-form space-y-4">
                 <Field
                   label="Full name"
                   icon={<UserRound className="h-4 w-4" />}
@@ -648,6 +605,8 @@ export default function LoginPage() {
                     placeholder="Enter your name"
                     autoComplete="name"
                     disabled={isLoading}
+                    aria-invalid={Boolean(error)}
+                    aria-describedby={error ? "auth-error" : undefined}
                     className={`${inputBaseClass} disabled:cursor-not-allowed disabled:opacity-70`}
                   />
                 </Field>
@@ -657,12 +616,15 @@ export default function LoginPage() {
                   icon={<Mail className="h-4 w-4" />}
                 >
                   <input
+                    type="email"
                     value={email}
                     onChange={(event) => setEmail(event.target.value)}
                     placeholder="Email address"
                     autoComplete="email"
                     inputMode="email"
                     disabled={isLoading}
+                    aria-invalid={Boolean(error)}
+                    aria-describedby={error ? "auth-error" : undefined}
                     className={`${inputBaseClass} disabled:cursor-not-allowed disabled:opacity-70`}
                   />
                 </Field>
@@ -678,6 +640,8 @@ export default function LoginPage() {
                     placeholder="Create a password"
                     autoComplete="new-password"
                     disabled={isLoading}
+                    aria-invalid={Boolean(error)}
+                    aria-describedby={error ? "auth-error" : "password-help"}
                     className={`${passwordInputClass} disabled:cursor-not-allowed disabled:opacity-70`}
                   />
 
@@ -695,13 +659,13 @@ export default function LoginPage() {
                   </button>
                 </Field>
 
-                <div className="jf-auth-security-note flex items-center gap-2 rounded-2xl border border-[rgba(52,211,153,0.18)] bg-[rgba(16,185,129,0.1)] px-4 py-2.5 text-xs font-semibold text-[#bbf7d0]">
+                <div id="password-help" className="jf-auth-security-note flex items-start gap-2 rounded-[var(--radius-control)] border border-success/20 bg-success/10 px-4 py-3 text-xs font-medium leading-5 text-success">
                   <ShieldCheck className="h-4 w-4 shrink-0" />
-                  Age and personal preferences can be added later in onboarding.
+                  Use at least 6 characters. Profile details are completed during onboarding.
                 </div>
 
                 {error ?
-                  <Feedback tone="error">{error}</Feedback>
+                  <Feedback id="auth-error" tone="error">{error}</Feedback>
                 : null}
 
                 <PrimaryButton
@@ -709,21 +673,13 @@ export default function LoginPage() {
                   disabled={isLoading}
                   loading={loadingMode === "creating"}
                 >
-                  Create account
+                  {loadingMode === "creating" ? "Creating account..." : "Create account"}
                 </PrimaryButton>
-              </motion.form>
-            : null}
+        </form>
+      ) : null}
 
-            {step === "forgot" ?
-              <motion.form
-                key="forgot"
-                onSubmit={handleForgotPassword}
-                noValidate
-                className="space-y-4"
-                initial={{ opacity: 0.96, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -8 }}
-              >
+      {step === "forgot" ? (
+        <form onSubmit={handleForgotPassword} noValidate className="space-y-4">
                 <button
                   type="button"
                   onClick={() => switchStep("login")}
@@ -739,18 +695,21 @@ export default function LoginPage() {
                   icon={<Mail className="h-4 w-4" />}
                 >
                   <input
+                    type="email"
                     value={email}
                     onChange={(event) => setEmail(event.target.value)}
                     placeholder="Email address"
                     autoComplete="email"
                     inputMode="email"
                     disabled={isLoading}
+                    aria-invalid={Boolean(error)}
+                    aria-describedby={error ? "auth-error" : undefined}
                     className={`${inputBaseClass} disabled:cursor-not-allowed disabled:opacity-70`}
                   />
                 </Field>
 
                 {error ?
-                  <Feedback tone="error">{error}</Feedback>
+                  <Feedback id="auth-error" tone="error">{error}</Feedback>
                 : null}
 
                 <PrimaryButton
@@ -758,20 +717,14 @@ export default function LoginPage() {
                   disabled={isLoading}
                   loading={loadingMode === "sending"}
                 >
-                  Send reset link
+                  {loadingMode === "sending" ? "Sending reset link..." : "Send reset link"}
                 </PrimaryButton>
-              </motion.form>
-            : null}
+        </form>
+      ) : null}
 
-            {step === "check-email" ?
-              <motion.div
-                key="check-email"
-                className="space-y-4 text-center"
-                initial={{ opacity: 0.96, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -8 }}
-              >
-                <div className="mx-auto grid h-16 w-16 place-items-center rounded-2xl border border-[rgba(52,211,153,0.22)] bg-[rgba(16,185,129,0.12)] text-[#bbf7d0]">
+      {step === "check-email" ? (
+        <div className="space-y-4 text-center">
+                <div className="mx-auto grid h-16 w-16 place-items-center rounded-[var(--radius-card)] border border-success/25 bg-success/10 text-success">
                   <Mail className="h-8 w-8" />
                 </div>
 
@@ -787,16 +740,13 @@ export default function LoginPage() {
                 <PrimaryButton onClick={() => switchStep("login")}>
                   Back to login
                 </PrimaryButton>
-              </motion.div>
-            : null}
-          </AnimatePresence>
-
-          <div className="mt-5 flex items-center justify-center gap-2 text-center text-[11px] leading-5 text-[var(--jf-auth-subtle)]">
-            <CheckCircle2 className="h-3.5 w-3.5 text-[#86efac]" />
-            <span>Protected by Supabase Auth and secure sessions.</span>
-          </div>
         </div>
-      </motion.section>
-    </main>
+      ) : null}
+
+      <div className="mt-5 flex items-center justify-center gap-2 text-center text-xs leading-5 text-text-tertiary">
+        <CheckCircle2 className="h-3.5 w-3.5 text-success" aria-hidden="true" />
+        <span>Protected by the existing Supabase authentication flow.</span>
+      </div>
+    </AuthShell>
   );
 }

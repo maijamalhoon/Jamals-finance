@@ -73,7 +73,6 @@ export default function MobileHeader() {
               aria-expanded={bellOpen}
             >
               <Bell size={14} className="text-text-secondary" />
-              <span className="absolute right-1.5 top-1.5 h-1.5 w-1.5 rounded-full bg-active" />
             </button>
 
             <AnimatePresence>

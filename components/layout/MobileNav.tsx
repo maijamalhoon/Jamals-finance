@@ -51,8 +51,7 @@ export default function MobileNav() {
               onClick={() => setMoreOpen(false)}
             />
 
-            <motion.div
-              role="menu"
+            <motion.nav
               aria-label="More dashboard navigation"
               className="fixed bottom-[calc(var(--jf-mobile-nav-height)+var(--jf-mobile-nav-gap)+env(safe-area-inset-bottom))] left-3 right-[5.5rem] z-[60] max-w-sm overflow-hidden rounded-[22px] border border-border/80 bg-card/96 p-2 shadow-theme backdrop-blur-2xl supports-[backdrop-filter]:bg-card/86 lg:hidden"
               initial={{ opacity: 0, y: 12, scale: 0.98 }}
@@ -68,7 +67,6 @@ export default function MobileNav() {
                     <Link
                       key={href}
                       href={href}
-                      role="menuitem"
                       aria-current={active ? "page" : undefined}
                       title={label}
                       className={`finance-focus flex min-h-12 min-w-0 items-center gap-2 rounded-[16px] px-2.5 text-sm font-semibold transition active:scale-[0.98] ${
@@ -86,7 +84,7 @@ export default function MobileNav() {
                   );
                 })}
               </div>
-            </motion.div>
+            </motion.nav>
           </>
         )}
       </AnimatePresence>
@@ -128,7 +126,6 @@ export default function MobileNav() {
           <button
             type="button"
             aria-label="Open more dashboard navigation"
-            aria-haspopup="menu"
             aria-expanded={moreOpen}
             aria-current={moreActive ? "page" : undefined}
             onClick={() => setMoreOpen((current) => !current)}

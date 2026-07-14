@@ -1,6 +1,7 @@
 "use client";
 
 import { AlertCircle, RefreshCw } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 export default function DashboardError({
   error,
@@ -32,10 +33,10 @@ export default function DashboardError({
             </p>
           ) : null}
         </div>
-        <button onClick={reset} className="primary-action">
+        <Button type="button" onClick={reset}>
           <RefreshCw size={14} />
           Try again
-        </button>
+        </Button>
       </div>
     </div>
   );

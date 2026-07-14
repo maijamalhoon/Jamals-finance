@@ -22,7 +22,7 @@ const siteUrl = "https://jamals-finance-sable.vercel.app";
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
-    default: "Jamal's Finance — Premium Personal Finance Dashboard",
+    default: "Jamal's Finance — Calm Personal Finance Workspace",
     template: "%s — Jamal's Finance",
   },
   verification: {
@@ -50,7 +50,7 @@ export const metadata: Metadata = {
     canonical: "/",
   },
   openGraph: {
-    title: "Jamal's Finance — Premium Personal Finance Dashboard",
+    title: "Jamal's Finance — Calm Personal Finance Workspace",
     description:
       "Track accounts, expenses, income, goals, liabilities, investments, and savings in one secure personal finance workspace.",
     url: "/",
@@ -60,7 +60,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Jamal's Finance — Premium Personal Finance Dashboard",
+    title: "Jamal's Finance — Calm Personal Finance Workspace",
     description:
       "Track accounts, expenses, income, goals, liabilities, investments, and savings in one secure personal finance workspace.",
   },
@@ -86,8 +86,8 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 5,
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#f7f9fc" },
-    { media: "(prefers-color-scheme: dark)", color: "#090c11" },
+    { media: "(prefers-color-scheme: light)", color: "#f6f8fb" },
+    { media: "(prefers-color-scheme: dark)", color: "#0b1119" },
   ],
 };
 

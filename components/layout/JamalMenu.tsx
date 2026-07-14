@@ -1,18 +1,13 @@
 "use client";
 
 import { AnimatePresence, motion } from "framer-motion";
-import { BarChart3, LogOut, Moon, Settings, Sun } from "lucide-react";
+import { BarChart3, LogOut, Settings } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { panelVariants } from "@/components/motion/animation-config";
-import {
-  applyThemePreference,
-  THEME_CHANGE_EVENT,
-  getStoredThemePreference,
-  type ResolvedTheme,
-} from "@/lib/theme";
+import ThemeSelector from "@/components/theme/ThemeSelector";
 
 type JamalMenuProps = {
   align?: "left" | "right";
@@ -28,30 +23,9 @@ export default function JamalMenu({
   const router = useRouter();
   const supabase = useMemo(() => createClient(), []);
   const [open, setOpen] = useState(false);
-  const [resolvedTheme, setResolvedTheme] = useState<ResolvedTheme>("light");
   const [displayName, setDisplayName] = useState("Jamal");
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    function syncThemeFromPreference() {
-      const preference = getStoredThemePreference();
-      setResolvedTheme(applyThemePreference(preference, { persist: false }));
-    }
-
-    syncThemeFromPreference();
-
-    const media = window.matchMedia("(prefers-color-scheme: dark)");
-    media.addEventListener("change", syncThemeFromPreference);
-    window.addEventListener(THEME_CHANGE_EVENT, syncThemeFromPreference);
-    window.addEventListener("storage", syncThemeFromPreference);
-
-    return () => {
-      media.removeEventListener("change", syncThemeFromPreference);
-      window.removeEventListener(THEME_CHANGE_EVENT, syncThemeFromPreference);
-      window.removeEventListener("storage", syncThemeFromPreference);
-    };
-  }, []);
 
   useEffect(() => {
     async function loadUserProfile() {
@@ -83,12 +57,6 @@ export default function JamalMenu({
     return () => document.removeEventListener("mousedown", handleClick);
   }, []);
 
-  function toggleTheme() {
-    const nextPreference = resolvedTheme === "dark" ? "light" : "dark";
-    setResolvedTheme(applyThemePreference(nextPreference));
-    setOpen(false);
-  }
-
   async function handleSignOut() {
     await supabase.auth.signOut();
     router.push("/login");
@@ -107,7 +75,7 @@ export default function JamalMenu({
             : "finance-focus finance-interactive-tile flex w-full items-center gap-3 border-border bg-card px-3 py-2.5 text-left shadow-theme"
         }
         aria-expanded={open}
-        aria-haspopup="menu"
+        aria-haspopup="dialog"
         aria-label="Open profile menu"
       >
         <Avatar className={compact ? "size-8" : "size-10"}>
@@ -142,7 +110,8 @@ export default function JamalMenu({
                 ? "bottom-[calc(100%+10px)]"
                 : "top-[calc(100%+10px)]"
             }`}
-            role="menu"
+            role="dialog"
+            aria-label="Profile and appearance"
           >
             <button
               type="button"
@@ -151,27 +120,17 @@ export default function JamalMenu({
                 setOpen(false);
               }}
               className="finance-focus finance-interactive-tile flex w-full items-center gap-3 px-3 py-2 text-left text-sm font-semibold"
-              role="menuitem"
             >
               <Settings size={15} />
               Settings
             </button>
-            <button
-              type="button"
-              onClick={toggleTheme}
-              className="finance-focus finance-interactive-tile flex w-full items-center gap-3 px-3 py-2 text-left text-sm font-semibold"
-              role="menuitem"
-            >
-              {resolvedTheme === "dark" ?
-                <Sun size={15} />
-              : <Moon size={15} />}
-              {resolvedTheme === "dark" ? "Light Mode" : "Dark Mode"}
-            </button>
+            <div className="my-1 border-y border-divider py-2">
+              <ThemeSelector showLabel className="w-full justify-start border-0 bg-transparent shadow-none" />
+            </div>
             <button
               type="button"
               onClick={handleSignOut}
               className="finance-focus finance-interactive-tile flex w-full items-center gap-3 px-3 py-2 text-left text-sm font-semibold"
-              role="menuitem"
             >
               <LogOut size={15} />
               Sign Out

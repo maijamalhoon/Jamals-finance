@@ -1,7 +1,9 @@
 "use client";
 
 import * as Sentry from "@sentry/nextjs";
+import { AlertTriangle, RefreshCw } from "lucide-react";
 import { useEffect } from "react";
+import { Button } from "@/components/ui/button";
 
 export default function GlobalError({
   error,
@@ -17,23 +19,20 @@ export default function GlobalError({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className="bg-background text-foreground antialiased">
-        <main className="flex min-h-screen items-center justify-center px-6">
-          <section className="w-full max-w-md rounded-xl border border-border bg-card p-6 shadow-soft">
-            <p className="text-sm font-medium text-danger">Something went wrong</p>
-            <h1 className="mt-3 text-2xl font-semibold text-text-primary">
-              We could not load this view.
-            </h1>
+        <main className="relative flex min-h-dvh items-center justify-center overflow-hidden px-4 py-10">
+          <div className="jf-node4-auth-ambient pointer-events-none absolute inset-0" aria-hidden="true" />
+          <section role="alert" className="finance-surface relative w-full max-w-md p-6 sm:p-7">
+            <span className="grid h-12 w-12 place-items-center rounded-[var(--radius-control)] border border-danger/25 bg-danger/10 text-danger">
+              <AlertTriangle className="h-5 w-5" aria-hidden="true" />
+            </span>
+            <p className="mt-5 text-sm font-semibold text-danger">Unexpected application error</p>
+            <h1 className="mt-2 text-2xl font-semibold text-text-primary">This view could not load.</h1>
             <p className="mt-3 text-sm leading-6 text-text-secondary">
-              The error has been reported. You can try loading the dashboard
-              again.
+              The error was reported. Retry the view; your saved finance records were not changed by this screen.
             </p>
-            <button
-              type="button"
-              onClick={reset}
-              className="mt-6 min-h-11 rounded-lg bg-active px-4 py-2 text-sm font-semibold text-primary-foreground transition hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-            >
-              Try again
-            </button>
+            <Button type="button" onClick={reset} className="mt-6 w-full">
+              <RefreshCw className="h-4 w-4" aria-hidden="true" /> Try again
+            </Button>
           </section>
         </main>
       </body>

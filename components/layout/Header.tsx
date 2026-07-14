@@ -110,9 +110,9 @@ export default function Header() {
           <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-text-secondary">
             Workspace
           </p>
-          <h1 className="mt-1 truncate text-[17px] font-bold leading-none text-text-primary">
+          <p className="mt-1 truncate text-[17px] font-bold leading-none text-text-primary">
             {routeTitle}
-          </h1>
+          </p>
         </div>
 
         <nav
@@ -243,7 +243,6 @@ export default function Header() {
             aria-expanded={bellOpen}
           >
             <Bell size={15} className="text-text-secondary" />
-            <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full border-2 border-card bg-active" />
           </button>
 
           <AnimatePresence>
