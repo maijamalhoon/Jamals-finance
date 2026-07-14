@@ -1,6 +1,6 @@
 "use client";
 
-import { type FormEvent, type ReactNode, useMemo, useState } from "react";
+import { type FormEvent, type ReactNode, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import {
@@ -19,6 +19,10 @@ import {
 } from "lucide-react";
 
 import { createClient } from "@/lib/supabase/client";
+import {
+  normalizeLoginReason,
+  sanitizeInternalRedirect,
+} from "@/lib/supabase/session";
 
 type Step = "login" | "signup" | "forgot" | "check-email";
 type LoadingMode = "signing" | "creating" | "google" | "sending" | null;
@@ -29,6 +33,16 @@ const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const inputBaseClass = "jf-auth-input jf-auth-input-with-start";
 const passwordInputClass =
   "jf-auth-input jf-auth-input-with-start jf-auth-input-with-end";
+
+const loginReasonMessages = {
+  session_expired: "Your session expired. Please log in again to continue.",
+  auth_unavailable: "Authentication is temporarily unavailable. Please try again shortly.",
+  callback_failed: "That sign-in link could not be completed. Please try again.",
+} as const;
+
+function onboardingDestination(next: string) {
+  return `/onboarding?next=${encodeURIComponent(next)}`;
+}
 
 function cleanEmail(value: string) {
   return value.trim().toLowerCase();
@@ -249,6 +263,15 @@ export default function LoginPage() {
   const [loadingMode, setLoadingMode] = useState<LoadingMode>(null);
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
+  const [safeNext, setSafeNext] = useState("/dashboard");
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    setSafeNext(sanitizeInternalRedirect(params.get("next")));
+
+    const reason = normalizeLoginReason(params.get("reason"));
+    if (reason) setMessage(loginReasonMessages[reason]);
+  }, []);
 
   const isLoading = Boolean(loadingMode);
   const isAuthEntryStep = step === "login" || step === "signup";
@@ -308,11 +331,21 @@ export default function LoginPage() {
 
     if (signInError) {
       setLoadingMode(null);
-      setError("The email or password is incorrect.");
+      const lower = signInError.message.toLowerCase();
+      const temporarilyUnavailable =
+        (signInError.status ?? 0) >= 500 ||
+        lower.includes("network") ||
+        lower.includes("fetch") ||
+        lower.includes("timeout");
+      setError(
+        temporarilyUnavailable
+          ? "Authentication is temporarily unavailable. Please try again shortly."
+          : "The email or password is incorrect.",
+      );
       return;
     }
 
-    router.replace("/dashboard");
+    router.replace(safeNext);
     router.refresh();
   }
 
@@ -343,7 +376,7 @@ export default function LoginPage() {
         data: {
           full_name: fullName.trim(),
         },
-        emailRedirectTo: `${window.location.origin}/auth/callback?next=/dashboard`,
+        emailRedirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(onboardingDestination(safeNext))}`,
       },
     });
 
@@ -364,7 +397,7 @@ export default function LoginPage() {
     }
 
     if (data.session) {
-      router.replace("/dashboard");
+      router.replace(onboardingDestination(safeNext));
       router.refresh();
       return;
     }
@@ -381,7 +414,7 @@ export default function LoginPage() {
     const { error: oauthError } = await supabase.auth.signInWithOAuth({
       provider,
       options: {
-        redirectTo: `${window.location.origin}/auth/callback?next=/onboarding`,
+        redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(onboardingDestination(safeNext))}`,
         queryParams: { access_type: "offline", prompt: "consent" },
       },
     });
