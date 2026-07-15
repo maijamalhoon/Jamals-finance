@@ -16,6 +16,20 @@ const settingsSource = readFileSync(
   "utf8",
 );
 
+const globalsCssSource = readFileSync(
+  new URL("../app/globals.css", import.meta.url),
+  "utf8",
+);
+
+function getCssRule(source: string, selectorStart: string) {
+  const ruleStart = source.indexOf(selectorStart);
+  if (ruleStart === -1) throw new Error(`Missing CSS rule: ${selectorStart}`);
+
+  const declarationStart = source.indexOf("{", ruleStart);
+  const ruleEnd = source.indexOf("}", declarationStart);
+  return source.slice(ruleStart, ruleEnd + 1);
+}
+
 const nonSettingsThemeSurfaces = [
   "../components/landing/PremiumLandingPage.tsx",
   "../components/auth/AuthShell.tsx",
@@ -104,6 +118,39 @@ describe("theme contracts", () => {
         new URL("../components/theme/ThemeSelector.tsx", import.meta.url),
       ),
     ).toBe(false);
+  });
+
+  it("keeps dark shared repairs on the approved semantic tokens", () => {
+    expect(globalsCssSource).not.toMatch(/\.theme-selector\b/);
+
+    const primaryActionRule = getCssRule(
+      globalsCssSource,
+      ".dark .primary-action",
+    );
+    const successRule = getCssRule(
+      globalsCssSource,
+      ".dark :where(.finance-status-success",
+    );
+    const dangerRule = getCssRule(
+      globalsCssSource,
+      ".dark :where(.finance-status-danger",
+    );
+    const warningRule = getCssRule(
+      globalsCssSource,
+      ".dark :where(.finance-status-warning",
+    );
+    const infoRule = getCssRule(
+      globalsCssSource,
+      ".dark :where(.finance-status-info",
+    );
+
+    expect(primaryActionRule).toContain("color: var(--brand-on-accent);");
+    expect(successRule).toContain("color: var(--success);");
+    expect(dangerRule).toContain("color: var(--danger);");
+    expect(warningRule).toContain("color: var(--warning);");
+    expect(infoRule).toContain("color: var(--info);");
+    expect(infoRule).not.toContain("var(--active)");
+    expect(globalsCssSource).not.toMatch(/#79f0b4|#ff9a9a|#ffd27a/i);
   });
 
   it("is server-safe without browser globals", () => {

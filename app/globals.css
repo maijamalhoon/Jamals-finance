@@ -5234,32 +5234,6 @@ tbody tr:hover {
   overflow-wrap: anywhere;
 }
 
-.theme-selector {
-  position: relative;
-  transition:
-    border-color var(--motion-duration-fast) var(--motion-ease),
-    background-color var(--motion-duration-fast) var(--motion-ease),
-    color var(--motion-duration-fast) var(--motion-ease),
-    box-shadow var(--motion-duration-fast) var(--motion-ease);
-}
-
-.theme-selector:hover {
-  border-color: var(--border-strong);
-  background: var(--surface-soft);
-}
-
-.theme-selector::after {
-  content: "";
-  position: absolute;
-  inset-inline-end: 0.7rem;
-  width: 0.4rem;
-  height: 0.4rem;
-  border-inline-end: 1.5px solid currentColor;
-  border-block-end: 1.5px solid currentColor;
-  pointer-events: none;
-  transform: translateY(-0.15rem) rotate(45deg);
-}
-
 .jf-node4-landing-ambient,
 .jf-node4-auth-ambient {
   background:
@@ -5515,7 +5489,7 @@ tbody tr:hover {
       color-mix(in srgb, var(--active), white 8%),
       color-mix(in srgb, var(--active), black 8%)
     );
-  color: #111827;
+  color: var(--brand-on-accent);
   box-shadow:
     0 14px 30px color-mix(in srgb, var(--active), transparent 78%),
     var(--surface-highlight);
@@ -5616,19 +5590,19 @@ tbody tr:hover {
 }
 
 .dark :where(.finance-status-success, span[class*="text-emerald"], span[class*="text-green"]) {
-  color: #79f0b4;
+  color: var(--success);
 }
 
 .dark :where(.finance-status-danger, span[class*="text-red"], span[class*="text-rose"]) {
-  color: #ff9a9a;
+  color: var(--danger);
 }
 
 .dark :where(.finance-status-warning, span[class*="text-amber"], span[class*="text-yellow"], span[class*="text-orange"]) {
-  color: #ffd27a;
+  color: var(--warning);
 }
 
 .dark :where(.finance-status-info, span[class*="text-blue"], span[class*="text-sky"], span[class*="text-cyan"], span[class*="text-indigo"]) {
-  color: color-mix(in srgb, var(--active), white 16%);
+  color: var(--info);
 }
 
 .dark :where(
