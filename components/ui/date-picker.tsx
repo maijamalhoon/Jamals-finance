@@ -11,6 +11,7 @@ interface DatePickerProps {
   onChange: (value: string) => void;
   placeholder?: string;
   ariaLabel?: string;
+  ariaDescribedBy?: string;
   disabled?: boolean;
   className?: string;
   minDate?: string;
@@ -81,6 +82,7 @@ export default function DatePicker({
   onChange,
   placeholder = "DD/MM/YYYY",
   ariaLabel = "Date",
+  ariaDescribedBy,
   disabled,
   className,
   minDate,
@@ -101,6 +103,10 @@ export default function DatePicker({
   }, [formattedValue, touched, value]);
 
   const error = getDateError(displayValue, minDate, maxDate);
+  const internalErrorId = id ? `${id}-error` : undefined;
+  const describedBy = [ariaDescribedBy, touched && error ? internalErrorId : null]
+    .filter(Boolean)
+    .join(" ") || undefined;
 
   function handleChange(nextRawValue: string) {
     const nextDisplayValue = formatTypedDate(nextRawValue);
@@ -127,6 +133,7 @@ export default function DatePicker({
         disabled={disabled}
         placeholder={placeholder}
         aria-label={ariaLabel}
+        aria-describedby={describedBy}
         aria-invalid={Boolean(touched && error)}
         maxLength={10}
         onChange={(event) => handleChange(event.target.value)}
@@ -135,7 +142,7 @@ export default function DatePicker({
       />
 
       {touched && error ? (
-        <p className={financeFieldErrorClass}>{error}</p>
+        <p id={internalErrorId} className={financeFieldErrorClass}>{error}</p>
       ) : null}
     </div>
   );
