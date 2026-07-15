@@ -1,3 +1,4 @@
+import { existsSync, readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 
 import {
@@ -9,6 +10,20 @@ import {
   resolveThemePreference,
   THEME_PREFERENCES,
 } from "./theme";
+
+const settingsSource = readFileSync(
+  new URL("../components/settings/SettingsOneUI.tsx", import.meta.url),
+  "utf8",
+);
+
+const nonSettingsThemeSurfaces = [
+  "../components/landing/PremiumLandingPage.tsx",
+  "../components/auth/AuthShell.tsx",
+  "../components/layout/JamalMenu.tsx",
+].map((relativePath) => ({
+  relativePath,
+  source: readFileSync(new URL(relativePath, import.meta.url), "utf8"),
+}));
 
 describe("theme contracts", () => {
   it("accepts exactly system, light, and dark", () => {
@@ -41,6 +56,54 @@ describe("theme contracts", () => {
       dataThemePreference: "system",
       darkClassActive: true,
     });
+
+    expect(getThemeRootState("system", "light")).toEqual({
+      preference: "system",
+      resolvedTheme: "light",
+      colorScheme: "light",
+      dataTheme: "light",
+      dataThemePreference: "system",
+      darkClassActive: false,
+    });
+
+    expect(getThemeRootState("light", "dark")).toMatchObject({
+      preference: "light",
+      resolvedTheme: "light",
+      colorScheme: "light",
+      dataTheme: "light",
+      dataThemePreference: "light",
+      darkClassActive: false,
+    });
+
+    expect(getThemeRootState("dark", "light")).toMatchObject({
+      preference: "dark",
+      resolvedTheme: "dark",
+      colorScheme: "dark",
+      dataTheme: "dark",
+      dataThemePreference: "dark",
+      darkClassActive: true,
+    });
+  });
+
+  it("keeps the only visible theme control in Settings Appearance", () => {
+    expect(settingsSource).toContain("<SectionTitle>Appearance</SectionTitle>");
+    expect(settingsSource).toContain('role="radiogroup"');
+    expect(settingsSource).toContain('aria-label="Theme preference"');
+    expect(settingsSource).toContain('role="radio"');
+    expect(settingsSource).toContain('value: "system"');
+    expect(settingsSource).toContain('value: "light"');
+    expect(settingsSource).toContain('value: "dark"');
+    expect(settingsSource).not.toMatch(/<select\b/);
+
+    for (const { relativePath, source } of nonSettingsThemeSurfaces) {
+      expect(source, relativePath).not.toContain("ThemeSelector");
+    }
+
+    expect(
+      existsSync(
+        new URL("../components/theme/ThemeSelector.tsx", import.meta.url),
+      ),
+    ).toBe(false);
   });
 
   it("is server-safe without browser globals", () => {

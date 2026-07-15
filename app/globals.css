@@ -83,40 +83,40 @@
 
 :root {
   color-scheme: light;
-  --page-background: #f6f8fb;
+  --page-background: #f6f8fc;
   --surface-primary: #ffffff;
-  --surface-secondary: #f1f5f9;
+  --surface-secondary: #eef2f8;
   --surface-elevated: #ffffff;
-  --surface-inset: #eaf0f6;
-  --surface-soft: #eef3f8;
+  --surface-inset: #e8eef6;
+  --surface-soft: #f2f5fa;
   --surface-glass: color-mix(in srgb, var(--surface-primary), transparent 8%);
-  --border: #d7e0eb;
-  --border-strong: #aebdcc;
-  --divider: #e3e9f1;
+  --border: #dce2ea;
+  --border-strong: #b8c2d0;
+  --divider: #e6eaf0;
   --text-primary: #101828;
-  --text-secondary: #475467;
-  --text-tertiary: #667085;
-  --text-disabled: #98a2b3;
-  --brand-accent: #2457d6;
-  --brand-accent-hover: #1f4bb8;
-  --brand-accent-pressed: #193d96;
+  --text-secondary: #5b6475;
+  --text-tertiary: #7a8494;
+  --text-disabled: #a1aab8;
+  --brand-accent: #4f46e5;
+  --brand-accent-hover: #4338ca;
+  --brand-accent-pressed: #3730a3;
   --brand-on-accent: #ffffff;
-  --success: #0f8f5f;
-  --danger: #d93444;
-  --warning: #b87503;
-  --info: #087ea4;
-  --investment: #7257d6;
-  --focus-color: #2457d6;
-  --overlay: rgb(15 23 42 / 0.48);
-  --chart-grid: #dce4ee;
+  --success: #087a55;
+  --danger: #c9364a;
+  --warning: #a85d00;
+  --info: #2563eb;
+  --investment: #7c3aed;
+  --focus-color: #4f46e5;
+  --overlay: rgb(8 17 31 / 0.48);
+  --chart-grid: #dce3ed;
   --chart-tooltip: #ffffff;
-  --chart-series-1: #2457d6;
-  --chart-series-2: #0f8f5f;
-  --chart-series-3: #b87503;
-  --chart-series-4: #7257d6;
-  --chart-series-5: #087ea4;
-  --loader: #f1f5f9;
-  --skeleton: #e9eef5;
+  --chart-series-1: #4f46e5;
+  --chart-series-2: #087a55;
+  --chart-series-3: #d97706;
+  --chart-series-4: #7c3aed;
+  --chart-series-5: #2563eb;
+  --loader: #eef2f8;
+  --skeleton: #e8eef6;
   --shadow-xs: 0 1px 2px rgb(16 24 40 / 0.04);
   --shadow: 0 1px 2px rgb(16 24 40 / 0.045);
   --shadow-soft: 0 12px 32px rgb(16 24 40 / 0.065);
@@ -192,45 +192,45 @@
 
 .dark {
   color-scheme: dark;
-  --page-background: #0b1119;
-  --surface-primary: #111a25;
-  --surface-secondary: #172231;
-  --surface-elevated: #1b2838;
-  --surface-inset: #0e1722;
-  --surface-soft: #1e2c3e;
+  --page-background: #08111f;
+  --surface-primary: #101a2b;
+  --surface-secondary: #162236;
+  --surface-elevated: #1c2940;
+  --surface-inset: #0d1726;
+  --surface-soft: #1a2740;
   --surface-glass: color-mix(in srgb, var(--surface-primary), transparent 8%);
-  --border: rgb(154 171 194 / 0.2);
-  --border-strong: #627188;
-  --divider: rgb(154 171 194 / 0.14);
-  --text-primary: #f7f9fd;
-  --text-secondary: #c6d0de;
-  --text-tertiary: #93a3b8;
-  --text-disabled: #6f8096;
-  --brand-accent: #d2ad55;
-  --brand-accent-hover: #e0bf70;
-  --brand-accent-pressed: #b9903e;
-  --brand-on-accent: #15110a;
-  --success: #65d99c;
-  --danger: #ff8b98;
-  --warning: #f3c263;
-  --info: #74d4f5;
-  --investment: #bfa9ff;
-  --focus-color: #e0bf70;
+  --border: #27364e;
+  --border-strong: #465873;
+  --divider: #223049;
+  --text-primary: #f4f7fb;
+  --text-secondary: #a9b4c6;
+  --text-tertiary: #8290a5;
+  --text-disabled: #607087;
+  --brand-accent: #818cf8;
+  --brand-accent-hover: #a5b4fc;
+  --brand-accent-pressed: #6366f1;
+  --brand-on-accent: #0b1020;
+  --success: #4ade80;
+  --danger: #fb7185;
+  --warning: #fbbf24;
+  --info: #60a5fa;
+  --investment: #c4b5fd;
+  --focus-color: #a5b4fc;
   --overlay: rgb(2 6 12 / 0.72);
-  --chart-grid: #2b3a4d;
-  --chart-tooltip: #1b2838;
-  --chart-series-1: #d2ad55;
-  --chart-series-2: #65d99c;
-  --chart-series-3: #f3c263;
-  --chart-series-4: #bfa9ff;
-  --chart-series-5: #74d4f5;
-  --loader: #1a2635;
-  --skeleton: #233044;
+  --chart-grid: #2a3a52;
+  --chart-tooltip: #1c2940;
+  --chart-series-1: #818cf8;
+  --chart-series-2: #4ade80;
+  --chart-series-3: #fbbf24;
+  --chart-series-4: #c4b5fd;
+  --chart-series-5: #60a5fa;
+  --loader: #162236;
+  --skeleton: #223049;
   --shadow-xs: 0 1px 2px rgb(0 0 0 / 0.28);
-  --shadow: 0 1px 2px rgb(0 0 0 / 0.34);
-  --shadow-soft: 0 16px 42px rgb(0 0 0 / 0.36);
-  --shadow-premium: 0 26px 78px rgb(0 0 0 / 0.48);
-  --glow-soft: 0 0 0 1px color-mix(in srgb, var(--brand-accent), transparent 72%);
+  --shadow: 0 1px 3px rgb(0 0 0 / 0.3);
+  --shadow-soft: 0 14px 36px rgb(0 0 0 / 0.3);
+  --shadow-premium: 0 22px 58px rgb(0 0 0 / 0.38);
+  --glow-soft: 0 0 0 1px color-mix(in srgb, var(--brand-accent), transparent 80%);
   --focus-ring:
     0 0 0 1px color-mix(in srgb, var(--focus-color), transparent 34%),
     0 0 0 4px color-mix(in srgb, var(--focus-color), transparent 76%);
@@ -290,7 +290,7 @@
   --sidebar-accent: var(--surface-soft);
   --sidebar-accent-foreground: var(--text-primary);
   --sidebar-border: var(--border);
-  --sidebar-ring: var(--active);
+  --sidebar-ring: var(--focus-color);
 }
 
 @layer base {
@@ -447,7 +447,7 @@
   .finance-interactive-tile:focus-visible,
   .finance-nav-item:focus-visible {
     outline: none;
-    border-color: var(--active);
+    border-color: var(--focus-color);
     box-shadow: var(--focus-ring);
   }
 
@@ -603,12 +603,12 @@
   .finance-control:focus-within,
   .finance-control:focus-visible {
     outline: none;
-    border-color: var(--active);
+    border-color: var(--focus-color);
     box-shadow: var(--focus-ring);
   }
 
   .finance-search-control:focus-within {
-    border-color: color-mix(in srgb, var(--active), var(--border) 68%);
+    border-color: color-mix(in srgb, var(--focus-color), var(--border) 68%);
     box-shadow: none;
     transform: none;
   }
@@ -618,6 +618,8 @@
   }
 
   .finance-focus:focus-visible {
+    outline: 2px solid var(--focus-color);
+    outline-offset: 3px;
     box-shadow: var(--focus-ring);
   }
 
@@ -991,7 +993,7 @@
   .field-input:focus,
   .field-input:focus-visible,
   .field-input:focus-within {
-    border-color: color-mix(in srgb, var(--active), var(--border) 55%);
+    border-color: color-mix(in srgb, var(--focus-color), var(--border) 55%);
     background-color: var(--surface);
     box-shadow: var(--focus-ring);
   }
@@ -1387,7 +1389,11 @@
   }
 
   .finance-panel-interactive {
-    @apply cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-active/40 focus-visible:ring-offset-0;
+    @apply cursor-pointer focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0;
+  }
+
+  .finance-panel-interactive:focus-visible {
+    box-shadow: var(--focus-ring);
   }
 
   .finance-panel-interactive:hover {
@@ -1921,26 +1927,29 @@
 }
 
 ::-webkit-scrollbar {
-  width: 5px;
-  height: 5px;
+  width: 10px;
+  height: 10px;
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--background);
+  background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--border);
+  border: 2px solid transparent;
   border-radius: 999px;
+  background: color-mix(in srgb, var(--border-strong) 72%, transparent);
+  background-clip: padding-box;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--text-secondary);
+  background: color-mix(in srgb, var(--text-secondary) 78%, transparent);
+  background-clip: padding-box;
 }
 
 * {
   scrollbar-width: thin;
-  scrollbar-color: var(--border) var(--background);
+  scrollbar-color: var(--border-strong) transparent;
   -webkit-tap-highlight-color: transparent;
 }
 
@@ -2135,8 +2144,8 @@ textarea:focus {
   box-shadow: none;
 }
 
-:where(a, button, input, select, textarea, [tabindex]):focus-visible {
-  outline: 2px solid color-mix(in srgb, var(--active), transparent 22%);
+:where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+  outline: 2px solid var(--focus-color);
   outline-offset: 3px;
 }
 
@@ -3422,11 +3431,6 @@ textarea:focus {
 @media (max-width: 1023px) {
   .jf-dashboard-scroll {
     padding-bottom: var(--jf-mobile-content-bottom) !important;
-    scrollbar-width: none;
-  }
-
-  .jf-dashboard-scroll::-webkit-scrollbar {
-    display: none;
   }
 
   .jf-dashboard-grid {
@@ -3517,10 +3521,8 @@ select:hover {
 input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):focus,
 textarea:focus,
 select:focus {
-  border-color: var(--color-active, #3b82f6);
-  box-shadow:
-    0 0 0 4px color-mix(in srgb, var(--color-active, #3b82f6) 16%, transparent),
-    0 14px 34px rgba(15, 23, 42, 0.08);
+  border-color: var(--focus-color);
+  box-shadow: var(--focus-ring);
   outline: none;
 }
 
@@ -3829,8 +3831,7 @@ tbody tr:hover {
 
 .jf-dashboard-header-wrap input:focus,
 .jf-dashboard-header-wrap [role="searchbox"]:focus {
-  box-shadow: 0 0 0 4px
-    color-mix(in srgb, var(--active, #3b82f6) 14%, transparent);
+  box-shadow: var(--focus-ring);
 }
 
 .jf-dashboard-header-wrap button,
@@ -4436,8 +4437,7 @@ tbody tr:hover {
   .card-hover a[href],
   .card-hover button
 ):focus-visible {
-  outline: 2px solid
-    color-mix(in srgb, var(--active, var(--primary)), transparent 35%);
+  outline: 2px solid var(--focus-color);
   outline-offset: 3px;
 }
 
@@ -4666,12 +4666,10 @@ tbody tr:hover {
 ):focus {
   border-color: color-mix(
     in srgb,
-    var(--active, var(--primary)),
+    var(--focus-color),
     transparent 42%
   );
-  box-shadow:
-    0 14px 32px rgba(15, 23, 42, 0.07),
-    0 0 0 3px color-mix(in srgb, var(--active, var(--primary)), transparent 84%);
+  box-shadow: var(--focus-ring);
 }
 
 :where(
@@ -4686,12 +4684,10 @@ tbody tr:hover {
   outline: none;
   border-color: color-mix(
     in srgb,
-    var(--active, var(--primary)),
+    var(--focus-color),
     transparent 42%
   );
-  box-shadow:
-    0 14px 32px rgba(15, 23, 42, 0.07),
-    0 0 0 3px color-mix(in srgb, var(--active, var(--primary)), transparent 84%);
+  box-shadow: var(--focus-ring);
 }
 
 .dark
@@ -4710,9 +4706,7 @@ tbody tr:hover {
     .finance-focus
   ):focus-visible,
 .dark :where(.finance-control, .finance-focus):focus-within {
-  box-shadow:
-    0 16px 34px rgba(0, 0, 0, 0.24),
-    0 0 0 3px color-mix(in srgb, var(--active, var(--primary)), transparent 78%);
+  box-shadow: var(--focus-ring);
 }
 
 :where(
@@ -5266,15 +5260,6 @@ tbody tr:hover {
   transform: translateY(-0.15rem) rotate(45deg);
 }
 
-.theme-selector select {
-  color-scheme: light dark;
-}
-
-.theme-selector select option {
-  background: var(--surface-elevated);
-  color: var(--text-primary);
-}
-
 .jf-node4-landing-ambient,
 .jf-node4-auth-ambient {
   background:
@@ -5322,6 +5307,10 @@ tbody tr:hover {
   background: var(--surface-soft);
 }
 
+.jf-node4-landing details > nav {
+  max-width: calc(100vw - 2rem);
+}
+
 .jf-node4-auth {
   --jf-auth-text: var(--text-primary);
   --jf-auth-muted: var(--text-secondary);
@@ -5344,34 +5333,49 @@ tbody tr:hover {
     );
 }
 
-@media (max-height: 720px) and (min-width: 1024px) {
+.jf-node6-auth-header {
+  padding-top: max(0.75rem, env(safe-area-inset-top));
+}
+
+.jf-node6-auth-layout {
+  padding-bottom: max(1.5rem, env(safe-area-inset-bottom));
+}
+
+@media (max-height: 760px) {
+  .jf-node6-auth-layout {
+    align-items: start;
+    min-height: auto;
+    padding-top: 0.5rem;
+  }
+
+  .jf-node4-auth-context h2 {
+    margin-top: 0.75rem;
+    font-size: clamp(2rem, 4vw, 2.75rem);
+  }
+
+  .jf-node4-auth-context > p:last-of-type {
+    margin-top: 0.75rem;
+  }
+
+  .jf-node4-auth-context > div {
+    margin-top: 1rem;
+  }
+}
+
+@media (max-height: 620px) and (min-width: 1024px) {
   .jf-node4-auth-context {
     display: none;
   }
 
-  .jf-node4-auth > div:last-child {
+  .jf-node6-auth-layout {
     grid-template-columns: minmax(0, 500px);
     justify-content: center;
-    align-items: start;
-  }
-}
-
-@media (max-width: 639px) {
-  .theme-selector {
-    padding-inline: 0.65rem;
-  }
-
-  .theme-selector select {
-    width: 4.4rem;
-    padding-inline-end: 0.8rem;
-    font-size: 0.75rem;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .jf-node4-landing *,
-  .jf-node4-auth *,
-  .theme-selector {
+  .jf-node4-auth * {
     scroll-behavior: auto !important;
     transition-duration: 0.01ms !important;
     animation-duration: 0.01ms !important;
@@ -5465,8 +5469,9 @@ tbody tr:hover {
 ):focus-visible,
 .dark :where(.finance-control, .finance-focus, .field-input):focus-within,
 .dark :where(.field-input):focus {
-  outline: none;
-  border-color: color-mix(in srgb, var(--active), white 12%);
+  outline: 2px solid var(--focus-color);
+  outline-offset: 3px;
+  border-color: var(--focus-color);
   box-shadow: var(--focus-ring);
 }
 
@@ -5692,36 +5697,4 @@ tbody tr:hover {
 ) {
   color: currentColor;
   opacity: 0.96;
-}
-
-.dark ::-webkit-scrollbar {
-  width: 0.75rem;
-  height: 0.75rem;
-}
-
-.dark ::-webkit-scrollbar-track {
-  background: color-mix(in srgb, var(--background), black 10%);
-}
-
-.dark ::-webkit-scrollbar-thumb {
-  border: 3px solid color-mix(in srgb, var(--background), black 10%);
-  border-radius: 999px;
-  background: color-mix(in srgb, var(--border-strong), var(--active) 12%);
-}
-
-.dark ::-webkit-scrollbar-thumb:hover {
-  background: color-mix(in srgb, var(--active), var(--border-strong) 55%);
-}
-
-.dark {
-  scrollbar-color:
-    color-mix(in srgb, var(--border-strong), var(--active) 12%)
-    color-mix(in srgb, var(--background), black 10%);
-}
-
-/* The theme selector owns the visible control shell and focus ring. */
-.dark .theme-selector select {
-  border: 0;
-  background: transparent;
-  box-shadow: none;
 }

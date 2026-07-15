@@ -1,5 +1,5 @@
 "use client";
-import type { FormEvent, ReactNode } from "react";
+import type { FormEvent, KeyboardEvent, ReactNode } from "react";
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -69,6 +69,7 @@ import {
 import {
   applyThemePreference,
   getStoredThemePreference,
+  THEME_STORAGE_KEY,
   type ResolvedTheme,
   type ThemePreference,
 } from "@/lib/theme";
@@ -143,19 +144,19 @@ const THEME_OPTIONS: Array<{
     value: "system",
     label: "System",
     description: "Follow browser and OS",
-    icon: <Monitor size={16} />,
+    icon: <Monitor size={16} aria-hidden="true" />,
   },
   {
     value: "light",
     label: "Light",
     description: "Bright finance workspace",
-    icon: <Sun size={16} />,
+    icon: <Sun size={16} aria-hidden="true" />,
   },
   {
     value: "dark",
     label: "Dark",
     description: "Dim finance workspace",
-    icon: <Moon size={16} />,
+    icon: <Moon size={16} aria-hidden="true" />,
   },
 ];
 
@@ -274,7 +275,7 @@ function SoftSwitch({
   );
 }
 
-function ThemeSelector({
+function AppearanceThemeControl({
   value,
   resolvedTheme,
   onChange,
@@ -283,6 +284,32 @@ function ThemeSelector({
   resolvedTheme: ResolvedTheme;
   onChange: (value: ThemeMode) => void;
 }) {
+  function handleRadioKeyDown(
+    event: KeyboardEvent<HTMLButtonElement>,
+    currentIndex: number,
+  ) {
+    const lastIndex = THEME_OPTIONS.length - 1;
+    let nextIndex: number | null = null;
+
+    if (event.key === "ArrowRight" || event.key === "ArrowDown") {
+      nextIndex = currentIndex === lastIndex ? 0 : currentIndex + 1;
+    } else if (event.key === "ArrowLeft" || event.key === "ArrowUp") {
+      nextIndex = currentIndex === 0 ? lastIndex : currentIndex - 1;
+    } else if (event.key === "Home") {
+      nextIndex = 0;
+    } else if (event.key === "End") {
+      nextIndex = lastIndex;
+    }
+
+    if (nextIndex === null) return;
+
+    event.preventDefault();
+    onChange(THEME_OPTIONS[nextIndex].value);
+    event.currentTarget.parentElement
+      ?.querySelectorAll<HTMLButtonElement>('[role="radio"]')
+      [nextIndex]?.focus();
+  }
+
   return (
     <div className="px-4 py-4 sm:px-5">
       <div className="flex min-w-0 items-start gap-3">
@@ -293,7 +320,11 @@ function ThemeSelector({
           <p className="text-[15px] font-semibold leading-5 text-text-primary">
             Theme
           </p>
-          <p className="mt-0.5 text-xs leading-5 text-text-secondary">
+          <p
+            className="mt-0.5 text-xs leading-5 text-text-secondary"
+            aria-live="polite"
+            aria-atomic="true"
+          >
             {value === "system" ?
               `Following system: ${resolvedTheme}`
             : `${value === "dark" ? "Dark" : "Light"} mode is active`}
@@ -309,7 +340,7 @@ function ThemeSelector({
         role="radiogroup"
         aria-label="Theme preference"
       >
-        {THEME_OPTIONS.map((option) => {
+        {THEME_OPTIONS.map((option, index) => {
           const active = value === option.value;
 
           return (
@@ -318,22 +349,30 @@ function ThemeSelector({
               type="button"
               role="radio"
               aria-checked={active}
+              tabIndex={active ? 0 : -1}
               onClick={() => onChange(option.value)}
-              className={`finance-focus flex min-w-0 items-center gap-3 rounded-[var(--oneui-control-radius)] border px-3 py-3 text-left transition-colors ${
+              onKeyDown={(event) => handleRadioKeyDown(event, index)}
+              className={`finance-focus flex min-h-11 min-w-0 items-center gap-3 rounded-[var(--oneui-control-radius)] border px-3 py-3 text-left transition-colors ${
                 active ?
-                  "border-active bg-active/10 text-active"
+                  "border-brand bg-brand/10 text-brand"
                 : "border-border bg-surface-secondary text-text-secondary hover:bg-hover hover:text-text-primary"
               }`}
             >
               <span className="grid h-8 w-8 shrink-0 place-items-center rounded-[12px] border border-current/20 bg-card">
                 {option.icon}
               </span>
-              <span className="min-w-0">
+              <span className="min-w-0 flex-1">
                 <span className="block text-sm font-bold">{option.label}</span>
-                <span className="block truncate text-[11px] font-semibold opacity-75">
+                <span className="block text-[11px] font-semibold leading-4 opacity-75">
                   {option.description}
                 </span>
               </span>
+              {active ? (
+                <span className="inline-flex shrink-0 items-center gap-1 text-[10px] font-bold uppercase tracking-[0.08em]">
+                  <Check size={14} aria-hidden="true" />
+                  <span className="hidden min-[360px]:inline">Selected</span>
+                </span>
+              ) : null}
             </button>
           );
         })}
@@ -1810,9 +1849,22 @@ export default function SettingsOneUI({
   }, [displayName, email]);
 
   useEffect(() => {
-    if (!themeReady) return;
+    function handleThemeStorage(event: StorageEvent) {
+      if (event.key !== null && event.key !== THEME_STORAGE_KEY) return;
 
-    setResolvedTheme(applyThemePreference(themeMode));
+      const storedTheme = getStoredThemePreference();
+      setThemeMode(storedTheme);
+      setResolvedTheme(
+        applyThemePreference(storedTheme, { persist: false }),
+      );
+    }
+
+    window.addEventListener("storage", handleThemeStorage);
+    return () => window.removeEventListener("storage", handleThemeStorage);
+  }, []);
+
+  useEffect(() => {
+    if (!themeReady) return;
 
     if (themeMode !== "system") return;
 
@@ -1827,6 +1879,7 @@ export default function SettingsOneUI({
 
   function handleThemeChange(nextTheme: ThemeMode) {
     setThemeMode(nextTheme);
+    setResolvedTheme(applyThemePreference(nextTheme));
     toast.success(
       nextTheme === "system" ?
         "Theme now follows your system."
@@ -1928,8 +1981,8 @@ export default function SettingsOneUI({
           <SectionTitle>Profile</SectionTitle>
           <SettingsCard>
             <div className="flex min-w-0 items-center gap-4 px-4 py-5 sm:px-5">
-              <div className="grid h-16 w-16 shrink-0 place-items-center rounded-full bg-active text-background shadow-theme">
-                <UserRound size={30} />
+              <div className="grid h-16 w-16 shrink-0 place-items-center rounded-full bg-brand text-primary-foreground shadow-theme">
+                <UserRound size={30} aria-hidden="true" />
               </div>
               <div className="min-w-0 flex-1">
                 <h3 className="truncate text-xl font-bold capitalize text-text-primary">
@@ -1957,7 +2010,7 @@ export default function SettingsOneUI({
         <section>
           <SectionTitle>Appearance</SectionTitle>
           <SettingsCard>
-            <ThemeSelector
+            <AppearanceThemeControl
               value={themeMode}
               resolvedTheme={resolvedTheme}
               onChange={handleThemeChange}

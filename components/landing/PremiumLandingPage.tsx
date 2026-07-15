@@ -27,8 +27,6 @@ import {
   type LucideIcon,
 } from "lucide-react";
 
-import ThemeSelector from "@/components/theme/ThemeSelector";
-
 type Capability = {
   title: string;
   copy: string;
@@ -297,16 +295,16 @@ export default function PremiumLandingPage() {
     <main className="jf-node4-landing relative min-h-dvh overflow-x-clip bg-background text-foreground">
       <div className="jf-node4-landing-ambient pointer-events-none absolute inset-x-0 top-0 h-[48rem]" aria-hidden="true" />
 
-      <header className="sticky top-0 z-50 border-b border-divider bg-background/90 backdrop-blur-xl">
-        <div className="mx-auto flex min-h-16 w-full max-w-[1180px] items-center gap-3 px-4 sm:px-6">
+      <header className="sticky top-0 z-50 border-b border-divider bg-background/95 shadow-[var(--shadow-xs)]">
+        <div className="mx-auto flex min-h-16 w-full max-w-[1180px] min-w-0 items-center gap-2 px-4 sm:gap-3 sm:px-6">
           <Link
             href="/"
-            className="finance-focus inline-flex min-h-11 shrink-0 items-center gap-2 rounded-[var(--radius-control)] px-1 text-sm font-bold text-text-primary"
+            className="finance-focus inline-flex min-h-11 min-w-0 shrink items-center gap-2 rounded-[var(--radius-control)] px-1 text-sm font-bold text-text-primary"
           >
             <span className="grid h-9 w-9 place-items-center rounded-[var(--radius-control)] border border-brand/20 bg-brand/10 text-brand">
               <CircleDollarSign className="h-5 w-5" aria-hidden="true" />
             </span>
-            <span className="hidden min-[360px]:inline">Jamal&apos;s Finance</span>
+            <span className="min-w-0 truncate">Jamal&apos;s Finance</span>
           </Link>
 
           <nav aria-label="Landing page" className="ml-auto hidden items-center gap-1 lg:flex">
@@ -321,13 +319,12 @@ export default function PremiumLandingPage() {
             ))}
           </nav>
 
-          <div className="ml-auto flex items-center gap-2 lg:ml-3">
-            <ThemeSelector />
+          <div className="ml-auto flex shrink-0 items-center gap-1.5 sm:gap-2 lg:ml-3">
             <Link
               href="/login"
               className="finance-focus hidden min-h-11 items-center rounded-[var(--radius-button)] px-3 text-sm font-semibold text-text-secondary hover:bg-surface-soft hover:text-text-primary sm:inline-flex"
             >
-              Log in
+              Login
             </Link>
             <Link
               href="/login"
@@ -338,9 +335,11 @@ export default function PremiumLandingPage() {
             </Link>
 
             <details className="relative lg:hidden">
-              <summary className="finance-focus grid h-11 w-11 cursor-pointer list-none place-items-center rounded-[var(--radius-control)] border border-border bg-surface-primary text-text-primary shadow-[var(--shadow-xs)] [&::-webkit-details-marker]:hidden">
+              <summary
+                aria-label="Open landing navigation"
+                className="finance-focus grid h-11 w-11 cursor-pointer list-none place-items-center rounded-[var(--radius-control)] border border-border bg-surface-primary text-text-primary shadow-[var(--shadow-xs)] [&::-webkit-details-marker]:hidden"
+              >
                 <Menu className="h-5 w-5" aria-hidden="true" />
-                <span className="sr-only">Open navigation</span>
               </summary>
               <nav
                 aria-label="Mobile landing page"

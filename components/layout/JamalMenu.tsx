@@ -7,7 +7,6 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { panelVariants } from "@/components/motion/animation-config";
-import ThemeSelector from "@/components/theme/ThemeSelector";
 
 type JamalMenuProps = {
   align?: "left" | "right";
@@ -71,7 +70,7 @@ export default function JamalMenu({
         onClick={() => setOpen((current) => !current)}
         className={
           compact
-            ? "finance-focus finance-control relative grid h-10 w-10 place-items-center overflow-visible rounded-[15px] p-0 shadow-theme"
+            ? "finance-focus finance-control relative grid h-11 w-11 place-items-center overflow-visible rounded-[15px] p-0 shadow-theme"
             : "finance-focus finance-interactive-tile flex w-full items-center gap-3 border-border bg-card px-3 py-2.5 text-left shadow-theme"
         }
         aria-expanded={open}
@@ -80,8 +79,8 @@ export default function JamalMenu({
       >
         <Avatar className={compact ? "size-8" : "size-10"}>
           {avatarUrl && <AvatarImage src={avatarUrl} alt={displayName} />}
-          <AvatarFallback className="bg-active text-sm font-bold text-background">
-            <BarChart3 size={15} />
+          <AvatarFallback className="bg-brand text-sm font-bold text-primary-foreground">
+            <BarChart3 size={15} aria-hidden="true" />
           </AvatarFallback>
         </Avatar>
 
@@ -103,7 +102,7 @@ export default function JamalMenu({
             initial="initial"
             animate="animate"
             exit="exit"
-            className={`finance-surface absolute z-[130] w-56 overflow-hidden p-2 ${
+            className={`finance-surface absolute z-[130] w-[min(14rem,calc(100vw-1.5rem))] overflow-hidden p-2 ${
               align === "right" ? "right-0" : "left-0"
             } ${
               placement === "top"
@@ -111,7 +110,7 @@ export default function JamalMenu({
                 : "top-[calc(100%+10px)]"
             }`}
             role="dialog"
-            aria-label="Profile and appearance"
+            aria-label="Profile menu"
           >
             <button
               type="button"
@@ -121,18 +120,16 @@ export default function JamalMenu({
               }}
               className="finance-focus finance-interactive-tile flex w-full items-center gap-3 px-3 py-2 text-left text-sm font-semibold"
             >
-              <Settings size={15} />
+              <Settings size={15} aria-hidden="true" />
               Settings
             </button>
-            <div className="my-1 border-y border-divider py-2">
-              <ThemeSelector showLabel className="w-full justify-start border-0 bg-transparent shadow-none" />
-            </div>
+            <div className="my-1 border-t border-divider" />
             <button
               type="button"
               onClick={handleSignOut}
               className="finance-focus finance-interactive-tile flex w-full items-center gap-3 px-3 py-2 text-left text-sm font-semibold"
             >
-              <LogOut size={15} />
+              <LogOut size={15} aria-hidden="true" />
               Sign Out
             </button>
           </motion.div>
