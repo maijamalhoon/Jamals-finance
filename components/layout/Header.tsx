@@ -1,124 +1,215 @@
 "use client";
 
 import Link from "next/link";
-import { Bell, Command, Search } from "lucide-react";
-import { AnimatePresence, motion } from "framer-motion";
+import {
+  BarChart3,
+  Check,
+  ChevronDown,
+  Search,
+  X,
+} from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
-import { panelVariants } from "@/components/motion/animation-config";
+import { Fragment, useState, type ReactNode } from "react";
+
 import JamalMenu from "@/components/layout/JamalMenu";
 import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
+import {
+  DESKTOP_MORE_NAV_GROUPS,
   DESKTOP_PRIMARY_NAV_ITEMS,
-  DESKTOP_SECONDARY_NAV_ITEMS,
+  getRouteGroup,
+  getRouteTitle,
+  isDesktopMoreActive,
   isNavItemActive,
-  NAV_ITEMS,
 } from "@/lib/navigation";
 
-function getRouteTitle(pathname: string) {
-  const navItem = NAV_ITEMS.find((item) =>
-    isNavItemActive(pathname, item.href),
-  );
-  if (navItem) return navItem.label;
-  if (pathname.startsWith("/dashboard/income")) return "Income";
-  if (pathname.startsWith("/dashboard/expenses")) return "Expenses";
-  if (pathname.startsWith("/dashboard/settings")) return "Settings";
-  if (pathname.startsWith("/dashboard/ai-insights")) return "AI Insights";
-  return "Dashboard";
-}
+type HeaderProps = {
+  notificationSlot: ReactNode;
+};
 
-export default function Header() {
+const desktopNavItemBaseClass =
+  "finance-focus relative flex min-h-11 min-w-0 items-center gap-1.5 rounded-[var(--radius-control)] border px-2 text-xs font-bold transition-colors xl:gap-2 xl:px-3 xl:text-sm";
+const desktopNavItemActiveClass =
+  "border-brand/30 bg-brand/10 text-brand shadow-theme active:bg-brand/15";
+const desktopNavItemInactiveClass =
+  "border-transparent text-text-secondary hover:border-border hover:bg-hover hover:text-text-primary active:bg-surface-inset active:text-text-primary";
+
+export default function Header({ notificationSlot }: HeaderProps) {
   const router = useRouter();
   const pathname = usePathname();
   const [query, setQuery] = useState("");
-  const [commandQuery, setCommandQuery] = useState("");
-  const [commandOpen, setCommandOpen] = useState(false);
-  const [bellOpen, setBellOpen] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
-  const commandRef = useRef<HTMLDivElement>(null);
-  const bellRef = useRef<HTMLDivElement>(null);
+  const [searchOpen, setSearchOpen] = useState(false);
   const routeTitle = getRouteTitle(pathname);
-  const secondaryItems = DESKTOP_SECONDARY_NAV_ITEMS.filter((item) =>
-    item.label.toLowerCase().includes(commandQuery.trim().toLowerCase()),
-  );
+  const routeGroup = getRouteGroup(pathname);
+  const moreActive = isDesktopMoreActive(pathname);
 
-  useEffect(() => {
-    function handleClick(e: MouseEvent) {
-      if (
-        commandRef.current &&
-        !commandRef.current.contains(e.target as Node)
-      ) {
-        setCommandOpen(false);
-      }
+  function handleSearch(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const trimmedQuery = query.trim();
+    if (!trimmedQuery) return;
 
-      if (bellRef.current && !bellRef.current.contains(e.target as Node)) {
-        setBellOpen(false);
-      }
-    }
-
-    document.addEventListener("mousedown", handleClick);
-    return () => document.removeEventListener("mousedown", handleClick);
-  }, []);
-
-  useEffect(() => {
-    function handleKeyDown(event: KeyboardEvent) {
-      if (event.key === "Escape") {
-        setCommandOpen(false);
-        setBellOpen(false);
-      }
-    }
-
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, []);
-
-  useEffect(() => {
-    setCommandOpen(false);
-    setCommandQuery("");
-    setBellOpen(false);
-  }, [pathname]);
-
-  useEffect(() => {
-    const scroller = document.querySelector<HTMLElement>(
-      "[data-dashboard-scroll]",
-    );
-    if (!scroller) return;
-
-    const update = () => setScrolled(scroller.scrollTop > 8);
-    update();
-    scroller.addEventListener("scroll", update, { passive: true });
-
-    return () => scroller.removeEventListener("scroll", update);
-  }, []);
-
-  function handleSearch(e: React.FormEvent) {
-    e.preventDefault();
-    if (!query.trim()) return;
     router.push(
-      `/dashboard/transactions?search=${encodeURIComponent(query.trim())}`,
+      `/dashboard/transactions?search=${encodeURIComponent(trimmedQuery)}`,
     );
     setQuery("");
+    setSearchOpen(false);
   }
 
   return (
-    <header
-      className={`motion-fade-slide jf-desktop-header sticky top-3 z-40 mx-4 flex h-[66px] min-w-0 flex-shrink-0 items-center justify-between gap-4 rounded-[24px] border border-border bg-surface-primary/96 px-4 transition-shadow duration-200 xl:px-5 ${
-        scrolled ? "shadow-[var(--shadow-premium)]" : "shadow-[var(--shadow-soft)]"
-      }`}
-    >
-      <div className="flex min-w-0 flex-1 items-center gap-3">
-        <div className="min-w-[124px] max-w-[178px]">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-text-secondary">
-            Workspace
-          </p>
-          <p className="mt-1 truncate text-[17px] font-bold leading-none text-text-primary">
-            {routeTitle}
-          </p>
+    <header className="jf-desktop-header relative z-30 min-w-0 flex-shrink-0 border-b border-border bg-surface-primary shadow-theme">
+      <div className="mx-auto flex min-h-[68px] w-full max-w-[1600px] min-w-0 items-center justify-between gap-3 px-3 xl:px-5">
+        <div className="flex min-w-0 flex-1 items-center gap-3">
+          <div className="grid h-10 w-10 shrink-0 place-items-center rounded-[var(--radius-control)] border border-brand/25 bg-brand text-primary-foreground shadow-theme">
+            <BarChart3 size={17} strokeWidth={2.2} aria-hidden="true" />
+          </div>
+
+          <div className="min-w-0 shrink-0">
+            <p className="truncate text-sm font-bold leading-4 text-text-primary">
+              Jamals Finance
+            </p>
+            <p className="mt-1 truncate text-[10px] font-semibold uppercase tracking-[0.1em] text-text-tertiary">
+              Personal workspace
+            </p>
+          </div>
+
+          <span
+            aria-hidden="true"
+            className="hidden h-8 w-px shrink-0 bg-border xl:block"
+          />
+
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-[10px] font-bold uppercase tracking-[0.14em] text-text-tertiary">
+              {routeGroup}
+            </p>
+            <h1 className="mt-1 truncate text-base font-bold leading-tight text-text-primary xl:text-lg">
+              {routeTitle}
+            </h1>
+          </div>
         </div>
 
-        <nav
-          aria-label="Desktop dashboard navigation"
-          className="flex min-w-0 flex-1 items-center gap-1 rounded-[18px] border border-border bg-surface-secondary p-1 shadow-[var(--surface-highlight)]"
-        >
+        <div className="flex shrink-0 items-center gap-2">
+          <form
+            role="search"
+            aria-label="Search transactions"
+            onSubmit={handleSearch}
+            className="finance-control finance-search-control hidden min-h-11 w-64 items-center gap-2 px-3 min-[1440px]:flex min-[1680px]:w-72"
+          >
+            <Search
+              size={16}
+              className="shrink-0 text-text-secondary"
+              aria-hidden="true"
+            />
+            <label htmlFor="desktop-transaction-search" className="sr-only">
+              Search transactions
+            </label>
+            <input
+              id="desktop-transaction-search"
+              type="search"
+              autoComplete="off"
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+              placeholder="Search transactions..."
+              className="min-w-0 flex-1 bg-transparent text-sm text-text-primary outline-none placeholder:text-text-secondary"
+            />
+          </form>
+
+          <Sheet open={searchOpen} onOpenChange={setSearchOpen}>
+            <SheetTrigger
+              type="button"
+              aria-label="Open transaction search"
+              className="finance-control finance-focus grid h-11 w-11 place-items-center rounded-[var(--radius-control)] text-text-secondary hover:text-text-primary min-[1440px]:hidden"
+            >
+              <Search size={17} aria-hidden="true" />
+            </SheetTrigger>
+            <SheetContent
+              side="right"
+              showCloseButton={false}
+              className="h-dvh w-[min(100vw,24rem)] max-w-full gap-0 border-border bg-surface-elevated p-0 sm:w-96 sm:max-w-96"
+            >
+              <SheetHeader className="border-b border-border px-4 pb-4 pt-[max(1rem,env(safe-area-inset-top))]">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <SheetTitle className="text-lg font-bold text-text-primary">
+                      Search transactions
+                    </SheetTitle>
+                    <SheetDescription className="mt-1 leading-5 text-text-secondary">
+                      Find transactions by the terms already supported on the transactions page.
+                    </SheetDescription>
+                  </div>
+                  <SheetClose
+                    className="finance-focus grid h-11 w-11 shrink-0 place-items-center rounded-[var(--radius-control)] text-text-secondary hover:bg-hover hover:text-text-primary"
+                    aria-label="Close transaction search"
+                  >
+                    <X size={18} aria-hidden="true" />
+                  </SheetClose>
+                </div>
+              </SheetHeader>
+              <form
+                role="search"
+                aria-label="Search transactions"
+                onSubmit={handleSearch}
+                className="p-4"
+              >
+                <label
+                  htmlFor="compact-desktop-transaction-search"
+                  className="mb-2 block text-sm font-semibold text-text-primary"
+                >
+                  Search terms
+                </label>
+                <div className="finance-control finance-search-control flex min-h-11 items-center gap-2 px-3">
+                  <Search
+                    size={16}
+                    className="shrink-0 text-text-secondary"
+                    aria-hidden="true"
+                  />
+                  <input
+                    id="compact-desktop-transaction-search"
+                    type="search"
+                    autoComplete="off"
+                    autoFocus
+                    value={query}
+                    onChange={(event) => setQuery(event.target.value)}
+                    placeholder="Search transactions..."
+                    className="min-w-0 flex-1 bg-transparent text-sm text-text-primary outline-none placeholder:text-text-secondary"
+                  />
+                </div>
+                <button
+                  type="submit"
+                  className="finance-focus mt-3 flex min-h-11 w-full items-center justify-center gap-2 rounded-[var(--radius-button)] bg-brand px-4 text-sm font-bold text-primary-foreground hover:bg-brand-hover"
+                >
+                  <Search size={16} aria-hidden="true" />
+                  Search transactions
+                </button>
+              </form>
+            </SheetContent>
+          </Sheet>
+
+          {notificationSlot}
+          <JamalMenu align="right" placement="bottom" variant="avatar" />
+        </div>
+      </div>
+
+      <nav
+        aria-label="Desktop dashboard navigation"
+        className="border-t border-border bg-surface-soft"
+      >
+        <div className="mx-auto flex min-h-[60px] w-full max-w-[1600px] min-w-0 items-center gap-1 overflow-visible px-3 py-2 xl:gap-1.5 xl:px-5">
           {DESKTOP_PRIMARY_NAV_ITEMS.map(({ label, href, icon: Icon }) => {
             const active = isNavItemActive(pathname, href);
 
@@ -127,160 +218,100 @@ export default function Header() {
                 key={href}
                 href={href}
                 aria-current={active ? "page" : undefined}
-                className={`finance-focus group relative flex min-h-11 min-w-0 items-center gap-2 rounded-[14px] px-3 text-sm font-semibold transition duration-200 xl:px-4 ${
+                data-active={active ? "true" : "false"}
+                className={`${desktopNavItemBaseClass} ${
                   active
-                    ? "border border-brand/25 bg-brand/10 text-brand shadow-theme"
-                    : "border border-transparent text-text-secondary hover:bg-surface-secondary hover:text-text-primary"
+                    ? desktopNavItemActiveClass
+                    : desktopNavItemInactiveClass
                 }`}
               >
-                <Icon className="h-[15px] w-[15px] shrink-0" aria-hidden="true" />
-                <span className="hidden truncate xl:inline">{label}</span>
+                <Icon size={15} strokeWidth={2.2} aria-hidden="true" />
+                <span className="truncate">{label}</span>
+                {active ? (
+                  <span
+                    aria-hidden="true"
+                    className="absolute inset-x-3 bottom-0 h-0.5 rounded-full bg-brand"
+                  />
+                ) : null}
               </Link>
             );
           })}
-        </nav>
-      </div>
 
-      <div className="flex min-w-0 items-center gap-2.5">
-        <div className="relative" ref={commandRef}>
-          <button
-            type="button"
-            onClick={() => setCommandOpen((current) => !current)}
-            className="finance-control finance-focus flex min-h-11 items-center gap-2 px-3 text-sm font-semibold text-text-secondary hover:text-text-primary"
-            aria-label="Open page search menu"
-            aria-haspopup="dialog"
-            aria-expanded={commandOpen}
-          >
-            <Command size={15} aria-hidden="true" />
-            <span>Pages</span>
-          </button>
+          <DropdownMenu>
+            <DropdownMenuTrigger
+              type="button"
+              aria-label="Open more dashboard navigation"
+              aria-current={moreActive ? "page" : undefined}
+              data-active={moreActive ? "true" : "false"}
+              className={`${desktopNavItemBaseClass} ${
+                moreActive
+                  ? desktopNavItemActiveClass
+                  : desktopNavItemInactiveClass
+              }`}
+            >
+              <span>More</span>
+              <ChevronDown size={14} strokeWidth={2.2} aria-hidden="true" />
+              {moreActive ? (
+                <span
+                  aria-hidden="true"
+                  className="absolute inset-x-3 bottom-0 h-0.5 rounded-full bg-brand"
+                />
+              ) : null}
+            </DropdownMenuTrigger>
 
-          <AnimatePresence>
-            {commandOpen && (
-              <motion.div
-                variants={panelVariants}
-                initial="initial"
-                animate="animate"
-                exit="exit"
-                role="dialog"
-                aria-label="Search dashboard pages"
-                className="finance-surface absolute right-0 top-13 z-[120] w-[min(320px,calc(100vw-2rem))] overflow-hidden p-2"
-              >
-                <div className="finance-control finance-search-control flex min-h-11 items-center gap-2 px-3">
-                  <Search size={14} className="text-text-secondary" aria-hidden="true" />
-                  <input
-                    type="search"
-                    autoComplete="off"
-                    value={commandQuery}
-                    onChange={(e) => setCommandQuery(e.target.value)}
-                    placeholder="Find a page..."
-                    aria-label="Find a dashboard page"
-                    className="min-w-0 flex-1 bg-transparent text-sm text-text-primary outline-none placeholder:text-text-secondary"
-                  />
-                </div>
+            <DropdownMenuContent
+              align="start"
+              side="bottom"
+              sideOffset={8}
+              className="w-72 max-w-[calc(100vw-2rem)] rounded-[var(--radius-tile)] border border-border bg-surface-elevated p-1.5 shadow-[var(--shadow-soft)]"
+            >
+              {DESKTOP_MORE_NAV_GROUPS.map((group, groupIndex) => (
+                <Fragment key={group.label}>
+                  {groupIndex > 0 ? <DropdownMenuSeparator /> : null}
+                  <DropdownMenuGroup>
+                    <DropdownMenuLabel className="px-2.5 py-1.5 text-[10px] font-bold uppercase tracking-[0.12em] text-text-tertiary">
+                      {group.label}
+                    </DropdownMenuLabel>
+                    {group.items.map(({ label, href, icon: Icon }) => {
+                      const active = isNavItemActive(pathname, href);
 
-                <div className="mt-2 grid gap-1">
-                  {secondaryItems.map(({ label, href, icon: Icon }) => {
-                    const active = isNavItemActive(pathname, href);
-
-                    return (
-                      <Link
-                        key={href}
-                        href={href}
-                        aria-current={active ? "page" : undefined}
-                        className={`finance-focus finance-interactive-tile flex min-h-11 items-center gap-3 px-3 py-2 text-sm font-semibold ${
-                          active
-                            ? "bg-brand/10 text-brand"
-                            : "text-text-secondary hover:text-text-primary"
-                        }`}
-                      >
-                        <span className="grid h-8 w-8 shrink-0 place-items-center rounded-[12px] border border-border bg-surface">
-                          <Icon size={15} aria-hidden="true" />
-                        </span>
-                        <span className="min-w-0 flex-1 truncate">
-                          {label}
-                        </span>
-                      </Link>
-                    );
-                  })}
-
-                  {secondaryItems.length === 0 && (
-                    <p className="px-3 py-4 text-center text-sm text-text-secondary">
-                      No matching pages
-                    </p>
-                  )}
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
+                      return (
+                        <DropdownMenuItem
+                          key={href}
+                          aria-current={active ? "page" : undefined}
+                          onClick={() => router.push(href)}
+                          className={`min-h-11 cursor-pointer gap-3 rounded-[var(--radius-control)] px-2.5 py-2 text-sm font-semibold ${
+                            active
+                              ? "bg-brand/10 text-brand focus:bg-brand/15 focus:text-brand"
+                              : "text-text-secondary focus:bg-hover focus:text-text-primary"
+                          }`}
+                        >
+                          <span
+                            className={`grid h-8 w-8 shrink-0 place-items-center rounded-[var(--radius-control)] border ${
+                              active
+                                ? "border-brand/30 bg-surface-primary"
+                                : "border-border bg-surface-soft"
+                            }`}
+                          >
+                            <Icon size={15} strokeWidth={2.2} aria-hidden="true" />
+                          </span>
+                          <span className="min-w-0 flex-1 truncate">{label}</span>
+                          {active ? (
+                            <span className="ml-auto inline-flex shrink-0 items-center gap-1 text-[10px] font-bold uppercase tracking-[0.08em]">
+                              <Check size={12} strokeWidth={2.4} aria-hidden="true" />
+                              Current
+                            </span>
+                          ) : null}
+                        </DropdownMenuItem>
+                      );
+                    })}
+                  </DropdownMenuGroup>
+                </Fragment>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
-
-        <form
-          onSubmit={handleSearch}
-          role="search"
-          aria-label="Search transactions"
-          className="finance-control finance-search-control finance-focus hidden min-h-11 w-72 items-center gap-2 px-3 2xl:flex"
-        >
-          <Search size={14} className="flex-shrink-0 text-text-secondary" aria-hidden="true" />
-          <input
-            type="search"
-            autoComplete="off"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search transactions..."
-            aria-label="Search transactions"
-            className="min-w-0 flex-1 bg-transparent text-sm text-text-primary outline-none placeholder:text-text-secondary"
-          />
-        </form>
-
-        <div className="relative" ref={bellRef}>
-          <button
-            type="button"
-            onClick={() => setBellOpen((current) => !current)}
-            className="finance-control finance-focus relative flex h-11 w-11 items-center justify-center"
-            aria-label="Open notifications"
-            aria-haspopup="dialog"
-            aria-expanded={bellOpen}
-          >
-            <Bell size={15} className="text-text-secondary" aria-hidden="true" />
-          </button>
-
-          <AnimatePresence>
-            {bellOpen && (
-              <motion.div
-                variants={panelVariants}
-                initial="initial"
-                animate="animate"
-                exit="exit"
-                role="dialog"
-                aria-label="Notifications"
-                className="finance-surface absolute right-0 top-13 z-[120] w-[min(18rem,calc(100vw-2rem))] overflow-hidden"
-              >
-                <div className="border-b border-border p-4">
-                  <p className="text-sm font-semibold text-text-primary">
-                    Notifications
-                  </p>
-                </div>
-                <div className="motion-empty p-4 py-8 text-center">
-                  <Bell
-                    size={24}
-                    className="mx-auto mb-2 text-text-secondary"
-                    aria-hidden="true"
-                  />
-                  <p className="text-sm text-text-secondary">
-                    No new notifications
-                  </p>
-                  <p className="mt-1 text-xs text-text-secondary">
-                    You're all caught up
-                  </p>
-                </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
-
-        <JamalMenu align="right" placement="bottom" variant="avatar" />
-      </div>
+      </nav>
     </header>
   );
 }

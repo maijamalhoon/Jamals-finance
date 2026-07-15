@@ -187,7 +187,7 @@ export default function FloatingActions() {
   return (
     <>
       <div
-        className={`jf-floating-actions fixed bottom-[calc(6.85rem+env(safe-area-inset-bottom))] right-3 z-[55] flex flex-col items-end gap-3 transition-all duration-200 sm:right-5 lg:bottom-8 lg:right-8 ${
+        className={`jf-floating-actions fixed bottom-[calc(6.85rem+env(safe-area-inset-bottom))] right-3 z-40 flex flex-col items-end gap-3 transition-all duration-200 sm:right-5 lg:bottom-8 lg:right-8 ${
           modalOpen ? "pointer-events-none translate-y-2 opacity-0" : ""
         }`}
         aria-hidden={modalOpen ? "true" : undefined}

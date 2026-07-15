@@ -1,18 +1,51 @@
 "use client";
 
-import { AnimatePresence, motion } from "framer-motion";
 import { BarChart3, LogOut, Settings } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useRef, useState } from "react";
-import { createClient } from "@/lib/supabase/client";
+import { useEffect, useMemo, useState } from "react";
+
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { panelVariants } from "@/components/motion/animation-config";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { createClient } from "@/lib/supabase/client";
 
 type JamalMenuProps = {
   align?: "left" | "right";
   placement?: "bottom" | "top";
   variant?: "card" | "avatar";
 };
+
+type ProfileSummary = {
+  displayName: string;
+  avatarUrl: string | null;
+};
+
+let profileRequest: Promise<ProfileSummary> | null = null;
+
+function getProfileSummary(supabase: ReturnType<typeof createClient>) {
+  if (!profileRequest) {
+    profileRequest = supabase.auth.getUser().then(({ data: { user } }) => {
+      const metadata = user?.user_metadata ?? {};
+
+      return {
+        displayName:
+          metadata.full_name ||
+          metadata.name ||
+          metadata.display_name ||
+          "Jamal",
+        avatarUrl: metadata.avatar_url || metadata.picture || null,
+      };
+    });
+  }
+
+  return profileRequest;
+}
 
 export default function JamalMenu({
   align = "right",
@@ -21,64 +54,44 @@ export default function JamalMenu({
 }: JamalMenuProps) {
   const router = useRouter();
   const supabase = useMemo(() => createClient(), []);
-  const [open, setOpen] = useState(false);
   const [displayName, setDisplayName] = useState("Jamal");
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
-  const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    async function loadUserProfile() {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      const metadata = user?.user_metadata ?? {};
+    let active = true;
 
-      setDisplayName(
-        metadata.full_name ||
-          metadata.name ||
-          metadata.display_name ||
-          "Jamal",
-      );
-      setAvatarUrl(metadata.avatar_url || metadata.picture || null);
-    }
+    getProfileSummary(supabase).then((profile) => {
+      if (!active) return;
+      setDisplayName(profile.displayName);
+      setAvatarUrl(profile.avatarUrl);
+    });
 
-    loadUserProfile();
+    return () => {
+      active = false;
+    };
   }, [supabase]);
-
-  useEffect(() => {
-    function handleClick(event: MouseEvent) {
-      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
-        setOpen(false);
-      }
-    }
-
-    document.addEventListener("mousedown", handleClick);
-    return () => document.removeEventListener("mousedown", handleClick);
-  }, []);
 
   async function handleSignOut() {
     await supabase.auth.signOut();
+    profileRequest = null;
     router.push("/login");
   }
 
   const compact = variant === "avatar";
 
   return (
-    <div className="relative" ref={menuRef}>
-      <button
+    <DropdownMenu>
+      <DropdownMenuTrigger
         type="button"
-        onClick={() => setOpen((current) => !current)}
+        aria-label={`Open profile menu for ${displayName}`}
         className={
           compact
-            ? "finance-focus finance-control relative grid h-11 w-11 place-items-center overflow-visible rounded-[15px] p-0 shadow-theme"
-            : "finance-focus finance-interactive-tile flex w-full items-center gap-3 border-border bg-card px-3 py-2.5 text-left shadow-theme"
+            ? "finance-focus finance-control relative grid h-11 w-11 place-items-center rounded-[var(--radius-control)] p-0 shadow-theme"
+            : "finance-focus flex min-h-11 w-full min-w-0 items-center gap-3 rounded-[var(--radius-tile)] border border-border bg-surface-primary px-3 py-2 text-left shadow-theme hover:bg-surface-soft"
         }
-        aria-expanded={open}
-        aria-haspopup="dialog"
-        aria-label="Open profile menu"
       >
-        <Avatar className={compact ? "size-8" : "size-10"}>
-          {avatarUrl && <AvatarImage src={avatarUrl} alt={displayName} />}
+        <Avatar className={compact ? "size-8" : "size-9"}>
+          {avatarUrl ? <AvatarImage src={avatarUrl} alt={displayName} /> : null}
           <AvatarFallback className="bg-brand text-sm font-bold text-primary-foreground">
             <BarChart3 size={15} aria-hidden="true" />
           </AvatarFallback>
@@ -91,50 +104,45 @@ export default function JamalMenu({
             <span className="block truncate text-sm font-bold text-text-primary">
               {displayName}
             </span>
+            <span className="mt-0.5 block truncate text-[11px] text-text-secondary">
+              Profile and account
+            </span>
           </span>
         )}
-      </button>
+      </DropdownMenuTrigger>
 
-      <AnimatePresence>
-        {open && (
-          <motion.div
-            variants={panelVariants}
-            initial="initial"
-            animate="animate"
-            exit="exit"
-            className={`finance-surface absolute z-[130] w-[min(14rem,calc(100vw-1.5rem))] overflow-hidden p-2 ${
-              align === "right" ? "right-0" : "left-0"
-            } ${
-              placement === "top"
-                ? "bottom-[calc(100%+10px)]"
-                : "top-[calc(100%+10px)]"
-            }`}
-            role="dialog"
-            aria-label="Profile menu"
-          >
-            <button
-              type="button"
-              onClick={() => {
-                router.push("/dashboard/settings");
-                setOpen(false);
-              }}
-              className="finance-focus finance-interactive-tile flex w-full items-center gap-3 px-3 py-2 text-left text-sm font-semibold"
-            >
-              <Settings size={15} aria-hidden="true" />
-              Settings
-            </button>
-            <div className="my-1 border-t border-divider" />
-            <button
-              type="button"
-              onClick={handleSignOut}
-              className="finance-focus finance-interactive-tile flex w-full items-center gap-3 px-3 py-2 text-left text-sm font-semibold"
-            >
-              <LogOut size={15} aria-hidden="true" />
-              Sign Out
-            </button>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
+      <DropdownMenuContent
+        align={align === "right" ? "end" : "start"}
+        side={placement}
+        sideOffset={8}
+        className="w-56 rounded-[var(--radius-tile)] border border-border bg-surface-elevated p-1.5 shadow-[var(--shadow-soft)]"
+      >
+        <DropdownMenuLabel className="px-2.5 py-2">
+          <span className="block truncate text-xs font-bold text-text-primary">
+            {displayName}
+          </span>
+          <span className="mt-0.5 block text-[10px] font-medium text-text-tertiary">
+            Jamals Finance
+          </span>
+        </DropdownMenuLabel>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem
+          onClick={() => router.push("/dashboard/settings")}
+          className="min-h-11 cursor-pointer gap-3 rounded-[var(--radius-control)] px-2.5 py-2 text-sm font-semibold text-text-secondary focus:bg-hover focus:text-text-primary"
+        >
+          <Settings size={16} aria-hidden="true" />
+          Settings
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem
+          variant="destructive"
+          onClick={handleSignOut}
+          className="min-h-11 cursor-pointer gap-3 rounded-[var(--radius-control)] px-2.5 py-2 text-sm font-semibold"
+        >
+          <LogOut size={16} aria-hidden="true" />
+          Sign Out
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }
