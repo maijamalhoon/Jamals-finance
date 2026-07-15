@@ -1,16 +1,20 @@
 import Header from "@/components/layout/Header";
 import MobileHeader from "@/components/layout/MobileHeader";
 import MobileNav from "@/components/layout/MobileNav";
+import Sidebar from "@/components/layout/Sidebar";
 import FloatingActions from "@/components/layout/FloatingActions";
 import DashboardScrollRestoration from "@/components/motion/DashboardScrollRestoration";
+import { loadDashboardNotifications } from "@/lib/notifications-server";
 
 export const dynamic = "force-dynamic";
 
-export default function DashboardLayout({
+export default async function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const notificationState = await loadDashboardNotifications();
+
   return (
     <div
       data-dashboard-shell
@@ -24,12 +28,15 @@ export default function DashboardLayout({
         aria-hidden="true"
         className="jf-dashboard-grid pointer-events-none absolute inset-0 z-0 opacity-[0.34]"
       />
+
+      <Sidebar />
+
       <div className="relative z-10 flex min-w-0 flex-1 flex-col overflow-hidden">
-        <div className="jf-dashboard-header-wrap hidden lg:block">
-          <Header />
+        <div className="jf-dashboard-header-wrap hidden shrink-0 lg:block">
+          <Header notificationState={notificationState} />
         </div>
 
-        <MobileHeader />
+        <MobileHeader notificationState={notificationState} />
         <DashboardScrollRestoration />
 
         <main

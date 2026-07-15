@@ -6,7 +6,7 @@ import {
   CreditCard,
   FileBarChart,
   LayoutDashboard,
-  LucideIcon,
+  type LucideIcon,
   Settings,
   Target,
   TrendingDown,
@@ -18,8 +18,6 @@ export interface NavItem {
   label: string;
   href: string;
   icon: LucideIcon;
-  tone: string;
-  mobilePrimary?: boolean;
 }
 
 export interface NavGroup {
@@ -35,45 +33,31 @@ export const NAV_GROUPS: NavGroup[] = [
         label: "Dashboard",
         href: "/dashboard",
         icon: LayoutDashboard,
-        tone: "text-text-primary bg-surface-secondary",
-        mobilePrimary: true,
       },
+    ],
+  },
+  {
+    label: "Money",
+    items: [
       {
         label: "Transactions",
         href: "/dashboard/transactions",
         icon: ArrowRightLeft,
-        tone: "text-violet-300 bg-violet-500/15",
-        mobilePrimary: true,
       },
       {
         label: "Accounts",
         href: "/dashboard/accounts",
         icon: WalletCards,
-        tone: "text-sky-300 bg-sky-500/15",
-        mobilePrimary: true,
       },
-    ],
-  },
-  {
-    label: "Money Flow",
-    items: [
       {
         label: "Income",
         href: "/dashboard/income",
         icon: TrendingUp,
-        tone: "text-emerald-300 bg-emerald-500/15",
       },
       {
         label: "Expenses",
         href: "/dashboard/expenses",
         icon: TrendingDown,
-        tone: "text-rose-300 bg-rose-500/15",
-      },
-      {
-        label: "Payables",
-        href: "/dashboard/payables",
-        icon: CreditCard,
-        tone: "text-amber-300 bg-amber-500/15",
       },
     ],
   },
@@ -84,47 +68,51 @@ export const NAV_GROUPS: NavGroup[] = [
         label: "Goals",
         href: "/dashboard/goals",
         icon: Target,
-        tone: "text-orange-300 bg-orange-500/15",
       },
       {
-        label: "Investments",
-        href: "/dashboard/investments",
-        icon: CircleDollarSign,
-        tone: "text-purple-300 bg-purple-500/15",
+        label: "Payables",
+        href: "/dashboard/payables",
+        icon: CreditCard,
       },
     ],
   },
   {
-    label: "Insights",
+    label: "Growth",
+    items: [
+      {
+        label: "Investments",
+        href: "/dashboard/investments",
+        icon: CircleDollarSign,
+      },
+    ],
+  },
+  {
+    label: "Intelligence",
     items: [
       {
         label: "Analytics",
         href: "/dashboard/analytics",
         icon: BarChart3,
-        tone: "text-blue-300 bg-blue-500/15",
-      },
-      {
-        label: "Reports",
-        href: "/dashboard/reports",
-        icon: FileBarChart,
-        tone: "text-cyan-300 bg-cyan-500/15",
       },
       {
         label: "AI Insights",
         href: "/dashboard/ai-insights",
         icon: Bot,
-        tone: "text-indigo-300 bg-indigo-500/15",
+      },
+      {
+        label: "Reports",
+        href: "/dashboard/reports",
+        icon: FileBarChart,
       },
     ],
   },
   {
-    label: "System",
+    label: "Workspace",
     items: [
       {
         label: "Settings",
         href: "/dashboard/settings",
         icon: Settings,
-        tone: "text-slate-300 bg-slate-500/15",
       },
     ],
   },
@@ -132,36 +120,65 @@ export const NAV_GROUPS: NavGroup[] = [
 
 export const NAV_ITEMS: NavItem[] = NAV_GROUPS.flatMap((group) => group.items);
 
-export const DESKTOP_PRIMARY_NAV_ITEMS = NAV_ITEMS.filter((item) =>
-  ["Dashboard", "Transactions", "Analytics", "AI Insights", "Investments"].includes(
-    item.label,
-  ),
-);
+const MOBILE_PRIMARY_HREFS = [
+  "/dashboard",
+  "/dashboard/transactions",
+  "/dashboard/accounts",
+] as const;
 
-export const DESKTOP_SECONDARY_NAV_ITEMS = NAV_ITEMS.filter((item) =>
-  [
-    "Accounts",
-    "Income",
-    "Expenses",
-    "Payables",
-    "Goals",
-    "Reports",
-    "Settings",
-  ].includes(item.label),
-);
+const mobilePrimaryHrefSet = new Set<string>(MOBILE_PRIMARY_HREFS);
 
-export const MOBILE_PRIMARY_NAV_ITEMS = NAV_ITEMS.filter(
-  (item) => item.mobilePrimary,
+export const MOBILE_PRIMARY_NAV_ITEMS = MOBILE_PRIMARY_HREFS.map(
+  (href) => NAV_ITEMS.find((item) => item.href === href)!,
 );
 
 export const MOBILE_MORE_NAV_ITEMS = NAV_ITEMS.filter(
-  (item) => !item.mobilePrimary,
+  (item) => !mobilePrimaryHrefSet.has(item.href),
 );
 
+export const MOBILE_MORE_NAV_GROUPS: NavGroup[] = NAV_GROUPS.map((group) => ({
+  ...group,
+  items: group.items.filter((item) => !mobilePrimaryHrefSet.has(item.href)),
+})).filter((group) => group.items.length > 0);
+
+function normalizePathname(pathname: string) {
+  const cleanPathname = pathname.split(/[?#]/, 1)[0] || "/";
+  return cleanPathname.length > 1 && cleanPathname.endsWith("/")
+    ? cleanPathname.slice(0, -1)
+    : cleanPathname;
+}
+
 export function isNavItemActive(pathname: string, href: string) {
-  if (href === "/dashboard") {
-    return pathname === "/dashboard";
+  const normalizedPathname = normalizePathname(pathname);
+  const normalizedHref = normalizePathname(href);
+
+  if (normalizedHref === "/dashboard") {
+    return normalizedPathname === normalizedHref;
   }
 
-  return pathname === href || (href !== "/dashboard" && pathname.startsWith(href));
+  return (
+    normalizedPathname === normalizedHref ||
+    normalizedPathname.startsWith(`${normalizedHref}/`)
+  );
+}
+
+export function getActiveNavItem(pathname: string) {
+  return [...NAV_ITEMS]
+    .sort((left, right) => right.href.length - left.href.length)
+    .find((item) => isNavItemActive(pathname, item.href));
+}
+
+export function getRouteTitle(pathname: string) {
+  return getActiveNavItem(pathname)?.label ?? "Dashboard";
+}
+
+export function getRouteGroup(pathname: string) {
+  const activeItem = getActiveNavItem(pathname);
+  if (!activeItem) return "Overview";
+
+  return (
+    NAV_GROUPS.find((group) =>
+      group.items.some((item) => item.href === activeItem.href),
+    )?.label ?? "Overview"
+  );
 }
