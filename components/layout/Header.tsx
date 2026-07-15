@@ -101,7 +101,7 @@ export default function Header() {
 
   return (
     <header
-      className={`motion-fade-slide jf-desktop-header sticky top-3 z-40 mx-4 flex h-[66px] flex-shrink-0 items-center justify-between gap-4 rounded-[24px] border border-border/80 bg-surface/88 px-4 backdrop-blur-2xl transition-shadow duration-200 supports-[backdrop-filter]:bg-surface/72 xl:px-5 ${
+      className={`motion-fade-slide jf-desktop-header sticky top-3 z-40 mx-4 flex h-[66px] min-w-0 flex-shrink-0 items-center justify-between gap-4 rounded-[24px] border border-border bg-surface-primary/96 px-4 transition-shadow duration-200 xl:px-5 ${
         scrolled ? "shadow-[var(--shadow-premium)]" : "shadow-[var(--shadow-soft)]"
       }`}
     >
@@ -117,7 +117,7 @@ export default function Header() {
 
         <nav
           aria-label="Desktop dashboard navigation"
-          className="flex min-w-0 flex-1 items-center gap-1 rounded-[18px] border border-border/70 bg-card/70 p-1 shadow-[inset_0_1px_0_rgb(255_255_255_/_0.36)]"
+          className="flex min-w-0 flex-1 items-center gap-1 rounded-[18px] border border-border bg-surface-secondary p-1 shadow-[var(--surface-highlight)]"
         >
           {DESKTOP_PRIMARY_NAV_ITEMS.map(({ label, href, icon: Icon }) => {
             const active = isNavItemActive(pathname, href);
@@ -127,13 +127,13 @@ export default function Header() {
                 key={href}
                 href={href}
                 aria-current={active ? "page" : undefined}
-                className={`finance-focus group relative flex h-9 min-w-0 items-center gap-2 rounded-[14px] px-3 text-sm font-semibold transition duration-200 xl:px-4 ${
+                className={`finance-focus group relative flex min-h-11 min-w-0 items-center gap-2 rounded-[14px] px-3 text-sm font-semibold transition duration-200 xl:px-4 ${
                   active
-                    ? "border border-active/20 bg-active/10 text-active shadow-theme"
+                    ? "border border-brand/25 bg-brand/10 text-brand shadow-theme"
                     : "border border-transparent text-text-secondary hover:bg-surface-secondary hover:text-text-primary"
                 }`}
               >
-                <Icon className="h-[15px] w-[15px] shrink-0" />
+                <Icon className="h-[15px] w-[15px] shrink-0" aria-hidden="true" />
                 <span className="hidden truncate xl:inline">{label}</span>
               </Link>
             );
@@ -146,12 +146,12 @@ export default function Header() {
           <button
             type="button"
             onClick={() => setCommandOpen((current) => !current)}
-            className="finance-control finance-focus flex h-9 items-center gap-2 px-3 text-sm font-semibold text-text-secondary hover:text-text-primary"
+            className="finance-control finance-focus flex min-h-11 items-center gap-2 px-3 text-sm font-semibold text-text-secondary hover:text-text-primary"
             aria-label="Open page search menu"
             aria-haspopup="dialog"
             aria-expanded={commandOpen}
           >
-            <Command size={15} />
+            <Command size={15} aria-hidden="true" />
             <span>Pages</span>
           </button>
 
@@ -164,10 +164,10 @@ export default function Header() {
                 exit="exit"
                 role="dialog"
                 aria-label="Search dashboard pages"
-                className="finance-surface absolute right-0 top-11 z-[120] w-[320px] overflow-hidden p-2"
+                className="finance-surface absolute right-0 top-13 z-[120] w-[min(320px,calc(100vw-2rem))] overflow-hidden p-2"
               >
-                <div className="finance-control finance-search-control flex h-10 items-center gap-2 px-3">
-                  <Search size={14} className="text-text-secondary" />
+                <div className="finance-control finance-search-control flex min-h-11 items-center gap-2 px-3">
+                  <Search size={14} className="text-text-secondary" aria-hidden="true" />
                   <input
                     type="search"
                     autoComplete="off"
@@ -190,12 +190,12 @@ export default function Header() {
                         aria-current={active ? "page" : undefined}
                         className={`finance-focus finance-interactive-tile flex min-h-11 items-center gap-3 px-3 py-2 text-sm font-semibold ${
                           active
-                            ? "bg-active/10 text-active"
+                            ? "bg-brand/10 text-brand"
                             : "text-text-secondary hover:text-text-primary"
                         }`}
                       >
                         <span className="grid h-8 w-8 shrink-0 place-items-center rounded-[12px] border border-border bg-surface">
-                          <Icon size={15} />
+                          <Icon size={15} aria-hidden="true" />
                         </span>
                         <span className="min-w-0 flex-1 truncate">
                           {label}
@@ -219,9 +219,9 @@ export default function Header() {
           onSubmit={handleSearch}
           role="search"
           aria-label="Search transactions"
-          className="finance-control finance-search-control finance-focus hidden h-9 w-72 items-center gap-2 px-3 2xl:flex"
+          className="finance-control finance-search-control finance-focus hidden min-h-11 w-72 items-center gap-2 px-3 2xl:flex"
         >
-          <Search size={14} className="flex-shrink-0 text-text-secondary" />
+          <Search size={14} className="flex-shrink-0 text-text-secondary" aria-hidden="true" />
           <input
             type="search"
             autoComplete="off"
@@ -237,12 +237,12 @@ export default function Header() {
           <button
             type="button"
             onClick={() => setBellOpen((current) => !current)}
-            className="finance-control finance-focus relative flex h-9 w-9 items-center justify-center"
+            className="finance-control finance-focus relative flex h-11 w-11 items-center justify-center"
             aria-label="Open notifications"
             aria-haspopup="dialog"
             aria-expanded={bellOpen}
           >
-            <Bell size={15} className="text-text-secondary" />
+            <Bell size={15} className="text-text-secondary" aria-hidden="true" />
           </button>
 
           <AnimatePresence>
@@ -254,7 +254,7 @@ export default function Header() {
                 exit="exit"
                 role="dialog"
                 aria-label="Notifications"
-                className="finance-surface absolute right-0 top-11 z-[120] w-72 overflow-hidden"
+                className="finance-surface absolute right-0 top-13 z-[120] w-[min(18rem,calc(100vw-2rem))] overflow-hidden"
               >
                 <div className="border-b border-border p-4">
                   <p className="text-sm font-semibold text-text-primary">
@@ -265,6 +265,7 @@ export default function Header() {
                   <Bell
                     size={24}
                     className="mx-auto mb-2 text-text-secondary"
+                    aria-hidden="true"
                   />
                   <p className="text-sm text-text-secondary">
                     No new notifications

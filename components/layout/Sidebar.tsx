@@ -21,12 +21,12 @@ export default function Sidebar() {
   return (
     <aside
       data-desktop-sidebar
-      className="motion-fade-slide relative z-50 hidden h-full w-[280px] flex-shrink-0 flex-col border-r border-border bg-card lg:flex"
+      className="motion-fade-slide relative z-50 hidden h-full w-[280px] flex-shrink-0 flex-col border-r border-border bg-surface-primary lg:flex"
     >
       <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
         <div className="flex items-center gap-3 border-b border-border/70 px-5 py-5">
-          <div className="grid h-12 w-12 place-items-center rounded-2xl border border-border bg-active/10 text-active shadow-sm">
-            <BarChart3 size={20} strokeWidth={2.2} />
+          <div className="grid h-12 w-12 place-items-center rounded-2xl border border-brand/25 bg-brand/10 text-brand shadow-sm">
+            <BarChart3 size={20} strokeWidth={2.2} aria-hidden="true" />
           </div>
 
           <div className="min-w-0">
@@ -55,14 +55,14 @@ export default function Sidebar() {
                         title={label}
                         className={`finance-focus group relative flex min-h-11 items-center gap-3 rounded-[16px] px-3 py-2 text-sm font-medium transition duration-200 ${
                           active
-                            ? "text-active"
+                            ? "text-brand"
                             : "text-text-secondary hover:bg-surface-secondary hover:text-text-primary"
                         }`}
                       >
                         {active && (
                           <motion.span
                             layoutId="sidebar-active-bg"
-                            className="absolute inset-0 rounded-[16px] bg-active/10"
+                            className="absolute inset-0 rounded-[16px] bg-brand/10"
                             transition={sidebarSpring}
                           />
                         )}
@@ -70,11 +70,11 @@ export default function Sidebar() {
                         <span
                           className={`relative z-10 grid h-9 w-9 shrink-0 place-items-center rounded-[13px] border transition-all duration-200 ${
                             active
-                              ? "border-active/30 bg-active/15 text-active"
-                              : "border-border/70 bg-surface text-text-secondary group-hover:border-border group-hover:bg-surface-secondary group-hover:text-text-primary"
+                              ? "border-brand/30 bg-brand/15 text-brand"
+                              : "border-border/70 bg-surface-primary text-text-secondary group-hover:border-border group-hover:bg-surface-secondary group-hover:text-text-primary"
                           }`}
                         >
-                          <Icon size={17} strokeWidth={2.2} />
+                          <Icon size={17} strokeWidth={2.2} aria-hidden="true" />
                         </span>
 
                         <span className="relative z-10 min-w-0 flex-1 truncate">

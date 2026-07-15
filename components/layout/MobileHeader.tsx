@@ -44,13 +44,13 @@ export default function MobileHeader() {
   return (
     <>
       <header
-        className={`motion-fade-slide flex h-[66px] flex-shrink-0 items-center justify-between border-b border-border bg-surface px-3 transition-shadow duration-200 lg:hidden ${
+        className={`motion-fade-slide flex h-[66px] min-w-0 flex-shrink-0 items-center justify-between gap-2 border-b border-border bg-surface-primary px-3 transition-shadow duration-200 lg:hidden ${
           scrolled ? "shadow-[var(--shadow-soft)]" : "shadow-theme"
         }`}
       >
-        <div className="flex min-w-0 items-center gap-2">
-          <div className="grid h-10 w-10 flex-shrink-0 place-items-center rounded-[15px] border border-active/30 bg-active text-background shadow-theme">
-            <BarChart3 size={16} />
+        <div className="flex min-w-0 flex-1 items-center gap-2">
+          <div className="grid h-11 w-11 flex-shrink-0 place-items-center rounded-[15px] border border-brand/30 bg-brand text-primary-foreground shadow-theme">
+            <BarChart3 size={16} aria-hidden="true" />
           </div>
           <span className="min-w-0">
             <span className="block truncate text-sm font-semibold leading-4 text-text-primary">
@@ -62,17 +62,17 @@ export default function MobileHeader() {
           </span>
         </div>
 
-        <div className="relative flex items-center gap-2">
+        <div className="relative flex shrink-0 items-center gap-2">
           <div className="relative" ref={bellRef}>
             <button
               type="button"
               onClick={() => setBellOpen((current) => !current)}
-              className="finance-focus finance-control relative flex h-10 w-10 items-center justify-center"
+              className="finance-focus finance-control relative flex h-11 w-11 items-center justify-center"
               aria-label="Open notifications"
               aria-haspopup="dialog"
               aria-expanded={bellOpen}
             >
-              <Bell size={14} className="text-text-secondary" />
+              <Bell size={14} className="text-text-secondary" aria-hidden="true" />
             </button>
 
             <AnimatePresence>
@@ -84,7 +84,7 @@ export default function MobileHeader() {
                   exit="exit"
                   role="dialog"
                   aria-label="Notifications"
-                  className="finance-surface absolute right-0 top-12 z-[80] w-[min(82vw,288px)] overflow-hidden"
+                  className="finance-surface absolute right-0 top-13 z-[80] w-[min(288px,calc(100vw-1.5rem))] overflow-hidden"
                 >
                   <div className="border-b border-border p-4">
                     <p className="text-sm font-semibold text-text-primary">
@@ -92,7 +92,7 @@ export default function MobileHeader() {
                     </p>
                   </div>
                   <div className="motion-empty p-5 py-8 text-center">
-                    <Bell size={23} className="mx-auto mb-2 text-text-secondary" />
+                    <Bell size={23} className="mx-auto mb-2 text-text-secondary" aria-hidden="true" />
                     <p className="text-sm font-semibold text-text-primary">
                       All clear
                     </p>

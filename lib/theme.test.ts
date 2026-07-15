@@ -1,3 +1,4 @@
+import { existsSync, readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 
 import {
@@ -9,6 +10,34 @@ import {
   resolveThemePreference,
   THEME_PREFERENCES,
 } from "./theme";
+
+const settingsSource = readFileSync(
+  new URL("../components/settings/SettingsOneUI.tsx", import.meta.url),
+  "utf8",
+);
+
+const globalsCssSource = readFileSync(
+  new URL("../app/globals.css", import.meta.url),
+  "utf8",
+);
+
+function getCssRule(source: string, selectorStart: string) {
+  const ruleStart = source.indexOf(selectorStart);
+  if (ruleStart === -1) throw new Error(`Missing CSS rule: ${selectorStart}`);
+
+  const declarationStart = source.indexOf("{", ruleStart);
+  const ruleEnd = source.indexOf("}", declarationStart);
+  return source.slice(ruleStart, ruleEnd + 1);
+}
+
+const nonSettingsThemeSurfaces = [
+  "../components/landing/PremiumLandingPage.tsx",
+  "../components/auth/AuthShell.tsx",
+  "../components/layout/JamalMenu.tsx",
+].map((relativePath) => ({
+  relativePath,
+  source: readFileSync(new URL(relativePath, import.meta.url), "utf8"),
+}));
 
 describe("theme contracts", () => {
   it("accepts exactly system, light, and dark", () => {
@@ -41,6 +70,87 @@ describe("theme contracts", () => {
       dataThemePreference: "system",
       darkClassActive: true,
     });
+
+    expect(getThemeRootState("system", "light")).toEqual({
+      preference: "system",
+      resolvedTheme: "light",
+      colorScheme: "light",
+      dataTheme: "light",
+      dataThemePreference: "system",
+      darkClassActive: false,
+    });
+
+    expect(getThemeRootState("light", "dark")).toMatchObject({
+      preference: "light",
+      resolvedTheme: "light",
+      colorScheme: "light",
+      dataTheme: "light",
+      dataThemePreference: "light",
+      darkClassActive: false,
+    });
+
+    expect(getThemeRootState("dark", "light")).toMatchObject({
+      preference: "dark",
+      resolvedTheme: "dark",
+      colorScheme: "dark",
+      dataTheme: "dark",
+      dataThemePreference: "dark",
+      darkClassActive: true,
+    });
+  });
+
+  it("keeps the only visible theme control in Settings Appearance", () => {
+    expect(settingsSource).toContain("<SectionTitle>Appearance</SectionTitle>");
+    expect(settingsSource).toContain('role="radiogroup"');
+    expect(settingsSource).toContain('aria-label="Theme preference"');
+    expect(settingsSource).toContain('role="radio"');
+    expect(settingsSource).toContain('value: "system"');
+    expect(settingsSource).toContain('value: "light"');
+    expect(settingsSource).toContain('value: "dark"');
+    expect(settingsSource).not.toMatch(/<select\b/);
+
+    for (const { relativePath, source } of nonSettingsThemeSurfaces) {
+      expect(source, relativePath).not.toContain("ThemeSelector");
+    }
+
+    expect(
+      existsSync(
+        new URL("../components/theme/ThemeSelector.tsx", import.meta.url),
+      ),
+    ).toBe(false);
+  });
+
+  it("keeps dark shared repairs on the approved semantic tokens", () => {
+    expect(globalsCssSource).not.toMatch(/\.theme-selector\b/);
+
+    const primaryActionRule = getCssRule(
+      globalsCssSource,
+      ".dark .primary-action",
+    );
+    const successRule = getCssRule(
+      globalsCssSource,
+      ".dark :where(.finance-status-success",
+    );
+    const dangerRule = getCssRule(
+      globalsCssSource,
+      ".dark :where(.finance-status-danger",
+    );
+    const warningRule = getCssRule(
+      globalsCssSource,
+      ".dark :where(.finance-status-warning",
+    );
+    const infoRule = getCssRule(
+      globalsCssSource,
+      ".dark :where(.finance-status-info",
+    );
+
+    expect(primaryActionRule).toContain("color: var(--brand-on-accent);");
+    expect(successRule).toContain("color: var(--success);");
+    expect(dangerRule).toContain("color: var(--danger);");
+    expect(warningRule).toContain("color: var(--warning);");
+    expect(infoRule).toContain("color: var(--info);");
+    expect(infoRule).not.toContain("var(--active)");
+    expect(globalsCssSource).not.toMatch(/#79f0b4|#ff9a9a|#ffd27a/i);
   });
 
   it("is server-safe without browser globals", () => {

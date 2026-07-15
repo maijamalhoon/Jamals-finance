@@ -9,8 +9,6 @@ import {
 } from "lucide-react";
 import type { ReactNode } from "react";
 
-import ThemeSelector from "@/components/theme/ThemeSelector";
-
 const contextItems = [
   {
     icon: ChartNoAxesCombined,
@@ -48,7 +46,7 @@ export default function AuthShell({
     <main className="jf-node4-auth jf-login-polish relative min-h-dvh overflow-x-hidden bg-background text-foreground">
       <div className="jf-node4-auth-ambient pointer-events-none absolute inset-0" aria-hidden="true" />
 
-      <header className="relative z-20 mx-auto flex w-full max-w-[1180px] items-center justify-between gap-3 px-4 py-3 sm:px-6 sm:py-4">
+      <header className="jf-node6-auth-header relative z-20 mx-auto flex w-full max-w-[1180px] min-w-0 items-center justify-between gap-3 px-4 pb-3 sm:px-6 sm:pb-4">
         <Link
           href="/"
           aria-label="Jamal's Finance home"
@@ -60,8 +58,7 @@ export default function AuthShell({
           <span className="hidden sm:inline">Jamal&apos;s Finance</span>
         </Link>
 
-        <div className="flex items-center gap-2">
-          <ThemeSelector />
+        <div className="flex shrink-0 items-center">
           <Link
             href="/"
             aria-label="Return to home"
@@ -74,7 +71,7 @@ export default function AuthShell({
       </header>
 
       <div
-        className={`relative z-10 mx-auto grid w-full max-w-[1120px] items-center gap-6 px-4 pb-6 sm:px-6 lg:grid-cols-[minmax(0,0.9fr)_minmax(420px,0.72fr)] lg:gap-10 lg:pb-10 ${
+        className={`jf-node6-auth-layout relative z-10 mx-auto grid w-full max-w-[1120px] min-w-0 items-center gap-6 px-4 sm:px-6 lg:grid-cols-[minmax(0,0.9fr)_minmax(420px,0.72fr)] lg:gap-10 ${
           compact ? "min-h-[calc(100dvh-84px)]" : "min-h-[calc(100dvh-88px)]"
         }`}
       >

@@ -86,8 +86,8 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 5,
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#f6f8fb" },
-    { media: "(prefers-color-scheme: dark)", color: "#0b1119" },
+    { media: "(prefers-color-scheme: light)", color: "#F6F8FC" },
+    { media: "(prefers-color-scheme: dark)", color: "#08111F" },
   ],
 };
 
@@ -108,14 +108,32 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{
             __html: `
 try {
-  var savedTheme = localStorage.getItem("${THEME_STORAGE_KEY}");
-  var theme = savedTheme === "light" || savedTheme === "dark" || savedTheme === "system" ? savedTheme : "system";
-  var prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-  var shouldUseDark = theme === "dark" || (theme === "system" && prefersDark);
-  document.documentElement.classList.toggle("dark", shouldUseDark);
-  document.documentElement.style.colorScheme = shouldUseDark ? "dark" : "light";
-  document.documentElement.dataset.themePreference = theme;
-  document.documentElement.dataset.theme = shouldUseDark ? "dark" : "light";
+  (function () {
+    var root = document.documentElement;
+    var media = window.matchMedia("(prefers-color-scheme: dark)");
+    var readPreference = function () {
+      var savedTheme = localStorage.getItem("${THEME_STORAGE_KEY}");
+      return savedTheme === "light" || savedTheme === "dark" || savedTheme === "system" ? savedTheme : "system";
+    };
+    var applyPreference = function (theme) {
+      var shouldUseDark = theme === "dark" || (theme === "system" && media.matches);
+      root.classList.toggle("dark", shouldUseDark);
+      root.style.colorScheme = shouldUseDark ? "dark" : "light";
+      root.dataset.themePreference = theme;
+      root.dataset.theme = shouldUseDark ? "dark" : "light";
+    };
+
+    applyPreference(readPreference());
+    media.addEventListener("change", function () {
+      var theme = readPreference();
+      if (theme === "system") applyPreference(theme);
+    });
+    window.addEventListener("storage", function (event) {
+      if (event.key === null || event.key === "${THEME_STORAGE_KEY}") {
+        applyPreference(readPreference());
+      }
+    });
+  })();
 } catch (_) {}
             `,
           }}
