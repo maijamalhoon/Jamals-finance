@@ -103,8 +103,12 @@ export function CashFlowCharts({ data }: { data: CashFlowPoint[] }) {
         title="Income vs expenses"
         description="Stored income and expense totals in each non-overlapping time bucket."
       >
-        <div role="img" aria-label="Bar chart comparing income and expenses by time bucket">
-          <ChartFrame className="h-72">
+        <div
+          role="img"
+          aria-label="Bar chart comparing income and expenses by time bucket"
+          className="h-64 min-w-0 overflow-hidden sm:h-72"
+        >
+          <ChartFrame>
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={data} margin={{ top: 8, right: 4, bottom: 4, left: 0 }}>
                 <CartesianGrid stroke="var(--chart-grid)" strokeDasharray="3 5" vertical={false} />
@@ -130,8 +134,12 @@ export function CashFlowCharts({ data }: { data: CashFlowPoint[] }) {
         title="Cumulative net cash flow"
         description="Income minus expenses accumulated from the first selected date."
       >
-        <div role="img" aria-label="Step chart of cumulative net cash flow by time bucket">
-          <ChartFrame className="h-72">
+        <div
+          role="img"
+          aria-label="Step chart of cumulative net cash flow by time bucket"
+          className="h-64 min-w-0 overflow-hidden sm:h-72"
+        >
+          <ChartFrame>
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={data} margin={{ top: 8, right: 10, bottom: 4, left: 0 }}>
                 <CartesianGrid stroke="var(--chart-grid)" strokeDasharray="3 5" vertical={false} />
@@ -159,8 +167,12 @@ export function SpendingDistributionChart({ data }: { data: CategoryBreakdownIte
 
   return (
     <div className="grid min-w-0 items-center gap-4 md:grid-cols-[minmax(0,1fr)_minmax(15rem,0.8fr)]">
-      <div role="img" aria-label="Donut chart of spending distribution by category">
-        <ChartFrame className="h-64">
+      <div
+        role="img"
+        aria-label="Donut chart of spending distribution by category"
+        className="h-60 min-w-0 overflow-hidden sm:h-64"
+      >
+        <ChartFrame>
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
               <Pie data={data} dataKey="amount" nameKey="name" innerRadius="52%" outerRadius="78%" paddingAngle={2} isAnimationActive={false}>
