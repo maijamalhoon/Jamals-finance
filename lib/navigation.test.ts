@@ -281,6 +281,35 @@ describe("dashboard shell contracts", () => {
     expect(jamalMenuSource).not.toContain('role="dialog"');
   });
 
+  it("keeps the profile identity label inside a valid dropdown group", () => {
+    const identityGroup = jamalMenuSource.match(
+      /<DropdownMenuGroup>\s*<DropdownMenuLabel[\s\S]*?<\/DropdownMenuLabel>\s*<\/DropdownMenuGroup>/,
+    );
+
+    expect(jamalMenuSource).toContain("DropdownMenuGroup,");
+    expect(identityGroup).not.toBeNull();
+    expect(jamalMenuSource).not.toContain('role="dialog"');
+    expect(jamalMenuSource).not.toContain("AnimatePresence");
+    expect(jamalMenuSource).toContain('router.push("/dashboard/settings")');
+    expect(jamalMenuSource).toContain("Settings");
+    expect(jamalMenuSource).toContain("Sign Out");
+    expect(jamalMenuSource).toMatch(
+      /<DropdownMenuItem\s+variant="destructive"[\s\S]*?Sign Out[\s\S]*?<\/DropdownMenuItem>/,
+    );
+  });
+
+  it("contains shared profile request failures before effects consume them", () => {
+    const sharedProfileRequest = jamalMenuSource.match(
+      /profileRequest = supabase\.auth[\s\S]*?return profileRequest;/,
+    )?.[0];
+
+    expect(sharedProfileRequest).toBeDefined();
+    expect(sharedProfileRequest).toContain("if (error) throw error;");
+    expect(sharedProfileRequest).toContain(".catch(() => {");
+    expect(sharedProfileRequest).toContain("profileRequest = null;");
+    expect(jamalMenuSource).not.toContain("console.");
+  });
+
   it("uses direct desktop navigation and reserves Sheet for transaction search", () => {
     expect(headerSource).toContain("DESKTOP_PRIMARY_NAV_ITEMS.map");
     expect(headerSource).toContain(
