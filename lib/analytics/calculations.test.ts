@@ -22,11 +22,13 @@ import {
   compareNetSavings,
   compareSavingsRate,
   formatRangeLabel,
+  getChangeDirection,
   getCombinedQueryRange,
   getCurrentAndPreviousRange,
   getInclusiveDayCount,
   getLargestEntries,
   getPreviousCustomRange,
+  hasPartialAccountMetadata,
   parseAnalyticsSearchParams,
   parseDateKey,
   resolveAnalyticsRange,
@@ -370,6 +372,23 @@ describe("comparison semantics", () => {
     });
   });
 
+  it("separates numeric movement direction from financial sentiment", () => {
+    expect(getChangeDirection(compareIncome(120, 100))).toBe("up");
+    expect(getChangeDirection(compareIncome(80, 100))).toBe("down");
+    expect(getChangeDirection(compareExpenses(120, 100))).toBe("up");
+    expect(getChangeDirection(compareExpenses(80, 100))).toBe("down");
+    expect(getChangeDirection(compareSavingsRate(25, 20))).toBe("up");
+    expect(getChangeDirection(compareSavingsRate(15, 20))).toBe("down");
+  });
+
+  it("does not assign numeric arrows to status comparisons", () => {
+    expect(getChangeDirection(compareIncome(100, 0))).toBeNull();
+    expect(getChangeDirection(compareNetSavings(-20, -50))).toBeNull();
+    expect(getChangeDirection(compareNetSavings(-50, -20))).toBeNull();
+    expect(getChangeDirection(compareIncome(0, 0))).toBeNull();
+    expect(getChangeDirection(compareSavingsRate(null, null))).toBeNull();
+  });
+
   it("expresses savings-rate movement in percentage points", () => {
     expect(compareSavingsRate(25, 20)).toEqual({
       kind: "percentagePoints",
@@ -710,6 +729,13 @@ describe("Node 5 breakdowns and largest entries", () => {
       ["deleted", UNKNOWN_ACCOUNT, 50],
     ]);
     expect(items.reduce((sum, item) => sum + item.percentage, 0)).toBe(100);
+  });
+
+  it("detects successful account metadata responses that omit referenced ids", () => {
+    expect(hasPartialAccountMetadata([" cash ", "card", "cash"], ["cash", " card "])).toBe(false);
+    expect(hasPartialAccountMetadata(["cash", "card"], ["cash"])).toBe(true);
+    expect(hasPartialAccountMetadata(["cash"], [null, " "])).toBe(true);
+    expect(hasPartialAccountMetadata([], [])).toBe(false);
   });
 
   it("allocates rounded percentages to exactly 100", () => {

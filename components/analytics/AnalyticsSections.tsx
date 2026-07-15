@@ -17,6 +17,7 @@ import { InlineNotice } from "@/components/ui/inline-notice";
 import { SpendingDistributionChart } from "@/components/analytics/AnalyticsCharts";
 import {
   formatRangeLabel,
+  getChangeDirection,
   summarizeInvestmentPortfolio,
   type AccountBreakdownItem,
   type AnalyticsAccountStatus,
@@ -32,7 +33,8 @@ import {
 } from "@/lib/analytics/calculations";
 
 function ChangeBadge({ change }: { change: ChangeResult }) {
-  const Icon = change.sentiment === "positive" ? ArrowUpRight : change.sentiment === "negative" ? ArrowDownRight : null;
+  const direction = getChangeDirection(change);
+  const Icon = direction === "up" ? ArrowUpRight : direction === "down" ? ArrowDownRight : null;
   const className =
     change.sentiment === "positive" ? "border-success/25 bg-success/10 text-success" :
     change.sentiment === "negative" ? "border-danger/25 bg-danger/10 text-danger" :

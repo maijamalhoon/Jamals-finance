@@ -2,6 +2,7 @@ import AnalyticsClient from "@/components/analytics/AnalyticsClient";
 import {
   calculateInvestmentMetrics,
   getCombinedQueryRange,
+  hasPartialAccountMetadata,
   parseAnalyticsSearchParams,
   parseDateKey,
   toFiniteNumber,
@@ -164,7 +165,7 @@ export default async function AnalyticsPage({
   const rawTransactions = (transactionsResult.data ?? []) as RawTransaction[];
   const accountIds = Array.from(
     new Set(rawTransactions.map((row) => row.account_id?.trim()).filter((id): id is string => Boolean(id))),
-  );
+  ).sort((left, right) => left.localeCompare(right));
 
   let accountStatus: AnalyticsAccountStatus = "available";
   let rawAccounts: RawAccount[] = [];
@@ -179,6 +180,9 @@ export default async function AnalyticsPage({
       console.error("[analytics] Account labels query failed", { code: accountsResult.error.code });
     } else {
       rawAccounts = (accountsResult.data ?? []) as RawAccount[];
+      if (hasPartialAccountMetadata(accountIds, rawAccounts.map((account) => account.id))) {
+        accountStatus = "partial";
+      }
     }
   }
 

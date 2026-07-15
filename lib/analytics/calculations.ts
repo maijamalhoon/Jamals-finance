@@ -13,6 +13,7 @@ export type AnalyticsPresetPeriod =
   | "year";
 export type AnalyticsPeriod = AnalyticsPresetPeriod | "custom";
 export type ChangeSentiment = "positive" | "negative" | "neutral" | "warning";
+export type ChangeDirection = "up" | "down" | null;
 export type AnalyticsDataStatus = "available" | "error";
 export type AnalyticsAccountStatus = "available" | "partial";
 
@@ -625,6 +626,39 @@ export function compareSavingsRate(currentRate: number | null, previousRate: num
     sentiment: value > 0 ? "positive" : "negative",
     value,
   };
+}
+
+export function getChangeDirection(change: ChangeResult): ChangeDirection {
+  if (
+    change.kind === "status" ||
+    change.value === null ||
+    !Number.isFinite(change.value) ||
+    change.value === 0
+  ) {
+    return null;
+  }
+
+  return change.value > 0 ? "up" : "down";
+}
+
+function normalizedStableId(value: unknown) {
+  return typeof value === "string" ? value.trim() : "";
+}
+
+export function hasPartialAccountMetadata(
+  referencedAccountIds: ReadonlyArray<string | null | undefined>,
+  returnedAccountIds: ReadonlyArray<string | null | undefined>,
+) {
+  const referenced = Array.from(
+    new Set(referencedAccountIds.map(normalizedStableId).filter(Boolean)),
+  ).sort((left, right) => left.localeCompare(right));
+
+  if (referenced.length === 0) return false;
+
+  const returned = new Set(
+    returnedAccountIds.map(normalizedStableId).filter(Boolean),
+  );
+  return referenced.some((id) => !returned.has(id));
 }
 
 export function calculateKpisForRanges(
