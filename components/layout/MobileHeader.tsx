@@ -2,18 +2,17 @@
 
 import { BarChart3 } from "lucide-react";
 import { usePathname } from "next/navigation";
+import type { ReactNode } from "react";
 
 import JamalMenu from "@/components/layout/JamalMenu";
-import NotificationCenter from "@/components/layout/NotificationCenter";
 import { getRouteTitle } from "@/lib/navigation";
-import type { NotificationState } from "@/lib/notifications";
 
 type MobileHeaderProps = {
-  notificationState: NotificationState;
+  notificationSlot: ReactNode;
 };
 
 export default function MobileHeader({
-  notificationState,
+  notificationSlot,
 }: MobileHeaderProps) {
   const pathname = usePathname();
   const routeTitle = getRouteTitle(pathname);
@@ -36,7 +35,7 @@ export default function MobileHeader({
       </div>
 
       <div className="flex shrink-0 items-center gap-1.5">
-        <NotificationCenter state={notificationState} />
+        {notificationSlot}
         <JamalMenu align="right" placement="bottom" variant="avatar" />
       </div>
     </header>

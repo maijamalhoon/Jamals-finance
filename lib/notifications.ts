@@ -4,6 +4,8 @@ export type NotificationSource = "goal" | "payable";
 export type NotificationTone = "danger" | "warning" | "info";
 export type NotificationUrgency = "Overdue" | "Due today" | "Due soon";
 
+export const DEFAULT_VISIBLE_ALERT_LIMIT = 12;
+
 export interface NotificationAlert {
   id: string;
   source: NotificationSource;
@@ -35,15 +37,25 @@ export interface GoalNotificationRecord {
 
 export interface NotificationState {
   status: "ready" | "partial" | "error";
-  alerts: NotificationAlert[];
+  visibleAlerts: NotificationAlert[];
+  totalActiveAlertCountFromCheckedRecords: number | null;
   unavailableSources: NotificationSource[];
+}
+
+export interface DerivedNotifications {
+  visibleAlerts: NotificationAlert[];
+  totalActiveAlertCountFromCheckedRecords: number;
 }
 
 type DeriveNotificationsOptions = {
   payables?: readonly PayableNotificationRecord[];
   goals?: readonly GoalNotificationRecord[];
   now?: Date;
-  limit?: number;
+  visibleLimit?: number;
+};
+
+type CreateNotificationStateOptions = DeriveNotificationsOptions & {
+  unavailableSources?: readonly NotificationSource[];
 };
 
 const TONE_PRIORITY: Record<NotificationTone, number> = {
@@ -238,12 +250,79 @@ export function deriveNotifications({
   payables = [],
   goals = [],
   now = new Date(),
-  limit = 12,
-}: DeriveNotificationsOptions) {
-  const boundedLimit = Number.isFinite(limit) ? Math.max(0, Math.floor(limit)) : 12;
-
-  return sortNotificationAlerts([
+  visibleLimit = DEFAULT_VISIBLE_ALERT_LIMIT,
+}: DeriveNotificationsOptions): DerivedNotifications {
+  const boundedVisibleLimit = Number.isFinite(visibleLimit)
+    ? Math.max(0, Math.floor(visibleLimit))
+    : DEFAULT_VISIBLE_ALERT_LIMIT;
+  const allAlerts = sortNotificationAlerts([
     ...derivePayableAlerts(payables, now),
     ...deriveGoalAlerts(goals, now),
-  ]).slice(0, boundedLimit);
+  ]);
+
+  return {
+    visibleAlerts: allAlerts.slice(0, boundedVisibleLimit),
+    totalActiveAlertCountFromCheckedRecords: allAlerts.length,
+  };
+}
+
+export function createNotificationState({
+  payables = [],
+  goals = [],
+  now = new Date(),
+  visibleLimit = DEFAULT_VISIBLE_ALERT_LIMIT,
+  unavailableSources = [],
+}: CreateNotificationStateOptions): NotificationState {
+  const normalizedUnavailableSources = (
+    ["payable", "goal"] as const
+  ).filter((source) => unavailableSources.includes(source));
+
+  if (normalizedUnavailableSources.length === 2) {
+    return {
+      status: "error",
+      visibleAlerts: [],
+      totalActiveAlertCountFromCheckedRecords: null,
+      unavailableSources: normalizedUnavailableSources,
+    };
+  }
+
+  const derived = deriveNotifications({
+    payables,
+    goals,
+    now,
+    visibleLimit,
+  });
+
+  return {
+    status:
+      normalizedUnavailableSources.length === 0 ? "ready" : "partial",
+    ...derived,
+    unavailableSources: normalizedUnavailableSources,
+  };
+}
+
+export function getNotificationTriggerLabel(state: NotificationState) {
+  const count = state.totalActiveAlertCountFromCheckedRecords;
+  if (count === null || count === 0) return "Open notification center";
+
+  const qualifier = state.status === "partial" ? " from available data" : "";
+  return `Open notification center, ${count} active ${count === 1 ? "alert" : "alerts"}${qualifier}`;
+}
+
+export function getNotificationSummary(state: NotificationState) {
+  const count = state.totalActiveAlertCountFromCheckedRecords;
+
+  if (count === null) return "Alert data unavailable";
+  if (count === 0) {
+    return state.status === "partial"
+      ? "No alerts in available data."
+      : "No current alerts.";
+  }
+
+  const qualifier = state.status === "partial" ? " from available data" : "";
+  if (state.visibleAlerts.length < count) {
+    return `Showing ${state.visibleAlerts.length} of ${count} active alerts${qualifier}.`;
+  }
+
+  return `${count} active ${count === 1 ? "alert" : "alerts"}${qualifier}.`;
 }

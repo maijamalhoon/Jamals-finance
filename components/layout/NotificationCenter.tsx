@@ -30,6 +30,10 @@ import type {
   NotificationState,
   NotificationTone,
 } from "@/lib/notifications";
+import {
+  getNotificationSummary,
+  getNotificationTriggerLabel,
+} from "@/lib/notifications";
 
 type NotificationCenterProps = {
   state: NotificationState;
@@ -52,6 +56,9 @@ const toneStyles: Record<
     className: "border-info/25 bg-info/10 text-info",
   },
 };
+
+const notificationTriggerClassName =
+  "finance-control finance-focus relative grid h-11 w-11 shrink-0 place-items-center rounded-[var(--radius-control)] text-text-secondary hover:text-text-primary";
 
 function formatAlertDate(dateKey: string) {
   const [year, month, day] = dateKey.split("-").map(Number);
@@ -119,6 +126,19 @@ function AlertRow({
   );
 }
 
+export function NotificationCenterLoading() {
+  return (
+    <button
+      type="button"
+      disabled
+      aria-label="Loading current alerts"
+      className={`${notificationTriggerClassName} cursor-wait opacity-70`}
+    >
+      <Bell size={18} aria-hidden="true" />
+    </button>
+  );
+}
+
 export default function NotificationCenter({ state }: NotificationCenterProps) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
@@ -137,12 +157,10 @@ export default function NotificationCenter({ state }: NotificationCenterProps) {
     };
   }, []);
 
-  const alertCount = state.alerts.length;
-  const showCount = state.status !== "error" && alertCount > 0;
-  const triggerLabel =
-    showCount
-      ? `Open notification center, ${alertCount} active ${alertCount === 1 ? "alert" : "alerts"}`
-      : "Open notification center";
+  const totalActiveAlertCount =
+    state.totalActiveAlertCountFromCheckedRecords;
+  const showCount = totalActiveAlertCount !== null && totalActiveAlertCount > 0;
+  const triggerLabel = getNotificationTriggerLabel(state);
 
   function retry() {
     if (!online) return;
@@ -154,7 +172,7 @@ export default function NotificationCenter({ state }: NotificationCenterProps) {
       <SheetTrigger
         type="button"
         aria-label={triggerLabel}
-        className="finance-control finance-focus relative grid h-11 w-11 shrink-0 place-items-center rounded-[var(--radius-control)] text-text-secondary hover:text-text-primary"
+        className={notificationTriggerClassName}
       >
         <Bell size={18} aria-hidden="true" />
         {showCount ? (
@@ -162,12 +180,7 @@ export default function NotificationCenter({ state }: NotificationCenterProps) {
             aria-hidden="true"
             className="absolute -right-1 -top-1 grid min-h-5 min-w-5 place-items-center rounded-full border-2 border-surface-primary bg-brand px-1 text-[10px] font-bold leading-none text-primary-foreground"
           >
-            {alertCount > 9 ? "9+" : alertCount}
-          </span>
-        ) : null}
-        {showCount ? (
-          <span className="sr-only">
-            {alertCount} active {alertCount === 1 ? "alert" : "alerts"}
+            {totalActiveAlertCount > 9 ? "9+" : totalActiveAlertCount}
           </span>
         ) : null}
       </SheetTrigger>
@@ -198,20 +211,14 @@ export default function NotificationCenter({ state }: NotificationCenterProps) {
 
         <div className="border-b border-border bg-surface-primary px-4 py-3 sm:px-5">
           <p className="text-sm font-semibold text-text-primary">
-            {state.status === "error"
-              ? "Alert data unavailable"
-              : state.status === "partial"
-                ? alertCount > 0
-                  ? `${alertCount} active ${alertCount === 1 ? "alert" : "alerts"} from available data`
-                  : "No alerts in available data"
-                : `${alertCount} active ${alertCount === 1 ? "alert" : "alerts"}`}
+            {getNotificationSummary(state)}
           </p>
           <p className="mt-0.5 text-xs text-text-secondary">
             {state.status === "error"
               ? "Goals and payables could not be checked."
               : state.status === "partial"
-                ? "One alert source could not be checked."
-                : "Active alerts reflect current deadlines, not unread messages."}
+                ? "One alert source could not be checked; the count uses available checked records."
+                : "The count reflects the bounded records checked for current deadlines."}
           </p>
         </div>
 
@@ -263,13 +270,13 @@ export default function NotificationCenter({ state }: NotificationCenterProps) {
                 variant="outline"
                 onClick={retry}
                 disabled={!online}
-                className="mt-4"
+                className="mt-4 min-h-11"
               >
                 <RefreshCw size={15} aria-hidden="true" />
                 {online ? "Retry" : "Reconnect to retry"}
               </Button>
             </div>
-          ) : state.alerts.length === 0 ? (
+          ) : state.visibleAlerts.length === 0 ? (
             <div className="flex min-h-[320px] flex-col items-center justify-center text-center">
               <span className="grid h-12 w-12 place-items-center rounded-[var(--radius-tile)] border border-border bg-surface-soft text-text-secondary">
                 <Bell size={21} aria-hidden="true" />
@@ -287,7 +294,7 @@ export default function NotificationCenter({ state }: NotificationCenterProps) {
             </div>
           ) : (
             <div className="space-y-3" aria-label="Current active alerts">
-              {state.alerts.map((alert) => (
+              {state.visibleAlerts.map((alert) => (
                 <AlertRow
                   key={alert.id}
                   alert={alert}

@@ -21,6 +21,13 @@ import {
   MOBILE_PRIMARY_NAV_ITEMS,
 } from "@/lib/navigation";
 
+const primaryNavItemBaseClass =
+  "finance-focus relative flex min-h-[58px] min-w-0 flex-col items-center justify-center gap-1 rounded-[var(--radius-tile)] px-0.5 text-[10px] font-bold transition-colors min-[360px]:text-[11px]";
+const activePrimaryNavItemClass =
+  "bg-brand text-primary-foreground shadow-theme active:bg-brand-pressed";
+const inactivePrimaryNavItemClass =
+  "text-text-secondary hover:bg-hover hover:text-text-primary active:bg-surface-inset active:text-text-primary";
+
 export default function MobileNav() {
   const pathname = usePathname();
   const [moreOpen, setMoreOpen] = useState(false);
@@ -34,7 +41,7 @@ export default function MobileNav() {
         aria-label="Mobile dashboard navigation"
         className="jf-mobile-nav-shell fixed inset-x-3 bottom-[calc(0.75rem+env(safe-area-inset-bottom))] z-50 lg:hidden"
       >
-        <div className="grid grid-cols-4 gap-1 rounded-[var(--radius-card)] border border-border bg-surface-elevated p-1.5 shadow-[var(--shadow-soft)]">
+        <div className="mx-auto grid w-full max-w-[32rem] grid-cols-4 gap-1 rounded-[var(--radius-card)] border border-border bg-surface-elevated p-1.5 shadow-[var(--shadow-soft)]">
           {MOBILE_PRIMARY_NAV_ITEMS.map(({ label, href, icon: Icon }) => {
             const active = isNavItemActive(pathname, href);
 
@@ -43,10 +50,10 @@ export default function MobileNav() {
                 key={href}
                 href={href}
                 aria-current={active ? "page" : undefined}
-                className={`finance-focus relative flex min-h-[58px] min-w-0 flex-col items-center justify-center gap-1 rounded-[var(--radius-tile)] px-0.5 text-[9px] font-bold transition-colors active:bg-brand-pressed min-[360px]:text-[10px] ${
+                className={`${primaryNavItemBaseClass} ${
                   active
-                    ? "bg-brand text-primary-foreground shadow-theme"
-                    : "text-text-secondary hover:bg-hover hover:text-text-primary"
+                    ? activePrimaryNavItemClass
+                    : inactivePrimaryNavItemClass
                 }`}
               >
                 {active ? (
@@ -71,10 +78,10 @@ export default function MobileNav() {
             type="button"
             aria-label="Open more dashboard navigation"
             aria-current={moreActive ? "page" : undefined}
-            className={`finance-focus relative flex min-h-[58px] min-w-0 flex-col items-center justify-center gap-1 rounded-[var(--radius-tile)] px-0.5 text-[9px] font-bold transition-colors active:bg-brand-pressed min-[360px]:text-[10px] ${
+            className={`${primaryNavItemBaseClass} ${
               moreActive || moreOpen
-                ? "bg-brand text-primary-foreground shadow-theme"
-                : "text-text-secondary hover:bg-hover hover:text-text-primary"
+                ? activePrimaryNavItemClass
+                : inactivePrimaryNavItemClass
             }`}
           >
             {moreActive || moreOpen ? (

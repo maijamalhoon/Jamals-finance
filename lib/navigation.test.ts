@@ -143,6 +143,10 @@ describe("dashboard shell contracts", () => {
     new URL("../components/layout/MobileNav.tsx", import.meta.url),
     "utf8",
   );
+  const notificationCenterSource = readFileSync(
+    new URL("../components/layout/NotificationCenter.tsx", import.meta.url),
+    "utf8",
+  );
   const jamalMenuSource = readFileSync(
     new URL("../components/layout/JamalMenu.tsx", import.meta.url),
     "utf8",
@@ -152,12 +156,45 @@ describe("dashboard shell contracts", () => {
     expect(layoutSource).toContain("<Sidebar />");
   });
 
-  it("uses one shared NotificationCenter from both headers", () => {
-    expect(headerSource).toContain("<NotificationCenter");
-    expect(mobileHeaderSource).toContain("<NotificationCenter");
+  it("streams one shared notification promise into both header slots", () => {
+    expect(layoutSource).toContain(
+      "const notificationStatePromise = loadDashboardNotifications();",
+    );
+    expect(layoutSource).not.toContain(
+      "await loadDashboardNotifications()",
+    );
+    expect(layoutSource).toContain(
+      "statePromise={notificationStatePromise}",
+    );
+    expect(layoutSource.match(/notificationSlot={notificationSlot}/g)).toHaveLength(
+      2,
+    );
+    expect(headerSource).toContain("{notificationSlot}");
+    expect(mobileHeaderSource).toContain("{notificationSlot}");
     expect(`${headerSource}\n${mobileHeaderSource}`).not.toContain(
       "No new notifications",
     );
+  });
+
+  it("keeps the mobile nav centered, readable, and semantically pressed", () => {
+    const inactiveClass = mobileNavSource.match(
+      /const inactivePrimaryNavItemClass =\s*\n\s*"([^"]+)"/,
+    )?.[1];
+
+    expect(mobileNavSource).toContain("mx-auto grid w-full max-w-[32rem]");
+    expect(mobileNavSource).toContain("text-[10px]");
+    expect(mobileNavSource).toContain("min-[360px]:text-[11px]");
+    expect(mobileNavSource).not.toContain("text-[9px]");
+    expect(inactiveClass).toBeDefined();
+    expect(inactiveClass).toContain("active:bg-surface-inset");
+    expect(inactiveClass).not.toContain("bg-brand");
+  });
+
+  it("guarantees a 44px notification loading and Retry target", () => {
+    expect(notificationCenterSource).toContain(
+      'aria-label="Loading current alerts"',
+    );
+    expect(notificationCenterSource).toContain('className="mt-4 min-h-11"');
   });
 
   it("uses accessible primitives for More and the profile menu", () => {

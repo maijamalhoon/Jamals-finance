@@ -1,9 +1,12 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  createNotificationState,
   deriveGoalAlerts,
   deriveNotifications,
   derivePayableAlerts,
+  getNotificationSummary,
+  getNotificationTriggerLabel,
   type GoalNotificationRecord,
   type PayableNotificationRecord,
 } from "./notifications";
@@ -124,7 +127,7 @@ describe("goal alert derivation", () => {
 
 describe("combined notification behavior", () => {
   it("sorts deterministically by severity, date, and stable ID", () => {
-    const alerts = deriveNotifications({
+    const { visibleAlerts } = deriveNotifications({
       now: FIXED_NOW,
       payables: [
         payable({ id: "warning-b", due_date: "2026-07-16" }),
@@ -137,7 +140,7 @@ describe("combined notification behavior", () => {
       ],
     });
 
-    expect(alerts.map((alert) => alert.id)).toEqual([
+    expect(visibleAlerts.map((alert) => alert.id)).toEqual([
       "goal:danger-a:deadline",
       "payable:danger-b:due",
       "goal:warning-a:deadline",
@@ -158,14 +161,65 @@ describe("combined notification behavior", () => {
     expect(todayId).toBe(soonId);
   });
 
-  it("bounds the visible result count", () => {
+  it("keeps the visible list bounded while preserving the total active count", () => {
     const payables = Array.from({ length: 20 }, (_, index) =>
       payable({ id: `p-${index}` }),
     );
+    const derived = deriveNotifications({
+      payables,
+      now: FIXED_NOW,
+      visibleLimit: 12,
+    });
 
-    expect(
-      deriveNotifications({ payables, now: FIXED_NOW, limit: 12 }),
-    ).toHaveLength(12);
+    expect(derived.totalActiveAlertCountFromCheckedRecords).toBe(20);
+    expect(derived.visibleAlerts).toHaveLength(12);
+  });
+
+  it("uses the total active count in trigger and visible-list summary logic", () => {
+    const state = createNotificationState({
+      payables: Array.from({ length: 20 }, (_, index) =>
+        payable({ id: `p-${index}` }),
+      ),
+      now: FIXED_NOW,
+    });
+
+    expect(getNotificationTriggerLabel(state)).toBe(
+      "Open notification center, 20 active alerts",
+    );
+    expect(getNotificationSummary(state)).toBe(
+      "Showing 12 of 20 active alerts.",
+    );
+  });
+
+  it("keeps successful-source alerts and labels partial counts as available data", () => {
+    const state = createNotificationState({
+      payables: [payable()],
+      now: FIXED_NOW,
+      unavailableSources: ["goal"],
+    });
+
+    expect(state.status).toBe("partial");
+    expect(state.unavailableSources).toEqual(["goal"]);
+    expect(state.totalActiveAlertCountFromCheckedRecords).toBe(1);
+    expect(state.visibleAlerts).toHaveLength(1);
+    expect(getNotificationTriggerLabel(state)).toBe(
+      "Open notification center, 1 active alert from available data",
+    );
+    expect(getNotificationSummary(state)).toBe(
+      "1 active alert from available data.",
+    );
+  });
+
+  it("exposes no count when both sources are unavailable", () => {
+    const state = createNotificationState({
+      now: FIXED_NOW,
+      unavailableSources: ["payable", "goal"],
+    });
+
+    expect(state.status).toBe("error");
+    expect(state.totalActiveAlertCountFromCheckedRecords).toBeNull();
+    expect(state.visibleAlerts).toEqual([]);
+    expect(getNotificationTriggerLabel(state)).toBe("Open notification center");
   });
 
   it("uses Asia/Karachi date semantics for a fixed instant", () => {
@@ -176,10 +230,16 @@ describe("combined notification behavior", () => {
   });
 
   it("does not invent unread state", () => {
-    const alert = deriveNotifications({ goals: [goal()], now: FIXED_NOW })[0];
+    const derived = deriveNotifications({ goals: [goal()], now: FIXED_NOW });
+    const state = createNotificationState({ goals: [goal()], now: FIXED_NOW });
+    const alert = derived.visibleAlerts[0];
 
     expect(alert).toBeDefined();
     expect(alert).not.toHaveProperty("unread");
     expect(alert).not.toHaveProperty("read");
+    expect(derived).not.toHaveProperty("unread");
+    expect(derived).not.toHaveProperty("read");
+    expect(state).not.toHaveProperty("unread");
+    expect(state).not.toHaveProperty("read");
   });
 });

@@ -2,10 +2,9 @@
 
 import { Search, X } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 
 import JamalMenu from "@/components/layout/JamalMenu";
-import NotificationCenter from "@/components/layout/NotificationCenter";
 import {
   Sheet,
   SheetClose,
@@ -16,13 +15,12 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { getRouteGroup, getRouteTitle } from "@/lib/navigation";
-import type { NotificationState } from "@/lib/notifications";
 
 type HeaderProps = {
-  notificationState: NotificationState;
+  notificationSlot: ReactNode;
 };
 
-export default function Header({ notificationState }: HeaderProps) {
+export default function Header({ notificationSlot }: HeaderProps) {
   const router = useRouter();
   const pathname = usePathname();
   const [query, setQuery] = useState("");
@@ -150,7 +148,7 @@ export default function Header({ notificationState }: HeaderProps) {
           </SheetContent>
         </Sheet>
 
-        <NotificationCenter state={notificationState} />
+        {notificationSlot}
         <JamalMenu align="right" placement="bottom" variant="avatar" />
       </div>
     </header>

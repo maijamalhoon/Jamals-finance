@@ -1,19 +1,40 @@
+import { Suspense } from "react";
+
 import Header from "@/components/layout/Header";
 import MobileHeader from "@/components/layout/MobileHeader";
 import MobileNav from "@/components/layout/MobileNav";
 import Sidebar from "@/components/layout/Sidebar";
 import FloatingActions from "@/components/layout/FloatingActions";
+import NotificationCenter, {
+  NotificationCenterLoading,
+} from "@/components/layout/NotificationCenter";
 import DashboardScrollRestoration from "@/components/motion/DashboardScrollRestoration";
+import type { NotificationState } from "@/lib/notifications";
 import { loadDashboardNotifications } from "@/lib/notifications-server";
 
 export const dynamic = "force-dynamic";
 
-export default async function DashboardLayout({
+async function NotificationCenterSlot({
+  statePromise,
+}: {
+  statePromise: Promise<NotificationState>;
+}) {
+  const state = await statePromise;
+
+  return <NotificationCenter state={state} />;
+}
+
+export default function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const notificationState = await loadDashboardNotifications();
+  const notificationStatePromise = loadDashboardNotifications();
+  const notificationSlot = (
+    <Suspense fallback={<NotificationCenterLoading />}>
+      <NotificationCenterSlot statePromise={notificationStatePromise} />
+    </Suspense>
+  );
 
   return (
     <div
@@ -33,10 +54,10 @@ export default async function DashboardLayout({
 
       <div className="relative z-10 flex min-w-0 flex-1 flex-col overflow-hidden">
         <div className="jf-dashboard-header-wrap hidden shrink-0 lg:block">
-          <Header notificationState={notificationState} />
+          <Header notificationSlot={notificationSlot} />
         </div>
 
-        <MobileHeader notificationState={notificationState} />
+        <MobileHeader notificationSlot={notificationSlot} />
         <DashboardScrollRestoration />
 
         <main

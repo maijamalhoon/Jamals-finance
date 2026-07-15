@@ -3,7 +3,7 @@ import "server-only";
 import { getAppDateKey } from "@/lib/dates";
 import {
   addDaysToDateKey,
-  deriveNotifications,
+  createNotificationState,
   type GoalNotificationRecord,
   type NotificationSource,
   type NotificationState,
@@ -87,21 +87,16 @@ export async function loadDashboardNotifications(
       payableResult.status === "ready" ? payableResult.data : [];
     const goals = goalResult.status === "ready" ? goalResult.data : [];
 
-    return {
-      status:
-        unavailableSources.length === 0
-          ? "ready"
-          : unavailableSources.length === 2
-            ? "error"
-            : "partial",
-      alerts: deriveNotifications({ payables, goals, now }),
+    return createNotificationState({
+      payables,
+      goals,
+      now,
       unavailableSources,
-    };
+    });
   } catch {
-    return {
-      status: "error",
-      alerts: [],
+    return createNotificationState({
+      now,
       unavailableSources: ["payable", "goal"],
-    };
+    });
   }
 }
