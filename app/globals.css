@@ -623,129 +623,6 @@
     box-shadow: var(--focus-ring);
   }
 
-  .jf-sidebar-link {
-    position: relative;
-    isolation: isolate;
-    display: flex;
-    min-height: 2.75rem;
-    align-items: center;
-    gap: 0.75rem;
-    overflow: visible;
-    border-radius: 1rem;
-    padding: 0.4rem 0.625rem 0.4rem 0.75rem;
-    color: var(--text-secondary);
-    transition:
-      color var(--motion-duration-base) var(--motion-ease),
-      background-color var(--motion-duration-base) var(--motion-ease);
-  }
-
-  .jf-sidebar-link:hover {
-    background-color: color-mix(in srgb, var(--hover), transparent 42%);
-    color: var(--text-primary);
-  }
-
-  .jf-sidebar-link:focus-visible {
-    outline: none;
-    box-shadow: var(--focus-ring);
-  }
-
-  .jf-sidebar-link[data-active="true"] {
-    color: var(--active);
-  }
-
-  .jf-sidebar-pill {
-    position: absolute;
-    inset: 0;
-    z-index: -1;
-    border: 1px solid color-mix(in srgb, var(--active), var(--border) 74%);
-    border-radius: 1rem;
-    background: linear-gradient(
-      180deg,
-      color-mix(in srgb, var(--card), var(--active) 8%),
-      var(--hover)
-    );
-    box-shadow: var(--shadow), var(--surface-highlight);
-    will-change: transform, opacity;
-  }
-
-  .jf-sidebar-line {
-    position: absolute;
-    inset-inline-start: 0.45rem;
-    top: calc(50% - 0.75rem);
-    z-index: 1;
-    width: 3px;
-    height: 1.5rem;
-    border-radius: 999px;
-    background: var(--active);
-    box-shadow: 0 0 0 1px color-mix(in srgb, var(--active), transparent 84%);
-    pointer-events: none;
-  }
-
-  .jf-sidebar-icon {
-    position: relative;
-    z-index: 2;
-    display: grid;
-    width: 2rem;
-    height: 2rem;
-    flex-shrink: 0;
-    place-items: center;
-    border: 1px solid color-mix(in srgb, var(--border), transparent 14%);
-    border-radius: 0.8rem;
-    background-color: color-mix(
-      in srgb,
-      var(--surface-secondary),
-      transparent 14%
-    );
-    color: var(--text-tertiary);
-    transition:
-      color var(--motion-duration-base) var(--motion-ease),
-      background-color var(--motion-duration-base) var(--motion-ease),
-      border-color var(--motion-duration-base) var(--motion-ease),
-      box-shadow var(--motion-duration-base) var(--motion-ease),
-      transform var(--motion-duration-fast) var(--motion-ease);
-  }
-
-  .jf-sidebar-link:hover .jf-sidebar-icon {
-    border-color: color-mix(in srgb, var(--active), var(--border) 82%);
-    background-color: var(--surface-secondary);
-    color: var(--text-primary);
-    transform: translateY(-1px);
-  }
-
-  .jf-sidebar-link[data-active="true"] .jf-sidebar-icon {
-    border-color: color-mix(in srgb, var(--active), transparent 72%);
-    background-color: var(--card);
-    color: var(--active);
-    box-shadow:
-      0 8px 18px color-mix(in srgb, var(--active), transparent 86%),
-      var(--surface-highlight);
-  }
-
-  .jf-sidebar-chevron {
-    position: relative;
-    z-index: 2;
-    margin-left: auto;
-    flex-shrink: 0;
-    color: var(--text-tertiary);
-    opacity: 0;
-    transform: translateX(-0.25rem);
-    transition:
-      color var(--motion-duration-base) var(--motion-ease),
-      opacity var(--motion-duration-base) var(--motion-ease),
-      transform var(--motion-duration-base) var(--motion-ease);
-  }
-
-  .jf-sidebar-link:hover .jf-sidebar-chevron {
-    opacity: 0.42;
-    transform: translateX(0);
-  }
-
-  .jf-sidebar-link[data-active="true"] .jf-sidebar-chevron {
-    color: var(--active);
-    opacity: 1;
-    transform: translateX(0);
-  }
-
   .page-heading {
     @apply flex flex-col gap-3 border p-4 sm:flex-row sm:items-end sm:justify-between sm:p-5;
     border-radius: var(--oneui-card-radius);
@@ -3337,14 +3214,6 @@ textarea:focus {
   animation-delay: -5s;
 }
 
-.jf-dashboard-sidebar-wrap {
-  box-shadow: var(--shadow);
-}
-
-.dark .jf-dashboard-sidebar-wrap {
-  box-shadow: var(--shadow);
-}
-
 .jf-dashboard-header-wrap {
   backdrop-filter: none;
 }
@@ -3743,9 +3612,8 @@ tbody tr:hover {
     transition-duration: 1ms !important;
   }
 }
-/* Navigation/header/sidebar safe polish — no chart selectors touched */
+/* Navigation/header safe polish — no chart selectors touched */
 .jf-dashboard-header-wrap,
-.jf-dashboard-sidebar-wrap,
 .jf-mobile-nav-shell {
   transform: translateZ(0);
 }
@@ -3784,8 +3652,6 @@ tbody tr:hover {
 .jf-dashboard-header-wrap input,
 .jf-dashboard-header-wrap button,
 .jf-dashboard-header-wrap a,
-.jf-dashboard-sidebar-wrap a,
-.jf-dashboard-sidebar-wrap button,
 .jf-mobile-nav-shell a,
 .jf-mobile-nav-shell button {
   -webkit-tap-highlight-color: transparent;
@@ -3806,9 +3672,7 @@ tbody tr:hover {
 }
 
 .jf-dashboard-header-wrap button,
-.jf-dashboard-header-wrap a,
-.jf-dashboard-sidebar-wrap a,
-.jf-dashboard-sidebar-wrap button {
+.jf-dashboard-header-wrap a {
   transition:
     border-color 180ms ease,
     background-color 180ms ease,
@@ -3819,33 +3683,16 @@ tbody tr:hover {
 
 @media (hover: hover) and (pointer: fine) {
   .jf-dashboard-header-wrap button:hover,
-  .jf-dashboard-header-wrap a:hover,
-  .jf-dashboard-sidebar-wrap a:hover,
-  .jf-dashboard-sidebar-wrap button:hover {
+  .jf-dashboard-header-wrap a:hover {
     transform: translateY(-1px);
   }
 }
 
 .jf-dashboard-header-wrap button:active,
 .jf-dashboard-header-wrap a:active,
-.jf-dashboard-sidebar-wrap a:active,
-.jf-dashboard-sidebar-wrap button:active,
 .jf-mobile-nav-shell a:active,
 .jf-mobile-nav-shell button:active {
   transform: scale(0.985);
-}
-
-.jf-dashboard-sidebar-wrap {
-  isolation: isolate;
-}
-
-.jf-dashboard-sidebar-wrap::after {
-  display: none;
-}
-
-.jf-dashboard-sidebar-wrap a[aria-current="page"],
-.jf-dashboard-sidebar-wrap a[data-active="true"] {
-  box-shadow: var(--shadow);
 }
 
 .jf-mobile-nav-shell > div {
@@ -3868,12 +3715,7 @@ tbody tr:hover {
 }
 
 @media (max-width: 1023px) {
-  .jf-dashboard-sidebar-wrap {
-    display: none !important;
-  }
-
-  .jf-dashboard-header-wrap::after,
-  .jf-dashboard-sidebar-wrap::after {
+  .jf-dashboard-header-wrap::after {
     display: none;
   }
 }
@@ -3886,7 +3728,6 @@ tbody tr:hover {
 
 @media (prefers-reduced-motion: reduce) {
   .jf-dashboard-header-wrap *,
-  .jf-dashboard-sidebar-wrap *,
   .jf-mobile-nav-shell * {
     transition-duration: 1ms !important;
     animation-duration: 1ms !important;
@@ -5450,36 +5291,6 @@ tbody tr:hover {
   background: color-mix(in srgb, var(--hover), white 4%);
 }
 
-.dark [data-desktop-sidebar] {
-  border-color: var(--border);
-  background: var(--sidebar);
-}
-
-.dark [data-desktop-sidebar] nav a {
-  border: 1px solid transparent;
-}
-
-.dark [data-desktop-sidebar] nav a:hover {
-  border-color: var(--border-strong);
-  background: var(--hover);
-  color: var(--text-primary);
-}
-
-.dark [data-desktop-sidebar] nav a[aria-current="page"],
-.dark [data-desktop-sidebar] nav a[data-active="true"] {
-  border-color: color-mix(in srgb, var(--active), transparent 48%);
-  background: color-mix(in srgb, var(--active), transparent 88%);
-  color: var(--active);
-  box-shadow: var(--shadow);
-}
-
-.dark [data-desktop-sidebar] nav a[aria-current="page"] .jf-sidebar-icon,
-.dark [data-desktop-sidebar] nav a[data-active="true"] .jf-sidebar-icon {
-  border-color: color-mix(in srgb, var(--active), transparent 40%);
-  background: color-mix(in srgb, var(--active), transparent 84%);
-  color: var(--active);
-}
-
 .dark :where(table thead, [data-slot="table-header"]) {
   background: color-mix(in srgb, var(--surface-secondary), transparent 12%);
 }
@@ -5596,7 +5407,6 @@ tbody tr:hover {
 
 .dark :where(
   [data-dashboard-shell] svg,
-  [data-desktop-sidebar] svg,
   [data-slot="button"] svg,
   .icon-button svg
 ) {

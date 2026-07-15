@@ -1,10 +1,14 @@
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 
 import {
+  DESKTOP_MORE_NAV_GROUPS,
+  DESKTOP_MORE_NAV_ITEMS,
+  DESKTOP_PRIMARY_NAV_ITEMS,
   getActiveNavItem,
   getRouteGroup,
   getRouteTitle,
+  isDesktopMoreActive,
   isNavItemActive,
   MOBILE_MORE_NAV_ITEMS,
   MOBILE_PRIMARY_NAV_ITEMS,
@@ -40,6 +44,22 @@ const expectedRoutes = [
   ["AI Insights", "/dashboard/ai-insights"],
   ["Reports", "/dashboard/reports"],
   ["Settings", "/dashboard/settings"],
+];
+
+const expectedDesktopPrimaryRoutes = [
+  "/dashboard",
+  "/dashboard/transactions",
+  "/dashboard/accounts",
+  "/dashboard/income",
+  "/dashboard/expenses",
+  "/dashboard/analytics",
+];
+
+const expectedDesktopMoreGroups = [
+  { label: "Planning", items: ["Goals", "Payables"] },
+  { label: "Growth", items: ["Investments"] },
+  { label: "Intelligence", items: ["AI Insights", "Reports"] },
+  { label: "Workspace", items: ["Settings"] },
 ];
 
 describe("dashboard navigation hierarchy", () => {
@@ -112,6 +132,40 @@ describe("dashboard navigation hierarchy", () => {
     ]);
   });
 
+  it("uses the exact desktop-primary routes and order", () => {
+    expect(DESKTOP_PRIMARY_NAV_ITEMS.map((item) => item.href)).toEqual(
+      expectedDesktopPrimaryRoutes,
+    );
+  });
+
+  it("places every remaining desktop route in More exactly once", () => {
+    const primaryHrefs = new Set(expectedDesktopPrimaryRoutes);
+    const expectedMoreHrefs = NAV_ITEMS.filter(
+      (item) => !primaryHrefs.has(item.href),
+    ).map((item) => item.href);
+    const actualMoreHrefs = DESKTOP_MORE_NAV_ITEMS.map((item) => item.href);
+
+    expect(actualMoreHrefs).toEqual(expectedMoreHrefs);
+    expect(new Set(actualMoreHrefs).size).toBe(actualMoreHrefs.length);
+    expect(
+      DESKTOP_MORE_NAV_GROUPS.map((group) => ({
+        label: group.label,
+        items: group.items.map((item) => item.label),
+      })),
+    ).toEqual(expectedDesktopMoreGroups);
+  });
+
+  it("activates desktop More for nested owning routes only", () => {
+    expect(isDesktopMoreActive("/dashboard/goals/example")).toBe(true);
+    expect(isDesktopMoreActive("/dashboard/payables/example")).toBe(true);
+    expect(isDesktopMoreActive("/dashboard/investments/example")).toBe(true);
+    expect(isDesktopMoreActive("/dashboard/ai-insights/history")).toBe(true);
+    expect(isDesktopMoreActive("/dashboard/reports/archive")).toBe(true);
+    expect(isDesktopMoreActive("/dashboard/settings/profile")).toBe(true);
+    expect(isDesktopMoreActive("/dashboard/analytics")).toBe(false);
+    expect(isDesktopMoreActive("/dashboard/goals-old")).toBe(false);
+  });
+
   it("places every remaining route in More exactly once", () => {
     const primaryHrefs = new Set(
       MOBILE_PRIMARY_NAV_ITEMS.map((item) => item.href),
@@ -151,9 +205,28 @@ describe("dashboard shell contracts", () => {
     new URL("../components/layout/JamalMenu.tsx", import.meta.url),
     "utf8",
   );
+  const globalsSource = readFileSync(
+    new URL("../app/globals.css", import.meta.url),
+    "utf8",
+  );
+  const sidebarPath = new URL(
+    "../components/layout/Sidebar.tsx",
+    import.meta.url,
+  );
 
-  it("mounts Sidebar in the authenticated dashboard layout", () => {
-    expect(layoutSource).toContain("<Sidebar />");
+  it("fully removes the desktop Sidebar architecture", () => {
+    expect(layoutSource).not.toContain("Sidebar");
+    expect(existsSync(sidebarPath)).toBe(false);
+    for (const selector of [
+      "jf-dashboard-sidebar-wrap",
+      "jf-sidebar-link",
+      "jf-sidebar-icon",
+      "jf-sidebar-pill",
+      "jf-sidebar-line",
+      "data-desktop-sidebar",
+    ]) {
+      expect(globalsSource).not.toContain(selector);
+    }
   });
 
   it("streams one shared notification promise into both header slots", () => {
@@ -200,13 +273,25 @@ describe("dashboard shell contracts", () => {
   it("uses accessible primitives for More and the profile menu", () => {
     expect(mobileNavSource).toContain("<Sheet");
     expect(mobileNavSource).not.toContain("AnimatePresence");
+    expect(headerSource).toContain("<DropdownMenu>");
+    expect(headerSource).toContain("<DropdownMenuTrigger");
+    expect(headerSource).toContain("DESKTOP_MORE_NAV_GROUPS");
     expect(jamalMenuSource).toContain("<DropdownMenu");
+    expect(headerSource).not.toContain('role="dialog"');
     expect(jamalMenuSource).not.toContain('role="dialog"');
   });
 
-  it("removes duplicated desktop primary navigation from Header", () => {
-    expect(headerSource).not.toContain("DESKTOP_PRIMARY_NAV_ITEMS");
-    expect(headerSource).not.toContain("DESKTOP_SECONDARY_NAV_ITEMS");
+  it("uses direct desktop navigation and reserves Sheet for transaction search", () => {
+    expect(headerSource).toContain("DESKTOP_PRIMARY_NAV_ITEMS.map");
+    expect(headerSource).toContain(
+      'aria-label="Desktop dashboard navigation"',
+    );
+    expect(headerSource.match(/<Sheet(?=[\s>])/g)).toHaveLength(1);
+    expect(headerSource.match(/<DropdownMenu(?=[\s>])/g)).toHaveLength(1);
+    expect(headerSource).toContain('aria-label="Open transaction search"');
+    expect(headerSource).toContain(
+      'aria-label="Open more dashboard navigation"',
+    );
     expect(headerSource).not.toContain(">Pages<");
   });
 });

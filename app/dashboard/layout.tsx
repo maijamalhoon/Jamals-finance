@@ -3,7 +3,6 @@ import { Suspense } from "react";
 import Header from "@/components/layout/Header";
 import MobileHeader from "@/components/layout/MobileHeader";
 import MobileNav from "@/components/layout/MobileNav";
-import Sidebar from "@/components/layout/Sidebar";
 import FloatingActions from "@/components/layout/FloatingActions";
 import NotificationCenter, {
   NotificationCenterLoading,
@@ -50,9 +49,7 @@ export default function DashboardLayout({
         className="jf-dashboard-grid pointer-events-none absolute inset-0 z-0 opacity-[0.34]"
       />
 
-      <Sidebar />
-
-      <div className="relative z-10 flex min-w-0 flex-1 flex-col overflow-hidden">
+      <div className="relative z-10 flex w-full min-w-0 flex-1 flex-col overflow-hidden">
         <div className="jf-dashboard-header-wrap hidden shrink-0 lg:block">
           <Header notificationSlot={notificationSlot} />
         </div>

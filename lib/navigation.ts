@@ -120,6 +120,30 @@ export const NAV_GROUPS: NavGroup[] = [
 
 export const NAV_ITEMS: NavItem[] = NAV_GROUPS.flatMap((group) => group.items);
 
+const DESKTOP_PRIMARY_HREFS = [
+  "/dashboard",
+  "/dashboard/transactions",
+  "/dashboard/accounts",
+  "/dashboard/income",
+  "/dashboard/expenses",
+  "/dashboard/analytics",
+] as const;
+
+const desktopPrimaryHrefSet = new Set<string>(DESKTOP_PRIMARY_HREFS);
+
+export const DESKTOP_PRIMARY_NAV_ITEMS = DESKTOP_PRIMARY_HREFS.map(
+  (href) => NAV_ITEMS.find((item) => item.href === href)!,
+);
+
+export const DESKTOP_MORE_NAV_ITEMS = NAV_ITEMS.filter(
+  (item) => !desktopPrimaryHrefSet.has(item.href),
+);
+
+export const DESKTOP_MORE_NAV_GROUPS: NavGroup[] = NAV_GROUPS.map((group) => ({
+  ...group,
+  items: group.items.filter((item) => !desktopPrimaryHrefSet.has(item.href)),
+})).filter((group) => group.items.length > 0);
+
 const MOBILE_PRIMARY_HREFS = [
   "/dashboard",
   "/dashboard/transactions",
@@ -159,6 +183,12 @@ export function isNavItemActive(pathname: string, href: string) {
   return (
     normalizedPathname === normalizedHref ||
     normalizedPathname.startsWith(`${normalizedHref}/`)
+  );
+}
+
+export function isDesktopMoreActive(pathname: string) {
+  return DESKTOP_MORE_NAV_ITEMS.some((item) =>
+    isNavItemActive(pathname, item.href),
   );
 }
 
