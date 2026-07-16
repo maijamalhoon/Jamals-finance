@@ -8,6 +8,7 @@ import { useDashboardAnimationReady } from "@/components/motion/useDashboardAnim
 import EmptyState from "@/components/ui/empty-state";
 import { useCurrency } from "@/components/currency/CurrencyProvider";
 import type { DashboardAvailability } from "@/lib/dashboard-financial-semantics";
+import { CHART_COLOR_PALETTE } from "@/lib/theme-colors";
 
 interface SpendingData {
   id?: string;
@@ -16,19 +17,6 @@ interface SpendingData {
   percentage: number;
   color: string;
 }
-
-const CATEGORY_PALETTE = [
-  "#2563eb",
-  "#16a34a",
-  "#f59e0b",
-  "#dc2626",
-  "#7c3aed",
-  "#0891b2",
-  "#db2777",
-  "#65a30d",
-  "#ea580c",
-  "#0d9488",
-] as const;
 
 function isUsableColor(color: string | null | undefined): color is string {
   return (
@@ -43,7 +31,7 @@ function getCategoryAccent(item: SpendingData, index: number) {
     .split("")
     .reduce((total, letter) => total + letter.charCodeAt(0), index);
 
-  return CATEGORY_PALETTE[stableSeed % CATEGORY_PALETTE.length];
+  return CHART_COLOR_PALETTE[stableSeed % CHART_COLOR_PALETTE.length];
 }
 
 function formatPercentage(value: number) {

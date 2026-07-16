@@ -8,11 +8,16 @@ import DatePicker from "@/components/ui/date-picker";
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  FinanceModalBody,
+  FinanceModalFooter,
+  FinanceFormField,
+  FinanceModalHeader,
+  financeCancelButtonClass,
+  financeErrorClass,
+  financeModalContentClass,
+} from "@/components/ui/finance-modal";
 import {
   validateCustomRange,
   type AnalyticsPeriod,
@@ -106,19 +111,21 @@ export default function AnalyticsRangeControls({
       </div>
 
       <Dialog open={open} onOpenChange={handleOpenChange}>
-        <DialogContent className="max-h-[calc(100dvh-1rem)] w-[calc(100vw-1rem)] max-w-lg overflow-y-auto p-5 sm:p-6">
-          <DialogHeader>
-            <DialogTitle className="text-lg">Custom analytics range</DialogTitle>
-            <DialogDescription>
-              Choose an inclusive start and end date. The comparison uses the immediately preceding range with the same number of days.
-            </DialogDescription>
-          </DialogHeader>
+        <DialogContent className={`${financeModalContentClass} sm:[--finance-modal-max-width:32rem]`}>
+          <FinanceModalHeader
+            title="Custom analytics range"
+            description="Choose an inclusive range. Comparison uses the immediately preceding period with the same number of days."
+            icon={CalendarRange}
+            tone="info"
+          />
 
-          <div className="grid gap-4 py-2 sm:grid-cols-2">
-            <div className="min-w-0 space-y-2">
-              <label className="text-sm font-semibold text-text-primary" htmlFor="analytics-range-start">
-                Start date
-              </label>
+          <FinanceModalBody>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <FinanceFormField
+                label="Start date"
+                htmlFor="analytics-range-start"
+                hint={!start ? "Required" : undefined}
+              >
               <DatePicker
                 id="analytics-range-start"
                 value={start}
@@ -127,13 +134,13 @@ export default function AnalyticsRangeControls({
                 ariaDescribedBy="analytics-range-help"
                 maxDate={now}
               />
-              {!start ? <p className="text-xs text-text-tertiary">Required</p> : null}
-            </div>
+              </FinanceFormField>
 
-            <div className="min-w-0 space-y-2">
-              <label className="text-sm font-semibold text-text-primary" htmlFor="analytics-range-end">
-                End date
-              </label>
+              <FinanceFormField
+                label="End date"
+                htmlFor="analytics-range-end"
+                hint={!end ? "Required" : undefined}
+              >
               <DatePicker
                 id="analytics-range-end"
                 value={end}
@@ -142,27 +149,38 @@ export default function AnalyticsRangeControls({
                 ariaDescribedBy="analytics-range-help"
                 maxDate={now}
               />
-              {!end ? <p className="text-xs text-text-tertiary">Required</p> : null}
+              </FinanceFormField>
             </div>
-          </div>
 
-          <p id="analytics-range-help" className="text-xs leading-5 text-text-tertiary">
-            Dates use DD/MM/YYYY. Future dates are unavailable.
-          </p>
-          {validation.rangeError ? (
-            <p className="text-sm font-medium text-danger" role="alert">
-              {validation.rangeError}
+            <p
+              id="analytics-range-help"
+              className="rounded-[var(--oneui-control-radius)] border border-info/20 bg-info/10 px-3 py-2.5 text-xs leading-5 text-text-secondary"
+            >
+              Dates use DD/MM/YYYY. Future dates are unavailable.
             </p>
-          ) : null}
+            {validation.rangeError ? (
+              <p className={financeErrorClass} role="alert">
+                {validation.rangeError}
+              </p>
+            ) : null}
+          </FinanceModalBody>
 
-          <DialogFooter className="mt-2 -mx-5 -mb-5 sm:-mx-6 sm:-mb-6">
-            <Button variant="outline" onClick={() => handleOpenChange(false)}>
+          <FinanceModalFooter>
+            <Button
+              variant="outline"
+              onClick={() => handleOpenChange(false)}
+              className={financeCancelButtonClass}
+            >
               Cancel
             </Button>
-            <Button disabled={!validation.valid || pending} onClick={applyCustomRange}>
+            <Button
+              disabled={!validation.valid || pending}
+              onClick={applyCustomRange}
+              className="primary-action w-full"
+            >
               Apply range
             </Button>
-          </DialogFooter>
+          </FinanceModalFooter>
         </DialogContent>
       </Dialog>
     </div>

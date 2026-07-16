@@ -15,9 +15,14 @@ const badgeVariants = cva(
         destructive:
           "bg-destructive/10 text-destructive focus-visible:ring-destructive/20 dark:bg-destructive/20 dark:focus-visible:ring-destructive/40 [a]:hover:bg-destructive/20",
         success: "border-success/20 bg-success/10 text-success",
+        income: "border-income/25 bg-income-soft text-income",
+        expense: "border-expense/25 bg-expense-soft text-expense",
+        transfer: "border-transfer/25 bg-transfer-soft text-transfer",
         warning: "border-warning/20 bg-warning/10 text-warning",
+        payables: "border-payables/25 bg-payables-soft text-payables",
         info: "border-info/20 bg-info/10 text-info",
         investment: "border-investment/20 bg-investment/10 text-investment",
+        goals: "border-goals/25 bg-goals-soft text-goals",
         outline:
           "border-border text-foreground [a]:hover:bg-muted [a]:hover:text-muted-foreground",
         ghost:

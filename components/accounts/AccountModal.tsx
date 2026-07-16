@@ -33,6 +33,10 @@ import {
   financeModalContentClass,
 } from "@/components/ui/finance-modal";
 import { BASE_CURRENCY } from "@/lib/currency";
+import {
+  ACCOUNT_ACCENT_OPTIONS,
+  getAccountAccentColor,
+} from "@/lib/theme-colors";
 
 export interface ExistingAccount {
   id: string;
@@ -67,17 +71,6 @@ const ICON_OPTIONS = [
   { value: "savings", label: "Saving", icon: PiggyBank },
 ];
 
-const COLOR_OPTIONS = [
-  { value: "blue", label: "Blue", hex: "#2563eb" },
-  { value: "green", label: "Green", hex: "#059669" },
-  { value: "orange", label: "Orange", hex: "#ea580c" },
-  { value: "purple", label: "Purple", hex: "#7c3aed" },
-  { value: "cyan", label: "Cyan", hex: "#0891b2" },
-  { value: "rose", label: "Rose", hex: "#e11d48" },
-  { value: "amber", label: "Amber", hex: "#d97706" },
-  { value: "slate", label: "Slate", hex: "#475569" },
-];
-
 function getLegacyTypeFromIcon(iconKey: string) {
   if (iconKey === "cash") return "cash";
   if (iconKey === "wallet") return "other_wallet";
@@ -96,12 +89,6 @@ function getIconFromLegacyType(type?: string | null) {
   if (type === "other_wallet") return "wallet";
   if (type === "freelance") return "business";
   return "bank";
-}
-
-function getAccentHex(colorValue: string) {
-  return (
-    COLOR_OPTIONS.find((color) => color.value === colorValue)?.hex ?? "#2563eb"
-  );
 }
 
 function getCssVars(accent: string) {
@@ -129,7 +116,10 @@ export default function AccountModal({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const accentHex = useMemo(() => getAccentHex(accentColor), [accentColor]);
+  const accent = useMemo(
+    () => getAccountAccentColor(accentColor),
+    [accentColor],
+  );
 
   useEffect(() => {
     if (!open) return;
@@ -210,7 +200,7 @@ export default function AccountModal({
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent
         className={financeModalContentClass}
-        style={getCssVars(accentHex)}
+        style={getCssVars(accent)}
       >
         <FinanceModalHeader
           title={isEditing ? "Edit Account" : "Add Account"}
@@ -314,14 +304,14 @@ export default function AccountModal({
               </span>
               <span className="text-[11px] font-semibold text-text-secondary">
                 {
-                  COLOR_OPTIONS.find((color) => color.value === accentColor)
+                  ACCOUNT_ACCENT_OPTIONS.find((color) => color.value === accentColor)
                     ?.label
                 }
               </span>
             </div>
 
             <div className="grid grid-cols-8 gap-2">
-              {COLOR_OPTIONS.map((color) => {
+              {ACCOUNT_ACCENT_OPTIONS.map((color) => {
                 const active = accentColor === color.value;
 
                 return (
@@ -333,20 +323,20 @@ export default function AccountModal({
                     onClick={() => setAccentColor(color.value)}
                     className="finance-focus grid h-9 w-full place-items-center rounded-full border p-0 transition-all"
                     style={{
-                      borderColor: active ? color.hex : "var(--border)",
+                      borderColor: active ? color.color : "var(--border)",
                       background:
                         active ?
-                          `color-mix(in srgb, ${color.hex}, transparent 84%)`
+                          `color-mix(in srgb, ${color.color}, transparent 84%)`
                         : "var(--surface-secondary)",
                       boxShadow:
                         active ?
-                          `0 0 0 3px color-mix(in srgb, ${color.hex}, transparent 82%)`
+                          `0 0 0 3px color-mix(in srgb, ${color.color}, transparent 82%)`
                         : "none",
                     }}
                     >
                       <span
                         className="h-5 w-5 rounded-full"
-                        style={{ backgroundColor: color.hex }}
+                        style={{ backgroundColor: color.color }}
                       />
                   </Button>
                 );
@@ -391,10 +381,10 @@ export default function AccountModal({
             type="button"
             onClick={handleSave}
             disabled={loading}
-            className="finance-focus primary-action min-h-[var(--oneui-control-height-lg)] w-full px-4 text-sm font-black text-white"
+            className="finance-focus primary-action min-h-[var(--oneui-control-height-lg)] w-full px-4 text-sm font-black text-text-inverse"
             style={{
               background:
-                "linear-gradient(135deg, var(--account-accent), color-mix(in srgb, var(--account-accent), #111827 18%))",
+                "linear-gradient(135deg, var(--account-accent), color-mix(in srgb, var(--account-accent), black 18%))",
               boxShadow:
                 "0 16px 34px color-mix(in srgb, var(--account-accent), transparent 78%)",
             }}

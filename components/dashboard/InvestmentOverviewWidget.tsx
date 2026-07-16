@@ -74,7 +74,7 @@ function LegendIcon({ entry }: { entry: AllocationEntry }) {
 
   return (
     <span
-      className="grid h-5 w-5 shrink-0 place-items-center rounded-full text-[8.5px] font-bold text-white"
+      className="grid h-5 w-5 shrink-0 place-items-center rounded-full text-[8.5px] font-bold text-text-inverse"
       style={{ backgroundColor: entry.color }}
     >
       {getAssetInitials(entry.name, entry.symbol)}

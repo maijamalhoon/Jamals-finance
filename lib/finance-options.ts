@@ -30,16 +30,16 @@ export const ACCOUNT_TYPES: {
   icon: LucideIcon;
   tone: string;
 }[] = [
-  { value: "cash", label: "Cash", icon: Wallet, tone: "text-green-300 bg-green-500/15" },
-  { value: "bank", label: "Bank Account", icon: Landmark, tone: "text-sky-300 bg-sky-500/15" },
-  { value: "jazzcash", label: "JazzCash", icon: Smartphone, tone: "text-orange-300 bg-orange-500/15" },
-  { value: "easypaisa", label: "Easypaisa", icon: Smartphone, tone: "text-lime-300 bg-lime-500/15" },
-  { value: "sadapay", label: "Sadapay", icon: CreditCard, tone: "text-pink-300 bg-pink-500/15" },
-  { value: "nayapay", label: "NayaPay", icon: CreditCard, tone: "text-cyan-300 bg-cyan-500/15" },
-  { value: "wallet", label: "Other Wallet", icon: Banknote, tone: "text-violet-300 bg-violet-500/15" },
-  { value: "freelance", label: "Freelance", icon: Briefcase, tone: "text-indigo-300 bg-indigo-500/15" },
-  { value: "investment", label: "Investment", icon: CircleDollarSign, tone: "text-amber-300 bg-amber-500/15" },
-  { value: "other", label: "Other", icon: Home, tone: "text-slate-300 bg-slate-500/15" },
+  { value: "cash", label: "Cash", icon: Wallet, tone: "text-income bg-income-soft" },
+  { value: "bank", label: "Bank Account", icon: Landmark, tone: "text-transfer bg-transfer-soft" },
+  { value: "jazzcash", label: "JazzCash", icon: Smartphone, tone: "text-payables bg-payables-soft" },
+  { value: "easypaisa", label: "Easypaisa", icon: Smartphone, tone: "text-secondary-brand bg-primary-soft" },
+  { value: "sadapay", label: "Sadapay", icon: CreditCard, tone: "text-primary bg-primary-soft" },
+  { value: "nayapay", label: "NayaPay", icon: CreditCard, tone: "text-info bg-info-soft" },
+  { value: "wallet", label: "Other Wallet", icon: Banknote, tone: "text-investment bg-investment-soft" },
+  { value: "freelance", label: "Freelance", icon: Briefcase, tone: "text-primary bg-primary-soft" },
+  { value: "investment", label: "Investment", icon: CircleDollarSign, tone: "text-investment bg-investment-soft" },
+  { value: "other", label: "Other", icon: Home, tone: "text-text-muted bg-surface-tinted" },
 ];
 
 export const EXPENSE_CATEGORY_HINTS = [
@@ -65,19 +65,19 @@ export const PAYABLE_STATUS_META: Record<
 > = {
   pending: {
     label: "Pending",
-    className: "bg-amber-400/12 text-amber-200 ring-amber-300/15",
+    className: "bg-payables-soft text-payables ring-payables/20",
   },
   partial: {
     label: "Partially paid",
-    className: "bg-sky-400/12 text-sky-200 ring-sky-300/15",
+    className: "bg-transfer-soft text-transfer ring-transfer/20",
   },
   completed: {
     label: "Completed",
-    className: "bg-emerald-400/12 text-emerald-200 ring-emerald-300/15",
+    className: "bg-success-soft text-success ring-success/20",
   },
   overdue: {
     label: "Overdue",
-    className: "bg-rose-400/12 text-rose-200 ring-rose-300/15",
+    className: "bg-danger-soft text-danger ring-danger/20",
   },
 };
 

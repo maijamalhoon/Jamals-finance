@@ -247,7 +247,7 @@ export default function FloatingActions() {
                           "finance-focus group flex w-full items-center gap-3 rounded-[16px] px-2.5 py-2.5 text-left",
                           "border border-transparent bg-transparent transition-all duration-200",
                           "hover:border-border hover:bg-muted/55 hover:shadow-[var(--shadow-soft)]",
-                          "active:bg-muted/70 dark:hover:border-white/10 dark:hover:bg-white/[0.045]",
+                          "active:bg-muted/70 dark:hover:border-border-strong dark:hover:bg-surface-tinted",
                         ].join(" ")}
                       >
                         <span

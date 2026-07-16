@@ -35,8 +35,8 @@ function Sparkline({ values }: { values: number[] }) {
     <svg viewBox={`0 0 ${width} ${height}`} className="h-16 w-full">
       <defs>
         <linearGradient id="dailySpendSpark" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#fbbf24" stopOpacity="0.28" />
-          <stop offset="100%" stopColor="#fbbf24" stopOpacity="0" />
+          <stop offset="0%" stopColor="var(--payables)" stopOpacity="0.28" />
+          <stop offset="100%" stopColor="var(--payables)" stopOpacity="0" />
         </linearGradient>
       </defs>
       <motion.path
@@ -52,7 +52,7 @@ function Sparkline({ values }: { values: number[] }) {
         initial={{ pathLength: 0, opacity: 0.65 }}
         animate={{ pathLength: 1, opacity: 1 }}
         transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
-        stroke="#fbbf24"
+        stroke="var(--payables)"
         strokeLinecap="round"
         strokeLinejoin="round"
         strokeWidth="3"
@@ -76,7 +76,7 @@ function Donut({ value }: { value: number }) {
           cy="56"
           r={radius}
           fill="none"
-          stroke="#e5e7eb"
+          stroke="var(--border)"
           strokeWidth="12"
         />
         <motion.circle
@@ -84,7 +84,7 @@ function Donut({ value }: { value: number }) {
           cy="56"
           r={radius}
           fill="none"
-          stroke={positive ? "#10b981" : "#ef4444"}
+          stroke={positive ? "var(--income)" : "var(--expense)"}
           strokeDasharray={circumference}
           initial={{ strokeDashoffset: circumference }}
           animate={{ strokeDashoffset: offset }}
@@ -95,8 +95,8 @@ function Donut({ value }: { value: number }) {
       </svg>
       <div className="absolute inset-0 grid place-items-center text-center">
         <div>
-          <p className="text-2xl font-bold text-slate-950">{Math.round(value)}%</p>
-          <p className="text-[10px] font-medium text-slate-500">saved</p>
+          <p className="text-2xl font-bold text-text-primary">{Math.round(value)}%</p>
+          <p className="text-[10px] font-medium text-text-muted">saved</p>
         </div>
       </div>
     </div>
@@ -121,46 +121,46 @@ export default function DashboardSignals({
 
   return (
     <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-      <div className="finance-panel card-hover flex min-h-[190px] items-center justify-between gap-5 p-5 hover:border-blue-200">
+      <div className="finance-panel card-hover flex min-h-[190px] items-center justify-between gap-5 p-5 hover:border-border-strong">
         <div>
-          <div className="grid h-10 w-10 place-items-center rounded-[18px] bg-emerald-50 text-emerald-600 ring-1 ring-emerald-100">
+          <div className="finance-feature-accent grid h-10 w-10 place-items-center rounded-[18px] border" data-tone="income">
             <Activity size={17} />
           </div>
-          <p className="mt-4 text-sm font-semibold text-slate-950">Savings Rate</p>
-          <p className="mt-1 max-w-[13rem] text-xs leading-5 text-slate-500">
+          <p className="mt-4 text-sm font-semibold text-text-primary">Savings Rate</p>
+          <p className="mt-1 max-w-[13rem] text-xs leading-5 text-text-muted">
             {savingsPositive ? "Income retained this month" : "Overspent this month"}
           </p>
         </div>
         <Donut value={savingsRate} />
       </div>
 
-      <div className="finance-panel card-hover min-h-[190px] p-5 hover:border-blue-200">
+      <div className="finance-panel card-hover min-h-[190px] p-5 hover:border-border-strong">
         <div className="flex items-start justify-between gap-4">
           <div>
-            <p className="text-sm font-semibold text-slate-950">Daily Spend</p>
-            <p className="mt-1 text-xs text-slate-500">
+            <p className="text-sm font-semibold text-text-primary">Daily Spend</p>
+            <p className="mt-1 text-xs text-text-muted">
               Month-to-date wave graph
             </p>
           </div>
-          <div className="grid h-10 w-10 place-items-center rounded-[18px] bg-amber-50 text-amber-600 ring-1 ring-amber-100">
+          <div className="finance-feature-accent grid h-10 w-10 place-items-center rounded-[18px] border" data-tone="payables">
             <Flame size={17} />
           </div>
         </div>
         <div className="mt-4">
-          <p className="text-2xl font-bold text-slate-950">{dailySpend}</p>
+          <p className="text-2xl font-bold text-text-primary">{dailySpend}</p>
           <Sparkline values={dailyExpenseTrend} />
         </div>
       </div>
 
-      <div className="finance-panel card-hover min-h-[190px] p-5 hover:border-blue-200">
+      <div className="finance-panel card-hover min-h-[190px] p-5 hover:border-border-strong">
         <div className="flex items-start justify-between gap-4">
           <div>
-            <p className="text-sm font-semibold text-slate-950">Active Days</p>
-            <p className="mt-1 text-xs text-slate-500">
+            <p className="text-sm font-semibold text-text-primary">Active Days</p>
+            <p className="mt-1 text-xs text-text-muted">
               {activeDayNumbers.length}/{daysInMonth} days with activity
             </p>
           </div>
-          <div className="grid h-10 w-10 place-items-center rounded-[18px] bg-blue-50 text-blue-600 ring-1 ring-blue-100">
+          <div className="finance-feature-accent grid h-10 w-10 place-items-center rounded-[18px] border" data-tone="transfer">
             <CalendarCheck size={17} />
           </div>
         </div>
@@ -181,8 +181,8 @@ export default function DashboardSignals({
                 }}
                 className={`aspect-square rounded-[9px] ${
                   active ?
-                    "bg-blue-600 shadow-[0_0_18px_rgba(37,99,235,0.22)]"
-                  : "bg-slate-100"
+                    "bg-transfer shadow-[0_0_18px_color-mix(in_srgb,var(--transfer),transparent_76%)]"
+                  : "bg-surface-tinted"
                 }`}
               />
             );

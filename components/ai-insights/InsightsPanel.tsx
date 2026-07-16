@@ -658,7 +658,7 @@ export default function InsightsPanel() {
                 <div
                   className={`max-w-[88%] rounded-[18px] px-3.5 py-2.5 text-xs leading-relaxed ${
                     message.role === "user" ?
-                      "bg-active text-white"
+                      "bg-active text-text-inverse"
                     : "bg-card text-text-secondary ring-1 ring-border"
                   }`}
                 >

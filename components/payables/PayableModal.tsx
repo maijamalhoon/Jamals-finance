@@ -8,6 +8,7 @@ import DatePicker from "@/components/ui/date-picker";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import {
   FinanceModalBody,
   FinanceModalFooter,
@@ -113,7 +114,7 @@ export default function PayableModal({ open, onClose, payable }: Props) {
 
   return (
     <Dialog open={open} onOpenChange={(nextOpen) => !nextOpen && onClose()}>
-      <DialogContent className={`${financeModalContentClass} sm:max-w-lg`}>
+      <DialogContent className={`${financeModalContentClass} sm:[--finance-modal-max-width:32rem]`}>
         <FinanceModalHeader
           title={isEditing ? "Edit Payable" : "Add Payable"}
           description="Save payable person, amount, reason, due date, and notes."
@@ -189,12 +190,12 @@ export default function PayableModal({ open, onClose, payable }: Props) {
           </div>
 
           <FinanceFormField label="Notes" htmlFor="payable-notes">
-            <textarea
+            <Textarea
               id="payable-notes"
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               placeholder="Agreement details, reminders, or partial payment notes"
-              className="field-input min-h-24 resize-none"
+              className="min-h-24 resize-none"
             />
           </FinanceFormField>
 

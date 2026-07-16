@@ -7,21 +7,10 @@ import { useCurrency } from "@/components/currency/CurrencyProvider";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-
-const COLORS = [
-  "#22c55e",
-  "#ef4444",
-  "#6366f1",
-  "#f59e0b",
-  "#ec4899",
-  "#3b82f6",
-  "#8b5cf6",
-  "#14b8a6",
-  "#f97316",
-  "#06b6d4",
-  "#84cc16",
-  "#6b7280",
-];
+import {
+  CATEGORY_COLOR_PALETTE as COLORS,
+  getReadableTextColor,
+} from "@/lib/theme-colors";
 
 interface Category {
   id: string;
@@ -50,11 +39,11 @@ export default function CategoriesSettings({
 
   const [addingFor, setAddingFor] = useState<"income" | "expense" | null>(null);
   const [newName, setNewName] = useState("");
-  const [newColor, setNewColor] = useState(COLORS[0]);
+  const [newColor, setNewColor] = useState<string>(COLORS[0]);
   const [parentId, setParentId] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editName, setEditName] = useState("");
-  const [editColor, setEditColor] = useState(COLORS[0]);
+  const [editColor, setEditColor] = useState<string>(COLORS[0]);
   const [editParentId, setEditParentId] = useState("");
   const [saving, setSaving] = useState(false);
 
@@ -134,12 +123,13 @@ export default function CategoriesSettings({
             className="finance-focus grid h-7 w-7 place-items-center rounded-full transition-transform hover:scale-110"
             style={{
               background: color,
+              color: getReadableTextColor(color),
               outline: value === color ? "2px solid var(--card)" : "none",
               outlineOffset: "2px",
             }}
             aria-label={`Pick ${color}`}
           >
-            {value === color && <Check size={12} className="text-text-primary" />}
+            {value === color && <Check size={12} />}
           </button>
         ))}
       </div>

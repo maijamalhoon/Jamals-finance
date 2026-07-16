@@ -1,5 +1,9 @@
 export const THEME_STORAGE_KEY = "jamal-theme";
 export const THEME_CHANGE_EVENT = "jamal-theme-change";
+export const THEME_VIEWPORT_COLORS = {
+  light: "#F6F8FB",
+  dark: "#0B1220",
+} as const;
 
 export const THEME_PREFERENCES = ["system", "light", "dark"] as const;
 
@@ -96,3 +100,35 @@ export function applyThemePreference(
 
   return state.resolvedTheme;
 }
+
+export const THEME_BOOTSTRAP_SCRIPT = `
+try {
+  (function () {
+    var root = document.documentElement;
+    var media = window.matchMedia("(prefers-color-scheme: dark)");
+    var storageKey = ${JSON.stringify(THEME_STORAGE_KEY)};
+    var readPreference = function () {
+      var savedTheme = localStorage.getItem(storageKey);
+      return savedTheme === "light" || savedTheme === "dark" || savedTheme === "system" ? savedTheme : "system";
+    };
+    var applyPreference = function (theme) {
+      var shouldUseDark = theme === "dark" || (theme === "system" && media.matches);
+      root.classList.toggle("dark", shouldUseDark);
+      root.style.colorScheme = shouldUseDark ? "dark" : "light";
+      root.dataset.themePreference = theme;
+      root.dataset.theme = shouldUseDark ? "dark" : "light";
+    };
+
+    applyPreference(readPreference());
+    media.addEventListener("change", function () {
+      var theme = readPreference();
+      if (theme === "system") applyPreference(theme);
+    });
+    window.addEventListener("storage", function (event) {
+      if (event.key === null || event.key === storageKey) {
+        applyPreference(readPreference());
+      }
+    });
+  })();
+} catch (_) {}
+`;

@@ -16,7 +16,7 @@ function isValidCategoryHex(color: string | null | undefined): color is string {
 }
 
 function getCategoryColor(color: string | null | undefined) {
-  return isValidCategoryHex(color) ? color : "#ef4444";
+  return isValidCategoryHex(color) ? color : "var(--expense)";
 }
 
 export default async function ExpensesPage() {

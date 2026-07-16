@@ -9,14 +9,27 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default: "bg-primary text-primary-foreground shadow-[var(--shadow-xs)] hover:bg-brand-hover",
+        default: "bg-primary text-primary-foreground shadow-[var(--shadow-xs)] hover:bg-primary-hover active:bg-primary-active",
         outline:
-          "border-border bg-background hover:bg-muted hover:text-foreground aria-expanded:bg-muted aria-expanded:text-foreground dark:border-input dark:bg-input/30 dark:hover:bg-input/50",
+          "border-border bg-surface text-text-primary shadow-[var(--shadow-xs)] hover:border-border-strong hover:bg-surface-tinted aria-expanded:bg-surface-tinted",
         secondary:
-          "bg-secondary text-secondary-foreground hover:bg-[color-mix(in_oklch,var(--secondary),var(--foreground)_5%)] aria-expanded:bg-secondary aria-expanded:text-secondary-foreground",
+          "bg-secondary text-secondary-foreground shadow-[var(--shadow-xs)] hover:bg-secondary-hover active:bg-secondary-hover aria-expanded:bg-secondary-hover aria-expanded:text-secondary-foreground",
         ghost:
-          "hover:bg-muted hover:text-foreground aria-expanded:bg-muted aria-expanded:text-foreground dark:hover:bg-muted/50",
-        destructive: "bg-danger text-white hover:brightness-95",
+          "text-text-secondary hover:bg-primary-soft hover:text-text-primary aria-expanded:bg-primary-soft aria-expanded:text-text-primary",
+        destructive:
+          "bg-danger text-[var(--status-foreground)] shadow-[var(--shadow-xs)] hover:bg-[color-mix(in_srgb,var(--danger),black_6%)] active:bg-[color-mix(in_srgb,var(--danger),black_10%)]",
+        success:
+          "bg-success text-[var(--status-foreground)] shadow-[var(--shadow-xs)] hover:bg-[color-mix(in_srgb,var(--success),black_6%)] active:bg-[color-mix(in_srgb,var(--success),black_10%)]",
+        income:
+          "bg-income text-[var(--status-foreground)] shadow-[var(--shadow-xs)] hover:bg-[color-mix(in_srgb,var(--income),black_6%)] active:bg-[color-mix(in_srgb,var(--income),black_10%)]",
+        warning:
+          "bg-warning text-[var(--status-foreground)] shadow-[var(--shadow-xs)] hover:bg-[color-mix(in_srgb,var(--warning),black_6%)] active:bg-[color-mix(in_srgb,var(--warning),black_10%)]",
+        payables:
+          "bg-payables text-[var(--status-foreground)] shadow-[var(--shadow-xs)] hover:bg-[color-mix(in_srgb,var(--payables),black_6%)] active:bg-[color-mix(in_srgb,var(--payables),black_10%)]",
+        transfer:
+          "bg-transfer text-[var(--status-foreground)] shadow-[var(--shadow-xs)] hover:bg-[color-mix(in_srgb,var(--transfer),black_6%)] active:bg-[color-mix(in_srgb,var(--transfer),black_10%)]",
+        investment:
+          "bg-investment text-[var(--status-foreground)] shadow-[var(--shadow-xs)] hover:bg-[color-mix(in_srgb,var(--investment),black_6%)] active:bg-[color-mix(in_srgb,var(--investment),black_10%)]",
         link: "text-primary underline-offset-4 hover:underline",
       },
       size: {

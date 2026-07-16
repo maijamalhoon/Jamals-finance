@@ -6,10 +6,12 @@
 
 @theme inline {
   --color-background: var(--background);
+  --color-background-subtle: var(--background-subtle);
   --color-surface: var(--surface);
   --color-surface-primary: var(--surface-primary);
   --color-surface-secondary: var(--surface-secondary);
   --color-surface-elevated: var(--surface-elevated);
+  --color-surface-tinted: var(--surface-tinted);
   --color-surface-inset: var(--surface-inset);
   --color-surface-soft: var(--surface-soft);
   --color-surface-glass: var(--surface-glass);
@@ -19,18 +21,42 @@
   --color-border-strong: var(--border-strong);
   --color-text-primary: var(--text-primary);
   --color-text-secondary: var(--text-secondary);
+  --color-text-muted: var(--text-muted);
+  --color-text-inverse: var(--text-inverse);
   --color-text-tertiary: var(--text-tertiary);
   --color-text-disabled: var(--text-disabled);
   --color-brand: var(--brand-accent);
   --color-brand-hover: var(--brand-accent-hover);
   --color-brand-pressed: var(--brand-accent-pressed);
+  --color-primary-hover: var(--primary-hover);
+  --color-primary-active: var(--primary-active);
+  --color-primary-soft: var(--primary-soft);
+  --color-secondary-brand: var(--secondary);
+  --color-secondary-hover: var(--secondary-hover);
+  --color-focus-ring: var(--focus-color);
   --color-hover: var(--hover);
   --color-active: var(--active);
   --color-success: var(--success);
+  --color-success-soft: var(--success-soft);
   --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
   --color-warning: var(--warning);
+  --color-warning-soft: var(--warning-soft);
   --color-info: var(--info);
+  --color-info-soft: var(--info-soft);
+  --color-disabled: var(--disabled);
+  --color-income: var(--income);
+  --color-income-soft: var(--income-soft);
+  --color-expense: var(--expense);
+  --color-expense-soft: var(--expense-soft);
+  --color-transfer: var(--transfer);
+  --color-transfer-soft: var(--transfer-soft);
   --color-investment: var(--investment);
+  --color-investment-soft: var(--investment-soft);
+  --color-goals: var(--goals);
+  --color-goals-soft: var(--goals-soft);
+  --color-payables: var(--payables);
+  --color-payables-soft: var(--payables-soft);
   --color-overlay: var(--overlay);
   --color-divider: var(--divider);
   --color-chart-grid: var(--chart-grid);
@@ -39,9 +65,9 @@
   --color-input: var(--input);
   --color-loader: var(--loader);
   --color-skeleton: var(--skeleton);
-  --shadow-theme: var(--shadow);
-  --shadow-soft: var(--shadow-soft);
-  --shadow-premium: var(--shadow-premium);
+  --shadow-theme: var(--shadow-sm);
+  --shadow-soft: var(--shadow-md);
+  --shadow-premium: var(--shadow-lg);
 
   --color-foreground: var(--text-primary);
   --color-card-foreground: var(--text-primary);
@@ -52,8 +78,8 @@
   --color-secondary: var(--secondary);
   --color-secondary-foreground: var(--secondary-foreground);
   --color-muted-foreground: var(--text-secondary);
-  --color-accent: var(--hover);
-  --color-accent-foreground: var(--text-primary);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--text-inverse);
   --color-destructive: var(--destructive);
   --color-ring: var(--ring);
   --color-chart-1: var(--chart-1);
@@ -83,44 +109,76 @@
 
 :root {
   color-scheme: light;
-  --page-background: #f6f8fc;
-  --surface-primary: #ffffff;
-  --surface-secondary: #eef2f8;
+  --page-background: #f6f8fb;
+  --background-subtle: #eef3f8;
+  --surface: #ffffff;
   --surface-elevated: #ffffff;
-  --surface-inset: #e8eef6;
-  --surface-soft: #f2f5fa;
+  --surface-tinted: #f8fafc;
+  --surface-primary: #ffffff;
+  --surface-secondary: #eef3f8;
+  --surface-inset: #f8fafc;
+  --surface-soft: #f8fafc;
   --surface-glass: color-mix(in srgb, var(--surface-primary), transparent 8%);
-  --border: #dce2ea;
-  --border-strong: #b8c2d0;
-  --divider: #e6eaf0;
-  --text-primary: #101828;
-  --text-secondary: #5b6475;
-  --text-tertiary: #7a8494;
-  --text-disabled: #a1aab8;
-  --brand-accent: #4f46e5;
-  --brand-accent-hover: #4338ca;
-  --brand-accent-pressed: #3730a3;
-  --brand-on-accent: #ffffff;
-  --success: #087a55;
-  --danger: #c9364a;
-  --warning: #a85d00;
-  --info: #2563eb;
-  --investment: #7c3aed;
-  --focus-color: #4f46e5;
-  --overlay: rgb(8 17 31 / 0.48);
-  --chart-grid: #dce3ed;
+  --border: #d8e1ec;
+  --border-strong: #c2cedc;
+  --divider: #d8e1ec;
+  --text-primary: #0f172a;
+  --text-secondary: #334155;
+  --text-muted: #64748b;
+  --text-tertiary: var(--text-muted);
+  --text-inverse: #f8fafc;
+  --disabled: #94a3b8;
+  --text-disabled: var(--disabled);
+  --primary: #3559e0;
+  --primary-hover: #2f4fc8;
+  --primary-active: #2845ae;
+  --primary-soft: #e9eeff;
+  --secondary: #0f766e;
+  --secondary-hover: #0b625c;
+  --accent: #4f46e5;
+  --focus-color: #7c9bff;
+  --brand-accent: var(--primary);
+  --brand-accent-hover: var(--primary-hover);
+  --brand-accent-pressed: var(--primary-active);
+  --brand-on-accent: var(--text-inverse);
+  --status-foreground: #0f172a;
+  --success: #1f9d6a;
+  --success-soft: #e8f7f0;
+  --warning: #c48a1c;
+  --warning-soft: #fff6e0;
+  --danger: #d96c63;
+  --danger-soft: #fdedec;
+  --info: #2e7dd7;
+  --info-soft: #eaf3ff;
+  --income: #1f9d6a;
+  --income-soft: #e8f7f0;
+  --expense: #d96c63;
+  --expense-soft: #fdedec;
+  --transfer: #2e7dd7;
+  --transfer-soft: #eaf3ff;
+  --investment: #7c5ce0;
+  --investment-soft: #f0edff;
+  --goals: #0f9f8f;
+  --goals-soft: #e7f8f5;
+  --payables: #c48a1c;
+  --payables-soft: #fff6e0;
+  --overlay: rgb(15 23 42 / 0.45);
+  --chart-grid: #d8e1ec;
   --chart-tooltip: #ffffff;
-  --chart-series-1: #4f46e5;
-  --chart-series-2: #087a55;
-  --chart-series-3: #d97706;
-  --chart-series-4: #7c3aed;
-  --chart-series-5: #2563eb;
-  --loader: #eef2f8;
-  --skeleton: #e8eef6;
-  --shadow-xs: 0 1px 2px rgb(16 24 40 / 0.04);
-  --shadow: 0 1px 2px rgb(16 24 40 / 0.045);
-  --shadow-soft: 0 12px 32px rgb(16 24 40 / 0.065);
-  --shadow-premium: 0 18px 48px rgb(16 24 40 / 0.085);
+  --chart-series-1: var(--primary);
+  --chart-series-2: var(--income);
+  --chart-series-3: var(--expense);
+  --chart-series-4: var(--investment);
+  --chart-series-5: var(--transfer);
+  --loader: var(--background-subtle);
+  --skeleton: #e4eaf2;
+  --shadow-xs: 0 1px 2px rgb(15 23 42 / 0.035);
+  --shadow-sm: 0 1px 3px rgb(15 23 42 / 0.06), 0 1px 2px rgb(15 23 42 / 0.035);
+  --shadow-md: 0 12px 30px rgb(15 23 42 / 0.075), 0 2px 8px rgb(15 23 42 / 0.04);
+  --shadow-lg: 0 22px 56px rgb(15 23 42 / 0.11), 0 4px 14px rgb(15 23 42 / 0.05);
+  --shadow: var(--shadow-sm);
+  --shadow-soft: var(--shadow-md);
+  --shadow-premium: var(--shadow-lg);
   --glow-soft: 0 0 0 1px color-mix(in srgb, var(--brand-accent), transparent 88%);
   --focus-ring: 0 0 0 3px color-mix(in srgb, var(--focus-color), transparent 78%);
   --surface-highlight: inset 0 1px 0 rgb(255 255 255 / 0.68);
@@ -155,7 +213,6 @@
   --motion-duration-base: 220ms;
   --motion-duration-slow: 320ms;
   --background: var(--page-background);
-  --surface: var(--surface-primary);
   --card: var(--surface-primary);
   --sidebar: var(--surface-primary);
   --hover: var(--surface-soft);
@@ -166,13 +223,10 @@
   --card-foreground: var(--text-primary);
   --popover: var(--surface-elevated);
   --popover-foreground: var(--text-primary);
-  --primary: var(--brand-accent);
   --primary-foreground: var(--brand-on-accent);
-  --secondary: var(--surface-secondary);
-  --secondary-foreground: var(--text-primary);
-  --muted-foreground: var(--text-secondary);
-  --accent: var(--surface-soft);
-  --accent-foreground: var(--text-primary);
+  --secondary-foreground: var(--text-inverse);
+  --muted-foreground: var(--text-muted);
+  --accent-foreground: var(--text-inverse);
   --destructive: var(--danger);
   --ring: var(--focus-color);
   --chart-1: var(--chart-series-1);
@@ -192,44 +246,76 @@
 
 .dark {
   color-scheme: dark;
-  --page-background: #08111f;
-  --surface-primary: #101a2b;
-  --surface-secondary: #162236;
-  --surface-elevated: #1c2940;
-  --surface-inset: #0d1726;
-  --surface-soft: #1a2740;
+  --page-background: #0b1220;
+  --background-subtle: #0f172a;
+  --surface: #111a2b;
+  --surface-primary: #111a2b;
+  --surface-secondary: #0f172a;
+  --surface-elevated: #162235;
+  --surface-tinted: #132033;
+  --surface-inset: #132033;
+  --surface-soft: #132033;
   --surface-glass: color-mix(in srgb, var(--surface-primary), transparent 8%);
-  --border: #27364e;
-  --border-strong: #465873;
-  --divider: #223049;
-  --text-primary: #f4f7fb;
-  --text-secondary: #a9b4c6;
-  --text-tertiary: #8290a5;
-  --text-disabled: #607087;
-  --brand-accent: #818cf8;
-  --brand-accent-hover: #a5b4fc;
-  --brand-accent-pressed: #6366f1;
-  --brand-on-accent: #0b1020;
-  --success: #4ade80;
-  --danger: #fb7185;
-  --warning: #fbbf24;
-  --info: #60a5fa;
-  --investment: #c4b5fd;
-  --focus-color: #a5b4fc;
-  --overlay: rgb(2 6 12 / 0.72);
-  --chart-grid: #2a3a52;
-  --chart-tooltip: #1c2940;
-  --chart-series-1: #818cf8;
-  --chart-series-2: #4ade80;
-  --chart-series-3: #fbbf24;
-  --chart-series-4: #c4b5fd;
-  --chart-series-5: #60a5fa;
-  --loader: #162236;
-  --skeleton: #223049;
-  --shadow-xs: 0 1px 2px rgb(0 0 0 / 0.28);
-  --shadow: 0 1px 3px rgb(0 0 0 / 0.3);
-  --shadow-soft: 0 14px 36px rgb(0 0 0 / 0.3);
-  --shadow-premium: 0 22px 58px rgb(0 0 0 / 0.38);
+  --border: #24344d;
+  --border-strong: #324664;
+  --divider: #24344d;
+  --text-primary: #e7eef8;
+  --text-secondary: #c4d0e0;
+  --text-muted: #93a4bc;
+  --text-tertiary: var(--text-muted);
+  --text-inverse: #0b1220;
+  --disabled: #64748b;
+  --text-disabled: var(--disabled);
+  --primary: #8aa4ff;
+  --primary-hover: #7693ff;
+  --primary-active: #6384f5;
+  --primary-soft: #1b2642;
+  --secondary: #3cb7aa;
+  --secondary-hover: #32a397;
+  --accent: #9a8cff;
+  --focus-color: #8aa4ff;
+  --brand-accent: var(--primary);
+  --brand-accent-hover: var(--primary-hover);
+  --brand-accent-pressed: var(--primary-active);
+  --brand-on-accent: var(--text-inverse);
+  --status-foreground: #0b1220;
+  --success: #33c78b;
+  --success-soft: #102a22;
+  --warning: #e6b450;
+  --warning-soft: #2b2211;
+  --danger: #f08a7b;
+  --danger-soft: #311a1c;
+  --info: #62a5ff;
+  --info-soft: #15253d;
+  --income: #33c78b;
+  --income-soft: #102a22;
+  --expense: #f08a7b;
+  --expense-soft: #311a1c;
+  --transfer: #62a5ff;
+  --transfer-soft: #15253d;
+  --investment: #a78bfa;
+  --investment-soft: #261f43;
+  --goals: #2fc6b2;
+  --goals-soft: #102d2a;
+  --payables: #e6b450;
+  --payables-soft: #2b2211;
+  --overlay: rgb(2 6 23 / 0.68);
+  --chart-grid: #24344d;
+  --chart-tooltip: #162235;
+  --chart-series-1: var(--primary);
+  --chart-series-2: var(--income);
+  --chart-series-3: var(--expense);
+  --chart-series-4: var(--investment);
+  --chart-series-5: var(--transfer);
+  --loader: var(--background-subtle);
+  --skeleton: #1d2a40;
+  --shadow-xs: 0 1px 2px rgb(0 0 0 / 0.24);
+  --shadow-sm: 0 2px 5px rgb(0 0 0 / 0.28), 0 1px 2px rgb(0 0 0 / 0.22);
+  --shadow-md: 0 16px 40px rgb(0 0 0 / 0.34), 0 3px 10px rgb(0 0 0 / 0.24);
+  --shadow-lg: 0 28px 72px rgb(0 0 0 / 0.46), 0 6px 18px rgb(0 0 0 / 0.28);
+  --shadow: var(--shadow-sm);
+  --shadow-soft: var(--shadow-md);
+  --shadow-premium: var(--shadow-lg);
   --glow-soft: 0 0 0 1px color-mix(in srgb, var(--brand-accent), transparent 80%);
   --focus-ring: 0 0 0 3px color-mix(in srgb, var(--focus-color), transparent 72%);
   --surface-highlight: inset 0 1px 0 rgb(255 255 255 / 0.08);
@@ -257,7 +343,6 @@
   --motion-duration-base: 220ms;
   --motion-duration-slow: 320ms;
   --background: var(--page-background);
-  --surface: var(--surface-primary);
   --card: var(--surface-primary);
   --sidebar: var(--surface-primary);
   --hover: var(--surface-soft);
@@ -268,13 +353,10 @@
   --card-foreground: var(--text-primary);
   --popover: var(--surface-elevated);
   --popover-foreground: var(--text-primary);
-  --primary: var(--brand-accent);
   --primary-foreground: var(--brand-on-accent);
-  --secondary: var(--surface-secondary);
-  --secondary-foreground: var(--text-primary);
-  --muted-foreground: var(--text-secondary);
-  --accent: var(--surface-soft);
-  --accent-foreground: var(--text-primary);
+  --secondary-foreground: var(--text-inverse);
+  --muted-foreground: var(--text-muted);
+  --accent-foreground: var(--text-inverse);
   --destructive: var(--danger);
   --ring: var(--focus-color);
   --chart-1: var(--chart-series-1);
@@ -690,17 +772,18 @@
     border-radius: var(--oneui-button-radius);
     border-color: var(--active);
     background-color: var(--active);
-    color: color-mix(in srgb, var(--background), white 8%);
-    box-shadow: var(--shadow);
+    color: var(--text-inverse);
+    box-shadow: var(--shadow-sm);
   }
 
   .primary-action:hover {
-    background-color: var(--active);
-    box-shadow: var(--shadow-soft);
+    background-color: var(--primary-hover);
+    box-shadow: var(--shadow-md);
     transform: translateY(-1px) scale(1.015);
   }
 
   .primary-action:active {
+    background-color: var(--primary-active);
     transform: translateY(0) scale(0.985);
   }
 
@@ -724,28 +807,28 @@
   .success-action {
     border-color: color-mix(in srgb, var(--success), transparent 22%);
     background-color: var(--success);
-    color: color-mix(in srgb, var(--background), white 8%);
+    color: var(--status-foreground);
     box-shadow: 0 14px 30px color-mix(in srgb, var(--success), transparent 78%);
   }
 
   .danger-action {
     border-color: color-mix(in srgb, var(--danger), transparent 22%);
     background-color: var(--danger);
-    color: color-mix(in srgb, var(--background), white 8%);
+    color: var(--status-foreground);
     box-shadow: 0 14px 30px color-mix(in srgb, var(--danger), transparent 80%);
   }
 
   .investment-action {
     border-color: color-mix(in srgb, var(--investment), transparent 24%);
     background-color: var(--investment);
-    color: color-mix(in srgb, var(--background), white 8%);
+    color: var(--status-foreground);
     box-shadow: 0 14px 30px color-mix(in srgb, var(--investment), transparent 80%);
   }
 
   .warning-action {
     border-color: color-mix(in srgb, var(--warning), transparent 28%);
     background-color: var(--warning);
-    color: var(--background);
+    color: var(--status-foreground);
     box-shadow: 0 14px 30px color-mix(in srgb, var(--warning), transparent 82%);
   }
 
@@ -1209,18 +1292,18 @@
       linear-gradient(
         180deg,
         transparent 0 24%,
-        rgb(148 163 184 / 0.14) 24% 25%,
+        color-mix(in srgb, var(--border-strong), transparent 86%) 24% 25%,
         transparent 25% 49%,
-        rgb(148 163 184 / 0.12) 49% 50%,
+        color-mix(in srgb, var(--border-strong), transparent 88%) 49% 50%,
         transparent 50% 74%,
-        rgb(148 163 184 / 0.1) 74% 75%,
+        color-mix(in srgb, var(--border-strong), transparent 90%) 74% 75%,
         transparent 75%
       ),
       linear-gradient(
         90deg,
-        rgb(248 250 252 / 0.2),
-        rgb(241 245 249 / 0.5),
-        rgb(248 250 252 / 0.2)
+        color-mix(in srgb, var(--surface-tinted), transparent 80%),
+        color-mix(in srgb, var(--surface-elevated), transparent 50%),
+        color-mix(in srgb, var(--surface-tinted), transparent 80%)
       );
   }
 
@@ -1234,7 +1317,7 @@
   }
 
   .finance-graph-loader::before {
-    border-top: 3px solid var(--loader-line, #ff9700);
+    border-top: 3px solid var(--loader-line, var(--payables));
     animation: graphLoaderDraw 0.72s var(--motion-ease) infinite;
   }
 
@@ -1243,22 +1326,22 @@
     background: linear-gradient(
       90deg,
       transparent,
-      rgb(255 255 255 / 0.75),
+      color-mix(in srgb, var(--text-primary), transparent 25%),
       transparent
     );
     animation: graphLoaderSweep 0.92s ease-in-out infinite;
   }
 
   .finance-graph-loader-orange {
-    --loader-line: #ff9700;
+    --loader-line: var(--payables);
   }
 
   .finance-graph-loader-green {
-    --loader-line: #19c76f;
+    --loader-line: var(--income);
   }
 
   .finance-graph-loader-blue {
-    --loader-line: #4f83ff;
+    --loader-line: var(--transfer);
   }
 
   .finance-graph-ready {
@@ -1357,6 +1440,55 @@
     border-color: color-mix(in srgb, var(--info), transparent 72%);
     background-color: color-mix(in srgb, var(--info), transparent 90%);
     color: var(--info);
+  }
+
+  .finance-feature-accent {
+    --feature-color: var(--primary);
+    --feature-soft: var(--primary-soft);
+    border-color: color-mix(in srgb, var(--feature-color), var(--border) 62%);
+    background: var(--feature-soft);
+    color: var(--feature-color);
+  }
+
+  :where(.finance-feature-accent, [data-feature-tone="income"])[data-feature-tone="income"],
+  .finance-feature-accent[data-tone="income"] {
+    --feature-color: var(--income);
+    --feature-soft: var(--income-soft);
+  }
+
+  :where(.finance-feature-accent, [data-feature-tone="expense"])[data-feature-tone="expense"],
+  .finance-feature-accent[data-tone="expense"] {
+    --feature-color: var(--expense);
+    --feature-soft: var(--expense-soft);
+  }
+
+  :where(.finance-feature-accent, [data-feature-tone="transfer"])[data-feature-tone="transfer"],
+  .finance-feature-accent[data-tone="transfer"] {
+    --feature-color: var(--transfer);
+    --feature-soft: var(--transfer-soft);
+  }
+
+  :where(.finance-feature-accent, [data-feature-tone="investment"])[data-feature-tone="investment"],
+  .finance-feature-accent[data-tone="investment"] {
+    --feature-color: var(--investment);
+    --feature-soft: var(--investment-soft);
+  }
+
+  :where(.finance-feature-accent, [data-feature-tone="goals"])[data-feature-tone="goals"],
+  .finance-feature-accent[data-tone="goals"] {
+    --feature-color: var(--goals);
+    --feature-soft: var(--goals-soft);
+  }
+
+  :where(.finance-feature-accent, [data-feature-tone="payables"])[data-feature-tone="payables"],
+  .finance-feature-accent[data-tone="payables"] {
+    --feature-color: var(--payables);
+    --feature-soft: var(--payables-soft);
+  }
+
+  .finance-feature-accent:is(:hover, :focus-visible) {
+    border-color: color-mix(in srgb, var(--feature-color), var(--border) 36%);
+    background: color-mix(in srgb, var(--feature-soft), var(--feature-color) 7%);
   }
 
   .finance-state-pill {
@@ -1479,7 +1611,6 @@
 }
 
 :is(
-  .text-white,
   .text-slate-950,
   .text-slate-900,
   .text-slate-800,
@@ -1492,9 +1623,11 @@
   color: var(--text-primary) !important;
 }
 
+.text-white {
+  color: var(--text-inverse) !important;
+}
+
 :is(
-  .text-white\/70,
-  .text-white\/80,
   .text-slate-600,
   .text-slate-500,
   .text-slate-400,
@@ -1507,6 +1640,10 @@
   .text-\[\#9aa3b5\]
 ) {
   color: var(--text-secondary) !important;
+}
+
+:is(.text-white\/70, .text-white\/80) {
+  color: color-mix(in srgb, var(--text-inverse), transparent 22%) !important;
 }
 
 :is(.placeholder-slate-400)::placeholder {
@@ -1583,7 +1720,7 @@
 
 :is(.bg-blue-600, .bg-blue-700, .bg-slate-950, .bg-\[\#111318\], .bg-primary) {
   background-color: var(--active) !important;
-  color: var(--background) !important;
+  color: var(--text-inverse) !important;
 }
 
 :is(
@@ -2286,7 +2423,7 @@ textarea:focus {
   background: linear-gradient(
     90deg,
     transparent,
-    rgba(255, 255, 255, 0.08),
+    color-mix(in srgb, var(--text-primary), transparent 92%),
     transparent
   );
   opacity: 0.55;
@@ -2343,18 +2480,19 @@ textarea:focus {
 
 .jf-btn:focus-visible {
   outline: none;
-  box-shadow: 0 0 0 4px rgba(96, 165, 250, 0.28);
+  box-shadow: var(--focus-ring);
 }
 
 .jf-btn-primary {
   border: 1px solid color-mix(in srgb, var(--active), transparent 18%);
   background: var(--active);
-  color: var(--background);
-  box-shadow: 0 16px 36px color-mix(in srgb, var(--active), transparent 82%);
+  color: var(--text-inverse);
+  box-shadow: var(--shadow-sm);
 }
 
 .jf-btn-primary:hover {
-  box-shadow: 0 20px 48px color-mix(in srgb, var(--active), transparent 76%);
+  background: var(--primary-hover);
+  box-shadow: var(--shadow-md);
 }
 
 .jf-btn-secondary {
@@ -2935,9 +3073,104 @@ select {
 
 [data-slot="dialog-content"].finance-modal-content,
 [role="dialog"].finance-modal-content {
-  width: min(calc(100vw - 1rem), 28rem);
-  max-width: min(calc(100vw - 1rem), 28rem);
-  max-height: min(90dvh, 47.5rem);
+  width: min(calc(100vw - 0.75rem), var(--finance-modal-max-width, 28rem));
+  max-width: min(calc(100vw - 0.75rem), var(--finance-modal-max-width, 28rem));
+  max-height: min(calc(100dvh - 0.75rem), 47.5rem);
+  border-color: color-mix(in srgb, var(--active), var(--border) 84%);
+  background:
+    radial-gradient(
+      circle at 12% 0%,
+      color-mix(in srgb, var(--active), transparent 91%),
+      transparent 15rem
+    ),
+    var(--card);
+  box-shadow:
+    0 28px 80px rgb(15 23 42 / 0.2),
+    0 1px 0 color-mix(in srgb, white, transparent 65%) inset;
+  overscroll-behavior: contain;
+}
+
+[data-receipt-tone="income"] {
+  --receipt-accent: var(--income);
+  --receipt-soft: var(--income-soft);
+}
+
+[data-receipt-tone="expense"] {
+  --receipt-accent: var(--expense);
+  --receipt-soft: var(--expense-soft);
+}
+
+[data-receipt-tone="transfer"] {
+  --receipt-accent: var(--transfer);
+  --receipt-soft: var(--transfer-soft);
+}
+
+.finance-modal-header {
+  background: color-mix(in srgb, var(--card), var(--surface-secondary) 16%);
+}
+
+.finance-modal-body {
+  scrollbar-gutter: stable;
+  background: color-mix(in srgb, var(--card), var(--surface-secondary) 18%);
+}
+
+.finance-modal-footer {
+  background: color-mix(in srgb, var(--card), var(--surface-elevated) 12%);
+  box-shadow: 0 -12px 30px rgb(15 23 42 / 0.035);
+}
+
+.finance-modal-content .finance-form-field > .field-label {
+  color: color-mix(in srgb, var(--text-primary), var(--active) 10%);
+  letter-spacing: 0.01em;
+}
+
+.finance-modal-content .field-input {
+  border-color: color-mix(in srgb, var(--border), var(--active) 8%);
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--input), white 3%),
+      var(--input)
+    );
+  box-shadow: 0 1px 0 color-mix(in srgb, white, transparent 72%) inset;
+}
+
+.finance-modal-content .field-input:hover {
+  border-color: color-mix(in srgb, var(--active), var(--border) 62%);
+  background: var(--surface);
+}
+
+.finance-modal-content .field-input:focus,
+.finance-modal-content .field-input:focus-visible,
+.finance-modal-content .field-input:focus-within {
+  border-color: color-mix(in srgb, var(--focus-color), var(--border) 38%);
+  background: var(--surface);
+}
+
+.dark .finance-modal-content .field-input {
+  border-color: color-mix(in srgb, var(--border), white 7%);
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--input), white 2.5%),
+      var(--input)
+    );
+  box-shadow: 0 1px 0 color-mix(in srgb, white, transparent 93%) inset;
+}
+
+@media (max-width: 639px) {
+  [data-slot="dialog-content"].finance-modal-content,
+  [role="dialog"].finance-modal-content {
+    top: auto;
+    right: 0.375rem;
+    bottom: max(0.375rem, env(safe-area-inset-bottom));
+    left: 0.375rem;
+    width: auto;
+    max-width: none;
+    max-height: calc(100dvh - max(0.75rem, env(safe-area-inset-bottom)));
+    transform: none;
+    border-radius: min(var(--oneui-card-radius), 1.5rem);
+  }
 }
 
 [data-radix-popper-content-wrapper] {
@@ -5557,5 +5790,30 @@ tbody tr:hover {
     transition-duration: 1ms !important;
     animation-duration: 1ms !important;
     animation-iteration-count: 1 !important;
+  }
+}
+
+@media print {
+  html,
+  body {
+    background: #ffffff !important;
+    color: #0f172a !important;
+  }
+
+  [data-transaction-receipt] {
+    --card: #ffffff;
+    --surface-secondary: #f8fafc;
+    --border: #cbd5e1;
+    --text-primary: #0f172a;
+    --text-secondary: #475569;
+    break-inside: avoid;
+    box-shadow: none !important;
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+
+  [data-transaction-receipt] .finance-panel-soft {
+    background: #f8fafc !important;
+    box-shadow: none !important;
   }
 }

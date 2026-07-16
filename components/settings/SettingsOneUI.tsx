@@ -73,6 +73,11 @@ import {
   type ResolvedTheme,
   type ThemePreference,
 } from "@/lib/theme";
+import {
+  CATEGORY_COLOR_PALETTE,
+  CATEGORY_FALLBACK_COLORS,
+  getReadableTextColor,
+} from "@/lib/theme-colors";
 
 type CategoryKind = "income" | "expense";
 type ThemeMode = ThemePreference;
@@ -113,24 +118,8 @@ interface SettingsRowProps {
 }
 
 const CATEGORY_COLORS: Record<CategoryKind, string> = {
-  income: "#22c55e",
-  expense: "#f59e0b",
+  ...CATEGORY_FALLBACK_COLORS,
 };
-
-const CATEGORY_PALETTE = [
-  "#22c55e",
-  "#ef4444",
-  "#6366f1",
-  "#f59e0b",
-  "#ec4899",
-  "#3b82f6",
-  "#8b5cf6",
-  "#14b8a6",
-  "#f97316",
-  "#06b6d4",
-  "#84cc16",
-  "#6b7280",
-];
 
 const ROOT_CATEGORY_VALUE = "__root__";
 
@@ -354,7 +343,7 @@ function AppearanceThemeControl({
               onKeyDown={(event) => handleRadioKeyDown(event, index)}
               className={`finance-focus flex min-h-11 min-w-0 items-center gap-3 rounded-[var(--oneui-control-radius)] border px-3 py-3 text-left transition-colors ${
                 active ?
-                  "border-brand bg-brand/10 text-brand"
+                  "border-primary bg-primary-soft text-primary"
                 : "border-border bg-surface-secondary text-text-secondary hover:bg-hover hover:text-text-primary"
               }`}
             >
@@ -428,40 +417,68 @@ function ProfileDialog({
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogContent className="max-h-[88dvh] overflow-y-auto rounded-3xl p-5 sm:max-w-lg">
-        <DialogHeader>
-          <DialogTitle className="text-xl font-bold">
-            Profile Settings
-          </DialogTitle>
-          <DialogDescription>
-            Update the name shown across the app.
-          </DialogDescription>
-        </DialogHeader>
-        <form onSubmit={handleProfileSave} className="space-y-4">
-          <div>
-            <label className="field-label" htmlFor="display-name">
-              Display name
-            </label>
+      <SettingsRow
+        icon={
+          <IconBubble tone="blue">
+            <UserRound size={21} />
+          </IconBubble>
+        }
+        title="Profile details"
+        description="Update your display name and review your sign-in email"
+        onClick={() => setOpen(true)}
+      />
+      <DialogContent className={`${financeModalContentClass} sm:[--finance-modal-max-width:32rem]`}>
+        <FinanceModalHeader
+          title="Profile Settings"
+          description="Update the name shown across the app. Your sign-in email stays read-only."
+          icon={UserRound}
+          tone="info"
+        />
+        <FinanceModalBody>
+          <form
+            id="profile-settings-form"
+            onSubmit={handleProfileSave}
+            className="space-y-4"
+          >
+            <FinanceFormField label="Display name" htmlFor="display-name">
             <Input
               id="display-name"
               value={draftName}
               onChange={(event) => setDraftName(event.target.value)}
               placeholder="Your display name"
+              autoComplete="name"
             />
-          </div>
-          <div>
-            <label className="field-label" htmlFor="profile-email">
-              Email
-            </label>
-            <Input id="profile-email" value={email} disabled />
-          </div>
-          <Button type="submit" disabled={saving} className="w-full" size="lg">
-            {saving ?
-              <Loader2 className="animate-spin" size={16} />
-            : <Save size={16} />}
-            {saving ? "Saving..." : "Save Profile"}
+            </FinanceFormField>
+            <FinanceFormField
+              label="Email"
+              htmlFor="profile-email"
+              hint="Email changes are managed through your authenticated account."
+            >
+              <Input id="profile-email" value={email} disabled autoComplete="email" />
+            </FinanceFormField>
+          </form>
+        </FinanceModalBody>
+        <FinanceModalFooter>
+          <Button
+            type="button"
+            onClick={() => setOpen(false)}
+            disabled={saving}
+            className={financeCancelButtonClass}
+          >
+            Cancel
           </Button>
-        </form>
+          <Button
+            type="submit"
+            form="profile-settings-form"
+            loading={saving}
+            loadingLabel="Saving..."
+            className="primary-action w-full"
+            size="lg"
+          >
+            <Save size={16} />
+            Save Profile
+          </Button>
+        </FinanceModalFooter>
       </DialogContent>
     </Dialog>
   );
@@ -612,13 +629,15 @@ function SecurityDialog({ email }: { email: string }) {
         description="Password verification and session controls"
         onClick={() => setOpen(true)}
       />
-      <DialogContent className="max-h-[88dvh] overflow-y-auto rounded-3xl p-5 sm:max-w-lg">
-        <DialogHeader>
-          <DialogTitle className="text-xl font-bold">Security</DialogTitle>
-          <DialogDescription>
-            Update account protection for {email || "this profile"}.
-          </DialogDescription>
-        </DialogHeader>
+      <DialogContent className={`${financeModalContentClass} sm:[--finance-modal-max-width:32rem]`}>
+        <FinanceModalHeader
+          title="Security"
+          description={`Update password verification and session controls for ${email || "this profile"}.`}
+          icon={LockKeyhole}
+          tone="info"
+        />
+
+        <FinanceModalBody className="space-y-4">
 
         <motion.div
           initial={{ opacity: 0, y: 8 }}
@@ -659,10 +678,7 @@ function SecurityDialog({ email }: { email: string }) {
                 </Button>
               </div>
             : <form onSubmit={handlePasswordSubmit} className="space-y-3">
-                <div>
-                  <label className="field-label" htmlFor="verification-code">
-                    Verification code
-                  </label>
+                <FinanceFormField label="Verification code" htmlFor="verification-code">
                   <Input
                     id="verification-code"
                     inputMode="numeric"
@@ -675,11 +691,8 @@ function SecurityDialog({ email }: { email: string }) {
                     }
                     placeholder="Enter verification code"
                   />
-                </div>
-                <div>
-                  <label className="field-label" htmlFor="new-password">
-                    New password
-                  </label>
+                </FinanceFormField>
+                <FinanceFormField label="New password" htmlFor="new-password">
                   <div className="relative">
                     <Input
                       id="new-password"
@@ -699,11 +712,8 @@ function SecurityDialog({ email }: { email: string }) {
                       {showPasswords ? <EyeOff size={16} /> : <Eye size={16} />}
                     </button>
                   </div>
-                </div>
-                <div>
-                  <label className="field-label" htmlFor="confirm-new-password">
-                    Confirm new password
-                  </label>
+                </FinanceFormField>
+                <FinanceFormField label="Confirm new password" htmlFor="confirm-new-password">
                   <Input
                     id="confirm-new-password"
                     type={showPasswords ? "text" : "password"}
@@ -712,7 +722,7 @@ function SecurityDialog({ email }: { email: string }) {
                     onChange={(event) => setConfirmPassword(event.target.value)}
                     placeholder="Repeat new password"
                   />
-                </div>
+                </FinanceFormField>
                 <div className="flex flex-col gap-2 sm:flex-row">
                   <Button
                     type="button"
@@ -807,7 +817,7 @@ function SecurityDialog({ email }: { email: string }) {
                 onClick={signOutOtherDevices}
                 disabled={isSigningOutOthers}
                 aria-busy={isSigningOutOthers}
-                className="bg-danger text-white hover:bg-danger/90"
+                className="bg-danger text-[var(--status-foreground)] hover:bg-danger/90"
               >
                 {isSigningOutOthers && <Loader2 className="animate-spin" size={16} />}
                 {isSigningOutOthers ? "Signing out..." : "Sign out other devices"}
@@ -815,6 +825,7 @@ function SecurityDialog({ email }: { email: string }) {
             </div>
           </DialogContent>
         </Dialog>
+        </FinanceModalBody>
       </DialogContent>
     </Dialog>
   );
@@ -1133,7 +1144,7 @@ function CategoriesDialog({
       <div>
         <p className="field-label">{label}</p>
         <div className="flex flex-wrap gap-2">
-          {CATEGORY_PALETTE.map((color) => (
+          {CATEGORY_COLOR_PALETTE.map((color) => (
             <button
               key={color}
               type="button"
@@ -1143,6 +1154,7 @@ function CategoriesDialog({
               className="finance-focus grid h-8 w-8 place-items-center rounded-full border border-border transition-transform hover:scale-105"
               style={{
                 backgroundColor: color,
+                color: getReadableTextColor(color),
                 boxShadow:
                   value === color ?
                     "0 0 0 3px var(--card), 0 0 0 5px var(--active)"
@@ -1152,7 +1164,7 @@ function CategoriesDialog({
               {value === color && (
                 <Check
                   size={14}
-                  className="text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.55)]"
+                  className="drop-shadow-sm"
                 />
               )}
             </button>
@@ -1511,7 +1523,7 @@ function CategoriesDialog({
         description="Manage income and expense categories"
         onClick={() => setOpen(true)}
       />
-      <DialogContent className={`${financeModalContentClass} sm:max-w-2xl`}>
+      <DialogContent className={`${financeModalContentClass} sm:[--finance-modal-max-width:42rem]`}>
         <FinanceModalHeader
           title="Categories"
           description="Add, edit, recolor, organize, and safely delete categories."
@@ -1652,7 +1664,7 @@ function CategoriesDialog({
             onClick={confirmCategoryDelete}
             disabled={isDeletingCategory}
             aria-busy={isDeletingCategory}
-            className="bg-danger text-white hover:bg-danger/90"
+            className="bg-danger text-[var(--status-foreground)] hover:bg-danger/90"
           >
             {isDeletingCategory && <Loader2 className="animate-spin" size={16} />}
             {isDeletingCategory ? "Verifying..." : "Delete"}

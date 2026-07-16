@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeftRight } from "lucide-react";
+import { ArrowDownUp, ArrowLeftRight } from "lucide-react";
 import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -47,6 +47,7 @@ export default function TransferModal({ open, onClose, onSuccess }: Props) {
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  const [swapAnnouncement, setSwapAnnouncement] = useState("");
   const toAccounts = accounts.filter((account) => account.id !== fromAccountId);
 
   useEffect(() => {
@@ -72,8 +73,25 @@ export default function TransferModal({ open, onClose, onSuccess }: Props) {
     setNote("");
     setTransferDate(getAppDateKey());
     setError("");
+    setSwapAnnouncement("");
     loadAccounts();
   }, [open, supabase]);
+
+  function handleSwapAccounts() {
+    if (!fromAccountId || !toAccountId || loading || saving) return;
+
+    const previousFromId = fromAccountId;
+    const previousToId = toAccountId;
+    const previousFrom = accounts.find((account) => account.id === previousFromId);
+    const previousTo = accounts.find((account) => account.id === previousToId);
+
+    setFromAccountId(previousToId);
+    setToAccountId(previousFromId);
+    setError("");
+    setSwapAnnouncement(
+      `${previousTo?.name ?? "Destination account"} is now the source and ${previousFrom?.name ?? "source account"} is now the destination.`,
+    );
+  }
 
   async function handleSave() {
     const parsedAmount = Number(amount);
@@ -144,42 +162,69 @@ export default function TransferModal({ open, onClose, onSuccess }: Props) {
           {loading ? (
             <div className="finance-skeleton h-40" />
           ) : accounts.length < 2 ? (
-            <div className="rounded-[18px] border border-amber-500/20 bg-amber-500/10 p-4 text-sm text-amber-700 dark:text-amber-200">
+            <div className="rounded-[18px] border border-payables/25 bg-payables-soft p-4 text-sm text-payables">
               Add at least two accounts before recording a transfer.
             </div>
           ) : (
             <>
-              <FinanceFormField label="From Account">
-                <AccountSelect
-                  value={fromAccountId}
-                  onValueChange={(nextFromId) => {
-                    setFromAccountId(nextFromId);
-                    if (toAccountId === nextFromId) {
-                      setToAccountId(
-                        accounts.find((account) => account.id !== nextFromId)
-                          ?.id || "",
-                      );
-                    }
-                  }}
-                  accounts={accounts}
-                  placeholder="Select source account"
-                />
-              </FinanceFormField>
+              <div className="rounded-[var(--oneui-card-radius)] border border-border bg-surface-secondary/70 p-3 sm:p-4">
+                <FinanceFormField label="From Account" htmlFor="transfer-from-account">
+                  <AccountSelect
+                    id="transfer-from-account"
+                    value={fromAccountId}
+                    onValueChange={(nextFromId) => {
+                      setFromAccountId(nextFromId);
+                      setSwapAnnouncement("");
+                      if (toAccountId === nextFromId) {
+                        setToAccountId(
+                          accounts.find((account) => account.id !== nextFromId)
+                            ?.id || "",
+                        );
+                      }
+                    }}
+                    accounts={accounts}
+                    placeholder="Select source account"
+                    ariaLabel="From account"
+                  />
+                </FinanceFormField>
 
-              <div className="flex justify-center">
-                <span className="grid h-9 w-9 place-items-center rounded-[14px] border border-border bg-surface-secondary text-text-secondary">
-                  <ArrowLeftRight size={16} />
-                </span>
+                <div className="flex items-center gap-3 py-2">
+                  <span aria-hidden="true" className="h-px flex-1 bg-border" />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    onClick={handleSwapAccounts}
+                    disabled={!fromAccountId || !toAccountId || loading || saving}
+                    aria-label="Swap source and destination accounts"
+                    title="Swap accounts"
+                    className="group size-11 shrink-0 rounded-full border-info/30 bg-info/10 text-info shadow-sm hover:border-info/50 hover:bg-info/15 hover:text-info"
+                  >
+                    <ArrowDownUp
+                      size={17}
+                      className="transition-transform duration-300 group-hover:rotate-180 group-active:scale-90 motion-reduce:transition-none"
+                    />
+                  </Button>
+                  <span aria-hidden="true" className="h-px flex-1 bg-border" />
+                </div>
+
+                <FinanceFormField label="To Account" htmlFor="transfer-to-account">
+                  <AccountSelect
+                    id="transfer-to-account"
+                    value={toAccountId}
+                    onValueChange={(nextToId) => {
+                      setToAccountId(nextToId);
+                      setSwapAnnouncement("");
+                    }}
+                    accounts={toAccounts}
+                    placeholder="Select destination account"
+                    ariaLabel="To account"
+                  />
+                </FinanceFormField>
+                <p className="sr-only" aria-live="polite">
+                  {swapAnnouncement}
+                </p>
               </div>
-
-              <FinanceFormField label="To Account">
-                <AccountSelect
-                  value={toAccountId}
-                  onValueChange={setToAccountId}
-                  accounts={toAccounts}
-                  placeholder="Select destination account"
-                />
-              </FinanceFormField>
 
               <div className="grid gap-3 sm:grid-cols-2">
                 <FinanceFormField

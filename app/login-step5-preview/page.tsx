@@ -5,25 +5,25 @@ const spending = [
     name: "Groceries and Household Essentials",
     value: 48500,
     percentage: 34,
-    color: "#16a34a",
+    color: "var(--income)",
   },
   {
     name: "Transport",
     value: 30200,
     percentage: 21,
-    color: "#2563eb",
+    color: "var(--transfer)",
   },
   {
     name: "Electricity and Internet Bills",
     value: 21100,
     percentage: 15,
-    color: "#f59e0b",
+    color: "var(--payables)",
   },
   {
     name: "Health and Pharmacy",
     value: 17400,
     percentage: 12,
-    color: "#dc2626",
+    color: "var(--expense)",
   },
   {
     name: "Education",
@@ -35,7 +35,7 @@ const spending = [
     name: "Very Long Miscellaneous Category Name That Should Truncate Cleanly",
     value: 9300,
     percentage: 7,
-    color: "#7c3aed",
+    color: "var(--investment)",
   },
 ];
 

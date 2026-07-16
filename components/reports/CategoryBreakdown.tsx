@@ -7,7 +7,7 @@ interface CategoryData {
   pct: number;
 }
 
-const FALLBACK_COLOR = "#64748b";
+const FALLBACK_COLOR = "var(--text-muted)";
 
 function isUsableColor(color: string | null | undefined): color is string {
   return (

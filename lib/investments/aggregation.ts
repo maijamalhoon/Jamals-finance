@@ -1,3 +1,5 @@
+import { CHART_COLOR_PALETTE } from "@/lib/theme-colors";
+
 export type InvestmentLike = {
   id: string;
   name: string;
@@ -45,18 +47,7 @@ export type AggregatedInvestment = {
   color: string;
 };
 
-const ASSET_COLORS = [
-  "#3b82f6",
-  "#f59e0b",
-  "#34d399",
-  "#a855f7",
-  "#ef4444",
-  "#14b8a6",
-  "#f97316",
-  "#64748b",
-  "#06b6d4",
-  "#84cc16",
-];
+const ASSET_COLORS = CHART_COLOR_PALETTE;
 
 function toFiniteNumber(value: number | string | null | undefined) {
   const parsed = Number(value);

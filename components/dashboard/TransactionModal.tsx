@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import DatePicker from "@/components/ui/date-picker";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import AccountSelect from "@/components/accounts/AccountSelect";
 import { getAppDateKey } from "@/lib/dates";
 import {
@@ -27,6 +28,10 @@ import {
 } from "@/components/ui/finance-modal";
 import { toast } from "sonner";
 import { BASE_CURRENCY } from "@/lib/currency";
+import {
+  CATEGORY_FALLBACK_COLORS,
+  FEATURE_COLOR_CSS,
+} from "@/lib/theme-colors";
 
 interface Category {
   id: string;
@@ -72,11 +77,6 @@ interface CategoryOption {
   depth: number;
 }
 
-const CATEGORY_FALLBACK_COLORS: Record<Category["type"], string> = {
-  income: "#22c55e",
-  expense: "#f59e0b",
-};
-
 function getCategoryColor(category: Category) {
   return category.color || CATEGORY_FALLBACK_COLORS[category.type];
 }
@@ -91,7 +91,7 @@ function CategorySwatch({
   return (
     <span
       aria-hidden="true"
-      className={`shrink-0 rounded-full border border-white/50 shadow-[0_0_0_1px_rgb(0_0_0_/_0.08)] dark:border-white/10 ${className}`}
+      className={`shrink-0 rounded-full border border-surface shadow-[0_0_0_1px_color-mix(in_srgb,var(--border-strong),transparent_35%)] ${className}`}
       style={{ backgroundColor: color }}
     />
   );
@@ -107,7 +107,7 @@ function CategorySummary({
   if (!option) {
     return (
       <span className="flex min-w-0 flex-1 items-center gap-3 text-text-secondary">
-        <CategorySwatch color="#94a3b8" className="h-3 w-3" />
+        <CategorySwatch color={FEATURE_COLOR_CSS.muted} className="h-3 w-3" />
         <span className="truncate">{placeholder}</span>
       </span>
     );
@@ -383,8 +383,8 @@ export default function TransactionModal({
                   className={`h-auto flex-1 rounded-[12px] py-2 text-sm font-semibold transition-colors ${
                     type === nextType
                       ? nextType === "income"
-                        ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-200"
-                        : "bg-rose-500/15 text-rose-700 dark:text-rose-200"
+                        ? "bg-income-soft text-income"
+                        : "bg-expense-soft text-expense"
                       : "text-text-secondary hover:bg-hover hover:text-text-primary"
                   }`}
                 >
@@ -509,13 +509,13 @@ export default function TransactionModal({
           </FinanceFormField>
 
           <FinanceFormField label="Note (Optional)" htmlFor="transaction-note">
-            <textarea
+            <Textarea
               id="transaction-note"
               value={note}
               onChange={(event) => setNote(event.target.value)}
               placeholder="What was this for?"
               rows={3}
-              className="field-input min-h-[5.5rem]"
+              className="min-h-[5.5rem] resize-none"
             />
           </FinanceFormField>
 

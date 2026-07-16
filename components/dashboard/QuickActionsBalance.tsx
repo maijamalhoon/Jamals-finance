@@ -24,39 +24,35 @@ const actions: Array<{
   label: string;
   icon: LucideIcon;
   ariaLabel: string;
-  circleClass: string;
+  tone: "income" | "expense" | "transfer" | "investment";
 }> = [
   {
     key: "income",
     label: "income",
     icon: ArrowUp,
     ariaLabel: "Add income",
-    circleClass:
-      "bg-emerald-50 text-emerald-600 border-emerald-100 group-hover:border-emerald-300 group-hover:bg-emerald-100 group-hover:shadow-emerald-500/15 dark:bg-emerald-500/10 dark:text-emerald-300 dark:border-emerald-500/20",
+    tone: "income",
   },
   {
     key: "expense",
     label: "expense",
     icon: ArrowDown,
     ariaLabel: "Add expense",
-    circleClass:
-      "bg-rose-50 text-rose-600 border-rose-100 group-hover:border-rose-300 group-hover:bg-rose-100 group-hover:shadow-rose-500/15 dark:bg-rose-500/10 dark:text-rose-300 dark:border-rose-500/20",
+    tone: "expense",
   },
   {
     key: "transfer",
     label: "transfer",
     icon: ArrowUpDown,
     ariaLabel: "Transfer money",
-    circleClass:
-      "bg-blue-50 text-blue-600 border-blue-100 group-hover:border-blue-300 group-hover:bg-blue-100 group-hover:shadow-blue-500/15 dark:bg-blue-500/10 dark:text-blue-300 dark:border-blue-500/20",
+    tone: "transfer",
   },
   {
     key: "invest",
     label: "invest",
     icon: TrendingUp,
     ariaLabel: "Add investment",
-    circleClass:
-      "bg-amber-50 text-amber-700 border-amber-100 group-hover:border-amber-300 group-hover:bg-amber-100 group-hover:shadow-amber-500/15 dark:bg-amber-500/10 dark:text-amber-200 dark:border-amber-500/20",
+    tone: "investment",
   },
 ];
 
@@ -145,7 +141,8 @@ export default function QuickActionsBalance({
                   className="dashboard-quick-action finance-focus group"
                 >
                   <span
-                    className={`grid h-11 w-11 place-items-center rounded-[16px] border transition-colors duration-200 sm:h-12 sm:w-12 ${action.circleClass}`}
+                    data-tone={action.tone}
+                    className="finance-feature-accent grid h-11 w-11 place-items-center rounded-[16px] border shadow-[var(--shadow-xs)] transition-colors duration-200 sm:h-12 sm:w-12"
                   >
                     <Icon
                       aria-hidden="true"

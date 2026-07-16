@@ -57,7 +57,7 @@ function HoldingAvatar({ holding }: { holding: AggregatedInvestment }) {
 
   return (
     <span
-      className="grid h-8 w-8 flex-shrink-0 place-items-center rounded-full text-[10px] font-bold text-white"
+      className="grid h-8 w-8 flex-shrink-0 place-items-center rounded-full text-[10px] font-bold text-text-inverse"
       style={{ backgroundColor: holding.color }}
     >
       {getAssetInitials(holding.name, holding.symbol)}

@@ -11,6 +11,7 @@ import {
   WalletCards,
   type LucideIcon,
 } from "lucide-react";
+import { FEATURE_COLOR_CSS } from "@/lib/theme-colors";
 
 export type TransactionIconMeta = {
   label: string;
@@ -34,43 +35,43 @@ const MATCHERS: {
   {
     label: "Transfer",
     icon: ArrowLeftRight,
-    accent: "#2563eb",
+    accent: FEATURE_COLOR_CSS.transfer,
     keywords: ["transfer", "moved", "wallet to", "bank to", "account to"],
   },
   {
     label: "Ride",
     icon: Car,
-    accent: "#16a34a",
+    accent: FEATURE_COLOR_CSS.primary,
     keywords: ["ride", "rides", "indrive", "careem", "uber", "bike"],
   },
   {
     label: "Food",
     icon: Coffee,
-    accent: "#dc2626",
+    accent: FEATURE_COLOR_CSS.expense,
     keywords: ["food", "dining", "drink", "drinks", "lunch", "dinner", "cafe"],
   },
   {
     label: "Shopping",
     icon: ShoppingBag,
-    accent: "#dc2626",
+    accent: FEATURE_COLOR_CSS.expense,
     keywords: ["shopping", "market", "store", "clothes", "item"],
   },
   {
     label: "Bills",
     icon: ReceiptText,
-    accent: "#dc2626",
+    accent: FEATURE_COLOR_CSS.payables,
     keywords: ["bill", "bills", "electric", "gas", "water", "internet", "utility"],
   },
   {
     label: "Bank",
     icon: Landmark,
-    accent: "#2563eb",
+    accent: FEATURE_COLOR_CSS.transfer,
     keywords: ["bank", "jazzcash", "easypaisa", "wallet", "card"],
   },
   {
     label: "Goals",
     icon: Target,
-    accent: "#7c3aed",
+    accent: FEATURE_COLOR_CSS.goals,
     keywords: ["goal", "goals", "target", "milestone"],
   },
 ];
@@ -96,7 +97,7 @@ export function getTransactionIconMeta({
     return {
       label: "Income",
       icon: TrendingUp,
-      accent: "#16a34a",
+      accent: FEATURE_COLOR_CSS.income,
     };
   }
 
@@ -104,7 +105,7 @@ export function getTransactionIconMeta({
     return {
       label: "Expense",
       icon: TrendingDown,
-      accent: "#dc2626",
+      accent: FEATURE_COLOR_CSS.expense,
     };
   }
 
@@ -112,27 +113,27 @@ export function getTransactionIconMeta({
     return {
       label: "Transfer",
       icon: ArrowLeftRight,
-      accent: "#2563eb",
+      accent: FEATURE_COLOR_CSS.transfer,
     };
   }
 
   return {
     label: "Transaction",
     icon: WalletCards,
-    accent: "#64748b",
+    accent: FEATURE_COLOR_CSS.muted,
   };
 }
 
 export function getTransactionToneClass(type?: string | null) {
   if (type === "income") {
-    return "text-emerald-600 dark:text-emerald-400";
+    return "text-income";
   }
 
   if (type === "expense") {
-    return "text-red-600 dark:text-red-400";
+    return "text-expense";
   }
 
-  return "text-blue-600 dark:text-blue-400";
+  return "text-transfer";
 }
 
 export function getTransactionPrefix(type?: string | null) {

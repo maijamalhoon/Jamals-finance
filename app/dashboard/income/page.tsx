@@ -41,7 +41,7 @@ export default async function IncomePage() {
   > = {};
   thisMonthEntries.forEach((t) => {
     const name = t.source_name || (t.categories as any)?.name || "Other";
-    const color = (t.categories as any)?.color || "#22c55e";
+    const color = (t.categories as any)?.color || "var(--income)";
     if (!sourceMap[name]) sourceMap[name] = { amount: 0, color, count: 0 };
     sourceMap[name].amount += Number(t.amount);
     sourceMap[name].count++;

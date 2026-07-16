@@ -18,10 +18,12 @@ export interface AccountOption {
 }
 
 interface AccountSelectProps {
+  id?: string;
   value: string;
   onValueChange: (value: string) => void;
   accounts: AccountOption[];
   placeholder?: string;
+  ariaLabel?: string;
   disabled?: boolean;
   loading?: boolean;
   emptyText?: string;
@@ -73,7 +75,7 @@ function AccountSummary({
         </span>
       </span>
       {balance && (
-        <span className="ml-2 shrink-0 text-right text-xs font-semibold text-text-primary">
+        <span className="ml-2 hidden max-w-28 shrink-0 truncate text-right text-xs font-semibold text-text-primary min-[360px]:block">
           {balance}
         </span>
       )}
@@ -82,10 +84,12 @@ function AccountSummary({
 }
 
 export default function AccountSelect({
+  id,
   value,
   onValueChange,
   accounts,
   placeholder = "Select account",
+  ariaLabel,
   disabled,
   loading,
   emptyText = "No accounts found",
@@ -106,12 +110,13 @@ export default function AccountSelect({
       disabled={unavailable}
     >
       <SelectTrigger
+        id={id}
         className={cn(
           "field-input h-auto min-h-12 w-full gap-3 px-3 py-2 pr-3 text-left",
           "data-placeholder:text-text-secondary [&>svg]:ml-1",
           className,
         )}
-        aria-label={placeholder}
+        aria-label={ariaLabel ?? placeholder}
       >
         <AccountSummary
           account={selectedAccount}
@@ -154,7 +159,7 @@ export default function AccountSelect({
                     </span>
                   </span>
                   {balance && (
-                    <span className="ml-auto shrink-0 text-right text-xs font-semibold text-text-primary">
+                    <span className="ml-auto hidden max-w-28 shrink-0 truncate text-right text-xs font-semibold text-text-primary min-[360px]:block">
                       {balance}
                     </span>
                   )}
