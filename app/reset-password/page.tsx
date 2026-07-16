@@ -13,16 +13,18 @@ import {
   ArrowRight,
   AlertTriangle,
   CheckCircle2,
-  Eye,
-  EyeOff,
   LoaderCircle,
   LockKeyhole,
   RefreshCw,
   XCircle,
 } from "lucide-react";
+import {
+  AuthFeedback,
+  AuthPasswordField,
+  AuthSubmitAction,
+} from "@/components/auth/AuthControls";
 import AuthShell from "@/components/auth/AuthShell";
 import { Button } from "@/components/ui/button";
-import { InlineNotice } from "@/components/ui/inline-notice";
 import { createClient } from "@/lib/supabase/client";
 import {
   classifyAuthFailure,
@@ -46,6 +48,7 @@ type RecoveryState =
   | "temporarily_unavailable"
   | "updating"
   | "success";
+type RecoveryField = "password" | "confirm";
 
 const RECOVERY_MARKER = "jamals-finance:password-recovery";
 type RecoveryOutcome = "ready" | "invalid" | "temporarily_unavailable";
@@ -256,11 +259,13 @@ export default function ResetPasswordPage() {
   const router = useRouter();
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
   const [recoveryState, setRecoveryState] = useState<RecoveryState>("checking");
-  const [error, setError] = useState("");
+  const [fieldErrors, setFieldErrors] = useState<Partial<Record<RecoveryField, string>>>({});
+  const [formError, setFormError] = useState("");
   const [message, setMessage] = useState("");
   const [retrying, setRetrying] = useState(false);
+  const passwordInputRef = useRef<HTMLInputElement>(null);
+  const confirmInputRef = useRef<HTMLInputElement>(null);
   const recoverySignalRef = useRef<RecoverySignal | null>(null);
   const recoveryEventConfirmedRef = useRef(false);
   const retryIntentRef = useRef<RecoveryRetryIntent>("none");
@@ -557,21 +562,41 @@ export default function ResetPasswordPage() {
     }
   }
 
-  async function handleReset(e: FormEvent) {
-    e.preventDefault();
-    if (password.length < 6) {
-      setError("Password must be at least 6 characters.");
-      return;
-    }
-    if (password !== confirm) {
-      setError("Passwords do not match.");
-      return;
-    }
+  function clearRecoveryFieldError(field: RecoveryField) {
+    setFieldErrors((current) => {
+      if (!current[field]) return current;
+      const next = { ...current };
+      delete next[field];
+      return next;
+    });
+  }
 
+  async function handleReset(event: FormEvent) {
+    event.preventDefault();
     if (recoveryState !== "ready") return;
 
+    setFieldErrors({});
+    setFormError("");
+
+    if (password.length < 6) {
+      setFieldErrors({ password: "Use at least 6 characters." });
+      passwordInputRef.current?.focus();
+      return;
+    }
+
+    if (!confirm) {
+      setFieldErrors({ confirm: "Enter the new password again." });
+      confirmInputRef.current?.focus();
+      return;
+    }
+
+    if (password !== confirm) {
+      setFieldErrors({ confirm: "The passwords do not match." });
+      confirmInputRef.current?.focus();
+      return;
+    }
+
     setRecoveryState("updating");
-    setError("");
     setMessage("");
 
     let updateOutcome: PasswordUpdateOutcome = "thrown_error";
@@ -585,13 +610,13 @@ export default function ResetPasswordPage() {
       updateOutcome = updateError ? "returned_error" : "success";
     } catch (updateException) {
       setRecoveryState("ready");
-      setError(getPasswordUpdateExceptionMessage(updateException));
+      setFormError(getPasswordUpdateExceptionMessage(updateException));
       return;
     }
 
     if (updateError) {
       setRecoveryState("ready");
-      setError(getResetPasswordError(updateError.message));
+      setFormError(getResetPasswordError(updateError.message));
       return;
     }
 
@@ -601,7 +626,7 @@ export default function ResetPasswordPage() {
       clearRecoveryMarker();
     }
     setRecoveryState("success");
-    setMessage("Password updated. Redirecting to your dashboard...");
+    setMessage("Password updated. Taking you to your dashboard…");
     setTimeout(() => router.push("/dashboard"), 900);
   }
 
@@ -650,18 +675,20 @@ export default function ResetPasswordPage() {
       icon={recoveryPresentation.icon}
     >
       {recoveryState === "checking" ? (
-        <InlineNotice tone="info" aria-live="polite" className="flex items-center gap-3">
-          <LoaderCircle className="h-5 w-5 shrink-0 animate-spin" aria-hidden="true" />
-          Verifying your recovery link...
-        </InlineNotice>
+        <AuthFeedback tone="info">
+          <span className="inline-flex items-center gap-2">
+            <LoaderCircle className="h-4 w-4 shrink-0 animate-spin" aria-hidden="true" />
+            Verifying your recovery link…
+          </span>
+        </AuthFeedback>
       ) : null}
 
       {recoveryState === "invalid" ? (
         <div className="space-y-4">
-          <InlineNotice tone="danger" role="alert">
-            This password reset link cannot be used. Request a new link to continue safely.
-          </InlineNotice>
-          <Button type="button" onClick={() => router.replace("/login?mode=forgot")} className="w-full">
+          <AuthFeedback tone="danger">
+            This reset link is expired, invalid, or has already been used. Request a new link to continue.
+          </AuthFeedback>
+          <Button type="button" size="lg" onClick={() => router.replace("/login?mode=forgot")} className="w-full">
             Request a new link <ArrowRight className="h-4 w-4" />
           </Button>
         </div>
@@ -669,14 +696,15 @@ export default function ResetPasswordPage() {
 
       {recoveryState === "temporarily_unavailable" ? (
         <div className="space-y-4">
-          <InlineNotice tone="warning" role="alert">
-            We could not verify this link because authentication is temporarily unavailable.
-          </InlineNotice>
+          <AuthFeedback tone="warning" role="alert">
+            Authentication is temporarily unavailable. This interruption does not mean the link is invalid.
+          </AuthFeedback>
           <Button
             type="button"
             onClick={retryRecoveryCheck}
             loading={retrying}
-            loadingLabel="Trying again..."
+            loadingLabel="Trying again…"
+            size="lg"
             className="w-full"
           >
             <RefreshCw className="h-4 w-4" /> Try again
@@ -686,77 +714,64 @@ export default function ResetPasswordPage() {
 
       {recoveryState === "success" ? (
         <div className="space-y-4">
-          <InlineNotice tone="success" aria-live="polite">
+          <AuthFeedback tone="success">
             {message || "Password updated successfully."}
-          </InlineNotice>
-          <Button type="button" onClick={() => router.push("/dashboard")} className="w-full">
+          </AuthFeedback>
+          <Button type="button" size="lg" onClick={() => router.push("/dashboard")} className="w-full">
             Continue to dashboard <ArrowRight className="h-4 w-4" />
           </Button>
         </div>
       ) : null}
 
       {recoveryState === "ready" || recoveryState === "updating" ? (
-        <form onSubmit={handleReset} className="space-y-4" aria-busy={loading}>
-          <div>
-            <label htmlFor="new-password" className="jf-auth-label">New password</label>
-            <div className="relative">
-              <input
-                id="new-password"
-                type={showPassword ? "text" : "password"}
-                value={password}
-                onChange={(event) => setPassword(event.target.value)}
-                placeholder="At least 6 characters"
-                autoComplete="new-password"
-                disabled={loading}
-                aria-invalid={Boolean(error)}
-                aria-describedby={error ? "recovery-error" : "recovery-password-help"}
-                className="jf-auth-input jf-auth-input-with-end"
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword((value) => !value)}
-                disabled={loading}
-                className="jf-auth-password-toggle finance-focus absolute right-1 top-1/2 grid h-11 w-11 -translate-y-1/2 place-items-center rounded-[var(--radius-control)]"
-                aria-label={showPassword ? "Hide password" : "Show password"}
-              >
-                {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-              </button>
-            </div>
-            <p id="recovery-password-help" className="mt-1.5 text-xs leading-5 text-text-tertiary">
-              Password managers can save this new password after the update succeeds.
-            </p>
+        <form onSubmit={handleReset} noValidate className="space-y-1" aria-busy={loading}>
+          <AuthPasswordField
+            id="new-password"
+            name="new_password"
+            label="New password"
+            value={password}
+            onChange={(event) => {
+              setPassword(event.target.value);
+              clearRecoveryFieldError("password");
+            }}
+            placeholder="At least 6 characters"
+            autoComplete="new-password"
+            disabled={loading}
+            error={fieldErrors.password}
+            helper="Use at least 6 characters. Password managers can save it after the update."
+            inputRef={passwordInputRef}
+            icon={<LockKeyhole className="h-4 w-4" />}
+          />
+
+          <AuthPasswordField
+            id="confirm-password"
+            name="confirm_password"
+            label="Confirm password"
+            value={confirm}
+            onChange={(event) => {
+              setConfirm(event.target.value);
+              clearRecoveryFieldError("confirm");
+            }}
+            placeholder="Repeat the new password"
+            autoComplete="new-password"
+            disabled={loading}
+            error={fieldErrors.confirm}
+            inputRef={confirmInputRef}
+            icon={<LockKeyhole className="h-4 w-4" />}
+          />
+
+          <div className="auth-feedback-slot">
+            {formError ? <AuthFeedback tone="danger">{formError}</AuthFeedback> : null}
           </div>
 
-          <div>
-            <label htmlFor="confirm-password" className="jf-auth-label">Confirm password</label>
-            <input
-              id="confirm-password"
-              type={showPassword ? "text" : "password"}
-              value={confirm}
-              onChange={(event) => setConfirm(event.target.value)}
-              placeholder="Repeat the new password"
-              autoComplete="new-password"
-              disabled={loading}
-              aria-invalid={Boolean(error)}
-              aria-describedby={error ? "recovery-error" : undefined}
-              className="jf-auth-input"
-            />
-          </div>
-
-          {error ? (
-            <InlineNotice id="recovery-error" tone="danger" role="alert">
-              {error}
-            </InlineNotice>
-          ) : null}
-
-          <Button
+          <AuthSubmitAction
             type="submit"
             loading={loading}
-            loadingLabel="Updating password..."
-            className="w-full"
+            loadingLabel="Updating password…"
+            disabled={loading}
           >
             Update password <ArrowRight className="h-4 w-4" />
-          </Button>
+          </AuthSubmitAction>
         </form>
       ) : null}
 
