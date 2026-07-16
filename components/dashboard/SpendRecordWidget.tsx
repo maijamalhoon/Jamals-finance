@@ -15,15 +15,18 @@ import ChartFrame from "@/components/ui/chart-frame";
 import { chartMotion } from "@/components/motion/animation-config";
 import CountedAmount from "@/components/motion/CountedAmount";
 import { useCurrency } from "@/components/currency/CurrencyProvider";
+import type { DashboardAvailability } from "@/lib/dashboard-financial-semantics";
 
 export default function SpendRecordWidget({
   monthlySpend,
   dailySpend,
   dailyExpenseTrend,
+  status,
 }: {
-  monthlySpend: number | string;
-  dailySpend: number | string;
+  monthlySpend: number | string | null;
+  dailySpend: number | string | null;
   dailyExpenseTrend: number[];
+  status: DashboardAvailability;
 }) {
   const { formatCurrency } = useCurrency();
   const data = useMemo(
@@ -45,11 +48,14 @@ export default function SpendRecordWidget({
     return peak.spend > 0 && uniqueValues.size > 1 ? peak : null;
   }, [data]);
   const displaySpend =
-    typeof monthlySpend === "number" ?
+    monthlySpend === null ? "Unavailable"
+    : typeof monthlySpend === "number" ?
       formatCurrency(monthlySpend)
     : monthlySpend;
   const displayDailyAverage =
-    typeof dailySpend === "number" ? formatCurrency(dailySpend) : dailySpend;
+    dailySpend === null ? "Unavailable"
+    : typeof dailySpend === "number" ? formatCurrency(dailySpend)
+    : dailySpend;
 
   return (
     <ChartCard
@@ -60,20 +66,31 @@ export default function SpendRecordWidget({
       <div className="flex min-h-0 flex-1 flex-col">
         <div className="pt-1">
           <p className="text-[25px] font-semibold leading-none tracking-normal text-[var(--dashboard-chart-spend)]">
-            <CountedAmount amount={displaySpend} duration={0.85} />
+            {monthlySpend === null ? displaySpend : <CountedAmount amount={displaySpend} duration={0.85} />}
           </p>
-          <p className="mt-1.5 truncate text-[11px] leading-none text-text-secondary">
-            {displayDailyAverage} daily average
+          <p className="mt-1.5 text-[11px] leading-4 text-text-secondary">
+            {status === "available" ? `${displayDailyAverage} daily average across elapsed days` : "Spend data is temporarily unavailable"}
           </p>
         </div>
 
-        {hasSpendData ? (
+        {status === "unavailable" ? (
+          <div className="dashboard-chart-empty mt-auto h-[118px] min-h-[118px]">
+            <div>
+              <span className="dashboard-chart-empty-icon">
+                <Activity size={16} />
+              </span>
+              <p className="text-xs font-semibold text-text-primary">Spend record unavailable</p>
+              <p className="mt-1 text-[11px] text-text-secondary">Refresh to try loading it again.</p>
+            </div>
+          </div>
+        ) : hasSpendData ? (
           <ChartFrame
             className="mt-auto h-[118px] min-h-[118px] min-w-0 overflow-hidden"
             tone="orange"
           >
             {({ width, height }) => (
               <AreaChart
+                accessibilityLayer
                 data={data}
                 height={height}
                 margin={{ top: 16, right: 2, left: 2, bottom: 2 }}
@@ -112,7 +129,6 @@ export default function SpendRecordWidget({
                     background: "var(--card)",
                     color: "var(--text-primary)",
                     boxShadow: "var(--shadow-soft)",
-                    backdropFilter: "blur(10px)",
                   }}
                   formatter={(value) => [
                     formatCurrency(Number(value ?? 0)),

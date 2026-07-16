@@ -2,21 +2,17 @@
 
 import Link from "next/link";
 import { ArrowRight, Package, Zap } from "lucide-react";
-import {
-  Cell,
-  Pie,
-  PieChart,
-  ResponsiveContainer,
-  Tooltip,
-} from "recharts";
+import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from "recharts";
+
 import ChartCard from "@/components/dashboard/ChartCard";
-import CountedAmount from "@/components/motion/CountedAmount";
 import { useCurrency } from "@/components/currency/CurrencyProvider";
+import CountedAmount from "@/components/motion/CountedAmount";
 import {
   aggregateInvestmentHoldings,
   getAssetInitials,
+  type AggregatedInvestment,
 } from "@/lib/investments/aggregation";
-import type { AggregatedInvestment } from "@/lib/investments/aggregation";
+import type { DashboardAvailability } from "@/lib/dashboard-financial-semantics";
 
 interface Investment {
   id: string;
@@ -36,19 +32,26 @@ interface Investment {
   is_live_priced?: boolean | null;
 }
 
-const profitColor = "var(--success)";
-const lossColor = "var(--danger)";
+type AllocationEntry = {
+  id: string;
+  name: string;
+  symbol: string | null;
+  imageUrl: string | null;
+  value: number;
+  color: string;
+  holding: AggregatedInvestment;
+};
 
 function shortName(name: string) {
-  return name.length > 11 ? `${name.slice(0, 9)}...` : name;
+  return name.length > 15 ? `${name.slice(0, 13)}…` : name;
 }
 
 function formatAllocation(value: number) {
-  return `${Math.round(value)}%`;
+  return `${value.toFixed(1)}%`;
 }
 
-function buildAllocationData(investments: Investment[]) {
-  const rows = aggregateInvestmentHoldings(investments)
+function buildAllocationData(investments: Investment[]): AllocationEntry[] {
+  return aggregateInvestmentHoldings(investments)
     .map((holding) => ({
       id: holding.groupKey,
       name: holding.name,
@@ -58,56 +61,20 @@ function buildAllocationData(investments: Investment[]) {
       color: holding.color,
       holding,
     }))
-    .filter((holding) => holding.value > 0);
-
-  if (rows.length > 0) return rows;
-
-  return [
-    {
-      id: "unpriced",
-      name: "Unpriced",
-      symbol: null,
-      imageUrl: null,
-      value: 1,
-      color: "#64748b",
-      holding: null,
-    },
-  ];
+    .filter((holding) => holding.value > 0 && holding.holding.current_price > 0);
 }
 
-function LegendIcon({
-  entry,
-}: {
-  entry: {
-    name: string;
-    symbol: string | null;
-    imageUrl: string | null;
-    color: string;
-    holding: AggregatedInvestment | null;
-  };
-}) {
+function LegendIcon({ entry }: { entry: AllocationEntry }) {
   if (entry.imageUrl) {
     return (
       // eslint-disable-next-line @next/next/no-img-element
-      <img
-        src={entry.imageUrl}
-        alt=""
-        className="h-5 w-5 flex-shrink-0 rounded-full"
-      />
-    );
-  }
-
-  if (!entry.holding) {
-    return (
-      <span className="grid h-5 w-5 flex-shrink-0 place-items-center rounded-full bg-surface-secondary text-text-secondary">
-        <Package size={11} />
-      </span>
+      <img src={entry.imageUrl} alt="" className="h-5 w-5 shrink-0 rounded-full" />
     );
   }
 
   return (
     <span
-      className="grid h-5 w-5 flex-shrink-0 place-items-center rounded-full text-[8.5px] font-bold text-white"
+      className="grid h-5 w-5 shrink-0 place-items-center rounded-full text-[8.5px] font-bold text-white"
       style={{ backgroundColor: entry.color }}
     >
       {getAssetInitials(entry.name, entry.symbol)}
@@ -118,75 +85,95 @@ function LegendIcon({
 export default function InvestmentOverviewWidget({
   investments,
   totalPnLPct,
+  availability,
+  unpricedCount,
 }: {
   investments: Investment[];
-  totalPnLPct: number;
+  totalPnLPct: number | null;
+  availability: DashboardAvailability;
+  unpricedCount: number;
 }) {
   const { formatCurrency } = useCurrency();
-  const isProfit = totalPnLPct >= 0;
-  const pnlColor = isProfit ? profitColor : lossColor;
   const allocationData = buildAllocationData(investments);
   const visibleInvestments = allocationData.slice(0, 3);
   const allocationTotalValue = allocationData.reduce(
     (sum, investment) => sum + investment.value,
     0,
   );
-  const realPortfolioValue = allocationData.reduce(
-    (sum, investment) =>
-      investment.holding ? sum + investment.value : sum,
-    0,
-  );
-  const chartKey = allocationData
-    .map((investment) => `${investment.id}-${investment.value}`)
-    .join("-");
+  const isProfit = totalPnLPct !== null && totalPnLPct > 0;
+  const isLoss = totalPnLPct !== null && totalPnLPct < 0;
+  const pnlColor = isProfit ? "var(--success)" : isLoss ? "var(--danger)" : "var(--text-secondary)";
+  const pnlLabel =
+    totalPnLPct === null ? "P&L unavailable"
+    : `${isProfit ? "+" : ""}${totalPnLPct.toFixed(1)}%`;
+  const emptyTitle =
+    availability === "unavailable" ? "Portfolio unavailable"
+    : investments.length === 0 ? "No holdings yet"
+    : "Pricing unavailable";
+  const emptyDescription =
+    availability === "unavailable" ? "Refresh when your connection is stable."
+    : investments.length === 0 ? "Add investments to see allocation."
+    : "Current prices are missing, so value and performance are not shown.";
 
   return (
-    <div className="h-full rounded-[21px]">
-      <ChartCard
-        eyebrow="Investments"
-        eyebrowIcon={<Zap />}
-        title="Portfolio Overview"
-        action={
-          <Link
-            href="/dashboard/investments"
-            className="finance-focus inline-flex items-center gap-1.5 rounded-full border border-border bg-surface-secondary px-2.5 py-1 text-[10px] font-semibold text-text-secondary transition-all hover:border-active/35 hover:text-active"
-            aria-label="Open Investment Overview details"
-          >
-            Details
-            <ArrowRight size={11} />
-          </Link>
-        }
-        legend={
+    <ChartCard
+      eyebrow="Investments"
+      eyebrowIcon={<Zap />}
+      title="Portfolio Overview"
+      description="Allocation by priced current value"
+      action={
+        <Link
+          href="/dashboard/investments"
+          className="dashboard-card-action finance-focus"
+          aria-label="Open investment details"
+        >
+          Details
+          <ArrowRight size={11} />
+        </Link>
+      }
+      legend={
+        visibleInvestments.length > 0 ? (
           <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
             {visibleInvestments.map((investment) => (
               <div
                 key={investment.id}
-                className="flex min-w-0 items-center gap-1.5 rounded-full border bg-surface-secondary/60 px-1.5 py-1 transition-all hover:-translate-y-0.5 hover:bg-hover/70 hover:shadow-sm"
-                style={{
-                  borderColor: `color-mix(in srgb, ${investment.color}, transparent 72%)`,
-                }}
+                className="flex min-w-0 items-center gap-1.5 rounded-full border border-border bg-surface-secondary px-2 py-1"
               >
                 <LegendIcon entry={investment} />
-                <span className="truncate text-[9.5px] font-medium text-[#8d96a8] dark:text-text-secondary">
+                <span className="truncate text-[9.5px] font-medium text-text-secondary">
                   {shortName(investment.name)}
                 </span>
-                {allocationTotalValue > 0 && investment.holding ? (
-                  <span
-                    className="ml-auto shrink-0 text-[9px] font-bold tabular-nums"
-                    style={{ color: investment.color }}
-                  >
-                    {formatAllocation((investment.value / allocationTotalValue) * 100)}
-                  </span>
-                ) : null}
+                <span
+                  className="ml-auto shrink-0 text-[9px] font-bold tabular-nums"
+                  style={{ color: investment.color }}
+                >
+                  {formatAllocation((investment.value / allocationTotalValue) * 100)}
+                </span>
               </div>
             ))}
           </div>
-        }
-      >
-        <div className="flex h-full min-h-[142px] items-center justify-center">
+        ) : null
+      }
+    >
+      {allocationData.length === 0 ? (
+        <div className="dashboard-chart-empty min-h-[142px]">
+          <div>
+            <span className="dashboard-chart-empty-icon">
+              <Package size={16} />
+            </span>
+            <p className="text-xs font-semibold text-text-primary">{emptyTitle}</p>
+            <p className="mt-1 text-[11px] text-text-secondary">{emptyDescription}</p>
+          </div>
+        </div>
+      ) : (
+        <div className="flex min-h-[142px] flex-col items-center justify-center">
+          <p className="sr-only">
+            Priced portfolio value {allocationTotalValue}. Performance is {pnlLabel}.
+            {unpricedCount > 0 ? ` ${unpricedCount} holdings are excluded because current pricing is unavailable.` : ""}
+          </p>
           <div className="relative h-[132px] w-[132px]">
             <ResponsiveContainer width="100%" height="100%" initialDimension={{ width: 128, height: 128 }}>
-              <PieChart key={chartKey}>
+              <PieChart accessibilityLayer>
                 <Pie
                   data={allocationData}
                   dataKey="value"
@@ -195,14 +182,12 @@ export default function InvestmentOverviewWidget({
                   outerRadius={60}
                   paddingAngle={3}
                   isAnimationActive
-                  animationBegin={160}
-                  animationDuration={1150}
+                  animationBegin={120}
+                  animationDuration={760}
                   stroke="var(--card)"
                   strokeWidth={3}
                 >
-                  {allocationData.map((entry) => (
-                    <Cell key={entry.id} fill={entry.color} />
-                  ))}
+                  {allocationData.map((entry) => <Cell key={entry.id} fill={entry.color} />)}
                 </Pie>
                 <Tooltip
                   contentStyle={{
@@ -212,54 +197,35 @@ export default function InvestmentOverviewWidget({
                     color: "var(--text-primary)",
                     boxShadow: "var(--shadow-soft)",
                   }}
-                  formatter={(value, name) => {
-                    const item = allocationData.find((entry) => entry.name === name);
-                    if (!item?.holding) return ["Pending price", "Status"];
-
-                    return [
-                      formatCurrency(Number(value ?? 0)),
-                      "Value",
-                    ];
-                  }}
+                  formatter={(value) => [formatCurrency(Number(value ?? 0)), "Priced value"]}
                   labelFormatter={(label) => {
                     const item = allocationData.find((entry) => entry.name === label);
-                    if (!item?.holding || allocationTotalValue <= 0) return String(label);
-                    return `${label} - ${formatAllocation((item.value / allocationTotalValue) * 100)}`;
+                    return item ? `${label} - ${formatAllocation((item.value / allocationTotalValue) * 100)}` : String(label);
                   }}
                 />
               </PieChart>
             </ResponsiveContainer>
-            <div className="absolute inset-[24px] grid place-items-center rounded-full border border-border/60 bg-card text-center shadow-[inset_0_1px_0_rgb(255_255_255_/_0.55)] dark:shadow-[inset_0_1px_0_rgb(255_255_255_/_0.05)]">
+            <div className="absolute inset-[24px] grid place-items-center rounded-full border border-border bg-card text-center">
               <div>
-                {realPortfolioValue > 0 ? (
-                  <>
-                    <p className="max-w-[4.8rem] truncate text-[13px] font-black leading-none text-text-primary">
-                      <CountedAmount
-                        amount={formatCurrency(realPortfolioValue, { compact: true })}
-                      />
-                    </p>
-                    <p
-                      className="mt-1 text-[10px] font-bold leading-none"
-                      style={{ color: pnlColor }}
-                    >
-                      <CountedAmount
-                        amount={`${isProfit ? "+" : "-"}${Math.abs(totalPnLPct).toFixed(1)}%`}
-                      />
-                    </p>
-                  </>
-                ) : (
-                  <p className="max-w-[4.8rem] truncate text-[12px] font-black leading-none text-text-primary">
-                    Unpriced
-                  </p>
-                )}
-                <p className="mt-1 text-[8.5px] font-semibold leading-none tracking-[0.12em] text-[#9aa3b5]">
-                  portfolio
+                <p className="max-w-[4.8rem] truncate text-[13px] font-black leading-none text-text-primary tabular-nums">
+                  <CountedAmount amount={formatCurrency(allocationTotalValue, { compact: true })} />
+                </p>
+                <p className="mt-1 text-[10px] font-bold leading-none tabular-nums" style={{ color: pnlColor }}>
+                  {totalPnLPct === null ? pnlLabel : <CountedAmount amount={pnlLabel} />}
+                </p>
+                <p className="mt-1 text-[8.5px] font-semibold leading-none tracking-[0.1em] text-text-secondary">
+                  priced value
                 </p>
               </div>
             </div>
           </div>
+          {unpricedCount > 0 ? (
+            <p className="mt-1 text-center text-[10px] font-semibold leading-4 text-warning">
+              {unpricedCount} unpriced {unpricedCount === 1 ? "holding" : "holdings"} excluded
+            </p>
+          ) : null}
         </div>
-      </ChartCard>
-    </div>
+      )}
+    </ChartCard>
   );
 }

@@ -7,6 +7,7 @@ import CountedAmount from "@/components/motion/CountedAmount";
 import { useDashboardAnimationReady } from "@/components/motion/useDashboardAnimationReady";
 import EmptyState from "@/components/ui/empty-state";
 import { useCurrency } from "@/components/currency/CurrencyProvider";
+import type { DashboardAvailability } from "@/lib/dashboard-financial-semantics";
 
 interface SpendingData {
   id?: string;
@@ -47,12 +48,13 @@ function getCategoryAccent(item: SpendingData, index: number) {
 
 function formatPercentage(value: number) {
   const safeValue = Number.isFinite(value) ? Math.max(value, 0) : 0;
-  return `${Math.round(safeValue)}%`;
+  return `${safeValue.toFixed(1)}%`;
 }
 
 export default function SpendingBreakdown({
   data,
   total,
+  status = "available",
   periodLabel = new Date().toLocaleDateString("en-US", {
     month: "long",
     year: "numeric",
@@ -60,6 +62,7 @@ export default function SpendingBreakdown({
 }: {
   data: SpendingData[];
   total: number;
+  status?: DashboardAvailability;
   periodLabel?: string;
 }) {
   const { ready, reduceMotion } = useDashboardAnimationReady();
@@ -72,10 +75,9 @@ export default function SpendingBreakdown({
       percentage:
         Number.isFinite(item.percentage) ? Math.max(item.percentage, 0) : 0,
     }))
-    .sort((a, b) => b.value - a.value)
-    .slice(0, 5);
+    .sort((a, b) => b.value - a.value);
 
-  if (data.length === 0) {
+  if (status === "unavailable" || data.length === 0) {
     return (
       <section className="finance-reference-card dashboard-list-card motion-card-entry">
         <div className="dashboard-list-card-header">
@@ -87,17 +89,19 @@ export default function SpendingBreakdown({
               <span className="truncate">Spending Breakdown</span>
             </div>
             <h3 className="dashboard-list-card-title">Top Categories</h3>
-            <p className="dashboard-list-card-subtitle">
-              Top categories this month
-            </p>
+            <p className="dashboard-list-card-subtitle">{periodLabel}</p>
           </div>
         </div>
         <div className="dashboard-chart-empty flex-1">
           <EmptyState
             compact
             icon={PieChart}
-            title="No expenses this month"
-            description="Expense categories will appear here once you add spending."
+            title={status === "unavailable" ? "Spending unavailable" : "No expenses this month"}
+            description={
+              status === "unavailable" ?
+                "Refresh when your connection is stable."
+              : "Expense categories will appear here once you add spending."
+            }
           />
         </div>
       </section>
@@ -130,8 +134,7 @@ export default function SpendingBreakdown({
         {sortedData.map((item, i) => {
           const accent = getCategoryAccent(item, i);
           const percent = Math.max(0, Math.min(item.percentage, 100));
-          const progressWidth =
-            safeTotal > 0 && percent > 0 ? Math.max(2, percent) : 0;
+          const progressWidth = safeTotal > 0 && percent > 0 ? percent : 0;
           const progressScale = ready ? progressWidth / 100 : 0;
           const rowStyle = {
             "--motion-reveal-delay": `${i * 65}ms`,
@@ -160,7 +163,7 @@ export default function SpendingBreakdown({
                     className="h-3 w-3 flex-shrink-0 rounded-full shadow-[0_0_0_3px_color-mix(in_srgb,var(--category-accent),transparent_84%)]"
                     style={{ backgroundColor: accent }}
                   />
-                  <span className="truncate text-[13px] font-semibold leading-5 text-text-primary sm:text-sm">
+                  <span className="line-clamp-2 break-words text-[13px] font-semibold leading-5 text-text-primary sm:text-sm">
                     {item.name}
                   </span>
                 </div>

@@ -14,6 +14,7 @@ import TransferModal from "@/components/accounts/TransferModal";
 import TransactionModal from "@/components/dashboard/TransactionModal";
 import InvestmentModal from "@/components/investments/InvestmentModal";
 import { useCurrency } from "@/components/currency/CurrencyProvider";
+import type { DashboardBalanceSummary } from "@/lib/dashboard-financial-semantics";
 
 type TransactionType = "income" | "expense";
 type QuickAction = TransactionType | "transfer" | "invest";
@@ -60,14 +61,14 @@ const actions: Array<{
 ];
 
 export default function QuickActionsBalance({
-  totalBalance,
+  summary,
 }: {
-  totalBalance: number | string;
+  summary: DashboardBalanceSummary;
 }) {
   const router = useRouter();
   const { formatCurrency } = useCurrency();
   const displayTotalBalance =
-    typeof totalBalance === "number" ? formatCurrency(totalBalance) : totalBalance;
+    summary.value === null ? "Unavailable" : formatCurrency(summary.value);
 
   const [transactionType, setTransactionType] =
     useState<TransactionType>("income");
@@ -95,34 +96,43 @@ export default function QuickActionsBalance({
     <>
       <section
         aria-label="Total net balance and quick actions"
-        className="finance-reference-card jf-balance-card relative overflow-hidden px-4 py-4 sm:px-5 sm:py-5 lg:px-6"
+        className="dashboard-balance-hero"
       >
         <div
           aria-hidden="true"
-          className="absolute inset-x-0 bottom-0 h-[3px] bg-gradient-to-r from-blue-500 via-emerald-500 to-orange-500"
-        />
-
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute -right-16 -top-20 h-48 w-48 rounded-full bg-blue-500/10 blur-3xl"
+          className="dashboard-balance-accent"
         />
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute left-1/4 top-0 h-24 w-64 -translate-y-1/2 rounded-full bg-emerald-500/10 blur-3xl"
+          className="dashboard-balance-shape dashboard-balance-shape-one"
+        />
+        <div
+          aria-hidden="true"
+          className="dashboard-balance-shape dashboard-balance-shape-two"
         />
 
         <div className="relative flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
-          <div className="min-w-0 text-center lg:text-left">
-            <p className="mb-2 text-[10px] font-black uppercase tracking-[0.24em] text-text-secondary">
-              Total net balance
-            </p>
+          <div className="min-w-0 text-left lg:max-w-[58%]">
+            <div className="mb-2 flex flex-wrap items-center gap-2">
+              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-text-secondary">
+                {summary.label}
+              </p>
+              {summary.status !== "available" ? (
+                <span className="dashboard-balance-status" data-status={summary.status}>
+                  {summary.status === "partial" ? "Partial" : "Unavailable"}
+                </span>
+              ) : null}
+            </div>
 
-            <h1 className="max-w-full break-words text-[clamp(2.05rem,4.1vw,4.15rem)] font-black leading-[0.96] tracking-tight text-text-primary [font-variant-numeric:tabular-nums] [overflow-wrap:anywhere] lg:max-w-[13ch] xl:max-w-[15ch]">
+            <h1 className="max-w-full break-words text-[clamp(2rem,4vw,4rem)] font-black leading-[0.98] tracking-[-0.05em] text-text-primary tabular-nums [overflow-wrap:anywhere]">
               {displayTotalBalance}
             </h1>
+            <p className="mt-3 max-w-2xl text-xs leading-5 text-text-secondary sm:text-sm sm:leading-6">
+              {summary.description}
+            </p>
           </div>
 
-          <div className="mx-auto grid w-full max-w-[480px] grid-cols-4 gap-2.5 lg:mx-0 lg:w-auto lg:min-w-[392px] lg:gap-3">
+          <div role="group" aria-label="Quick actions" className="grid w-full grid-cols-4 gap-1.5 sm:gap-2 lg:w-auto lg:min-w-[392px]">
             {actions.map((action) => {
               const Icon = action.icon;
 
@@ -132,10 +142,10 @@ export default function QuickActionsBalance({
                   type="button"
                   aria-label={action.ariaLabel}
                   onClick={() => openAction(action.key)}
-                  className="finance-focus group flex min-w-0 flex-col items-center justify-center gap-2 rounded-[var(--oneui-control-radius)] border border-transparent px-1 py-1.5 transition-all duration-200 hover:-translate-y-0.5 hover:border-border hover:bg-card/60 focus-visible:bg-card/70"
+                  className="dashboard-quick-action finance-focus group"
                 >
                   <span
-                    className={`grid h-11 w-11 place-items-center rounded-full border shadow-sm transition-all duration-200 group-hover:shadow-lg sm:h-12 sm:w-12 lg:h-14 lg:w-14 ${action.circleClass}`}
+                    className={`grid h-11 w-11 place-items-center rounded-[16px] border transition-colors duration-200 sm:h-12 sm:w-12 ${action.circleClass}`}
                   >
                     <Icon
                       aria-hidden="true"
@@ -143,7 +153,7 @@ export default function QuickActionsBalance({
                     />
                   </span>
 
-                  <span className="truncate text-[11px] font-black lowercase tracking-[-0.03em] text-text-primary sm:text-xs">
+                  <span className="max-w-full truncate text-[10px] font-bold capitalize text-text-primary sm:text-[11px]">
                     {action.label}
                   </span>
                 </button>

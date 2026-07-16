@@ -14,9 +14,12 @@ import { chartMotion } from "@/components/motion/animation-config";
 import { useCurrency } from "@/components/currency/CurrencyProvider";
 import ChartFrame from "@/components/ui/chart-frame";
 import ChartCard from "@/components/dashboard/ChartCard";
+import type { DashboardAvailability } from "@/lib/dashboard-financial-semantics";
 
 interface ChartData {
+  dateKey?: string;
   date: string;
+  day?: number;
   income: number;
   expenses: number;
 }
@@ -44,7 +47,7 @@ function CustomTooltip({
   const net = income - expenses;
 
   return (
-    <div className="min-w-[178px] rounded-[16px] border border-border bg-card/95 p-3 text-xs shadow-[var(--shadow-soft)] backdrop-blur-md">
+    <div className="min-w-[178px] rounded-[16px] border border-border bg-card p-3 text-xs shadow-[var(--shadow-soft)]">
       <p className="mb-2 font-semibold text-text-primary">{label}</p>
       <div className="space-y-1.5">
         <p className="flex items-center justify-between gap-5 font-medium text-success">
@@ -64,7 +67,13 @@ function CustomTooltip({
   );
 }
 
-export default function IncomeExpenseChart({ data }: { data: ChartData[] }) {
+export default function IncomeExpenseChart({
+  data,
+  status,
+}: {
+  data: ChartData[];
+  status: DashboardAvailability;
+}) {
   const { formatCurrency } = useCurrency();
   const chartRows = useMemo(
     () =>
@@ -73,7 +82,7 @@ export default function IncomeExpenseChart({ data }: { data: ChartData[] }) {
         income: Number.isFinite(Number(point.income)) ? Number(point.income) : 0,
         expenses:
           Number.isFinite(Number(point.expenses)) ? Number(point.expenses) : 0,
-        day: index + 1,
+        day: point.day ?? index + 1,
       })),
     [data],
   );
@@ -88,12 +97,15 @@ export default function IncomeExpenseChart({ data }: { data: ChartData[] }) {
       ),
     [chartRows],
   );
+  const totalIncome = chartRows.reduce((sum, point) => sum + point.income, 0);
+  const totalExpenses = chartRows.reduce((sum, point) => sum + point.expenses, 0);
 
   return (
     <ChartCard
       eyebrow="Income vs Expenses"
       eyebrowIcon={<DollarSign />}
       title="Daily Cash Flow"
+      description="Elapsed days in the current month"
       legendPlacement="header"
       legend={
         <div className="flex items-center gap-2 pt-0.5">
@@ -112,16 +124,32 @@ export default function IncomeExpenseChart({ data }: { data: ChartData[] }) {
         </div>
       }
     >
-      {hasCashFlow ? (
+      <p className="sr-only">
+        {status === "available" ?
+          `${chartRows.length} elapsed days. Total income ${totalIncome}; total expenses ${totalExpenses}.`
+        : "Cash-flow data is temporarily unavailable."}
+      </p>
+      {status === "unavailable" ? (
+        <div className="dashboard-chart-empty h-[162px] min-h-[162px]">
+          <div>
+            <span className="dashboard-chart-empty-icon">
+              <DollarSign size={16} />
+            </span>
+            <p className="text-xs font-semibold text-text-primary">Cash flow unavailable</p>
+            <p className="mt-1 text-[11px] text-text-secondary">Refresh when your connection is stable.</p>
+          </div>
+        </div>
+      ) : hasCashFlow ? (
         <ChartFrame
           className="h-[162px] min-h-[162px] min-w-0 overflow-hidden"
           tone="green"
         >
           {({ width, height }) => (
             <ComposedChart
+              accessibilityLayer
               data={chartRows}
               height={height}
-              margin={{ top: 10, right: 10, left: 16, bottom: 0 }}
+              margin={{ top: 10, right: 6, left: 0, bottom: 0 }}
               width={width}
             >
               <defs>
@@ -158,8 +186,8 @@ export default function IncomeExpenseChart({ data }: { data: ChartData[] }) {
                 tick={{ fill: "var(--dashboard-chart-muted)", fontSize: 11 }}
                 axisLine={false}
                 tickLine={false}
-                width={64}
-                tickMargin={8}
+                width={54}
+                tickMargin={6}
                 tickFormatter={(value) =>
                   formatCurrency(Number(value), { compact: true })
                 }

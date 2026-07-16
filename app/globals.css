@@ -231,9 +231,7 @@
   --shadow-soft: 0 14px 36px rgb(0 0 0 / 0.3);
   --shadow-premium: 0 22px 58px rgb(0 0 0 / 0.38);
   --glow-soft: 0 0 0 1px color-mix(in srgb, var(--brand-accent), transparent 80%);
-  --focus-ring:
-    0 0 0 1px color-mix(in srgb, var(--focus-color), transparent 34%),
-    0 0 0 4px color-mix(in srgb, var(--focus-color), transparent 76%);
+  --focus-ring: 0 0 0 3px color-mix(in srgb, var(--focus-color), transparent 72%);
   --surface-highlight: inset 0 1px 0 rgb(255 255 255 / 0.08);
   --oneui-page-gutter: clamp(0.875rem, 1.7vw, 1.75rem);
   --oneui-card-radius: 1.25rem;
@@ -604,6 +602,10 @@
   .finance-control:focus-visible {
     outline: none;
     border-color: var(--focus-color);
+  }
+
+  .finance-control:focus-visible,
+  .finance-control:has(:focus-visible) {
     box-shadow: var(--focus-ring);
   }
 
@@ -618,8 +620,7 @@
   }
 
   .finance-focus:focus-visible {
-    outline: 2px solid var(--focus-color);
-    outline-offset: 3px;
+    outline: none;
     box-shadow: var(--focus-ring);
   }
 
@@ -868,8 +869,13 @@
   }
 
   .field-input:focus,
-  .field-input:focus-visible,
   .field-input:focus-within {
+    border-color: color-mix(in srgb, var(--focus-color), var(--border) 55%);
+    background-color: var(--surface);
+    box-shadow: none;
+  }
+
+  .field-input:focus-visible {
     border-color: color-mix(in srgb, var(--focus-color), var(--border) 55%);
     background-color: var(--surface);
     box-shadow: var(--focus-ring);
@@ -1061,8 +1067,7 @@
   }
 
   .dashboard-list-rows {
-    @apply min-h-0 flex-1 overflow-y-auto overflow-x-hidden pr-1;
-    scrollbar-gutter: stable;
+    @apply min-h-0 flex-1 overflow-visible;
   }
 
   .dashboard-list-row {
@@ -1319,11 +1324,7 @@
   .finance-loading-panel {
     @apply rounded-[20px] border p-4 sm:p-5;
     border-color: var(--border);
-    background: linear-gradient(
-      180deg,
-      color-mix(in srgb, var(--card), white 3%),
-      var(--card)
-    );
+    background: var(--card);
     box-shadow: var(--shadow);
   }
 
@@ -1929,8 +1930,8 @@ textarea:focus {
 }
 
 :where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
-  outline: 2px solid var(--focus-color);
-  outline-offset: 3px;
+  outline: none;
+  box-shadow: var(--focus-ring);
 }
 
 @keyframes fadeIn {
@@ -3233,33 +3234,17 @@ tbody tr:hover {
   :where(.finance-loading-panel, [class*="loading-panel"]) {
   position: relative;
   overflow: hidden;
-  border: 1px solid color-mix(in srgb, var(--border) 72%, transparent);
-  background:
-    radial-gradient(
-      circle at 18% 0%,
-      rgba(59, 130, 246, 0.08),
-      transparent 34%
-    ),
-    linear-gradient(
-      135deg,
-      color-mix(in srgb, var(--card) 94%, transparent),
-      color-mix(in srgb, var(--surface-secondary) 58%, transparent)
-    );
-  box-shadow: 0 18px 44px rgba(15, 23, 42, 0.06);
-  backdrop-filter: blur(16px);
+  border: 1px solid var(--border);
+  background: var(--card);
+  box-shadow: var(--shadow-soft);
+  backdrop-filter: none;
 }
 
 .dark
   [data-dashboard-shell]
   :where(.finance-loading-panel, [class*="loading-panel"]) {
-  background:
-    radial-gradient(
-      circle at 18% 0%,
-      rgba(59, 130, 246, 0.13),
-      transparent 36%
-    ),
-    linear-gradient(135deg, rgba(15, 23, 42, 0.72), rgba(15, 23, 42, 0.44));
-  box-shadow: 0 20px 54px rgba(0, 0, 0, 0.24);
+  background: var(--card);
+  box-shadow: var(--shadow-soft);
 }
 
 [data-dashboard-shell]
@@ -3716,8 +3701,8 @@ tbody tr:hover {
   .card-hover a[href],
   .card-hover button
 ):focus-visible {
-  outline: 2px solid var(--focus-color);
-  outline-offset: 3px;
+  outline: none;
+  box-shadow: var(--focus-ring);
 }
 
 @media (hover: none) {
@@ -5026,8 +5011,7 @@ tbody tr:hover {
 ):focus-visible,
 .dark :where(.finance-control, .finance-focus, .field-input):focus-within,
 .dark :where(.field-input):focus {
-  outline: 2px solid var(--focus-color);
-  outline-offset: 3px;
+  outline: none;
   border-color: var(--focus-color);
   box-shadow: var(--focus-ring);
 }
@@ -5151,8 +5135,8 @@ tbody tr:hover {
   [data-slot="sheet-overlay"]
 ) {
   background: rgb(0 0 0 / 0.58);
-  backdrop-filter: blur(7px) saturate(1.05);
-  -webkit-backdrop-filter: blur(7px) saturate(1.05);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
 }
 
 .dark :where(
@@ -5211,4 +5195,367 @@ tbody tr:hover {
 ) {
   color: currentColor;
   opacity: 0.96;
+}
+
+/* Node 9: truthful dashboard surfaces and shared interaction states */
+.dashboard-overview {
+  min-width: 0;
+  color: var(--text-primary);
+}
+
+.dashboard-overview :where(.finance-panel, .finance-reference-card, .dashboard-graph-card) {
+  border-color: var(--border);
+  background: var(--card);
+  box-shadow: var(--shadow-soft);
+  transform: none;
+  will-change: auto;
+}
+
+.dashboard-overview :where(.finance-panel, .finance-reference-card, .dashboard-graph-card):hover {
+  border-color: color-mix(in srgb, var(--active), var(--border) 82%);
+  background: var(--card);
+  box-shadow: var(--shadow-soft);
+  transform: none;
+}
+
+[data-dashboard-shell] .finance-surface-glass {
+  border-color: var(--border);
+  background: var(--card);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+[data-dashboard-shell] .jf-floating-actions .blur-md {
+  filter: none;
+}
+
+.dashboard-data-notice {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  border: 1px solid color-mix(in srgb, var(--warning), var(--border) 72%);
+  border-radius: var(--oneui-card-radius);
+  background: color-mix(in srgb, var(--card) 92%, var(--warning) 8%);
+  padding: 1rem;
+  color: var(--warning);
+  box-shadow: var(--shadow-soft);
+}
+
+.dashboard-balance-hero {
+  position: relative;
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: var(--oneui-card-radius);
+  background: color-mix(in srgb, var(--card) 94%, var(--active) 6%);
+  padding: 1rem;
+  color: var(--text-primary);
+  box-shadow: var(--shadow);
+}
+
+.dashboard-balance-accent {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: 0;
+  width: 0.3rem;
+  background: linear-gradient(180deg, var(--active), var(--success), var(--warning));
+}
+
+.dashboard-balance-shape {
+  position: absolute;
+  pointer-events: none;
+  border: 1px solid color-mix(in srgb, var(--active), var(--border) 68%);
+  background: color-mix(in srgb, var(--card) 76%, var(--active) 24%);
+}
+
+.dashboard-balance-shape-one {
+  right: -2.5rem;
+  top: -3.5rem;
+  width: 10rem;
+  height: 10rem;
+  border-radius: 2.25rem;
+  transform: rotate(18deg);
+}
+
+.dashboard-balance-shape-two {
+  right: 8.5rem;
+  bottom: -4rem;
+  width: 7rem;
+  height: 7rem;
+  border-radius: 999px;
+  border-color: color-mix(in srgb, var(--success), var(--border) 72%);
+  background: color-mix(in srgb, var(--card) 78%, var(--success) 22%);
+}
+
+.dashboard-balance-status {
+  display: inline-flex;
+  min-height: 1.5rem;
+  align-items: center;
+  border: 1px solid currentColor;
+  border-radius: 999px;
+  padding-inline: 0.55rem;
+  background: var(--card);
+  color: var(--warning);
+  font-size: 0.625rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.dashboard-balance-status[data-status="unavailable"] {
+  color: var(--danger);
+}
+
+.dashboard-quick-action {
+  display: flex;
+  min-width: 0;
+  min-height: 4.75rem;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  border: 1px solid transparent;
+  border-radius: var(--oneui-control-radius);
+  padding: 0.35rem 0.15rem;
+  background: transparent;
+  transition:
+    border-color var(--motion-duration-fast) var(--motion-ease),
+    background-color var(--motion-duration-fast) var(--motion-ease),
+    box-shadow var(--motion-duration-fast) var(--motion-ease),
+    transform var(--motion-duration-fast) var(--motion-ease);
+}
+
+.dashboard-quick-action:hover {
+  border-color: var(--border);
+  background: var(--card);
+}
+
+.dashboard-quick-action:active {
+  transform: scale(0.98);
+}
+
+.dashboard-metric-card {
+  --metric-accent: var(--active);
+  position: relative;
+  display: flex;
+  min-width: 0;
+  min-height: 10.25rem;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: var(--oneui-card-radius);
+  background: var(--card);
+  padding: 1rem;
+  color: var(--text-primary);
+  box-shadow: var(--shadow-soft);
+}
+
+.dashboard-metric-card::after {
+  position: absolute;
+  inset-inline: 1rem;
+  bottom: 0;
+  height: 0.2rem;
+  border-radius: 999px 999px 0 0;
+  background: var(--metric-accent);
+  content: "";
+}
+
+.dashboard-metric-shape {
+  position: absolute;
+  right: -1rem;
+  top: -1.5rem;
+  width: 5rem;
+  height: 5rem;
+  border: 1px solid color-mix(in srgb, var(--metric-accent), var(--border) 65%);
+  border-radius: 1.5rem;
+  background: color-mix(in srgb, var(--card) 82%, var(--metric-accent) 18%);
+  transform: rotate(16deg);
+}
+
+.dashboard-metric-icon {
+  display: grid;
+  width: 2.5rem;
+  height: 2.5rem;
+  place-items: center;
+  flex-shrink: 0;
+  border: 1px solid color-mix(in srgb, var(--metric-accent), var(--border) 58%);
+  border-radius: 0.9rem;
+  background: color-mix(in srgb, var(--card) 84%, var(--metric-accent) 16%);
+  color: var(--metric-accent);
+}
+
+.dashboard-comparison-badge {
+  --comparison-color: var(--text-secondary);
+  display: inline-flex;
+  max-width: 100%;
+  min-height: 1.75rem;
+  align-items: center;
+  gap: 0.3rem;
+  flex-shrink: 1;
+  border: 1px solid color-mix(in srgb, var(--comparison-color), var(--border) 64%);
+  border-radius: 999px;
+  padding-inline: 0.55rem;
+  background: color-mix(in srgb, var(--card) 86%, var(--comparison-color) 14%);
+  color: var(--comparison-color);
+  font-size: 0.625rem;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.dashboard-comparison-badge span {
+  overflow-wrap: anywhere;
+  text-align: right;
+  white-space: normal;
+}
+
+.dashboard-pulse-tile {
+  position: relative;
+  min-width: 0;
+  min-height: 6.75rem;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 1.15rem;
+  background: var(--card);
+  padding: 0.85rem;
+  box-shadow: var(--shadow-soft);
+}
+
+.dashboard-card-action {
+  display: inline-flex;
+  min-height: 2.75rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding-inline: 0.8rem;
+  background: var(--surface-secondary);
+  color: var(--active);
+  font-size: 0.6875rem;
+  font-weight: 700;
+}
+
+.dashboard-overview .dashboard-list-card-action {
+  display: inline-flex;
+  min-height: 2.75rem;
+  align-items: center;
+  justify-content: center;
+  padding-inline: 0.8rem;
+}
+
+.dashboard-overview .dashboard-list-rows {
+  overflow: visible;
+  padding-right: 0;
+}
+
+.dashboard-overview .dashboard-list-row[data-rank="1"] {
+  background: color-mix(in srgb, var(--card) 94%, var(--category-accent, var(--active)) 6%);
+}
+
+.dashboard-overview .dashboard-chart-empty {
+  background: var(--surface-secondary);
+}
+
+.dashboard-overview .dashboard-progress-fill {
+  box-shadow: none;
+}
+
+:where(
+  a,
+  button,
+  input,
+  select,
+  textarea,
+  summary,
+  [role="button"],
+  [role="combobox"],
+  [tabindex]:not([tabindex="-1"])
+) {
+  -webkit-tap-highlight-color: transparent;
+}
+
+:where(
+  a,
+  button,
+  input,
+  select,
+  textarea,
+  summary,
+  [role="button"],
+  [role="combobox"],
+  [tabindex]:not([tabindex="-1"])
+):focus {
+  outline: none;
+}
+
+:where(
+  a,
+  button,
+  input,
+  select,
+  textarea,
+  summary,
+  [role="button"],
+  [role="combobox"],
+  [tabindex]:not([tabindex="-1"])
+):focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+:where(input, select, textarea, [role="combobox"]):focus:not(:focus-visible) {
+  box-shadow: none;
+}
+
+.finance-control:focus-within {
+  outline: none;
+  box-shadow: none;
+}
+
+.finance-control:has(:focus-visible),
+.finance-focus:has(:focus-visible) {
+  box-shadow: var(--focus-ring);
+}
+
+:where([data-slot="dialog-overlay"], [data-slot="sheet-overlay"]) {
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+@media (min-width: 640px) {
+  .dashboard-balance-hero {
+    padding: 1.25rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .dashboard-balance-hero {
+    padding: 1.5rem;
+  }
+}
+
+@media (max-width: 359px) {
+  .dashboard-balance-hero,
+  .dashboard-metric-card {
+    padding-inline: 0.8rem;
+  }
+
+  .dashboard-quick-action {
+    min-height: 4.5rem;
+  }
+
+  .dashboard-comparison-badge {
+    max-width: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dashboard-overview *,
+  .dashboard-overview *::before,
+  .dashboard-overview *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 1ms !important;
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+  }
 }
