@@ -13,11 +13,15 @@ import {
   getTransactionSoftStyle,
   getTransactionToneClass,
 } from "@/lib/transaction-icons";
+import {
+  getRenderableTransactionAmount,
+  type DashboardAvailability,
+} from "@/lib/dashboard-financial-semantics";
 
 interface Transaction {
   id: string;
   type: "income" | "expense" | "transfer" | string;
-  amount: number | string;
+  amount: number | string | null;
   note: string | null;
   date: string;
   source_name?: string | null;
@@ -66,8 +70,10 @@ function getFlowSubtitle(tx: Transaction) {
 
 export default function RecentTransactions({
   transactions,
+  status,
 }: {
   transactions: Transaction[];
+  status: DashboardAvailability;
 }) {
   const { formatCurrency } = useCurrency();
   const visibleTransactions = transactions.slice(0, 5);
@@ -89,7 +95,7 @@ export default function RecentTransactions({
           </p>
         </div>
 
-        {transactions.length > 0 ?
+        {status === "available" && transactions.length > 0 ?
           <Link
             href="/dashboard/transactions"
             className="dashboard-list-card-action"
@@ -99,18 +105,23 @@ export default function RecentTransactions({
         : null}
       </div>
 
-      {visibleTransactions.length === 0 ?
+      {status === "unavailable" || visibleTransactions.length === 0 ?
         <div className="dashboard-chart-empty flex-1">
           <EmptyState
             compact
             icon={ArrowLeftRight}
-            title="No transactions yet"
-            description="Add income or expense to see activity here."
+            title={status === "unavailable" ? "Recent activity unavailable" : "No transactions yet"}
+            description={
+              status === "unavailable" ?
+                "Refresh when your connection is stable."
+              : "Add income or expense to see activity here."
+            }
           />
         </div>
       : <div className="dashboard-list-rows">
           <div className="flex min-w-0 flex-col gap-1">
             {visibleTransactions.map((tx, index) => {
+              const safeAmount = getRenderableTransactionAmount(tx.amount);
               const iconMeta = getTransactionIconMeta({
                 type: tx.type,
                 note: tx.note,
@@ -138,26 +149,29 @@ export default function RecentTransactions({
                   </span>
 
                   <div className="min-w-0">
-                    <p className="truncate text-[13px] font-bold leading-5 text-text-primary sm:text-sm">
+                    <p className="line-clamp-2 break-words text-[13px] font-bold leading-5 text-text-primary sm:text-sm">
                       {getFlowTitle(tx)}
                     </p>
 
-                    <p className="mt-0.5 truncate text-[11px] font-medium leading-4 text-text-secondary">
+                    <p className="mt-0.5 line-clamp-2 break-words text-[11px] font-medium leading-4 text-text-secondary">
                       {getFlowSubtitle(tx)}
                     </p>
                   </div>
 
                   <p
-                    className={`max-w-[8.5rem] shrink-0 break-words text-right text-[13px] font-black leading-5 tabular-nums [overflow-wrap:anywhere] sm:max-w-none sm:whitespace-nowrap ${getTransactionToneClass(
+                    className={`max-w-[7.5rem] shrink-0 break-words text-right text-[12px] font-black leading-5 tabular-nums [overflow-wrap:anywhere] sm:max-w-[9rem] sm:text-[13px] ${getTransactionToneClass(
                       tx.type,
                     )}`}
                   >
-                    {getTransactionPrefix(tx.type)}
-                    <CountedAmount
-                      amount={formatCurrency(Number(tx.amount ?? 0), {
-                        absolute: true,
-                      })}
-                    />
+                    {safeAmount === null ?
+                      <span className="text-text-secondary">Amount unavailable</span>
+                    : <>
+                        {getTransactionPrefix(tx.type)}
+                        <CountedAmount
+                          amount={formatCurrency(safeAmount, { absolute: true })}
+                        />
+                      </>
+                    }
                   </p>
                 </article>
               );

@@ -17,6 +17,7 @@ import {
 } from "@/components/goals/use-animated-goal-value";
 import { useCurrency } from "@/components/currency/CurrencyProvider";
 import EmptyState from "@/components/ui/empty-state";
+import type { DashboardAvailability } from "@/lib/dashboard-financial-semantics";
 
 interface Goal {
   id: string;
@@ -50,7 +51,8 @@ function getGoalProgress(goal: Goal) {
   const target = Number(goal.target_amount);
 
   const safeCurrent = Number.isFinite(current) ? Math.max(current, 0) : 0;
-  const safeTarget = Number.isFinite(target) ? Math.max(target, 0) : 0;
+  const targetValid = Number.isFinite(target) && target > 0;
+  const safeTarget = targetValid ? target : 0;
 
   const percentage =
     safeTarget > 0 ? Math.min((safeCurrent / safeTarget) * 100, 100) : 0;
@@ -60,6 +62,7 @@ function getGoalProgress(goal: Goal) {
     target: safeTarget,
     percentage,
     done: percentage >= 100,
+    targetValid,
   };
 }
 
@@ -72,7 +75,7 @@ function GoalRow({
   index: number;
   reduceMotion: boolean;
 }) {
-  const { current, target, percentage, done } = getGoalProgress(goal);
+  const { current, target, percentage, done, targetValid } = getGoalProgress(goal);
   const progressReady = useProgressReveal(
     reduceMotion,
     `${goal.id}:${percentage}`,
@@ -85,14 +88,15 @@ function GoalRow({
   const GoalIcon = done ? CheckCircle2 : entry.icon;
   const accent = done ? "var(--success)" : getGoalCategoryStyle(goal).accent;
   const statusLabel =
-    done ? "Complete"
+    !targetValid ? "Target unavailable"
+    : done ? "Complete"
     : percentage === 0 ? "Not started"
     : formatPercent(percentage);
 
   const delay = 0;
   const progressScale =
     progressReady && percentage > 0 ?
-      Math.max(2, Math.min(percentage, 100)) / 100
+      Math.min(percentage, 100) / 100
     : 0;
 
   const rowStyle = {
@@ -123,13 +127,13 @@ function GoalRow({
         </span>
 
         <div className="min-w-0">
-          <p className="truncate text-[13px] font-semibold leading-5 text-text-primary sm:text-sm">
+          <p className="line-clamp-2 break-words text-[13px] font-semibold leading-5 text-text-primary sm:text-sm">
             {goal.name}
           </p>
 
           <p className="mt-0.5 truncate text-[11px] font-medium leading-4 text-text-secondary">
             <AnimatedCurrency value={current} delay={delay} /> /{" "}
-            <AnimatedCurrency value={target} delay={delay} />
+            {targetValid ? <AnimatedCurrency value={target} delay={delay} /> : "Target unavailable"}
           </p>
         </div>
 
@@ -148,9 +152,11 @@ function GoalRow({
 export default function GoalsProgress({
   goals,
   maxVisible = DEFAULT_VISIBLE_GOALS,
+  status,
 }: {
   goals: Goal[];
   maxVisible?: number;
+  status: DashboardAvailability;
 }) {
   const reduceMotion = useReducedMotion();
   const visibleGoals = useMemo(() => {
@@ -161,14 +167,18 @@ export default function GoalsProgress({
 
   let content: ReactNode;
 
-  if (visibleGoals.length === 0) {
+  if (status === "unavailable" || visibleGoals.length === 0) {
     content = (
       <div className="dashboard-chart-empty min-h-[150px] flex-1">
         <EmptyState
           compact
           icon={CheckCircle2}
-          title="No goals yet"
-          description="Create goals to monitor savings progress from the dashboard."
+          title={status === "unavailable" ? "Goals unavailable" : "No goals yet"}
+          description={
+            status === "unavailable" ?
+              "Refresh when your connection is stable."
+            : "Create goals to monitor savings progress from the dashboard."
+          }
         />
       </div>
     );
@@ -207,7 +217,7 @@ export default function GoalsProgress({
           </p>
         </div>
 
-        {goals.length > 0 ?
+        {status === "available" && goals.length > 0 ?
           <Link
             href="/dashboard/goals"
             className="dashboard-list-card-action"

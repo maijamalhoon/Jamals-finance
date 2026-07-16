@@ -4,7 +4,6 @@ import { AlertCircle, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export default function DashboardError({
-  error,
   reset,
 }: {
   error: Error & { digest?: string };
@@ -25,13 +24,8 @@ export default function DashboardError({
             Dashboard could not load
           </p>
           <p className="mt-1 text-xs leading-5 text-text-secondary">
-            Refresh the workspace and try again. Your saved finance data was not changed.
+            The overview is temporarily unavailable. Check your connection, then try loading it again.
           </p>
-          {error.digest ? (
-            <p className="mt-2 text-[11px] font-medium text-text-tertiary">
-              Error reference: {error.digest}
-            </p>
-          ) : null}
         </div>
         <Button type="button" onClick={reset}>
           <RefreshCw size={14} />

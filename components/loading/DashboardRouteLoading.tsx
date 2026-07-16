@@ -262,9 +262,10 @@ export default function DashboardRouteLoading({
         delay={0}
       >
         <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
-          <div className="min-w-0 space-y-3 text-center lg:text-left">
-            <SkeletonLine className="mx-auto h-3 w-36 lg:mx-0" />
-            <SkeletonLine className="mx-auto h-14 w-full max-w-[520px] lg:mx-0 lg:h-16" />
+          <div className="min-w-0 space-y-3 text-left">
+            <SkeletonLine className="h-3 w-36" />
+            <SkeletonLine className="h-14 w-full max-w-[520px] lg:h-16" />
+            <SkeletonLine className="h-4 w-full max-w-[420px]" />
           </div>
 
           <div className="mx-auto grid w-full max-w-[480px] grid-cols-4 gap-2.5 lg:mx-0 lg:w-auto lg:min-w-[392px] lg:gap-3">
@@ -274,7 +275,7 @@ export default function DashboardRouteLoading({
                 className="flex min-w-0 flex-col items-center justify-center gap-2 px-1 py-1.5"
               >
                 <SkeletonLine
-                  className="h-11 w-11 rounded-full sm:h-12 sm:w-12 lg:h-14 lg:w-14"
+                  className="h-11 w-11 rounded-[16px] sm:h-12 sm:w-12"
                   delay={index * 25}
                 />
                 <SkeletonLine className="h-3 w-14" delay={index * 30} />
@@ -286,7 +287,7 @@ export default function DashboardRouteLoading({
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {Array.from({ length: 4 }).map((_, index) => (
-          <Panel key={index} className="min-h-[112px]" delay={80 + index * 35}>
+          <Panel key={index} className="min-h-[164px]" delay={80 + index * 35}>
             <div className="space-y-3">
               <SkeletonLine className="h-4 w-28" delay={index * 20} />
               <SkeletonLine
@@ -300,8 +301,8 @@ export default function DashboardRouteLoading({
       </div>
 
       <Panel className="min-h-[170px]" delay={220}>
-        <div className="grid gap-4 sm:grid-cols-3">
-          {Array.from({ length: 3 }).map((_, index) => (
+        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+          {Array.from({ length: 4 }).map((_, index) => (
             <div
               key={index}
               className="space-y-3 rounded-[var(--oneui-control-radius)] border border-border/70 p-3"
@@ -314,9 +315,6 @@ export default function DashboardRouteLoading({
               />
             </div>
           ))}
-        </div>
-        <div className="mt-4">
-          <SkeletonLine className="h-3 w-52 max-w-full" />
         </div>
       </Panel>
 

@@ -8,13 +8,15 @@ import {
 } from "lucide-react";
 import CountedAmount from "@/components/motion/CountedAmount";
 import { useCurrency } from "@/components/currency/CurrencyProvider";
+import type { DashboardAvailability } from "@/lib/dashboard-financial-semantics";
 
 interface FinancePulseCardProps {
-  income: number | string;
-  expenses: number | string;
-  net: number | string;
+  income: number | string | null;
+  expenses: number | string | null;
+  net: number | string | null;
   netTone: "positive" | "negative" | "neutral";
   remainingDays: number;
+  status: DashboardAvailability;
 }
 
 export default function FinancePulseCard({
@@ -23,29 +25,29 @@ export default function FinancePulseCard({
   net,
   netTone,
   remainingDays,
+  status,
 }: FinancePulseCardProps) {
   const { formatCurrency } = useCurrency();
-  const displayIncome =
-    typeof income === "number" ? formatCurrency(income) : income;
-  const displayExpenses =
-    typeof expenses === "number" ? formatCurrency(expenses) : expenses;
-  const displayNet = typeof net === "number" ? formatCurrency(net) : net;
+  const displayIncome = income === null ? "Unavailable" : typeof income === "number" ? formatCurrency(income) : income;
+  const displayExpenses = expenses === null ? "Unavailable" : typeof expenses === "number" ? formatCurrency(expenses) : expenses;
+  const displayNet = net === null ? "Unavailable" : typeof net === "number" ? formatCurrency(net) : net;
   const netDetail =
-    netTone === "positive" ? "Positive cash flow"
+    status !== "available" ? "Today’s data unavailable"
+    : netTone === "positive" ? "Positive cash flow"
     : netTone === "negative" ? "Expense pressure"
     : "Break-even today";
   const summaryTiles = [
     {
       label: "Income",
       value: displayIncome,
-      detail: "Today",
+      detail: status === "available" ? "Today" : "Temporarily unavailable",
       accent: "var(--success)",
       icon: Wallet,
     },
     {
       label: "Expenses",
       value: displayExpenses,
-      detail: "Today spend",
+      detail: status === "available" ? "Today spend" : "Temporarily unavailable",
       accent: "var(--danger)",
       icon: Activity,
     },
@@ -69,17 +71,12 @@ export default function FinancePulseCard({
   ];
 
   return (
-    <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+    <section aria-label="Today’s financial pulse" className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
       {summaryTiles.map(({ label, value, detail, accent, icon: Icon }) => (
         <article
           key={label}
-          className="finance-hover-lift relative min-h-[104px] overflow-hidden rounded-[18px] border border-border/70 bg-card/76 px-3.5 py-3 shadow-[0_1px_2px_rgb(16_24_40_/_0.035)]"
+          className="dashboard-pulse-tile"
         >
-          <span
-            aria-hidden="true"
-            className="absolute -right-5 -top-6 h-16 w-16 rounded-full blur-2xl"
-            style={{ backgroundColor: `color-mix(in srgb, ${accent}, transparent 84%)` }}
-          />
           <span
             className="absolute inset-y-2 left-0 w-1 rounded-r-full"
             style={{ backgroundColor: accent }}
@@ -89,8 +86,8 @@ export default function FinancePulseCard({
               <p className="text-[10px] font-bold uppercase tracking-[0.1em] text-text-secondary">
                 {label}
               </p>
-              <p className="mt-1.5 break-words text-[15px] font-black leading-tight text-text-primary [overflow-wrap:anywhere]">
-                <CountedAmount amount={value} />
+              <p className="mt-1.5 break-words text-[15px] font-black leading-tight text-text-primary tabular-nums [overflow-wrap:anywhere]">
+                {value === "Unavailable" ? value : <CountedAmount amount={value} />}
               </p>
             </div>
             <span
@@ -104,11 +101,11 @@ export default function FinancePulseCard({
               <Icon size={13} strokeWidth={2.2} />
             </span>
           </div>
-          <p className="mt-1 truncate pl-1.5 text-[10.5px] font-semibold text-text-secondary">
+          <p className="mt-1 line-clamp-2 pl-1.5 text-[10.5px] font-semibold leading-4 text-text-secondary">
             {detail}
           </p>
         </article>
       ))}
-    </div>
+    </section>
   );
 }

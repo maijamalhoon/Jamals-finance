@@ -1,52 +1,65 @@
-import { createClient } from "@/lib/supabase/server";
-import MetricCard from "@/components/dashboard/MetricCard";
-import IncomeExpenseChart from "@/components/dashboard/IncomeExpenseChart";
-import SpendingBreakdown from "@/components/dashboard/SpendingBreakdown";
-import RecentTransactions from "@/components/dashboard/RecentTransactions";
-import GoalsProgress from "@/components/dashboard/GoalsProgress";
 import FinancePulseCard from "@/components/dashboard/FinancePulseCard";
+import GoalsProgress from "@/components/dashboard/GoalsProgress";
+import IncomeExpenseChart from "@/components/dashboard/IncomeExpenseChart";
 import InvestmentOverviewWidget from "@/components/dashboard/InvestmentOverviewWidget";
-import SpendRecordWidget from "@/components/dashboard/SpendRecordWidget";
-import ChartCard from "@/components/dashboard/ChartCard";
-import QuickActionsBalance from "@/components/dashboard/QuickActionsBalance";
+import MetricCard from "@/components/dashboard/MetricCard";
 import NewUserSetupGuide from "@/components/dashboard/NewUserSetupGuide";
-import {
-  aggregateInvestmentHoldings,
-  getAggregatedPortfolioTotals,
-} from "@/lib/investments/aggregation";
-import { refreshInvestmentMarketPrices } from "@/lib/investments/pricing";
-import { sortTransactionsNewestFirst } from "@/lib/transactions";
-import {
-  formatAppMonth,
-  formatAppMonthYear,
-  formatDateKey,
-  getAppDateKey,
-  getAppMonthRange,
-  normalizeDateKey,
-} from "@/lib/dates";
+import QuickActionsBalance from "@/components/dashboard/QuickActionsBalance";
+import RecentTransactions from "@/components/dashboard/RecentTransactions";
+import SpendingBreakdown from "@/components/dashboard/SpendingBreakdown";
+import SpendRecordWidget from "@/components/dashboard/SpendRecordWidget";
 import {
   DashboardMotion,
   DashboardMotionItem,
 } from "@/components/dashboard/DashboardMotion";
-import { AlertTriangle, Zap } from "lucide-react";
+import {
+  buildDashboardBalanceSummary,
+  buildDashboardCashFlow,
+  buildDashboardSpendingBreakdown,
+  calculateDashboardPricedPortfolio,
+  calculateDashboardTransactionSnapshot,
+  calculateInvestmentContributions,
+  getDashboardPeriodRanges,
+  inspectDashboardInvestmentQuality,
+  resolveDashboardSetupCounts,
+  sanitizeDashboardTransactions,
+  sumDashboardAccountBalances,
+  type DashboardAvailability,
+  type DashboardTransactionInput,
+} from "@/lib/dashboard-financial-semantics";
+import { formatAppMonthYear, getAppDateKey, getAppDateParts, getDaysInMonth } from "@/lib/dates";
+import { refreshInvestmentMarketPrices } from "@/lib/investments/pricing";
+import { createClient } from "@/lib/supabase/server";
+import { sortTransactionsNewestFirst } from "@/lib/transactions";
+import { AlertTriangle } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
-type DashboardTransaction = {
-  id: string;
-  type: "income" | "expense" | "transfer" | string;
-  amount: number | string;
-  note: string | null;
-  date: string;
-  created_at?: string | null;
-  categories: {
-    id: string;
-    name: string;
-    color: string | null;
-    parent?: { name: string } | null;
-  } | null;
-  accounts: { name: string } | null;
+type DashboardCategory = {
+  id?: string | null;
+  name?: string | null;
+  color?: string | null;
+  parent?: { name?: string | null } | null;
 };
+
+type DashboardAccountRelation = { name?: string | null };
+
+type DashboardTransaction = {
+  id?: string | null;
+  type?: string | null;
+  amount?: number | string | null;
+  note?: string | null;
+  date?: string | null;
+  created_at?: string | null;
+  category_id?: string | null;
+  account_id?: string | null;
+  source_name?: string | null;
+  person_name?: string | null;
+  item_name?: string | null;
+  categories?: DashboardCategory | DashboardCategory[] | null;
+  accounts?: DashboardAccountRelation | DashboardAccountRelation[] | null;
+};
+
 type DashboardAccount = {
   id: string;
   balance: number | string | null;
@@ -79,117 +92,88 @@ type DashboardGoal = {
   icon: string | null;
 };
 
-type SetupCounts = {
-  accounts: number;
-  incomeTransactions: number;
-  expenseTransactions: number;
-  incomeCategories: number;
-  expenseCategories: number;
-  goals: number;
-  investments: number;
-};
+type QueryError = { code?: string | null } | null;
 
-function isDateInRange(
-  value: Date | string | null | undefined,
-  start: string,
-  end: string,
-) {
-  const dateKey = normalizeDateKey(value);
-  return Boolean(dateKey && dateKey >= start && dateKey <= end);
+function firstRelation<T>(value: T | T[] | null | undefined): T | null {
+  return Array.isArray(value) ? (value[0] ?? null) : (value ?? null);
 }
 
-function isValidCategoryHex(color: string | null | undefined): color is string {
-  return (
-    typeof color === "string" && /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(color)
-  );
-}
-
-function getCategoryColor(color: string | null | undefined) {
-  return isValidCategoryHex(color) ? color : "#6b7280";
-}
-
-function getMetricTrend(current: number, previous: number) {
-  const safeCurrent = Number.isFinite(current) ? current : 0;
-  const safePrevious = Number.isFinite(previous) ? previous : 0;
-
-  if (safePrevious === 0) {
-    return {
-      label: safeCurrent === 0 ? "No prior data" : "New",
-      tone: "neutral" as const,
-    };
-  }
-
-  const value = Number(
-    (((safeCurrent - safePrevious) / Math.abs(safePrevious)) * 100).toFixed(2),
-  );
-
+function toTransactionInput(row: DashboardTransaction): DashboardTransactionInput {
+  const category = firstRelation(row.categories);
+  const account = firstRelation(row.accounts);
   return {
-    label: `${value >= 0 ? "+" : "-"}${Math.abs(value).toFixed(1)}%`,
-    tone:
-      value > 0 ? "positive" as const
-      : value < 0 ? "negative" as const
-      : "neutral" as const,
+    id: row.id,
+    amount: row.amount,
+    date: row.date,
+    type: row.type,
+    categoryId: category?.id ?? row.category_id,
+    categoryName: category?.name,
+    categoryColor: category?.color,
+    accountId: row.account_id,
+    accountName: account?.name,
+    sourceName: row.source_name,
+    personName: row.person_name,
+    itemName: row.item_name,
   };
+}
+
+function logQueryFailure(area: string, error: QueryError) {
+  if (!error) return;
+  console.error("[dashboard] Data query failed", {
+    area,
+    code: error.code ?? "unknown",
+  });
+}
+
+function pluralizedIssue(count: number, singular: string, plural: string) {
+  return `${count} ${count === 1 ? singular : plural}`;
 }
 
 export default async function DashboardPage() {
   const supabase = await createClient();
-
   const now = new Date();
-  const todayStr = getAppDateKey(now);
-  const {
-    year,
-    month,
-    day: dayOfMonth,
-    daysInMonth,
-    firstDay,
-    lastDay,
-    lastFirst,
-    lastLast,
-  } = getAppMonthRange(now);
+  const todayKey = getAppDateKey(now);
+  const { year, month, day } = getAppDateParts(now);
+  const daysInMonth = getDaysInMonth(year, month);
+  const ranges = getDashboardPeriodRanges(todayKey);
 
   const [
-    { data: thisTxns, error: thisTxnsError },
-    { data: recentTxns, error: recentTxnsError },
-    { data: lastTxns, error: lastTxnsError },
-    { data: investments, error: investmentsError },
-    { data: goals, error: goalsError },
-    { data: accounts, error: accountsError },
-    { count: setupAccountsCount, error: setupAccountsError },
-    { count: setupIncomeCount, error: setupIncomeError },
-    { count: setupExpenseCount, error: setupExpenseError },
-    { count: setupIncomeCategoriesCount, error: setupIncomeCategoriesError },
-    { count: setupExpenseCategoriesCount, error: setupExpenseCategoriesError },
-    { count: setupGoalsCount, error: setupGoalsError },
-    { count: setupInvestmentsCount, error: setupInvestmentsError },
+    transactionsResult,
+    recentResult,
+    investmentsResult,
+    goalsResult,
+    accountsResult,
+    setupAccountsResult,
+    setupIncomeResult,
+    setupExpenseResult,
+    setupIncomeCategoriesResult,
+    setupExpenseCategoriesResult,
+    setupGoalsResult,
+    setupInvestmentsResult,
   ] = await Promise.all([
     supabase
       .from("transactions")
-      .select("*, categories(id, name, color), accounts(name)")
-      .gte("date", firstDay)
-      .lte("date", lastDay)
-      .order("date", { ascending: false }),
-
+      .select(
+        "id, type, amount, note, date, created_at, category_id, account_id, source_name, person_name, item_name, categories(id, name, color), accounts(name)",
+      )
+      .gte("date", ranges.query.start)
+      .lte("date", ranges.query.end)
+      .order("date", { ascending: true })
+      .order("created_at", { ascending: true }),
     supabase
       .from("transactions")
-      .select("*, categories(id, name, color), accounts(name)")
+      .select(
+        "id, type, amount, note, date, created_at, source_name, person_name, item_name, categories(id, name, color), accounts(name)",
+      )
       .order("date", { ascending: false })
       .order("created_at", { ascending: false })
       .limit(12),
-
-    supabase
-      .from("transactions")
-      .select("type, amount")
-      .gte("date", lastFirst)
-      .lte("date", lastLast),
-
     supabase
       .from("investments")
       .select(
         "id, name, type, quantity, purchase_price, current_price, purchased_at, asset_id, symbol, image_url, price_source, current_price_original, current_price_currency, price_updated_at, price_change_24h, is_live_priced",
       )
       .order("created_at", { ascending: false }),
-
     supabase.from("goals").select("*").order("created_at").limit(6),
     supabase.from("accounts").select("id, balance"),
     supabase.from("accounts").select("id", { count: "exact", head: true }),
@@ -213,343 +197,330 @@ export default async function DashboardPage() {
     supabase.from("investments").select("id", { count: "exact", head: true }),
   ]);
 
-  const setupCounts: SetupCounts = {
-    accounts: setupAccountsCount ?? 0,
-    incomeTransactions: setupIncomeCount ?? 0,
-    expenseTransactions: setupExpenseCount ?? 0,
-    incomeCategories: setupIncomeCategoriesCount ?? 0,
-    expenseCategories: setupExpenseCategoriesCount ?? 0,
-    goals: setupGoalsCount ?? 0,
-    investments: setupInvestmentsCount ?? 0,
-  };
+  const queryFailures: Array<[string, QueryError]> = [
+    ["period-transactions", transactionsResult.error],
+    ["recent-activity", recentResult.error],
+    ["investments", investmentsResult.error],
+    ["goals", goalsResult.error],
+    ["accounts", accountsResult.error],
+    ["setup-accounts", setupAccountsResult.error],
+    ["setup-income", setupIncomeResult.error],
+    ["setup-expenses", setupExpenseResult.error],
+    ["setup-income-categories", setupIncomeCategoriesResult.error],
+    ["setup-expense-categories", setupExpenseCategoriesResult.error],
+    ["setup-goals", setupGoalsResult.error],
+    ["setup-investments", setupInvestmentsResult.error],
+  ];
+  queryFailures.forEach(([area, error]) => logQueryFailure(area, error));
 
-  const dashboardErrors = [
-    thisTxnsError,
-    recentTxnsError,
-    lastTxnsError,
-    investmentsError,
-    goalsError,
-    accountsError,
-    setupAccountsError,
-    setupIncomeError,
-    setupExpenseError,
-    setupIncomeCategoriesError,
-    setupExpenseCategoriesError,
-    setupGoalsError,
-    setupInvestmentsError,
-  ].filter(Boolean);
+  const transactionsStatus: DashboardAvailability =
+    transactionsResult.error ? "unavailable" : "available";
+  const recentStatus: DashboardAvailability =
+    recentResult.error ? "unavailable" : "available";
+  const goalsStatus: DashboardAvailability =
+    goalsResult.error ? "unavailable" : "available";
 
-  if (dashboardErrors.length > 0) {
-    console.error(
-      "Failed to load some dashboard data",
-      dashboardErrors.map((error) => error?.message),
-    );
-  }
-
-  const txns = (thisTxns ?? []) as DashboardTransaction[];
-  const recentTransactions = sortTransactionsNewestFirst(
-    (recentTxns ?? []) as DashboardTransaction[],
+  const rawPeriodTransactions = (transactionsResult.data ?? []) as DashboardTransaction[];
+  const financialTransactions =
+    transactionsStatus === "available" ?
+      sanitizeDashboardTransactions(
+        rawPeriodTransactions.map(toTransactionInput),
+        ranges.query,
+      )
+    : [];
+  const transactionSnapshot = calculateDashboardTransactionSnapshot(
+    financialTransactions,
+    ranges,
   );
-  const previousTxns = (lastTxns ?? []) as Array<{
-    type: string;
-    amount: number | string;
-  }>;
-  const investmentRows = await refreshInvestmentMarketPrices(
-    (investments ?? []) as DashboardInvestment[],
+  const cashFlow = buildDashboardCashFlow(financialTransactions, ranges.current);
+  const spending = buildDashboardSpendingBreakdown(
+    financialTransactions,
+    ranges.current,
   );
-  const groupedInvestmentRows = aggregateInvestmentHoldings(investmentRows);
-  const goalRows = (goals ?? []) as DashboardGoal[];
-
-  const accountRows = (accounts ?? []) as DashboardAccount[];
-
-  const cashBalance = accountRows.reduce(
-    (sum, account) => sum + Number(account.balance ?? 0),
-    0,
-  );
-  const income = txns
-    .filter((transaction) => transaction.type === "income")
-    .reduce((sum, transaction) => sum + Number(transaction.amount), 0);
-
-  const expenses = txns
-    .filter((transaction) => transaction.type === "expense")
-    .reduce((sum, transaction) => sum + Number(transaction.amount), 0);
-
-  const netProfit = income - expenses;
-
-  const investmentTotals = getAggregatedPortfolioTotals(groupedInvestmentRows);
-  const investmentsValue = investmentTotals.totalValue;
-  const totalNetBalance = cashBalance + investmentsValue;
-
-  const monthlyInvestmentsValue = investmentRows
-    .filter((investment) =>
-      isDateInRange(investment.purchased_at, firstDay, lastDay),
-    )
-    .reduce(
-      (sum, investment) =>
-        sum + Number(investment.quantity) * Number(investment.purchase_price),
-      0,
-    );
-
-  const previousMonthlyInvestmentsValue = investmentRows
-    .filter((investment) =>
-      isDateInRange(investment.purchased_at, lastFirst, lastLast),
-    )
-    .reduce(
-      (sum, investment) =>
-        sum + Number(investment.quantity) * Number(investment.purchase_price),
-      0,
-    );
-
-  const totalPnLPct = investmentTotals.totalPnLPct;
-
-  const lastIncome = previousTxns
-    .filter((transaction) => transaction.type === "income")
-    .reduce((sum, transaction) => sum + Number(transaction.amount), 0);
-
-  const lastExpenses = previousTxns
-    .filter((transaction) => transaction.type === "expense")
-    .reduce((sum, transaction) => sum + Number(transaction.amount), 0);
-
-  const lastNetProfit = lastIncome - lastExpenses;
-
-  const dailyTotals = new Map<string, { income: number; expenses: number }>();
-
-  txns.forEach((transaction) => {
-    const dateKey = normalizeDateKey(transaction.date);
-
-    if (!dateKey) return;
-
-    const current = dailyTotals.get(dateKey) ?? {
-      income: 0,
-      expenses: 0,
-    };
-
-    if (transaction.type === "income") {
-      current.income += Number(transaction.amount);
-    }
-
-    if (transaction.type === "expense") {
-      current.expenses += Number(transaction.amount);
-    }
-
-    dailyTotals.set(dateKey, current);
-  });
-
-  const todayTotals = dailyTotals.get(todayStr) ?? {
+  const today = cashFlow.find((point) => point.dateKey === todayKey) ?? {
     income: 0,
     expenses: 0,
   };
-
-  const netToday = todayTotals.income - todayTotals.expenses;
-
-  const netTodayTone =
-    netToday > 0 ? "positive"
-    : netToday < 0 ? "negative"
+  const todayNet = today.income - today.expenses;
+  const todayNetTone =
+    todayNet > 0 ? "positive"
+    : todayNet < 0 ? "negative"
     : "neutral";
 
-  const chartData = Array.from({ length: daysInMonth }, (_, index) => {
-    const day = index + 1;
-    const dateStr = formatDateKey(year, month, day);
+  const rawInvestments = (investmentsResult.data ?? []) as DashboardInvestment[];
+  const investmentRows =
+    investmentsResult.error ? [] : await refreshInvestmentMarketPrices(rawInvestments);
+  const investmentQuality = inspectDashboardInvestmentQuality(
+    investmentRows.map((investment) => ({
+      quantity: investment.quantity,
+      purchasePrice: investment.purchase_price,
+      currentPrice: investment.current_price,
+    })),
+  );
+  const investmentTotals = calculateDashboardPricedPortfolio(
+    investmentRows.map((investment) => ({
+      quantity: investment.quantity,
+      purchasePrice: investment.purchase_price,
+      currentPrice: investment.current_price,
+    })),
+  );
+  const investmentContribution = calculateInvestmentContributions(
+    investmentRows.map((investment) => ({
+      quantity: investment.quantity,
+      purchasePrice: investment.purchase_price,
+      purchasedAt: investment.purchased_at,
+    })),
+    ranges,
+  );
+  const investmentsStatus: DashboardAvailability =
+    investmentsResult.error ? "unavailable"
+    : investmentQuality.invalidCount > 0 || investmentQuality.unpricedCount > 0 ? "partial"
+    : "available";
+  const contributionStatus: DashboardAvailability =
+    investmentsResult.error ? "unavailable"
+    : investmentQuality.invalidCount > 0 ? "partial"
+    : "available";
 
-    const totals = dailyTotals.get(dateStr);
+  const accountRows = (accountsResult.data ?? []) as DashboardAccount[];
+  const accountSummary = sumDashboardAccountBalances(
+    accountRows.map((account) => account.balance),
+  );
+  const accountsStatus: DashboardAvailability =
+    accountsResult.error ? "unavailable"
+    : accountSummary.invalidCount > 0 ? "partial"
+    : "available";
 
-    return {
-      date: `${day} ${formatAppMonth(year, month)}`,
-      income: totals?.income ?? 0,
-      expenses: totals?.expenses ?? 0,
-    };
+  const investmentIssues = [
+    investmentQuality.unpricedCount > 0 ?
+      `${pluralizedIssue(investmentQuality.unpricedCount, "holding has", "holdings have")} no usable current price.`
+    : null,
+    investmentQuality.invalidCount > 0 ?
+      `${pluralizedIssue(investmentQuality.invalidCount, "investment row was", "investment rows were")} excluded because its values were malformed.`
+    : null,
+  ].filter((issue): issue is string => Boolean(issue));
+
+  const balanceSummary = buildDashboardBalanceSummary({
+    accounts: {
+      status: accountsStatus,
+      value: accountsResult.error ? null : accountSummary.value,
+      issue:
+        accountsResult.error ? "Account balances could not be included."
+        : accountSummary.invalidCount > 0 ?
+          `${pluralizedIssue(accountSummary.invalidCount, "account balance was", "account balances were")} excluded because it was malformed.`
+        : null,
+    },
+    investments: {
+      status: investmentsStatus,
+      value: investmentsResult.error ? null : investmentTotals.totalValue,
+      issue:
+        investmentsResult.error ? "Investment values could not be included."
+        : investmentIssues.join(" ") || null,
+    },
   });
 
-  const categoryMap = new Map<
-    string,
-    { id: string; name: string; amount: number; color: string }
-  >();
+  const setupResults = [
+    setupAccountsResult,
+    setupIncomeResult,
+    setupExpenseResult,
+    setupIncomeCategoriesResult,
+    setupExpenseCategoriesResult,
+    setupGoalsResult,
+    setupInvestmentsResult,
+  ];
+  const setupStatus: DashboardAvailability =
+    setupResults.some((result) => result.error) ? "unavailable" : "available";
+  const setupCounts = resolveDashboardSetupCounts(setupStatus, {
+    accounts: setupAccountsResult.count,
+    incomeTransactions: setupIncomeResult.count,
+    expenseTransactions: setupExpenseResult.count,
+    incomeCategories: setupIncomeCategoriesResult.count,
+    expenseCategories: setupExpenseCategoriesResult.count,
+    goals: setupGoalsResult.count,
+    investments: setupInvestmentsResult.count,
+  });
 
-  txns
-    .filter((transaction) => transaction.type === "expense")
-    .forEach((transaction) => {
-      const categoryId = transaction.categories?.id;
-      const key = categoryId ?? "uncategorized";
-      const name = transaction.categories?.name || "Other";
-      const color = getCategoryColor(transaction.categories?.color);
-
-      if (!categoryMap.has(key)) {
-        categoryMap.set(key, {
-          id: key,
-          name,
-          amount: 0,
-          color,
-        });
+  const recentTransactions = sortTransactionsNewestFirst(
+    ((recentResult.data ?? []) as DashboardTransaction[]).flatMap((row) => {
+      const id = row.id?.trim();
+      const type = row.type?.trim().toLowerCase();
+      if (!id || (type !== "income" && type !== "expense" && type !== "transfer")) {
+        return [];
       }
+      const category = firstRelation(row.categories);
+      const account = firstRelation(row.accounts);
+      return [{
+        id,
+        type,
+        amount: row.amount ?? null,
+        note: row.note ?? null,
+        date: row.date ?? "",
+        created_at: row.created_at ?? null,
+        source_name: row.source_name ?? null,
+        person_name: row.person_name ?? null,
+        item_name: row.item_name ?? null,
+        categories: category ? {
+          name: category.name?.trim() || "Other",
+          color: category.color ?? null,
+          parent: category.parent?.name ? { name: category.parent.name } : null,
+        } : null,
+        accounts: account?.name ? { name: account.name } : null,
+      }];
+    }),
+  );
 
-      const current = categoryMap.get(key);
-      if (current) current.amount += Number(transaction.amount);
-    });
-
-  const spendingData = Array.from(categoryMap.values())
-    .map(({ id, name, amount, color }) => ({
-      id,
-      name,
-      value: amount,
-      color,
-      percentage: expenses > 0 ? (amount / expenses) * 100 : 0,
-    }))
-    .sort((a, b) => b.value - a.value)
-    .slice(0, 5);
+  const warnings = [
+    transactionsResult.error ?
+      "Month comparisons, cash flow, spending, and today’s activity are unavailable."
+    : null,
+    recentResult.error ? "Recent activity is unavailable." : null,
+    accountsResult.error ? "Account balances could not be loaded." : null,
+    investmentsResult.error ? "Investment values and contributions could not be loaded." : null,
+    goalsResult.error ? "Goals could not be loaded." : null,
+    setupStatus === "unavailable" ? "Setup progress is deferred until its counts can be checked." : null,
+  ].filter((warning): warning is string => Boolean(warning));
 
   const currentMonthLabel = formatAppMonthYear(year, month);
-
-  const dailySpend = expenses / Math.max(dayOfMonth, 1);
-  const remainingDays = Math.max(daysInMonth - dayOfMonth, 0);
-  const dailyExpenseTrend = chartData.map((day) => day.expenses);
+  const dailySpend =
+    transactionSnapshot.current.expenses / Math.max(cashFlow.length, 1);
+  const remainingDays = Math.max(daysInMonth - day, 0);
 
   return (
-    <DashboardMotion className="w-full space-y-6 pb-12">
-      {dashboardErrors.length > 0 ? (
+    <DashboardMotion className="dashboard-overview w-full space-y-6 pb-12">
+      {warnings.length > 0 ? (
         <DashboardMotionItem>
-          <div className="finance-panel border-warning/30 bg-warning/10 p-4 text-sm text-text-primary">
-            <div className="flex items-start gap-3">
-              <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-warning" />
-              <div>
-                <p className="font-semibold">Some dashboard data could not be loaded.</p>
-                <p className="mt-1 text-xs leading-5 text-text-secondary">
-                  Refresh the page or try again after checking your connection.
-                </p>
-              </div>
+          <aside
+            aria-live="polite"
+            className="dashboard-data-notice"
+            role="status"
+          >
+            <AlertTriangle aria-hidden="true" className="mt-0.5 h-5 w-5 shrink-0" />
+            <div className="min-w-0">
+              <h2 className="text-sm font-bold text-text-primary">
+                Some dashboard data is temporarily unavailable
+              </h2>
+              <ul className="mt-1.5 list-disc space-y-1 pl-4 text-xs leading-5 text-text-secondary">
+                {warnings.map((warning) => <li key={warning}>{warning}</li>)}
+              </ul>
+              <p className="mt-2 text-xs leading-5 text-text-secondary">
+                Refresh when your connection is stable. Available sections can still be used.
+              </p>
             </div>
-          </div>
+          </aside>
         </DashboardMotionItem>
       ) : null}
 
       <DashboardMotionItem>
-        <QuickActionsBalance totalBalance={totalNetBalance} />
+        <QuickActionsBalance summary={balanceSummary} />
       </DashboardMotionItem>
 
-      <DashboardMotionItem>
-        <NewUserSetupGuide counts={setupCounts} />
-      </DashboardMotionItem>
+      {setupCounts ? (
+        <DashboardMotionItem>
+          <NewUserSetupGuide counts={setupCounts} />
+        </DashboardMotionItem>
+      ) : null}
 
-      <div className="grid w-full grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <section aria-label="Month-to-date financial metrics" className="grid w-full grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <h2 className="sr-only">Month-to-date financial metrics</h2>
         <DashboardMotionItem>
           <MetricCard
-            title="Month Balance"
-            subtitle={currentMonthLabel}
-            amount={netProfit}
-            trend={getMetricTrend(netProfit, lastNetProfit)}
+            accentColor="#4f46e5"
+            amount={transactionsStatus === "available" ? transactionSnapshot.current.netSavings : null}
+            availability={transactionsStatus}
+            comparison={transactionsStatus === "available" ? transactionSnapshot.comparisons.netSavings : null}
             iconName="wallet"
-            accentColor="#3b82f6"
-            progress={62}
+            subtitle={currentMonthLabel}
+            title="Net savings"
           />
         </DashboardMotionItem>
-
         <DashboardMotionItem>
           <MetricCard
-            title="Monthly Income"
-            subtitle={currentMonthLabel}
-            amount={income}
-            trend={getMetricTrend(income, lastIncome)}
+            accentColor="#16a34a"
+            amount={transactionsStatus === "available" ? transactionSnapshot.current.income : null}
+            availability={transactionsStatus}
+            comparison={transactionsStatus === "available" ? transactionSnapshot.comparisons.income : null}
             iconName="income"
-            accentColor="#22c55e"
-            progress={64}
+            subtitle={currentMonthLabel}
+            title="Month-to-date income"
           />
         </DashboardMotionItem>
-
         <DashboardMotionItem>
           <MetricCard
-            title="Monthly Expenses"
-            subtitle={currentMonthLabel}
-            amount={expenses}
-            trend={getMetricTrend(expenses, lastExpenses)}
+            accentColor="#e2554f"
+            amount={transactionsStatus === "available" ? transactionSnapshot.current.expenses : null}
+            availability={transactionsStatus}
+            comparison={transactionsStatus === "available" ? transactionSnapshot.comparisons.expenses : null}
             iconName="expenses"
-            accentColor="#ef4444"
-            progress={38}
+            subtitle={currentMonthLabel}
+            title="Month-to-date expenses"
           />
         </DashboardMotionItem>
-
         <DashboardMotionItem>
           <MetricCard
-            title="Investments This Month"
-            subtitle={currentMonthLabel}
-            amount={monthlyInvestmentsValue}
-            trend={getMetricTrend(
-              monthlyInvestmentsValue,
-              previousMonthlyInvestmentsValue,
-            )}
+            accentColor="#d97706"
+            amount={contributionStatus === "unavailable" ? null : investmentContribution.current}
+            availability={contributionStatus}
+            comparison={contributionStatus === "available" ? investmentContribution.comparison : null}
             iconName="investments"
-            accentColor="#f59e0b"
-            progress={68}
+            subtitle={currentMonthLabel}
+            title="Investment contributions"
           />
         </DashboardMotionItem>
-      </div>
+      </section>
 
       <DashboardMotionItem>
         <FinancePulseCard
-          income={todayTotals.income}
-          expenses={todayTotals.expenses}
-          net={netToday}
-          netTone={netTodayTone}
+          expenses={transactionsStatus === "available" ? today.expenses : null}
+          income={transactionsStatus === "available" ? today.income : null}
+          net={transactionsStatus === "available" ? todayNet : null}
+          netTone={todayNetTone}
           remainingDays={remainingDays}
+          status={transactionsStatus}
         />
       </DashboardMotionItem>
 
       <div className="grid w-full grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,2fr)]">
         <DashboardMotionItem className="min-w-0">
           <SpendRecordWidget
-            monthlySpend={expenses}
-            dailySpend={dailySpend}
-            dailyExpenseTrend={dailyExpenseTrend}
+            dailyExpenseTrend={cashFlow.map((point) => point.expenses)}
+            dailySpend={transactionsStatus === "available" ? dailySpend : null}
+            monthlySpend={transactionsStatus === "available" ? transactionSnapshot.current.expenses : null}
+            status={transactionsStatus}
           />
         </DashboardMotionItem>
-
         <DashboardMotionItem className="min-w-0">
-          {investmentRows.length > 0 ?
-            <InvestmentOverviewWidget
-              investments={investmentRows}
-              totalPnLPct={totalPnLPct}
-            />
-          : <ChartCard
-              eyebrow="Investments"
-              eyebrowIcon={<Zap />}
-              title="Portfolio Overview"
-              description="Allocation by current value"
-            >
-              <div className="dashboard-chart-empty min-h-[132px]">
-                <div>
-                  <span className="dashboard-chart-empty-icon">
-                    <Zap size={16} />
-                  </span>
-                  <p className="text-xs font-semibold text-text-primary">
-                    No holdings yet
-                  </p>
-                  <p className="mt-1 text-[11px] text-text-secondary">
-                    Add investments to see allocation.
-                  </p>
-                </div>
-              </div>
-            </ChartCard>
-          }
+          <InvestmentOverviewWidget
+            availability={investmentsStatus}
+            investments={investmentRows}
+            totalPnLPct={investmentTotals.totalPnLPct}
+            unpricedCount={investmentQuality.unpricedCount}
+          />
         </DashboardMotionItem>
-
         <DashboardMotionItem className="min-w-0">
-          <IncomeExpenseChart data={chartData} />
+          <IncomeExpenseChart data={cashFlow} status={transactionsStatus} />
         </DashboardMotionItem>
       </div>
 
       <div className="grid w-full grid-cols-1 items-stretch gap-4 lg:grid-cols-3">
         <DashboardMotionItem className="h-full min-w-0">
           <SpendingBreakdown
-            data={spendingData}
-            total={expenses}
+            data={spending.data}
             periodLabel={currentMonthLabel}
+            status={transactionsStatus}
+            total={spending.total}
           />
         </DashboardMotionItem>
-
         <DashboardMotionItem className="h-full min-w-0">
-          <GoalsProgress goals={goalRows} maxVisible={4} />
+          <GoalsProgress
+            goals={(goalsResult.data ?? []) as DashboardGoal[]}
+            maxVisible={4}
+            status={goalsStatus}
+          />
         </DashboardMotionItem>
-
         <DashboardMotionItem className="h-full min-w-0">
-          <RecentTransactions transactions={recentTransactions} />
+          <RecentTransactions
+            status={recentStatus}
+            transactions={recentTransactions}
+          />
         </DashboardMotionItem>
       </div>
     </DashboardMotion>
