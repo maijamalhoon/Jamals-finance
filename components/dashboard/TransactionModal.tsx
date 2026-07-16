@@ -91,7 +91,7 @@ function CategorySwatch({
   return (
     <span
       aria-hidden="true"
-      className={`shrink-0 rounded-full border border-surface shadow-[0_0_0_1px_color-mix(in_srgb,var(--border-strong),transparent_35%)] ${className}`}
+      className={`shrink-0 rounded-full border border-surface ${className}`}
       style={{ backgroundColor: color }}
     />
   );
@@ -236,6 +236,8 @@ export default function TransactionModal({
   }, [open, supabase, transaction?.account_id, transaction?.category_id, type]);
 
   async function handleSave() {
+    if (loading) return;
+
     if (loadingOptions) {
       setError("Please wait while categories and accounts load.");
       return;
@@ -539,9 +541,11 @@ export default function TransactionModal({
             type="button"
             onClick={handleSave}
             disabled={loading || loadingOptions}
+            loading={loading}
+            loadingLabel="Saving transaction…"
             className={`py-3 ${isIncome ? "success-action" : "danger-action"}`}
           >
-            {loadingOptions ? "Loading..." : btnLabel}
+            {btnLabel}
           </Button>
         </FinanceModalFooter>
       </DialogContent>

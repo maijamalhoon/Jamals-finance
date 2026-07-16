@@ -67,6 +67,8 @@ export default function GoalModal({ open, onClose, onSuccess, goal }: Props) {
   }, [open, goal]);
 
   async function handleSave() {
+    if (loading) return;
+
     if (!name.trim() || !targetAmount) {
       setError("Goal name and target amount are required.");
       return;
@@ -132,7 +134,7 @@ export default function GoalModal({ open, onClose, onSuccess, goal }: Props) {
                   }`}
                 >
                   <Icon size={16} />
-                  <span className="max-w-full truncate text-[9px]">{label}</span>
+                  <span className="max-w-full truncate text-[10px]">{label}</span>
                 </Button>
               ))}
             </div>
@@ -203,9 +205,11 @@ export default function GoalModal({ open, onClose, onSuccess, goal }: Props) {
             type="button"
             onClick={handleSave}
             disabled={loading}
+            loading={loading}
+            loadingLabel="Saving goal…"
             className="primary-action py-3"
           >
-            {loading ? "Saving..." : isEditing ? "Update Goal" : "Create Goal"}
+            {isEditing ? "Update Goal" : "Create Goal"}
           </Button>
         </FinanceModalFooter>
       </DialogContent>

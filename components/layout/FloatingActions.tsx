@@ -223,7 +223,7 @@ export default function FloatingActions() {
                     Quick actions
                   </p>
 
-                  <span className="h-1.5 w-1.5 rounded-full bg-active shadow-[0_0_0_4px_color-mix(in_srgb,var(--active),transparent_84%)]" />
+                  <span className="h-1.5 w-1.5 rounded-full bg-active" />
                 </div>
 
                 <div className="space-y-1.5">
@@ -306,7 +306,7 @@ export default function FloatingActions() {
           className={[
             "finance-focus relative grid h-[56px] w-[56px] place-items-center overflow-hidden rounded-[21px] sm:h-[58px] sm:w-[58px]",
             "bg-active text-primary-foreground ring-1 ring-active/25",
-            "shadow-[0_18px_42px_color-mix(in_srgb,var(--active),transparent_68%)]",
+            "shadow-[var(--shadow-lg)]",
             "transition-[filter,box-shadow] duration-200 hover:brightness-105",
           ].join(" ")}
         >

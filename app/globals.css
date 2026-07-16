@@ -68,6 +68,7 @@
   --shadow-theme: var(--shadow-sm);
   --shadow-soft: var(--shadow-md);
   --shadow-premium: var(--shadow-lg);
+  --shadow-dialog: var(--shadow-overlay);
 
   --color-foreground: var(--text-primary);
   --color-card-foreground: var(--text-primary);
@@ -176,6 +177,7 @@
   --shadow-sm: 0 1px 3px rgb(15 23 42 / 0.06), 0 1px 2px rgb(15 23 42 / 0.035);
   --shadow-md: 0 12px 30px rgb(15 23 42 / 0.075), 0 2px 8px rgb(15 23 42 / 0.04);
   --shadow-lg: 0 22px 56px rgb(15 23 42 / 0.11), 0 4px 14px rgb(15 23 42 / 0.05);
+  --shadow-overlay: 0 30px 80px rgb(15 23 42 / 0.16), 0 8px 24px rgb(15 23 42 / 0.07);
   --shadow: var(--shadow-sm);
   --shadow-soft: var(--shadow-md);
   --shadow-premium: var(--shadow-lg);
@@ -209,9 +211,14 @@
       env(safe-area-inset-bottom)
   );
   --motion-ease: cubic-bezier(0.16, 1, 0.3, 1);
+  --motion-ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --motion-ease-emphasized: cubic-bezier(0.16, 1, 0.3, 1);
+  --motion-duration-instant: 90ms;
   --motion-duration-fast: 160ms;
   --motion-duration-base: 220ms;
   --motion-duration-slow: 320ms;
+  --motion-duration-deliberate: 420ms;
+  --motion-duration-skeleton: 1400ms;
   --background: var(--page-background);
   --card: var(--surface-primary);
   --sidebar: var(--surface-primary);
@@ -313,6 +320,7 @@
   --shadow-sm: 0 2px 5px rgb(0 0 0 / 0.28), 0 1px 2px rgb(0 0 0 / 0.22);
   --shadow-md: 0 16px 40px rgb(0 0 0 / 0.34), 0 3px 10px rgb(0 0 0 / 0.24);
   --shadow-lg: 0 28px 72px rgb(0 0 0 / 0.46), 0 6px 18px rgb(0 0 0 / 0.28);
+  --shadow-overlay: 0 34px 90px rgb(0 0 0 / 0.56), 0 10px 28px rgb(0 0 0 / 0.32);
   --shadow: var(--shadow-sm);
   --shadow-soft: var(--shadow-md);
   --shadow-premium: var(--shadow-lg);
@@ -339,9 +347,14 @@
       env(safe-area-inset-bottom)
   );
   --motion-ease: cubic-bezier(0.16, 1, 0.3, 1);
+  --motion-ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --motion-ease-emphasized: cubic-bezier(0.16, 1, 0.3, 1);
+  --motion-duration-instant: 90ms;
   --motion-duration-fast: 160ms;
   --motion-duration-base: 220ms;
   --motion-duration-slow: 320ms;
+  --motion-duration-deliberate: 420ms;
+  --motion-duration-skeleton: 1400ms;
   --background: var(--page-background);
   --card: var(--surface-primary);
   --sidebar: var(--surface-primary);
@@ -808,28 +821,28 @@
     border-color: color-mix(in srgb, var(--success), transparent 22%);
     background-color: var(--success);
     color: var(--status-foreground);
-    box-shadow: 0 14px 30px color-mix(in srgb, var(--success), transparent 78%);
+    box-shadow: var(--shadow-xs);
   }
 
   .danger-action {
     border-color: color-mix(in srgb, var(--danger), transparent 22%);
     background-color: var(--danger);
     color: var(--status-foreground);
-    box-shadow: 0 14px 30px color-mix(in srgb, var(--danger), transparent 80%);
+    box-shadow: var(--shadow-xs);
   }
 
   .investment-action {
     border-color: color-mix(in srgb, var(--investment), transparent 24%);
     background-color: var(--investment);
     color: var(--status-foreground);
-    box-shadow: 0 14px 30px color-mix(in srgb, var(--investment), transparent 80%);
+    box-shadow: var(--shadow-xs);
   }
 
   .warning-action {
     border-color: color-mix(in srgb, var(--warning), transparent 28%);
     background-color: var(--warning);
     color: var(--status-foreground);
-    box-shadow: 0 14px 30px color-mix(in srgb, var(--warning), transparent 82%);
+    box-shadow: var(--shadow-xs);
   }
 
   .summary-card:hover {
@@ -4465,9 +4478,7 @@ tbody tr:hover {
   gap: 1rem;
   min-width: 0;
   border-color: color-mix(in srgb, var(--border), transparent 12%);
-  box-shadow:
-    0 18px 44px rgb(16 24 40 / 0.075),
-    var(--surface-highlight);
+  box-shadow: var(--shadow-md), var(--surface-highlight);
 }
 
 [data-dashboard-shell] :where(.page-heading > *) {
@@ -4582,9 +4593,13 @@ tbody tr:hover {
 
 /* Roadmap Node 4: semantic public/auth foundation. */
 .finance-amount,
-[data-finance-amount] {
+[data-finance-amount],
+[data-slot="money"] {
   min-width: 0;
-  font-variant-numeric: tabular-nums;
+  font-family: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  font-variant-numeric: tabular-nums lining-nums;
+  font-feature-settings: "tnum" 1, "lnum" 1;
+  letter-spacing: -0.012em;
   overflow-wrap: anywhere;
 }
 
@@ -5815,5 +5830,91 @@ tbody tr:hover {
   [data-transaction-receipt] .finance-panel-soft {
     background: #f8fafc !important;
     box-shadow: none !important;
+  }
+}
+
+/* Node 2: canonical typography, icon, elevation, motion, and loading behavior. */
+body {
+  font-family: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  font-variant-numeric: tabular-nums lining-nums;
+  font-feature-settings: "tnum" 1, "lnum" 1;
+}
+
+:where(svg.lucide) {
+  stroke-width: 2;
+}
+
+:where(.icon-button) {
+  width: var(--touch-target);
+  min-width: var(--touch-target);
+  height: var(--touch-target);
+  min-height: var(--touch-target);
+}
+
+:where(.finance-loading-panel) {
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-sm);
+}
+
+:where(.finance-loading-panel)::before {
+  display: none !important;
+}
+
+:where(.finance-skeleton, [data-slot="skeleton"]) {
+  animation-duration: var(--motion-duration-skeleton) !important;
+  animation-delay: var(--skeleton-delay, 0ms) !important;
+  animation-timing-function: var(--motion-ease-standard) !important;
+  will-change: background-position;
+}
+
+:where([data-slot="dialog-content"], [data-slot="sheet-content"]) {
+  box-shadow: var(--shadow-overlay);
+  transition-duration: var(--motion-duration-base);
+  transition-timing-function: var(--motion-ease-emphasized);
+}
+
+:where([data-slot="select-content"], [data-slot="dropdown-menu-content"], [role="tooltip"]) {
+  box-shadow: var(--shadow-md);
+}
+
+:where(.finance-amount, [data-finance-amount], [data-slot="money"]) {
+  text-align: inherit;
+  text-rendering: geometricPrecision;
+}
+
+:where(button, [role="button"], a.finance-focus):active {
+  transition-duration: var(--motion-duration-instant);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto !important;
+  }
+
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 1ms !important;
+    transition-delay: 0ms !important;
+  }
+
+  :where(.finance-skeleton, [data-slot="skeleton"]) {
+    animation: none !important;
+    background: var(--skeleton) !important;
+    will-change: auto;
+  }
+
+  :where(.finance-hover-lift, .card-hover, .motion-icon):hover,
+  :where(.finance-hover-lift, .card-hover, .motion-icon):active {
+    transform: none !important;
+  }
+}
+
+@media print {
+  :where([data-loading-region="true"], [data-slot="skeleton"]) {
+    display: none !important;
   }
 }

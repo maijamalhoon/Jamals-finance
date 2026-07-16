@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useTransition } from "react";
 import {
   AlertTriangle,
   Bell,
@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { BackgroundRefreshStatus } from "@/components/loading/LoadingPrimitives";
 import {
   Sheet,
   SheetClose,
@@ -143,6 +144,7 @@ export default function NotificationCenter({ state }: NotificationCenterProps) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [online, setOnline] = useState(true);
+  const [refreshing, startRefresh] = useTransition();
 
   useEffect(() => {
     const updateOnlineState = () => setOnline(navigator.onLine);
@@ -163,8 +165,8 @@ export default function NotificationCenter({ state }: NotificationCenterProps) {
   const triggerLabel = getNotificationTriggerLabel(state);
 
   function retry() {
-    if (!online) return;
-    router.refresh();
+    if (!online || refreshing) return;
+    startRefresh(() => router.refresh());
   }
 
   return (
@@ -209,17 +211,36 @@ export default function NotificationCenter({ state }: NotificationCenterProps) {
           </div>
         </SheetHeader>
 
-        <div className="border-b border-border bg-surface-primary px-4 py-3 sm:px-5">
-          <p className="text-sm font-semibold text-text-primary">
-            {getNotificationSummary(state)}
-          </p>
-          <p className="mt-0.5 text-xs text-text-secondary">
-            {state.status === "error"
-              ? "Goals and payables could not be checked."
-              : state.status === "partial"
-                ? "One alert source could not be checked; the count uses available checked records."
-                : "The count reflects the bounded records checked for current deadlines."}
-          </p>
+        <div className="flex min-w-0 items-start justify-between gap-3 border-b border-border bg-surface-primary px-4 py-3 sm:px-5">
+          <div className="min-w-0 flex-1">
+            <p className="text-sm font-semibold text-text-primary">
+              {getNotificationSummary(state)}
+            </p>
+            <p className="mt-0.5 text-xs text-text-secondary">
+              {state.status === "error"
+                ? "Goals and payables could not be checked."
+                : state.status === "partial"
+                  ? "One alert source could not be checked; the count uses available checked records."
+                  : "The count reflects the bounded records checked for current deadlines."}
+            </p>
+            <BackgroundRefreshStatus
+              refreshing={refreshing}
+              label="Refreshing alerts…"
+              className="mt-1.5"
+            />
+          </div>
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            onClick={retry}
+            loading={refreshing}
+            disabled={!online}
+            aria-label="Refresh current alerts"
+            title="Refresh current alerts"
+          >
+            <RefreshCw aria-hidden="true" />
+          </Button>
         </div>
 
         <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 py-4 pb-[max(1rem,env(safe-area-inset-bottom))] sm:px-5">
@@ -270,6 +291,8 @@ export default function NotificationCenter({ state }: NotificationCenterProps) {
                 variant="outline"
                 onClick={retry}
                 disabled={!online}
+                loading={refreshing}
+                loadingLabel="Retrying…"
                 className="mt-4 min-h-11"
               >
                 <RefreshCw size={15} aria-hidden="true" />

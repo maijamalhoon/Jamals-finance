@@ -1,5 +1,5 @@
 import DashboardRouteLoading from "@/components/loading/DashboardRouteLoading";
 
 export default function TransactionsLoading() {
-  return <DashboardRouteLoading variant="table" />;
+  return <DashboardRouteLoading variant="transactions" />;
 }

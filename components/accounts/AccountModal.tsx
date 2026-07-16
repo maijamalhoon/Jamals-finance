@@ -146,6 +146,8 @@ export default function AccountModal({
   }, [open, account]);
 
   async function handleSave() {
+    if (loading) return;
+
     if (!name.trim()) {
       setError("Enter an account name.");
       return;
@@ -381,19 +383,16 @@ export default function AccountModal({
             type="button"
             onClick={handleSave}
             disabled={loading}
+            loading={loading}
+            loadingLabel="Saving account…"
             className="finance-focus primary-action min-h-[var(--oneui-control-height-lg)] w-full px-4 text-sm font-black text-text-inverse"
             style={{
               background:
                 "linear-gradient(135deg, var(--account-accent), color-mix(in srgb, var(--account-accent), black 18%))",
-              boxShadow:
-                "0 16px 34px color-mix(in srgb, var(--account-accent), transparent 78%)",
+              boxShadow: "var(--shadow-sm)",
             }}
           >
-            {loading ?
-              "Saving..."
-            : isEditing ?
-              "Update Account"
-            : "Add Account"}
+            {isEditing ? "Update Account" : "Add Account"}
           </Button>
         </FinanceModalFooter>
       </DialogContent>

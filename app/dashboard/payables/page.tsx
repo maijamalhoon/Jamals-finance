@@ -169,7 +169,7 @@ export default async function PayablesPage({
                   href={paramsFor(tab.value)}
                   className={`finance-focus min-w-max rounded-[14px] px-3 py-2 text-center text-xs font-semibold transition-all ${
                     active ?
-                      "bg-card text-text-primary shadow-[0_8px_22px_rgba(15,23,42,0.08)] dark:shadow-[0_8px_22px_rgba(0,0,0,0.18)]"
+                      "bg-card text-text-primary shadow-[var(--shadow-xs)]"
                     : "text-text-secondary hover:bg-hover hover:text-text-primary"
                   }`}
                 >

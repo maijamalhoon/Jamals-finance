@@ -64,6 +64,8 @@ export default function PayableModal({ open, onClose, payable }: Props) {
   }, [open, payable]);
 
   async function handleSave() {
+    if (loading) return;
+
     const value = Number(originalValue);
     if (!personName.trim() || !reason.trim() || !Number.isFinite(value) || value <= 0) {
       setError("Person, reason, and value greater than 0 are required.");
@@ -219,9 +221,11 @@ export default function PayableModal({ open, onClose, payable }: Props) {
             type="button"
             onClick={handleSave}
             disabled={loading}
+            loading={loading}
+            loadingLabel="Saving payable…"
             className="primary-action w-full py-3"
           >
-            {loading ? "Saving..." : isEditing ? "Update Payable" : "Save Payable"}
+            {isEditing ? "Update Payable" : "Save Payable"}
           </Button>
         </FinanceModalFooter>
       </DialogContent>

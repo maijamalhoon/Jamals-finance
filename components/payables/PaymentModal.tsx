@@ -82,6 +82,8 @@ export default function PaymentModal({ open, onClose, payable, accounts }: Props
   }
 
   async function handleSave() {
+    if (loading) return;
+
     const parsedAmount = Number(amount);
     if (!Number.isFinite(parsedAmount) || parsedAmount <= 0 || !accountId) {
       setError("Enter a payment amount and select the account used.");
@@ -267,9 +269,11 @@ export default function PaymentModal({ open, onClose, payable, accounts }: Props
             type="button"
             onClick={handleSave}
             disabled={loading || !accounts.length}
+            loading={loading}
+            loadingLabel="Recording payment…"
             className="primary-action w-full py-3"
           >
-            {loading ? "Recording..." : "Record Payment"}
+            Record Payment
           </Button>
         </FinanceModalFooter>
       </DialogContent>

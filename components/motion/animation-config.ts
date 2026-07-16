@@ -3,9 +3,13 @@ import type { Variants } from "framer-motion";
 export const motionEase = [0.16, 1, 0.3, 1] as const;
 
 export const motionDurations = {
+  instant: 0.09,
   fast: 0.16,
-  base: 0.24,
+  base: 0.22,
   page: 0.28,
+  slow: 0.32,
+  deliberate: 0.42,
+  skeleton: 1.4,
   chart: 850,
 } as const;
 

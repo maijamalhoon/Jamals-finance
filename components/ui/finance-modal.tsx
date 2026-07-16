@@ -15,7 +15,7 @@ export const financeModalContentClass =
   "finance-modal-content finance-panel flex max-h-[calc(100dvh-0.75rem)] w-[calc(100vw-0.75rem)] max-w-md [--finance-modal-max-width:28rem] flex-col gap-0 overflow-hidden p-0 text-text-primary shadow-premium sm:max-h-[90dvh] sm:w-full";
 
 export const financeCancelButtonClass =
-  "finance-focus inline-flex min-h-[var(--oneui-control-height-lg)] items-center justify-center rounded-[var(--oneui-button-radius)] border border-border bg-surface-secondary px-4 py-2 text-sm font-semibold text-text-primary transition-all hover:bg-hover active:scale-[0.985] disabled:opacity-50";
+  "finance-focus inline-flex min-h-[var(--oneui-control-height-lg)] items-center justify-center rounded-[var(--oneui-button-radius)] border border-border bg-surface-secondary px-4 py-2 text-sm font-semibold text-text-primary transition-[background-color,border-color,color,transform] duration-[var(--motion-duration-fast)] [transition-timing-function:var(--motion-ease-standard)] hover:bg-hover active:scale-[0.985] disabled:opacity-50";
 
 export const financeErrorClass =
   "rounded-[var(--oneui-control-radius)] border border-danger/20 bg-danger/10 px-3 py-2.5 text-sm font-medium leading-5 text-danger";

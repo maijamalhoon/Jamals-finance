@@ -6,6 +6,7 @@ import {
   CalendarClock,
   ChevronDown,
   CircleDollarSign,
+  LoaderCircle,
   Pencil,
   ReceiptText,
   Trash2,
@@ -86,6 +87,7 @@ export default function PayableCard({
     STATUS_PROGRESS_COLOR[displayStatus] ?? STATUS_PROGRESS_COLOR.pending;
 
   async function handleDelete() {
+    if (deleting) return;
     if (!confirm(`Delete payable for ${payable.person_name}?`)) return;
     setDeleting(true);
     const { error } = await supabase
@@ -198,10 +200,15 @@ export default function PayableCard({
               type="button"
               onClick={handleDelete}
               disabled={deleting}
+              aria-busy={deleting || undefined}
               className="danger-action min-h-10 rounded-full px-3 py-2 text-xs hover:border-danger/35 hover:bg-danger/10"
             >
-              <Trash2 size={14} />
-              Delete
+              {deleting ? (
+                <LoaderCircle className="animate-spin motion-reduce:animate-none" size={14} aria-hidden="true" />
+              ) : (
+                <Trash2 size={14} aria-hidden="true" />
+              )}
+              {deleting ? "Deleting…" : "Delete"}
             </button>
           </div>
           <p className="text-xs text-text-secondary">

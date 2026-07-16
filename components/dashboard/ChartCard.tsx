@@ -35,7 +35,7 @@ export default function ChartCard({
                 {eyebrowIcon}
               </span>
             ) : null}
-            <p className="truncate text-[9px] font-semibold uppercase tracking-[0.2em]">
+            <p className="truncate text-[10px] font-semibold uppercase tracking-[0.16em]">
               {eyebrow}
             </p>
           </div>

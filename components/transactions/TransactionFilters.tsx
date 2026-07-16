@@ -1,14 +1,16 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState, useTransition } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { ChevronDown, Filter, Search, X } from "lucide-react";
+import { BackgroundRefreshStatus } from "@/components/loading/LoadingPrimitives";
 
 export default function TransactionFilters() {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const [pending, startNavigation] = useTransition();
 
   const [open, setOpen] = useState(false);
 
@@ -44,11 +46,13 @@ export default function TransactionFilters() {
 
       if (nextQuery === currentQuery) return;
 
-      router.push(nextQuery ? `${pathname}?${nextQuery}` : pathname, {
-        scroll: false,
+      startNavigation(() => {
+        router.push(nextQuery ? `${pathname}?${nextQuery}` : pathname, {
+          scroll: false,
+        });
       });
     },
-    [pathname, router, searchParams],
+    [pathname, router, searchParams, startNavigation],
   );
 
   useEffect(() => {
@@ -85,7 +89,7 @@ export default function TransactionFilters() {
     setSource("");
     setPerson("");
     setItem("");
-    router.push(pathname, { scroll: false });
+    startNavigation(() => router.push(pathname, { scroll: false }));
   }
 
   const activeFilterCount = useMemo(() => {
@@ -113,7 +117,7 @@ export default function TransactionFilters() {
   ]);
 
   return (
-    <div className="mb-5 min-w-0 space-y-3">
+    <div className="mb-5 min-w-0 space-y-3" aria-busy={pending || undefined}>
       <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="finance-control finance-search-control finance-focus flex min-h-11 w-full min-w-0 max-w-[420px] items-center gap-2 px-3 py-2">
           <Search size={15} className="flex-shrink-0 text-text-secondary" />
@@ -167,6 +171,13 @@ export default function TransactionFilters() {
             />
           </button>
         </div>
+      </div>
+
+      <div className="min-h-5" aria-live="polite">
+        <BackgroundRefreshStatus
+          refreshing={pending}
+          label="Updating transactions…"
+        />
       </div>
 
       {open ?

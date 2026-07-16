@@ -3,7 +3,8 @@
 import type { CSSProperties } from "react";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { CheckCircle2, Pencil, Trash2 } from "lucide-react";
+import { CheckCircle2, LoaderCircle, Pencil, Trash2 } from "lucide-react";
+import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
 import GoalModal, { ExistingGoal } from "./GoalModal";
 import { GOAL_ICONS } from "./goal-icons";
@@ -48,9 +49,18 @@ export default function GoalCard({ goal }: { goal: ExistingGoal }) {
   }
 
   async function handleDelete() {
+    if (deleting) return;
     if (!confirm(`Delete "${goal.name}"?`)) return;
     setDeleting(true);
-    await supabase.from("goals").delete().eq("id", goal.id);
+    const { error } = await supabase.from("goals").delete().eq("id", goal.id);
+
+    if (error) {
+      setDeleting(false);
+      toast.error("Could not delete the goal. Please try again.");
+      return;
+    }
+
+    toast.success("Goal deleted");
     router.refresh();
   }
 
@@ -87,14 +97,20 @@ export default function GoalCard({ goal }: { goal: ExistingGoal }) {
             type="button"
             onClick={handleDelete}
             disabled={deleting}
+            aria-busy={deleting || undefined}
             className="icon-button hover:border-danger/30 hover:bg-danger/10 hover:text-danger"
             aria-label="Delete goal"
+            title="Delete goal"
           >
-            <Trash2 size={12} />
+            {deleting ? (
+              <LoaderCircle className="animate-spin motion-reduce:animate-none" size={12} aria-hidden="true" />
+            ) : (
+              <Trash2 size={12} aria-hidden="true" />
+            )}
           </button>
         </div>
 
-        <div className="mb-4 flex min-w-0 items-start gap-3 pr-16">
+        <div className="mb-4 flex min-w-0 items-start gap-3 pr-24">
           <span
             className="grid h-11 w-11 shrink-0 place-items-center rounded-full border"
             style={{
@@ -144,7 +160,7 @@ export default function GoalCard({ goal }: { goal: ExistingGoal }) {
 
         <div className="mt-auto flex min-w-0 items-end justify-between gap-3 border-t border-border pt-4">
           <div className="min-w-0">
-            <p className="break-words text-sm font-bold text-text-primary [overflow-wrap:anywhere]">
+            <p className="finance-amount break-words text-sm font-bold text-text-primary [overflow-wrap:anywhere]">
               {formatCurrency(safeCurrent)}
             </p>
             <p className="mt-0.5 break-words text-xs text-text-secondary [overflow-wrap:anywhere]">
@@ -152,7 +168,7 @@ export default function GoalCard({ goal }: { goal: ExistingGoal }) {
             </p>
           </div>
           <div className="min-w-0 max-w-[48%] text-right">
-            <p className="break-words text-sm font-bold text-[var(--goal-accent)] [overflow-wrap:anywhere]">
+            <p className="finance-amount break-words text-sm font-bold text-[var(--goal-accent)] [overflow-wrap:anywhere]">
               {formatCurrency(Math.max(safeTarget - safeCurrent, 0))}
             </p>
             {!done && (

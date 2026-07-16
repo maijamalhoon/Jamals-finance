@@ -148,7 +148,7 @@ export default function SpendingBreakdown({
               <div className="mb-2.5 grid min-w-0 grid-cols-[minmax(0,1fr)_auto_auto] items-center gap-x-2.5 sm:gap-x-3">
                 <div className="flex min-w-0 items-center gap-2.5">
                   <span
-                    className="h-3 w-3 flex-shrink-0 rounded-full shadow-[0_0_0_3px_color-mix(in_srgb,var(--category-accent),transparent_84%)]"
+                    className="h-3 w-3 flex-shrink-0 rounded-full"
                     style={{ backgroundColor: accent }}
                   />
                   <span className="line-clamp-2 break-words text-[13px] font-semibold leading-5 text-text-primary sm:text-sm">

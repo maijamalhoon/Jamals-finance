@@ -181,7 +181,7 @@ export default function DashboardSignals({
                 }}
                 className={`aspect-square rounded-[9px] ${
                   active ?
-                    "bg-transfer shadow-[0_0_18px_color-mix(in_srgb,var(--transfer),transparent_76%)]"
+                    "bg-transfer shadow-[var(--shadow-xs)]"
                   : "bg-surface-tinted"
                 }`}
               />

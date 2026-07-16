@@ -19,6 +19,7 @@ import {
   AuthSubmitAction,
 } from "@/components/auth/AuthControls";
 import AuthShell from "@/components/auth/AuthShell";
+import { AuthFormSkeleton } from "@/components/loading/LoadingPrimitives";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/client";
 import {
@@ -242,11 +243,7 @@ export default function OnboardingPage() {
                 Checking your session…
               </span>
             </AuthFeedback>
-            <div className="auth-skeleton-stack" aria-hidden="true">
-              <span />
-              <span />
-              <span />
-            </div>
+            <AuthFormSkeleton fields={2} />
           </div>
         ) : (
           <div className="space-y-4">

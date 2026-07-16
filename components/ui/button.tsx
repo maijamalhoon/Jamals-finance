@@ -5,7 +5,7 @@ import { LoaderCircle } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 const buttonVariants = cva(
-  "group/button inline-flex shrink-0 items-center justify-center rounded-[var(--radius-button)] border border-transparent bg-clip-padding text-sm font-semibold whitespace-nowrap transition-[background-color,border-color,color,box-shadow,transform] duration-[var(--motion-duration-fast)] outline-none select-none focus-visible:shadow-[var(--focus-ring)] active:not-aria-[haspopup]:translate-y-px disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 dark:aria-invalid:border-destructive/60 dark:aria-invalid:ring-destructive/30 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+  "group/button relative inline-flex shrink-0 items-center justify-center rounded-[var(--radius-button)] border border-transparent bg-clip-padding text-sm font-semibold whitespace-nowrap transition-[background-color,border-color,color,box-shadow,transform] duration-[var(--motion-duration-fast)] outline-none select-none focus-visible:shadow-[var(--focus-ring)] active:not-aria-[haspopup]:translate-y-px disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 dark:aria-invalid:border-destructive/60 dark:aria-invalid:ring-destructive/30 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
   {
     variants: {
       variant: {
@@ -76,8 +76,31 @@ function Button({
       className={cn(buttonVariants({ variant, size, className }))}
       {...props}
     >
-      {loading ? <LoaderCircle className="animate-spin" aria-hidden="true" /> : null}
-      {loading && loadingLabel ? loadingLabel : children}
+      <span className="grid min-w-0 grid-cols-1 place-items-center">
+        <span
+          aria-hidden={loading || undefined}
+          className={cn(
+            "col-start-1 row-start-1 inline-flex min-w-0 items-center justify-center gap-2",
+            loading && "invisible",
+          )}
+        >
+          {children}
+        </span>
+        {loading ? (
+          <span className="col-start-1 row-start-1 inline-flex min-w-0 items-center justify-center gap-2">
+            <LoaderCircle className="animate-spin motion-reduce:animate-none" aria-hidden="true" />
+            {loadingLabel ? <span>{loadingLabel}</span> : null}
+          </span>
+        ) : loadingLabel ? (
+          <span
+            aria-hidden="true"
+            className="invisible col-start-1 row-start-1 inline-flex min-w-0 items-center justify-center gap-2"
+          >
+            <LoaderCircle aria-hidden="true" />
+            <span>{loadingLabel}</span>
+          </span>
+        ) : null}
+      </span>
     </ButtonPrimitive>
   )
 }

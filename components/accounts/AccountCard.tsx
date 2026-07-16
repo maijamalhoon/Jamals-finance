@@ -9,12 +9,14 @@ import {
   BriefcaseBusiness,
   CreditCard,
   Landmark,
+  LoaderCircle,
   Pencil,
   PiggyBank,
   Smartphone,
   Trash2,
   Wallet,
 } from "lucide-react";
+import { toast } from "sonner";
 
 import { createClient } from "@/lib/supabase/client";
 import AccountModal, { ExistingAccount } from "./AccountModal";
@@ -76,6 +78,7 @@ export default function AccountCard({ account }: AccountCardProps) {
   const accent = getAccountAccentColor(account.accent_color);
 
   async function handleDelete() {
+    if (deleting) return;
     if (!confirm(`Delete "${account.name}"? This cannot be undone.`)) return;
 
     setDeleting(true);
@@ -86,11 +89,12 @@ export default function AccountCard({ account }: AccountCardProps) {
       .eq("id", account.id);
 
     if (error) {
-      alert(error.message);
+      toast.error("Could not delete the account. Please try again.");
       setDeleting(false);
       return;
     }
 
+    toast.success("Account deleted");
     router.refresh();
   }
 
@@ -129,10 +133,16 @@ export default function AccountCard({ account }: AccountCardProps) {
               type="button"
               onClick={handleDelete}
               disabled={deleting}
+              aria-busy={deleting || undefined}
               className="icon-button hover:border-danger/30 hover:bg-danger/10 hover:text-danger"
               aria-label="Delete account"
+              title="Delete account"
             >
-              <Trash2 size={13} />
+              {deleting ? (
+                <LoaderCircle className="animate-spin motion-reduce:animate-none" size={13} aria-hidden="true" />
+              ) : (
+                <Trash2 size={13} aria-hidden="true" />
+              )}
             </button>
           </div>
         </div>
@@ -160,7 +170,7 @@ export default function AccountCard({ account }: AccountCardProps) {
             Balance
           </p>
 
-          <p className="mt-1 break-words text-2xl font-black tracking-normal text-text-primary [overflow-wrap:anywhere]">
+          <p className="finance-amount mt-1 break-words text-2xl font-black tracking-normal text-text-primary [overflow-wrap:anywhere]">
             {formatCurrency(Number(account.balance ?? 0))}
           </p>
         </div>
@@ -172,7 +182,7 @@ export default function AccountCard({ account }: AccountCardProps) {
               Income In
             </div>
 
-            <p className="break-words text-sm font-black text-success [overflow-wrap:anywhere]">
+            <p className="finance-amount break-words text-sm font-black text-success [overflow-wrap:anywhere]">
               {formatCurrency(Number(account.inflow ?? 0))}
             </p>
           </div>
@@ -183,7 +193,7 @@ export default function AccountCard({ account }: AccountCardProps) {
               Expense Out
             </div>
 
-            <p className="break-words text-sm font-black text-danger [overflow-wrap:anywhere]">
+            <p className="finance-amount break-words text-sm font-black text-danger [overflow-wrap:anywhere]">
               {formatCurrency(Number(account.outflow ?? 0))}
             </p>
           </div>

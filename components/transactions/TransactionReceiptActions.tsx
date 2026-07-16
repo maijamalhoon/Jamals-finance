@@ -1,7 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { Copy, Printer } from "lucide-react";
+import { Check, Copy, Printer } from "lucide-react";
+import { toast } from "sonner";
+
+import { Button } from "@/components/ui/button";
 
 export default function TransactionReceiptActions({
   receiptText,
@@ -9,35 +12,45 @@ export default function TransactionReceiptActions({
   receiptText: string;
 }) {
   const [copied, setCopied] = useState(false);
+  const [copying, setCopying] = useState(false);
 
   async function handleCopy() {
-    await navigator.clipboard.writeText(receiptText);
-    setCopied(true);
+    if (copying) return;
+    setCopying(true);
 
-    window.setTimeout(() => {
-      setCopied(false);
-    }, 1600);
+    try {
+      await navigator.clipboard.writeText(receiptText);
+      setCopied(true);
+      toast.success("Receipt copied");
+      window.setTimeout(() => setCopied(false), 1600);
+    } catch {
+      toast.error("Could not copy the receipt. Please try again.");
+    } finally {
+      setCopying(false);
+    }
   }
 
   return (
     <div className="print:hidden flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
-      <button
+      <Button
         type="button"
         onClick={handleCopy}
-        className="finance-focus inline-flex h-11 items-center justify-center gap-2 rounded-[var(--oneui-control-radius)] border border-border bg-surface px-4 text-sm font-bold text-text-primary shadow-sm transition-all hover:-translate-y-0.5 hover:bg-hover hover:shadow-md"
+        variant="outline"
+        loading={copying}
+        loadingLabel="Copying…"
       >
-        <Copy size={16} />
+        {copied ? (
+          <Check size={16} aria-hidden="true" />
+        ) : (
+          <Copy size={16} aria-hidden="true" />
+        )}
         {copied ? "Copied" : "Copy receipt"}
-      </button>
+      </Button>
 
-      <button
-        type="button"
-        onClick={() => window.print()}
-        className="finance-focus inline-flex h-11 items-center justify-center gap-2 rounded-[var(--oneui-control-radius)] border border-active bg-active px-4 text-sm font-bold text-background shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md"
-      >
-        <Printer size={16} />
+      <Button type="button" onClick={() => window.print()}>
+        <Printer size={16} aria-hidden="true" />
         Print / Save PDF
-      </button>
+      </Button>
     </div>
   );
 }

@@ -94,6 +94,8 @@ export default function TransferModal({ open, onClose, onSuccess }: Props) {
   }
 
   async function handleSave() {
+    if (saving || loading) return;
+
     const parsedAmount = Number(amount);
 
     if (!fromAccountId || !toAccountId) {
@@ -282,9 +284,11 @@ export default function TransferModal({ open, onClose, onSuccess }: Props) {
             type="button"
             onClick={handleSave}
             disabled={saving || loading || accounts.length < 2}
+            loading={saving}
+            loadingLabel="Saving transfer…"
             className="primary-action py-3"
           >
-            {saving ? "Saving..." : "Save Transfer"}
+            Save Transfer
           </Button>
         </FinanceModalFooter>
       </DialogContent>

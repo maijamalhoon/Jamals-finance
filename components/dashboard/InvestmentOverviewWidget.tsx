@@ -74,7 +74,7 @@ function LegendIcon({ entry }: { entry: AllocationEntry }) {
 
   return (
     <span
-      className="grid h-5 w-5 shrink-0 place-items-center rounded-full text-[8.5px] font-bold text-text-inverse"
+      className="grid h-5 w-5 shrink-0 place-items-center rounded-full text-[10px] font-bold text-text-inverse"
       style={{ backgroundColor: entry.color }}
     >
       {getAssetInitials(entry.name, entry.symbol)}
@@ -144,7 +144,7 @@ export default function InvestmentOverviewWidget({
                   {shortName(investment.name)}
                 </span>
                 <span
-                  className="ml-auto shrink-0 text-[9px] font-bold tabular-nums"
+                  className="ml-auto shrink-0 text-[10px] font-bold tabular-nums"
                   style={{ color: investment.color }}
                 >
                   {formatAllocation((investment.value / allocationTotalValue) * 100)}
@@ -213,7 +213,7 @@ export default function InvestmentOverviewWidget({
                 <p className="mt-1 text-[10px] font-bold leading-none tabular-nums" style={{ color: pnlColor }}>
                   {totalPnLPct === null ? pnlLabel : <CountedAmount amount={pnlLabel} />}
                 </p>
-                <p className="mt-1 text-[8.5px] font-semibold leading-none tracking-[0.1em] text-text-secondary">
+                <p className="mt-1 text-[10px] font-semibold leading-none tracking-[0.1em] text-text-secondary">
                   priced value
                 </p>
               </div>

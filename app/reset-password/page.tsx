@@ -24,6 +24,7 @@ import {
   AuthSubmitAction,
 } from "@/components/auth/AuthControls";
 import AuthShell from "@/components/auth/AuthShell";
+import { AuthFormSkeleton } from "@/components/loading/LoadingPrimitives";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/client";
 import {
@@ -627,7 +628,8 @@ export default function ResetPasswordPage() {
     }
     setRecoveryState("success");
     setMessage("Password updated. Taking you to your dashboard…");
-    setTimeout(() => router.push("/dashboard"), 900);
+    router.replace("/dashboard");
+    router.refresh();
   }
 
   const recoveryPresentation =
@@ -675,12 +677,15 @@ export default function ResetPasswordPage() {
       icon={recoveryPresentation.icon}
     >
       {recoveryState === "checking" ? (
-        <AuthFeedback tone="info">
-          <span className="inline-flex items-center gap-2">
-            <LoaderCircle className="h-4 w-4 shrink-0 animate-spin" aria-hidden="true" />
-            Verifying your recovery link…
-          </span>
-        </AuthFeedback>
+        <div aria-busy="true">
+          <AuthFeedback tone="info">
+            <span className="inline-flex items-center gap-2">
+              <LoaderCircle className="h-4 w-4 shrink-0 animate-spin motion-reduce:animate-none" aria-hidden="true" />
+              Verifying your recovery link…
+            </span>
+          </AuthFeedback>
+          <AuthFormSkeleton fields={2} />
+        </div>
       ) : null}
 
       {recoveryState === "invalid" ? (

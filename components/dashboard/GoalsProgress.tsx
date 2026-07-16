@@ -116,7 +116,7 @@ function GoalRow({
     >
       <div className="grid min-w-0 grid-cols-[38px_minmax(0,1fr)_auto] items-center gap-3">
         <span
-          className="grid h-9 w-9 shrink-0 place-items-center rounded-[14px] border shadow-[inset_0_1px_0_rgb(255_255_255_/_0.4)]"
+          className="grid h-9 w-9 shrink-0 place-items-center rounded-[14px] border shadow-[var(--surface-highlight)]"
           style={{
             color: accent,
             borderColor: `color-mix(in srgb, ${accent}, transparent 76%)`,

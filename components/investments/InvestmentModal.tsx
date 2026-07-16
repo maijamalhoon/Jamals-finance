@@ -558,6 +558,8 @@ export default function InvestmentModal({
   }
 
   async function handleSave() {
+    if (loading) return;
+
     const assetName = name.trim();
     const parsedQuantity = parseNumber(quantity);
     const parsedPurchasePrice = parseNumber(purchasePrice);
@@ -1148,15 +1150,11 @@ export default function InvestmentModal({
             type="button"
             onClick={handleSave}
             disabled={loading || loadingOptions}
+            loading={loading}
+            loadingLabel="Saving investment…"
             className="primary-action py-3"
           >
-            {loading || loadingOptions
-              ? loadingOptions
-                ? "Loading..."
-                : "Saving..."
-              : isEditing
-                ? "Update Investment"
-                : "Add Investment"}
+            {isEditing ? "Update Investment" : "Add Investment"}
           </Button>
         </FinanceModalFooter>
       </DialogContent>

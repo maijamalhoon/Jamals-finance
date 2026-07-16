@@ -142,7 +142,7 @@ export default function RecentTransactions({
                   className="group motion-table-row grid grid-cols-[38px_minmax(0,1fr)_auto] items-center gap-3 rounded-2xl border border-transparent px-2.5 py-2.5 transition-all duration-200 hover:-translate-y-0.5 hover:border-border hover:bg-hover/70 hover:shadow-sm"
                 >
                   <span
-                    className="grid h-9 w-9 shrink-0 place-items-center rounded-[14px] border shadow-[inset_0_1px_0_rgb(255_255_255_/_0.4)] transition-transform duration-200 group-hover:scale-105"
+                    className="grid h-9 w-9 shrink-0 place-items-center rounded-[14px] border shadow-[var(--surface-highlight)] transition-transform duration-[var(--motion-duration-fast)] group-hover:scale-105"
                     style={getTransactionSoftStyle(iconMeta.accent)}
                   >
                     <Icon size={16} strokeWidth={2.35} />
