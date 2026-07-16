@@ -18,11 +18,11 @@
 
 ## Validation
 
+- [ ] `npm run check` passed
 - [ ] Targeted tests passed
-- [ ] `npx tsc --noEmit` passed
-- [ ] `npm run lint` passed
 - [ ] `npm run build` passed
 - [ ] `git diff --check` passed
+- [ ] GitHub Actions passed
 - [ ] Manual verification completed
 
 ### Exact results

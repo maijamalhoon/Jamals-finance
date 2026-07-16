@@ -1,12 +1,29 @@
 {
   "name": "jamals-finance",
   "version": "0.1.0",
+  "description": "A privacy-minded personal finance workspace built with Next.js and Supabase.",
   "private": true,
+  "license": "UNLICENSED",
+  "author": "Jamal Yaqoob",
+  "homepage": "https://jamals-finance-sable.vercel.app",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/maijamalhoon/Jamals-finance.git"
+  },
+  "bugs": {
+    "url": "https://github.com/maijamalhoon/Jamals-finance/issues"
+  },
+  "engines": {
+    "node": ">=20.9.0"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "check": "npm run lint && npm run typecheck && npm test",
     "test:ui": "vitest run lib/theme.test.ts",
     "test:analytics": "vitest run lib/analytics/calculations.test.ts",
     "test:settings": "vitest run lib/settings/security.test.ts",
