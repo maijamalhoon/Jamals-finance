@@ -1,0 +1,208 @@
+import { readFileSync } from "node:fs";
+import { describe, expect, it } from "vitest";
+
+const loginSource = readFileSync(
+  new URL("../app/login/page.tsx", import.meta.url),
+  "utf8",
+);
+const onboardingSource = readFileSync(
+  new URL("../app/onboarding/page.tsx", import.meta.url),
+  "utf8",
+);
+const resetPasswordSource = readFileSync(
+  new URL("../app/reset-password/page.tsx", import.meta.url),
+  "utf8",
+);
+const authShellSource = readFileSync(
+  new URL("../components/auth/AuthShell.tsx", import.meta.url),
+  "utf8",
+);
+const authControlsSource = readFileSync(
+  new URL("../components/auth/AuthControls.tsx", import.meta.url),
+  "utf8",
+);
+const globalsCssSource = readFileSync(
+  new URL("../app/globals.css", import.meta.url),
+  "utf8",
+);
+
+const authRouteSources = [loginSource, onboardingSource, resetPasswordSource];
+
+function getObjectCall(source: string, callStart: string) {
+  const start = source.indexOf(callStart);
+  if (start === -1) throw new Error(`Missing call: ${callStart}`);
+  const end = source.indexOf("});", start);
+  if (end === -1) throw new Error(`Unclosed call: ${callStart}`);
+  return source.slice(start, end + 3);
+}
+
+describe("Node 8 authentication experience contracts", () => {
+  it("retains every existing login and account-recovery auth method", () => {
+    expect(loginSource).toContain("supabase.auth.signInWithPassword({");
+    expect(loginSource).toContain("supabase.auth.signUp({");
+    expect(loginSource).toContain("supabase.auth.signInWithOAuth({");
+    expect(loginSource).toContain("supabase.auth.resetPasswordForEmail(");
+    expect(loginSource).toContain('type Step = "login" | "signup" | "forgot" | "check-email"');
+  });
+
+  it("keeps safe redirect sanitization in login and onboarding", () => {
+    expect(loginSource).toContain("sanitizeInternalRedirect(params.get(\"next\"))");
+    expect(loginSource).toContain("router.replace(safeNext)");
+    expect(onboardingSource).toContain("sanitizeInternalRedirect(");
+    expect(onboardingSource).toContain("router.replace(destination)");
+    expect(onboardingSource).toContain("router.replace(safeNext)");
+  });
+
+  it("routes signup through callback and onboarding with full_name metadata", () => {
+    const signupCall = getObjectCall(loginSource, "supabase.auth.signUp({");
+    expect(loginSource).toContain("function onboardingDestination(next: string)");
+    expect(signupCall).toContain("full_name: fullName.trim()");
+    expect(signupCall).toContain("/auth/callback?next=");
+    expect(signupCall).toContain("onboardingDestination(safeNext)");
+    expect(loginSource).toContain("router.replace(onboardingDestination(safeNext))");
+  });
+
+  it("retains Google OAuth redirect protection and provider parameters", () => {
+    const oauthCall = getObjectCall(loginSource, "supabase.auth.signInWithOAuth({");
+    expect(oauthCall).toContain("provider,");
+    expect(oauthCall).toContain("/auth/callback?next=");
+    expect(oauthCall).toContain("onboardingDestination(safeNext)");
+    expect(oauthCall).toContain('queryParams: { access_type: "offline", prompt: "consent" }');
+  });
+
+  it("keeps forgot-password recovery pointed at /reset-password", () => {
+    const resetCall = loginSource.slice(
+      loginSource.indexOf("supabase.auth.resetPasswordForEmail("),
+      loginSource.indexOf("if (resetError)", loginSource.indexOf("supabase.auth.resetPasswordForEmail(")),
+    );
+    expect(resetCall).toContain("redirectTo: `${window.location.origin}/reset-password`");
+  });
+
+  it("keeps onboarding user verification, profile columns, and completion checks", () => {
+    expect(onboardingSource).toContain("await supabase.auth.getUser()");
+    expect(onboardingSource).toContain('.from("profiles")');
+    expect(onboardingSource).toContain('.select("full_name, age, onboarding_completed")');
+    expect(onboardingSource).toContain('.eq("id", user.id)');
+    expect(onboardingSource).toContain("if (profile?.onboarding_completed)");
+    expect(onboardingSource).toContain("numericAge < 10");
+    expect(onboardingSource).toContain("numericAge > 120");
+
+    const upsertCall = getObjectCall(
+      onboardingSource,
+      'supabase.from("profiles").upsert({',
+    );
+    for (const field of [
+      "id: userId",
+      "email,",
+      "full_name: fullName.trim()",
+      "age: numericAge",
+      "provider,",
+      "onboarding_completed: true",
+      "updated_at: new Date().toISOString()",
+    ]) {
+      expect(upsertCall).toContain(field);
+    }
+    expect(onboardingSource.match(/onboarding_completed:\s*true/g) ?? []).toHaveLength(1);
+    expect(onboardingSource.indexOf("if (saveError)")).toBeLessThan(
+      onboardingSource.indexOf("router.replace(safeNext)"),
+    );
+  });
+
+  it("retains the secure recovery machinery and complete presentation state set", () => {
+    for (const helper of [
+      "classifyAuthFailure",
+      "classifyRecoveryLinkError",
+      "createRecoveryMarker",
+      "getOrCreateKeyedRecoveryAttempt",
+      "getRecoveryRetryOperation",
+      "isConfirmedRecoveryAuthEvent",
+      "parseValidRecoveryMarker",
+      "shouldClearRecoveryMarkerAfterPasswordUpdate",
+      "exchangeCodeForSession",
+      "hashRecoverySession",
+      "removeRecoveryParameters",
+    ]) {
+      expect(resetPasswordSource, helper).toContain(helper);
+    }
+
+    expect(resetPasswordSource.match(/\.exchangeCodeForSession\(/g) ?? []).toHaveLength(1);
+    expect(resetPasswordSource).toContain('const RECOVERY_MARKER = "jamals-finance:password-recovery"');
+    expect(resetPasswordSource).toContain('router.replace("/dashboard")');
+    expect(resetPasswordSource).toContain('router.replace("/login?mode=forgot")');
+
+    for (const state of [
+      "checking",
+      "ready",
+      "invalid",
+      "temporarily_unavailable",
+      "updating",
+      "success",
+    ]) {
+      expect(resetPasswordSource, state).toContain(`"${state}"`);
+    }
+  });
+
+  it("keeps labels, stable names, autocomplete, and accessible error wiring", () => {
+    expect(authControlsSource).toContain("<label htmlFor={id}");
+    expect(authControlsSource).toContain("id={id}");
+    expect(authControlsSource).toContain("name={name}");
+    expect(authControlsSource).toContain("aria-invalid={error ? true : undefined}");
+    expect(authControlsSource).toContain("aria-describedby={describedBy}");
+    expect(authControlsSource).toContain('aria-live="polite"');
+    expect(authControlsSource).toContain("inputRef?: RefObject<HTMLInputElement | null>");
+    expect(authControlsSource).toContain("Show ${props.label.toLowerCase()}");
+    expect(authControlsSource).toContain("Hide ${props.label.toLowerCase()}");
+
+    for (const source of authRouteSources) {
+      expect(source).toContain("name=");
+      expect(source).toContain("autoComplete=");
+    }
+    expect(loginSource).toContain('inputMode="email"');
+    expect(onboardingSource).toContain('inputMode="numeric"');
+    expect(loginSource).toContain('autoComplete="current-password"');
+    expect(loginSource).toContain('autoComplete="new-password"');
+    expect(resetPasswordSource.match(/autoComplete="new-password"/g) ?? []).toHaveLength(2);
+  });
+
+  it("uses independent recovery password controls and field-specific focus", () => {
+    expect(resetPasswordSource.match(/<AuthPasswordField/g) ?? []).toHaveLength(2);
+    expect(resetPasswordSource).toContain("passwordInputRef.current?.focus()");
+    expect(resetPasswordSource).toContain("confirmInputRef.current?.focus()");
+    expect(resetPasswordSource).toContain('setFieldErrors({ password: "Use at least 6 characters." })');
+    expect(resetPasswordSource).toContain('setFieldErrors({ confirm: "The passwords do not match." })');
+  });
+
+  it("prevents duplicate actions and catches rejected client auth promises", () => {
+    expect(loginSource).toContain("const actionInFlight = useRef(false)");
+    expect(loginSource.match(/catch \{/g) ?? []).toHaveLength(4);
+    expect(onboardingSource).toContain("const saveInFlight = useRef(false)");
+    expect(onboardingSource.match(/catch \{/g) ?? []).toHaveLength(3);
+    expect(resetPasswordSource).toContain('if (recoveryState !== "ready") return');
+  });
+
+  it("uses AuthShell for all three routes without adding a theme control", () => {
+    for (const source of authRouteSources) {
+      expect(source).toContain('import AuthShell from "@/components/auth/AuthShell"');
+      expect(source).toContain("<AuthShell");
+      expect(source).not.toMatch(/ThemeSelector|theme selector|jamal-theme|setTheme/i);
+    }
+    expect(authShellSource).toContain("Jamals Finance");
+    expect(authShellSource).toContain("data-auth-root");
+  });
+
+  it("keeps auth styling semantic, scoped, and autofill-safe", () => {
+    expect(globalsCssSource).toContain(".jf-auth-root {");
+    expect(globalsCssSource).toContain(".jf-auth-root .auth-input:-webkit-autofill");
+    expect(globalsCssSource).toContain("-webkit-text-fill-color: var(--text-primary) !important;");
+    expect(globalsCssSource).toContain("var(--surface-inset)");
+    expect(globalsCssSource).toContain("@media (prefers-reduced-motion: reduce)");
+    expect(globalsCssSource).not.toContain(".chat-auth-");
+    expect(globalsCssSource).not.toContain(".jf-login-polish");
+  });
+
+  it("does not log credentials, tokens, or private recovery parameters", () => {
+    const combinedSource = authRouteSources.join("\n");
+    expect(combinedSource).not.toMatch(/console\.(log|debug|info|warn|error)\s*\(/);
+    expect(combinedSource).not.toMatch(/console[^\n]*(password|token|code|hash|metadata)/i);
+  });
+});

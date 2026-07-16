@@ -1365,99 +1365,6 @@
     color: var(--text-secondary);
   }
 
-  .chat-auth-shell {
-    background: var(--background);
-    color: var(--text-primary);
-  }
-
-  .chat-auth-card {
-    @apply rounded-[24px] border p-5 sm:p-6;
-    border-color: var(--border);
-    background: linear-gradient(
-      145deg,
-      color-mix(in srgb, var(--card), white 4%),
-      var(--card)
-    );
-    box-shadow: var(--shadow-premium);
-  }
-
-  .chat-auth-input {
-    @apply h-13 w-full rounded-2xl border px-4 text-[15px] outline-none transition-all;
-    border-color: color-mix(in srgb, var(--border), var(--active) 30%);
-    background-color: color-mix(
-      in srgb,
-      var(--card),
-      var(--surface-secondary) 12%
-    );
-    color: var(--text-primary);
-  }
-
-  .chat-auth-input:hover {
-    border-color: var(--active);
-    background-color: color-mix(
-      in srgb,
-      var(--card),
-      var(--surface-secondary) 18%
-    );
-  }
-
-  .chat-auth-input:focus {
-    border-color: color-mix(in srgb, var(--active), white 20%);
-    box-shadow: var(--focus-ring);
-  }
-
-  .chat-auth-button {
-    @apply inline-flex h-13 w-full items-center justify-center gap-2 rounded-2xl border px-4 text-sm font-semibold transition-all disabled:opacity-60;
-    border-color: var(--active);
-    background-color: var(--active);
-    color: var(--background);
-    box-shadow: var(--shadow);
-  }
-
-  .chat-auth-button:hover,
-  .chat-auth-button:focus-visible {
-    background-color: color-mix(in srgb, var(--active), white 12%);
-    box-shadow: var(--shadow-soft);
-    transform: translateY(-1px);
-    outline: none;
-  }
-
-  .chat-auth-button:focus-visible {
-    box-shadow: var(--focus-ring), var(--shadow-soft);
-  }
-
-  .chat-auth-secondary {
-    @apply inline-flex h-13 w-full items-center justify-center gap-2 rounded-2xl border px-4 text-sm font-semibold transition-all disabled:opacity-60;
-    border-color: var(--border);
-    background-color: var(--input);
-    color: var(--text-primary);
-  }
-
-  .chat-auth-secondary:hover,
-  .chat-auth-secondary:focus-visible {
-    background-color: var(--hover);
-    box-shadow: var(--shadow-soft);
-    transform: translateY(-1px);
-    outline: none;
-  }
-
-  .chat-auth-tabs {
-    @apply grid grid-cols-2 rounded-[22px] border p-1;
-    border-color: var(--border);
-    background-color: var(--surface-secondary);
-  }
-
-  .chat-auth-tabs button {
-    @apply h-10 rounded-2xl text-sm font-semibold transition-all;
-    color: var(--text-secondary);
-  }
-
-  .chat-auth-tabs button:hover,
-  .chat-auth-tabs button.is-active {
-    background-color: var(--card);
-    color: var(--text-primary);
-    box-shadow: var(--shadow);
-  }
 }
 
 .theme-toast {
@@ -2320,418 +2227,6 @@ textarea:focus {
     ),
     var(--background);
   color: var(--text-primary);
-}
-
-.jf-auth-page {
-  min-height: 100dvh;
-  overflow-x: hidden;
-  background:
-    radial-gradient(
-      circle at 20% 8%,
-      color-mix(in srgb, var(--active), transparent 88%),
-      transparent 28rem
-    ),
-    radial-gradient(
-      circle at 90% 12%,
-      color-mix(in srgb, var(--success), transparent 90%),
-      transparent 24rem
-    ),
-    var(--background);
-  color: var(--text-primary);
-}
-
-.jf-login-polish {
-  --jf-auth-text: #f8fbff;
-  --jf-auth-muted: rgb(248 251 255 / 0.72);
-  --jf-auth-subtle: rgb(248 251 255 / 0.52);
-  --jf-auth-border: rgb(255 255 255 / 0.14);
-  --jf-auth-border-strong: rgb(255 255 255 / 0.24);
-  --jf-auth-panel: rgb(255 255 255 / 0.085);
-  --jf-auth-panel-hover: rgb(255 255 255 / 0.12);
-  --jf-auth-control: rgb(255 255 255 / 0.075);
-  --jf-auth-control-hover: rgb(255 255 255 / 0.1);
-  --jf-auth-autofill: #142032;
-  --jf-auth-primary: #f8fbff;
-  --jf-auth-primary-hover: #eaf5ff;
-  --jf-auth-primary-text: #07101f;
-  isolation: isolate;
-  background:
-    radial-gradient(
-      circle at 18% 8%,
-      rgb(45 212 191 / 0.22),
-      transparent 32%
-    ),
-    radial-gradient(
-      circle at 80% 12%,
-      rgb(59 130 246 / 0.18),
-      transparent 30%
-    ),
-    radial-gradient(circle at 50% 78%, rgb(244 114 182 / 0.08), transparent 28%),
-    #070b12;
-  color: var(--jf-auth-text);
-}
-
-:root:not(.dark) .jf-login-polish {
-  --jf-auth-text: var(--text-primary);
-  --jf-auth-muted: #475467;
-  --jf-auth-subtle: #667085;
-  --jf-auth-border: rgb(148 163 184 / 0.32);
-  --jf-auth-border-strong: rgb(37 99 235 / 0.52);
-  --jf-auth-panel: rgb(255 255 255 / 0.94);
-  --jf-auth-panel-hover: #f1f5f9;
-  --jf-auth-control: #ffffff;
-  --jf-auth-control-hover: #f8fafc;
-  --jf-auth-autofill: #f4f8ff;
-  --jf-auth-primary: #1d4ed8;
-  --jf-auth-primary-hover: #1e40af;
-  --jf-auth-primary-text: #ffffff;
-  background:
-    radial-gradient(
-      circle at 18% 8%,
-      rgb(45 212 191 / 0.18),
-      transparent 32%
-    ),
-    radial-gradient(
-      circle at 80% 12%,
-      rgb(59 130 246 / 0.14),
-      transparent 30%
-    ),
-    radial-gradient(circle at 50% 78%, rgb(244 114 182 / 0.08), transparent 28%),
-    #f6f8fb;
-}
-
-.jf-login-polish ::selection {
-  background: rgb(147 197 253 / 0.28);
-}
-
-.jf-auth-grid {
-  background:
-    linear-gradient(90deg, rgb(255 255 255 / 0.045) 1px, transparent 1px),
-    linear-gradient(0deg, rgb(255 255 255 / 0.04) 1px, transparent 1px);
-  background-size: 52px 52px;
-  opacity: 0.2;
-}
-
-:root:not(.dark) .jf-auth-grid {
-  background:
-    linear-gradient(90deg, rgb(15 23 42 / 0.055) 1px, transparent 1px),
-    linear-gradient(0deg, rgb(15 23 42 / 0.045) 1px, transparent 1px);
-  opacity: 0.32;
-}
-
-.jf-auth-accent-line {
-  background: linear-gradient(90deg, var(--success), var(--info), var(--warning));
-}
-
-.jf-auth-card {
-  border: 1px solid var(--jf-auth-border);
-  border-radius: 1.5rem;
-  background: var(--jf-auth-panel);
-  box-shadow:
-    0 24px 76px rgb(0 0 0 / 0.3),
-    inset 0 1px 0 rgb(255 255 255 / 0.08);
-  transform: translateZ(0);
-}
-
-:root:not(.dark) .jf-auth-card {
-  box-shadow:
-    0 28px 80px rgb(15 23 42 / 0.12),
-    inset 0 1px 0 rgb(255 255 255 / 0.72);
-}
-
-@supports (
-  (backdrop-filter: blur(10px)) or (-webkit-backdrop-filter: blur(10px))
-) {
-  .jf-auth-card {
-    backdrop-filter: blur(18px) saturate(1.12);
-    -webkit-backdrop-filter: blur(18px) saturate(1.12);
-  }
-}
-
-.jf-auth-card::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  border-radius: inherit;
-  background:
-    radial-gradient(circle at 20% 0%, rgb(147 197 253 / 0.13), transparent 34%),
-    radial-gradient(circle at 80% 0%, rgb(134 239 172 / 0.09), transparent 36%);
-}
-
-.jf-auth-icon {
-  display: grid;
-  width: 2.75rem;
-  height: 2.75rem;
-  place-items: center;
-  border: 1px solid var(--jf-auth-border);
-  border-radius: 1rem;
-  background: rgb(255 255 255 / 0.09);
-  color: #bfdbfe;
-  box-shadow: 0 16px 36px rgb(59 130 246 / 0.16);
-}
-
-:root:not(.dark) .jf-auth-icon {
-  background: color-mix(in srgb, var(--active), transparent 90%);
-  color: var(--active);
-}
-
-.jf-auth-label {
-  display: block;
-  margin-bottom: 0.5rem;
-  color: var(--jf-auth-muted);
-  font-size: 0.75rem;
-  font-weight: 650;
-}
-
-.jf-auth-input {
-  width: 100%;
-  height: 2.875rem;
-  min-height: 2.875rem;
-  border: 1px solid var(--jf-auth-border);
-  border-radius: 1rem;
-  background: var(--jf-auth-control);
-  color: var(--jf-auth-text);
-  padding-inline: 1rem;
-  font-size: 0.9375rem;
-  font-weight: 650;
-  outline: none;
-  transition:
-    border-color var(--motion-duration-base) var(--motion-ease),
-    background-color var(--motion-duration-base) var(--motion-ease),
-    box-shadow var(--motion-duration-base) var(--motion-ease),
-    opacity var(--motion-duration-base) var(--motion-ease);
-}
-
-.jf-auth-input::placeholder {
-  color: var(--jf-auth-subtle);
-}
-
-.jf-auth-input:hover {
-  border-color: var(--jf-auth-border-strong);
-  background: var(--jf-auth-control-hover);
-}
-
-.jf-auth-input:focus,
-.jf-auth-input:focus-visible {
-  border-color: var(--jf-auth-border-strong);
-  background: var(--jf-auth-control-hover);
-  box-shadow: var(--focus-ring);
-}
-
-.jf-auth-input:disabled {
-  cursor: not-allowed;
-  opacity: 0.7;
-}
-
-.jf-auth-input-glow:focus-within {
-  filter: drop-shadow(0 12px 28px rgb(96 165 250 / 0.1));
-}
-
-.jf-auth-primary,
-.jf-auth-social {
-  display: inline-flex;
-  width: 100%;
-  height: 2.875rem;
-  min-height: 2.875rem;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  border-radius: 1rem;
-  padding-inline: 1.25rem;
-  font-size: 0.9375rem;
-  font-weight: 750;
-  transition:
-    transform var(--motion-duration-fast) var(--motion-ease),
-    border-color var(--motion-duration-base) var(--motion-ease),
-    background-color var(--motion-duration-base) var(--motion-ease),
-    box-shadow var(--motion-duration-base) var(--motion-ease),
-    opacity var(--motion-duration-base) var(--motion-ease);
-}
-
-.jf-auth-primary {
-  background: var(--jf-auth-primary);
-  color: var(--jf-auth-primary-text);
-  box-shadow: 0 18px 44px rgb(216 235 255 / 0.16);
-}
-
-.jf-auth-primary:hover {
-  background: var(--jf-auth-primary-hover);
-}
-
-.jf-auth-social {
-  border: 1px solid var(--jf-auth-border);
-  background: var(--jf-auth-control);
-  color: var(--jf-auth-text);
-  box-shadow: 0 10px 24px rgb(0 0 0 / 0.12);
-}
-
-.jf-auth-social:hover {
-  border-color: var(--jf-auth-border-strong);
-  background: var(--jf-auth-panel-hover);
-}
-
-.jf-auth-social-block {
-  position: relative;
-}
-
-.jf-auth-divider {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  padding-block: 0.125rem;
-}
-
-.jf-auth-divider span {
-  height: 1px;
-  flex: 1;
-  background: var(--jf-auth-border);
-}
-
-.jf-auth-divider strong {
-  color: var(--jf-auth-subtle);
-  font-size: 0.6875rem;
-  font-weight: 850;
-  letter-spacing: 0;
-}
-
-.jf-auth-primary:disabled,
-.jf-auth-social:disabled {
-  cursor: not-allowed;
-  opacity: 0.72;
-}
-
-.jf-auth-action {
-  position: relative;
-  overflow: hidden;
-}
-
-.jf-auth-action::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background: linear-gradient(
-    110deg,
-    transparent 0%,
-    rgb(255 255 255 / 0.28) 45%,
-    transparent 58%
-  );
-  transform: translateX(-120%);
-  animation: jfAuthSheen 5.2s ease-in-out infinite;
-}
-
-.jf-auth-tab-list {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  border: 1px solid var(--jf-auth-border);
-  border-radius: 1rem;
-  background: var(--jf-auth-control);
-  padding: 0.21875rem;
-}
-
-.jf-auth-tab {
-  min-height: var(--touch-target-min);
-  border-radius: 0.75rem;
-  color: var(--jf-auth-muted);
-  font-size: 0.875rem;
-  font-weight: 750;
-  transition:
-    background-color var(--motion-duration-base) var(--motion-ease),
-    color var(--motion-duration-base) var(--motion-ease),
-    box-shadow var(--motion-duration-base) var(--motion-ease);
-}
-
-.jf-auth-tab:hover {
-  background: var(--jf-auth-panel-hover);
-  color: var(--jf-auth-text);
-}
-
-.jf-auth-tab[data-active="true"] {
-  background: var(--jf-auth-primary);
-  color: var(--jf-auth-primary-text);
-  box-shadow: var(--shadow-xs);
-}
-
-.jf-auth-feedback {
-  border: 1px solid;
-  border-radius: 1rem;
-  padding: 0.6875rem 0.875rem;
-  font-size: 0.875rem;
-  font-weight: 650;
-  line-height: 1.35rem;
-}
-
-.jf-auth-feedback[data-tone="error"] {
-  border-color: rgb(248 113 113 / 0.26);
-  background: rgb(239 68 68 / 0.14);
-  color: #fecaca;
-}
-
-.jf-auth-feedback[data-tone="success"] {
-  border-color: rgb(52 211 153 / 0.24);
-  background: rgb(16 185 129 / 0.12);
-  color: #bbf7d0;
-}
-
-.jf-auth-feedback[data-tone="info"] {
-  border-color: rgb(125 211 252 / 0.22);
-  background: rgb(14 165 233 / 0.12);
-  color: #bae6fd;
-}
-
-@keyframes jfAuthSheen {
-  0%,
-  70% {
-    transform: translateX(-120%);
-  }
-
-  84%,
-  100% {
-    transform: translateX(120%);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .jf-login-polish *,
-  .jf-login-polish *::before,
-  .jf-login-polish *::after {
-    animation-duration: 1ms !important;
-    animation-iteration-count: 1 !important;
-    scroll-behavior: auto !important;
-    transition-duration: 1ms !important;
-  }
-}
-
-@media (max-width: 380px) {
-  .jf-login-polish {
-    --jf-auth-muted: rgb(248 251 255 / 0.78);
-  }
-
-  :root:not(.dark) .jf-login-polish {
-    --jf-auth-muted: #344054;
-  }
-
-  .jf-auth-card {
-    border-radius: 1.25rem;
-  }
-
-  .jf-auth-icon {
-    width: 2.5rem;
-    height: 2.5rem;
-  }
-
-  .jf-auth-input,
-  .jf-auth-primary,
-  .jf-auth-social {
-    height: 2.75rem;
-    min-height: 2.75rem;
-    font-size: 0.875rem;
-  }
-
-  .jf-auth-tab {
-    height: 2.5rem;
-  }
 }
 
 .jf-section {
@@ -4747,149 +4242,6 @@ tbody tr:hover {
   }
 }
 
-/* Phase 5B: public auth control polish.
-   Keep these rules late so broad form polish cannot override auth fields. */
-.jf-login-polish .jf-auth-card {
-  background: var(--jf-auth-panel);
-  border-color: var(--jf-auth-border);
-}
-
-.jf-login-polish .jf-auth-label {
-  color: var(--jf-auth-muted);
-  font-weight: 700;
-  letter-spacing: 0;
-  text-transform: none;
-}
-
-.jf-login-polish .jf-auth-input-glow {
-  position: relative;
-}
-
-.jf-login-polish .jf-auth-field-icon {
-  left: 1rem;
-  z-index: 2;
-  display: grid;
-  width: 1.05rem;
-  height: 1.05rem;
-  place-items: center;
-  color: var(--jf-auth-subtle);
-}
-
-.jf-login-polish .jf-auth-input {
-  height: 3rem;
-  min-height: 3rem;
-  border-color: var(--jf-auth-border);
-  border-radius: 1rem;
-  background: var(--jf-auth-control);
-  color: var(--jf-auth-text);
-  padding: 0 1rem;
-  font-size: 0.9375rem;
-  font-weight: 650;
-  line-height: 1.35;
-  box-shadow:
-    inset 0 1px 0 rgb(255 255 255 / 0.08),
-    0 1px 0 rgb(15 23 42 / 0.03);
-  caret-color: var(--jf-auth-primary);
-}
-
-.jf-login-polish .jf-auth-input-with-start {
-  padding-left: 3rem;
-}
-
-.jf-login-polish .jf-auth-input-with-end {
-  padding-right: 3.75rem;
-}
-
-.jf-login-polish .jf-auth-input::placeholder {
-  color: var(--jf-auth-subtle);
-  opacity: 1;
-}
-
-.jf-login-polish .jf-auth-input:hover {
-  border-color: var(--jf-auth-border-strong);
-  background: var(--jf-auth-control-hover);
-}
-
-.jf-login-polish .jf-auth-input:focus,
-.jf-login-polish .jf-auth-input:focus-visible {
-  border-color: var(--jf-auth-border-strong);
-  background: var(--jf-auth-control-hover);
-  box-shadow:
-    0 0 0 4px color-mix(in srgb, var(--jf-auth-primary), transparent 82%),
-    0 16px 36px rgb(15 23 42 / 0.08);
-  outline: none;
-}
-
-.jf-login-polish .jf-auth-password-toggle {
-  z-index: 3;
-  color: var(--jf-auth-subtle);
-}
-
-.jf-login-polish .jf-auth-input:-webkit-autofill,
-.jf-login-polish .jf-auth-input:-webkit-autofill:hover,
-.jf-login-polish .jf-auth-input:-webkit-autofill:focus,
-.jf-login-polish .jf-auth-input:-webkit-autofill:active {
-  border-color: var(--jf-auth-border-strong);
-  -webkit-text-fill-color: var(--jf-auth-text);
-  caret-color: var(--jf-auth-text);
-  -webkit-box-shadow:
-    0 0 0 1000px var(--jf-auth-autofill) inset,
-    0 0 0 4px color-mix(in srgb, var(--jf-auth-primary), transparent 86%);
-  transition: background-color 9999s ease-out;
-}
-
-.jf-login-polish .jf-auth-input:autofill {
-  border-color: var(--jf-auth-border-strong);
-  background: var(--jf-auth-autofill);
-  color: var(--jf-auth-text);
-}
-
-:root:not(.dark) .jf-login-polish .jf-auth-card {
-  box-shadow:
-    0 28px 80px rgb(15 23 42 / 0.11),
-    0 0 0 1px rgb(255 255 255 / 0.74) inset;
-}
-
-:root:not(.dark) .jf-login-polish .jf-auth-feedback[data-tone="error"] {
-  border-color: rgb(220 38 38 / 0.2);
-  background: rgb(254 242 242 / 0.92);
-  color: #991b1b;
-}
-
-:root:not(.dark) .jf-login-polish .jf-auth-feedback[data-tone="success"] {
-  border-color: rgb(22 138 83 / 0.22);
-  background: rgb(236 253 245 / 0.9);
-  color: #065f46;
-}
-
-:root:not(.dark) .jf-login-polish .jf-auth-feedback[data-tone="info"] {
-  border-color: rgb(2 132 199 / 0.22);
-  background: rgb(240 249 255 / 0.9);
-  color: #075985;
-}
-
-.jf-login-polish .jf-auth-security-note {
-  border-color: rgb(52 211 153 / 0.2);
-  background: rgb(16 185 129 / 0.1);
-  color: #bbf7d0;
-}
-
-:root:not(.dark) .jf-login-polish .jf-auth-security-note {
-  border-color: rgb(22 138 83 / 0.24);
-  background: linear-gradient(180deg, rgb(236 253 245 / 0.92), rgb(220 252 231 / 0.78));
-  color: #065f46;
-}
-
-@media (max-width: 640px) {
-  .jf-login-polish .jf-auth-input,
-  .jf-login-polish .jf-auth-primary,
-  .jf-login-polish .jf-auth-social,
-  .jf-login-polish .jf-auth-tab {
-    min-height: 3rem;
-    font-size: 16px;
-  }
-}
-
 /* Phase 1 shared UI polish: low-risk route, state, and chart refinements. */
 [data-dashboard-shell] :where(.page-heading) {
   gap: 1rem;
@@ -5069,71 +4421,518 @@ tbody tr:hover {
   max-width: calc(100vw - 2rem);
 }
 
-.jf-node4-auth {
-  --jf-auth-text: var(--text-primary);
-  --jf-auth-muted: var(--text-secondary);
-  --jf-auth-subtle: var(--text-tertiary);
-  --jf-auth-border: var(--border);
-  --jf-auth-border-strong: var(--border-strong);
-  --jf-auth-panel: var(--surface-primary);
-  --jf-auth-panel-hover: var(--surface-soft);
-  --jf-auth-control: var(--surface-inset);
-  --jf-auth-control-hover: var(--surface-soft);
-  --jf-auth-autofill: var(--surface-secondary);
-  --jf-auth-primary: var(--brand-accent);
-  --jf-auth-primary-hover: var(--brand-accent-hover);
-  --jf-auth-primary-text: var(--brand-on-accent);
+.jf-auth-root {
+  isolation: isolate;
   background:
     linear-gradient(
       180deg,
-      color-mix(in srgb, var(--page-background), var(--surface-secondary) 34%),
-      var(--page-background)
+      color-mix(in srgb, var(--background), var(--surface-secondary) 34%),
+      var(--background)
     );
 }
 
-.jf-node6-auth-header {
-  padding-top: max(0.75rem, env(safe-area-inset-top));
+.jf-auth-root ::selection {
+  background: color-mix(in srgb, var(--brand-accent), transparent 72%);
+  color: var(--text-primary);
 }
 
-.jf-node6-auth-layout {
+.jf-auth-ambient {
+  background:
+    radial-gradient(
+      circle at 10% 6%,
+      color-mix(in srgb, var(--brand-accent), transparent 89%),
+      transparent 30rem
+    ),
+    radial-gradient(
+      circle at 92% 10%,
+      color-mix(in srgb, var(--info), transparent 93%),
+      transparent 26rem
+    );
+}
+
+.jf-auth-header {
+  min-height: 4.25rem;
+  padding-top: max(0.75rem, env(safe-area-inset-top));
+  padding-bottom: 0.5rem;
+}
+
+.jf-auth-layout {
+  padding-top: 0.75rem;
   padding-bottom: max(1.5rem, env(safe-area-inset-bottom));
 }
 
-@media (max-height: 760px) {
-  .jf-node6-auth-layout {
-    align-items: start;
-    min-height: auto;
+.jf-auth-card {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  background: var(--surface-primary);
+  box-shadow: var(--shadow-premium), var(--surface-highlight);
+}
+
+.jf-auth-root .auth-trust-item {
+  display: flex;
+  min-width: 0;
+  gap: 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  background: color-mix(in srgb, var(--surface-primary), transparent 8%);
+  padding: 0.875rem 1rem;
+  box-shadow: var(--shadow-xs);
+}
+
+.jf-auth-root .auth-eyebrow,
+.jf-auth-root .auth-progress {
+  display: inline-flex;
+  min-height: 2rem;
+  align-items: center;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface-secondary);
+  padding-inline: 0.75rem;
+  color: var(--text-secondary);
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.jf-auth-root .auth-progress {
+  border-color: color-mix(in srgb, var(--brand-accent), var(--border) 68%);
+  background: color-mix(in srgb, var(--brand-accent), transparent 91%);
+  color: var(--brand-accent);
+}
+
+.jf-auth-root .auth-mode-tabs {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.25rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-control);
+  background: var(--surface-inset);
+  padding: 0.25rem;
+}
+
+.jf-auth-root .auth-mode-tab {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
+  border: 1px solid transparent;
+  border-radius: calc(var(--radius-control) - 0.25rem);
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  font-weight: 700;
+  outline: none;
+  transition:
+    border-color var(--motion-duration-fast) var(--motion-ease),
+    background-color var(--motion-duration-fast) var(--motion-ease),
+    color var(--motion-duration-fast) var(--motion-ease),
+    box-shadow var(--motion-duration-fast) var(--motion-ease);
+}
+
+.jf-auth-root .auth-mode-tab:hover {
+  background: var(--surface-soft);
+  color: var(--text-primary);
+}
+
+.jf-auth-root .auth-mode-tab[data-active="true"] {
+  border-color: var(--border);
+  background: var(--surface-elevated);
+  color: var(--text-primary);
+  box-shadow: var(--shadow-xs);
+}
+
+.jf-auth-root .auth-mode-tab:focus-visible,
+.jf-auth-root .auth-provider-action:focus-visible,
+.jf-auth-root .auth-password-toggle:focus-visible {
+  box-shadow: var(--focus-ring);
+}
+
+.jf-auth-root .auth-provider-action {
+  display: inline-flex;
+  width: 100%;
+  min-height: 48px;
+  align-items: center;
+  justify-content: center;
+  gap: 0.625rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-control);
+  background: var(--surface-elevated);
+  padding-inline: 1rem;
+  color: var(--text-primary);
+  font-size: 0.9375rem;
+  font-weight: 700;
+  outline: none;
+  box-shadow: var(--shadow-xs);
+  transition:
+    border-color var(--motion-duration-fast) var(--motion-ease),
+    background-color var(--motion-duration-fast) var(--motion-ease),
+    box-shadow var(--motion-duration-fast) var(--motion-ease),
+    transform var(--motion-duration-fast) var(--motion-ease);
+}
+
+.jf-auth-root .auth-provider-action:hover {
+  border-color: var(--border-strong);
+  background: var(--surface-soft);
+  box-shadow: var(--shadow);
+}
+
+.jf-auth-root .auth-provider-action:active {
+  transform: translateY(1px);
+}
+
+.jf-auth-root .auth-provider-action:disabled,
+.jf-auth-root .auth-mode-tab:disabled,
+.jf-auth-root .auth-password-toggle:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.jf-auth-root .auth-divider {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 0.75rem;
+  color: var(--text-tertiary);
+}
+
+.jf-auth-root .auth-divider span {
+  height: 1px;
+  min-width: 0;
+  flex: 1;
+  background: var(--border);
+}
+
+.jf-auth-root .auth-divider strong {
+  flex: none;
+  font-size: 0.75rem;
+  font-weight: 650;
+}
+
+.jf-auth-root .auth-field-label {
+  display: block;
+  margin-bottom: 0.45rem;
+  color: var(--text-secondary);
+  font-size: 0.8125rem;
+  font-weight: 700;
+}
+
+.jf-auth-root .auth-field-control {
+  position: relative;
+  min-width: 0;
+}
+
+.jf-auth-root .auth-input {
+  width: 100%;
+  min-height: 48px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-control);
+  background: var(--surface-inset);
+  padding-inline: 1rem;
+  color: var(--text-primary);
+  caret-color: var(--brand-accent);
+  font-size: 1rem;
+  font-weight: 550;
+  line-height: 1.4;
+  outline: none;
+  transition:
+    border-color var(--motion-duration-fast) var(--motion-ease),
+    background-color var(--motion-duration-fast) var(--motion-ease),
+    box-shadow var(--motion-duration-fast) var(--motion-ease),
+    opacity var(--motion-duration-fast) var(--motion-ease);
+}
+
+.jf-auth-root .auth-input::placeholder {
+  color: var(--text-tertiary);
+  opacity: 1;
+}
+
+.jf-auth-root .auth-input:hover {
+  border-color: var(--border-strong);
+  background: var(--surface-soft);
+}
+
+.jf-auth-root .auth-input:focus,
+.jf-auth-root .auth-input:focus-visible {
+  border-color: var(--brand-accent);
+  background: var(--surface-elevated);
+  box-shadow: var(--focus-ring);
+}
+
+.jf-auth-root .auth-input[aria-invalid="true"] {
+  border-color: var(--danger);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--danger), transparent 82%);
+}
+
+.jf-auth-root .auth-input:disabled {
+  cursor: not-allowed;
+  opacity: 0.68;
+}
+
+.jf-auth-root .auth-input-with-start {
+  padding-left: 2.875rem;
+}
+
+.jf-auth-root .auth-input-with-end {
+  padding-right: 3.5rem;
+}
+
+.jf-auth-root .auth-field-icon {
+  position: absolute;
+  z-index: 2;
+  top: 50%;
+  left: 1rem;
+  display: grid;
+  width: 1rem;
+  height: 1rem;
+  place-items: center;
+  color: var(--text-tertiary);
+  transform: translateY(-50%);
+}
+
+.jf-auth-root .auth-password-toggle {
+  position: absolute;
+  z-index: 3;
+  top: 50%;
+  right: 0.125rem;
+  display: grid;
+  width: 44px;
+  height: 44px;
+  place-items: center;
+  border-radius: calc(var(--radius-control) - 0.25rem);
+  color: var(--text-tertiary);
+  outline: none;
+  transform: translateY(-50%);
+  transition:
+    background-color var(--motion-duration-fast) var(--motion-ease),
+    color var(--motion-duration-fast) var(--motion-ease);
+}
+
+.jf-auth-root .auth-password-toggle:hover {
+  background: var(--surface-soft);
+  color: var(--text-primary);
+}
+
+.jf-auth-root .auth-field-message {
+  min-height: 1.5rem;
+  padding-top: 0.25rem;
+  font-size: 0.75rem;
+  line-height: 1.25rem;
+}
+
+.jf-auth-root .auth-field-message:empty {
+  min-height: 0;
+  padding-top: 0;
+}
+
+.jf-auth-root .auth-field-error {
+  color: var(--danger);
+  font-weight: 650;
+}
+
+.jf-auth-root .auth-field-helper {
+  color: var(--text-tertiary);
+}
+
+.jf-auth-root .auth-feedback {
+  display: flex;
+  min-width: 0;
+  align-items: flex-start;
+  gap: 0.625rem;
+  overflow-wrap: anywhere;
+}
+
+.jf-auth-root .auth-feedback-slot {
+  min-height: 3.25rem;
+}
+
+.jf-auth-root .auth-primary-action {
+  min-height: 48px;
+  box-shadow: var(--shadow);
+}
+
+.jf-auth-root .auth-status-icon {
+  display: grid;
+  width: 3.5rem;
+  height: 3.5rem;
+  place-items: center;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  background: var(--surface-secondary);
+  color: var(--info);
+}
+
+.jf-auth-root .auth-status-icon[data-tone="success"] {
+  border-color: color-mix(in srgb, var(--success), transparent 72%);
+  background: color-mix(in srgb, var(--success), transparent 90%);
+  color: var(--success);
+}
+
+.jf-auth-root .auth-identity-row,
+.jf-auth-root .auth-identity-summary > div {
+  min-width: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-control);
+  background: var(--surface-secondary);
+}
+
+.jf-auth-root .auth-identity-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.625rem;
+  padding: 0.75rem 0.875rem;
+  font-size: 0.875rem;
+  line-height: 1.35rem;
+}
+
+.jf-auth-root .auth-identity-summary {
+  display: grid;
+  min-width: 0;
+  gap: 0.5rem;
+}
+
+.jf-auth-root .auth-identity-summary > div {
+  padding: 0.7rem 0.875rem;
+}
+
+.jf-auth-root .auth-identity-summary dt {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--text-tertiary);
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.jf-auth-root .auth-identity-summary dd {
+  margin-top: 0.25rem;
+  overflow-wrap: anywhere;
+  color: var(--text-primary);
+  font-size: 0.875rem;
+  font-weight: 650;
+  line-height: 1.35rem;
+}
+
+.jf-auth-root .auth-skeleton-stack {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.jf-auth-root .auth-skeleton-stack span {
+  display: block;
+  height: 3rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-control);
+  background: var(--surface-secondary);
+  animation: jfAuthPulse 1.6s ease-in-out infinite;
+}
+
+.jf-auth-root .auth-skeleton-stack span:first-child {
+  width: 68%;
+  height: 1rem;
+}
+
+.jf-auth-root .auth-input:-webkit-autofill,
+.jf-auth-root .auth-input:-webkit-autofill:hover,
+.jf-auth-root .auth-input:-webkit-autofill:focus,
+.jf-auth-root .auth-input:-webkit-autofill:active {
+  border-color: var(--border-strong);
+  -webkit-text-fill-color: var(--text-primary) !important;
+  caret-color: var(--text-primary);
+  -webkit-box-shadow: 0 0 0 1000px var(--surface-inset) inset !important;
+}
+
+.jf-auth-root .auth-input:autofill {
+  background: var(--surface-inset);
+  color: var(--text-primary);
+}
+
+@keyframes jfAuthPulse {
+  0%,
+  100% {
+    opacity: 0.5;
+  }
+
+  50% {
+    opacity: 1;
+  }
+}
+
+@media (max-width: 430px) {
+  .jf-auth-header {
+    min-height: 3.75rem;
+  }
+
+  .jf-auth-layout {
     padding-top: 0.5rem;
   }
 
-  .jf-node4-auth-context h2 {
-    margin-top: 0.75rem;
-    font-size: clamp(2rem, 4vw, 2.75rem);
+  .jf-auth-card {
+    border-radius: calc(var(--radius-card) - 0.25rem);
+  }
+}
+
+@media (max-width: 340px) {
+  .jf-auth-card {
+    padding: 1rem;
   }
 
-  .jf-node4-auth-context > p:last-of-type {
+  .jf-auth-root .auth-divider {
+    gap: 0.5rem;
+  }
+}
+
+@media (max-height: 780px) and (min-width: 1024px) {
+  .jf-auth-layout {
+    align-items: start;
+    padding-top: 0;
+    padding-bottom: max(0.75rem, env(safe-area-inset-bottom));
+  }
+
+  .jf-auth-card {
+    padding: 1.25rem;
+  }
+
+  .jf-auth-card > div:first-child {
+    margin-bottom: 0.75rem;
+  }
+
+  .jf-auth-root .auth-feedback-slot {
+    min-height: 2.75rem;
+  }
+
+  .jf-auth-context h2 {
+    margin-top: 0.75rem;
+    font-size: clamp(2rem, 4vw, 2.6rem);
+  }
+
+  .jf-auth-context > p:last-of-type {
     margin-top: 0.75rem;
   }
 
-  .jf-node4-auth-context > div {
+  .jf-auth-context > div {
     margin-top: 1rem;
+  }
+
+  .jf-auth-context .auth-trust-item {
+    padding-block: 0.65rem;
   }
 }
 
 @media (max-height: 620px) and (min-width: 1024px) {
-  .jf-node4-auth-context {
+  .jf-auth-context {
     display: none;
   }
 
-  .jf-node6-auth-layout {
-    grid-template-columns: minmax(0, 500px);
+  .jf-auth-layout {
+    grid-template-columns: minmax(0, 480px);
     justify-content: center;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .jf-node4-landing *,
-  .jf-node4-auth * {
+  .jf-auth-root *,
+  .jf-auth-root *::before,
+  .jf-auth-root *::after {
     scroll-behavior: auto !important;
     transition-duration: 0.01ms !important;
     animation-duration: 0.01ms !important;

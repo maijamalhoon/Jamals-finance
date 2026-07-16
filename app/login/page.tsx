@@ -1,46 +1,44 @@
 "use client";
 
-import { type FormEvent, type ReactNode, useEffect, useMemo, useState } from "react";
+import { type FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   ArrowLeft,
   ArrowRight,
-  CheckCircle2,
-  Eye,
-  EyeOff,
-  LoaderCircle,
   LockKeyhole,
   Mail,
+  MailCheck,
   ShieldCheck,
   UserRound,
 } from "lucide-react";
 
+import {
+  AuthFeedback,
+  AuthField,
+  AuthModeTabs,
+  AuthPasswordField,
+  AuthProviderButton,
+  AuthSubmitAction,
+} from "@/components/auth/AuthControls";
+import AuthShell from "@/components/auth/AuthShell";
+import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/client";
 import {
   normalizeLoginReason,
   sanitizeInternalRedirect,
 } from "@/lib/supabase/session";
-import AuthShell from "@/components/auth/AuthShell";
 
 type Step = "login" | "signup" | "forgot" | "check-email";
 type LoadingMode = "signing" | "creating" | "google" | "sending" | null;
 type OAuthProvider = "google";
-type AuthField = "email" | "password" | "fullName";
-
-const authFieldErrorIds: Record<AuthField, string> = {
-  email: "auth-email-error",
-  password: "auth-password-error",
-  fullName: "auth-full-name-error",
-};
+type AuthFieldName = "email" | "password" | "fullName";
+type CheckEmailPurpose = "signup" | "recovery";
+type AuthFailure = { message?: string; status?: number };
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-const inputBaseClass = "jf-auth-input jf-auth-input-with-start";
-const passwordInputClass =
-  "jf-auth-input jf-auth-input-with-start jf-auth-input-with-end";
-
 const loginReasonMessages = {
-  session_expired: "Your session expired. Please log in again to continue.",
+  session_expired: "Your session expired. Log in again to continue.",
   auth_unavailable: "Authentication is temporarily unavailable. Please try again shortly.",
   callback_failed: "That sign-in link could not be completed. Please try again.",
 } as const;
@@ -53,9 +51,19 @@ function cleanEmail(value: string) {
   return value.trim().toLowerCase();
 }
 
-function getOAuthError(provider: OAuthProvider, message?: string) {
+function isTemporaryFailure(error: AuthFailure | undefined) {
+  const lower = error?.message?.toLowerCase() ?? "";
+  return (
+    (error?.status ?? 0) >= 500 ||
+    lower.includes("network") ||
+    lower.includes("fetch") ||
+    lower.includes("timeout")
+  );
+}
+
+function getOAuthError(provider: OAuthProvider, error?: AuthFailure) {
   const providerLabel = provider === "google" ? "Google" : "Google";
-  const lower = message?.toLowerCase() ?? "";
+  const lower = error?.message?.toLowerCase() ?? "";
 
   if (
     lower.includes("unsupported provider") ||
@@ -68,15 +76,15 @@ function getOAuthError(provider: OAuthProvider, message?: string) {
     return `Too many ${providerLabel} sign-in attempts. Please wait a moment and try again.`;
   }
 
-  if (lower.includes("network") || lower.includes("fetch")) {
-    return "Network connection failed. Check your internet and try again.";
+  if (isTemporaryFailure(error)) {
+    return "We could not reach the authentication service. Check your connection and try again.";
   }
 
   return `${providerLabel} sign-in could not be completed. Please try again.`;
 }
 
-function getSignupError(message?: string) {
-  const lower = message?.toLowerCase() ?? "";
+function getSignupError(error?: AuthFailure) {
+  const lower = error?.message?.toLowerCase() ?? "";
 
   if (lower.includes("already") || lower.includes("registered")) {
     return "An account already exists for this email. Log in with your password.";
@@ -90,15 +98,15 @@ function getSignupError(message?: string) {
     return "Choose a stronger password and try again.";
   }
 
-  if (lower.includes("network") || lower.includes("fetch")) {
-    return "Network connection failed. Check your internet and try again.";
+  if (isTemporaryFailure(error)) {
+    return "We could not reach the authentication service. Check your connection and try again.";
   }
 
   return "We could not create your account. Check your details and try again.";
 }
 
-function getForgotPasswordError(message?: string) {
-  const lower = message?.toLowerCase() ?? "";
+function getForgotPasswordError(error?: AuthFailure) {
+  const lower = error?.message?.toLowerCase() ?? "";
 
   if (lower.includes("rate limit") || lower.includes("too many")) {
     return "Too many reset requests. Please wait a moment and try again.";
@@ -108,8 +116,8 @@ function getForgotPasswordError(message?: string) {
     return "Enter a valid email address.";
   }
 
-  if (lower.includes("network") || lower.includes("fetch")) {
-    return "Network connection failed. Check your internet and try again.";
+  if (isTemporaryFailure(error)) {
+    return "We could not reach the authentication service. Check your connection and try again.";
   }
 
   return "We could not send the reset link. Please try again.";
@@ -138,134 +146,24 @@ function GoogleLogo() {
   );
 }
 
-function ButtonSpinner() {
-  return <LoaderCircle className="h-4 w-4 animate-spin" aria-hidden="true" />;
-}
-
-function PrimaryButton({
-  children,
-  disabled,
-  loading,
-  type = "button",
-  onClick,
-}: {
-  children: ReactNode;
-  disabled?: boolean;
-  loading?: boolean;
-  type?: "button" | "submit";
-  onClick?: () => void;
-}) {
-  return (
-    <button
-      type={type}
-      onClick={onClick}
-      disabled={disabled || loading}
-      aria-busy={loading}
-      className="jf-auth-action jf-auth-primary group"
-    >
-      {loading ?
-        <ButtonSpinner />
-      : null}
-      <span>{children}</span>
-      {!loading ?
-        <ArrowRight className="h-4 w-4 transition group-hover:translate-x-0.5" />
-      : null}
-    </button>
-  );
-}
-
-function SocialButton({
-  icon,
-  children,
-  onClick,
-  disabled,
-  loading,
-}: {
-  icon: ReactNode;
-  children: ReactNode;
-  onClick: () => void;
-  disabled?: boolean;
-  loading?: boolean;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      disabled={disabled || loading}
-      aria-busy={loading}
-      className="jf-auth-social"
-    >
-      <span className="grid h-5 w-5 place-items-center">
-        {loading ?
-          <ButtonSpinner />
-        : icon}
-      </span>
-      <span>{children}</span>
-    </button>
-  );
-}
-
-function Field({
-  label,
-  icon,
-  children,
-}: {
-  label: string;
-  icon?: ReactNode;
-  children: ReactNode;
-}) {
-  return (
-    <label className="block">
-      <span className="jf-auth-label">{label}</span>
-
-      <div className="jf-auth-input-glow relative">
-        {icon ?
-          <span className="jf-auth-field-icon pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[var(--jf-auth-subtle)]">
-            {icon}
-          </span>
-        : null}
-
-        {children}
-      </div>
-    </label>
-  );
-}
-
-function Feedback({
-  tone,
-  children,
-  id,
-}: {
-  tone: "error" | "success" | "info";
-  children: ReactNode;
-  id?: string;
-}) {
-  return (
-    <p
-      id={id}
-      role={tone === "error" ? "alert" : undefined}
-      aria-live={tone === "error" ? undefined : "polite"}
-      data-tone={tone}
-      className="jf-auth-feedback"
-    >
-      {children}
-    </p>
-  );
-}
-
 export default function LoginPage() {
   const router = useRouter();
   const supabase = useMemo(() => createClient(), []);
+  const actionInFlight = useRef(false);
+  const emailRef = useRef<HTMLInputElement>(null);
+  const passwordRef = useRef<HTMLInputElement>(null);
+  const fullNameRef = useRef<HTMLInputElement>(null);
 
   const [step, setStep] = useState<Step>("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
   const [loadingMode, setLoadingMode] = useState<LoadingMode>(null);
-  const [error, setError] = useState("");
-  const [errorField, setErrorField] = useState<AuthField | null>(null);
-  const [message, setMessage] = useState("");
+  const [fieldErrors, setFieldErrors] = useState<Partial<Record<AuthFieldName, string>>>({});
+  const [formError, setFormError] = useState("");
+  const [reasonMessage, setReasonMessage] = useState("");
+  const [checkEmailPurpose, setCheckEmailPurpose] = useState<CheckEmailPurpose>("signup");
+  const [submittedEmail, setSubmittedEmail] = useState("");
   const [safeNext, setSafeNext] = useState("/dashboard");
 
   useEffect(() => {
@@ -275,43 +173,56 @@ export default function LoginPage() {
     if (params.get("mode") === "forgot") setStep("forgot");
 
     const reason = normalizeLoginReason(params.get("reason"));
-    if (reason) setMessage(loginReasonMessages[reason]);
+    if (reason) setReasonMessage(loginReasonMessages[reason]);
   }, []);
 
   const isLoading = Boolean(loadingMode);
   const isAuthEntryStep = step === "login" || step === "signup";
-  const googleButtonLabel =
-    loadingMode === "google" ? "Opening Google..."
-    : step === "signup" ? "Sign up with Google"
-    : "Continue with Google";
 
-  function resetFeedback() {
-    setError("");
-    setErrorField(null);
-    setMessage("");
+  function beginAction(mode: Exclude<LoadingMode, null>) {
+    if (actionInFlight.current) return false;
+    actionInFlight.current = true;
+    setLoadingMode(mode);
+    return true;
   }
 
-  function setFieldError(field: AuthField, nextError: string) {
-    setError(nextError);
-    setErrorField(field);
+  function endAction() {
+    actionInFlight.current = false;
+    setLoadingMode(null);
   }
 
-  function setFormError(nextError: string) {
-    setError(nextError);
-    setErrorField(null);
+  function resetActionFeedback() {
+    setFieldErrors({});
+    setFormError("");
   }
 
-  function clearFieldError(field: AuthField) {
-    if (errorField !== field) return;
-
-    setError("");
-    setErrorField(null);
+  function focusField(field: AuthFieldName) {
+    const refs = {
+      email: emailRef,
+      password: passwordRef,
+      fullName: fullNameRef,
+    };
+    refs[field].current?.focus();
   }
 
-  function switchStep(nextStep: Step) {
-    resetFeedback();
+  function setFieldError(field: AuthFieldName, message: string) {
+    setFieldErrors((current) => ({ ...current, [field]: message }));
+    focusField(field);
+  }
+
+  function clearFieldError(field: AuthFieldName) {
+    setFieldErrors((current) => {
+      if (!current[field]) return current;
+      const next = { ...current };
+      delete next[field];
+      return next;
+    });
+  }
+
+  function switchStep(nextStep: "login" | "signup" | "forgot") {
+    if (actionInFlight.current) return;
+    resetActionFeedback();
     setPassword("");
-    setShowPassword(false);
     setStep(nextStep);
   }
 
@@ -334,10 +245,10 @@ export default function LoginPage() {
 
   async function handleLogin(event: FormEvent) {
     event.preventDefault();
-    resetFeedback();
+    if (actionInFlight.current) return;
+    resetActionFeedback();
 
     const nextEmail = validateEmailAddress();
-
     if (!nextEmail) return;
 
     if (!password) {
@@ -345,153 +256,173 @@ export default function LoginPage() {
       return;
     }
 
-    setLoadingMode("signing");
+    if (!beginAction("signing")) return;
 
-    const { error: signInError } = await supabase.auth.signInWithPassword({
-      email: nextEmail,
-      password,
-    });
+    try {
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email: nextEmail,
+        password,
+      });
 
-    if (signInError) {
-      setLoadingMode(null);
-      const lower = signInError.message.toLowerCase();
-      const temporarilyUnavailable =
-        (signInError.status ?? 0) >= 500 ||
-        lower.includes("network") ||
-        lower.includes("fetch") ||
-        lower.includes("timeout");
-      setFormError(
-        temporarilyUnavailable
-          ? "Authentication is temporarily unavailable. Please try again shortly."
-          : "The email or password is incorrect.",
-      );
-      return;
+      if (signInError) {
+        endAction();
+        setFormError(
+          isTemporaryFailure(signInError)
+            ? "Authentication is temporarily unavailable. Please try again shortly."
+            : "The email or password is incorrect.",
+        );
+        return;
+      }
+
+      router.replace(safeNext);
+      router.refresh();
+    } catch {
+      endAction();
+      setFormError("We could not reach the authentication service. Check your connection and try again.");
     }
-
-    router.replace(safeNext);
-    router.refresh();
   }
 
   async function handleSignup(event: FormEvent) {
     event.preventDefault();
-    resetFeedback();
-
-    const nextEmail = validateEmailAddress();
-
-    if (!nextEmail) return;
+    if (actionInFlight.current) return;
+    resetActionFeedback();
 
     if (!fullName.trim()) {
       setFieldError("fullName", "Enter your full name.");
       return;
     }
 
+    const nextEmail = validateEmailAddress();
+    if (!nextEmail) return;
+
     if (!password || password.length < 6) {
-      setFieldError("password", "Password must be at least 6 characters.");
+      setFieldError("password", "Use at least 6 characters.");
       return;
     }
 
-    setLoadingMode("creating");
+    if (!beginAction("creating")) return;
 
-    const { data, error: signUpError } = await supabase.auth.signUp({
-      email: nextEmail,
-      password,
-      options: {
-        data: {
-          full_name: fullName.trim(),
+    try {
+      const { data, error: signUpError } = await supabase.auth.signUp({
+        email: nextEmail,
+        password,
+        options: {
+          data: {
+            full_name: fullName.trim(),
+          },
+          emailRedirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(onboardingDestination(safeNext))}`,
         },
-        emailRedirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(onboardingDestination(safeNext))}`,
-      },
-    });
+      });
 
-    if (signUpError) {
-      setLoadingMode(null);
-
-      if (
-        signUpError.message.toLowerCase().includes("already") ||
-        signUpError.message.toLowerCase().includes("registered")
-      ) {
-        setStep("login");
-        setFormError(getSignupError(signUpError.message));
+      if (signUpError) {
+        endAction();
+        if (
+          signUpError.message.toLowerCase().includes("already") ||
+          signUpError.message.toLowerCase().includes("registered")
+        ) {
+          setPassword("");
+          setStep("login");
+        }
+        setFormError(getSignupError(signUpError));
         return;
       }
 
-      setFormError(getSignupError(signUpError.message));
-      return;
-    }
+      if (data.session) {
+        router.replace(onboardingDestination(safeNext));
+        router.refresh();
+        return;
+      }
 
-    if (data.session) {
-      router.replace(onboardingDestination(safeNext));
-      router.refresh();
-      return;
+      endAction();
+      setSubmittedEmail(nextEmail);
+      setCheckEmailPurpose("signup");
+      setStep("check-email");
+    } catch {
+      endAction();
+      setFormError(getSignupError({ status: 503 }));
     }
-
-    setLoadingMode(null);
-    setStep("check-email");
-    setMessage(`A verification link has been sent to ${nextEmail}.`);
   }
 
   async function handleOAuthSignIn(provider: OAuthProvider) {
-    resetFeedback();
-    setLoadingMode(provider);
+    if (!isAuthEntryStep || actionInFlight.current) return;
+    resetActionFeedback();
+    if (!beginAction("google")) return;
 
-    const { error: oauthError } = await supabase.auth.signInWithOAuth({
-      provider,
-      options: {
-        redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(onboardingDestination(safeNext))}`,
-        queryParams: { access_type: "offline", prompt: "consent" },
-      },
-    });
+    try {
+      const { error: oauthError } = await supabase.auth.signInWithOAuth({
+        provider,
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(onboardingDestination(safeNext))}`,
+          queryParams: { access_type: "offline", prompt: "consent" },
+        },
+      });
 
-    if (oauthError) {
-      setLoadingMode(null);
-      setFormError(getOAuthError(provider, oauthError.message));
+      if (oauthError) {
+        endAction();
+        setFormError(getOAuthError(provider, oauthError));
+      }
+    } catch {
+      endAction();
+      setFormError(getOAuthError(provider, { status: 503 }));
     }
   }
 
   async function handleForgotPassword(event: FormEvent) {
     event.preventDefault();
-    resetFeedback();
+    if (actionInFlight.current) return;
+    resetActionFeedback();
 
     const nextEmail = validateEmailAddress();
-
     if (!nextEmail) return;
+    if (!beginAction("sending")) return;
 
-    setLoadingMode("sending");
+    try {
+      const { error: resetError } = await supabase.auth.resetPasswordForEmail(
+        nextEmail,
+        {
+          redirectTo: `${window.location.origin}/reset-password`,
+        },
+      );
 
-    const { error: resetError } = await supabase.auth.resetPasswordForEmail(
-      nextEmail,
-      {
-        redirectTo: `${window.location.origin}/reset-password`,
-      },
-    );
+      if (resetError) {
+        endAction();
+        setFormError(getForgotPasswordError(resetError));
+        return;
+      }
 
-    setLoadingMode(null);
-
-    if (resetError) {
-      setFormError(getForgotPasswordError(resetError.message));
-      return;
+      endAction();
+      setSubmittedEmail(nextEmail);
+      setCheckEmailPurpose("recovery");
+      setStep("check-email");
+    } catch {
+      endAction();
+      setFormError(getForgotPasswordError({ status: 503 }));
     }
-
-    setStep("check-email");
-    setMessage(`A password reset link has been sent to ${nextEmail}.`);
   }
 
   const title =
     step === "login" ? "Welcome back"
     : step === "signup" ? "Create your account"
-    : step === "forgot" ? "Reset password"
+    : step === "forgot" ? "Reset your password"
     : "Check your email";
 
-  const subtitle =
-    step === "login" ? "Log in to continue to your personal finance dashboard."
-    : step === "signup" ?
-      "Create a secure Jamal's Finance account in a few seconds."
-    : step === "forgot" ?
-      "Enter your email and we will send a secure reset link."
-    : message || "Open your inbox and follow the secure link.";
+  const description =
+    step === "login" ? "Log in to continue to your private finance workspace."
+    : step === "signup" ? "Create your Jamals Finance account, then complete one short profile step."
+    : step === "forgot" ? "Enter your email and we will send password-recovery instructions without revealing account status."
+    : checkEmailPurpose === "signup"
+      ? "Confirm your email to continue to profile setup."
+      : "Use the recovery link in your email to choose a new password.";
+
+  const formErrorFeedback = (
+    <div className="auth-feedback-slot">
+      {formError ? <AuthFeedback tone="danger">{formError}</AuthFeedback> : null}
+    </div>
+  );
 
   return (
     <AuthShell
+      compact={step !== "signup"}
       eyebrow={
         step === "login" ? "Account access"
         : step === "signup" ? "New workspace"
@@ -499,327 +430,215 @@ export default function LoginPage() {
         : "Email confirmation"
       }
       title={title}
-      description={subtitle}
-      icon={step === "check-email" ? Mail : ShieldCheck}
+      description={description}
+      icon={step === "check-email" ? MailCheck : ShieldCheck}
     >
       {isAuthEntryStep ? (
-        <div className="jf-auth-tab-list mb-4" role="group" aria-label="Authentication mode">
-          <button
-            type="button"
-            onClick={() => switchStep("login")}
-            disabled={isLoading}
-            aria-pressed={step === "login"}
-            data-active={step === "login"}
-            className="jf-auth-tab h-11"
-          >
-            Log in
-          </button>
-          <button
-            type="button"
-            onClick={() => switchStep("signup")}
-            disabled={isLoading}
-            aria-pressed={step === "signup"}
-            data-active={step === "signup"}
-            className="jf-auth-tab h-11"
-          >
-            Sign up
-          </button>
-        </div>
+        <AuthModeTabs active={step} disabled={isLoading} onChange={switchStep} />
+      ) : null}
+
+      {reasonMessage && isAuthEntryStep ? (
+        <AuthFeedback tone="info" className="mt-4">
+          {reasonMessage}
+        </AuthFeedback>
       ) : null}
 
       {isAuthEntryStep ? (
-        <div className="jf-auth-social-block mb-4 space-y-3">
-          <SocialButton
+        <div className="mt-4 space-y-3">
+          <AuthProviderButton
             icon={<GoogleLogo />}
-            onClick={() => handleOAuthSignIn("google")}
+            onClick={() => void handleOAuthSignIn("google")}
             disabled={isLoading}
             loading={loadingMode === "google"}
+            loadingLabel="Opening Google…"
           >
-            {googleButtonLabel}
-          </SocialButton>
+            {step === "signup" ? "Sign up with Google" : "Continue with Google"}
+          </AuthProviderButton>
 
-          <div className="jf-auth-divider" aria-hidden="true">
-            <span />
-            <strong>or use email</strong>
-            <span />
+          <div className="auth-divider">
+            <span aria-hidden="true" />
+            <strong>or continue with email</strong>
+            <span aria-hidden="true" />
           </div>
         </div>
       ) : null}
 
       {step === "login" ? (
-        <form onSubmit={handleLogin} noValidate className="jf-auth-form space-y-4">
-                <Field
-                  label="Email address"
-                  icon={<Mail className="h-4 w-4" />}
-                >
-                  <input
-                    type="email"
-                    value={email}
-                    onChange={(event) => {
-                      setEmail(event.target.value);
-                      clearFieldError("email");
-                    }}
-                    placeholder="you@example.com"
-                    autoComplete="email"
-                    inputMode="email"
-                    disabled={isLoading}
-                    aria-invalid={errorField === "email"}
-                    aria-describedby={
-                      errorField === "email" ? authFieldErrorIds.email : undefined
-                    }
-                    className={`${inputBaseClass} disabled:cursor-not-allowed disabled:opacity-70`}
-                  />
-                </Field>
+        <form id="auth-login-panel" onSubmit={handleLogin} noValidate className="mt-4 space-y-1" aria-busy={isLoading}>
+          <AuthField
+            id="login-email"
+            name="email"
+            label="Email address"
+            type="email"
+            value={email}
+            onChange={(event) => {
+              setEmail(event.target.value);
+              clearFieldError("email");
+            }}
+            placeholder="you@example.com"
+            autoComplete="email"
+            inputMode="email"
+            disabled={isLoading}
+            error={fieldErrors.email}
+            inputRef={emailRef}
+            icon={<Mail className="h-4 w-4" />}
+          />
 
-                <Field
-                  label="Password"
-                  icon={<LockKeyhole className="h-4 w-4" />}
-                >
-                  <input
-                    type={showPassword ? "text" : "password"}
-                    value={password}
-                    onChange={(event) => {
-                      setPassword(event.target.value);
-                      clearFieldError("password");
-                    }}
-                    placeholder="Enter your password"
-                    autoComplete="current-password"
-                    disabled={isLoading}
-                    aria-invalid={errorField === "password"}
-                    aria-describedby={
-                      errorField === "password" ? authFieldErrorIds.password : undefined
-                    }
-                    className={`${passwordInputClass} disabled:cursor-not-allowed disabled:opacity-70`}
-                  />
+          <AuthPasswordField
+            id="login-password"
+            name="password"
+            label="Password"
+            value={password}
+            onChange={(event) => {
+              setPassword(event.target.value);
+              clearFieldError("password");
+            }}
+            placeholder="Enter your password"
+            autoComplete="current-password"
+            disabled={isLoading}
+            error={fieldErrors.password}
+            inputRef={passwordRef}
+            icon={<LockKeyhole className="h-4 w-4" />}
+          />
 
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword((value) => !value)}
-                    className="jf-auth-password-toggle absolute right-1 top-1/2 grid h-11 w-11 -translate-y-1/2 place-items-center rounded-2xl text-[var(--jf-auth-subtle)] transition hover:bg-[var(--jf-auth-panel-hover)] hover:text-[var(--jf-auth-text)]"
-                    aria-label={
-                      showPassword ? "Hide password" : "Show password"
-                    }
-                  >
-                    {showPassword ?
-                      <EyeOff className="h-4 w-4" />
-                    : <Eye className="h-4 w-4" />}
-                  </button>
-                </Field>
+          {formErrorFeedback}
 
-                {error ?
-                  <Feedback
-                    id={errorField ? authFieldErrorIds[errorField] : "auth-error"}
-                    tone="error"
-                  >
-                    {error}
-                  </Feedback>
-                : null}
+          <AuthSubmitAction type="submit" loading={loadingMode === "signing"} loadingLabel="Logging in…" disabled={isLoading}>
+            Log in <ArrowRight className="h-4 w-4" />
+          </AuthSubmitAction>
 
-                <PrimaryButton
-                  type="submit"
-                  disabled={isLoading}
-                  loading={loadingMode === "signing"}
-                >
-                  {loadingMode === "signing" ? "Logging in..." : "Log in"}
-                </PrimaryButton>
-
-                <button
-                  type="button"
-                  onClick={() => switchStep("forgot")}
-                  disabled={isLoading}
-                  className="flex h-11 w-full items-center justify-center rounded-2xl text-sm font-semibold text-[var(--jf-auth-muted)] transition hover:bg-[var(--jf-auth-panel-hover)] hover:text-[var(--jf-auth-text)] disabled:cursor-not-allowed disabled:opacity-60"
-                >
-                  Forgot password?
-                </button>
+          <Button type="button" variant="ghost" onClick={() => switchStep("forgot")} disabled={isLoading} className="w-full text-text-secondary">
+            Forgot password?
+          </Button>
         </form>
       ) : null}
 
       {step === "signup" ? (
-        <form onSubmit={handleSignup} noValidate className="jf-auth-form space-y-4">
-                <Field
-                  label="Full name"
-                  icon={<UserRound className="h-4 w-4" />}
-                >
-                  <input
-                    value={fullName}
-                    onChange={(event) => {
-                      setFullName(event.target.value);
-                      clearFieldError("fullName");
-                    }}
-                    placeholder="Enter your name"
-                    autoComplete="name"
-                    disabled={isLoading}
-                    aria-invalid={errorField === "fullName"}
-                    aria-describedby={
-                      errorField === "fullName" ? authFieldErrorIds.fullName : undefined
-                    }
-                    className={`${inputBaseClass} disabled:cursor-not-allowed disabled:opacity-70`}
-                  />
-                </Field>
+        <form id="auth-signup-panel" onSubmit={handleSignup} noValidate className="mt-4 space-y-1" aria-busy={isLoading}>
+          <AuthField
+            id="signup-full-name"
+            name="full_name"
+            label="Full name"
+            value={fullName}
+            onChange={(event) => {
+              setFullName(event.target.value);
+              clearFieldError("fullName");
+            }}
+            placeholder="Enter your full name"
+            autoComplete="name"
+            disabled={isLoading}
+            error={fieldErrors.fullName}
+            inputRef={fullNameRef}
+            icon={<UserRound className="h-4 w-4" />}
+          />
 
-                <Field
-                  label="Email address"
-                  icon={<Mail className="h-4 w-4" />}
-                >
-                  <input
-                    type="email"
-                    value={email}
-                    onChange={(event) => {
-                      setEmail(event.target.value);
-                      clearFieldError("email");
-                    }}
-                    placeholder="Email address"
-                    autoComplete="email"
-                    inputMode="email"
-                    disabled={isLoading}
-                    aria-invalid={errorField === "email"}
-                    aria-describedby={
-                      errorField === "email" ? authFieldErrorIds.email : undefined
-                    }
-                    className={`${inputBaseClass} disabled:cursor-not-allowed disabled:opacity-70`}
-                  />
-                </Field>
+          <AuthField
+            id="signup-email"
+            name="email"
+            label="Email address"
+            type="email"
+            value={email}
+            onChange={(event) => {
+              setEmail(event.target.value);
+              clearFieldError("email");
+            }}
+            placeholder="you@example.com"
+            autoComplete="email"
+            inputMode="email"
+            disabled={isLoading}
+            error={fieldErrors.email}
+            inputRef={emailRef}
+            icon={<Mail className="h-4 w-4" />}
+          />
 
-                <Field
-                  label="Password"
-                  icon={<LockKeyhole className="h-4 w-4" />}
-                >
-                  <input
-                    type={showPassword ? "text" : "password"}
-                    value={password}
-                    onChange={(event) => {
-                      setPassword(event.target.value);
-                      clearFieldError("password");
-                    }}
-                    placeholder="Create a password"
-                    autoComplete="new-password"
-                    disabled={isLoading}
-                    aria-invalid={errorField === "password"}
-                    aria-describedby={
-                      errorField === "password"
-                        ? `password-help ${authFieldErrorIds.password}`
-                        : "password-help"
-                    }
-                    className={`${passwordInputClass} disabled:cursor-not-allowed disabled:opacity-70`}
-                  />
+          <AuthPasswordField
+            id="signup-password"
+            name="password"
+            label="Password"
+            value={password}
+            onChange={(event) => {
+              setPassword(event.target.value);
+              clearFieldError("password");
+            }}
+            placeholder="Create a password"
+            autoComplete="new-password"
+            disabled={isLoading}
+            error={fieldErrors.password}
+            helper="Use at least 6 characters."
+            inputRef={passwordRef}
+            icon={<LockKeyhole className="h-4 w-4" />}
+          />
 
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword((value) => !value)}
-                    className="jf-auth-password-toggle absolute right-1 top-1/2 grid h-11 w-11 -translate-y-1/2 place-items-center rounded-2xl text-[var(--jf-auth-subtle)] transition hover:bg-[var(--jf-auth-panel-hover)] hover:text-[var(--jf-auth-text)]"
-                    aria-label={
-                      showPassword ? "Hide password" : "Show password"
-                    }
-                  >
-                    {showPassword ?
-                      <EyeOff className="h-4 w-4" />
-                    : <Eye className="h-4 w-4" />}
-                  </button>
-                </Field>
+          {formErrorFeedback}
 
-                <div id="password-help" className="jf-auth-security-note flex items-start gap-2 rounded-[var(--radius-control)] border border-success/20 bg-success/10 px-4 py-3 text-xs font-medium leading-5 text-success">
-                  <ShieldCheck className="h-4 w-4 shrink-0" />
-                  Use at least 6 characters. Profile details are completed during onboarding.
-                </div>
-
-                {error ?
-                  <Feedback
-                    id={errorField ? authFieldErrorIds[errorField] : "auth-error"}
-                    tone="error"
-                  >
-                    {error}
-                  </Feedback>
-                : null}
-
-                <PrimaryButton
-                  type="submit"
-                  disabled={isLoading}
-                  loading={loadingMode === "creating"}
-                >
-                  {loadingMode === "creating" ? "Creating account..." : "Create account"}
-                </PrimaryButton>
+          <AuthSubmitAction type="submit" loading={loadingMode === "creating"} loadingLabel="Creating account…" disabled={isLoading}>
+            Create account <ArrowRight className="h-4 w-4" />
+          </AuthSubmitAction>
         </form>
       ) : null}
 
       {step === "forgot" ? (
-        <form onSubmit={handleForgotPassword} noValidate className="space-y-4">
-                <button
-                  type="button"
-                  onClick={() => switchStep("login")}
-                  disabled={isLoading}
-                  className="inline-flex h-11 items-center gap-2 rounded-2xl px-2 text-sm font-semibold text-[var(--jf-auth-muted)] transition hover:bg-[var(--jf-auth-panel-hover)] hover:text-[var(--jf-auth-text)]"
-                >
-                  <ArrowLeft className="h-4 w-4" />
-                  Back to login
-                </button>
+        <form onSubmit={handleForgotPassword} noValidate className="space-y-2" aria-busy={isLoading}>
+          <Button type="button" variant="ghost" onClick={() => switchStep("login")} disabled={isLoading} className="-ml-2 text-text-secondary">
+            <ArrowLeft className="h-4 w-4" /> Back to login
+          </Button>
 
-                <Field
-                  label="Email address"
-                  icon={<Mail className="h-4 w-4" />}
-                >
-                  <input
-                    type="email"
-                    value={email}
-                    onChange={(event) => {
-                      setEmail(event.target.value);
-                      clearFieldError("email");
-                    }}
-                    placeholder="Email address"
-                    autoComplete="email"
-                    inputMode="email"
-                    disabled={isLoading}
-                    aria-invalid={errorField === "email"}
-                    aria-describedby={
-                      errorField === "email" ? authFieldErrorIds.email : undefined
-                    }
-                    className={`${inputBaseClass} disabled:cursor-not-allowed disabled:opacity-70`}
-                  />
-                </Field>
+          <AuthField
+            id="forgot-email"
+            name="email"
+            label="Email address"
+            type="email"
+            value={email}
+            onChange={(event) => {
+              setEmail(event.target.value);
+              clearFieldError("email");
+            }}
+            placeholder="you@example.com"
+            autoComplete="email"
+            inputMode="email"
+            disabled={isLoading}
+            error={fieldErrors.email}
+            inputRef={emailRef}
+            icon={<Mail className="h-4 w-4" />}
+          />
 
-                {error ?
-                  <Feedback
-                    id={errorField ? authFieldErrorIds[errorField] : "auth-error"}
-                    tone="error"
-                  >
-                    {error}
-                  </Feedback>
-                : null}
+          {formErrorFeedback}
 
-                <PrimaryButton
-                  type="submit"
-                  disabled={isLoading}
-                  loading={loadingMode === "sending"}
-                >
-                  {loadingMode === "sending" ? "Sending reset link..." : "Send reset link"}
-                </PrimaryButton>
+          <AuthSubmitAction type="submit" loading={loadingMode === "sending"} loadingLabel="Sending reset link…" disabled={isLoading}>
+            Send reset link <ArrowRight className="h-4 w-4" />
+          </AuthSubmitAction>
         </form>
       ) : null}
 
       {step === "check-email" ? (
         <div className="space-y-4 text-center">
-                <div className="mx-auto grid h-16 w-16 place-items-center rounded-[var(--radius-card)] border border-success/25 bg-success/10 text-success">
-                  <Mail className="h-8 w-8" />
-                </div>
+          <div className="auth-status-icon mx-auto" data-tone="success">
+            <MailCheck className="h-7 w-7" aria-hidden="true" />
+          </div>
 
-                {message ?
-                  <Feedback tone="success">{message}</Feedback>
-                : null}
+          <AuthFeedback tone={checkEmailPurpose === "signup" ? "success" : "info"} className="text-left">
+            {checkEmailPurpose === "signup"
+              ? "Your account needs email confirmation before profile setup."
+              : "If this address is eligible, password recovery instructions will arrive shortly."}
+          </AuthFeedback>
 
-                <p className="text-sm leading-6 text-[var(--jf-auth-muted)]">
-                  Open your email and follow the secure link. You will be
-                  redirected back after verification.
-                </p>
+          {submittedEmail ? (
+            <div className="auth-identity-row text-left">
+              <Mail className="h-4 w-4 shrink-0 text-text-tertiary" aria-hidden="true" />
+              <span className="min-w-0 break-all font-medium text-text-primary">{submittedEmail}</span>
+            </div>
+          ) : null}
 
-                <PrimaryButton onClick={() => switchStep("login")}>
-                  Back to login
-                </PrimaryButton>
+          <p className="text-sm leading-6 text-text-secondary">
+            Check your inbox and spam folder, then follow the link in that email.
+          </p>
+
+          <Button type="button" variant="outline" size="lg" onClick={() => switchStep("login")} className="w-full">
+            Back to login
+          </Button>
         </div>
       ) : null}
 
-      <div className="mt-5 flex items-center justify-center gap-2 text-center text-xs leading-5 text-text-tertiary">
-        <CheckCircle2 className="h-3.5 w-3.5 text-success" aria-hidden="true" />
-        <span>Protected by the existing Supabase authentication flow.</span>
-      </div>
     </AuthShell>
   );
 }
