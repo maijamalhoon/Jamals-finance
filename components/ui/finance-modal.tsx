@@ -12,7 +12,7 @@ import { cn } from "@/lib/utils";
 type FinanceTone = "default" | "success" | "danger" | "info" | "investment" | "warning";
 
 export const financeModalContentClass =
-  "finance-modal-content finance-panel flex max-h-[90dvh] w-[calc(100vw-1rem)] max-w-md flex-col gap-0 overflow-hidden p-0 text-text-primary shadow-premium sm:w-full";
+  "finance-modal-content finance-panel flex max-h-[calc(100dvh-0.75rem)] w-[calc(100vw-0.75rem)] max-w-md [--finance-modal-max-width:28rem] flex-col gap-0 overflow-hidden p-0 text-text-primary shadow-premium sm:max-h-[90dvh] sm:w-full";
 
 export const financeCancelButtonClass =
   "finance-focus inline-flex min-h-[var(--oneui-control-height-lg)] items-center justify-center rounded-[var(--oneui-button-radius)] border border-border bg-surface-secondary px-4 py-2 text-sm font-semibold text-text-primary transition-all hover:bg-hover active:scale-[0.985] disabled:opacity-50";
@@ -25,6 +25,15 @@ export const financeFieldHintClass =
 
 export const financeFieldErrorClass =
   "mt-1.5 text-xs font-semibold leading-5 text-danger";
+
+const toneAccentClass: Record<FinanceTone, string> = {
+  default: "bg-active",
+  success: "bg-success",
+  danger: "bg-danger",
+  info: "bg-info",
+  investment: "bg-investment",
+  warning: "bg-warning",
+};
 
 interface FinanceModalHeaderProps {
   title: string;
@@ -45,19 +54,32 @@ export function FinanceModalHeader({
 }: FinanceModalHeaderProps) {
   return (
     <DialogHeader
+      data-tone={tone}
       className={cn(
-        "shrink-0 border-b border-border px-4 py-4 pr-12 sm:px-5",
+        "finance-modal-header relative shrink-0 overflow-hidden border-b border-border px-4 py-4 pr-12 sm:px-5",
         className,
       )}
     >
-      <DialogTitle className="flex min-w-0 items-center gap-3 text-base font-semibold">
+      <span
+        aria-hidden="true"
+        className={cn("absolute inset-x-0 top-0 h-0.5", toneAccentClass[tone])}
+      />
+      <div className="flex min-w-0 items-start gap-3">
         <span className="finance-icon-container" data-size="sm" data-tone={tone}>
           <Icon size={16} strokeWidth={2.2} />
         </span>
-        <span className="min-w-0 flex-1 truncate">{title}</span>
-        {badge}
-      </DialogTitle>
-      <DialogDescription className="sr-only">{description}</DialogDescription>
+        <div className="min-w-0 flex-1">
+          <div className="flex min-w-0 items-start gap-2">
+            <DialogTitle className="min-w-0 flex-1 break-words text-base leading-5 font-bold">
+              {title}
+            </DialogTitle>
+            {badge}
+          </div>
+          <DialogDescription className="mt-1 text-xs leading-5 text-text-secondary">
+            {description}
+          </DialogDescription>
+        </div>
+      </div>
     </DialogHeader>
   );
 }
@@ -69,7 +91,7 @@ export function FinanceModalBody({
   return (
     <div
       className={cn(
-        "min-h-0 flex-1 space-y-4 overflow-y-auto overscroll-contain px-4 py-4 pb-[calc(1rem+env(safe-area-inset-bottom))] sm:px-5",
+        "finance-modal-body min-h-0 flex-1 space-y-4 overflow-y-auto overscroll-contain px-3.5 py-4 pb-[calc(1rem+env(safe-area-inset-bottom))] sm:px-5",
         className,
       )}
       {...props}
@@ -85,7 +107,7 @@ export function FinanceModalFooter({
     <div
       data-slot="dialog-footer"
       className={cn(
-        "grid shrink-0 grid-cols-1 gap-2 border-t border-border bg-card px-4 py-3.5 pb-[calc(0.875rem+env(safe-area-inset-bottom))] sm:grid-cols-2",
+        "finance-modal-footer grid shrink-0 grid-cols-1 gap-2 border-t border-border bg-card px-3.5 py-3.5 pb-[calc(0.875rem+env(safe-area-inset-bottom))] sm:grid-cols-2 sm:px-5",
         className,
       )}
       {...props}
@@ -109,7 +131,7 @@ export function FinanceFormField({
   className?: string;
 }) {
   return (
-    <div className={cn("min-w-0", className)}>
+    <div data-slot="finance-form-field" className={cn("finance-form-field min-w-0", className)}>
       <label className="field-label" htmlFor={htmlFor}>
         {label}
       </label>

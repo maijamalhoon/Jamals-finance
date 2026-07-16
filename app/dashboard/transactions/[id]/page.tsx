@@ -1,4 +1,3 @@
-import type { CSSProperties } from "react";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import {
@@ -40,7 +39,6 @@ type ReceiptData = {
   itemText: string;
   transferFromText: string;
   transferToText: string;
-  accent: string;
   receiptText: string;
 };
 
@@ -48,26 +46,22 @@ const TYPE_META: Record<
   ReceiptType,
   {
     label: string;
-    accent: string;
     icon: typeof TrendingUp;
     amountPrefix: string;
   }
 > = {
   income: {
     label: "Income",
-    accent: "#16a34a",
     icon: TrendingUp,
     amountPrefix: "+",
   },
   expense: {
     label: "Expense",
-    accent: "#dc2626",
     icon: TrendingDown,
     amountPrefix: "-",
   },
   transfer: {
     label: "Transfer",
-    accent: "#2563eb",
     icon: ArrowLeftRight,
     amountPrefix: "",
   },
@@ -149,7 +143,6 @@ function mapTransactionReceipt(transaction: any): ReceiptData {
     itemText: transaction.item_name || "",
     transferFromText: "",
     transferToText: "",
-    accent: meta.accent,
   };
 
   return {
@@ -178,7 +171,6 @@ function mapTransferReceipt(transfer: any): ReceiptData {
     itemText: "",
     transferFromText: transfer.from_account?.name || "From account",
     transferToText: transfer.to_account?.name || "To account",
-    accent: meta.accent,
   };
 
   return {
@@ -294,10 +286,6 @@ export default async function TransactionReceiptPage({
 
   const TypeIcon = TYPE_META[receipt.type].icon;
 
-  const receiptVars = {
-    "--receipt-accent": receipt.accent,
-  } as CSSProperties;
-
   return (
     <main className="mx-auto flex w-full max-w-6xl min-w-0 flex-col gap-5 pb-24 print:max-w-none">
       <div className="print:hidden flex min-w-0 flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -314,7 +302,8 @@ export default async function TransactionReceiptPage({
 
       <section
         className="finance-reference-card relative min-w-0 overflow-hidden print:border-none print:shadow-none"
-        style={receiptVars}
+        data-transaction-receipt
+        data-receipt-tone={receipt.type}
       >
         <div className="relative border-b border-border p-5 sm:p-7">
           <div className="flex min-w-0 flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">

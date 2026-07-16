@@ -423,7 +423,7 @@ export default async function DashboardPage() {
         <h2 className="sr-only">Month-to-date financial metrics</h2>
         <DashboardMotionItem>
           <MetricCard
-            accentColor="#4f46e5"
+            accentColor="var(--primary)"
             amount={transactionsStatus === "available" ? transactionSnapshot.current.netSavings : null}
             availability={transactionsStatus}
             comparison={transactionsStatus === "available" ? transactionSnapshot.comparisons.netSavings : null}
@@ -434,7 +434,7 @@ export default async function DashboardPage() {
         </DashboardMotionItem>
         <DashboardMotionItem>
           <MetricCard
-            accentColor="#16a34a"
+            accentColor="var(--income)"
             amount={transactionsStatus === "available" ? transactionSnapshot.current.income : null}
             availability={transactionsStatus}
             comparison={transactionsStatus === "available" ? transactionSnapshot.comparisons.income : null}
@@ -445,7 +445,7 @@ export default async function DashboardPage() {
         </DashboardMotionItem>
         <DashboardMotionItem>
           <MetricCard
-            accentColor="#e2554f"
+            accentColor="var(--expense)"
             amount={transactionsStatus === "available" ? transactionSnapshot.current.expenses : null}
             availability={transactionsStatus}
             comparison={transactionsStatus === "available" ? transactionSnapshot.comparisons.expenses : null}
@@ -456,7 +456,7 @@ export default async function DashboardPage() {
         </DashboardMotionItem>
         <DashboardMotionItem>
           <MetricCard
-            accentColor="#d97706"
+            accentColor="var(--investment)"
             amount={contributionStatus === "unavailable" ? null : investmentContribution.current}
             availability={contributionStatus}
             comparison={contributionStatus === "available" ? investmentContribution.comparison : null}

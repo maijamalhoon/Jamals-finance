@@ -20,27 +20,27 @@ const GOAL_CATEGORY_STYLES: Record<GoalCategory, GoalCategoryStyle> = {
   travel: {
     category: "travel",
     label: "Travel",
-    accent: "#3b82f6",
+    accent: "var(--transfer)",
   },
   electronics: {
     category: "electronics",
     label: "Electronics",
-    accent: "#8b5cf6",
+    accent: "var(--investment)",
   },
   car: {
     category: "car",
     label: "Car",
-    accent: "#06b6d4",
+    accent: "var(--goals)",
   },
   home: {
     category: "home",
     label: "House",
-    accent: "#16a34a",
+    accent: "var(--income)",
   },
   other: {
     category: "other",
     label: "Other",
-    accent: "var(--text-secondary)",
+    accent: "var(--text-muted)",
   },
 };
 

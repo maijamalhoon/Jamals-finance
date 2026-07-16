@@ -4,6 +4,7 @@ import {
   getAppDateParts,
   getDaysInMonth,
 } from "../dates";
+import { FEATURE_COLOR_HEX } from "../theme-colors";
 
 export type AnalyticsPresetPeriod =
   | "today"
@@ -176,7 +177,7 @@ const PRESET_PERIODS = new Set<AnalyticsPresetPeriod>([
   "year",
 ]);
 
-export const DEFAULT_CATEGORY_COLOR = "#64748b";
+export const DEFAULT_CATEGORY_COLOR = FEATURE_COLOR_HEX.muted.toLowerCase();
 export const OTHER_CATEGORIES_ID = "other-categories";
 export const UNSPECIFIED_SOURCE = "Unspecified source";
 export const UNKNOWN_ACCOUNT = "Unknown account";

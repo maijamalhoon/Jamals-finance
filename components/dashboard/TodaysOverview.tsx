@@ -75,7 +75,7 @@ export default function TodaysOverview({
         <div>
           <div className="flex items-start justify-between gap-4">
             <div>
-              <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-blue-500">
+              <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-primary">
                 <Sparkles size={14} />
                 Today's Overview
               </div>
@@ -124,7 +124,7 @@ export default function TodaysOverview({
         <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-1">
           <div className="finance-panel-soft p-4">
             <div className="flex items-center gap-2 text-sm font-semibold text-text-primary">
-              <BrainCircuit size={16} className="text-violet-600" />
+              <BrainCircuit size={16} className="text-investment" />
               AI engine insight
             </div>
             <p className="mt-3 text-sm leading-6 text-text-primary">

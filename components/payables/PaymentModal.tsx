@@ -21,6 +21,7 @@ import { getAppDateKey } from "@/lib/dates";
 import { BASE_CURRENCY } from "@/lib/currency";
 import { useCurrency } from "@/components/currency/CurrencyProvider";
 import { CircleDollarSign } from "lucide-react";
+import { FEATURE_COLOR_HEX } from "@/lib/theme-colors";
 
 interface Account {
   id: string;
@@ -71,7 +72,7 @@ export default function PaymentModal({ open, onClose, payable, accounts }: Props
         user_id: userId,
         name: "Debt repayment",
         type: "expense",
-        color: "#fb7185",
+        color: FEATURE_COLOR_HEX.expense,
       })
       .select("id")
       .single();
@@ -163,7 +164,7 @@ export default function PaymentModal({ open, onClose, payable, accounts }: Props
 
   return (
     <Dialog open={open} onOpenChange={(nextOpen) => !nextOpen && onClose()}>
-      <DialogContent className={`${financeModalContentClass} sm:max-w-md`}>
+      <DialogContent className={financeModalContentClass}>
         <FinanceModalHeader
           title="Record Payment"
           description="Record a repayment against this payable."

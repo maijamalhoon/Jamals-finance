@@ -105,10 +105,10 @@ export default function CurrencyConverter() {
             </p>
             <span className="flex items-center gap-1">
               <span
-                className={`w-1.5 h-1.5 rounded-full ${live ? "bg-emerald-500" : "bg-amber-500"}`}
+                className={`h-1.5 w-1.5 rounded-full ${live ? "bg-success" : "bg-warning"}`}
               />
               <span
-                className={`text-[10px] ${live ? "text-emerald-600" : "text-amber-600"}`}
+                className={`text-[10px] ${live ? "text-success" : "text-warning"}`}
               >
                 {live ? "Live" : "Fallback"}
               </span>

@@ -98,7 +98,7 @@ function SetupRow({ step }: { step: SetupStep }) {
         <span
           className={`mt-0.5 grid h-9 w-9 shrink-0 place-items-center rounded-full border ${
             step.complete ?
-              "border-emerald-500/25 bg-emerald-500/10 text-emerald-600 dark:text-emerald-300"
+              "border-success/25 bg-success-soft text-success"
             : "border-border bg-surface-secondary text-text-secondary"
           }`}
         >
@@ -126,7 +126,7 @@ function SetupRow({ step }: { step: SetupStep }) {
 
       <div className="flex shrink-0 justify-start sm:justify-end">
         {step.complete ?
-          <span className="inline-flex min-h-10 items-center gap-2 rounded-[var(--oneui-button-radius)] border border-emerald-500/20 bg-emerald-500/10 px-3 text-xs font-black text-emerald-700 dark:text-emerald-200">
+          <span className="inline-flex min-h-10 items-center gap-2 rounded-[var(--oneui-button-radius)] border border-success/25 bg-success-soft px-3 text-xs font-black text-success">
             <CheckCircle2 aria-hidden="true" className="h-3.5 w-3.5" />
             Done
           </span>
@@ -350,13 +350,13 @@ export default function NewUserSetupGuide({
       >
         <div
           aria-hidden="true"
-          className="absolute inset-x-0 top-0 h-[3px] bg-gradient-to-r from-emerald-500 via-blue-500 to-amber-500"
+          className="absolute inset-x-0 top-0 h-[3px] bg-gradient-to-r from-income via-primary to-payables"
         />
 
         <div className="relative flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
           <div className="min-w-0 lg:max-w-[360px]">
             <div className="mb-3 flex items-center gap-2">
-              <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full border border-blue-500/20 bg-blue-500/10 text-blue-600 dark:text-blue-300">
+              <span className="finance-feature-accent grid h-9 w-9 shrink-0 place-items-center rounded-full border" data-tone="transfer">
                 <Sparkles aria-hidden="true" className="h-4.5 w-4.5" />
               </span>
               <div className="min-w-0">

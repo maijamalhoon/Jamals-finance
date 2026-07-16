@@ -19,8 +19,8 @@ export default function Image() {
         position: "relative",
         overflow: "hidden",
         background:
-          "linear-gradient(135deg, #07111a 0%, #0c1724 48%, #111827 100%)",
-        color: "#f8fbff",
+          "linear-gradient(135deg, #0B1220 0%, #111A2B 48%, #162235 100%)",
+        color: "#E7EEF8",
         fontFamily: "Arial, Helvetica, sans-serif",
       }}
     >
@@ -66,7 +66,7 @@ export default function Image() {
           left: 0,
           right: 0,
           height: 10,
-          background: "linear-gradient(90deg, #22c55e, #38bdf8, #fbbf24)",
+          background: "linear-gradient(90deg, #33C78B, #62A5FF, #E6B450)",
         }}
       />
 
@@ -108,7 +108,7 @@ export default function Image() {
                   height: 32,
                   borderRadius: 10,
                   marginRight: 12,
-                  background: "linear-gradient(135deg, #22c55e, #38bdf8)",
+                  background: "linear-gradient(135deg, #33C78B, #62A5FF)",
                 }}
               />
               Jamal&apos;s Finance
@@ -121,7 +121,7 @@ export default function Image() {
                 lineHeight: 1.02,
                 letterSpacing: "-0.055em",
                 fontWeight: 800,
-                color: "#f8fbff",
+                color: "#E7EEF8",
               }}
             >
               Manage money with clarity.
@@ -202,7 +202,7 @@ export default function Image() {
                 </div>
                 <div
                   style={{
-                    color: "#f8fbff",
+                    color: "#E7EEF8",
                     fontSize: 50,
                     fontWeight: 800,
                     marginTop: 6,
@@ -216,7 +216,7 @@ export default function Image() {
                 style={{
                   borderRadius: 999,
                   background: "rgba(34,197,94,0.16)",
-                  color: "#bbf7d0",
+                  color: "#33C78B",
                   padding: "9px 14px",
                   fontSize: 18,
                   fontWeight: 800,
@@ -243,7 +243,7 @@ export default function Image() {
                     marginRight: 14,
                     borderRadius: 999,
                     background:
-                      "linear-gradient(180deg, #f8fbff 0%, #93c5fd 100%)",
+                      "linear-gradient(180deg, #E7EEF8 0%, #8AA4FF 100%)",
                   }}
                 />
               ))}
@@ -257,9 +257,9 @@ export default function Image() {
               }}
             >
               {[
-                ["Income", "+$4,280", "#86efac"],
-                ["Expenses", "-$1,940", "#fca5a5"],
-                ["Savings", "$2,340", "#93c5fd"],
+                ["Income", "+$4,280", "#33C78B"],
+                ["Expenses", "-$1,940", "#F08A7B"],
+                ["Savings", "$2,340", "#8AA4FF"],
               ].map(([label, value, color]) => (
                 <div
                   key={label}

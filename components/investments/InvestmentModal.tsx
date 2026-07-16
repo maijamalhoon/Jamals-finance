@@ -723,7 +723,7 @@ export default function InvestmentModal({
 
   return (
     <Dialog open={open} onOpenChange={(nextOpen) => !nextOpen && onClose()}>
-      <DialogContent className={`${financeModalContentClass} sm:max-w-lg`}>
+      <DialogContent className={`${financeModalContentClass} sm:[--finance-modal-max-width:32rem]`}>
         <FinanceModalHeader
           title={isEditing ? "Edit Investment" : "Add Investment"}
           description="Enter asset details, pricing, and purchase date."

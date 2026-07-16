@@ -19,6 +19,7 @@ import {
 import { createClient } from "@/lib/supabase/client";
 import AccountModal, { ExistingAccount } from "./AccountModal";
 import { useCurrency } from "@/components/currency/CurrencyProvider";
+import { getAccountAccentColor } from "@/lib/theme-colors";
 
 type AccountWithTotals = ExistingAccount & {
   inflow?: number;
@@ -35,23 +36,8 @@ const ICON_MAP = {
   savings: PiggyBank,
 };
 
-const COLOR_MAP = {
-  blue: "#2563eb",
-  green: "#059669",
-  orange: "#ea580c",
-  purple: "#7c3aed",
-  cyan: "#0891b2",
-  rose: "#e11d48",
-  amber: "#d97706",
-  slate: "#475569",
-};
-
 function getIcon(iconKey?: string | null) {
   return ICON_MAP[(iconKey ?? "bank") as keyof typeof ICON_MAP] ?? Landmark;
-}
-
-function getColor(color?: string | null) {
-  return COLOR_MAP[(color ?? "blue") as keyof typeof COLOR_MAP] ?? "#2563eb";
 }
 
 function getAccountKindLabel(value?: string | null) {
@@ -87,7 +73,7 @@ export default function AccountCard({ account }: AccountCardProps) {
   const [deleting, setDeleting] = useState(false);
 
   const Icon = getIcon(account.icon_key);
-  const accent = getColor(account.accent_color);
+  const accent = getAccountAccentColor(account.accent_color);
 
   async function handleDelete() {
     if (!confirm(`Delete "${account.name}"? This cannot be undone.`)) return;
