@@ -7,6 +7,7 @@ Thank you for taking an interest in the project. The repository is publicly visi
 - Check existing issues and pull requests for overlapping work.
 - Open an issue before proposing a large feature, schema change, authentication change, or redesign.
 - Keep security reports private and follow [SECURITY.md](SECURITY.md).
+- Follow the project [Code of Conduct](CODE_OF_CONDUCT.md).
 - Do not include real financial records, credentials, access tokens, or production secrets in issues, screenshots, fixtures, or commits.
 
 ## Development setup
@@ -91,8 +92,7 @@ Run the checks relevant to your change. For broad changes, use:
 
 ```bash
 npm run test:analytics
-npx tsc --noEmit
-npm run lint
+npm run check
 npm run build
 git diff --check
 ```

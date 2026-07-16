@@ -1,0 +1,51 @@
+name: Feature request
+description: Propose a focused improvement with clear product and data-integrity boundaries.
+title: "feat: "
+labels:
+  - enhancement
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem to solve
+      description: Explain the user problem before describing a solution.
+    validations:
+      required: true
+  - type: textarea
+    id: outcome
+    attributes:
+      label: Desired outcome
+      description: Describe the smallest useful and truthful result.
+    validations:
+      required: true
+  - type: textarea
+    id: scope
+    attributes:
+      label: Suggested scope
+      description: List the routes or workflows that should change and those that should remain untouched.
+    validations:
+      required: true
+  - type: textarea
+    id: integrity
+    attributes:
+      label: Financial, privacy, or security considerations
+      description: Call out calculations, ownership, RLS, authentication, or sensitive-data implications.
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance criteria
+      placeholder: |
+        - [ ] Works on mobile, tablet, and desktop
+        - [ ] Handles loading, empty, error, and disabled states
+        - [ ] Does not fabricate financial data
+    validations:
+      required: true
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Pre-submission checks
+      options:
+        - label: I searched existing issues and pull requests for overlapping work.
+          required: true
+        - label: This proposal does not include credentials or private financial data.
+          required: true

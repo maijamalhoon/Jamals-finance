@@ -2,6 +2,8 @@
 
 <img src="./public/readme/jamals-finance-hero.svg" alt="Jamal's Finance product showcase" width="100%" />
 
+<sub>Concept illustration. Financial values shown in the artwork are illustrative only.</sub>
+
 # Jamal's Finance
 
 ### Understand your money. Plan with clarity.
@@ -15,7 +17,7 @@ A privacy-minded personal finance workspace for tracking income, expenses, accou
 [![Supabase](https://img.shields.io/badge/Supabase-PostgreSQL-1f9d73?style=for-the-badge&logo=supabase&logoColor=white)](https://supabase.com/)
 [![Vercel](https://img.shields.io/badge/Deployed%20on-Vercel-111827?style=for-the-badge&logo=vercel)](https://vercel.com/)
 
-[Live app](https://jamals-finance-sable.vercel.app) · [Security](SECURITY.md) · [Contributing](CONTRIBUTING.md) · [Local setup](#local-development)
+[Live app](https://jamals-finance-sable.vercel.app) | [Security](SECURITY.md) | [Contributing](CONTRIBUTING.md) | [Code of Conduct](CODE_OF_CONDUCT.md) | [Local setup](#local-development)
 
 </div>
 
@@ -50,7 +52,7 @@ Personal-finance software should make money clearer without pretending to know m
 - Parent/child category management
 - Dashboard summaries and financial activity views
 - Period-based income, expense, savings, spending, cash-flow, and investment analytics
-- Light, dark, and system theme foundations
+- Semantic light, dark, and system themes with shared responsive finance forms
 - Responsive desktop and mobile navigation
 - Supabase-backed persistence with owner-scoped Row Level Security
 - Sentry integration points for production monitoring
@@ -106,15 +108,14 @@ Development is intentionally split into focused nodes so that financial integrit
 | Analytics data integrity | Complete |
 | Settings security integrity | Complete |
 | Supabase session recovery | Complete |
-| Premium experience foundation | Complete; corrective UI work tracked |
-| Analytics Master System | **In progress** |
-| Full page-by-page UI/UX system | Planned next |
-| Theme and mobile critical cleanup | Queued |
-| AI reliability contract | Queued |
-| Global locale, currency, and timezone integrity | Queued |
-| PWA, offline, accessibility, and release hardening | Planned |
+| Authentication and onboarding | Complete |
+| Global shell and navigation | Complete |
+| Dashboard financial semantics | Complete |
+| Semantic theme and responsive finance forms | Complete |
+| Route loading and motion consistency | Active iteration |
+| AI reliability, globalisation, PWA, and release hardening | Planned |
 
-The active analytics work is not mixed with unrelated redesign tasks. After it is completed and audited, the application will move through a full page-by-page, device-by-device UI/UX plan.
+Active work remains isolated on scoped branches. Completed branches are integrated through reviewed pull requests so unfinished application changes do not leak into repository-maintenance work.
 
 ## Design and quality contract
 
@@ -186,6 +187,7 @@ flowchart TB
 ## Repository structure
 
 ```text
+.github/                 CI, ownership, issue forms, and PR standards
 app/
   api/                    Server route handlers
   auth/                   Authentication callback handling
@@ -297,11 +299,13 @@ Open `http://localhost:3000`.
 | `npm run build` | Create a production build |
 | `npm run start` | Start the built production server |
 | `npm run lint` | Run ESLint |
+| `npm run typecheck` | Run TypeScript validation |
+| `npm test` | Run the complete Vitest suite |
+| `npm run check` | Run lint, typecheck, and all tests |
 | `npm run test:analytics` | Run deterministic analytics tests |
 | `npm run test:settings` | Run settings security tests |
 | `npm run test:session` | Run session and recovery tests |
 | `npm run test:ui` | Run focused UI-foundation tests |
-| `npx tsc --noEmit` | Run TypeScript validation |
 
 Review `package.json` for the authoritative current script list.
 
@@ -311,31 +315,28 @@ Changes should follow a branch-and-review workflow rather than direct pushes to 
 
 ```text
 fresh main
-→ scoped feature branch
-→ focused implementation
-→ targeted tests
-→ typecheck and lint
-→ production build
-→ diff review
-→ pull request
-→ squash merge
-→ production verification
+-> scoped feature branch
+-> focused implementation
+-> targeted tests
+-> typecheck and lint
+-> production build
+-> diff review
+-> pull request
+-> squash merge
+-> production verification
 ```
 
 For broad application changes, the expected validation baseline is:
 
 ```bash
-npm run test:analytics
-npm run test:ui
-npm run test:session
-npm run test:settings
-npx tsc --noEmit
-npm run lint
+npm run check
 npm run build
 git diff --check
 ```
 
 A passing build does not replace manual verification of responsive layouts, keyboard behavior, loading/empty/error states, financial semantics, or the exact production deployment.
+
+Every pull request runs the same lint, typecheck, test, and production-build baseline in GitHub Actions. Repository ownership, issue intake, security reporting, contribution rules, and pull-request expectations are versioned under `.github/`, [SECURITY.md](SECURITY.md), and [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Security model
 
@@ -364,7 +365,7 @@ Environment variables must be configured separately for local, preview, and prod
 
 ## Contributing
 
-This repository is publicly visible, but product direction and merges are maintained by the project owner. Read [CONTRIBUTING.md](CONTRIBUTING.md) before opening a pull request.
+This repository is publicly visible, but product direction and merges are maintained by the project owner. Read [CONTRIBUTING.md](CONTRIBUTING.md) and the [Code of Conduct](CODE_OF_CONDUCT.md) before opening a pull request.
 
 ## License
 

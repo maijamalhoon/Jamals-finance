@@ -16,6 +16,10 @@
 # Test output
 /coverage/
 
+# Local verification artifacts
+/build-output.txt
+/qa-screenshots/
+
 # Environment files
 .env*
 !.env.example
