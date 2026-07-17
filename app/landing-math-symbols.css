@@ -1,0 +1,154 @@
+/* Lightweight decorative math-symbol field for the public landing page.
+   CSS-only motion keeps runtime work near zero and never intercepts input. */
+
+.landing-math-field {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  overflow: hidden;
+  pointer-events: none;
+  user-select: none;
+  contain: layout paint style;
+}
+
+.landing-math-symbol {
+  position: absolute;
+  top: -14vh;
+  left: var(--math-x);
+  display: block;
+  width: 1em;
+  height: 1em;
+  color: var(--math-symbol-color);
+  font-family: ui-rounded, "SF Pro Rounded", "Segoe UI Symbol", system-ui, sans-serif;
+  font-size: calc(clamp(1rem, 1.7vw, 2rem) * var(--math-size));
+  font-weight: 650;
+  line-height: 1;
+  text-align: center;
+  text-shadow: 0 5px 18px color-mix(in srgb, var(--math-symbol-color) 18%, transparent);
+  opacity: 0;
+  transform: translate3d(0, -14vh, 0) rotate(var(--math-rotate-start)) scale(0.82);
+  will-change: transform, opacity;
+  animation-name: landing-math-fall;
+  animation-duration: var(--math-duration);
+  animation-delay: var(--math-delay);
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+
+.landing-math-symbol-plus {
+  --math-symbol-color: #2aa876;
+}
+
+.landing-math-symbol-minus {
+  --math-symbol-color: #dc6b73;
+}
+
+.landing-math-symbol-multiply {
+  --math-symbol-color: #8878d7;
+}
+
+.landing-math-symbol-divide {
+  --math-symbol-color: #4a9fc1;
+}
+
+.landing-math-symbol-equals {
+  --math-symbol-color: #c99348;
+}
+
+.dark .landing-math-field {
+  opacity: 0.84;
+}
+
+.dark .landing-math-symbol-plus {
+  --math-symbol-color: #6bdba2;
+}
+
+.dark .landing-math-symbol-minus {
+  --math-symbol-color: #fa8c93;
+}
+
+.dark .landing-math-symbol-multiply {
+  --math-symbol-color: #b3a2ff;
+}
+
+.dark .landing-math-symbol-divide {
+  --math-symbol-color: #72cee9;
+}
+
+.dark .landing-math-symbol-equals {
+  --math-symbol-color: #efba68;
+}
+
+@keyframes landing-math-fall {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, -14vh, 0) rotate(var(--math-rotate-start)) scale(0.82);
+  }
+
+  10% {
+    opacity: var(--math-opacity);
+  }
+
+  36% {
+    opacity: var(--math-opacity);
+    transform: translate3d(var(--math-drift-a), 30vh, 0) rotate(0deg) scale(0.94);
+  }
+
+  68% {
+    opacity: var(--math-opacity);
+    transform: translate3d(var(--math-drift-b), 69vh, 0) rotate(var(--math-rotate-end)) scale(1.02);
+  }
+
+  88% {
+    opacity: calc(var(--math-opacity) * 0.62);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translate3d(var(--math-drift-c), 114vh, 0) rotate(var(--math-rotate-end)) scale(1.08);
+  }
+}
+
+@media (max-width: 1023px) {
+  .landing-math-symbol {
+    font-size: calc(clamp(0.95rem, 2.8vw, 1.7rem) * var(--math-size));
+    text-shadow: 0 4px 14px color-mix(in srgb, var(--math-symbol-color) 14%, transparent);
+  }
+
+  .landing-math-symbol:nth-child(n + 13) {
+    display: none;
+  }
+}
+
+@media (max-width: 639px) {
+  .landing-math-field {
+    opacity: 0.82;
+  }
+
+  .landing-math-symbol {
+    font-size: calc(clamp(0.9rem, 5vw, 1.45rem) * var(--math-size));
+    font-weight: 620;
+  }
+
+  .landing-math-symbol:nth-child(n + 10) {
+    display: none;
+  }
+}
+
+@media (max-width: 379px) {
+  .landing-math-symbol:nth-child(n + 8) {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .landing-math-field {
+    display: none;
+  }
+}
+
+@media (forced-colors: active) {
+  .landing-math-field {
+    display: none;
+  }
+}
