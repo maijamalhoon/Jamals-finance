@@ -240,7 +240,7 @@ export default function GoalCard({
 
         <div className="mt-3 flex flex-wrap gap-2">
           {!done ? (
-            <Button size="sm" type="button" onClick={() => setContributionOpen(true)}>
+            <Button className="min-h-11" size="sm" type="button" onClick={() => setContributionOpen(true)}>
               <Plus aria-hidden="true" />
               Add contribution
             </Button>
@@ -248,6 +248,7 @@ export default function GoalCard({
           {(goal.goal_contributions?.length ?? 0) > 0 ? (
             <Button
               size="sm"
+              className="min-h-11"
               variant="outline"
               type="button"
               aria-expanded={historyOpen}
@@ -285,7 +286,7 @@ export default function GoalCard({
                   ) : null}
                 </div>
                 <Button
-                  size="icon-xs"
+                  size="icon"
                   variant="ghost"
                   type="button"
                   aria-label="Remove contribution"

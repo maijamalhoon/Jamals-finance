@@ -160,7 +160,7 @@ export default function PayableModal({ open, onClose, payable }: Props) {
                   key={label}
                   type="button"
                   onClick={() => setReason(label)}
-                  className="finance-focus inline-flex items-center gap-1.5 rounded-xl border border-border bg-surface-secondary px-2.5 py-1.5 text-xs text-text-secondary hover:bg-hover hover:text-text-primary"
+                  className="finance-focus inline-flex min-h-11 items-center gap-1.5 rounded-xl border border-border bg-surface-secondary px-2.5 py-1.5 text-xs text-text-secondary hover:bg-hover hover:text-text-primary"
                 >
                   <Icon size={12} />
                   {label}

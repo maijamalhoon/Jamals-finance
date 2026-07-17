@@ -126,7 +126,7 @@ export default function TransactionFilters() {
           {search ?
             <button
               onClick={() => setSearch("")}
-              className="finance-focus grid h-6 w-6 place-items-center rounded-full text-text-secondary transition-colors hover:bg-hover hover:text-text-primary"
+              className="finance-focus grid h-11 w-11 place-items-center rounded-full text-text-secondary transition-colors hover:bg-hover hover:text-text-primary"
               aria-label="Clear search"
               type="button"
             >
@@ -139,7 +139,7 @@ export default function TransactionFilters() {
           {activeFilterCount > 0 ?
             <button
               onClick={clearFilters}
-              className="finance-focus rounded-full border border-border bg-surface px-3 py-2 text-xs font-semibold text-text-secondary transition-colors hover:bg-hover hover:text-text-primary"
+              className="finance-focus min-h-11 rounded-full border border-border bg-surface px-3 py-2 text-xs font-semibold text-text-secondary transition-colors hover:bg-hover hover:text-text-primary"
               type="button"
             >
               Clear all
@@ -149,7 +149,7 @@ export default function TransactionFilters() {
           <button
             onClick={() => setOpen((value) => !value)}
             aria-expanded={open}
-            className="finance-focus inline-flex items-center gap-2 rounded-full border border-border bg-surface px-4 py-2 text-sm font-semibold text-text-primary shadow-sm transition-all hover:-translate-y-0.5 hover:bg-hover hover:shadow-md"
+            className="finance-focus inline-flex min-h-11 items-center gap-2 rounded-full border border-border bg-surface px-4 py-2 text-sm font-semibold text-text-primary shadow-sm transition-all hover:-translate-y-0.5 hover:bg-hover hover:shadow-md"
             type="button"
           >
             <Filter size={15} />

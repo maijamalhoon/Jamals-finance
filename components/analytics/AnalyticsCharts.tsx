@@ -11,7 +11,6 @@ import {
   Pie,
   PieChart,
   ReferenceLine,
-  ResponsiveContainer,
   Tooltip,
   XAxis,
   YAxis,
@@ -109,8 +108,13 @@ export function CashFlowCharts({ data }: { data: CashFlowPoint[] }) {
           className="h-64 min-w-0 overflow-hidden sm:h-72"
         >
           <ChartFrame>
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={data} margin={{ top: 8, right: 4, bottom: 4, left: 0 }}>
+            {({ width, height }) => (
+              <BarChart
+                width={width}
+                height={height}
+                data={data}
+                margin={{ top: 8, right: 4, bottom: 4, left: 0 }}
+              >
                 <CartesianGrid stroke="var(--chart-grid)" strokeDasharray="3 5" vertical={false} />
                 <XAxis dataKey="label" tick={{ fill: "var(--text-tertiary)", fontSize: 10 }} tickLine={false} axisLine={false} interval="preserveStartEnd" />
                 <YAxis domain={[(minimum: number) => Math.min(minimum, 0), (maximum: number) => Math.max(maximum, 0)]} tick={{ fill: "var(--text-tertiary)", fontSize: 10 }} tickLine={false} axisLine={false} width={54} tickFormatter={(value) => formatCurrency(Number(value), { compact: true })} />
@@ -123,7 +127,7 @@ export function CashFlowCharts({ data }: { data: CashFlowPoint[] }) {
                 <Bar dataKey="income" fill="var(--success)" radius={[6, 6, 0, 0]} isAnimationActive={false} />
                 <Bar dataKey="expenses" fill="var(--danger)" radius={[6, 6, 0, 0]} isAnimationActive={false} />
               </BarChart>
-            </ResponsiveContainer>
+            )}
           </ChartFrame>
         </div>
         <CashFlowTable data={data} />
@@ -140,8 +144,13 @@ export function CashFlowCharts({ data }: { data: CashFlowPoint[] }) {
           className="h-64 min-w-0 overflow-hidden sm:h-72"
         >
           <ChartFrame>
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={data} margin={{ top: 8, right: 10, bottom: 4, left: 0 }}>
+            {({ width, height }) => (
+              <LineChart
+                width={width}
+                height={height}
+                data={data}
+                margin={{ top: 8, right: 10, bottom: 4, left: 0 }}
+              >
                 <CartesianGrid stroke="var(--chart-grid)" strokeDasharray="3 5" vertical={false} />
                 <XAxis dataKey="label" tick={{ fill: "var(--text-tertiary)", fontSize: 10 }} tickLine={false} axisLine={false} interval="preserveStartEnd" />
                 <YAxis domain={[(minimum: number) => Math.min(minimum, 0), (maximum: number) => Math.max(maximum, 0)]} tick={{ fill: "var(--text-tertiary)", fontSize: 10 }} tickLine={false} axisLine={false} width={54} tickFormatter={(value) => formatCurrency(Number(value), { compact: true })} />
@@ -152,7 +161,7 @@ export function CashFlowCharts({ data }: { data: CashFlowPoint[] }) {
                 />
                 <Line type="stepAfter" dataKey="cumulativeNetFlow" stroke="var(--chart-series-1)" strokeWidth={3} dot={{ r: 3, fill: "var(--chart-series-1)" }} activeDot={{ r: 5 }} isAnimationActive={false} />
               </LineChart>
-            </ResponsiveContainer>
+            )}
           </ChartFrame>
         </div>
         <CashFlowTable data={data} />
@@ -173,8 +182,8 @@ export function SpendingDistributionChart({ data }: { data: CategoryBreakdownIte
         className="h-60 min-w-0 overflow-hidden sm:h-64"
       >
         <ChartFrame>
-          <ResponsiveContainer width="100%" height="100%">
-            <PieChart>
+          {({ width, height }) => (
+            <PieChart width={width} height={height}>
               <Pie data={data} dataKey="amount" nameKey="name" innerRadius="52%" outerRadius="78%" paddingAngle={2} isAnimationActive={false}>
                 {data.map((item) => <Cell key={item.id} fill={item.color} />)}
               </Pie>
@@ -183,7 +192,7 @@ export function SpendingDistributionChart({ data }: { data: CategoryBreakdownIte
                 formatter={(value) => formatCurrency(Number(value ?? 0))}
               />
             </PieChart>
-          </ResponsiveContainer>
+          )}
         </ChartFrame>
       </div>
       <ul className="min-w-0 space-y-2" aria-label="Spending distribution summary">

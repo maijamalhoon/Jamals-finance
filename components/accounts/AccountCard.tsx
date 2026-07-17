@@ -214,7 +214,7 @@ export default function AccountCard({ account }: AccountCardProps) {
 
         <Link
           href={`/dashboard/accounts/${account.id}`}
-          className="finance-focus relative mt-3 inline-flex min-h-10 items-center justify-center gap-2 rounded-xl border border-border bg-surface-secondary px-3 text-xs font-bold text-text-primary hover:bg-hover"
+          className="finance-focus relative mt-3 inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-border bg-surface-secondary px-3 text-xs font-bold text-text-primary hover:bg-hover"
         >
           <ScrollText size={14} aria-hidden="true" />
           View history

@@ -199,6 +199,16 @@ export function getActiveNavItem(pathname: string) {
 }
 
 export function getRouteTitle(pathname: string) {
+  const normalizedPathname = normalizePathname(pathname);
+
+  if (/^\/dashboard\/transactions\/[^/]+$/.test(normalizedPathname)) {
+    return "Transaction receipt";
+  }
+
+  if (/^\/dashboard\/accounts\/[^/]+$/.test(normalizedPathname)) {
+    return "Account details";
+  }
+
   return getActiveNavItem(pathname)?.label ?? "Dashboard";
 }
 

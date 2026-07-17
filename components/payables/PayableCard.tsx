@@ -183,7 +183,7 @@ export default function PayableCard({
               type="button"
               onClick={() => setPaymentOpen(true)}
               disabled={remaining <= 0 || !accounts.length}
-              className="success-action min-h-10 rounded-full px-3 py-2 text-xs"
+              className="success-action min-h-11 rounded-full px-3 py-2 text-xs"
             >
               <CircleDollarSign size={14} />
               Record Payment
@@ -191,7 +191,7 @@ export default function PayableCard({
             <button
               type="button"
               onClick={() => setEditOpen(true)}
-              className="primary-action min-h-10 rounded-full bg-surface-secondary px-3 py-2 text-xs text-text-primary shadow-none hover:bg-hover"
+              className="primary-action min-h-11 rounded-full bg-surface-secondary px-3 py-2 text-xs text-text-primary shadow-none hover:bg-hover"
             >
               <Pencil size={14} />
               Edit
@@ -201,7 +201,7 @@ export default function PayableCard({
               onClick={handleDelete}
               disabled={deleting}
               aria-busy={deleting || undefined}
-              className="danger-action min-h-10 rounded-full px-3 py-2 text-xs hover:border-danger/35 hover:bg-danger/10"
+              className="danger-action min-h-11 rounded-full px-3 py-2 text-xs hover:border-danger/35 hover:bg-danger/10"
             >
               {deleting ? (
                 <LoaderCircle className="animate-spin motion-reduce:animate-none" size={14} aria-hidden="true" />

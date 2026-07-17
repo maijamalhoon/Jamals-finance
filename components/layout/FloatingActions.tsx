@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import dynamic from "next/dynamic";
+import { usePathname, useRouter } from "next/navigation";
 import { AnimatePresence, motion, type Variants } from "framer-motion";
 import {
   ArrowLeftRight,
@@ -13,10 +14,20 @@ import {
   type LucideIcon,
 } from "lucide-react";
 
-import TransferModal from "@/components/accounts/TransferModal";
-import TransactionModal from "@/components/dashboard/TransactionModal";
-import GoalModal from "@/components/goals/GoalModal";
-import InvestmentModal from "@/components/investments/InvestmentModal";
+const TransferModal = dynamic(() => import("@/components/accounts/TransferModal"), {
+  ssr: false,
+});
+const TransactionModal = dynamic(
+  () => import("@/components/dashboard/TransactionModal"),
+  { ssr: false },
+);
+const GoalModal = dynamic(() => import("@/components/goals/GoalModal"), {
+  ssr: false,
+});
+const InvestmentModal = dynamic(
+  () => import("@/components/investments/InvestmentModal"),
+  { ssr: false },
+);
 
 type ActionKey = "income" | "expense" | "investment" | "transfer" | "goal";
 
@@ -128,6 +139,8 @@ const itemVariants: Variants = {
 
 export default function FloatingActions() {
   const router = useRouter();
+  const pathname = usePathname();
+  const available = pathname === "/dashboard/transactions";
 
   const [open, setOpen] = useState(false);
   const [transactionOpen, setTransactionOpen] = useState(false);
@@ -140,6 +153,8 @@ export default function FloatingActions() {
     transactionOpen || transferOpen || goalOpen || investmentOpen || externalDialogOpen;
 
   useEffect(() => {
+    if (!available) return;
+
     const updateDialogState = () => {
       setExternalDialogOpen(
         Boolean(document.querySelector('[data-slot="dialog-content"], [role="dialog"]')),
@@ -152,7 +167,18 @@ export default function FloatingActions() {
     observer.observe(document.body, { childList: true, subtree: true });
 
     return () => observer.disconnect();
-  }, []);
+  }, [available]);
+
+  useEffect(() => {
+    if (available) return;
+
+    setOpen(false);
+    setTransactionOpen(false);
+    setTransferOpen(false);
+    setGoalOpen(false);
+    setInvestmentOpen(false);
+    setExternalDialogOpen(false);
+  }, [available]);
 
   useEffect(() => {
     if (modalOpen) setOpen(false);
@@ -184,10 +210,12 @@ export default function FloatingActions() {
     router.refresh();
   }
 
+  if (!available) return null;
+
   return (
     <>
       <div
-        className={`jf-floating-actions fixed bottom-[calc(6.85rem+env(safe-area-inset-bottom))] right-3 z-40 flex flex-col items-end gap-3 transition-all duration-200 print:hidden sm:right-5 lg:bottom-8 lg:right-8 ${
+        className={`jf-floating-actions fixed bottom-[calc(1rem+env(safe-area-inset-bottom))] right-3 z-40 flex flex-col items-end gap-3 transition-all duration-200 print:hidden sm:right-5 lg:bottom-8 lg:right-8 ${
           modalOpen ? "pointer-events-none translate-y-2 opacity-0" : ""
         }`}
         aria-hidden={modalOpen ? "true" : undefined}
@@ -206,6 +234,7 @@ export default function FloatingActions() {
               />
 
               <motion.div
+                id="quick-finance-actions"
                 role="group"
                 aria-label="Quick finance actions"
                 variants={menuVariants}
@@ -288,8 +317,8 @@ export default function FloatingActions() {
         <motion.button
           type="button"
           aria-label={open ? "Close quick actions" : "Open quick actions"}
-          aria-haspopup="dialog"
           aria-expanded={open}
+          aria-controls="quick-finance-actions"
           onClick={() => setOpen((current) => !current)}
           whileHover={{
             y: -2,
@@ -333,33 +362,41 @@ export default function FloatingActions() {
         </motion.button>
       </div>
 
-      <TransactionModal
-        open={transactionOpen}
-        defaultType={txType}
-        onClose={() => setTransactionOpen(false)}
-        onSuccess={() => {
-          setTransactionOpen(false);
-          refreshAfterSuccess();
-        }}
-      />
+      {transactionOpen ? (
+        <TransactionModal
+          open
+          defaultType={txType}
+          onClose={() => setTransactionOpen(false)}
+          onSuccess={() => {
+            setTransactionOpen(false);
+            refreshAfterSuccess();
+          }}
+        />
+      ) : null}
 
-      <TransferModal
-        open={transferOpen}
-        onClose={() => setTransferOpen(false)}
-        onSuccess={refreshAfterSuccess}
-      />
+      {transferOpen ? (
+        <TransferModal
+          open
+          onClose={() => setTransferOpen(false)}
+          onSuccess={refreshAfterSuccess}
+        />
+      ) : null}
 
-      <GoalModal
-        open={goalOpen}
-        onClose={() => setGoalOpen(false)}
-        onSuccess={refreshAfterSuccess}
-      />
+      {goalOpen ? (
+        <GoalModal
+          open
+          onClose={() => setGoalOpen(false)}
+          onSuccess={refreshAfterSuccess}
+        />
+      ) : null}
 
-      <InvestmentModal
-        open={investmentOpen}
-        onClose={() => setInvestmentOpen(false)}
-        onSuccess={refreshAfterSuccess}
-      />
+      {investmentOpen ? (
+        <InvestmentModal
+          open
+          onClose={() => setInvestmentOpen(false)}
+          onSuccess={refreshAfterSuccess}
+        />
+      ) : null}
     </>
   );
 }

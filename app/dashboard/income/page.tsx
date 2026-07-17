@@ -6,12 +6,19 @@ import Money from "@/components/currency/Money";
 import { Landmark, TrendingUp } from "lucide-react";
 import { loadTransactions } from "@/lib/transactions";
 import { formatDateKey, getAppDateParts } from "@/lib/dates";
+import { getPaginationState } from "@/lib/pagination";
+import TransactionPagination from "@/components/transactions/TransactionPagination";
 
 export const dynamic = "force-dynamic";
 
-export default async function IncomePage() {
+export default async function IncomePage({
+  searchParams,
+}: {
+  searchParams?: Promise<{ page?: string }> | { page?: string };
+}) {
   const supabase = await createClient();
   const now = getAppDateParts();
+  const { page } = (await Promise.resolve(searchParams)) ?? {};
 
   const firstDayMonth = formatDateKey(now.year, now.month, 1);
   const firstDayYear = `${now.year}-01-01`;
@@ -19,6 +26,11 @@ export default async function IncomePage() {
   const raw = await loadTransactions(supabase, { type: "income" });
 
   const income = raw ?? [];
+  const pagination = getPaginationState(income.length, page, 20);
+  const visibleIncome = income.slice(
+    pagination.startIndex,
+    pagination.endIndex,
+  );
   const thisMonthEntries = income.filter((t) => t.date >= firstDayMonth);
   const thisMonth = thisMonthEntries.reduce(
     (s, t) => s + Number(t.amount),
@@ -61,7 +73,10 @@ export default async function IncomePage() {
         <AddIncomeButton />
       </div>
 
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+      <div
+        data-mobile-summary-grid
+        className="grid grid-cols-2 gap-3 sm:grid-cols-3"
+      >
         <div className="summary-card min-w-0">
           <p className="mb-1.5 text-xs font-semibold text-text-secondary">
             This Month
@@ -80,7 +95,7 @@ export default async function IncomePage() {
           </p>
         </div>
 
-        <div className="summary-card min-w-0 border-success/30 bg-success/10">
+        <div className="summary-card col-span-2 min-w-0 border-success/30 bg-success/10 sm:col-span-1">
           <p className="mb-1.5 text-xs font-semibold text-text-secondary">
             Best Month Ever
           </p>
@@ -176,7 +191,9 @@ export default async function IncomePage() {
             All Income
           </h3>
           <span className="text-xs font-medium text-text-secondary">
-            {income.length} entries
+            {income.length === 0
+              ? "0 entries"
+              : `${pagination.startIndex + 1}-${pagination.endIndex} of ${income.length}`}
           </span>
         </div>
 
@@ -197,7 +214,18 @@ export default async function IncomePage() {
             description="Add your first earning to start seeing source breakdowns and income trends."
           />
         ) : (
-          income.map((tx) => <TransactionRow key={tx.id} tx={tx as any} />)
+          <>
+            <div className="space-y-1">
+              {visibleIncome.map((tx) => (
+                <TransactionRow key={tx.id} tx={tx as any} />
+              ))}
+            </div>
+            <TransactionPagination
+              {...pagination}
+              basePath="/dashboard/income"
+              itemLabel="income entries"
+            />
+          </>
         )}
       </div>
     </div>

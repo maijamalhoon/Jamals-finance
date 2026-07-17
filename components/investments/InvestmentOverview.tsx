@@ -129,7 +129,8 @@ function PortfolioSummaryGrid({
   return (
     <section
       aria-label="Portfolio summary"
-      className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4"
+      data-mobile-summary-grid
+      className="grid grid-cols-2 gap-3 xl:grid-cols-4"
     >
       <SummaryMetric
         label="Total Invested"
@@ -418,7 +419,7 @@ function EmbeddedInsightCard({ investments }: { investments: ExistingInvestment[
       </div>
       <Link
         href="/dashboard/ai-insights"
-        className="inline-flex min-h-10 items-center justify-center gap-2 rounded-[16px] border border-border bg-surface-secondary px-3 text-xs font-semibold text-text-primary transition-colors hover:bg-hover"
+        className="finance-focus inline-flex min-h-11 items-center justify-center gap-2 rounded-[16px] border border-border bg-surface-secondary px-3 text-xs font-semibold text-text-primary transition-colors hover:bg-hover"
       >
         View more
         <ArrowRight size={12} />

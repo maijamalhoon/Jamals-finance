@@ -317,7 +317,7 @@ export default async function ReportsPage({
       <div className="page-heading finance-surface-glass overflow-hidden print:border-none print:bg-white print:shadow-none">
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
-            <h1 className="page-title">Reports</h1>
+            <h2 className="page-title">Reports</h2>
             {financialDataAvailable ? (
               <span className="finance-status-success rounded-full border px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.08em]">
                 Ready
@@ -359,7 +359,7 @@ export default async function ReportsPage({
         </InlineNotice>
       ) : null}
 
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
+      <div data-mobile-summary-grid className="grid grid-cols-2 gap-3 xl:grid-cols-4">
         <article className="summary-card min-w-0">
           <div className="flex items-center gap-2 text-success">
             <TrendingUp aria-hidden="true" size={16} />

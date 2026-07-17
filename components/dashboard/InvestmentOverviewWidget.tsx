@@ -2,9 +2,10 @@
 
 import Link from "next/link";
 import { ArrowRight, Package, Zap } from "lucide-react";
-import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from "recharts";
+import { Cell, Pie, PieChart, Tooltip } from "recharts";
 
 import ChartCard from "@/components/dashboard/ChartCard";
+import ChartFrame from "@/components/ui/chart-frame";
 import { useCurrency } from "@/components/currency/CurrencyProvider";
 import CountedAmount from "@/components/motion/CountedAmount";
 import {
@@ -172,8 +173,9 @@ export default function InvestmentOverviewWidget({
             {unpricedCount > 0 ? ` ${unpricedCount} holdings are excluded because current pricing is unavailable.` : ""}
           </p>
           <div className="relative h-[132px] w-[132px]">
-            <ResponsiveContainer width="100%" height="100%" initialDimension={{ width: 128, height: 128 }}>
-              <PieChart accessibilityLayer>
+            <ChartFrame>
+              {({ width, height }) => (
+                <PieChart width={width} height={height} accessibilityLayer>
                 <Pie
                   data={allocationData}
                   dataKey="value"
@@ -203,8 +205,9 @@ export default function InvestmentOverviewWidget({
                     return item ? `${label} - ${formatAllocation((item.value / allocationTotalValue) * 100)}` : String(label);
                   }}
                 />
-              </PieChart>
-            </ResponsiveContainer>
+                </PieChart>
+              )}
+            </ChartFrame>
             <div className="absolute inset-[24px] grid place-items-center rounded-full border border-border bg-card text-center">
               <div>
                 <p className="max-w-[4.8rem] truncate text-[13px] font-black leading-none text-text-primary tabular-nums">

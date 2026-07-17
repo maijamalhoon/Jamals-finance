@@ -42,12 +42,29 @@ describe("Node 8 authentication experience contracts", () => {
     expect(loginSource).toContain("supabase.auth.signUp({");
     expect(loginSource).toContain("supabase.auth.signInWithOAuth({");
     expect(loginSource).toContain("supabase.auth.resetPasswordForEmail(");
-    expect(loginSource).toContain('type Step = "login" | "signup" | "forgot" | "check-email"');
+    for (const step of [
+      '"entry"',
+      '"password"',
+      '"signup-details"',
+      '"forgot"',
+      '"check-email"',
+    ]) {
+      expect(loginSource).toContain(step);
+    }
   });
 
   it("keeps credentials out of the URL before client hydration", () => {
-    expect(loginSource.match(/method="post"/g) ?? []).toHaveLength(3);
-    expect(loginSource.match(/action="\/login"/g) ?? []).toHaveLength(3);
+    expect(loginSource.match(/method="post"/g) ?? []).toHaveLength(4);
+    expect(loginSource.match(/action="\/login"/g) ?? []).toHaveLength(4);
+  });
+
+  it("uses an email-first state machine and clears sensitive values on account changes", () => {
+    expect(loginSource).toContain('const [step, setStep] = useState<Step>("entry")');
+    expect(loginSource).toContain('setStep(authMode === "signup" ? "signup-details" : "password")');
+    expect(loginSource).toContain('setPassword("")');
+    expect(loginSource).toContain('autoComplete="username"');
+    expect(loginSource).toContain("Use another account");
+    expect(loginSource).toContain("Change email");
   });
 
   it("keeps safe redirect sanitization in login and onboarding", () => {
@@ -72,7 +89,9 @@ describe("Node 8 authentication experience contracts", () => {
     expect(oauthCall).toContain("provider,");
     expect(oauthCall).toContain("/auth/callback?next=");
     expect(oauthCall).toContain("onboardingDestination(safeNext)");
-    expect(oauthCall).toContain('queryParams: { access_type: "offline", prompt: "consent" }');
+    expect(oauthCall).toContain('queryParams: { prompt: "select_account" }');
+    expect(loginSource).toContain("NEXT_PUBLIC_ENABLE_GOOGLE_AUTH");
+    expect(loginSource).not.toContain('access_type: "offline"');
   });
 
   it("keeps forgot-password recovery pointed at /reset-password", () => {
@@ -81,6 +100,21 @@ describe("Node 8 authentication experience contracts", () => {
       loginSource.indexOf("if (resetError)", loginSource.indexOf("supabase.auth.resetPasswordForEmail(")),
     );
     expect(resetCall).toContain("redirectTo: `${window.location.origin}/reset-password`");
+  });
+
+  it("supports privacy-safe confirmation resend and recovery retry states", () => {
+    expect(loginSource).toContain("supabase.auth.resend({");
+    expect(loginSource).toContain('type: "signup"');
+    expect(loginSource).toContain("resendCooldownSeconds");
+    expect(loginSource).toContain("maskEmail(submittedEmail)");
+    expect(loginSource).toContain("If this address supports password sign-in");
+    expect(loginSource).toContain("navigator.onLine");
+  });
+
+  it("does not expose deferred authentication methods in the current UI", () => {
+    expect(loginSource).not.toMatch(/Continue with (Apple|Microsoft)/);
+    expect(loginSource).not.toMatch(/phone number|WhatsApp|SMS sign-in/i);
+    expect(loginSource).not.toMatch(/passkey|single sign-on|MFA/i);
   });
 
   it("keeps onboarding user verification, profile columns, and completion checks", () => {
@@ -165,6 +199,8 @@ describe("Node 8 authentication experience contracts", () => {
     expect(authControlsSource).toContain("inputRef?: RefObject<HTMLInputElement | null>");
     expect(authControlsSource).toContain("Show ${props.label.toLowerCase()}");
     expect(authControlsSource).toContain("Hide ${props.label.toLowerCase()}");
+    expect(authControlsSource).toContain('getModifierState("CapsLock")');
+    expect(authControlsSource).toContain("AuthPasswordRequirements");
 
     for (const source of authRouteSources) {
       expect(source).toContain("name=");
@@ -187,7 +223,7 @@ describe("Node 8 authentication experience contracts", () => {
 
   it("prevents duplicate actions and catches rejected client auth promises", () => {
     expect(loginSource).toContain("const actionInFlight = useRef(false)");
-    expect(loginSource.match(/catch \{/g) ?? []).toHaveLength(4);
+    expect(loginSource.match(/catch \{/g)?.length ?? 0).toBeGreaterThanOrEqual(5);
     expect(onboardingSource).toContain("const saveInFlight = useRef(false)");
     expect(onboardingSource.match(/catch \{/g)?.length ?? 0).toBeGreaterThanOrEqual(6);
     expect(resetPasswordSource).toContain('if (recoveryState !== "ready") return');
@@ -201,6 +237,8 @@ describe("Node 8 authentication experience contracts", () => {
     }
     expect(authShellSource).toContain("Jamal&apos;s Finance");
     expect(authShellSource).toContain("data-auth-root");
+    expect(loginSource).toContain("minimal");
+    expect(resetPasswordSource).toContain("minimal");
   });
 
   it("keeps auth styling semantic, scoped, and autofill-safe", () => {
@@ -208,6 +246,8 @@ describe("Node 8 authentication experience contracts", () => {
     expect(globalsCssSource).toContain(".jf-auth-root .auth-input:-webkit-autofill");
     expect(globalsCssSource).toContain("-webkit-text-fill-color: var(--text-primary) !important;");
     expect(globalsCssSource).toContain("var(--surface-inset)");
+    expect(globalsCssSource).toContain('.jf-auth-root[data-auth-minimal]');
+    expect(globalsCssSource).toContain(".auth-password-requirements");
     expect(globalsCssSource).toContain("@media (prefers-reduced-motion: reduce)");
     expect(globalsCssSource).not.toContain(".chat-auth-");
     expect(globalsCssSource).not.toContain(".jf-login-polish");

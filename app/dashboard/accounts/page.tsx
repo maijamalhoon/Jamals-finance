@@ -93,7 +93,10 @@ export default async function AccountsPage() {
           </div>
 
           <div className="flex min-w-0 flex-col gap-3 sm:items-start lg:items-end">
-            <div className="grid w-full min-w-0 grid-cols-1 gap-2 sm:w-auto sm:grid-cols-2">
+            <div
+              data-mobile-summary-grid
+              className="grid w-full min-w-0 grid-cols-2 gap-2 sm:w-auto"
+            >
               <div className="summary-card min-w-0 border-active/30 bg-active/10 px-3 py-2">
                 <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-text-secondary">
                   Total Balance

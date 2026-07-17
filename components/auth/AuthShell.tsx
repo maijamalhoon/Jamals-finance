@@ -35,6 +35,7 @@ export default function AuthShell({
   description,
   icon: Icon = ShieldCheck,
   compact = false,
+  minimal = false,
 }: {
   children: ReactNode;
   eyebrow: string;
@@ -43,11 +44,13 @@ export default function AuthShell({
   description: string;
   icon?: LucideIcon;
   compact?: boolean;
+  minimal?: boolean;
 }) {
   return (
     <main
       className="jf-auth-root relative flex min-h-dvh min-w-0 flex-col overflow-x-clip bg-background text-text-primary"
       data-auth-root
+      data-auth-minimal={minimal || undefined}
     >
       <div className="jf-auth-ambient pointer-events-none absolute inset-0" aria-hidden="true" />
 
@@ -74,11 +77,15 @@ export default function AuthShell({
       </header>
 
       <div
-        className={`jf-auth-layout relative z-10 mx-auto grid w-full max-w-[1180px] min-w-0 flex-1 items-center gap-8 px-4 sm:px-6 lg:grid-cols-[minmax(0,1fr)_minmax(460px,480px)] lg:px-8 xl:gap-14 ${
+        className={`jf-auth-layout relative z-10 mx-auto grid w-full min-w-0 flex-1 items-center px-4 sm:px-6 lg:px-8 ${
+          minimal
+            ? "max-w-[540px] grid-cols-1 justify-items-center"
+            : "max-w-[1180px] gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(460px,480px)] xl:gap-14"
+        } ${
           compact ? "jf-auth-layout-compact" : ""
         }`}
       >
-        <aside className="jf-auth-context hidden min-w-0 lg:block" aria-label="Why use Jamal's Finance">
+        {!minimal ? <aside className="jf-auth-context hidden min-w-0 lg:block" aria-label="Why use Jamal's Finance">
           <p className="text-sm font-semibold text-brand">Calm by design</p>
           <h2 className="mt-4 max-w-xl text-balance text-4xl font-semibold leading-[1.08] text-text-primary xl:text-[2.8rem]">
             Make the next money decision with a clearer picture.
@@ -109,9 +116,9 @@ export default function AuthShell({
               );
             })}
           </div>
-        </aside>
+        </aside> : null}
 
-        <section className="jf-auth-card motion-reveal mx-auto w-full max-w-[480px] min-w-0 p-5 sm:p-7">
+        <section className={`jf-auth-card motion-reveal mx-auto w-full min-w-0 p-5 sm:p-7 ${minimal ? "max-w-[460px]" : "max-w-[480px]"}`}>
           <div className="mb-5 min-w-0">
             <div className="mb-4 flex min-w-0 items-center justify-between gap-3">
               <div className="flex min-w-0 flex-wrap items-center gap-2">
@@ -133,6 +140,18 @@ export default function AuthShell({
           {children}
         </section>
       </div>
+
+      {minimal ? (
+        <footer className="jf-auth-footer relative z-10 mx-auto flex w-full max-w-[540px] flex-wrap items-center justify-center gap-x-4 gap-y-1 px-5 pb-[max(1rem,env(safe-area-inset-bottom))] text-xs text-text-tertiary">
+          <span>Jamal&apos;s Finance account access</span>
+          <Link
+            href="/#privacy"
+            className="finance-focus inline-flex min-h-11 items-center rounded-[var(--radius-control)] px-2 font-semibold text-text-secondary hover:text-text-primary"
+          >
+            Privacy
+          </Link>
+        </footer>
+      ) : null}
     </main>
   );
 }

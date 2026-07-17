@@ -20,8 +20,13 @@ import {
   financeErrorClass,
   financeModalContentClass,
 } from "@/components/ui/finance-modal";
-import { BASE_CURRENCY } from "@/lib/currency";
+import { BASE_CURRENCY, formatMoney } from "@/lib/currency";
 import { getUserMutationError } from "@/lib/user-errors";
+import {
+  getAvailableTransferBalance,
+  getMaximumTransferInput,
+  getTransferAmountIssue,
+} from "@/lib/transfer-amount";
 
 interface Account {
   id: string;
@@ -49,8 +54,29 @@ export default function TransferModal({ open, onClose, onSuccess }: Props) {
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  const [amountTouched, setAmountTouched] = useState(false);
   const [swapAnnouncement, setSwapAnnouncement] = useState("");
-  const toAccounts = accounts.filter((account) => account.id !== fromAccountId);
+  const toAccounts = useMemo(
+    () => accounts.filter((account) => account.id !== fromAccountId),
+    [accounts, fromAccountId],
+  );
+  const fromAccount = useMemo(
+    () => accounts.find((account) => account.id === fromAccountId),
+    [accounts, fromAccountId],
+  );
+  const availableBalance = getAvailableTransferBalance(fromAccount?.balance);
+  const amountIssue = getTransferAmountIssue(amount, availableBalance);
+  const amountError =
+    amountTouched && amountIssue === "missing" ?
+      "Enter a transfer amount."
+    : amountTouched && amountIssue === "invalid" ?
+      "Enter a transfer amount greater than 0."
+    : amountTouched && amountIssue === "exceeds-balance" ?
+      `Amount exceeds the available balance of ${formatMoney(availableBalance, {
+        currency: BASE_CURRENCY,
+        maximumFractionDigits: 2,
+      })}.`
+    : null;
 
   useEffect(() => {
     if (!open) return;
@@ -77,6 +103,7 @@ export default function TransferModal({ open, onClose, onSuccess }: Props) {
     setReference("");
     setTransferDate(getAppDateKey());
     setError("");
+    setAmountTouched(false);
     setSwapAnnouncement("");
     loadAccounts();
   }, [open, supabase]);
@@ -97,10 +124,16 @@ export default function TransferModal({ open, onClose, onSuccess }: Props) {
     );
   }
 
+  function handleUseMaximum() {
+    if (!fromAccountId || availableBalance <= 0 || loading || saving) return;
+
+    setAmount(getMaximumTransferInput(availableBalance));
+    setAmountTouched(true);
+    setError("");
+  }
+
   async function handleSave() {
     if (saving || loading) return;
-
-    const parsedAmount = Number(amount);
 
     if (!fromAccountId || !toAccountId) {
       setError("Select both accounts.");
@@ -110,10 +143,15 @@ export default function TransferModal({ open, onClose, onSuccess }: Props) {
       setError("From and to account must be different.");
       return;
     }
-    if (!Number.isFinite(parsedAmount) || parsedAmount <= 0) {
-      setError("Enter a transfer amount greater than 0.");
+
+    setAmountTouched(true);
+
+    if (amountIssue) {
+      setError("");
       return;
     }
+
+    const parsedAmount = Number(amount);
 
     setSaving(true);
     setError("");
@@ -183,6 +221,8 @@ export default function TransferModal({ open, onClose, onSuccess }: Props) {
                     value={fromAccountId}
                     onValueChange={(nextFromId) => {
                       setFromAccountId(nextFromId);
+                      setAmountTouched(Boolean(amount));
+                      setError("");
                       setSwapAnnouncement("");
                       if (toAccountId === nextFromId) {
                         setToAccountId(
@@ -239,15 +279,62 @@ export default function TransferModal({ open, onClose, onSuccess }: Props) {
                 <FinanceFormField
                   label={`Amount (${BASE_CURRENCY})`}
                   htmlFor="transfer-amount"
+                  error={
+                    amountError ?
+                      <span id="transfer-amount-error">{amountError}</span>
+                    : undefined
+                  }
+                  hint={
+                    <span id="transfer-amount-balance">
+                      {fromAccount ?
+                        `Available: ${formatMoney(availableBalance, {
+                          currency: BASE_CURRENCY,
+                          maximumFractionDigits: 2,
+                        })}`
+                      : "Select a source account to see its available balance."}
+                    </span>
+                  }
                 >
-                  <Input
-                    id="transfer-amount"
-                    type="number"
-                    value={amount}
-                    onChange={(event) => setAmount(event.target.value)}
-                    placeholder="0"
-                    className="font-semibold"
-                  />
+                  <div className="relative">
+                    <Input
+                      id="transfer-amount"
+                      type="number"
+                      inputMode="decimal"
+                      min="0"
+                      max={availableBalance || undefined}
+                      step="any"
+                      value={amount}
+                      onChange={(event) => {
+                        setAmount(event.target.value);
+                        setAmountTouched(true);
+                        setError("");
+                      }}
+                      onBlur={() => setAmountTouched(true)}
+                      placeholder="0"
+                      aria-invalid={Boolean(amountError) || undefined}
+                      aria-describedby={
+                        amountError ?
+                          "transfer-amount-error"
+                        : "transfer-amount-balance"
+                      }
+                      className="pr-[4.75rem] font-semibold tabular-nums"
+                    />
+                    <button
+                      type="button"
+                      onClick={handleUseMaximum}
+                      disabled={
+                        !fromAccountId ||
+                        availableBalance <= 0 ||
+                        loading ||
+                        saving
+                      }
+                      className="finance-focus absolute inset-y-1.5 right-1.5 inline-flex min-w-14 items-center justify-center rounded-[calc(var(--radius-control)-0.3rem)] border border-info/25 bg-info/10 px-2.5 text-xs font-black uppercase tracking-[0.04em] text-info transition-[background-color,border-color,transform] hover:border-info/45 hover:bg-info/15 active:scale-[0.97] disabled:cursor-not-allowed disabled:border-border disabled:bg-surface-inset disabled:text-text-tertiary"
+                      aria-label="Use the full available account balance"
+                      title="Use full available balance"
+                    >
+                      Max
+                    </button>
+                  </div>
                 </FinanceFormField>
                 <FinanceFormField label="Transfer Date" htmlFor="transfer-date">
                   <DatePicker
@@ -299,7 +386,9 @@ export default function TransferModal({ open, onClose, onSuccess }: Props) {
           <Button
             type="button"
             onClick={handleSave}
-            disabled={saving || loading || accounts.length < 2}
+            disabled={
+              saving || loading || accounts.length < 2 || Boolean(amountIssue)
+            }
             loading={saving}
             loadingLabel="Saving transfer…"
             className="primary-action py-3"

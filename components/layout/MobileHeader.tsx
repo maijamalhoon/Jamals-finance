@@ -1,10 +1,9 @@
 "use client";
 
-import { CircleDollarSign } from "lucide-react";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 
-import JamalMenu from "@/components/layout/JamalMenu";
+import MobileNav from "@/components/layout/MobileNav";
 import { getRouteTitle } from "@/lib/navigation";
 
 type MobileHeaderProps = {
@@ -18,26 +17,19 @@ export default function MobileHeader({
   const routeTitle = getRouteTitle(pathname);
 
   return (
-    <header className="relative z-30 flex min-h-[68px] min-w-0 flex-shrink-0 items-center justify-between gap-2 border-b border-border bg-surface-primary px-3 shadow-theme print:hidden lg:hidden sm:px-4">
-      <div className="flex min-w-0 flex-1 items-center gap-2.5">
-        <div className="grid h-10 w-10 shrink-0 place-items-center rounded-[var(--radius-control)] border border-brand/25 bg-brand text-primary-foreground shadow-theme">
-          <CircleDollarSign size={18} aria-hidden="true" />
-        </div>
-        <div className="min-w-0 flex-1">
-          <p className="truncate text-sm font-bold leading-4 text-text-primary">
-            <span className="hidden min-[390px]:inline">Jamal&apos;s Finance</span>
-            <span className="min-[390px]:hidden">Finance</span>
-          </p>
-          <p className="mt-1 truncate text-[11px] font-semibold leading-4 text-text-secondary">
-            {routeTitle}
-          </p>
-        </div>
+    <header className="relative z-30 flex min-h-[60px] min-w-0 flex-shrink-0 items-center gap-2 border-b border-border bg-surface-primary/95 px-2.5 backdrop-blur-xl print:hidden lg:hidden sm:px-4">
+      <MobileNav />
+
+      <div className="min-w-0 flex-1 px-1">
+        <h1 className="truncate text-sm font-black leading-5 text-text-primary">
+          {routeTitle}
+        </h1>
+        <p className="truncate text-[10px] font-semibold uppercase tracking-[0.1em] text-text-tertiary">
+          Jamal&apos;s Finance
+        </p>
       </div>
 
-      <div className="flex shrink-0 items-center gap-1.5">
-        {notificationSlot}
-        <JamalMenu align="right" placement="bottom" variant="avatar" />
-      </div>
+      <div className="flex shrink-0 items-center">{notificationSlot}</div>
     </header>
   );
 }

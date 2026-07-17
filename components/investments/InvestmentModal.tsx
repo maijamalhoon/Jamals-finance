@@ -771,7 +771,7 @@ export default function InvestmentModal({
                     <button
                       type="button"
                       onClick={handleClearSearch}
-                      className="finance-focus absolute right-2 top-1/2 grid h-7 w-7 -translate-y-1/2 place-items-center rounded-full text-text-secondary transition-colors hover:bg-hover hover:text-text-primary"
+                      className="finance-focus absolute right-0 top-1/2 grid h-11 w-11 -translate-y-1/2 place-items-center rounded-full text-text-secondary transition-colors hover:bg-hover hover:text-text-primary"
                       aria-label="Clear asset search"
                     >
                       <X className="h-3.5 w-3.5" />
@@ -867,7 +867,7 @@ export default function InvestmentModal({
               <button
                 type="button"
                 onClick={handleManualMode}
-                className="text-xs font-semibold text-active transition-colors hover:text-active-hover"
+                className="finance-focus inline-flex min-h-11 items-center rounded-[var(--radius-button)] text-xs font-semibold text-active transition-colors hover:text-active-hover"
               >
                 Can't find asset? Add manually
               </button>
@@ -891,7 +891,7 @@ export default function InvestmentModal({
                     setQuery("");
                     clearMarketSelection();
                   }}
-                  className="mt-2 text-xs font-semibold text-active transition-colors hover:text-active-hover"
+                  className="finance-focus mt-2 inline-flex min-h-11 items-center rounded-[var(--radius-button)] text-xs font-semibold text-active transition-colors hover:text-active-hover"
                 >
                   Search crypto or stocks instead
                 </button>
@@ -939,7 +939,7 @@ export default function InvestmentModal({
                         setQuery("");
                         clearMarketSelection();
                       }}
-                      className="finance-focus rounded-full border border-border bg-card px-2.5 py-1 text-[11px] font-semibold text-text-primary transition-colors hover:bg-hover"
+                      className="finance-focus min-h-11 rounded-full border border-border bg-card px-2.5 py-1 text-[11px] font-semibold text-text-primary transition-colors hover:bg-hover"
                     >
                       Change
                     </button>
@@ -1022,7 +1022,7 @@ export default function InvestmentModal({
                       type="button"
                       onClick={() => setPurchaseCurrency(currency)}
                       aria-pressed={purchaseCurrency === currency}
-                      className={`finance-focus rounded-full px-2 py-1 text-[10px] font-bold transition-colors ${
+                      className={`finance-focus min-h-11 min-w-11 rounded-full px-2 py-1 text-[10px] font-bold transition-colors ${
                         purchaseCurrency === currency
                           ? "bg-card text-text-primary shadow-theme"
                           : "text-text-secondary hover:text-text-primary"
@@ -1088,7 +1088,7 @@ export default function InvestmentModal({
                       type="button"
                       onClick={() => setCurrentPriceCurrency(currency)}
                       aria-pressed={currentPriceCurrency === currency}
-                      className={`finance-focus rounded-full px-2 py-1 text-[10px] font-bold transition-colors ${
+                      className={`finance-focus min-h-11 min-w-11 rounded-full px-2 py-1 text-[10px] font-bold transition-colors ${
                         currentPriceCurrency === currency
                           ? "bg-card text-text-primary shadow-theme"
                           : "text-text-secondary hover:text-text-primary"

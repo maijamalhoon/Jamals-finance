@@ -200,6 +200,7 @@ export default function TransactionRow({ tx }: { tx: Transaction }) {
   return (
     <>
       <article
+        data-transaction-row
         className="group grid min-w-0 grid-cols-[auto,minmax(0,1fr)] gap-3 rounded-[var(--oneui-tile-radius)] border border-transparent px-3 py-3 transition-all duration-200 hover:-translate-y-0.5 hover:bg-hover hover:shadow-sm md:flex md:items-center"
       >
         <div

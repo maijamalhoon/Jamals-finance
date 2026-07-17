@@ -1,12 +1,23 @@
 "use client";
 
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import {
+  Activity,
+  ArrowLeftRight,
+  BarChart3,
   Check,
   ChevronDown,
   CircleDollarSign,
+  FileBarChart,
+  ListFilter,
+  Plus,
   Search,
+  TrendingDown,
+  TrendingUp,
+  WalletCards,
   X,
+  type LucideIcon,
 } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 import { Fragment, useState, type ReactNode } from "react";
@@ -39,22 +50,127 @@ import {
   isNavItemActive,
 } from "@/lib/navigation";
 
+const TransactionModal = dynamic(
+  () => import("@/components/dashboard/TransactionModal"),
+  { ssr: false },
+);
+
 type HeaderProps = {
   notificationSlot: ReactNode;
 };
 
 const desktopNavItemBaseClass =
-  "finance-focus relative flex min-h-11 min-w-0 items-center gap-1.5 rounded-[var(--radius-control)] border px-2 text-xs font-bold transition-colors xl:gap-2 xl:px-3 xl:text-sm";
+  "finance-focus relative flex min-h-11 min-w-0 items-center gap-1.5 rounded-[var(--radius-control)] border px-2.5 text-xs font-bold transition-[background-color,border-color,color,transform] duration-150 xl:gap-2 xl:px-3 xl:text-sm";
 const desktopNavItemActiveClass =
-  "border-brand/30 bg-brand/10 text-brand shadow-theme active:bg-brand/15";
+  "border-transparent bg-brand/10 text-brand shadow-none active:bg-brand/15";
 const desktopNavItemInactiveClass =
-  "border-transparent text-text-secondary hover:border-border hover:bg-hover hover:text-text-primary active:bg-surface-inset active:text-text-primary";
+  "border-transparent text-text-secondary hover:bg-hover hover:text-text-primary active:scale-[0.985] active:bg-surface-inset";
+
+type DesktopNavMenuEntry = {
+  label: string;
+  description: string;
+  icon: LucideIcon;
+  href?: string;
+  action?: "add-income" | "add-expense";
+};
+
+const DESKTOP_NAV_MENU_ENTRIES: Record<string, DesktopNavMenuEntry[]> = {
+  "/dashboard/accounts": [
+    {
+      label: "All accounts",
+      description: "Balances and account history",
+      icon: WalletCards,
+      href: "/dashboard/accounts",
+    },
+    {
+      label: "Transfer activity",
+      description: "Money moved between accounts",
+      icon: ArrowLeftRight,
+      href: "/dashboard/transactions?type=transfer",
+    },
+    {
+      label: "All account activity",
+      description: "Search the complete ledger",
+      icon: ListFilter,
+      href: "/dashboard/transactions",
+    },
+  ],
+  "/dashboard/income": [
+    {
+      label: "Income overview",
+      description: "Totals, sources, and history",
+      icon: TrendingUp,
+      href: "/dashboard/income",
+    },
+    {
+      label: "Add income",
+      description: "Record money received",
+      icon: Plus,
+      action: "add-income",
+    },
+    {
+      label: "Income transactions",
+      description: "Filtered transaction history",
+      icon: ListFilter,
+      href: "/dashboard/transactions?type=income",
+    },
+  ],
+  "/dashboard/expenses": [
+    {
+      label: "Expense overview",
+      description: "Totals, categories, and history",
+      icon: TrendingDown,
+      href: "/dashboard/expenses",
+    },
+    {
+      label: "Add expense",
+      description: "Record money spent",
+      icon: Plus,
+      action: "add-expense",
+    },
+    {
+      label: "Expense transactions",
+      description: "Filtered transaction history",
+      icon: ListFilter,
+      href: "/dashboard/transactions?type=expense",
+    },
+  ],
+  "/dashboard/analytics": [
+    {
+      label: "Analytics overview",
+      description: "Key metrics and trends",
+      icon: BarChart3,
+      href: "/dashboard/analytics",
+    },
+    {
+      label: "Cash flow",
+      description: "Income versus spending",
+      icon: Activity,
+      href: "/dashboard/analytics#cash-flow",
+    },
+    {
+      label: "Spending analysis",
+      description: "Category and account breakdown",
+      icon: TrendingDown,
+      href: "/dashboard/analytics#spending-analysis",
+    },
+    {
+      label: "Reports",
+      description: "Monthly financial reporting",
+      icon: FileBarChart,
+      href: "/dashboard/reports",
+    },
+  ],
+};
 
 export default function Header({ notificationSlot }: HeaderProps) {
   const router = useRouter();
   const pathname = usePathname();
   const [query, setQuery] = useState("");
   const [searchOpen, setSearchOpen] = useState(false);
+  const [transactionType, setTransactionType] = useState<
+    "income" | "expense" | null
+  >(null);
   const routeTitle = getRouteTitle(pathname);
   const routeGroup = getRouteGroup(pathname);
   const moreActive = isDesktopMoreActive(pathname);
@@ -71,9 +187,24 @@ export default function Header({ notificationSlot }: HeaderProps) {
     setSearchOpen(false);
   }
 
+  function handleMenuEntry(entry: DesktopNavMenuEntry) {
+    if (entry.action === "add-income") {
+      setTransactionType("income");
+      return;
+    }
+
+    if (entry.action === "add-expense") {
+      setTransactionType("expense");
+      return;
+    }
+
+    if (entry.href) router.push(entry.href);
+  }
+
   return (
-    <header className="jf-desktop-header relative z-30 min-w-0 flex-shrink-0 border-b border-border bg-surface-primary shadow-theme">
-      <div className="mx-auto flex min-h-[68px] w-full max-w-[1600px] min-w-0 items-center justify-between gap-3 px-3 xl:px-5">
+    <>
+    <header className="jf-desktop-header relative z-30 min-w-0 flex-shrink-0 border-b border-border bg-surface-primary/95 backdrop-blur-xl">
+      <div className="mx-auto flex min-h-16 w-full max-w-[1600px] min-w-0 items-center justify-between gap-4 px-4 xl:px-6">
         <div className="flex min-w-0 flex-1 items-center gap-3">
           <div className="grid h-10 w-10 shrink-0 place-items-center rounded-[var(--radius-control)] border border-brand/25 bg-brand text-primary-foreground shadow-theme">
             <CircleDollarSign size={18} aria-hidden="true" />
@@ -108,7 +239,7 @@ export default function Header({ notificationSlot }: HeaderProps) {
             role="search"
             aria-label="Search transactions"
             onSubmit={handleSearch}
-            className="finance-control finance-search-control hidden min-h-11 w-64 items-center gap-2 px-3 min-[1440px]:flex min-[1680px]:w-72"
+            className="finance-control finance-search-control hidden min-h-11 w-64 items-center gap-2 px-3 min-[1280px]:flex min-[1600px]:w-72"
           >
             <Search
               size={16}
@@ -133,7 +264,7 @@ export default function Header({ notificationSlot }: HeaderProps) {
             <SheetTrigger
               type="button"
               aria-label="Open transaction search"
-              className="finance-control finance-focus grid h-11 w-11 place-items-center rounded-[var(--radius-control)] text-text-secondary hover:text-text-primary min-[1440px]:hidden"
+              className="finance-control finance-focus grid h-11 w-11 place-items-center rounded-[var(--radius-control)] text-text-secondary hover:text-text-primary min-[1280px]:hidden"
             >
               <Search size={17} aria-hidden="true" />
             </SheetTrigger>
@@ -207,11 +338,80 @@ export default function Header({ notificationSlot }: HeaderProps) {
 
       <nav
         aria-label="Desktop dashboard navigation"
-        className="border-t border-border bg-surface-soft"
+        className="border-t border-border bg-surface-primary"
       >
-        <div className="mx-auto flex min-h-[60px] w-full max-w-[1600px] min-w-0 items-center gap-1 overflow-visible px-3 py-2 xl:gap-1.5 xl:px-5">
+        <div className="mx-auto flex min-h-14 w-full max-w-[1600px] min-w-0 items-center gap-1 overflow-visible px-4 py-1.5 xl:gap-1.5 xl:px-6">
           {DESKTOP_PRIMARY_NAV_ITEMS.map(({ label, href, icon: Icon }) => {
             const active = isNavItemActive(pathname, href);
+            const menuEntries = DESKTOP_NAV_MENU_ENTRIES[href];
+
+            if (menuEntries) {
+              return (
+                <DropdownMenu key={href}>
+                  <DropdownMenuTrigger
+                    type="button"
+                    aria-label={`Open ${label} navigation`}
+                    aria-current={active ? "page" : undefined}
+                    data-active={active ? "true" : "false"}
+                    className={`${desktopNavItemBaseClass} ${
+                      active
+                        ? desktopNavItemActiveClass
+                        : desktopNavItemInactiveClass
+                    }`}
+                  >
+                    <Icon size={16} strokeWidth={2.1} aria-hidden="true" />
+                    <span className="truncate">{label}</span>
+                    <ChevronDown size={13} strokeWidth={2.2} aria-hidden="true" />
+                    {active ? (
+                      <span
+                        aria-hidden="true"
+                        className="absolute inset-x-3 bottom-0 h-0.5 rounded-full bg-brand"
+                      />
+                    ) : null}
+                  </DropdownMenuTrigger>
+
+                  <DropdownMenuContent
+                    align="start"
+                    side="bottom"
+                    sideOffset={8}
+                    className="w-80 max-w-[calc(100vw-2rem)] rounded-[var(--radius-tile)] border border-border bg-surface-elevated p-1.5 shadow-[var(--shadow-soft)]"
+                  >
+                    <DropdownMenuGroup>
+                      <DropdownMenuLabel className="px-2.5 py-2 text-[10px] font-black uppercase tracking-[0.12em] text-text-tertiary">
+                        {label}
+                      </DropdownMenuLabel>
+                      {menuEntries.map((entry) => {
+                        const EntryIcon = entry.icon;
+
+                        return (
+                          <DropdownMenuItem
+                            key={`${entry.label}-${entry.href ?? entry.action}`}
+                            onClick={() => handleMenuEntry(entry)}
+                            className="min-h-14 cursor-pointer gap-3 rounded-[var(--radius-control)] px-2.5 py-2 text-text-secondary focus:bg-hover focus:text-text-primary"
+                          >
+                            <span className="grid h-9 w-9 shrink-0 place-items-center rounded-[12px] bg-surface-secondary text-text-primary">
+                              <EntryIcon
+                                size={16}
+                                strokeWidth={2.1}
+                                aria-hidden="true"
+                              />
+                            </span>
+                            <span className="min-w-0 flex-1">
+                              <span className="block truncate text-sm font-bold text-text-primary">
+                                {entry.label}
+                              </span>
+                              <span className="mt-0.5 block truncate text-[11px] font-medium text-text-tertiary">
+                                {entry.description}
+                              </span>
+                            </span>
+                          </DropdownMenuItem>
+                        );
+                      })}
+                    </DropdownMenuGroup>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              );
+            }
 
             return (
               <Link
@@ -225,7 +425,7 @@ export default function Header({ notificationSlot }: HeaderProps) {
                     : desktopNavItemInactiveClass
                 }`}
               >
-                <Icon size={15} strokeWidth={2.2} aria-hidden="true" />
+                <Icon size={16} strokeWidth={2.1} aria-hidden="true" />
                 <span className="truncate">{label}</span>
                 {active ? (
                   <span
@@ -250,7 +450,7 @@ export default function Header({ notificationSlot }: HeaderProps) {
               }`}
             >
               <span>More</span>
-              <ChevronDown size={14} strokeWidth={2.2} aria-hidden="true" />
+              <ChevronDown size={14} strokeWidth={2.1} aria-hidden="true" />
               {moreActive ? (
                 <span
                   aria-hidden="true"
@@ -313,5 +513,18 @@ export default function Header({ notificationSlot }: HeaderProps) {
         </div>
       </nav>
     </header>
+
+    {transactionType ? (
+      <TransactionModal
+        open
+        defaultType={transactionType}
+        onClose={() => setTransactionType(null)}
+        onSuccess={() => {
+          setTransactionType(null);
+          router.refresh();
+        }}
+      />
+    ) : null}
+    </>
   );
 }

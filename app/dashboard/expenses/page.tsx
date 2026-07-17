@@ -6,6 +6,8 @@ import Money from "@/components/currency/Money";
 import { Landmark, TrendingDown } from "lucide-react";
 import { loadTransactions } from "@/lib/transactions";
 import { formatDateKey, getAppDateParts } from "@/lib/dates";
+import { getPaginationState } from "@/lib/pagination";
+import TransactionPagination from "@/components/transactions/TransactionPagination";
 
 export const dynamic = "force-dynamic";
 
@@ -19,9 +21,14 @@ function getCategoryColor(color: string | null | undefined) {
   return isValidCategoryHex(color) ? color : "var(--expense)";
 }
 
-export default async function ExpensesPage() {
+export default async function ExpensesPage({
+  searchParams,
+}: {
+  searchParams?: Promise<{ page?: string }> | { page?: string };
+}) {
   const supabase = await createClient();
   const now = getAppDateParts();
+  const { page } = (await Promise.resolve(searchParams)) ?? {};
 
   const firstDayMonth = formatDateKey(now.year, now.month, 1);
   const firstDayYear = `${now.year}-01-01`;
@@ -29,6 +36,11 @@ export default async function ExpensesPage() {
   const raw = await loadTransactions(supabase, { type: "expense" });
 
   const expenses = raw ?? [];
+  const pagination = getPaginationState(expenses.length, page, 20);
+  const visibleExpenses = expenses.slice(
+    pagination.startIndex,
+    pagination.endIndex,
+  );
   const thisMonthEntries = expenses.filter((t) => t.date >= firstDayMonth);
   const thisMonth = thisMonthEntries.reduce(
     (s, t) => s + Number(t.amount),
@@ -115,7 +127,10 @@ export default async function ExpensesPage() {
         )}
       </div>
 
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+      <div
+        data-mobile-summary-grid
+        className="grid grid-cols-2 gap-3 sm:grid-cols-3"
+      >
         <div className="summary-card min-w-0">
           <p className="mb-1.5 text-xs font-semibold text-text-secondary">
             This Month
@@ -134,7 +149,7 @@ export default async function ExpensesPage() {
           </p>
         </div>
 
-        <div className="summary-card min-w-0 border-danger/30 bg-danger/10">
+        <div className="summary-card col-span-2 min-w-0 border-danger/30 bg-danger/10 sm:col-span-1">
           <p className="mb-1.5 text-xs font-semibold text-text-secondary">
             Highest Month Ever
           </p>
@@ -194,7 +209,9 @@ export default async function ExpensesPage() {
             All Expenses
           </h3>
           <span className="text-xs font-medium text-text-secondary">
-            {expenses.length} entries
+            {expenses.length === 0
+              ? "0 entries"
+              : `${pagination.startIndex + 1}-${pagination.endIndex} of ${expenses.length}`}
           </span>
         </div>
 
@@ -215,7 +232,18 @@ export default async function ExpensesPage() {
             description="Record your first expense to unlock category breakdowns and spend patterns."
           />
         ) : (
-          expenses.map((tx) => <TransactionRow key={tx.id} tx={tx as any} />)
+          <>
+            <div className="space-y-1">
+              {visibleExpenses.map((tx) => (
+                <TransactionRow key={tx.id} tx={tx as any} />
+              ))}
+            </div>
+            <TransactionPagination
+              {...pagination}
+              basePath="/dashboard/expenses"
+              itemLabel="expense entries"
+            />
+          </>
         )}
       </div>
     </div>

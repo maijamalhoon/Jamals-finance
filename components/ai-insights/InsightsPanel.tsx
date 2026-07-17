@@ -191,7 +191,7 @@ function HealthMeter({ score, label }: { score: number; label: string }) {
 
 function SummarySkeleton() {
   return (
-    <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4">
+    <div data-mobile-summary-grid className="grid grid-cols-2 gap-3 xl:grid-cols-4">
       {[1, 2, 3, 4].map((item) => (
         <div
           key={item}
@@ -327,7 +327,7 @@ export default function InsightsPanel() {
       {loading ?
         <SummarySkeleton />
       : summaryCards.length > 0 ?
-        <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4">
+        <div data-mobile-summary-grid className="grid grid-cols-2 gap-3 xl:grid-cols-4">
           {summaryCards.map((card) => (
             <div
               key={card.label}
@@ -695,7 +695,7 @@ export default function InsightsPanel() {
           <button
             type="submit"
             disabled={!question.trim() || chatLoading}
-            className="primary-action min-h-11 px-3"
+            className="primary-action min-h-11 min-w-11 px-3"
             aria-label="Send finance question"
           >
             {chatLoading ?
