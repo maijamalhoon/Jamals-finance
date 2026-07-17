@@ -1,17 +1,25 @@
+import type { Metadata } from "next";
 import { Suspense } from "react";
 
-import Header from "@/components/layout/Header";
-import MobileHeader from "@/components/layout/MobileHeader";
 import FloatingActions from "@/components/layout/FloatingActions";
 import NotificationCenter, {
   NotificationCenterLoading,
 } from "@/components/layout/NotificationCenter";
-import DashboardScrollRestoration from "@/components/motion/DashboardScrollRestoration";
+import ResponsiveDashboardHeader from "@/components/layout/ResponsiveDashboardHeader";
 import ConnectionStatus from "@/components/layout/ConnectionStatus";
+import DashboardScrollRestoration from "@/components/motion/DashboardScrollRestoration";
 import type { NotificationState } from "@/lib/notifications";
 import { loadDashboardNotifications } from "@/lib/notifications-server";
 
+import "./dashboard-performance.css";
+
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  alternates: {
+    canonical: "/dashboard",
+  },
+};
 
 async function NotificationCenterSlot({
   statePromise,
@@ -50,11 +58,7 @@ export default function DashboardLayout({
       />
 
       <div className="relative z-10 flex w-full min-w-0 flex-1 flex-col overflow-hidden">
-        <div className="jf-dashboard-header-wrap hidden shrink-0 print:hidden lg:block">
-          <Header notificationSlot={notificationSlot} />
-        </div>
-
-        <MobileHeader notificationSlot={notificationSlot} />
+        <ResponsiveDashboardHeader notificationSlot={notificationSlot} />
         <ConnectionStatus />
         <DashboardScrollRestoration />
 
