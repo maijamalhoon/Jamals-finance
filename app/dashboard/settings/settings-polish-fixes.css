@@ -1,0 +1,37 @@
+/* Selector correction loaded after the main Settings polish. */
+.settings-page-polish section:nth-of-type(7) > div {
+  gap: 0.75rem;
+}
+
+.settings-page-polish section:nth-of-type(7) .summary-card {
+  position: relative;
+  overflow: hidden;
+  min-height: 6.6rem;
+  display: grid;
+  place-content: center;
+  border: 1px solid color-mix(in srgb, var(--border), transparent 5%);
+  border-radius: 1rem;
+  background:
+    radial-gradient(circle at 100% 0, color-mix(in srgb, var(--primary), transparent 87%) 0, transparent 42%),
+    var(--surface-primary);
+  box-shadow: var(--surface-highlight), 0 8px 22px rgb(23 35 58 / 0.055);
+}
+
+.settings-page-polish section:nth-of-type(7) .summary-card p:first-child {
+  font-size: clamp(1.35rem, 3vw, 1.8rem);
+  line-height: 1;
+  letter-spacing: -0.04em;
+}
+
+.settings-page-polish section:nth-of-type(7) .summary-card p:last-child {
+  margin-top: 0.5rem;
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+@media (max-width: 639px) {
+  .settings-page-polish section:nth-of-type(7) .summary-card {
+    min-height: 5.4rem;
+  }
+}
