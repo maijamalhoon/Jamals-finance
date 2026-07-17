@@ -1,8 +1,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import SettingsOneUI, {
-  type SettingsCategory,
-} from "@/components/settings/SettingsOneUI";
+import SettingsExperience from "@/components/settings/SettingsExperience";
+import type { SettingsCategory } from "@/components/settings/SettingsOneUI";
 
 import "./settings-polish.css";
 import "./settings-polish-fixes.css";
@@ -106,7 +105,7 @@ export default async function SettingsPage() {
 
   return (
     <div className="settings-page-polish">
-      <SettingsOneUI
+      <SettingsExperience
         email={user.email ?? ""}
         userId={user.id}
         displayName={displayName}
