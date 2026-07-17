@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import PremiumLandingPage from "@/components/landing/PremiumLandingPage";
 
+import "./landing-enhancements.css";
+
 export const metadata: Metadata = {
   title: "Jamal's Finance - Calm Personal Finance Workspace",
   description:
