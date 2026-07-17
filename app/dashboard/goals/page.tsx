@@ -4,22 +4,88 @@ import AddGoalButton from "@/components/goals/AddGoalButton";
 import GoalSummaryStats from "@/components/goals/GoalSummaryStats";
 import EmptyState from "@/components/ui/empty-state";
 import { AlertTriangle, Target } from "lucide-react";
+import type { ExistingGoal, GoalAccount } from "@/components/goals/GoalModal";
+
+interface GoalContributionRow {
+  id: string;
+  amount: number;
+  contributed_at: string;
+  note: string | null;
+  contribution_account: GoalAccount | null;
+}
+
+interface GoalRow extends ExistingGoal {
+  linked_account: GoalAccount | null;
+  goal_contributions: GoalContributionRow[];
+}
 
 export const dynamic = "force-dynamic";
 
 export default async function GoalsPage() {
   const supabase = await createClient();
 
-  const { data: goals, error: goalsError } = await supabase
-    .from("goals")
-    .select("*")
-    .order("created_at", { ascending: false });
+  const [goalsResult, accountsResult] = await Promise.all([
+    supabase
+      .from("goals")
+      .select(`
+        id,
+        name,
+        target_amount,
+        current_amount,
+        deadline,
+        icon,
+        account_id,
+        linked_account:account_id(id, name, type),
+        goal_contributions(
+          id,
+          amount,
+          contributed_at,
+          note,
+          contribution_account:account_id(id, name, type)
+        )
+      `)
+      .order("created_at", { ascending: false })
+      .order("contributed_at", {
+        referencedTable: "goal_contributions",
+        ascending: false,
+      }),
+    supabase
+      .from("accounts")
+      .select("id, name, type")
+      .eq("status", "active")
+      .order("name"),
+  ]);
+
+  const { data: goals, error: goalsError } = goalsResult;
+  const { data: accounts, error: accountsError } = accountsResult;
 
   if (goalsError) {
-    console.error("Failed to load goals", goalsError.message);
+    console.error("Failed to load goals", { code: goalsError.code });
+  }
+  if (accountsError) {
+    console.error("Failed to load goal accounts", { code: accountsError.code });
   }
 
-  const list = goals ?? [];
+  const list = (goals ?? []).map((goal) => {
+    const raw = goal as unknown as Omit<GoalRow, "linked_account" | "goal_contributions"> & {
+      linked_account: GoalAccount[];
+      goal_contributions: Array<
+        Omit<GoalContributionRow, "contribution_account"> & {
+          contribution_account: GoalAccount[];
+        }
+      >;
+    };
+
+    return {
+      ...raw,
+      linked_account: raw.linked_account?.[0] ?? null,
+      goal_contributions: (raw.goal_contributions ?? []).map((contribution) => ({
+        ...contribution,
+        contribution_account: contribution.contribution_account?.[0] ?? null,
+      })),
+    } satisfies GoalRow;
+  });
+  const accountList = (accounts ?? []) as GoalAccount[];
   const completed = list.filter(
     (g) => Number(g.current_amount) >= Number(g.target_amount),
   );
@@ -43,7 +109,7 @@ export default async function GoalsPage() {
               {completed.length} of {list.length} completed
             </p>
           </div>
-          <AddGoalButton />
+          <AddGoalButton accounts={accountList} />
         </div>
       </section>
 
@@ -56,6 +122,13 @@ export default async function GoalsPage() {
           overallPct={overallPct}
         />
       )}
+
+      {accountsError && !goalsError ? (
+        <div role="status" className="finance-panel-soft flex items-start gap-3 p-4 text-sm text-text-secondary">
+          <AlertTriangle className="mt-0.5 shrink-0 text-warning" size={18} aria-hidden="true" />
+          <p>Goals are available, but linked accounts could not be loaded. Refresh before editing account links.</p>
+        </div>
+      ) : null}
 
       {goalsError ? (
         <div className="finance-panel min-h-[280px] px-5">
@@ -76,7 +149,7 @@ export default async function GoalsPage() {
       ) : (
         <div className="grid auto-rows-fr grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
           {list.map((g) => (
-            <GoalCard key={g.id} goal={g as any} />
+            <GoalCard key={g.id} goal={g} accounts={accountList} />
           ))}
         </div>
       )}

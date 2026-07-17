@@ -21,6 +21,7 @@ import {
   financeModalContentClass,
 } from "@/components/ui/finance-modal";
 import { BASE_CURRENCY } from "@/lib/currency";
+import { getUserMutationError } from "@/lib/user-errors";
 
 interface Account {
   id: string;
@@ -44,6 +45,7 @@ export default function TransferModal({ open, onClose, onSuccess }: Props) {
   const [amount, setAmount] = useState("");
   const [transferDate, setTransferDate] = useState(getAppDateKey());
   const [note, setNote] = useState("");
+  const [reference, setReference] = useState("");
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
@@ -58,6 +60,7 @@ export default function TransferModal({ open, onClose, onSuccess }: Props) {
       const { data } = await supabase
         .from("accounts")
         .select("id, name, type, balance")
+        .eq("status", "active")
         .order("name");
 
       const rows = (data ?? []) as Account[];
@@ -71,6 +74,7 @@ export default function TransferModal({ open, onClose, onSuccess }: Props) {
 
     setAmount("");
     setNote("");
+    setReference("");
     setTransferDate(getAppDateKey());
     setError("");
     setSwapAnnouncement("");
@@ -134,12 +138,15 @@ export default function TransferModal({ open, onClose, onSuccess }: Props) {
         amount: parsedAmount,
         transfer_date: transferDate,
         note: note.trim() || null,
+        reference: reference.trim() || null,
       });
 
     setSaving(false);
 
     if (saveError) {
-      setError(saveError.message);
+      setError(
+        getUserMutationError(saveError, "Transfer could not be recorded. Try again."),
+      );
       toast.error("Failed to record transfer");
       return;
     }
@@ -155,7 +162,7 @@ export default function TransferModal({ open, onClose, onSuccess }: Props) {
       <DialogContent className={financeModalContentClass}>
         <FinanceModalHeader
           title="Transfer Money"
-          description="Select different accounts, amount, date, and an optional note."
+          description="Select different accounts, amount, date, note, and reference."
           icon={ArrowLeftRight}
           tone="info"
         />
@@ -259,6 +266,15 @@ export default function TransferModal({ open, onClose, onSuccess }: Props) {
                   value={note}
                   onChange={(event) => setNote(event.target.value)}
                   placeholder="ATM cash withdrawal, bank deposit, wallet move..."
+                />
+              </FinanceFormField>
+
+              <FinanceFormField label="Reference (Optional)" htmlFor="transfer-reference">
+                <Input
+                  id="transfer-reference"
+                  value={reference}
+                  onChange={(event) => setReference(event.target.value)}
+                  placeholder="Bank confirmation or transfer reference"
                 />
               </FinanceFormField>
             </>

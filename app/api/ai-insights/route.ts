@@ -576,7 +576,7 @@ async function getFinanceSummary() {
     ),
     readSummaryRows<RawAccount>(
       "accounts",
-      supabase.from("accounts").select("balance"),
+      supabase.from("accounts").select("balance").eq("status", "active"),
     ),
   ]);
 
@@ -595,22 +595,28 @@ async function getFinanceSummary() {
   const currentIncome = currentMonthTransactions
     .filter((transaction) => transaction.type === "income")
     .reduce((sum, transaction) => sum + toFiniteNumber(transaction.amount), 0);
-  const currentExpenses = currentMonthTransactions
+  const currentGrossExpenses = currentMonthTransactions
     .filter((transaction) => transaction.type === "expense")
     .reduce((sum, transaction) => sum + toFiniteNumber(transaction.amount), 0);
+  const currentRefunds = currentMonthTransactions
+    .filter((transaction) => transaction.type === "refund")
+    .reduce((sum, transaction) => sum + toFiniteNumber(transaction.amount), 0);
+  const currentExpenses = currentGrossExpenses - currentRefunds;
   const categoryMap = new Map<string, number>();
 
   currentMonthTransactions
-    .filter((transaction) => transaction.type === "expense")
+    .filter((transaction) => transaction.type === "expense" || transaction.type === "refund")
     .forEach((transaction) => {
       const category = getCategoryName(transaction.categories);
+      const direction = transaction.type === "refund" ? -1 : 1;
       categoryMap.set(
         category,
-        (categoryMap.get(category) ?? 0) + toFiniteNumber(transaction.amount),
+        (categoryMap.get(category) ?? 0) + direction * toFiniteNumber(transaction.amount),
       );
     });
 
   const categorySpendingTotals = Array.from(categoryMap.entries())
+    .filter(([, amount]) => amount > 0)
     .map(([category, amount]) => ({ category, amount: roundCurrency(amount) }))
     .sort((a, b) => b.amount - a.amount)
     .slice(0, 8);
@@ -625,9 +631,13 @@ async function getFinanceSummary() {
     const income = rangeTransactions
       .filter((transaction) => transaction.type === "income")
       .reduce((sum, transaction) => sum + toFiniteNumber(transaction.amount), 0);
-    const expenses = rangeTransactions
+    const grossExpenses = rangeTransactions
       .filter((transaction) => transaction.type === "expense")
       .reduce((sum, transaction) => sum + toFiniteNumber(transaction.amount), 0);
+    const refunds = rangeTransactions
+      .filter((transaction) => transaction.type === "refund")
+      .reduce((sum, transaction) => sum + toFiniteNumber(transaction.amount), 0);
+    const expenses = grossExpenses - refunds;
 
     return {
       month: range.key,

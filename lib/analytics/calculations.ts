@@ -543,7 +543,7 @@ function normalizedAmount(value: unknown) {
 
 function normalizedType(value: string) {
   const type = value.trim().toLowerCase();
-  return type === "income" || type === "expense" ? type : null;
+  return type === "income" || type === "expense" || type === "refund" ? type : null;
 }
 
 function transactionDateKey(transaction: AnalyticsTransactionData) {
@@ -562,10 +562,17 @@ export function sumTransactions(
   type: "income" | "expense",
 ) {
   return transactions.reduce((sum, transaction) => {
-    if (!isTransactionInRange(transaction, range) || normalizedType(transaction.type) !== type) {
+    if (!isTransactionInRange(transaction, range)) {
       return sum;
     }
-    return sum + normalizedAmount(transaction.amount);
+    const transactionType = normalizedType(transaction.type);
+    const amount = normalizedAmount(transaction.amount);
+    if (type === "income") {
+      return transactionType === "income" ? sum + amount : sum;
+    }
+    if (transactionType === "expense") return sum + amount;
+    if (transactionType === "refund") return sum - amount;
+    return sum;
   }, 0);
 }
 
@@ -592,6 +599,7 @@ export function compareIncome(current: number, previous: number): ChangeResult {
 export function compareExpenses(current: number, previous: number): ChangeResult {
   if (previous > 0) return percentageChange(current, previous, false);
   if (current > 0) return { kind: "status", label: "New", sentiment: "negative", value: null };
+  if (current < 0) return { kind: "status", label: "Net refund", sentiment: "positive", value: null };
   return { kind: "status", label: "No change", sentiment: "neutral", value: null };
 }
 
@@ -761,26 +769,30 @@ export function buildSpendingData(
   const spending = new Map<string, { id: string; name: string; amount: number; color: string | null }>();
 
   for (const transaction of transactions) {
-    if (!isTransactionInRange(transaction, range) || normalizedType(transaction.type) !== "expense") continue;
+    if (!isTransactionInRange(transaction, range)) continue;
+    const type = normalizedType(transaction.type);
+    if (type !== "expense" && type !== "refund") continue;
     const amount = normalizedAmount(transaction.amount);
     if (amount === 0) continue;
+    const delta = type === "refund" ? -amount : amount;
     const id = transaction.categoryId?.trim() || "uncategorized";
     const current = spending.get(id);
     const nextColor = isUsableColor(transaction.categoryColor) ? transaction.categoryColor : null;
     if (current) {
-      current.amount += amount;
+      current.amount += delta;
       if (!isUsableColor(current.color) && nextColor) current.color = nextColor;
     } else {
       spending.set(id, {
         id,
         name: transaction.categoryName?.trim() || "Other",
-        amount,
+        amount: delta,
         color: nextColor,
       });
     }
   }
 
   const categories = Array.from(spending.values())
+    .filter((item) => item.amount > 0)
     .map((item) => ({ ...item, color: isUsableColor(item.color) ? item.color : DEFAULT_CATEGORY_COLOR }))
     .sort((left, right) => right.amount - left.amount || left.id.localeCompare(right.id));
   if (categories.length <= 5) return categories;
@@ -858,24 +870,27 @@ export function buildAccountBreakdown(
 ): AccountBreakdownItem[] {
   const accounts = new Map<string, { id: string; name: string; type: string | null; amount: number }>();
   for (const transaction of transactions) {
-    if (!isTransactionInRange(transaction, range) || normalizedType(transaction.type) !== "expense") continue;
+    if (!isTransactionInRange(transaction, range)) continue;
+    const transactionType = normalizedType(transaction.type);
+    if (transactionType !== "expense" && transactionType !== "refund") continue;
     const amount = normalizedAmount(transaction.amount);
     if (amount === 0) continue;
+    const delta = transactionType === "refund" ? -amount : amount;
     const storedId = transaction.accountId?.trim() || "";
     const id = storedId || "account:unknown";
     const current = accounts.get(id);
-    if (current) current.amount += amount;
+    if (current) current.amount += delta;
     else {
       accounts.set(id, {
         id,
         name: transaction.accountName?.trim() || UNKNOWN_ACCOUNT,
         type: transaction.accountType?.trim() || null,
-        amount,
+        amount: delta,
       });
     }
   }
   return withPercentages(
-    Array.from(accounts.values()).sort(
+    Array.from(accounts.values()).filter((item) => item.amount > 0).sort(
       (left, right) => right.amount - left.amount || left.id.localeCompare(right.id),
     ),
   );

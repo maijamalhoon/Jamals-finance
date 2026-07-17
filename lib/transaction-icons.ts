@@ -1,9 +1,11 @@
 import {
   ArrowLeftRight,
   Car,
+  ChartNoAxesCombined,
   Coffee,
   Landmark,
   ReceiptText,
+  RotateCcw,
   ShoppingBag,
   Target,
   TrendingDown,
@@ -109,6 +111,22 @@ export function getTransactionIconMeta({
     };
   }
 
+  if (type === "investment") {
+    return {
+      label: "Investment contribution",
+      icon: ChartNoAxesCombined,
+      accent: FEATURE_COLOR_CSS.investment,
+    };
+  }
+
+  if (type === "refund") {
+    return {
+      label: "Expense refund",
+      icon: RotateCcw,
+      accent: FEATURE_COLOR_CSS.transfer,
+    };
+  }
+
   if (type === "transfer") {
     return {
       label: "Transfer",
@@ -133,12 +151,21 @@ export function getTransactionToneClass(type?: string | null) {
     return "text-expense";
   }
 
+  if (type === "investment") {
+    return "text-investment";
+  }
+
+  if (type === "refund") {
+    return "text-info";
+  }
+
   return "text-transfer";
 }
 
 export function getTransactionPrefix(type?: string | null) {
   if (type === "income") return "+ ";
-  if (type === "expense") return "- ";
+  if (type === "refund") return "+ ";
+  if (type === "expense" || type === "investment") return "- ";
   return "";
 }
 

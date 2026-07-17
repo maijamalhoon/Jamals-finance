@@ -20,6 +20,7 @@ import {
   financeErrorClass,
   financeModalContentClass,
 } from "@/components/ui/finance-modal";
+import { getUserMutationError } from "@/lib/user-errors";
 
 const TYPES = [
   { value: "crypto", label: "Crypto" },
@@ -337,6 +338,7 @@ export default function InvestmentModal({
       const accountsRequest = supabase
         .from("accounts")
         .select("id, name, type, balance")
+        .eq("status", "active")
         .order("name");
 
       const linkedTransactionRequest =
@@ -358,7 +360,7 @@ export default function InvestmentModal({
       if (accountsError) {
         setAccounts([]);
         setAccountId("");
-        setError(accountsError.message || "Could not load accounts.");
+        setError("Accounts could not be loaded. Check your connection and try again.");
         return;
       }
 
@@ -699,7 +701,9 @@ export default function InvestmentModal({
     setLoading(false);
 
     if (saveError) {
-      setError(saveError.message || "Failed to save. Try again.");
+      setError(
+        getUserMutationError(saveError, "Investment could not be saved. Try again."),
+      );
       toast.error("Failed to save investment");
       return;
     }

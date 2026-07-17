@@ -21,6 +21,7 @@ import {
 import { PAYABLE_QUICK_REASONS } from "@/lib/finance-options";
 import { HandCoins } from "lucide-react";
 import { BASE_CURRENCY } from "@/lib/currency";
+import { getUserMutationError } from "@/lib/user-errors";
 
 export interface ExistingPayable {
   id: string;
@@ -104,7 +105,9 @@ export default function PayableModal({ open, onClose, payable }: Props) {
     setLoading(false);
 
     if (saveError) {
-      setError(saveError.message);
+      setError(
+        getUserMutationError(saveError, "Payable could not be saved. Try again."),
+      );
       toast.error("Failed to save payable");
       return;
     }

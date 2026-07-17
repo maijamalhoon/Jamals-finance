@@ -3113,6 +3113,16 @@ select {
   --receipt-soft: var(--expense-soft);
 }
 
+[data-receipt-tone="investment"] {
+  --receipt-accent: var(--investment);
+  --receipt-soft: var(--investment-soft);
+}
+
+[data-receipt-tone="refund"] {
+  --receipt-accent: var(--info);
+  --receipt-soft: var(--info-soft);
+}
+
 [data-receipt-tone="transfer"] {
   --receipt-accent: var(--transfer);
   --receipt-soft: var(--transfer-soft);
@@ -5916,5 +5926,43 @@ body {
 @media print {
   :where([data-loading-region="true"], [data-slot="skeleton"]) {
     display: none !important;
+  }
+
+  body:has([data-print-report]) [data-dashboard-shell] {
+    display: block !important;
+    height: auto !important;
+    min-height: auto !important;
+    overflow: visible !important;
+    background: #ffffff !important;
+  }
+
+  body:has([data-print-report]) [data-dashboard-scroll] {
+    overflow: visible !important;
+    padding: 0 !important;
+  }
+
+  body:has([data-print-report]) .jf-node4-dashboard-ambient,
+  body:has([data-print-report]) .jf-dashboard-grid {
+    display: none !important;
+  }
+
+  [data-print-report] {
+    --background: #ffffff;
+    --card: #ffffff;
+    --surface-secondary: #f8fafc;
+    --border: #cbd5e1;
+    --text-primary: #0f172a;
+    --text-secondary: #475569;
+    color: #0f172a !important;
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+
+  [data-print-report] :where(.finance-panel, .finance-panel-soft, .summary-card) {
+    box-shadow: none !important;
+  }
+
+  [data-print-report] :where(article, section, .finance-panel, .summary-card) {
+    break-inside: avoid;
   }
 }

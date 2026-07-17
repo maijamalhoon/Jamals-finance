@@ -15,6 +15,7 @@ import ChartFrame from "@/components/ui/chart-frame";
 
 interface Props {
   data: { month: string; income: number; expenses: number }[];
+  title?: string;
 }
 
 interface TooltipPayload {
@@ -52,14 +53,24 @@ function CustomTooltip({
   );
 }
 
-export default function MonthlyChart({ data }: Props) {
+export default function MonthlyChart({ data, title = "Cash-flow overview" }: Props) {
   const { formatCurrency } = useCurrency();
 
   return (
     <div className="finance-panel min-w-0 overflow-hidden p-4 sm:p-5">
       <h3 className="mb-5 text-sm font-semibold text-text-primary">
-        Monthly Overview (Last 6 Months)
+        {title}
       </h3>
+      <p className="sr-only">
+        {data.length === 0
+          ? "No cash-flow points are available."
+          : data
+              .map(
+                (point) =>
+                  `${point.month}: income ${formatCurrency(point.income)}, expenses ${formatCurrency(point.expenses)}`,
+              )
+              .join(". ")}
+      </p>
       <ChartFrame className="h-[260px] min-h-[260px] min-w-0 overflow-hidden">
         <ResponsiveContainer
           width="100%"

@@ -6,16 +6,24 @@ import { useEffect, useState, useTransition } from "react";
 import {
   AlertTriangle,
   Bell,
+  BellOff,
+  Check,
+  CheckCheck,
   Clock3,
   Info,
   RefreshCw,
+  Settings,
   Target,
+  Timer,
   WifiOff,
   X,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { BackgroundRefreshStatus } from "@/components/loading/LoadingPrimitives";
+import { createClient } from "@/lib/supabase/client";
+import { getUserMutationError } from "@/lib/user-errors";
+import { toast } from "sonner";
 import {
   Sheet,
   SheetClose,
@@ -26,15 +34,17 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import type {
-  NotificationAlert,
+  NotificationInboxAlert,
   NotificationSource,
   NotificationState,
   NotificationTone,
 } from "@/lib/notifications";
 import {
+  addDaysToDateKey,
   getNotificationSummary,
   getNotificationTriggerLabel,
 } from "@/lib/notifications";
+import { getAppDateKey } from "@/lib/dates";
 
 type NotificationCenterProps = {
   state: NotificationState;
@@ -80,51 +90,135 @@ function formatUnavailableSources(sources: NotificationSource[]) {
 function AlertRow({
   alert,
   onNavigate,
+  onMarkRead,
+  onSnooze,
+  onDismiss,
+  pending,
+  persistenceAvailable,
 }: {
-  alert: NotificationAlert;
-  onNavigate: () => void;
+  alert: NotificationInboxAlert;
+  onNavigate: (alert: NotificationInboxAlert) => void;
+  onMarkRead: (alert: NotificationInboxAlert) => void;
+  onSnooze: (alert: NotificationInboxAlert) => void;
+  onDismiss: (alert: NotificationInboxAlert) => void;
+  pending: boolean;
+  persistenceAvailable: boolean;
 }) {
   const tone = toneStyles[alert.tone];
   const Icon = tone.icon;
   const SourceIcon = alert.source === "goal" ? Target : Clock3;
 
   return (
-    <Link
-      href={alert.href}
-      onClick={onNavigate}
-      className="finance-focus group flex min-h-11 min-w-0 gap-3 rounded-[var(--radius-tile)] border border-border bg-surface-primary p-3.5 text-left shadow-theme transition-colors hover:border-border-strong hover:bg-surface-soft"
+    <article
+      className={`rounded-[var(--radius-tile)] border bg-surface-primary p-3.5 shadow-theme transition-colors ${
+        alert.read === false ? "border-brand/35" : "border-border"
+      }`}
     >
-      <span
-        className={`grid h-10 w-10 shrink-0 place-items-center rounded-[var(--radius-control)] border ${tone.className}`}
+      <Link
+        href={alert.href}
+        onClick={() => onNavigate(alert)}
+        className="finance-focus group flex min-h-11 min-w-0 gap-3 rounded-[calc(var(--radius-tile)-0.35rem)] text-left hover:bg-surface-soft"
       >
-        <Icon size={17} strokeWidth={2.2} aria-hidden="true" />
-      </span>
+        <span
+          className={`grid h-10 w-10 shrink-0 place-items-center rounded-[var(--radius-control)] border ${tone.className}`}
+        >
+          <Icon size={17} strokeWidth={2.2} aria-hidden="true" />
+        </span>
 
-      <span className="min-w-0 flex-1">
-        <span className="flex min-w-0 flex-wrap items-center gap-1.5">
-          <span
-            className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.08em] ${tone.className}`}
+        <span className="min-w-0 flex-1">
+          <span className="flex min-w-0 flex-wrap items-center gap-1.5">
+            {alert.read === false ? (
+              <span className="inline-flex items-center gap-1 rounded-full border border-brand/30 bg-brand/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.08em] text-brand">
+                <span aria-hidden="true" className="size-1.5 rounded-full bg-brand" />
+                Unread
+              </span>
+            ) : null}
+            <span
+              className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.08em] ${tone.className}`}
+            >
+              <Icon size={10} aria-hidden="true" />
+              {alert.urgency}
+            </span>
+            <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-text-tertiary">
+              <SourceIcon size={11} aria-hidden="true" />
+              {alert.source === "goal" ? "Goal" : "Payable"}
+            </span>
+          </span>
+          <span className="mt-2 block break-words text-sm font-bold leading-5 text-text-primary">
+            {alert.title}
+          </span>
+          <span className="mt-1 block text-xs leading-5 text-text-secondary">
+            {alert.description}
+          </span>
+          <span className="mt-2 block text-[11px] font-semibold text-text-tertiary">
+            Deadline: <time dateTime={alert.dateKey}>{formatAlertDate(alert.dateKey)}</time>
+          </span>
+        </span>
+      </Link>
+
+      {persistenceAvailable ? (
+        <div className="mt-3 flex flex-wrap justify-end gap-1.5 border-t border-border pt-2.5">
+          {alert.read === false ? (
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              disabled={pending}
+              onClick={() => onMarkRead(alert)}
+              className="min-h-10 text-xs"
+            >
+              <Check aria-hidden="true" size={14} />
+              Mark read
+            </Button>
+          ) : null}
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            disabled={pending}
+            onClick={() => onSnooze(alert)}
+            className="min-h-10 text-xs"
           >
-            <Icon size={10} aria-hidden="true" />
-            {alert.urgency}
-          </span>
-          <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-text-tertiary">
-            <SourceIcon size={11} aria-hidden="true" />
-            {alert.source === "goal" ? "Goal" : "Payable"}
-          </span>
-        </span>
-        <span className="mt-2 block break-words text-sm font-bold leading-5 text-text-primary">
-          {alert.title}
-        </span>
-        <span className="mt-1 block text-xs leading-5 text-text-secondary">
-          {alert.description}
-        </span>
-        <span className="mt-2 block text-[11px] font-semibold text-text-tertiary">
-          <time dateTime={alert.dateKey}>{formatAlertDate(alert.dateKey)}</time>
-        </span>
-      </span>
-    </Link>
+            <Timer aria-hidden="true" size={14} />
+            Snooze 1 day
+          </Button>
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            disabled={pending}
+            onClick={() => onDismiss(alert)}
+            className="min-h-10 text-xs text-danger hover:text-danger"
+          >
+            <BellOff aria-hidden="true" size={14} />
+            Dismiss
+          </Button>
+        </div>
+      ) : null}
+    </article>
   );
+}
+
+function groupAlerts(alerts: NotificationInboxAlert[]) {
+  const today = getAppDateKey();
+  const weekEnd = addDaysToDateKey(today, 7) ?? today;
+  const groups = [
+    { label: "Today", alerts: alerts.filter((alert) => alert.dateKey === today) },
+    {
+      label: "This Week",
+      alerts: alerts.filter(
+        (alert) => alert.dateKey > today && alert.dateKey <= weekEnd,
+      ),
+    },
+    {
+      label: "Earlier",
+      alerts: alerts.filter(
+        (alert) => alert.dateKey < today || alert.dateKey > weekEnd,
+      ),
+    },
+  ];
+
+  return groups.filter((group) => group.alerts.length > 0);
 }
 
 export function NotificationCenterLoading() {
@@ -142,9 +236,11 @@ export function NotificationCenterLoading() {
 
 export default function NotificationCenter({ state }: NotificationCenterProps) {
   const router = useRouter();
+  const supabase = createClient();
   const [open, setOpen] = useState(false);
   const [online, setOnline] = useState(true);
   const [refreshing, startRefresh] = useTransition();
+  const [actionId, setActionId] = useState<string | null>(null);
 
   useEffect(() => {
     const updateOnlineState = () => setOnline(navigator.onLine);
@@ -159,10 +255,121 @@ export default function NotificationCenter({ state }: NotificationCenterProps) {
     };
   }, []);
 
-  const totalActiveAlertCount =
-    state.totalActiveAlertCountFromCheckedRecords;
-  const showCount = totalActiveAlertCount !== null && totalActiveAlertCount > 0;
+  const displayedCount = state.unreadAlertCount ?? state.totalActiveAlertCountFromCheckedRecords;
+  const showCount = displayedCount !== null && displayedCount > 0;
+  const badgeCount = displayedCount ?? 0;
   const triggerLabel = getNotificationTriggerLabel(state);
+  const alertGroups = groupAlerts(state.visibleAlerts);
+
+  async function persistAlertState(
+    notificationId: string,
+    values: {
+      read_at?: string;
+      dismissed_at?: string;
+      snoozed_until?: string;
+    },
+    successMessage?: string,
+  ) {
+    if (state.persistenceStatus !== "ready" || actionId) return false;
+    setActionId(notificationId);
+
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
+    if (userError || !user) {
+      toast.error("Your session expired. Sign in again.");
+      setActionId(null);
+      return false;
+    }
+
+    const { error } = await supabase.from("notification_states").upsert(
+      {
+        user_id: user.id,
+        notification_id: notificationId,
+        ...values,
+      },
+      { onConflict: "user_id,notification_id" },
+    );
+
+    setActionId(null);
+    if (error) {
+      toast.error(
+        getUserMutationError(error, "Notification could not be updated. Try again."),
+      );
+      return false;
+    }
+
+    if (successMessage) toast.success(successMessage);
+    startRefresh(() => router.refresh());
+    return true;
+  }
+
+  function markRead(alert: NotificationInboxAlert) {
+    void persistAlertState(alert.id, { read_at: new Date().toISOString() });
+  }
+
+  function snooze(alert: NotificationInboxAlert) {
+    const now = new Date();
+    void persistAlertState(
+      alert.id,
+      {
+        read_at: now.toISOString(),
+        snoozed_until: new Date(now.getTime() + 86_400_000).toISOString(),
+      },
+      "Alert snoozed for one day.",
+    );
+  }
+
+  function dismiss(alert: NotificationInboxAlert) {
+    const now = new Date().toISOString();
+    void persistAlertState(
+      alert.id,
+      { read_at: now, dismissed_at: now },
+      "Alert dismissed.",
+    );
+  }
+
+  async function markAllRead() {
+    if (
+      state.persistenceStatus !== "ready" ||
+      state.activeAlertIds.length === 0 ||
+      actionId
+    ) {
+      return;
+    }
+    setActionId("all");
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
+    if (userError || !user) {
+      toast.error("Your session expired. Sign in again.");
+      setActionId(null);
+      return;
+    }
+
+    const readAt = new Date().toISOString();
+    const { error } = await supabase.from("notification_states").upsert(
+      state.activeAlertIds.map((notificationId) => ({
+        user_id: user.id,
+        notification_id: notificationId,
+        read_at: readAt,
+      })),
+      { onConflict: "user_id,notification_id" },
+    );
+
+    setActionId(null);
+    if (error) {
+      toast.error(
+        getUserMutationError(error, "Notifications could not be updated. Try again."),
+      );
+      return;
+    }
+
+    toast.success("All alerts marked as read.");
+    startRefresh(() => router.refresh());
+  }
 
   function retry() {
     if (!online || refreshing) return;
@@ -182,7 +389,7 @@ export default function NotificationCenter({ state }: NotificationCenterProps) {
             aria-hidden="true"
             className="absolute -right-1 -top-1 grid min-h-5 min-w-5 place-items-center rounded-full border-2 border-surface-primary bg-brand px-1 text-[10px] font-bold leading-none text-primary-foreground"
           >
-            {totalActiveAlertCount > 9 ? "9+" : totalActiveAlertCount}
+            {badgeCount > 9 ? "9+" : badgeCount}
           </span>
         ) : null}
       </SheetTrigger>
@@ -199,7 +406,7 @@ export default function NotificationCenter({ state }: NotificationCenterProps) {
                 Notification center
               </SheetTitle>
               <SheetDescription className="mt-1 text-sm leading-5 text-text-secondary">
-                Current alerts from your goals and payables.
+                Goal and payable alerts with persistent read controls.
               </SheetDescription>
             </div>
             <SheetClose
@@ -229,18 +436,42 @@ export default function NotificationCenter({ state }: NotificationCenterProps) {
               className="mt-1.5"
             />
           </div>
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon"
-            onClick={retry}
-            loading={refreshing}
-            disabled={!online}
-            aria-label="Refresh current alerts"
-            title="Refresh current alerts"
-          >
-            <RefreshCw aria-hidden="true" />
-          </Button>
+          <div className="flex shrink-0 items-center gap-1">
+            {state.persistenceStatus === "ready" && (state.unreadAlertCount ?? 0) > 0 ? (
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                onClick={() => void markAllRead()}
+                disabled={Boolean(actionId)}
+                aria-label="Mark all alerts as read"
+                title="Mark all as read"
+              >
+                <CheckCheck aria-hidden="true" />
+              </Button>
+            ) : null}
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              onClick={retry}
+              loading={refreshing}
+              disabled={!online}
+              aria-label="Refresh current alerts"
+              title="Refresh current alerts"
+            >
+              <RefreshCw aria-hidden="true" />
+            </Button>
+            <Link
+              href="/dashboard/settings#notifications"
+              onClick={() => setOpen(false)}
+              aria-label="Open notification preferences"
+              title="Notification preferences"
+              className="finance-focus grid size-11 place-items-center rounded-[var(--radius-button)] text-text-secondary hover:bg-primary-soft hover:text-text-primary"
+            >
+              <Settings aria-hidden="true" size={16} />
+            </Link>
+          </div>
         </div>
 
         <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 py-4 pb-[max(1rem,env(safe-area-inset-bottom))] sm:px-5">
@@ -272,6 +503,18 @@ export default function NotificationCenter({ state }: NotificationCenterProps) {
                   {formatUnavailableSources(state.unavailableSources)} could not be checked. Available alerts are still shown.
                 </p>
               </div>
+            </div>
+          ) : null}
+
+          {state.persistenceStatus === "error" ? (
+            <div
+              role="status"
+              className="mb-3 flex items-start gap-2 rounded-[var(--radius-tile)] border border-warning/25 bg-warning/10 p-3 text-warning"
+            >
+              <AlertTriangle className="mt-0.5 shrink-0" size={16} aria-hidden="true" />
+              <p className="text-xs leading-5">
+                Read, snooze, and dismiss state could not be loaded. Alerts remain view-only until refresh succeeds.
+              </p>
             </div>
           ) : null}
 
@@ -316,13 +559,33 @@ export default function NotificationCenter({ state }: NotificationCenterProps) {
               </p>
             </div>
           ) : (
-            <div className="space-y-3" aria-label="Current active alerts">
-              {state.visibleAlerts.map((alert) => (
-                <AlertRow
-                  key={alert.id}
-                  alert={alert}
-                  onNavigate={() => setOpen(false)}
-                />
+            <div className="space-y-5" aria-label="Current active alerts">
+              {alertGroups.map((group) => (
+                <section key={group.label} aria-labelledby={`notification-group-${group.label.replace(/\s+/g, "-").toLowerCase()}`}>
+                  <h3
+                    id={`notification-group-${group.label.replace(/\s+/g, "-").toLowerCase()}`}
+                    className="mb-2 px-1 text-[11px] font-bold uppercase tracking-[0.14em] text-text-secondary"
+                  >
+                    {group.label}
+                  </h3>
+                  <div className="space-y-3">
+                    {group.alerts.map((alert) => (
+                      <AlertRow
+                        key={alert.id}
+                        alert={alert}
+                        onNavigate={(selectedAlert) => {
+                          if (selectedAlert.read === false) markRead(selectedAlert);
+                          setOpen(false);
+                        }}
+                        onMarkRead={markRead}
+                        onSnooze={snooze}
+                        onDismiss={dismiss}
+                        pending={actionId === alert.id || actionId === "all"}
+                        persistenceAvailable={state.persistenceStatus === "ready"}
+                      />
+                    ))}
+                  </div>
+                </section>
               ))}
             </div>
           )}

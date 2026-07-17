@@ -55,6 +55,14 @@ function getFlowTitle(tx: Transaction) {
     return tx.categories?.name || tx.note || "Expense";
   }
 
+  if (tx.type === "investment") {
+    return tx.note || tx.item_name || "Investment contribution";
+  }
+
+  if (tx.type === "refund") {
+    return tx.note || tx.categories?.name || "Expense refund";
+  }
+
   return "Transfer";
 }
 
@@ -64,6 +72,8 @@ function getFlowSubtitle(tx: Transaction) {
 
   if (tx.type === "income") return `Came to ${account} - ${date}`;
   if (tx.type === "expense") return `Paid from ${account} - ${date}`;
+  if (tx.type === "investment") return `Invested from ${account} - ${date}`;
+  if (tx.type === "refund") return `Returned to ${account} - ${date}`;
 
   return `${account} - ${date}`;
 }
@@ -95,7 +105,7 @@ export default function RecentTransactions({
           </p>
         </div>
 
-        {status === "available" && transactions.length > 0 ?
+        {status !== "unavailable" && transactions.length > 0 ?
           <Link
             href="/dashboard/transactions"
             className="dashboard-list-card-action"
@@ -114,7 +124,7 @@ export default function RecentTransactions({
             description={
               status === "unavailable" ?
                 "Refresh when your connection is stable."
-              : "Add income or expense to see activity here."
+              : "Record account activity to see it here."
             }
           />
         </div>

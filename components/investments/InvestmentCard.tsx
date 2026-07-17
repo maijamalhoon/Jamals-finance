@@ -19,6 +19,8 @@ import { useCurrency } from "@/components/currency/CurrencyProvider";
 import { BASE_CURRENCY, formatMoney } from "@/lib/currency";
 import { getAssetInitials } from "@/lib/investments/aggregation";
 import InvestmentModal, { ExistingInvestment } from "./InvestmentModal";
+import { toast } from "sonner";
+import { getUserMutationError } from "@/lib/user-errors";
 
 const CONFIG: Record<
   string,
@@ -185,7 +187,9 @@ export default function InvestmentCard({
     setDeletingId(null);
 
     if (error) {
-      alert(error.message);
+      toast.error(
+        getUserMutationError(error, "Investment could not be deleted. Try again."),
+      );
       return;
     }
 

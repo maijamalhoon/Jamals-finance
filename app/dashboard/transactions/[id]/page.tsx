@@ -4,6 +4,8 @@ import {
   ArrowLeft,
   ArrowLeftRight,
   CalendarDays,
+  CheckCircle2,
+  ChartNoAxesCombined,
   Clock3,
   CreditCard,
   Hash,
@@ -12,6 +14,7 @@ import {
   Tag,
   TrendingDown,
   TrendingUp,
+  RotateCcw,
   UserRound,
   Wallet,
 } from "lucide-react";
@@ -20,7 +23,7 @@ import { createClient } from "@/lib/supabase/server";
 import { formatMoney } from "@/lib/currency";
 import TransactionReceiptActions from "@/components/transactions/TransactionReceiptActions";
 
-type ReceiptType = "income" | "expense" | "transfer";
+type ReceiptType = "income" | "expense" | "investment" | "refund" | "transfer";
 
 type ReceiptData = {
   id: string;
@@ -39,7 +42,48 @@ type ReceiptData = {
   itemText: string;
   transferFromText: string;
   transferToText: string;
+  accountId: string;
+  categoryId: string;
+  refundedAmount: number;
+  refundOfText: string;
+  referenceText: string;
+  statusText: string;
   receiptText: string;
+};
+
+type ReceiptCategory = {
+  name?: string | null;
+  color?: string | null;
+  parent?: { name?: string | null } | null;
+};
+
+type ReceiptTransactionRow = {
+  id: string;
+  type: string;
+  amount: number | string | null;
+  account_id: string | null;
+  category_id: string | null;
+  refund_of_transaction_id: string | null;
+  reference: string | null;
+  note: string | null;
+  date: string | null;
+  created_at: string | null;
+  source_name: string | null;
+  person_name: string | null;
+  item_name: string | null;
+  accounts: { name?: string | null } | null;
+  categories: ReceiptCategory | null;
+};
+
+type ReceiptTransferRow = {
+  id: string;
+  amount: number | string | null;
+  transfer_date: string | null;
+  note: string | null;
+  reference: string | null;
+  created_at: string | null;
+  from_account: { name?: string | null } | null;
+  to_account: { name?: string | null } | null;
 };
 
 const TYPE_META: Record<
@@ -59,6 +103,16 @@ const TYPE_META: Record<
     label: "Expense",
     icon: TrendingDown,
     amountPrefix: "-",
+  },
+  investment: {
+    label: "Investment contribution",
+    icon: ChartNoAxesCombined,
+    amountPrefix: "-",
+  },
+  refund: {
+    label: "Expense refund",
+    icon: RotateCcw,
+    amountPrefix: "+",
   },
   transfer: {
     label: "Transfer",
@@ -84,7 +138,7 @@ function formatDate(value?: string | null, includeTime = false) {
   });
 }
 
-function getCategoryText(category: any) {
+function getCategoryText(category: ReceiptCategory | null) {
   const parentName = category?.parent?.name;
   const categoryName = category?.name;
 
@@ -108,6 +162,9 @@ function buildReceiptText(receipt: Omit<ReceiptData, "receiptText">) {
     receipt.sourceText ? `Source: ${receipt.sourceText}` : null,
     receipt.personText ? `Person: ${receipt.personText}` : null,
     receipt.itemText ? `Item: ${receipt.itemText}` : null,
+    receipt.refundOfText ? `Original Expense ID: ${receipt.refundOfText}` : null,
+    receipt.referenceText ? `Reference: ${receipt.referenceText}` : null,
+    `Status: ${receipt.statusText}`,
     `Transaction ID: ${receipt.id}`,
     receipt.createdText ? `Created: ${receipt.createdText}` : null,
   ]
@@ -115,9 +172,12 @@ function buildReceiptText(receipt: Omit<ReceiptData, "receiptText">) {
     .join("\n");
 }
 
-function mapTransactionReceipt(transaction: any): ReceiptData {
+function mapTransactionReceipt(transaction: ReceiptTransactionRow): ReceiptData {
   const type: ReceiptType =
-    transaction.type === "income" ? "income" : "expense";
+    transaction.type === "income" ? "income"
+    : transaction.type === "investment" ? "investment"
+    : transaction.type === "refund" ? "refund"
+    : "expense";
   const meta = TYPE_META[type];
 
   const baseReceipt: Omit<ReceiptData, "receiptText"> = {
@@ -143,6 +203,12 @@ function mapTransactionReceipt(transaction: any): ReceiptData {
     itemText: transaction.item_name || "",
     transferFromText: "",
     transferToText: "",
+    accountId: transaction.account_id || "",
+    categoryId: transaction.category_id || "",
+    refundedAmount: 0,
+    refundOfText: transaction.refund_of_transaction_id || "",
+    referenceText: transaction.reference || "",
+    statusText: "Recorded",
   };
 
   return {
@@ -151,7 +217,7 @@ function mapTransactionReceipt(transaction: any): ReceiptData {
   };
 }
 
-function mapTransferReceipt(transfer: any): ReceiptData {
+function mapTransferReceipt(transfer: ReceiptTransferRow): ReceiptData {
   const meta = TYPE_META.transfer;
 
   const baseReceipt: Omit<ReceiptData, "receiptText"> = {
@@ -171,6 +237,12 @@ function mapTransferReceipt(transfer: any): ReceiptData {
     itemText: "",
     transferFromText: transfer.from_account?.name || "From account",
     transferToText: transfer.to_account?.name || "To account",
+    accountId: "",
+    categoryId: "",
+    refundedAmount: 0,
+    refundOfText: "",
+    referenceText: transfer.reference || "",
+    statusText: "Recorded",
   };
 
   return {
@@ -229,6 +301,10 @@ export default async function TransactionReceiptPage({
       user_id,
       type,
       amount,
+      account_id,
+      category_id,
+      refund_of_transaction_id,
+      reference,
       note,
       date,
       created_at,
@@ -252,7 +328,24 @@ export default async function TransactionReceiptPage({
     .maybeSingle();
 
   let receipt: ReceiptData | null =
-    transaction ? mapTransactionReceipt(transaction) : null;
+    transaction ? mapTransactionReceipt(transaction as unknown as ReceiptTransactionRow) : null;
+
+  if (receipt?.type === "expense") {
+    const { data: refunds, error: refundsError } = await supabase
+      .from("transactions")
+      .select("amount")
+      .eq("refund_of_transaction_id", receipt.id)
+      .eq("type", "refund");
+
+    if (refundsError) {
+      console.error("Failed to load expense refunds", { code: refundsError.code });
+    } else {
+      receipt.refundedAmount = (refunds ?? []).reduce(
+        (sum, refund) => sum + Number(refund.amount ?? 0),
+        0,
+      );
+    }
+  }
 
   if (!receipt) {
     const { data: transfer } = await supabase
@@ -264,6 +357,7 @@ export default async function TransactionReceiptPage({
         amount,
         transfer_date,
         note,
+        reference,
         created_at,
         from_account:from_account_id (
           name
@@ -277,7 +371,7 @@ export default async function TransactionReceiptPage({
       .eq("user_id", user.id)
       .maybeSingle();
 
-    receipt = transfer ? mapTransferReceipt(transfer) : null;
+    receipt = transfer ? mapTransferReceipt(transfer as unknown as ReceiptTransferRow) : null;
   }
 
   if (!receipt) {
@@ -297,7 +391,22 @@ export default async function TransactionReceiptPage({
           Back to transactions
         </Link>
 
-        <TransactionReceiptActions receiptText={receipt.receiptText} />
+        <TransactionReceiptActions
+          receiptText={receipt.receiptText}
+          receiptId={receipt.id}
+          refundExpense={
+            receipt.type === "expense" && receipt.accountId && receipt.categoryId
+              ? {
+                  id: receipt.id,
+                  title: receipt.title,
+                  amount: receipt.amount,
+                  refundedAmount: receipt.refundedAmount,
+                  accountId: receipt.accountId,
+                  categoryId: receipt.categoryId,
+                }
+              : undefined
+          }
+        />
       </div>
 
       <section
@@ -427,6 +536,32 @@ export default async function TransactionReceiptPage({
               />
 
               <DetailLine icon={Hash} label="Receipt ID" value={receipt.id} />
+
+              <DetailLine
+                icon={Hash}
+                label="Reference"
+                value={receipt.referenceText}
+              />
+
+              <DetailLine
+                icon={CheckCircle2}
+                label="Status"
+                value={receipt.statusText}
+              />
+
+              {receipt.type === "expense" && receipt.refundedAmount > 0 ? (
+                <DetailLine
+                  icon={RotateCcw}
+                  label="Refunded So Far"
+                  value={formatMoney(receipt.refundedAmount)}
+                />
+              ) : null}
+
+              <DetailLine
+                icon={RotateCcw}
+                label="Original Expense ID"
+                value={receipt.refundOfText}
+              />
             </div>
           </div>
 

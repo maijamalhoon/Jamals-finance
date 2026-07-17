@@ -184,10 +184,10 @@ describe("combined notification behavior", () => {
     });
 
     expect(getNotificationTriggerLabel(state)).toBe(
-      "Open notification center, 20 active alerts",
+      "Open notification center, 20 unread alerts",
     );
     expect(getNotificationSummary(state)).toBe(
-      "Showing 12 of 20 active alerts.",
+      "Showing 12 of 20 active alerts, 20 unread.",
     );
   });
 
@@ -203,10 +203,10 @@ describe("combined notification behavior", () => {
     expect(state.totalActiveAlertCountFromCheckedRecords).toBe(1);
     expect(state.visibleAlerts).toHaveLength(1);
     expect(getNotificationTriggerLabel(state)).toBe(
-      "Open notification center, 1 active alert from available data",
+      "Open notification center, 1 unread alert from available data",
     );
     expect(getNotificationSummary(state)).toBe(
-      "1 active alert from available data.",
+      "1 active alert, 1 unread from available data.",
     );
   });
 
@@ -229,17 +229,30 @@ describe("combined notification behavior", () => {
     expect(alerts[0]?.urgency).toBe("Due today");
   });
 
-  it("does not invent unread state", () => {
-    const derived = deriveNotifications({ goals: [goal()], now: FIXED_NOW });
-    const state = createNotificationState({ goals: [goal()], now: FIXED_NOW });
-    const alert = derived.visibleAlerts[0];
+  it("applies persisted read, dismiss, and snooze state to deterministic alerts", () => {
+    const notificationId = "goal:goal-1:deadline";
+    const unread = createNotificationState({ goals: [goal()], now: FIXED_NOW });
+    const read = createNotificationState({
+      goals: [goal()],
+      now: FIXED_NOW,
+      userStates: [{ notification_id: notificationId, read_at: "2026-07-15T07:00:00Z" }],
+    });
+    const dismissed = createNotificationState({
+      goals: [goal()],
+      now: FIXED_NOW,
+      userStates: [{ notification_id: notificationId, dismissed_at: "2026-07-15T07:00:00Z" }],
+    });
+    const snoozed = createNotificationState({
+      goals: [goal()],
+      now: FIXED_NOW,
+      userStates: [{ notification_id: notificationId, snoozed_until: "2026-07-16T07:00:00Z" }],
+    });
 
-    expect(alert).toBeDefined();
-    expect(alert).not.toHaveProperty("unread");
-    expect(alert).not.toHaveProperty("read");
-    expect(derived).not.toHaveProperty("unread");
-    expect(derived).not.toHaveProperty("read");
-    expect(state).not.toHaveProperty("unread");
-    expect(state).not.toHaveProperty("read");
+    expect(unread.visibleAlerts[0]?.read).toBe(false);
+    expect(unread.unreadAlertCount).toBe(1);
+    expect(read.visibleAlerts[0]?.read).toBe(true);
+    expect(read.unreadAlertCount).toBe(0);
+    expect(dismissed.visibleAlerts).toEqual([]);
+    expect(snoozed.visibleAlerts).toEqual([]);
   });
 });

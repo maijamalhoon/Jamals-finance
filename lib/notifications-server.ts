@@ -26,6 +26,36 @@ export async function loadDashboardNotifications(
   try {
     const supabase = await createClient();
 
+    const [preferencesResult, statesResult] = await Promise.all([
+      supabase
+        .from("notification_preferences")
+        .select("goal_alerts_enabled, payable_alerts_enabled")
+        .maybeSingle(),
+      supabase
+        .from("notification_states")
+        .select("notification_id, read_at, dismissed_at, snoozed_until"),
+    ]);
+
+    if (preferencesResult.error) {
+      console.error("[notifications] Preferences query failed", {
+        code: preferencesResult.error.code ?? "unknown",
+      });
+    }
+    if (statesResult.error) {
+      console.error("[notifications] State query failed", {
+        code: statesResult.error.code ?? "unknown",
+      });
+    }
+
+    const goalAlertsEnabled =
+      preferencesResult.error || preferencesResult.data === null
+        ? true
+        : preferencesResult.data.goal_alerts_enabled;
+    const payableAlertsEnabled =
+      preferencesResult.error || preferencesResult.data === null
+        ? true
+        : preferencesResult.data.payable_alerts_enabled;
+
     const payableRequest = supabase
       .from("liabilities")
       .select(
@@ -48,6 +78,8 @@ export async function loadDashboardNotifications(
     const loadPayables = async (): Promise<
       SourceResult<PayableNotificationRecord>
     > => {
+      if (!payableAlertsEnabled) return { status: "ready", data: [] };
+
       try {
         const { data, error } = await payableRequest;
         return error
@@ -62,6 +94,8 @@ export async function loadDashboardNotifications(
     };
 
     const loadGoals = async (): Promise<SourceResult<GoalNotificationRecord>> => {
+      if (!goalAlertsEnabled) return { status: "ready", data: [] };
+
       try {
         const { data, error } = await goalRequest;
         return error
@@ -92,6 +126,7 @@ export async function loadDashboardNotifications(
       goals,
       now,
       unavailableSources,
+      userStates: statesResult.error ? null : (statesResult.data ?? []),
     });
   } catch {
     return createNotificationState({

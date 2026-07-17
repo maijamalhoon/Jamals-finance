@@ -18,7 +18,7 @@ export default function MobileHeader({
   const routeTitle = getRouteTitle(pathname);
 
   return (
-    <header className="relative z-30 flex min-h-[68px] min-w-0 flex-shrink-0 items-center justify-between gap-2 border-b border-border bg-surface-primary px-3 shadow-theme lg:hidden sm:px-4">
+    <header className="relative z-30 flex min-h-[68px] min-w-0 flex-shrink-0 items-center justify-between gap-2 border-b border-border bg-surface-primary px-3 shadow-theme print:hidden lg:hidden sm:px-4">
       <div className="flex min-w-0 flex-1 items-center gap-2.5">
         <div className="grid h-10 w-10 shrink-0 place-items-center rounded-[var(--radius-control)] border border-brand/25 bg-brand text-primary-foreground shadow-theme">
           <BarChart3 size={17} strokeWidth={2.2} aria-hidden="true" />

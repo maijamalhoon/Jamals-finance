@@ -2,18 +2,20 @@
 
 import { type CSSProperties, useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import {
+  Archive,
+  ArchiveRestore,
   ArrowDownLeft,
   ArrowUpRight,
   Banknote,
   BriefcaseBusiness,
   CreditCard,
   Landmark,
-  LoaderCircle,
   Pencil,
   PiggyBank,
   Smartphone,
-  Trash2,
+  ScrollText,
   Wallet,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -22,6 +24,7 @@ import { createClient } from "@/lib/supabase/client";
 import AccountModal, { ExistingAccount } from "./AccountModal";
 import { useCurrency } from "@/components/currency/CurrencyProvider";
 import { getAccountAccentColor } from "@/lib/theme-colors";
+import { getUserMutationError } from "@/lib/user-errors";
 
 type AccountWithTotals = ExistingAccount & {
   inflow?: number;
@@ -72,29 +75,32 @@ export default function AccountCard({ account }: AccountCardProps) {
   const { formatCurrency } = useCurrency();
 
   const [editOpen, setEditOpen] = useState(false);
-  const [deleting, setDeleting] = useState(false);
+  const [changingStatus, setChangingStatus] = useState(false);
 
   const Icon = getIcon(account.icon_key);
   const accent = getAccountAccentColor(account.accent_color);
 
-  async function handleDelete() {
-    if (deleting) return;
-    if (!confirm(`Delete "${account.name}"? This cannot be undone.`)) return;
+  const archived = account.status === "archived";
 
-    setDeleting(true);
+  async function handleStatusChange() {
+    if (changingStatus) return;
+    const action = archived ? "restore" : "archive";
+    if (!confirm(`${archived ? "Restore" : "Archive"} "${account.name}"?`)) return;
 
-    const { error } = await supabase
-      .from("accounts")
-      .delete()
-      .eq("id", account.id);
+    setChangingStatus(true);
+
+    const { error } = await supabase.rpc("set_account_archived", {
+      p_account_id: account.id,
+      p_archived: !archived,
+    });
 
     if (error) {
-      toast.error("Could not delete the account. Please try again.");
-      setDeleting(false);
+      toast.error(getUserMutationError(error, `Account could not be ${action}d. Try again.`));
+      setChangingStatus(false);
       return;
     }
 
-    toast.success("Account deleted");
+    toast.success(archived ? "Account restored" : "Account archived");
     router.refresh();
   }
 
@@ -119,29 +125,31 @@ export default function AccountCard({ account }: AccountCardProps) {
             <Icon size={20} strokeWidth={2.2} />
           </div>
 
-          <div className="flex gap-1 opacity-100 transition-opacity sm:opacity-0 sm:group-hover:opacity-100">
-            <button
-              type="button"
-              onClick={() => setEditOpen(true)}
-              className="icon-button"
-              aria-label="Edit account"
-            >
-              <Pencil size={13} />
-            </button>
+          <div className="flex gap-1 opacity-100 transition-opacity sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100">
+            {!archived ? (
+              <button
+                type="button"
+                onClick={() => setEditOpen(true)}
+                className="icon-button"
+                aria-label="Edit account"
+              >
+                <Pencil size={13} />
+              </button>
+            ) : null}
 
             <button
               type="button"
-              onClick={handleDelete}
-              disabled={deleting}
-              aria-busy={deleting || undefined}
-              className="icon-button hover:border-danger/30 hover:bg-danger/10 hover:text-danger"
-              aria-label="Delete account"
-              title="Delete account"
+              onClick={handleStatusChange}
+              disabled={changingStatus}
+              aria-busy={changingStatus || undefined}
+              className="icon-button"
+              aria-label={archived ? "Restore account" : "Archive account"}
+              title={archived ? "Restore account" : "Archive account"}
             >
-              {deleting ? (
-                <LoaderCircle className="animate-spin motion-reduce:animate-none" size={13} aria-hidden="true" />
+              {archived ? (
+                <ArchiveRestore size={13} aria-hidden="true" />
               ) : (
-                <Trash2 size={13} aria-hidden="true" />
+                <Archive size={13} aria-hidden="true" />
               )}
             </button>
           </div>
@@ -153,6 +161,11 @@ export default function AccountCard({ account }: AccountCardProps) {
           </p>
 
           <div className="mt-2 flex flex-wrap items-center gap-2">
+            {archived ? (
+              <span className="inline-flex rounded-full border border-warning/30 bg-warning/10 px-2.5 py-1 text-[11px] font-bold text-warning">
+                Archived
+              </span>
+            ) : null}
             <span className="account-accent-pill inline-flex rounded-full border px-2.5 py-1 text-[11px] font-bold">
               {getAccountKindLabel(account.account_kind)}
             </span>
@@ -198,17 +211,27 @@ export default function AccountCard({ account }: AccountCardProps) {
             </p>
           </div>
         </div>
+
+        <Link
+          href={`/dashboard/accounts/${account.id}`}
+          className="finance-focus relative mt-3 inline-flex min-h-10 items-center justify-center gap-2 rounded-xl border border-border bg-surface-secondary px-3 text-xs font-bold text-text-primary hover:bg-hover"
+        >
+          <ScrollText size={14} aria-hidden="true" />
+          View history
+        </Link>
       </article>
 
-      <AccountModal
-        open={editOpen}
-        account={account}
-        onClose={() => setEditOpen(false)}
-        onSuccess={() => {
-          setEditOpen(false);
-          router.refresh();
-        }}
-      />
+      {!archived ? (
+        <AccountModal
+          open={editOpen}
+          account={account}
+          onClose={() => setEditOpen(false)}
+          onSuccess={() => {
+            setEditOpen(false);
+            router.refresh();
+          }}
+        />
+      ) : null}
     </>
   );
 }

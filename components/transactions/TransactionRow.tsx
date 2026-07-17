@@ -4,13 +4,16 @@ import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   ArrowLeftRight,
+  ChartNoAxesCombined,
   Eye,
   Pencil,
+  RotateCcw,
   Trash2,
   TrendingDown,
   TrendingUp,
   type LucideIcon,
 } from "lucide-react";
+import { toast } from "sonner";
 
 import { createClient } from "@/lib/supabase/client";
 import TransactionModal, {
@@ -18,16 +21,18 @@ import TransactionModal, {
 } from "@/components/dashboard/TransactionModal";
 import { useCurrency } from "@/components/currency/CurrencyProvider";
 
-type TransactionType = "income" | "expense" | "transfer";
+type TransactionType = "income" | "expense" | "investment" | "refund" | "transfer";
 
 type Transaction = Omit<ExistingTransaction, "type"> & {
   type?: TransactionType | string | null;
   amount?: number | string | null;
   date?: string | null;
+  created_at?: string | null;
   note?: string | null;
   source_name?: string | null;
   person_name?: string | null;
   item_name?: string | null;
+  reference?: string | null;
   categories: {
     name?: string | null;
     color?: string | null;
@@ -65,6 +70,27 @@ function getTypeMeta(type?: string | null): {
     };
   }
 
+  if (type === "investment") {
+    return {
+      label: "Investment contribution",
+      icon: ChartNoAxesCombined,
+      softClass:
+        "border-investment/30 bg-investment/10 text-investment",
+      amountClass: "text-investment",
+      prefix: "-",
+    };
+  }
+
+  if (type === "refund") {
+    return {
+      label: "Expense refund",
+      icon: RotateCcw,
+      softClass: "border-info/30 bg-info/10 text-info",
+      amountClass: "text-info",
+      prefix: "+",
+    };
+  }
+
   return {
     label: "Transfer",
     icon: ArrowLeftRight,
@@ -76,7 +102,13 @@ function getTypeMeta(type?: string | null): {
 }
 
 function normalizeType(type?: string | null): TransactionType {
-  if (type === "income" || type === "expense" || type === "transfer") {
+  if (
+    type === "income" ||
+    type === "expense" ||
+    type === "investment" ||
+    type === "refund" ||
+    type === "transfer"
+  ) {
     return type;
   }
 
@@ -98,6 +130,8 @@ function formatDate(date?: string | null) {
 }
 
 function getCategoryLabel(tx: Transaction) {
+  if (tx.type === "transfer") return "Transfer";
+
   const parentName = tx.categories?.parent?.name;
   const categoryName = tx.categories?.name;
 
@@ -118,6 +152,7 @@ export default function TransactionRow({ tx }: { tx: Transaction }) {
   const meta = getTypeMeta(type);
   const TypeIcon = meta.icon;
   const canEdit = type === "income" || type === "expense";
+  const canDelete = type !== "investment";
 
   const categoryLabel = getCategoryLabel(tx);
   const title = tx.note || tx.categories?.name || meta.label;
@@ -134,22 +169,11 @@ export default function TransactionRow({ tx }: { tx: Transaction }) {
       type === "income" && tx.source_name ? `Source: ${tx.source_name}` : null,
       tx.person_name ? `Person: ${tx.person_name}` : null,
       tx.item_name ? `Item: ${tx.item_name}` : null,
+      tx.reference ? `Ref: ${tx.reference}` : null,
     ].filter(Boolean);
 
-    return details.join(" • ");
-  }, [tx.item_name, tx.person_name, tx.source_name, type]);
-
-  function openReceipt() {
-    if (typeof document !== "undefined") {
-      const activeElement = document.activeElement;
-
-      if (activeElement instanceof HTMLElement) {
-        activeElement.blur();
-      }
-    }
-
-    router.push(receiptHref);
-  }
+    return details.join(" - ");
+  }, [tx.item_name, tx.person_name, tx.reference, tx.source_name, type]);
 
   async function handleDelete() {
     if (!tx.id) return;
@@ -166,7 +190,7 @@ export default function TransactionRow({ tx }: { tx: Transaction }) {
     setDeleting(false);
 
     if (error) {
-      alert(error.message);
+      toast.error("Could not delete this transaction. Please try again.");
       return;
     }
 
@@ -175,18 +199,8 @@ export default function TransactionRow({ tx }: { tx: Transaction }) {
 
   return (
     <>
-      <div
-        role="button"
-        tabIndex={0}
-        onMouseDown={(event) => event.preventDefault()}
-        onClick={openReceipt}
-        onKeyDown={(event) => {
-          if (event.key === "Enter" || event.key === " ") {
-            event.preventDefault();
-            openReceipt();
-          }
-        }}
-        className="finance-focus group grid min-w-0 cursor-pointer grid-cols-[auto,minmax(0,1fr)] gap-3 rounded-[var(--oneui-tile-radius)] border border-transparent px-3 py-3 transition-all duration-200 hover:-translate-y-0.5 hover:bg-hover hover:shadow-sm md:flex md:items-center"
+      <article
+        className="group grid min-w-0 grid-cols-[auto,minmax(0,1fr)] gap-3 rounded-[var(--oneui-tile-radius)] border border-transparent px-3 py-3 transition-all duration-200 hover:-translate-y-0.5 hover:bg-hover hover:shadow-sm md:flex md:items-center"
       >
         <div
           className={`grid h-10 w-10 shrink-0 place-items-center rounded-2xl border transition-all duration-200 group-hover:scale-105 ${meta.softClass}`}
@@ -283,22 +297,24 @@ export default function TransactionRow({ tx }: { tx: Transaction }) {
             </button>
           : null}
 
-          <button
-            onMouseDown={(event) => event.preventDefault()}
-            onClick={(event) => {
-              event.stopPropagation();
-              void handleDelete();
-            }}
-            disabled={deleting}
-            className="finance-focus grid h-11 w-11 place-items-center rounded-full border border-border bg-surface text-text-secondary shadow-sm transition-all hover:-translate-y-0.5 hover:border-danger/30 hover:bg-danger/10 hover:text-danger hover:shadow-md disabled:cursor-not-allowed disabled:opacity-50 md:h-8 md:w-8"
-            aria-label="Delete transaction"
-            title="Delete"
-            type="button"
-          >
-            <Trash2 size={14} />
-          </button>
+          {canDelete ?
+            <button
+              onMouseDown={(event) => event.preventDefault()}
+              onClick={(event) => {
+                event.stopPropagation();
+                void handleDelete();
+              }}
+              disabled={deleting}
+              className="finance-focus grid h-11 w-11 place-items-center rounded-full border border-border bg-surface text-text-secondary shadow-sm transition-all hover:-translate-y-0.5 hover:border-danger/30 hover:bg-danger/10 hover:text-danger hover:shadow-md disabled:cursor-not-allowed disabled:opacity-50 md:h-8 md:w-8"
+              aria-label="Delete transaction"
+              title="Delete"
+              type="button"
+            >
+              <Trash2 size={14} />
+            </button>
+          : null}
         </div>
-      </div>
+      </article>
 
       {canEdit ?
         <TransactionModal

@@ -6,7 +6,18 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { ChevronDown, Filter, Search, X } from "lucide-react";
 import { BackgroundRefreshStatus } from "@/components/loading/LoadingPrimitives";
 
-export default function TransactionFilters() {
+export interface TransactionFilterOption {
+  value: string;
+  label: string;
+}
+
+export default function TransactionFilters({
+  categories = [],
+  accounts = [],
+}: {
+  categories?: TransactionFilterOption[];
+  accounts?: TransactionFilterOption[];
+}) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -19,6 +30,9 @@ export default function TransactionFilters() {
   const activeTo = searchParams.get("to") || "";
   const activeMin = searchParams.get("min") || "";
   const activeMax = searchParams.get("max") || "";
+  const activeCategory = searchParams.get("category") || "all";
+  const activeAccount = searchParams.get("account") || "all";
+  const activeSort = searchParams.get("sort") || "newest";
 
   const [search, setSearch] = useState(searchParams.get("search") || "");
   const [source, setSource] = useState(searchParams.get("source") || "");
@@ -99,6 +113,9 @@ export default function TransactionFilters() {
       activeTo,
       activeMin,
       activeMax,
+      activeCategory !== "all",
+      activeAccount !== "all",
+      activeSort !== "newest",
       search,
       source,
       person,
@@ -110,6 +127,9 @@ export default function TransactionFilters() {
     activeTo,
     activeMin,
     activeMax,
+    activeCategory,
+    activeAccount,
+    activeSort,
     search,
     source,
     person,
@@ -191,6 +211,8 @@ export default function TransactionFilters() {
               <option value="all">All</option>
               <option value="income">Income</option>
               <option value="expense">Expense</option>
+              <option value="refund">Expense refund</option>
+              <option value="investment">Investment contribution</option>
               <option value="transfer">Transfer</option>
             </select>
           </FilterField>
@@ -211,6 +233,51 @@ export default function TransactionFilters() {
               onChange={(event) => updateParams({ to: event.target.value })}
               className="finance-control finance-focus h-10 w-full px-3 text-sm text-text-primary outline-none"
             />
+          </FilterField>
+
+          <FilterField label="Category">
+            <select
+              value={activeCategory}
+              onChange={(event) => updateParams({ category: event.target.value })}
+              disabled={categories.length === 0}
+              className="finance-control finance-focus h-10 w-full px-3 text-sm text-text-primary outline-none disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              <option value="all">All categories</option>
+              {categories.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </FilterField>
+
+          <FilterField label="Account">
+            <select
+              value={activeAccount}
+              onChange={(event) => updateParams({ account: event.target.value })}
+              disabled={accounts.length === 0}
+              className="finance-control finance-focus h-10 w-full px-3 text-sm text-text-primary outline-none disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              <option value="all">All accounts</option>
+              {accounts.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </FilterField>
+
+          <FilterField label="Sort">
+            <select
+              value={activeSort}
+              onChange={(event) => updateParams({ sort: event.target.value })}
+              className="finance-control finance-focus h-10 w-full px-3 text-sm text-text-primary outline-none"
+            >
+              <option value="newest">Newest first</option>
+              <option value="oldest">Oldest first</option>
+              <option value="highest">Highest amount</option>
+              <option value="lowest">Lowest amount</option>
+            </select>
           </FilterField>
 
           <FilterField label="Source">

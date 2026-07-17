@@ -31,20 +31,24 @@ export default async function AccountsPage() {
   if (pageErrors.length > 0) {
     console.error(
       "Failed to load accounts page data",
-      pageErrors.map((error) => error?.message),
+      pageErrors.map((error) => error?.code ?? "unknown"),
     );
   }
 
   const safeAccounts = accounts ?? [];
+  const activeAccountList = safeAccounts.filter(
+    (account) => account.status !== "archived",
+  );
+  const archivedAccountList = safeAccounts.filter(
+    (account) => account.status === "archived",
+  );
 
-  const totalBalance = safeAccounts.reduce(
+  const totalBalance = activeAccountList.reduce(
     (sum, account) => sum + Number(account.balance ?? 0),
     0,
   );
 
-  const activeAccounts = safeAccounts.filter(
-    (account) => Number(account.balance ?? 0) > 0,
-  ).length;
+  const activeAccounts = activeAccountList.length;
 
   const accountTotals = new Map<string, AccountTotals>();
 
@@ -80,7 +84,11 @@ export default async function AccountsPage() {
             <h2 className="page-title">Accounts</h2>
 
             <p className="page-subtitle break-words">
-              {safeAccounts.length} accounts - Total <Money amount={totalBalance} />
+              {activeAccounts} active
+              {archivedAccountList.length > 0
+                ? ` · ${archivedAccountList.length} archived`
+                : ""}
+              {" · "}Total <Money amount={totalBalance} />
             </p>
           </div>
 
@@ -100,7 +108,7 @@ export default async function AccountsPage() {
                   Active
                 </p>
                 <p className="break-words text-sm font-bold text-success">
-                  {activeAccounts}/{safeAccounts.length}
+                  {activeAccounts}
                 </p>
               </div>
             </div>
@@ -127,20 +135,50 @@ export default async function AccountsPage() {
           />
         </div>
       ) : (
-        <section className="grid auto-rows-fr grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          {safeAccounts.map((account) => (
-            <AccountCard
-              key={account.id}
-              account={{
-                ...account,
-                ...(accountTotals.get(account.id) ?? {
-                  inflow: 0,
-                  outflow: 0,
-                }),
-              }}
-            />
-          ))}
-        </section>
+        <div className="space-y-6">
+          {activeAccountList.length > 0 ? (
+            <section aria-labelledby="active-accounts-heading" className="space-y-3">
+              <h3 id="active-accounts-heading" className="text-sm font-bold text-text-primary">
+                Active accounts
+              </h3>
+              <div className="grid auto-rows-fr grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                {activeAccountList.map((account) => (
+                  <AccountCard
+                    key={account.id}
+                    account={{
+                      ...account,
+                      ...(accountTotals.get(account.id) ?? { inflow: 0, outflow: 0 }),
+                    }}
+                  />
+                ))}
+              </div>
+            </section>
+          ) : null}
+
+          {archivedAccountList.length > 0 ? (
+            <section aria-labelledby="archived-accounts-heading" className="space-y-3">
+              <div>
+                <h3 id="archived-accounts-heading" className="text-sm font-bold text-text-primary">
+                  Archived accounts
+                </h3>
+                <p className="text-xs text-text-secondary">
+                  Read-only accounts remain available for history and reports.
+                </p>
+              </div>
+              <div className="grid auto-rows-fr grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                {archivedAccountList.map((account) => (
+                  <AccountCard
+                    key={account.id}
+                    account={{
+                      ...account,
+                      ...(accountTotals.get(account.id) ?? { inflow: 0, outflow: 0 }),
+                    }}
+                  />
+                ))}
+              </div>
+            </section>
+          ) : null}
+        </div>
       )}
     </div>
   );

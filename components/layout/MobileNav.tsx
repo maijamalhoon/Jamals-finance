@@ -39,7 +39,7 @@ export default function MobileNav() {
     <Sheet open={moreOpen} onOpenChange={setMoreOpen}>
       <nav
         aria-label="Mobile dashboard navigation"
-        className="jf-mobile-nav-shell fixed inset-x-3 bottom-[calc(0.75rem+env(safe-area-inset-bottom))] z-50 lg:hidden"
+        className="jf-mobile-nav-shell fixed inset-x-3 bottom-[calc(0.75rem+env(safe-area-inset-bottom))] z-50 print:hidden lg:hidden"
       >
         <div className="mx-auto grid w-full max-w-[32rem] grid-cols-4 gap-1 rounded-[var(--radius-card)] border border-border bg-surface-elevated p-1.5 shadow-[var(--shadow-soft)]">
           {MOBILE_PRIMARY_NAV_ITEMS.map(({ label, href, icon: Icon }) => {

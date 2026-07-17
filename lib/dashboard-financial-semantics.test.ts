@@ -41,11 +41,12 @@ describe("dashboard period semantics", () => {
 });
 
 describe("dashboard transaction sanitization", () => {
-  it("excludes transfers, unknown types, malformed amounts, invalid dates, and non-positive values", () => {
+  it("keeps refunds while excluding transfers, investments, malformed values, and out-of-range dates", () => {
     const rows = [
       baseRow,
       { ...baseRow, id: "transfer", type: "transfer" },
-      { ...baseRow, id: "unknown", type: "refund" },
+      { ...baseRow, id: "investment", type: "investment" },
+      { ...baseRow, id: "refund", type: "refund" },
       { ...baseRow, id: "bad-number", amount: "12oops" },
       { ...baseRow, id: "nan", amount: Number.NaN },
       { ...baseRow, id: "infinity", amount: Number.POSITIVE_INFINITY },
@@ -60,7 +61,7 @@ describe("dashboard transaction sanitization", () => {
       end: "2026-07-16",
     });
 
-    expect(result.map((row) => row.id)).toEqual(["tx-1"]);
+    expect(result.map((row) => row.id)).toEqual(["tx-1", "refund"]);
     expect(result.every((row) => Number.isFinite(Number(row.amount)))).toBe(true);
   });
 });
