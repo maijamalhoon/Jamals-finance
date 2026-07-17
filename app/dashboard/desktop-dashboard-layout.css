@@ -1,0 +1,116 @@
+/* Large-screen dashboard composition. Mobile and tablet layouts remain unchanged. */
+@media (min-width: 1280px) {
+  .dashboard-overview {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    align-items: start;
+    gap: 1rem;
+  }
+
+  .dashboard-overview > * {
+    grid-column: 1 / -1;
+    margin-top: 0 !important;
+  }
+
+  .dashboard-overview
+    > div[class*="xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,2fr)]"],
+  .dashboard-overview > div[class*="lg:grid-cols-3"] {
+    display: contents;
+  }
+
+  .dashboard-overview
+    > div[class*="xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,2fr)]"]
+    > *,
+  .dashboard-overview > div[class*="lg:grid-cols-3"] > * {
+    min-width: 0;
+    height: auto !important;
+    align-self: start;
+  }
+
+  .dashboard-overview
+    > div[class*="xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,2fr)]"]
+    > *
+    > :where(section, div),
+  .dashboard-overview > div[class*="lg:grid-cols-3"] > * > :where(section, div) {
+    height: auto !important;
+  }
+
+  /* Primary insight row: wide cash-flow chart with compact supporting cards. */
+  .dashboard-overview
+    > div[class*="xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,2fr)]"]
+    > :nth-child(3) {
+    order: 10;
+    grid-column: span 6;
+  }
+
+  .dashboard-overview > div[class*="lg:grid-cols-3"] > :nth-child(1) {
+    order: 11;
+    grid-column: span 3;
+  }
+
+  .dashboard-overview > div[class*="lg:grid-cols-3"] > :nth-child(2) {
+    order: 12;
+    grid-column: span 3;
+  }
+
+  /* Activity row: compact spend record beside the wider transaction table. */
+  .dashboard-overview
+    > div[class*="xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,2fr)]"]
+    > :nth-child(1) {
+    order: 13;
+    grid-column: span 4;
+  }
+
+  .dashboard-overview > div[class*="lg:grid-cols-3"] > :nth-child(3) {
+    order: 14;
+    grid-column: span 8;
+  }
+
+  /* Portfolio uses the full width so its donut and top holdings sit side by side. */
+  .dashboard-overview
+    > div[class*="xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,2fr)]"]
+    > :nth-child(2) {
+    order: 15;
+    grid-column: 1 / -1;
+  }
+
+  .dashboard-overview
+    > div[class*="xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,2fr)]"]
+    > :nth-child(2)
+    > section
+    > header
+    + div[class*="grid"] {
+    grid-template-columns: minmax(220px, 0.82fr) minmax(320px, 1.18fr) !important;
+    align-items: center;
+  }
+}
+
+/* Reports must end with their content and retain the dashboard theme while scrolling. */
+[data-dashboard-scroll]:has([data-print-report]) {
+  min-height: 0;
+  background: var(--background);
+  overscroll-behavior-y: contain;
+}
+
+[data-print-report] {
+  min-height: 0 !important;
+  height: auto !important;
+  max-width: 100%;
+  overflow-x: clip;
+  background: transparent;
+  padding-bottom: max(0.5rem, env(safe-area-inset-bottom));
+}
+
+[data-print-report] > :where(.grid, section, article, div) {
+  min-width: 0;
+}
+
+@media (min-width: 1280px) {
+  [data-print-report] {
+    row-gap: 1rem;
+  }
+
+  [data-print-report] > .grid {
+    align-items: start;
+  }
+}
