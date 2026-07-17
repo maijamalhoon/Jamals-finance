@@ -40,7 +40,7 @@
     "clsx": "^2.1.1",
     "flatpickr": "^4.6.13",
     "framer-motion": "^12.41.0",
-    "lucide-react": "^1.23.0",
+    "lucide-react": "^1.25.0",
     "motion": "^12.42.2",
     "next": "16.2.9",
     "radix-ui": "^1.5.0",
