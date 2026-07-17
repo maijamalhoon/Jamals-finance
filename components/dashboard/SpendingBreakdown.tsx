@@ -3,10 +3,11 @@
 import Link from "next/link";
 import type { CSSProperties } from "react";
 import { PieChart } from "lucide-react";
+
+import { useCurrency } from "@/components/currency/CurrencyProvider";
 import CountedAmount from "@/components/motion/CountedAmount";
 import { useDashboardAnimationReady } from "@/components/motion/useDashboardAnimationReady";
 import EmptyState from "@/components/ui/empty-state";
-import { useCurrency } from "@/components/currency/CurrencyProvider";
 import type { DashboardAvailability } from "@/lib/dashboard-financial-semantics";
 import { CHART_COLOR_PALETTE } from "@/lib/theme-colors";
 
@@ -63,32 +64,40 @@ export default function SpendingBreakdown({
       percentage:
         Number.isFinite(item.percentage) ? Math.max(item.percentage, 0) : 0,
     }))
-    .sort((a, b) => b.value - a.value);
+    .sort((a, b) => b.value - a.value)
+    .slice(0, 5);
 
   if (status === "unavailable" || data.length === 0) {
     return (
-      <section className="finance-reference-card dashboard-list-card motion-card-entry">
-        <div className="dashboard-list-card-header">
-          <div className="min-w-0">
-            <div className="dashboard-list-card-kicker">
-              <span className="dashboard-list-card-kicker-icon">
-                <PieChart />
-              </span>
-              <span className="truncate">Spending Breakdown</span>
+      <section className="finance-reference-card motion-card-entry flex h-full min-h-[300px] flex-col overflow-hidden p-4 sm:p-5">
+        <div className="flex min-w-0 items-start justify-between gap-3">
+          <div className="flex min-w-0 items-center gap-2">
+            <span className="dashboard-list-card-kicker-icon">
+              <PieChart />
+            </span>
+            <div className="min-w-0">
+              <h3 className="truncate text-[11px] font-bold uppercase tracking-[0.12em] text-text-secondary">
+                Spending Breakdown
+              </h3>
+              <p className="mt-1 truncate text-[10px] font-medium text-text-tertiary">
+                {periodLabel}
+              </p>
             </div>
-            <h3 className="dashboard-list-card-title">Top Categories</h3>
-            <p className="dashboard-list-card-subtitle">{periodLabel}</p>
           </div>
         </div>
-        <div className="dashboard-chart-empty flex-1">
+        <div className="dashboard-chart-empty mt-4 flex-1">
           <EmptyState
             compact
             icon={PieChart}
-            title={status === "unavailable" ? "Spending unavailable" : "No expenses this month"}
+            title={
+              status === "unavailable"
+                ? "Spending unavailable"
+                : "No expenses this month"
+            }
             description={
-              status === "unavailable" ?
-                "Refresh when your connection is stable."
-              : "Expense categories will appear here once you add spending."
+              status === "unavailable"
+                ? "Refresh when your connection is stable."
+                : "Expense categories will appear here once you add spending."
             }
           />
         </div>
@@ -96,18 +105,51 @@ export default function SpendingBreakdown({
     );
   }
 
+  let cursor = 0;
+  const segments = sortedData.map((item, index) => {
+    const accent = getCategoryAccent(item, index);
+    const share =
+      safeTotal > 0
+        ? Math.max(0, Math.min((item.value / safeTotal) * 100, 100))
+        : Math.max(0, Math.min(item.percentage, 100));
+    const start = cursor;
+    const end = Math.min(100, cursor + share);
+    cursor = end;
+    return {
+      ...item,
+      accent,
+      start,
+      end,
+    };
+  });
+  const gradientParts = segments.map(
+    (item) => `${item.accent} ${item.start}% ${item.end}%`,
+  );
+  if (cursor < 100) {
+    gradientParts.push(`var(--surface-secondary) ${cursor}% 100%`);
+  }
+  const donutStyle = {
+    background: `conic-gradient(${gradientParts.join(", ")})`,
+    opacity: ready ? 1 : 0.35,
+    transform: ready ? "scale(1) rotate(0deg)" : "scale(0.9) rotate(-14deg)",
+    transitionDuration: reduceMotion ? "0ms" : "700ms",
+  } as CSSProperties;
+
   return (
-    <section className="finance-reference-card dashboard-list-card motion-card-entry">
-      <div className="dashboard-list-card-header">
-        <div className="min-w-0">
-          <div className="dashboard-list-card-kicker">
-            <span className="dashboard-list-card-kicker-icon">
-              <PieChart />
-            </span>
-            <span className="truncate">Spending Breakdown</span>
+    <section className="finance-reference-card motion-card-entry flex h-full min-h-[300px] min-w-0 flex-col overflow-hidden p-4 sm:p-5">
+      <div className="flex min-w-0 items-start justify-between gap-3">
+        <div className="flex min-w-0 items-center gap-2">
+          <span className="dashboard-list-card-kicker-icon">
+            <PieChart />
+          </span>
+          <div className="min-w-0">
+            <h3 className="truncate text-[11px] font-bold uppercase tracking-[0.12em] text-text-secondary">
+              Spending Breakdown
+            </h3>
+            <p className="mt-1 truncate text-[10px] font-medium text-text-tertiary">
+              {periodLabel}
+            </p>
           </div>
-          <h3 className="dashboard-list-card-title">Top Categories</h3>
-          <p className="dashboard-list-card-subtitle">{periodLabel}</p>
         </div>
 
         <Link
@@ -118,70 +160,49 @@ export default function SpendingBreakdown({
         </Link>
       </div>
 
-      <div className="dashboard-list-rows">
-        {sortedData.map((item, i) => {
-          const accent = getCategoryAccent(item, i);
-          const percent = Math.max(0, Math.min(item.percentage, 100));
-          const progressWidth = safeTotal > 0 && percent > 0 ? percent : 0;
-          const progressScale = ready ? progressWidth / 100 : 0;
-          const rowStyle = {
-            "--motion-reveal-delay": `${i * 65}ms`,
-            "--category-accent": accent,
-            "--progress-accent": accent,
-          } as CSSProperties;
-          const progressStyle = {
-            transform: `scaleX(${progressScale})`,
-            transitionDuration: reduceMotion ? "0ms" : "820ms",
-          } as CSSProperties;
-          const percentageStyle = {
-            ...rowStyle,
-            animationDelay: `${i * 65 + 105}ms`,
-          } as CSSProperties;
-
-          return (
-            <div
-              key={item.id ?? `${item.name}-${i}`}
-              className="dashboard-list-row motion-card-entry overflow-hidden"
-              style={rowStyle}
-            >
-              <div className="mb-2.5 grid min-w-0 grid-cols-[minmax(0,1fr)_auto_auto] items-center gap-x-2.5 sm:gap-x-3">
-                <div className="flex min-w-0 items-center gap-2.5">
-                  <span
-                    className="h-3 w-3 flex-shrink-0 rounded-full"
-                    style={{ backgroundColor: accent }}
-                  />
-                  <span className="line-clamp-2 break-words text-[13px] font-semibold leading-5 text-text-primary sm:text-sm">
-                    {item.name}
-                  </span>
-                </div>
-                <span
-                  className="motion-counter-ready max-w-[7.5rem] break-words text-right text-[12px] font-semibold leading-5 text-text-primary [overflow-wrap:anywhere] sm:max-w-none sm:whitespace-nowrap sm:text-[13px]"
-                  style={{ animationDelay: `${i * 65 + 85}ms` }}
-                >
-                  <CountedAmount
-                    amount={formatCurrency(item.value)}
-                    duration={0.82}
-                  />
-                </span>
-                <span
-                  className="motion-counter-ready w-10 whitespace-nowrap text-right text-[12px] font-bold leading-5 text-[var(--category-accent)] sm:text-[13px]"
-                  style={percentageStyle}
-                >
-                  <CountedAmount amount={formatPercentage(item.percentage)} duration={0.78} />
-                </span>
-              </div>
-
-              <div className="dashboard-progress-track">
-                <div
-                  className="dashboard-progress-fill"
-                  style={progressStyle}
-                />
-              </div>
+      <div className="mt-4 grid min-h-0 flex-1 items-center gap-5 sm:grid-cols-[minmax(130px,0.8fr)_minmax(0,1.2fr)] sm:gap-4 2xl:grid-cols-1">
+        <div className="flex justify-center 2xl:justify-start">
+          <div
+            aria-label={`Total spending ${formatCurrency(safeTotal)}`}
+            className="relative grid size-[150px] shrink-0 place-items-center rounded-full transition-[opacity,transform] sm:size-[160px] 2xl:size-[150px]"
+            role="img"
+            style={donutStyle}
+          >
+            <div className="absolute inset-[18px] rounded-full border border-border/60 bg-card shadow-[inset_0_1px_5px_rgb(15_23_42_/_0.06)]" />
+            <div className="relative z-10 max-w-[105px] text-center">
+              <p className="break-words text-[15px] font-black leading-tight tracking-[-0.02em] text-text-primary tabular-nums [overflow-wrap:anywhere]">
+                <CountedAmount amount={formatCurrency(safeTotal)} duration={0.82} />
+              </p>
+              <p className="mt-1 text-[10px] font-semibold text-text-secondary">
+                Total spent
+              </p>
             </div>
-          );
-        })}
-      </div>
+          </div>
+        </div>
 
+        <div className="min-w-0 space-y-2.5">
+          {segments.map((item, index) => (
+            <div
+              key={item.id ?? `${item.name}-${index}`}
+              className="motion-card-entry grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-3"
+              style={{ "--motion-reveal-delay": `${index * 55}ms` } as CSSProperties}
+            >
+              <div className="flex min-w-0 items-center gap-2.5">
+                <span
+                  className="size-2.5 shrink-0 rounded-full"
+                  style={{ backgroundColor: item.accent }}
+                />
+                <span className="truncate text-[12px] font-semibold text-text-primary sm:text-[13px] 2xl:text-[12px]">
+                  {item.name}
+                </span>
+              </div>
+              <span className="whitespace-nowrap text-[11px] font-bold tabular-nums text-text-secondary sm:text-xs">
+                {formatPercentage(item.percentage)}
+              </span>
+            </div>
+          ))}
+        </div>
+      </div>
     </section>
   );
 }
