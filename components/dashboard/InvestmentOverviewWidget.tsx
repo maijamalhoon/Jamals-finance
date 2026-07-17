@@ -400,26 +400,31 @@ export default function InvestmentOverviewWidget({
                       ))}
                     </Pie>
                     <Tooltip
+                      cursor={false}
                       contentStyle={{
-                        borderRadius: 16,
+                        maxWidth: "min(78vw, 280px)",
+                        borderRadius: 14,
                         borderColor: "var(--border)",
-                        background: "var(--card)",
+                        background: "var(--chart-tooltip)",
                         color: "var(--text-primary)",
                         boxShadow: "var(--shadow-soft)",
+                        padding: "10px 12px",
                       }}
-                      formatter={(value) => [
-                        formatCurrency(Number(value ?? 0)),
-                        "Priced value",
-                      ]}
-                      labelFormatter={(label) => {
-                        const item = allocationData.find(
-                          (entry) => entry.name === label,
-                        );
-                        return item
-                          ? `${label} - ${formatAllocation(
-                              (item.value / allocationTotalValue) * 100,
-                            )}`
-                          : String(label);
+                      itemStyle={{
+                        color: "var(--text-primary)",
+                        fontSize: 12,
+                        fontWeight: 750,
+                        padding: 0,
+                      }}
+                      labelStyle={{ display: "none" }}
+                      formatter={(value, _name, item) => {
+                        const entry = item.payload as AllocationEntry | undefined;
+                        const label =
+                          entry?.symbol?.trim().toUpperCase() ||
+                          entry?.name ||
+                          "Investment";
+
+                        return [formatCurrency(Number(value ?? 0)), label];
                       }}
                     />
                   </PieChart>
