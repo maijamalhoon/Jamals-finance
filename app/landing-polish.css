@@ -1,0 +1,389 @@
+/* Final landing-page polish.
+   Keeps the existing content and links intact while tightening responsive spacing,
+   separating light/dark art direction, and adding reliable scroll reveal motion. */
+
+.jf-node4-landing {
+  --landing-max-width: 1320px;
+  --landing-scroll-progress: 0;
+  --landing-accent-a: #315bd8;
+  --landing-accent-b: #7c4fd6;
+  --landing-accent-c: #0e9f91;
+  --landing-glow-a: rgb(49 91 216 / 0.2);
+  --landing-glow-b: rgb(124 79 214 / 0.16);
+  --landing-glow-c: rgb(14 159 145 / 0.12);
+
+  --page-background: #f4f7fd;
+  --background: #f4f7fd;
+  --background-subtle: #eaf0fb;
+  --surface: #ffffff;
+  --surface-primary: #ffffff;
+  --surface-secondary: #eef3fb;
+  --surface-elevated: #ffffff;
+  --surface-inset: #f3f6fc;
+  --surface-soft: #f5f8fd;
+  --border: #d5dfed;
+  --border-strong: #b8c8dc;
+  --divider: #dfe7f2;
+  --text-primary: #12213b;
+  --text-secondary: #43536c;
+  --text-muted: #687994;
+  --primary: #315bd8;
+  --primary-hover: #264bb8;
+  --primary-active: #1f3f9d;
+  --brand-accent: #315bd8;
+  --brand-accent-hover: #264bb8;
+  --brand-accent-pressed: #1f3f9d;
+  --brand: #315bd8;
+  --focus-color: #5d7ee8;
+  --investment: #7c4fd6;
+  --info: #287fc5;
+  --success: #11805f;
+  --warning: #a66a0a;
+  --danger: #bd4c55;
+  --primary-foreground: #ffffff;
+  --brand-on-accent: #ffffff;
+
+  background:
+    radial-gradient(circle at 8% 4%, var(--landing-glow-a), transparent 29rem),
+    radial-gradient(circle at 94% 15%, var(--landing-glow-b), transparent 31rem),
+    linear-gradient(180deg, #f8faff 0%, #f3f7fd 38%, #edf3fb 100%);
+  scroll-behavior: smooth;
+}
+
+.dark .jf-node4-landing {
+  --landing-accent-a: #91a8ff;
+  --landing-accent-b: #c39cff;
+  --landing-accent-c: #55d4c6;
+  --landing-glow-a: rgb(91 121 255 / 0.24);
+  --landing-glow-b: rgb(155 94 255 / 0.21);
+  --landing-glow-c: rgb(41 205 188 / 0.14);
+
+  --page-background: #070b16;
+  --background: #070b16;
+  --background-subtle: #0b1222;
+  --surface: #111a2c;
+  --surface-primary: #111a2c;
+  --surface-secondary: #0b1425;
+  --surface-elevated: #17233a;
+  --surface-inset: #0a1221;
+  --surface-soft: #152239;
+  --border: #273652;
+  --border-strong: #3a4d70;
+  --divider: #22314c;
+  --text-primary: #f3f6ff;
+  --text-secondary: #c4cee0;
+  --text-muted: #8f9fba;
+  --primary: #91a8ff;
+  --primary-hover: #a9baff;
+  --primary-active: #7f98f4;
+  --brand-accent: #91a8ff;
+  --brand-accent-hover: #a9baff;
+  --brand-accent-pressed: #7f98f4;
+  --brand: #91a8ff;
+  --focus-color: #a5b5ff;
+  --investment: #c39cff;
+  --info: #72b8ff;
+  --success: #5ad6a3;
+  --warning: #efbe67;
+  --danger: #ff938f;
+  --primary-foreground: #08101f;
+  --brand-on-accent: #08101f;
+
+  background:
+    radial-gradient(circle at 13% 2%, var(--landing-glow-a), transparent 34rem),
+    radial-gradient(circle at 88% 18%, var(--landing-glow-b), transparent 36rem),
+    radial-gradient(circle at 48% 72%, var(--landing-glow-c), transparent 42rem),
+    linear-gradient(180deg, #070b16 0%, #091020 42%, #070c18 100%);
+}
+
+/* A subtle page-progress line makes long-form scrolling feel intentional. */
+.jf-node4-landing > header {
+  position: sticky;
+  isolation: isolate;
+}
+
+.jf-node4-landing > header::after {
+  position: absolute;
+  right: 0;
+  bottom: -1px;
+  left: 0;
+  z-index: 2;
+  height: 2px;
+  scale: var(--landing-scroll-progress) 1;
+  transform-origin: left center;
+  background: linear-gradient(
+    90deg,
+    var(--landing-accent-a),
+    var(--landing-accent-c),
+    var(--landing-accent-b)
+  );
+  box-shadow: 0 0 14px color-mix(in srgb, var(--landing-accent-a) 45%, transparent);
+  content: "";
+}
+
+/* Give every section enough room to breathe, but never force empty viewport height. */
+.jf-node4-landing > header + section {
+  min-height: auto !important;
+  gap: clamp(2rem, 4vw, 4.75rem) !important;
+  padding-block: clamp(3.5rem, 6.5vw, 6.75rem) !important;
+}
+
+.jf-node4-landing > section.mx-auto,
+.jf-node4-landing > section > div,
+.jf-node4-landing > footer > div,
+.jf-node4-landing > header > div {
+  width: 100%;
+  max-width: var(--landing-max-width) !important;
+}
+
+.jf-node4-landing > section.mx-auto,
+.jf-node4-landing > section > div,
+.jf-node4-landing > footer > div {
+  padding-inline: clamp(1rem, 2.6vw, 3rem) !important;
+}
+
+.jf-node4-landing #capabilities,
+.jf-node4-landing #preview,
+.jf-node4-landing > section:has(.jf-node4-cta) {
+  padding-block: clamp(3.75rem, 6vw, 6.5rem) !important;
+}
+
+.jf-node4-landing #workflow > div,
+.jf-node4-landing #privacy > div {
+  gap: clamp(2rem, 4vw, 4.5rem) !important;
+  padding-block: clamp(3.75rem, 6vw, 6.5rem) !important;
+}
+
+.jf-node4-landing section {
+  scroll-margin-top: 5rem;
+}
+
+/* Make section backgrounds distinct without creating hard visual breaks. */
+.jf-node4-landing > section[aria-label="Product values"] {
+  background: color-mix(in srgb, var(--surface-primary) 80%, transparent) !important;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.jf-node4-landing #workflow {
+  background:
+    radial-gradient(circle at 90% 20%, color-mix(in srgb, var(--landing-accent-c) 8%, transparent), transparent 28rem),
+    color-mix(in srgb, var(--surface-secondary) 80%, transparent) !important;
+}
+
+.jf-node4-landing #privacy {
+  background:
+    radial-gradient(circle at 10% 85%, color-mix(in srgb, var(--landing-accent-b) 8%, transparent), transparent 28rem),
+    color-mix(in srgb, var(--surface-primary) 82%, transparent) !important;
+}
+
+/* Remove forced card whitespace while keeping rows visually balanced. */
+.jf-node4-landing #capabilities > div:last-child article {
+  min-height: 0 !important;
+  height: 100%;
+  padding: clamp(1.1rem, 1.7vw, 1.5rem) !important;
+}
+
+.jf-node4-landing #capabilities > div:last-child {
+  align-items: stretch;
+  gap: clamp(0.75rem, 1.25vw, 1.15rem) !important;
+}
+
+.jf-node4-landing #workflow li,
+.jf-node4-landing #privacy .finance-surface {
+  min-width: 0;
+  height: auto;
+}
+
+.jf-node4-landing .finance-surface {
+  background: linear-gradient(
+    145deg,
+    color-mix(in srgb, var(--surface-primary) 96%, var(--landing-accent-a) 4%),
+    var(--surface-primary)
+  );
+}
+
+.dark .jf-node4-landing .finance-surface {
+  background: linear-gradient(
+    145deg,
+    color-mix(in srgb, var(--surface-primary) 92%, var(--landing-accent-a) 8%),
+    color-mix(in srgb, var(--surface-primary) 94%, #000 6%)
+  );
+}
+
+/* Reliable bottom-to-top reveal on every modern browser. */
+.jf-node4-landing.landing-reveal-ready [data-landing-reveal] {
+  opacity: 0;
+  translate: 0 clamp(1.75rem, 4vw, 4rem);
+  scale: 0.985;
+  animation: none !important;
+  transition:
+    opacity 680ms cubic-bezier(0.16, 1, 0.3, 1),
+    translate 760ms cubic-bezier(0.16, 1, 0.3, 1),
+    scale 760ms cubic-bezier(0.16, 1, 0.3, 1);
+  transition-delay: calc(var(--landing-reveal-order, 0) * 55ms);
+}
+
+.jf-node4-landing.landing-reveal-ready [data-landing-reveal].is-revealed {
+  opacity: 1;
+  translate: 0 0;
+  scale: 1;
+}
+
+/* Keep preview art fluid and prevent decorative effects from creating overflow. */
+.jf-node4-landing > header + section > figure,
+.jf-node4-landing #preview > figure {
+  width: 100%;
+  min-width: 0;
+  max-width: none;
+}
+
+.jf-node4-landing > header + section > figure > div,
+.jf-node4-landing #preview > figure > div {
+  min-width: 0;
+}
+
+.jf-node4-landing .jf-node4-cta {
+  padding: clamp(1.5rem, 4vw, 4rem) !important;
+}
+
+/* Tablet composition: no hard minimum columns, so nothing overlaps. */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .jf-node4-landing > header + section {
+    padding-block: clamp(4rem, 8vw, 5.5rem) !important;
+  }
+
+  .jf-node4-landing #capabilities > div:last-child {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  .jf-node4-landing #capabilities > div:last-child article:last-child {
+    grid-column: 1 / -1;
+    width: min(100%, 34rem);
+    justify-self: center;
+  }
+}
+
+/* Desktop composition: use the screen without unsafe fixed minimums. */
+@media (min-width: 1024px) {
+  .jf-node4-landing {
+    --landing-max-width: min(96vw, 1880px);
+  }
+
+  .jf-node4-landing > header + section {
+    grid-template-columns: minmax(0, 0.82fr) minmax(0, 1.18fr) !important;
+    align-items: center !important;
+  }
+
+  .jf-node4-landing #workflow > div {
+    grid-template-columns: minmax(0, 0.7fr) minmax(0, 1.3fr) !important;
+    align-items: start;
+  }
+
+  .jf-node4-landing #preview {
+    grid-template-columns: minmax(0, 0.64fr) minmax(0, 1.36fr) !important;
+    align-items: center;
+  }
+
+  .jf-node4-landing #privacy > div {
+    grid-template-columns: minmax(0, 0.76fr) minmax(0, 1.24fr) !important;
+    align-items: start;
+  }
+
+  .jf-node4-landing #capabilities > div:last-child {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  }
+
+  .jf-node4-landing #capabilities > div:last-child article:last-child {
+    grid-column: 2;
+  }
+}
+
+@media (min-width: 1280px) {
+  .jf-node4-landing #capabilities > div:last-child {
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  }
+
+  .jf-node4-landing #capabilities > div:last-child article:last-child {
+    grid-column: 2 / span 2;
+  }
+
+  .jf-node4-landing > header + section h1 {
+    font-size: clamp(4.35rem, 5.3vw, 6.5rem) !important;
+  }
+}
+
+/* Short laptop displays need tighter vertical rhythm, not clipped content. */
+@media (min-width: 1024px) and (max-height: 760px) {
+  .jf-node4-landing > header + section {
+    padding-block: 3rem !important;
+  }
+
+  .jf-node4-landing > header + section h1 {
+    font-size: clamp(3.5rem, 5vw, 5rem) !important;
+  }
+
+  .jf-node4-landing #capabilities,
+  .jf-node4-landing #preview,
+  .jf-node4-landing > section:has(.jf-node4-cta),
+  .jf-node4-landing #workflow > div,
+  .jf-node4-landing #privacy > div {
+    padding-block: 3.5rem !important;
+  }
+}
+
+/* Mobile stays compact, readable, and free from horizontal collisions. */
+@media (max-width: 639px) {
+  .jf-node4-landing {
+    --landing-max-width: 100%;
+  }
+
+  .jf-node4-landing > header + section {
+    gap: 2.25rem !important;
+    padding-block: 3.25rem 3.75rem !important;
+  }
+
+  .jf-node4-landing > section.mx-auto,
+  .jf-node4-landing > section > div,
+  .jf-node4-landing > footer > div {
+    padding-inline: 1rem !important;
+  }
+
+  .jf-node4-landing #capabilities,
+  .jf-node4-landing #preview,
+  .jf-node4-landing > section:has(.jf-node4-cta),
+  .jf-node4-landing #workflow > div,
+  .jf-node4-landing #privacy > div {
+    padding-block: 3.5rem !important;
+  }
+
+  .jf-node4-landing #capabilities > div:last-child {
+    gap: 0.75rem !important;
+  }
+
+  .jf-node4-landing #capabilities > div:last-child article {
+    padding: 1.1rem !important;
+  }
+
+  .jf-node4-landing .jf-node4-cta {
+    padding: 1.5rem 1rem !important;
+  }
+
+  .jf-node4-landing.landing-reveal-ready [data-landing-reveal] {
+    translate: 0 2rem;
+    transition-delay: calc(var(--landing-reveal-order, 0) * 35ms);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .jf-node4-landing.landing-reveal-ready [data-landing-reveal] {
+    opacity: 1 !important;
+    translate: none !important;
+    scale: 1 !important;
+    transition: none !important;
+  }
+
+  .jf-node4-landing > header::after {
+    transition: none;
+  }
+}
