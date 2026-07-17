@@ -1,0 +1,53 @@
+/* Keep the portfolio value readable inside the responsive donut without ellipsis. */
+.dashboard-overview
+  section.finance-reference-card
+  > header
+  + div
+  > div:first-child
+  > div.relative {
+  container-type: inline-size;
+}
+
+.dashboard-overview
+  section.finance-reference-card
+  > header
+  + div
+  > div:first-child
+  > div.relative
+  > div.pointer-events-none
+  > div {
+  width: 68%;
+  max-width: 68%;
+  padding-inline: 0;
+}
+
+.dashboard-overview
+  section.finance-reference-card
+  > header
+  + div
+  > div:first-child
+  > div.relative
+  > div.pointer-events-none
+  > div
+  > p.truncate:first-child {
+  overflow: visible;
+  text-overflow: clip;
+  white-space: nowrap;
+  font-size: clamp(1rem, 5vw, 1.75rem);
+  font-size: clamp(1rem, 8.5cqw, 1.75rem);
+  letter-spacing: -0.045em;
+}
+
+@media (max-width: 359px) {
+  .dashboard-overview
+    section.finance-reference-card
+    > header
+    + div
+    > div:first-child
+    > div.relative
+    > div.pointer-events-none
+    > div
+    > p.truncate:first-child {
+    font-size: clamp(0.9rem, 8cqw, 1.35rem);
+  }
+}
