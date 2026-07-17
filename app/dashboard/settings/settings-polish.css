@@ -1,0 +1,449 @@
+/* Responsive visual polish for the Settings page.
+   Presentation only: dialogs, Supabase writes, theme logic, exports,
+   notifications, navigation, and sign-out behavior remain unchanged. */
+
+.settings-page-polish {
+  min-width: 0;
+  container-type: inline-size;
+}
+
+.settings-page-polish > div {
+  min-width: 0;
+}
+
+.settings-page-polish > div > div {
+  width: 100%;
+  max-width: 72rem !important;
+}
+
+.settings-page-polish .page-heading {
+  position: relative;
+  isolation: isolate;
+  min-height: 7.25rem;
+  display: flex;
+  align-items: center;
+  padding: clamp(1.15rem, 2.5vw, 1.75rem);
+  border: 1px solid color-mix(in srgb, var(--border-strong), transparent 14%);
+  border-radius: clamp(1.15rem, 2vw, 1.55rem);
+  background:
+    radial-gradient(circle at 92% 8%, color-mix(in srgb, var(--primary), transparent 83%) 0, transparent 35%),
+    linear-gradient(135deg, color-mix(in srgb, var(--surface-primary), var(--primary) 3%), var(--surface-primary) 62%);
+  box-shadow: var(--surface-highlight), 0 14px 38px rgb(23 35 58 / 0.075);
+  overflow: hidden;
+}
+
+.settings-page-polish .page-heading::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 4px;
+  background: linear-gradient(180deg, var(--primary), var(--investment));
+  box-shadow: 0 0 18px color-mix(in srgb, var(--primary), transparent 46%);
+}
+
+.settings-page-polish .page-heading::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  width: clamp(7rem, 18vw, 13rem);
+  aspect-ratio: 1;
+  right: clamp(-4.5rem, -4vw, -2rem);
+  top: 50%;
+  translate: 0 -50%;
+  border: 1px solid color-mix(in srgb, var(--primary), transparent 78%);
+  border-radius: 38% 62% 58% 42%;
+  rotate: 18deg;
+  opacity: 0.7;
+}
+
+.dark .settings-page-polish .page-heading {
+  background:
+    radial-gradient(circle at 92% 8%, color-mix(in srgb, var(--primary), transparent 72%) 0, transparent 38%),
+    linear-gradient(135deg, color-mix(in srgb, var(--surface-primary), var(--primary) 7%), var(--surface-primary) 64%);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.045), 0 18px 44px rgb(0 0 0 / 0.18);
+}
+
+.settings-page-polish .page-title {
+  font-size: clamp(1.55rem, 3vw, 2.2rem);
+  line-height: 1.05;
+  letter-spacing: -0.035em;
+}
+
+.settings-page-polish .page-subtitle {
+  max-width: 42rem;
+  margin-top: 0.55rem;
+  font-size: clamp(0.78rem, 1.2vw, 0.92rem);
+  line-height: 1.55;
+}
+
+.settings-page-polish section {
+  min-width: 0;
+}
+
+.settings-page-polish section > p:first-child {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0 0.35rem 0.55rem;
+  color: var(--text-secondary);
+  font-size: 0.67rem;
+  letter-spacing: 0.16em;
+}
+
+.settings-page-polish section > p:first-child::before {
+  content: "";
+  width: 1.4rem;
+  height: 2px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--primary), color-mix(in srgb, var(--primary), transparent 72%));
+}
+
+.settings-page-polish .finance-panel {
+  border: 1px solid color-mix(in srgb, var(--border), transparent 4%);
+  border-radius: clamp(1rem, 1.6vw, 1.3rem);
+  background:
+    radial-gradient(circle at 100% 0, color-mix(in srgb, var(--primary), transparent 96%) 0, transparent 35%),
+    var(--surface-primary);
+  box-shadow: var(--surface-highlight), 0 9px 26px rgb(23 35 58 / 0.06);
+}
+
+.dark .settings-page-polish .finance-panel {
+  background:
+    radial-gradient(circle at 100% 0, color-mix(in srgb, var(--primary), transparent 88%) 0, transparent 38%),
+    var(--surface-primary);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.035), 0 14px 32px rgb(0 0 0 / 0.15);
+}
+
+.settings-page-polish .finance-panel > :where(button, a, div) {
+  min-width: 0;
+}
+
+.settings-page-polish .finance-panel > :where(button, a) {
+  min-height: 4.4rem;
+  gap: 0.85rem;
+  padding-block: 0.8rem;
+  transition:
+    background-color var(--motion-duration-fast) ease,
+    transform var(--motion-duration-fast) var(--motion-ease);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.settings-page-polish .finance-icon-bubble {
+  width: 2.55rem !important;
+  height: 2.55rem !important;
+  border-radius: 0.82rem !important;
+  border: 1px solid color-mix(in srgb, currentColor, transparent 72%);
+  background: color-mix(in srgb, currentColor, transparent 91%);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.45), var(--shadow-xs);
+}
+
+.dark .settings-page-polish .finance-icon-bubble {
+  background: color-mix(in srgb, currentColor, transparent 86%);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.04), var(--shadow-xs);
+}
+
+.settings-page-polish .finance-panel [class*="ml-[76px]"] {
+  margin-left: 4.55rem;
+  background: color-mix(in srgb, var(--divider), transparent 18%);
+}
+
+.settings-page-polish .finance-state-pill {
+  min-height: 1.65rem;
+  padding-inline: 0.62rem;
+  border: 1px solid color-mix(in srgb, var(--border-strong), transparent 25%);
+  background: color-mix(in srgb, var(--surface-secondary), transparent 10%);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.28);
+  font-size: 0.62rem;
+  letter-spacing: 0.04em;
+}
+
+/* Profile summary */
+.settings-page-polish section:first-of-type .finance-panel > div:first-child {
+  position: relative;
+  min-height: 6.8rem;
+  padding-block: 1.05rem;
+  background:
+    linear-gradient(90deg, color-mix(in srgb, var(--primary), transparent 94%), transparent 48%);
+}
+
+.settings-page-polish section:first-of-type .finance-panel > div:first-child > div:first-child {
+  width: 3.65rem;
+  height: 3.65rem;
+  border-radius: 1.15rem;
+  background: linear-gradient(145deg, var(--primary), color-mix(in srgb, var(--primary), var(--investment) 35%));
+  box-shadow: 0 10px 24px color-mix(in srgb, var(--primary), transparent 70%);
+}
+
+.settings-page-polish section:first-of-type .finance-panel h3 {
+  font-size: clamp(1rem, 2vw, 1.22rem);
+  letter-spacing: -0.025em;
+}
+
+/* Theme selector */
+.settings-page-polish [role="radiogroup"] {
+  gap: 0.65rem;
+}
+
+.settings-page-polish [role="radiogroup"] > button {
+  min-width: 0;
+  border-radius: 0.95rem;
+  background: color-mix(in srgb, var(--surface-secondary), transparent 12%);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.24);
+  transition:
+    transform var(--motion-duration-fast) var(--motion-ease),
+    border-color var(--motion-duration-fast) ease,
+    background-color var(--motion-duration-fast) ease,
+    box-shadow var(--motion-duration-fast) ease;
+}
+
+.settings-page-polish [role="radiogroup"] > button[aria-checked="true"] {
+  border-color: color-mix(in srgb, var(--primary), transparent 32%);
+  background:
+    linear-gradient(145deg, color-mix(in srgb, var(--primary-soft), var(--surface-primary) 14%), var(--primary-soft));
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.42), 0 8px 18px color-mix(in srgb, var(--primary), transparent 86%);
+}
+
+.dark .settings-page-polish [role="radiogroup"] > button[aria-checked="true"] {
+  background: color-mix(in srgb, var(--surface-secondary), var(--primary) 13%);
+}
+
+/* Compact switches */
+.settings-page-polish [role="switch"] {
+  width: 3.25rem !important;
+  height: 2rem !important;
+  border-radius: 999px;
+  box-shadow: inset 0 1px 3px rgb(23 35 58 / 0.12);
+}
+
+.settings-page-polish [role="switch"] > span {
+  width: 1.5rem !important;
+  height: 1.5rem !important;
+  top: 0.2rem !important;
+  left: 0.22rem !important;
+  box-shadow: 0 2px 7px rgb(23 35 58 / 0.22);
+}
+
+.settings-page-polish [role="switch"][aria-checked="true"] > span {
+  transform: translateX(1.17rem) !important;
+}
+
+/* Account stats */
+.settings-page-polish section:nth-of-type(8) > div {
+  gap: 0.75rem;
+}
+
+.settings-page-polish section:nth-of-type(8) .summary-card {
+  position: relative;
+  overflow: hidden;
+  min-height: 6.6rem;
+  display: grid;
+  place-content: center;
+  border: 1px solid color-mix(in srgb, var(--border), transparent 5%);
+  border-radius: 1rem;
+  background:
+    radial-gradient(circle at 100% 0, color-mix(in srgb, var(--primary), transparent 87%) 0, transparent 42%),
+    var(--surface-primary);
+  box-shadow: var(--surface-highlight), 0 8px 22px rgb(23 35 58 / 0.055);
+}
+
+.settings-page-polish section:nth-of-type(8) .summary-card p:first-child {
+  font-size: clamp(1.35rem, 3vw, 1.8rem);
+  line-height: 1;
+  letter-spacing: -0.04em;
+}
+
+.settings-page-polish section:nth-of-type(8) .summary-card p:last-child {
+  margin-top: 0.5rem;
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+/* Sign out and footer */
+.settings-page-polish > div > div > button:last-of-type {
+  min-height: 3.6rem;
+  border-radius: 1rem;
+  border-color: color-mix(in srgb, var(--danger), transparent 55%);
+  background: color-mix(in srgb, var(--danger-soft), transparent 20%);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.3);
+  transition:
+    transform var(--motion-duration-fast) var(--motion-ease),
+    background-color var(--motion-duration-fast) ease,
+    border-color var(--motion-duration-fast) ease;
+}
+
+.settings-page-polish footer {
+  padding-block: 0.25rem 0.75rem;
+  color: var(--text-tertiary);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .settings-page-polish .finance-panel > :where(button, a):hover {
+    transform: translateX(2px);
+    background: color-mix(in srgb, var(--hover), var(--primary) 2%);
+  }
+
+  .settings-page-polish [role="radiogroup"] > button:hover {
+    transform: translateY(-2px);
+    border-color: color-mix(in srgb, var(--primary), transparent 62%);
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.34), 0 9px 20px rgb(23 35 58 / 0.07);
+  }
+
+  .settings-page-polish > div > div > button:last-of-type:hover {
+    transform: translateY(-1px);
+    border-color: color-mix(in srgb, var(--danger), transparent 38%);
+    background: color-mix(in srgb, var(--danger-soft), var(--danger) 4%);
+  }
+}
+
+@media (min-width: 400px) and (max-width: 639px) {
+  .settings-page-polish [role="radiogroup"] {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  }
+
+  .settings-page-polish [role="radiogroup"] > button {
+    flex-direction: column;
+    justify-content: center;
+    gap: 0.4rem;
+    padding: 0.7rem 0.35rem;
+    text-align: center;
+  }
+
+  .settings-page-polish [role="radiogroup"] > button > span:nth-child(2) > span:last-child {
+    display: none;
+  }
+
+  .settings-page-polish [role="radiogroup"] > button > span:last-child {
+    position: absolute;
+    top: 0.4rem;
+    right: 0.4rem;
+  }
+}
+
+@media (max-width: 639px) {
+  .settings-page-polish > div > div {
+    gap: 0;
+  }
+
+  .settings-page-polish .page-heading {
+    min-height: 6.25rem;
+    padding: 1rem;
+    border-radius: 1.05rem;
+  }
+
+  .settings-page-polish .page-heading::after {
+    right: -4.7rem;
+    opacity: 0.48;
+  }
+
+  .settings-page-polish section > p:first-child {
+    padding-top: 0.2rem;
+    padding-bottom: 0.45rem;
+  }
+
+  .settings-page-polish .finance-panel {
+    border-radius: 1rem;
+  }
+
+  .settings-page-polish .finance-panel > :where(button, a, div) {
+    padding-left: 0.85rem;
+    padding-right: 0.85rem;
+  }
+
+  .settings-page-polish .finance-panel > :where(button, a) {
+    min-height: 4.1rem;
+    gap: 0.7rem;
+  }
+
+  .settings-page-polish .finance-panel > :where(button, a) span.min-w-0.flex-1 > span:first-child {
+    font-size: 0.84rem;
+  }
+
+  .settings-page-polish .finance-panel > :where(button, a) span.min-w-0.flex-1 > span:last-child {
+    font-size: 0.68rem;
+    line-height: 1.35;
+  }
+
+  .settings-page-polish .finance-icon-bubble {
+    width: 2.25rem !important;
+    height: 2.25rem !important;
+    border-radius: 0.72rem !important;
+  }
+
+  .settings-page-polish .finance-icon-bubble svg {
+    width: 1rem;
+    height: 1rem;
+  }
+
+  .settings-page-polish .finance-panel [class*="ml-[76px]"] {
+    margin-left: 3.8rem;
+  }
+
+  .settings-page-polish section:first-of-type .finance-panel > div:first-child {
+    min-height: 5.7rem;
+    gap: 0.8rem;
+  }
+
+  .settings-page-polish section:first-of-type .finance-panel > div:first-child > div:first-child {
+    width: 3.05rem;
+    height: 3.05rem;
+    border-radius: 0.9rem;
+  }
+
+  .settings-page-polish section:first-of-type .finance-panel > div:first-child > div:first-child svg {
+    width: 1.35rem;
+    height: 1.35rem;
+  }
+
+  .settings-page-polish section:nth-of-type(8) .summary-card {
+    min-height: 5.4rem;
+  }
+}
+
+@media (min-width: 900px) {
+  .settings-page-polish > div > div {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-areas:
+      "hero hero"
+      "profile appearance"
+      "preferences appearance"
+      "notifications data"
+      "tools data"
+      "stats stats"
+      "signout signout"
+      "footer footer";
+    gap: 1.15rem;
+    align-items: start;
+  }
+
+  .settings-page-polish > div > div > * + * {
+    margin-block-start: 0 !important;
+  }
+
+  .settings-page-polish > div > div > .page-heading { grid-area: hero; }
+  .settings-page-polish > div > div > section:nth-of-type(1) { grid-area: profile; }
+  .settings-page-polish > div > div > section:nth-of-type(2) { grid-area: appearance; }
+  .settings-page-polish > div > div > section:nth-of-type(3) { grid-area: preferences; }
+  .settings-page-polish > div > div > section:nth-of-type(4) { grid-area: notifications; }
+  .settings-page-polish > div > div > section:nth-of-type(5) { grid-area: tools; }
+  .settings-page-polish > div > div > section:nth-of-type(6) { grid-area: data; }
+  .settings-page-polish > div > div > section:nth-of-type(7) { grid-area: stats; }
+  .settings-page-polish > div > div > button:last-of-type { grid-area: signout; }
+  .settings-page-polish > div > div > footer { grid-area: footer; }
+
+  .settings-page-polish section:nth-of-type(7) > div {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .settings-page-polish *,
+  .settings-page-polish *::before,
+  .settings-page-polish *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}
