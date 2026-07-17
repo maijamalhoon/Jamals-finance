@@ -39,7 +39,7 @@ export default function ResponsiveDashboardHeader({
     return (
       <div
         aria-hidden="true"
-        className="min-h-[60px] shrink-0 border-b border-border bg-surface-primary/95 print:hidden lg:min-h-[120px]"
+        className="min-h-[60px] shrink-0 border-b border-border bg-surface-primary/95 print:hidden lg:min-h-[88px]"
       />
     );
   }
