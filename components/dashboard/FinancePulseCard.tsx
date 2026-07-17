@@ -6,6 +6,8 @@ import {
   Target,
   Wallet,
 } from "lucide-react";
+import type { CSSProperties } from "react";
+
 import CountedAmount from "@/components/motion/CountedAmount";
 import { useCurrency } from "@/components/currency/CurrencyProvider";
 import type { DashboardAvailability } from "@/lib/dashboard-financial-semantics";
@@ -76,22 +78,23 @@ export default function FinancePulseCard({
         <article
           key={label}
           className="dashboard-pulse-tile"
+          style={{ "--pulse-accent": accent } as CSSProperties}
         >
-          <span
-            className="absolute inset-y-2 left-0 w-1 rounded-r-full"
-            style={{ backgroundColor: accent }}
-          />
-          <div className="flex items-start justify-between gap-3 pl-1.5">
+          <span aria-hidden="true" className="dashboard-pulse-accent" />
+          <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
               <p className="text-[10px] font-bold uppercase tracking-[0.1em] text-text-secondary">
                 {label}
               </p>
-              <p className="mt-1.5 break-words text-[15px] font-black leading-tight text-text-primary tabular-nums [overflow-wrap:anywhere]">
+              <p
+                className="dashboard-pulse-value mt-1.5 break-words font-black leading-tight text-text-primary tabular-nums [overflow-wrap:anywhere]"
+                title={value}
+              >
                 {value === "Unavailable" ? value : <CountedAmount amount={value} />}
               </p>
             </div>
             <span
-              className="grid h-8 w-8 shrink-0 place-items-center rounded-[13px] border"
+              className="dashboard-pulse-icon grid h-8 w-8 shrink-0 place-items-center rounded-[13px] border"
               style={{
                 color: accent,
                 borderColor: `color-mix(in srgb, ${accent}, transparent 74%)`,
@@ -101,7 +104,7 @@ export default function FinancePulseCard({
               <Icon size={13} strokeWidth={2.2} />
             </span>
           </div>
-          <p className="mt-1 line-clamp-2 pl-1.5 text-[10.5px] font-semibold leading-4 text-text-secondary">
+          <p className="mt-1.5 line-clamp-2 text-[10.5px] font-semibold leading-4 text-text-secondary">
             {detail}
           </p>
         </article>
