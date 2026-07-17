@@ -2,11 +2,13 @@
 
 import Link from "next/link";
 import type { CSSProperties } from "react";
-import { PieChart } from "lucide-react";
+import { PieChart as PieChartIcon } from "lucide-react";
+import { Cell, Pie, PieChart, Tooltip } from "recharts";
 
 import { useCurrency } from "@/components/currency/CurrencyProvider";
 import CountedAmount from "@/components/motion/CountedAmount";
 import { useDashboardAnimationReady } from "@/components/motion/useDashboardAnimationReady";
+import ChartFrame from "@/components/ui/chart-frame";
 import EmptyState from "@/components/ui/empty-state";
 import type { DashboardAvailability } from "@/lib/dashboard-financial-semantics";
 import { CHART_COLOR_PALETTE } from "@/lib/theme-colors";
@@ -60,7 +62,7 @@ export default function SpendingBreakdown({
   status?: DashboardAvailability;
   periodLabel?: string;
 }) {
-  const { ready, reduceMotion } = useDashboardAnimationReady();
+  const { reduceMotion } = useDashboardAnimationReady();
   const { formatCurrency } = useCurrency();
   const safeTotal = Number.isFinite(total) ? Math.max(total, 0) : 0;
   const sortedData = [...data]
@@ -79,7 +81,7 @@ export default function SpendingBreakdown({
         <div className="flex min-w-0 items-start justify-between gap-3">
           <div className="flex min-w-0 items-center gap-2">
             <span className="dashboard-list-card-kicker-icon">
-              <PieChart />
+              <PieChartIcon />
             </span>
             <div className="min-w-0">
               <h3 className="truncate text-[11px] font-bold uppercase tracking-[0.12em] text-text-secondary">
@@ -94,7 +96,7 @@ export default function SpendingBreakdown({
         <div className="dashboard-chart-empty mt-4 flex-1">
           <EmptyState
             compact
-            icon={PieChart}
+            icon={PieChartIcon}
             title={
               status === "unavailable"
                 ? "Spending unavailable"
@@ -139,26 +141,14 @@ export default function SpendingBreakdown({
     },
     { cursor: 0, segments: [] },
   );
-  const { cursor, segments } = segmentState;
-  const gradientParts = segments.map(
-    (item) => `${item.accent} ${item.start}% ${item.end}%`,
-  );
-  if (cursor < 100) {
-    gradientParts.push(`var(--surface-secondary) ${cursor}% 100%`);
-  }
-  const donutStyle = {
-    background: `conic-gradient(${gradientParts.join(", ")})`,
-    opacity: ready ? 1 : 0.35,
-    transform: ready ? "scale(1) rotate(0deg)" : "scale(0.9) rotate(-14deg)",
-    transitionDuration: reduceMotion ? "0ms" : "700ms",
-  } as CSSProperties;
+  const { segments } = segmentState;
 
   return (
     <section className="finance-reference-card motion-card-entry flex h-full min-h-[300px] min-w-0 flex-col overflow-hidden p-4 sm:p-5">
       <div className="flex min-w-0 items-start justify-between gap-3">
         <div className="flex min-w-0 items-center gap-2">
           <span className="dashboard-list-card-kicker-icon">
-            <PieChart />
+            <PieChartIcon />
           </span>
           <div className="min-w-0">
             <h3 className="truncate text-[11px] font-bold uppercase tracking-[0.12em] text-text-secondary">
@@ -178,22 +168,62 @@ export default function SpendingBreakdown({
         </Link>
       </div>
 
-      <div className="mt-4 grid min-h-0 flex-1 items-center gap-6 sm:grid-cols-[minmax(210px,0.95fr)_minmax(0,1.05fr)] sm:gap-5 2xl:grid-cols-1">
-        <div className="flex justify-center">
+      <div className="mt-4 grid min-h-0 flex-1 items-center gap-6 sm:grid-cols-[minmax(220px,0.95fr)_minmax(0,1.05fr)] sm:gap-5 2xl:grid-cols-1">
+        <div className="flex min-w-0 justify-center">
           <div
             aria-label={`Total spending ${formatCurrency(safeTotal)}`}
-            className="relative grid size-[190px] shrink-0 place-items-center rounded-full transition-[opacity,transform] min-[420px]:size-[210px] sm:size-[220px] lg:size-[240px] 2xl:size-[230px]"
+            className="relative aspect-square w-full max-w-[280px] min-[420px]:max-w-[300px] sm:max-w-[320px] lg:max-w-[340px] 2xl:max-w-[300px]"
             role="img"
-            style={donutStyle}
           >
-            <div className="absolute inset-[23px] rounded-full border border-border/60 bg-card shadow-[inset_0_1px_5px_rgb(15_23_42_/_0.06)] min-[420px]:inset-[25px] sm:inset-[27px] lg:inset-[30px] 2xl:inset-[28px]" />
-            <div className="relative z-10 max-w-[132px] text-center sm:max-w-[150px]">
-              <p className="break-words text-[17px] font-black leading-tight tracking-[-0.02em] text-text-primary tabular-nums [overflow-wrap:anywhere] sm:text-[19px] lg:text-xl">
-                <CountedAmount amount={formatCurrency(safeTotal)} duration={0.82} />
-              </p>
-              <p className="mt-1.5 text-[10px] font-semibold text-text-secondary sm:text-[11px]">
-                Total spent
-              </p>
+            <ChartFrame>
+              {({ width, height }) => (
+                <PieChart width={width} height={height} accessibilityLayer>
+                  <Pie
+                    data={segments}
+                    dataKey="value"
+                    nameKey="name"
+                    innerRadius="52%"
+                    outerRadius="78%"
+                    paddingAngle={2}
+                    isAnimationActive={!reduceMotion}
+                    animationBegin={0}
+                    animationDuration={700}
+                    animationEasing="ease-out"
+                    stroke="var(--card)"
+                    strokeWidth={3}
+                  >
+                    {segments.map((item, index) => (
+                      <Cell
+                        key={item.id ?? `${item.name}-${index}`}
+                        fill={item.accent}
+                      />
+                    ))}
+                  </Pie>
+                  <Tooltip
+                    contentStyle={{
+                      background: "var(--chart-tooltip)",
+                      border: "1px solid var(--border)",
+                      borderRadius: 12,
+                      color: "var(--text-primary)",
+                    }}
+                    formatter={(value) => [
+                      formatCurrency(Number(value ?? 0)),
+                      "Spending",
+                    ]}
+                  />
+                </PieChart>
+              )}
+            </ChartFrame>
+
+            <div className="pointer-events-none absolute inset-0 grid place-items-center text-center">
+              <div className="max-w-[46%] min-w-0">
+                <p className="break-words text-[17px] font-black leading-tight tracking-[-0.02em] text-text-primary tabular-nums [overflow-wrap:anywhere] sm:text-[19px] lg:text-xl">
+                  <CountedAmount amount={formatCurrency(safeTotal)} duration={0.82} />
+                </p>
+                <p className="mt-1.5 text-[10px] font-semibold text-text-secondary sm:text-[11px]">
+                  Total spent
+                </p>
+              </div>
             </div>
           </div>
         </div>
