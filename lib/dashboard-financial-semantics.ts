@@ -230,7 +230,7 @@ export function sanitizeDashboardTransactions(
       !date ||
       amount === null ||
       amount <= 0 ||
-      (type !== "income" && type !== "expense") ||
+      (type !== "income" && type !== "expense" && type !== "refund") ||
       (range && (date < range.start || date > range.end))
     ) {
       return [];

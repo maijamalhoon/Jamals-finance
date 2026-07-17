@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import {
   Check,
+  BellRing,
   ChevronRight,
   Download,
   Eye,
@@ -107,6 +108,11 @@ interface SettingsOneUIProps {
   categoryUsage: Record<string, number>;
   categoriesAvailable: boolean;
   stats: AccountStats;
+  notificationPreferences: {
+    goal_alerts_enabled: boolean;
+    payable_alerts_enabled: boolean;
+  };
+  notificationPreferencesAvailable: boolean;
 }
 
 interface SettingsRowProps {
@@ -1826,6 +1832,8 @@ export default function SettingsOneUI({
   categoryUsage,
   categoriesAvailable,
   stats,
+  notificationPreferences: initialNotificationPreferences,
+  notificationPreferencesAvailable,
 }: SettingsOneUIProps) {
   const router = useRouter();
   const supabase = createClient();
@@ -1838,6 +1846,9 @@ export default function SettingsOneUI({
   const [isSigningOut, setIsSigningOut] = useState(false);
   const [profileName, setProfileName] = useState(
     displayName || email.split("@")[0]?.replace(/[._-]/g, " ") || "Jamal",
+  );
+  const [notificationPreferences, setNotificationPreferences] = useState(
+    initialNotificationPreferences,
   );
 
   useEffect(() => {
@@ -1859,6 +1870,10 @@ export default function SettingsOneUI({
       displayName || email.split("@")[0]?.replace(/[._-]/g, " ") || "Jamal",
     );
   }, [displayName, email]);
+
+  useEffect(() => {
+    setNotificationPreferences(initialNotificationPreferences);
+  }, [initialNotificationPreferences]);
 
   useEffect(() => {
     function handleThemeStorage(event: StorageEvent) {
@@ -1927,6 +1942,36 @@ export default function SettingsOneUI({
 
     toast.success("Signed out successfully.");
     router.replace("/login");
+    router.refresh();
+  }
+
+  async function handleNotificationPreference(
+    key: "goal_alerts_enabled" | "payable_alerts_enabled",
+    checked: boolean,
+  ) {
+    if (!notificationPreferencesAvailable) return;
+
+    const previous = notificationPreferences;
+    const next = { ...previous, [key]: checked };
+    setNotificationPreferences(next);
+
+    const { error } = await supabase.from("notification_preferences").upsert(
+      {
+        user_id: userId,
+        ...next,
+      },
+      { onConflict: "user_id" },
+    );
+
+    if (error) {
+      setNotificationPreferences(previous);
+      toast.error(
+        mapAuthError(error, "Notification preference could not be saved. Try again."),
+      );
+      return;
+    }
+
+    toast.success("Notification preferences saved.");
     router.refresh();
   }
 
@@ -2068,6 +2113,64 @@ export default function SettingsOneUI({
               description={`Current display preference: ${currency}`}
               right={<span className="finance-state-pill">{currency}</span>}
             />
+          </SettingsCard>
+        </section>
+
+        <section id="notifications" className="scroll-mt-6">
+          <SectionTitle>Notifications</SectionTitle>
+          <SettingsCard>
+            {notificationPreferencesAvailable ? (
+              <>
+                <SettingsRow
+                  icon={
+                    <IconBubble tone="violet">
+                      <BellRing size={21} />
+                    </IconBubble>
+                  }
+                  title="Goal deadline alerts"
+                  description="Show due-soon and overdue alerts for unfinished goals"
+                  right={
+                    <SoftSwitch
+                      checked={notificationPreferences.goal_alerts_enabled}
+                      onCheckedChange={(checked) =>
+                        void handleNotificationPreference("goal_alerts_enabled", checked)
+                      }
+                      label="Goal deadline alerts"
+                    />
+                  }
+                />
+                <Divider />
+                <SettingsRow
+                  icon={
+                    <IconBubble tone="blue">
+                      <BellRing size={21} />
+                    </IconBubble>
+                  }
+                  title="Payable due alerts"
+                  description="Show due-soon and overdue alerts for outstanding payables"
+                  right={
+                    <SoftSwitch
+                      checked={notificationPreferences.payable_alerts_enabled}
+                      onCheckedChange={(checked) =>
+                        void handleNotificationPreference("payable_alerts_enabled", checked)
+                      }
+                      label="Payable due alerts"
+                    />
+                  }
+                />
+              </>
+            ) : (
+              <SettingsRow
+                icon={
+                  <IconBubble tone="gray">
+                    <BellRing size={21} />
+                  </IconBubble>
+                }
+                title="Notification preferences unavailable"
+                description="Refresh Settings when your connection is stable. Existing preferences were not changed."
+                right={<span className="finance-state-pill">Unavailable</span>}
+              />
+            )}
           </SettingsCard>
         </section>
 

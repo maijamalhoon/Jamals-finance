@@ -32,6 +32,7 @@ import {
   CATEGORY_FALLBACK_COLORS,
   FEATURE_COLOR_CSS,
 } from "@/lib/theme-colors";
+import { getUserMutationError } from "@/lib/user-errors";
 
 interface Category {
   id: string;
@@ -59,6 +60,7 @@ export interface ExistingTransaction {
   source_name?: string | null;
   person_name?: string | null;
   item_name?: string | null;
+  reference?: string | null;
 }
 
 interface Props {
@@ -147,6 +149,7 @@ export default function TransactionModal({
   const [sourceName, setSourceName] = useState("");
   const [personName, setPersonName] = useState("");
   const [itemName, setItemName] = useState("");
+  const [reference, setReference] = useState("");
   const [categories, setCategories] = useState<Category[]>([]);
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [loadingOptions, setLoadingOptions] = useState(false);
@@ -165,6 +168,7 @@ export default function TransactionModal({
       setSourceName(transaction.source_name || "");
       setPersonName(transaction.person_name || "");
       setItemName(transaction.item_name || "");
+      setReference(transaction.reference || "");
     } else {
       setType(defaultType);
       setAmount("");
@@ -175,6 +179,7 @@ export default function TransactionModal({
       setSourceName("");
       setPersonName("");
       setItemName("");
+      setReference("");
     }
     setError("");
   }, [open, transaction, defaultType]);
@@ -195,7 +200,11 @@ export default function TransactionModal({
           .eq("type", type)
           .order("parent_id", { ascending: true, nullsFirst: true })
           .order("name"),
-        supabase.from("accounts").select("id, name, type, balance").order("name"),
+        supabase
+          .from("accounts")
+          .select("id, name, type, balance")
+          .eq("status", "active")
+          .order("name"),
       ]);
       if (cancelled) return;
       setLoadingOptions(false);
@@ -205,7 +214,7 @@ export default function TransactionModal({
         setAccounts([]);
         setCategoryId("");
         setAccountId("");
-        setError(catsError?.message || accsError?.message || "Could not load options.");
+        setError("Categories or accounts could not be loaded. Check your connection and try again.");
         return;
       }
 
@@ -285,6 +294,7 @@ export default function TransactionModal({
       source_name: type === "income" ? sourceName.trim() || null : null,
       person_name: personName.trim() || null,
       item_name: itemName.trim() || null,
+      reference: reference.trim() || null,
     };
 
     const { error: saveError } = isEditing
@@ -294,7 +304,9 @@ export default function TransactionModal({
     setLoading(false);
 
     if (saveError) {
-      setError(`Error: ${saveError.message}`);
+      setError(
+        getUserMutationError(saveError, "Transaction could not be saved. Try again."),
+      );
       toast.error("Failed to save transaction");
       return;
     }
@@ -518,6 +530,15 @@ export default function TransactionModal({
               placeholder="What was this for?"
               rows={3}
               className="min-h-[5.5rem] resize-none"
+            />
+          </FinanceFormField>
+
+          <FinanceFormField label="Reference (Optional)" htmlFor="transaction-reference">
+            <Input
+              id="transaction-reference"
+              value={reference}
+              onChange={(event) => setReference(event.target.value)}
+              placeholder="Invoice, order, or confirmation number"
             />
           </FinanceFormField>
 

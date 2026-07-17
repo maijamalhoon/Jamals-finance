@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { mapAuthError } from "@/lib/settings/security";
 
 export default function ProfileSettings({ email }: { email: string }) {
   const supabase = createClient();
@@ -21,8 +22,8 @@ export default function ProfileSettings({ email }: { email: string }) {
       setError("Passwords do not match.");
       return;
     }
-    if (newPassword.length < 6) {
-      setError("Minimum 6 characters.");
+    if (newPassword.length < 8) {
+      setError("Minimum 8 characters.");
       return;
     }
 
@@ -36,7 +37,7 @@ export default function ProfileSettings({ email }: { email: string }) {
 
     setLoading(false);
     if (e) {
-      setError(e.message);
+      setError(mapAuthError(e, "Password could not be updated. Try again."));
     } else {
       setMessage("Password updated successfully.");
       setNewPassword("");
@@ -70,7 +71,7 @@ export default function ProfileSettings({ email }: { email: string }) {
                 type="password"
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
-                placeholder="Minimum 6 characters"
+                placeholder="Minimum 8 characters"
                 className="field-input"
               />
             </div>

@@ -3,22 +3,55 @@
 import type { CSSProperties } from "react";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { CheckCircle2, LoaderCircle, Pencil, Trash2 } from "lucide-react";
+import {
+  CheckCircle2,
+  ChevronDown,
+  Landmark,
+  LoaderCircle,
+  Pencil,
+  Plus,
+  Trash2,
+} from "lucide-react";
 import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
-import GoalModal, { ExistingGoal } from "./GoalModal";
+import GoalModal, { ExistingGoal, type GoalAccount } from "./GoalModal";
+import GoalContributionModal from "./GoalContributionModal";
 import { GOAL_ICONS } from "./goal-icons";
 import { getGoalCategoryStyle } from "./goal-styles";
 import { useProgressReveal, useReducedMotion } from "./use-animated-goal-value";
 import { useCurrency } from "@/components/currency/CurrencyProvider";
+import { Button } from "@/components/ui/button";
+import { getUserMutationError } from "@/lib/user-errors";
 
-export default function GoalCard({ goal }: { goal: ExistingGoal }) {
+interface GoalContribution {
+  id: string;
+  amount: number;
+  contributed_at: string;
+  note: string | null;
+  contribution_account?: GoalAccount | null;
+}
+
+interface GoalWithContributions extends ExistingGoal {
+  linked_account?: GoalAccount | null;
+  goal_contributions?: GoalContribution[];
+}
+
+export default function GoalCard({
+  goal,
+  accounts,
+}: {
+  goal: GoalWithContributions;
+  accounts: GoalAccount[];
+}) {
   const router = useRouter();
   const supabase = createClient();
   const { formatCurrency } = useCurrency();
 
   const [editOpen, setEditOpen] = useState(false);
+  const [contributionOpen, setContributionOpen] = useState(false);
+  const [historyOpen, setHistoryOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [deletingContributionId, setDeletingContributionId] = useState<string | null>(null);
   const [now] = useState(() => Date.now());
   const reduceMotion = useReducedMotion();
 
@@ -61,6 +94,25 @@ export default function GoalCard({ goal }: { goal: ExistingGoal }) {
     }
 
     toast.success("Goal deleted");
+    router.refresh();
+  }
+
+  async function handleDeleteContribution(contribution: GoalContribution) {
+    if (deletingContributionId) return;
+    if (!confirm(`Remove the ${formatCurrency(Number(contribution.amount))} contribution?`)) return;
+
+    setDeletingContributionId(contribution.id);
+    const { error } = await supabase.rpc("delete_goal_contribution", {
+      p_contribution_id: contribution.id,
+    });
+    setDeletingContributionId(null);
+
+    if (error) {
+      toast.error(getUserMutationError(error, "Contribution could not be removed. Try again."));
+      return;
+    }
+
+    toast.success("Contribution removed");
     router.refresh();
   }
 
@@ -178,9 +230,78 @@ export default function GoalCard({ goal }: { goal: ExistingGoal }) {
             )}
           </div>
         </div>
+
+        {goal.linked_account ? (
+          <p className="mt-3 flex items-center gap-1.5 text-xs text-text-secondary">
+            <Landmark size={13} aria-hidden="true" />
+            Linked to <span className="font-semibold text-text-primary">{goal.linked_account.name}</span>
+          </p>
+        ) : null}
+
+        <div className="mt-3 flex flex-wrap gap-2">
+          {!done ? (
+            <Button size="sm" type="button" onClick={() => setContributionOpen(true)}>
+              <Plus aria-hidden="true" />
+              Add contribution
+            </Button>
+          ) : null}
+          {(goal.goal_contributions?.length ?? 0) > 0 ? (
+            <Button
+              size="sm"
+              variant="outline"
+              type="button"
+              aria-expanded={historyOpen}
+              onClick={() => setHistoryOpen((value) => !value)}
+            >
+              History ({goal.goal_contributions?.length})
+              <ChevronDown
+                aria-hidden="true"
+                className={historyOpen ? "rotate-180 transition-transform" : "transition-transform"}
+              />
+            </Button>
+          ) : null}
+        </div>
+
+        {historyOpen ? (
+          <div className="mt-3 space-y-2 border-t border-border pt-3">
+            {goal.goal_contributions?.map((contribution) => (
+              <div key={contribution.id} className="flex items-start justify-between gap-3 rounded-xl bg-surface-secondary p-3">
+                <div className="min-w-0">
+                  <p className="finance-amount text-sm font-semibold text-text-primary">
+                    {formatCurrency(Number(contribution.amount))}
+                  </p>
+                  <p className="text-xs text-text-secondary">
+                    <time dateTime={contribution.contributed_at}>
+                      {new Intl.DateTimeFormat("en-PK", { dateStyle: "medium", timeZone: "UTC" }).format(
+                        new Date(`${contribution.contributed_at}T00:00:00Z`),
+                      )}
+                    </time>
+                    {contribution.contribution_account?.name
+                      ? ` · ${contribution.contribution_account.name}`
+                      : ""}
+                  </p>
+                  {contribution.note ? (
+                    <p className="mt-1 break-words text-xs text-text-secondary">{contribution.note}</p>
+                  ) : null}
+                </div>
+                <Button
+                  size="icon-xs"
+                  variant="ghost"
+                  type="button"
+                  aria-label="Remove contribution"
+                  loading={deletingContributionId === contribution.id}
+                  onClick={() => handleDeleteContribution(contribution)}
+                >
+                  <Trash2 aria-hidden="true" />
+                </Button>
+              </div>
+            ))}
+          </div>
+        ) : null}
       </div>
 
       <GoalModal
+        accounts={accounts}
         open={editOpen}
         goal={goal}
         onClose={() => setEditOpen(false)}
@@ -188,6 +309,13 @@ export default function GoalCard({ goal }: { goal: ExistingGoal }) {
           setEditOpen(false);
           router.refresh();
         }}
+      />
+      <GoalContributionModal
+        open={contributionOpen}
+        goal={goal}
+        accounts={accounts}
+        onClose={() => setContributionOpen(false)}
+        onSuccess={() => router.refresh()}
       />
     </>
   );

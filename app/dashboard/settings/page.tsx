@@ -29,6 +29,7 @@ export default async function SettingsPage() {
     transactionsResult,
     goalsResult,
     investmentsResult,
+    notificationPreferencesResult,
   ] = await Promise.all([
     supabase
       .from("categories")
@@ -57,6 +58,11 @@ export default async function SettingsPage() {
       .from("investments")
       .select("id", { count: "exact", head: true })
       .eq("user_id", user.id),
+    supabase
+      .from("notification_preferences")
+      .select("goal_alerts_enabled, payable_alerts_enabled")
+      .eq("user_id", user.id)
+      .maybeSingle(),
   ]);
 
   logSettingsQueryError("categories", categoriesResult.error);
@@ -65,6 +71,7 @@ export default async function SettingsPage() {
   logSettingsQueryError("transactions-count", transactionsResult.error);
   logSettingsQueryError("goals-count", goalsResult.error);
   logSettingsQueryError("investments-count", investmentsResult.error);
+  logSettingsQueryError("notification-preferences", notificationPreferencesResult.error);
 
   const categoriesAvailable =
     !categoriesResult.error && !categoryUsageResult.error;
@@ -108,6 +115,13 @@ export default async function SettingsPage() {
         goals: goalsResult.error ? null : goalsResult.count,
         investments: investmentsResult.error ? null : investmentsResult.count,
       }}
+      notificationPreferences={
+        notificationPreferencesResult.data ?? {
+          goal_alerts_enabled: true,
+          payable_alerts_enabled: true,
+        }
+      }
+      notificationPreferencesAvailable={!notificationPreferencesResult.error}
     />
   );
 }

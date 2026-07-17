@@ -8,6 +8,7 @@ import NotificationCenter, {
   NotificationCenterLoading,
 } from "@/components/layout/NotificationCenter";
 import DashboardScrollRestoration from "@/components/motion/DashboardScrollRestoration";
+import ConnectionStatus from "@/components/layout/ConnectionStatus";
 import type { NotificationState } from "@/lib/notifications";
 import { loadDashboardNotifications } from "@/lib/notifications-server";
 
@@ -50,11 +51,12 @@ export default function DashboardLayout({
       />
 
       <div className="relative z-10 flex w-full min-w-0 flex-1 flex-col overflow-hidden">
-        <div className="jf-dashboard-header-wrap hidden shrink-0 lg:block">
+        <div className="jf-dashboard-header-wrap hidden shrink-0 print:hidden lg:block">
           <Header notificationSlot={notificationSlot} />
         </div>
 
         <MobileHeader notificationSlot={notificationSlot} />
+        <ConnectionStatus />
         <DashboardScrollRestoration />
 
         <main

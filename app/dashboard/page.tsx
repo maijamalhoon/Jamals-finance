@@ -60,6 +60,16 @@ type DashboardTransaction = {
   accounts?: DashboardAccountRelation | DashboardAccountRelation[] | null;
 };
 
+type DashboardTransfer = {
+  id?: string | null;
+  amount?: number | string | null;
+  note?: string | null;
+  transfer_date?: string | null;
+  created_at?: string | null;
+  from_account?: DashboardAccountRelation | DashboardAccountRelation[] | null;
+  to_account?: DashboardAccountRelation | DashboardAccountRelation[] | null;
+};
+
 type DashboardAccount = {
   id: string;
   balance: number | string | null;
@@ -140,6 +150,7 @@ export default async function DashboardPage() {
   const [
     transactionsResult,
     recentResult,
+    recentTransfersResult,
     investmentsResult,
     goalsResult,
     accountsResult,
@@ -169,14 +180,25 @@ export default async function DashboardPage() {
       .order("created_at", { ascending: false })
       .limit(12),
     supabase
+      .from("account_transfers")
+      .select(
+        "id, amount, note, transfer_date, created_at, from_account:from_account_id(name), to_account:to_account_id(name)",
+      )
+      .order("transfer_date", { ascending: false })
+      .order("created_at", { ascending: false })
+      .limit(12),
+    supabase
       .from("investments")
       .select(
         "id, name, type, quantity, purchase_price, current_price, purchased_at, asset_id, symbol, image_url, price_source, current_price_original, current_price_currency, price_updated_at, price_change_24h, is_live_priced",
       )
       .order("created_at", { ascending: false }),
     supabase.from("goals").select("*").order("created_at").limit(6),
-    supabase.from("accounts").select("id, balance"),
-    supabase.from("accounts").select("id", { count: "exact", head: true }),
+    supabase.from("accounts").select("id, balance").eq("status", "active"),
+    supabase
+      .from("accounts")
+      .select("id", { count: "exact", head: true })
+      .eq("status", "active"),
     supabase
       .from("transactions")
       .select("id", { count: "exact", head: true })
@@ -199,7 +221,8 @@ export default async function DashboardPage() {
 
   const queryFailures: Array<[string, QueryError]> = [
     ["period-transactions", transactionsResult.error],
-    ["recent-activity", recentResult.error],
+    ["recent-transactions", recentResult.error],
+    ["recent-transfers", recentTransfersResult.error],
     ["investments", investmentsResult.error],
     ["goals", goalsResult.error],
     ["accounts", accountsResult.error],
@@ -216,7 +239,9 @@ export default async function DashboardPage() {
   const transactionsStatus: DashboardAvailability =
     transactionsResult.error ? "unavailable" : "available";
   const recentStatus: DashboardAvailability =
-    recentResult.error ? "unavailable" : "available";
+    recentResult.error && recentTransfersResult.error ? "unavailable"
+    : recentResult.error || recentTransfersResult.error ? "partial"
+    : "available";
   const goalsStatus: DashboardAvailability =
     goalsResult.error ? "unavailable" : "available";
 
@@ -339,11 +364,15 @@ export default async function DashboardPage() {
     investments: setupInvestmentsResult.count,
   });
 
-  const recentTransactions = sortTransactionsNewestFirst(
-    ((recentResult.data ?? []) as DashboardTransaction[]).flatMap((row) => {
+  const recentTransactionRows = (
+    (recentResult.data ?? []) as DashboardTransaction[]
+  ).flatMap((row) => {
       const id = row.id?.trim();
       const type = row.type?.trim().toLowerCase();
-      if (!id || (type !== "income" && type !== "expense" && type !== "transfer")) {
+      if (
+        !id ||
+        (type !== "income" && type !== "expense" && type !== "investment" && type !== "refund")
+      ) {
         return [];
       }
       const category = firstRelation(row.categories);
@@ -365,14 +394,43 @@ export default async function DashboardPage() {
         } : null,
         accounts: account?.name ? { name: account.name } : null,
       }];
-    }),
+    });
+
+  const recentTransferRows = (
+    (recentTransfersResult.data ?? []) as DashboardTransfer[]
+  ).flatMap((row) => {
+    const id = row.id?.trim();
+    if (!id) return [];
+
+    const fromName = firstRelation(row.from_account)?.name?.trim() || "From account";
+    const toName = firstRelation(row.to_account)?.name?.trim() || "To account";
+
+    return [{
+      id,
+      type: "transfer",
+      amount: row.amount ?? null,
+      note: row.note ?? null,
+      date: row.transfer_date ?? "",
+      created_at: row.created_at ?? null,
+      source_name: null,
+      person_name: null,
+      item_name: null,
+      categories: null,
+      accounts: { name: `${fromName} -> ${toName}` },
+    }];
+  });
+
+  const recentTransactions = sortTransactionsNewestFirst(
+    [...recentTransactionRows, ...recentTransferRows],
   );
 
   const warnings = [
     transactionsResult.error ?
       "Month comparisons, cash flow, spending, and today’s activity are unavailable."
     : null,
-    recentResult.error ? "Recent activity is unavailable." : null,
+    recentStatus === "unavailable" ? "Recent activity is unavailable."
+    : recentStatus === "partial" ? "Recent activity is based on partial data."
+    : null,
     accountsResult.error ? "Account balances could not be loaded." : null,
     investmentsResult.error ? "Investment values and contributions could not be loaded." : null,
     goalsResult.error ? "Goals could not be loaded." : null,

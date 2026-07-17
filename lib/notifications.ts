@@ -17,6 +17,17 @@ export interface NotificationAlert {
   href: string;
 }
 
+export interface NotificationInboxAlert extends NotificationAlert {
+  read: boolean | null;
+}
+
+export interface NotificationUserState {
+  notification_id: string;
+  read_at?: string | null;
+  dismissed_at?: string | null;
+  snoozed_until?: string | null;
+}
+
 export interface PayableNotificationRecord {
   id: string;
   person_name: string;
@@ -37,8 +48,11 @@ export interface GoalNotificationRecord {
 
 export interface NotificationState {
   status: "ready" | "partial" | "error";
-  visibleAlerts: NotificationAlert[];
+  persistenceStatus: "ready" | "error";
+  visibleAlerts: NotificationInboxAlert[];
+  activeAlertIds: string[];
   totalActiveAlertCountFromCheckedRecords: number | null;
+  unreadAlertCount: number | null;
   unavailableSources: NotificationSource[];
 }
 
@@ -56,6 +70,7 @@ type DeriveNotificationsOptions = {
 
 type CreateNotificationStateOptions = DeriveNotificationsOptions & {
   unavailableSources?: readonly NotificationSource[];
+  userStates?: readonly NotificationUserState[] | null;
 };
 
 const TONE_PRIORITY: Record<NotificationTone, number> = {
@@ -272,6 +287,7 @@ export function createNotificationState({
   now = new Date(),
   visibleLimit = DEFAULT_VISIBLE_ALERT_LIMIT,
   unavailableSources = [],
+  userStates = [],
 }: CreateNotificationStateOptions): NotificationState {
   const normalizedUnavailableSources = (
     ["payable", "goal"] as const
@@ -280,8 +296,11 @@ export function createNotificationState({
   if (normalizedUnavailableSources.length === 2) {
     return {
       status: "error",
+      persistenceStatus: userStates === null ? "error" : "ready",
       visibleAlerts: [],
+      activeAlertIds: [],
       totalActiveAlertCountFromCheckedRecords: null,
+      unreadAlertCount: null,
       unavailableSources: normalizedUnavailableSources,
     };
   }
@@ -290,23 +309,56 @@ export function createNotificationState({
     payables,
     goals,
     now,
-    visibleLimit,
+    visibleLimit: Number.MAX_SAFE_INTEGER,
   });
+  const boundedVisibleLimit = Number.isFinite(visibleLimit)
+    ? Math.max(0, Math.floor(visibleLimit))
+    : DEFAULT_VISIBLE_ALERT_LIMIT;
+  const stateById = new Map(
+    (userStates ?? []).map((state) => [state.notification_id, state]),
+  );
+  const nowTime = now.getTime();
+  const activeAlerts = derived.visibleAlerts
+    .filter((alert) => {
+      const userState = stateById.get(alert.id);
+      if (userState?.dismissed_at) return false;
+      if (!userState?.snoozed_until) return true;
+      const snoozedUntil = new Date(userState.snoozed_until).getTime();
+      return Number.isNaN(snoozedUntil) || snoozedUntil <= nowTime;
+    })
+    .map<NotificationInboxAlert>((alert) => ({
+      ...alert,
+      read:
+        userStates === null ? null : Boolean(stateById.get(alert.id)?.read_at),
+    }));
+  const unreadAlertCount =
+    userStates === null
+      ? null
+      : activeAlerts.filter((alert) => alert.read === false).length;
 
   return {
     status:
       normalizedUnavailableSources.length === 0 ? "ready" : "partial",
-    ...derived,
+    persistenceStatus: userStates === null ? "error" : "ready",
+    visibleAlerts: activeAlerts.slice(0, boundedVisibleLimit),
+    activeAlertIds: activeAlerts.map((alert) => alert.id),
+    totalActiveAlertCountFromCheckedRecords: activeAlerts.length,
+    unreadAlertCount,
     unavailableSources: normalizedUnavailableSources,
   };
 }
 
 export function getNotificationTriggerLabel(state: NotificationState) {
-  const count = state.totalActiveAlertCountFromCheckedRecords;
-  if (count === null || count === 0) return "Open notification center";
+  const activeCount = state.totalActiveAlertCountFromCheckedRecords;
+  const unreadCount = state.unreadAlertCount;
+  if (activeCount === null || activeCount === 0) return "Open notification center";
 
   const qualifier = state.status === "partial" ? " from available data" : "";
-  return `Open notification center, ${count} active ${count === 1 ? "alert" : "alerts"}${qualifier}`;
+  if (unreadCount === null) {
+    return `Open notification center, ${activeCount} active ${activeCount === 1 ? "alert" : "alerts"}${qualifier}`;
+  }
+  if (unreadCount === 0) return "Open notification center, no unread alerts";
+  return `Open notification center, ${unreadCount} unread ${unreadCount === 1 ? "alert" : "alerts"}${qualifier}`;
 }
 
 export function getNotificationSummary(state: NotificationState) {
@@ -320,9 +372,13 @@ export function getNotificationSummary(state: NotificationState) {
   }
 
   const qualifier = state.status === "partial" ? " from available data" : "";
+  const unreadSummary =
+    state.unreadAlertCount === null
+      ? ""
+      : `, ${state.unreadAlertCount} unread`;
   if (state.visibleAlerts.length < count) {
-    return `Showing ${state.visibleAlerts.length} of ${count} active alerts${qualifier}.`;
+    return `Showing ${state.visibleAlerts.length} of ${count} active alerts${unreadSummary}${qualifier}.`;
   }
 
-  return `${count} active ${count === 1 ? "alert" : "alerts"}${qualifier}.`;
+  return `${count} active ${count === 1 ? "alert" : "alerts"}${unreadSummary}${qualifier}.`;
 }

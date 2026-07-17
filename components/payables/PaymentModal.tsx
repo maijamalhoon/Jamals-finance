@@ -21,7 +21,7 @@ import { getAppDateKey } from "@/lib/dates";
 import { BASE_CURRENCY } from "@/lib/currency";
 import { useCurrency } from "@/components/currency/CurrencyProvider";
 import { CircleDollarSign } from "lucide-react";
-import { FEATURE_COLOR_HEX } from "@/lib/theme-colors";
+import { getUserMutationError } from "@/lib/user-errors";
 
 interface Account {
   id: string;
@@ -55,32 +55,6 @@ export default function PaymentModal({ open, onClose, payable, accounts }: Props
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  async function ensureDebtCategory(userId: string) {
-    const { data: existing } = await supabase
-      .from("categories")
-      .select("id")
-      .eq("type", "expense")
-      .ilike("name", "Debt repayment")
-      .limit(1)
-      .maybeSingle();
-
-    if (existing?.id) return existing.id as string;
-
-    const { data: created, error: createError } = await supabase
-      .from("categories")
-      .insert({
-        user_id: userId,
-        name: "Debt repayment",
-        type: "expense",
-        color: FEATURE_COLOR_HEX.expense,
-      })
-      .select("id")
-      .single();
-
-    if (createError) throw createError;
-    return created.id as string;
-  }
-
   async function handleSave() {
     if (loading) return;
 
@@ -112,40 +86,16 @@ export default function PaymentModal({ open, onClose, payable, accounts }: Props
     }
 
     try {
-      const categoryId = await ensureDebtCategory(user.id);
-      const transactionNote =
-        note.trim() ||
-        `Payment returned to ${payable.person_name} for ${payable.reason}`;
-
-      const { data: transaction, error: txError } = await supabase
-        .from("transactions")
-        .insert({
-          user_id: user.id,
-          type: "expense",
-          amount: parsedAmount,
-          category_id: categoryId,
-          account_id: accountId,
-          date: paidAt,
-          note: transactionNote,
-          person_name: payable.person_name,
-          item_name: payable.item_name,
-        })
-        .select("id")
-        .single();
-
-      if (txError) throw txError;
-
-      const { error: paymentError } = await supabase
-        .from("liability_payments")
-        .insert({
-          liability_id: payable.id,
-          user_id: user.id,
-          account_id: accountId,
-          transaction_id: transaction.id,
-          amount: parsedAmount,
-          paid_at: paidAt,
-          note: note.trim() || null,
-        });
+      const { error: paymentError } = await supabase.rpc(
+        "record_liability_payment",
+        {
+          p_liability_id: payable.id,
+          p_account_id: accountId,
+          p_amount: parsedAmount,
+          p_paid_at: paidAt,
+          p_note: note.trim() || null,
+        },
+      );
 
       if (paymentError) throw paymentError;
 
@@ -155,9 +105,12 @@ export default function PaymentModal({ open, onClose, payable, accounts }: Props
       router.refresh();
       onClose();
     } catch (saveError) {
-      const message =
-        saveError instanceof Error ? saveError.message : "Failed to record payment.";
-      setError(message);
+      setError(
+        getUserMutationError(
+          saveError,
+          "Payment could not be recorded. Check the amount and try again.",
+        ),
+      );
       toast.error("Failed to record payment");
     } finally {
       setLoading(false);

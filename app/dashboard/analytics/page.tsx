@@ -98,7 +98,7 @@ function sanitizeTransactions(
       !date ||
       amount === null ||
       amount <= 0 ||
-      (type !== "income" && type !== "expense")
+      (type !== "income" && type !== "expense" && type !== "refund")
     ) {
       return [];
     }

@@ -41,7 +41,11 @@ export default async function PayablesPage({
       )
       .order("due_date", { ascending: true, nullsFirst: false })
       .order("created_at", { ascending: false }),
-    supabase.from("accounts").select("id, name, type").order("name"),
+    supabase
+      .from("accounts")
+      .select("id, name, type")
+      .eq("status", "active")
+      .order("name"),
   ]);
 
   const allPayables = ((rawPayables ?? []) as Payable[]).map((payable) => ({

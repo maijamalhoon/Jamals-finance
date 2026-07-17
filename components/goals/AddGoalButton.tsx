@@ -3,9 +3,9 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Target } from "lucide-react";
-import GoalModal from "./GoalModal";
+import GoalModal, { type GoalAccount } from "./GoalModal";
 
-export default function AddGoalButton() {
+export default function AddGoalButton({ accounts }: { accounts: GoalAccount[] }) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
 
@@ -21,6 +21,7 @@ export default function AddGoalButton() {
       </button>
 
       <GoalModal
+        accounts={accounts}
         open={open}
         onClose={() => setOpen(false)}
         onSuccess={() => {

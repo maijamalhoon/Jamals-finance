@@ -15,11 +15,17 @@ function isUsableColor(color: string | null | undefined): color is string {
   );
 }
 
-export default function CategoryBreakdown({ data }: { data: CategoryData[] }) {
+export default function CategoryBreakdown({
+  data,
+  title = "Top Expense Categories",
+}: {
+  data: CategoryData[];
+  title?: string;
+}) {
   return (
     <div className="finance-panel min-w-0 overflow-hidden p-4 sm:p-5">
       <h3 className="mb-4 text-sm font-semibold text-text-primary">
-        Top Expense Categories
+        {title}
       </h3>
 
       {data.length === 0 ?

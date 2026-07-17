@@ -37,6 +37,7 @@ import {
   ACCOUNT_ACCENT_OPTIONS,
   getAccountAccentColor,
 } from "@/lib/theme-colors";
+import { getUserMutationError } from "@/lib/user-errors";
 
 export interface ExistingAccount {
   id: string;
@@ -47,6 +48,8 @@ export interface ExistingAccount {
   account_kind?: string | null;
   icon_key?: string | null;
   accent_color?: string | null;
+  status?: "active" | "archived";
+  archived_at?: string | null;
 }
 
 interface Props {
@@ -73,7 +76,7 @@ const ICON_OPTIONS = [
 
 function getLegacyTypeFromIcon(iconKey: string) {
   if (iconKey === "cash") return "cash";
-  if (iconKey === "wallet") return "other_wallet";
+  if (iconKey === "wallet") return "wallet";
   if (iconKey === "phone") return "easypaisa";
   if (iconKey === "card") return "sadapay";
   if (iconKey === "business") return "freelance";
@@ -86,7 +89,7 @@ function getIconFromLegacyType(type?: string | null) {
     return "phone";
   }
   if (type === "sadapay") return "card";
-  if (type === "other_wallet") return "wallet";
+  if (type === "wallet" || type === "other_wallet") return "wallet";
   if (type === "freelance") return "business";
   return "bank";
 }
@@ -153,6 +156,12 @@ export default function AccountModal({
       return;
     }
 
+    const openingBalance = balance.trim() === "" ? 0 : Number(balance);
+    if (!isEditing && !Number.isFinite(openingBalance)) {
+      setError("Enter a valid opening balance.");
+      return;
+    }
+
     setLoading(true);
     setError("");
 
@@ -168,7 +177,7 @@ export default function AccountModal({
       return;
     }
 
-    const payload = {
+    const accountDetails = {
       user_id: user.id,
       name: name.trim(),
       type: getLegacyTypeFromIcon(iconKey),
@@ -176,19 +185,20 @@ export default function AccountModal({
       account_kind: accountKind,
       icon_key: iconKey,
       accent_color: accentColor,
-      balance: parseFloat(balance) || 0,
     };
 
     const { error: saveError } =
       isEditing ?
-        await supabase.from("accounts").update(payload).eq("id", account!.id)
-      : await supabase.from("accounts").insert(payload);
+        await supabase.from("accounts").update(accountDetails).eq("id", account!.id)
+      : await supabase.from("accounts").insert({
+          ...accountDetails,
+          balance: openingBalance,
+        });
 
     setLoading(false);
 
     if (saveError) {
-      console.error(saveError);
-      setError("Failed to save. Try again.");
+      setError(getUserMutationError(saveError, "Account could not be saved. Try again."));
       toast.error("Failed to save account");
       return;
     }
@@ -358,9 +368,15 @@ export default function AccountModal({
               type="number"
               value={balance}
               onChange={(e) => setBalance(e.target.value)}
+              disabled={isEditing}
               placeholder="0"
-              className="font-bold"
+              className="font-bold disabled:cursor-not-allowed disabled:opacity-70"
             />
+            {isEditing ? (
+              <p className="mt-1.5 text-xs leading-5 text-text-secondary">
+                Current balance is managed by income, expenses, investments, and transfers.
+              </p>
+            ) : null}
           </FinanceFormField>
 
           {error && (

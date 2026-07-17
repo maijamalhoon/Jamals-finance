@@ -9,6 +9,7 @@ import {
   Circle,
   RotateCcw,
   Sparkles,
+  HandCoins,
   Tags,
   Target,
   TrendingDown,
@@ -288,6 +289,19 @@ export default function NewUserSetupGuide({
         >
           Add expense
         </SetupActionButton>
+      ),
+    },
+    {
+      id: "payables",
+      title: "Review payables",
+      detail: "Track money owed, due dates, partial payments, and reminders.",
+      complete: false,
+      optional: true,
+      icon: <HandCoins aria-hidden="true" className="h-4.5 w-4.5" />,
+      action: (
+        <SetupActionLink href="/dashboard/payables">
+          Explore payables
+        </SetupActionLink>
       ),
     },
     {

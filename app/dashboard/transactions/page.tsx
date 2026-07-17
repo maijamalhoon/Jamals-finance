@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Suspense } from "react";
+import { Suspense, type ComponentProps } from "react";
 import { ArrowLeftRight } from "lucide-react";
 
 import { createClient } from "@/lib/supabase/server";
@@ -26,8 +26,23 @@ type SearchParams = {
   item?: string;
   min?: string;
   max?: string;
+  sort?: string;
   limit?: string;
 };
+
+type TransactionSort = "newest" | "oldest" | "highest" | "lowest";
+type TransactionListRow = ComponentProps<typeof TransactionRow>["tx"];
+
+function cleanSort(value?: string): TransactionSort {
+  return value === "oldest" || value === "highest" || value === "lowest"
+    ? value
+    : "newest";
+}
+
+function transactionTime(value: unknown) {
+  const parsed = new Date(String(value ?? "")).getTime();
+  return Number.isNaN(parsed) ? 0 : parsed;
+}
 
 function cleanLimit(value?: string) {
   const parsed = Number(value);
@@ -71,6 +86,7 @@ export default async function TransactionsPage({
   const item = resolvedSearchParams.item;
   const min = resolvedSearchParams.min;
   const max = resolvedSearchParams.max;
+  const sort = cleanSort(resolvedSearchParams.sort);
   const limit = resolvedSearchParams.limit;
 
   const supabase = await createClient();
@@ -83,19 +99,63 @@ export default async function TransactionsPage({
   const minAmount = cleanAmount(min);
   const maxAmount = cleanAmount(max);
 
-  const rawTransactions = await loadTransactions(supabase, {
-    type: type === "income" || type === "expense" ? type : undefined,
-    from,
-    to,
-    category,
-    account,
-    minAmount,
-    maxAmount,
-  });
+  const [rawTransactions, categoriesResult, accountsResult] = await Promise.all([
+    loadTransactions(supabase, {
+      type:
+        type === "income" ||
+        type === "expense" ||
+        type === "refund" ||
+        type === "investment" ||
+        type === "transfer" ?
+          type
+        : undefined,
+      from,
+      to,
+      category,
+      account,
+      minAmount,
+      maxAmount,
+    }),
+    supabase
+      .from("categories")
+      .select("id, name, parent_id")
+      .order("name", { ascending: true }),
+    supabase
+      .from("accounts")
+      .select("id, name")
+      .order("name", { ascending: true }),
+  ]);
 
-  const transactions = (rawTransactions ?? [])
+  if (categoriesResult.error) {
+    console.error("[transactions] Category filters unavailable", {
+      code: categoriesResult.error.code ?? "unknown",
+    });
+  }
+  if (accountsResult.error) {
+    console.error("[transactions] Account filters unavailable", {
+      code: accountsResult.error.code ?? "unknown",
+    });
+  }
+
+  const categoryRows = categoriesResult.data ?? [];
+  const categoryById = new Map(
+    categoryRows.map((row) => [row.id, row.name?.trim() || "Other"]),
+  );
+  const categoryOptions = categoryRows.map((row) => ({
+    value: row.id,
+    label:
+      row.parent_id && categoryById.has(row.parent_id)
+        ? `${categoryById.get(row.parent_id)} / ${row.name}`
+        : row.name,
+  }));
+  const accountOptions = (accountsResult.data ?? []).map((row) => ({
+    value: row.id,
+    label: row.name,
+  }));
+
+  const transactions = ((rawTransactions ?? []) as TransactionListRow[])
     .filter(Boolean)
-    .filter((transaction: any) => {
+    .filter((transaction) => {
       const categoryName =
         transaction?.categories?.parent?.name ?
           `${transaction.categories.parent.name} ${transaction.categories?.name ?? ""}`
@@ -108,6 +168,7 @@ export default async function TransactionsPage({
         transaction?.source_name,
         transaction?.person_name,
         transaction?.item_name,
+        transaction?.reference,
         categoryName,
         accountName,
         transaction?.type,
@@ -117,7 +178,11 @@ export default async function TransactionsPage({
         .toLowerCase();
 
       if (
-        (type === "income" || type === "expense" || type === "transfer") &&
+        (type === "income" ||
+          type === "expense" ||
+          type === "refund" ||
+          type === "investment" ||
+          type === "transfer") &&
         String(transaction?.type) !== type
       ) {
         return false;
@@ -153,6 +218,23 @@ export default async function TransactionsPage({
       }
 
       return true;
+    })
+    .sort((left, right) => {
+      if (sort === "highest" || sort === "lowest") {
+        const amountDifference =
+          Number(right.amount ?? 0) - Number(left.amount ?? 0);
+        return sort === "highest" ? amountDifference : -amountDifference;
+      }
+
+      const dateDifference =
+        transactionTime(right.date) - transactionTime(left.date);
+      if (dateDifference !== 0) {
+        return sort === "newest" ? dateDifference : -dateDifference;
+      }
+
+      const createdDifference =
+        transactionTime(right.created_at) - transactionTime(left.created_at);
+      return sort === "newest" ? createdDifference : -createdDifference;
     });
 
   const visibleLimit = cleanLimit(limit);
@@ -189,6 +271,7 @@ export default async function TransactionsPage({
     "max",
     maxAmount === null ? undefined : String(maxAmount),
   );
+  addParam(nextParams, "sort", sort === "newest" ? undefined : sort);
 
   nextParams.set("limit", String(nextLimit));
 
@@ -205,7 +288,10 @@ export default async function TransactionsPage({
       </div>
 
       <Suspense fallback={<div className="mb-5 h-12" />}>
-        <TransactionFilters />
+        <TransactionFilters
+          categories={categoryOptions}
+          accounts={accountOptions}
+        />
       </Suspense>
 
       <div className="finance-panel min-w-0 overflow-hidden p-3 sm:p-5">
@@ -227,7 +313,7 @@ export default async function TransactionsPage({
           />
         : <>
             <div className="space-y-1">
-              {visibleTransactions.map((tx: any) => (
+              {visibleTransactions.map((tx) => (
                 <TransactionRow key={tx.id} tx={tx} />
               ))}
             </div>
