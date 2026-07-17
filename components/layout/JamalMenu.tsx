@@ -19,7 +19,7 @@ import { createClient } from "@/lib/supabase/client";
 type JamalMenuProps = {
   align?: "left" | "right";
   placement?: "bottom" | "top";
-  variant?: "card" | "avatar";
+  variant?: "card" | "avatar" | "drawer";
 };
 
 type ProfileSummary = {
@@ -92,6 +92,7 @@ export default function JamalMenu({
   }
 
   const compact = variant === "avatar";
+  const drawer = variant === "drawer";
 
   return (
     <DropdownMenu>
@@ -101,10 +102,12 @@ export default function JamalMenu({
         className={
           compact
             ? "finance-focus flex h-11 min-w-[3.75rem] items-center justify-center gap-1 rounded-full border border-transparent bg-transparent px-1.5 text-text-secondary shadow-none hover:bg-hover hover:text-text-primary data-popup-open:bg-hover data-popup-open:text-text-primary"
-            : "finance-focus flex min-h-11 w-full min-w-0 items-center gap-3 rounded-[var(--radius-tile)] border border-border bg-surface-primary px-3 py-2 text-left shadow-theme hover:bg-surface-soft"
+            : drawer
+              ? "finance-focus flex min-h-14 w-full min-w-0 items-center gap-2.5 rounded-[18px] border border-border bg-surface-secondary/75 px-3 py-2 text-left shadow-[inset_0_1px_0_rgb(255_255_255_/_0.24)] transition-[background-color,border-color,box-shadow,transform] hover:-translate-y-px hover:border-brand/25 hover:bg-surface-soft hover:shadow-[var(--shadow-xs)]"
+              : "finance-focus flex min-h-11 w-full min-w-0 items-center gap-3 rounded-[var(--radius-tile)] border border-border bg-surface-primary px-3 py-2 text-left shadow-theme hover:bg-surface-soft"
         }
       >
-        <Avatar className="size-9">
+        <Avatar className={drawer ? "size-9" : "size-9"}>
           {avatarUrl ? <AvatarImage src={avatarUrl} alt={displayName} /> : null}
           <AvatarFallback
             className={
@@ -127,14 +130,21 @@ export default function JamalMenu({
             <ChevronDown size={14} strokeWidth={2.1} aria-hidden="true" />
           </>
         ) : (
-          <span className="min-w-0 flex-1">
-            <span className="block truncate text-sm font-bold text-text-primary">
-              {displayName}
+          <>
+            <span className="min-w-0 flex-1">
+              <span className="block truncate text-sm font-bold text-text-primary">
+                {displayName}
+              </span>
+              <span className="mt-0.5 block truncate text-[11px] text-text-secondary">
+                Profile and account
+              </span>
             </span>
-            <span className="mt-0.5 block truncate text-[11px] text-text-secondary">
-              Profile and account
-            </span>
-          </span>
+            {drawer ? (
+              <span className="grid size-8 shrink-0 place-items-center rounded-[10px] border border-border bg-surface-primary text-text-secondary">
+                <Settings size={15} strokeWidth={2.1} aria-hidden="true" />
+              </span>
+            ) : null}
+          </>
         )}
       </DropdownMenuTrigger>
 
