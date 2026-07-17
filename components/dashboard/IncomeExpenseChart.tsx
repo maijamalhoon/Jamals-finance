@@ -10,7 +10,6 @@ import {
   Tooltip,
 } from "recharts";
 import { DollarSign } from "lucide-react";
-import { chartMotion } from "@/components/motion/animation-config";
 import { useCurrency } from "@/components/currency/CurrencyProvider";
 import ChartFrame from "@/components/ui/chart-frame";
 import ChartCard from "@/components/dashboard/ChartCard";
@@ -52,11 +51,15 @@ function CustomTooltip({
       <div className="space-y-1.5">
         <p className="flex items-center justify-between gap-5 font-medium text-success">
           <span>Income</span>
-          <span className="font-bold tabular-nums">{formatCurrency(income)}</span>
+          <span className="font-bold tabular-nums">
+            {formatCurrency(income)}
+          </span>
         </p>
         <p className="flex items-center justify-between gap-5 font-medium text-danger">
           <span>Expenses</span>
-          <span className="font-bold tabular-nums">{formatCurrency(expenses)}</span>
+          <span className="font-bold tabular-nums">
+            {formatCurrency(expenses)}
+          </span>
         </p>
         <p className="flex items-center justify-between gap-5 border-t border-border/70 pt-1.5 font-medium text-text-primary">
           <span>Net</span>
@@ -98,7 +101,10 @@ export default function IncomeExpenseChart({
     [chartRows],
   );
   const totalIncome = chartRows.reduce((sum, point) => sum + point.income, 0);
-  const totalExpenses = chartRows.reduce((sum, point) => sum + point.expenses, 0);
+  const totalExpenses = chartRows.reduce(
+    (sum, point) => sum + point.expenses,
+    0,
+  );
 
   return (
     <ChartCard
@@ -135,8 +141,12 @@ export default function IncomeExpenseChart({
             <span className="dashboard-chart-empty-icon">
               <DollarSign size={16} />
             </span>
-            <p className="text-xs font-semibold text-text-primary">Cash flow unavailable</p>
-            <p className="mt-1 text-[11px] text-text-secondary">Refresh when your connection is stable.</p>
+            <p className="text-xs font-semibold text-text-primary">
+              Cash flow unavailable
+            </p>
+            <p className="mt-1 text-[11px] text-text-secondary">
+              Refresh when your connection is stable.
+            </p>
           </div>
         </div>
       ) : hasCashFlow ? (
@@ -153,13 +163,41 @@ export default function IncomeExpenseChart({
               width={width}
             >
               <defs>
-                <linearGradient id="dailyIncomeFill" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="var(--dashboard-chart-income)" stopOpacity={0.2} />
-                  <stop offset="100%" stopColor="var(--dashboard-chart-income)" stopOpacity={0.02} />
+                <linearGradient
+                  id="dailyIncomeFill"
+                  x1="0"
+                  y1="0"
+                  x2="0"
+                  y2="1"
+                >
+                  <stop
+                    offset="0%"
+                    stopColor="var(--dashboard-chart-income)"
+                    stopOpacity={0.2}
+                  />
+                  <stop
+                    offset="100%"
+                    stopColor="var(--dashboard-chart-income)"
+                    stopOpacity={0.02}
+                  />
                 </linearGradient>
-                <linearGradient id="dailyExpenseFill" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="var(--dashboard-chart-expense)" stopOpacity={0.16} />
-                  <stop offset="100%" stopColor="var(--dashboard-chart-expense)" stopOpacity={0.02} />
+                <linearGradient
+                  id="dailyExpenseFill"
+                  x1="0"
+                  y1="0"
+                  x2="0"
+                  y2="1"
+                >
+                  <stop
+                    offset="0%"
+                    stopColor="var(--dashboard-chart-expense)"
+                    stopOpacity={0.16}
+                  />
+                  <stop
+                    offset="100%"
+                    stopColor="var(--dashboard-chart-expense)"
+                    stopOpacity={0.02}
+                  />
                 </linearGradient>
               </defs>
               <CartesianGrid
@@ -197,26 +235,32 @@ export default function IncomeExpenseChart({
                 type="monotone"
                 dataKey="income"
                 dot={false}
-                activeDot={{ r: 4, strokeWidth: 2, stroke: "var(--card)" }}
-                isAnimationActive
+                activeDot={{
+                  r: 4,
+                  strokeWidth: 2,
+                  stroke: "var(--card)",
+                }}
+                isAnimationActive={false}
                 stroke="var(--dashboard-chart-income)"
                 strokeLinecap="round"
                 strokeWidth={2.35}
                 fill="url(#dailyIncomeFill)"
-                {...chartMotion}
               />
               <Area
                 type="monotone"
                 dataKey="expenses"
                 dot={false}
-                activeDot={{ r: 4, strokeWidth: 2, stroke: "var(--card)" }}
-                isAnimationActive
+                activeDot={{
+                  r: 4,
+                  strokeWidth: 2,
+                  stroke: "var(--card)",
+                }}
+                isAnimationActive={false}
                 stroke="var(--dashboard-chart-expense)"
                 strokeDasharray="4 4"
                 strokeLinecap="round"
                 strokeWidth={2.25}
                 fill="url(#dailyExpenseFill)"
-                {...chartMotion}
               />
             </ComposedChart>
           )}
@@ -227,8 +271,12 @@ export default function IncomeExpenseChart({
             <span className="dashboard-chart-empty-icon">
               <DollarSign size={16} />
             </span>
-            <p className="text-xs font-semibold text-text-primary">No cash flow yet</p>
-            <p className="mt-1 text-[11px] text-text-secondary">Income and expenses will appear here.</p>
+            <p className="text-xs font-semibold text-text-primary">
+              No cash flow yet
+            </p>
+            <p className="mt-1 text-[11px] text-text-secondary">
+              Income and expenses will appear here.
+            </p>
           </div>
         </div>
       )}
