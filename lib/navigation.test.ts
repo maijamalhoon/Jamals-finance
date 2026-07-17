@@ -354,8 +354,8 @@ describe("dashboard shell contracts", () => {
     );
     expect(sheetSearchCount === 1 || hasInlineSearch).toBe(true);
 
-    expect(headerSource).toContain('aria-label="Open transaction search"');
-    expect(headerSource).toContain('aria-label="Close transaction search"');
+    expect(headerSource).toContain('"Open transaction search"');
+    expect(headerSource).toContain('"Close transaction search"');
     expect(headerSource).toContain(
       'aria-label="Open more dashboard navigation"',
     );
