@@ -1,0 +1,132 @@
+/* Shared dashboard card actions and compact table-header polish.
+   Presentation only: routes, data, chart logic, and button behavior remain unchanged. */
+
+[data-dashboard-scroll] :is(.dashboard-list-card-action, .dashboard-card-action) {
+  display: inline-flex;
+  min-height: 2.25rem;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  border: 1px solid color-mix(in srgb, var(--brand), var(--border) 72%);
+  border-radius: 999px;
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--surface-elevated), white 7%),
+      color-mix(in srgb, var(--surface-secondary), var(--brand) 4%)
+    );
+  padding: 0.42rem 0.82rem;
+  color: var(--brand);
+  box-shadow:
+    0 7px 18px rgb(15 23 42 / 0.07),
+    inset 0 1px 0 rgb(255 255 255 / 0.58);
+  font-size: 0.7rem;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  text-decoration: none;
+  transition:
+    transform 180ms var(--motion-ease),
+    border-color 180ms var(--motion-ease),
+    background-color 180ms var(--motion-ease),
+    box-shadow 180ms var(--motion-ease),
+    color 180ms var(--motion-ease);
+}
+
+[data-dashboard-scroll] :is(.dashboard-list-card-action, .dashboard-card-action)::after {
+  content: "→";
+  display: inline-block;
+  font-size: 0.78rem;
+  line-height: 1;
+  transition: transform 180ms var(--motion-ease);
+}
+
+[data-dashboard-scroll] .dashboard-card-action svg {
+  display: none;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  [data-dashboard-scroll] :is(.dashboard-list-card-action, .dashboard-card-action):hover {
+    transform: translateY(-1px);
+    border-color: color-mix(in srgb, var(--brand), var(--border) 50%);
+    background:
+      linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--brand-soft), white 20%),
+        color-mix(in srgb, var(--brand-soft), var(--surface-elevated) 42%)
+      );
+    color: var(--brand-strong, var(--brand));
+    box-shadow:
+      0 10px 24px color-mix(in srgb, var(--brand), transparent 86%),
+      inset 0 1px 0 rgb(255 255 255 / 0.68);
+  }
+
+  [data-dashboard-scroll] :is(.dashboard-list-card-action, .dashboard-card-action):hover::after {
+    transform: translateX(2px);
+  }
+}
+
+[data-dashboard-scroll] :is(.dashboard-list-card-action, .dashboard-card-action):active {
+  transform: scale(0.97);
+}
+
+.dark [data-dashboard-scroll] :is(.dashboard-list-card-action, .dashboard-card-action) {
+  border-color: color-mix(in srgb, var(--brand), var(--border) 66%);
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--surface-elevated), white 3%),
+      color-mix(in srgb, var(--surface-secondary), var(--brand) 7%)
+    );
+  box-shadow:
+    0 8px 22px rgb(0 0 0 / 0.24),
+    inset 0 1px 0 rgb(255 255 255 / 0.06);
+}
+
+/* Remove the harsh line under compact card-table headings and replace it with
+   a soft grouped header surface. */
+[data-dashboard-scroll] .finance-reference-card table thead tr {
+  border-bottom: 0 !important;
+}
+
+[data-dashboard-scroll] .finance-reference-card table thead th {
+  border-bottom: 0 !important;
+  background: color-mix(in srgb, var(--surface-secondary), transparent 18%);
+  padding-top: 0.55rem;
+  padding-bottom: 0.55rem;
+  color: var(--text-tertiary);
+  font-size: 0.6rem;
+  letter-spacing: 0.09em;
+}
+
+[data-dashboard-scroll] .finance-reference-card table thead th:first-child {
+  border-radius: 0.7rem 0 0 0.7rem;
+  padding-left: 0.65rem;
+}
+
+[data-dashboard-scroll] .finance-reference-card table thead th:last-child {
+  border-radius: 0 0.7rem 0.7rem 0;
+  padding-right: 0.65rem;
+}
+
+[data-dashboard-scroll] .finance-reference-card table tbody tr:first-child td {
+  padding-top: 0.8rem;
+}
+
+@media (max-width: 639px) {
+  [data-dashboard-scroll] :is(.dashboard-list-card-action, .dashboard-card-action) {
+    min-height: 2.1rem;
+    padding-inline: 0.72rem;
+    font-size: 0.66rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-dashboard-scroll] :is(.dashboard-list-card-action, .dashboard-card-action),
+  [data-dashboard-scroll] :is(.dashboard-list-card-action, .dashboard-card-action)::after {
+    transform: none !important;
+    transition: none !important;
+  }
+}
