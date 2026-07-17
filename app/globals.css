@@ -3191,6 +3191,11 @@ select {
     width: auto;
     max-width: none;
     max-height: calc(100dvh - max(0.75rem, env(safe-area-inset-bottom)));
+    /* Tailwind 4 centers dialogs through these variables and the individual
+       `translate` property. Reset the variables when the mobile sheet uses
+       explicit inset edges, otherwise it stays shifted by half its own size. */
+    --tw-translate-x: 0px;
+    --tw-translate-y: 0px;
     transform: none;
     border-radius: min(var(--oneui-card-radius), 1.5rem);
   }
