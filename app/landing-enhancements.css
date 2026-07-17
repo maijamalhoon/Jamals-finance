@@ -1,0 +1,467 @@
+/* Premium landing-page composition and motion.
+   All effects are CSS-only, preserve existing links/content, and respect reduced motion. */
+
+.jf-node4-landing {
+  --landing-max-width: 1420px;
+  isolation: isolate;
+}
+
+.jf-node4-landing::before,
+.jf-node4-landing::after {
+  position: absolute;
+  z-index: 0;
+  pointer-events: none;
+  content: "";
+}
+
+.jf-node4-landing::before {
+  top: 4rem;
+  left: 50%;
+  width: min(92vw, 1180px);
+  height: min(78vw, 760px);
+  translate: -50% 0;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 30% 35%, color-mix(in srgb, var(--brand) 20%, transparent), transparent 43%),
+    radial-gradient(circle at 72% 46%, color-mix(in srgb, var(--investment) 17%, transparent), transparent 40%),
+    radial-gradient(circle at 52% 78%, color-mix(in srgb, var(--info) 12%, transparent), transparent 36%);
+  filter: blur(24px);
+  opacity: 0.8;
+}
+
+.jf-node4-landing::after {
+  inset: 4rem 0 auto;
+  height: 48rem;
+  background-image:
+    linear-gradient(color-mix(in srgb, var(--border) 36%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in srgb, var(--border) 36%, transparent) 1px, transparent 1px);
+  background-size: 56px 56px;
+  mask-image: linear-gradient(to bottom, rgb(0 0 0 / 0.48), transparent 84%);
+  opacity: 0.28;
+}
+
+.jf-node4-landing > header {
+  background: color-mix(in srgb, var(--background) 86%, transparent) !important;
+  backdrop-filter: blur(18px) saturate(145%);
+  -webkit-backdrop-filter: blur(18px) saturate(145%);
+}
+
+.jf-node4-landing > header > div,
+.jf-node4-landing > section.mx-auto,
+.jf-node4-landing > section > div,
+.jf-node4-landing > footer > div {
+  max-width: var(--landing-max-width) !important;
+}
+
+.jf-node4-landing > header > div {
+  padding-inline: clamp(1rem, 2.6vw, 2.5rem) !important;
+}
+
+.jf-node4-landing > header a,
+.jf-node4-landing > header summary {
+  transition:
+    transform 180ms var(--motion-ease),
+    color 180ms var(--motion-ease),
+    background-color 180ms var(--motion-ease),
+    border-color 180ms var(--motion-ease),
+    box-shadow 180ms var(--motion-ease);
+}
+
+.jf-node4-landing > header a:hover,
+.jf-node4-landing > header summary:hover {
+  transform: translateY(-1px);
+}
+
+/* Hero */
+.jf-node4-landing > header + section {
+  position: relative;
+  min-height: min(880px, calc(100svh - 4rem));
+  padding-inline: clamp(1rem, 3vw, 2.75rem) !important;
+  overflow: visible;
+}
+
+.jf-node4-landing > header + section::before {
+  position: absolute;
+  top: 11%;
+  right: 5%;
+  width: 14rem;
+  height: 14rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--brand) 15%, transparent);
+  filter: blur(70px);
+  pointer-events: none;
+  content: "";
+}
+
+.jf-node4-landing > header + section > div:first-child {
+  position: relative;
+  z-index: 2;
+}
+
+.jf-node4-landing > header + section > div:first-child > p:first-child {
+  position: relative;
+  overflow: hidden;
+  background: color-mix(in srgb, var(--surface-primary) 88%, transparent);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.jf-node4-landing > header + section > div:first-child > p:first-child::after {
+  position: absolute;
+  inset: 0;
+  translate: -130% 0;
+  background: linear-gradient(100deg, transparent 20%, rgb(255 255 255 / 0.42) 50%, transparent 80%);
+  content: "";
+}
+
+.jf-node4-landing > header + section h1 {
+  max-width: 12ch !important;
+  background: linear-gradient(
+    128deg,
+    var(--text-primary) 18%,
+    var(--text-primary) 48%,
+    var(--brand) 76%,
+    var(--investment) 108%
+  );
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent !important;
+  text-wrap: balance;
+}
+
+.jf-node4-landing > header + section a[href*="mode=signup"],
+.jf-node4-landing .jf-node4-cta a:first-of-type {
+  position: relative;
+  overflow: hidden;
+  box-shadow:
+    0 12px 30px color-mix(in srgb, var(--brand) 22%, transparent),
+    var(--shadow-xs);
+}
+
+.jf-node4-landing > header + section a[href*="mode=signup"]::before,
+.jf-node4-landing .jf-node4-cta a:first-of-type::before {
+  position: absolute;
+  inset: -50% auto -50% -70%;
+  width: 42%;
+  rotate: 14deg;
+  background: linear-gradient(90deg, transparent, rgb(255 255 255 / 0.36), transparent);
+  content: "";
+}
+
+.jf-node4-landing > header + section > figure,
+.jf-node4-landing #preview > figure {
+  position: relative;
+  z-index: 2;
+  overflow: visible !important;
+  border-color: color-mix(in srgb, var(--brand) 22%, var(--border)) !important;
+  box-shadow:
+    0 28px 70px rgb(15 23 42 / 0.12),
+    0 8px 24px color-mix(in srgb, var(--brand) 10%, transparent),
+    inset 0 1px 0 rgb(255 255 255 / 0.32);
+}
+
+.jf-node4-landing > header + section > figure::before,
+.jf-node4-landing #preview > figure::before {
+  position: absolute;
+  inset: -1px;
+  z-index: -1;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(
+    130deg,
+    color-mix(in srgb, var(--brand) 55%, transparent),
+    transparent 35%,
+    transparent 66%,
+    color-mix(in srgb, var(--investment) 42%, transparent)
+  );
+  content: "";
+  mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  mask-composite: exclude;
+  -webkit-mask-composite: xor;
+}
+
+.jf-node4-landing > header + section > figure > div,
+.jf-node4-landing #preview > figure > div {
+  transform-origin: center;
+}
+
+.jf-node4-landing figure [role="img"] > span {
+  transform-origin: bottom;
+}
+
+/* Wide-screen composition: use the available display instead of leaving large side gutters. */
+@media (min-width: 1024px) {
+  .jf-node4-landing > header + section {
+    grid-template-columns: minmax(410px, 0.82fr) minmax(560px, 1.18fr) !important;
+    gap: clamp(2.5rem, 4vw, 5rem) !important;
+  }
+
+  .jf-node4-landing #workflow > div {
+    grid-template-columns: minmax(340px, 0.72fr) minmax(620px, 1.28fr) !important;
+  }
+
+  .jf-node4-landing #preview {
+    grid-template-columns: minmax(360px, 0.66fr) minmax(650px, 1.34fr) !important;
+  }
+
+  .jf-node4-landing #privacy > div {
+    grid-template-columns: minmax(390px, 0.76fr) minmax(620px, 1.24fr) !important;
+  }
+}
+
+@media (min-width: 1440px) {
+  .jf-node4-landing {
+    --landing-max-width: 1500px;
+  }
+
+  .jf-node4-landing > header + section {
+    grid-template-columns: minmax(470px, 0.78fr) minmax(760px, 1.22fr) !important;
+    gap: clamp(4rem, 5vw, 6.5rem) !important;
+    padding-top: 5.5rem !important;
+    padding-bottom: 6rem !important;
+  }
+
+  .jf-node4-landing > header + section h1 {
+    font-size: clamp(4.7rem, 5.2vw, 6.25rem) !important;
+  }
+
+  .jf-node4-landing #capabilities > div:last-child {
+    gap: 1rem !important;
+  }
+}
+
+/* Product value strip */
+.jf-node4-landing > section[aria-label="Product values"] > div > div {
+  position: relative;
+  transition:
+    background-color 220ms var(--motion-ease),
+    transform 220ms var(--motion-ease);
+}
+
+.jf-node4-landing > section[aria-label="Product values"] > div > div:hover {
+  z-index: 1;
+  transform: translateY(-3px);
+  background: color-mix(in srgb, var(--surface-soft) 72%, transparent);
+}
+
+/* Capability cards */
+.jf-node4-landing #capabilities > div:last-child article {
+  position: relative;
+  overflow: hidden;
+  min-height: 13.5rem;
+  border-color: color-mix(in srgb, var(--border) 80%, var(--brand) 20%);
+  transition:
+    transform 240ms var(--motion-ease),
+    border-color 240ms var(--motion-ease),
+    box-shadow 240ms var(--motion-ease),
+    background-color 240ms var(--motion-ease);
+}
+
+.jf-node4-landing #capabilities > div:last-child article::after {
+  position: absolute;
+  right: -3rem;
+  bottom: -4rem;
+  width: 9rem;
+  height: 9rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--brand) 8%, transparent);
+  transition: transform 300ms var(--motion-ease), opacity 300ms var(--motion-ease);
+  content: "";
+  opacity: 0.6;
+}
+
+.jf-node4-landing #capabilities > div:last-child article:hover {
+  transform: translateY(-7px);
+  border-color: color-mix(in srgb, var(--brand) 42%, var(--border));
+  box-shadow:
+    0 20px 44px rgb(15 23 42 / 0.1),
+    0 6px 18px color-mix(in srgb, var(--brand) 8%, transparent);
+}
+
+.jf-node4-landing #capabilities > div:last-child article:hover::after {
+  transform: scale(1.35) translate(-0.4rem, -0.4rem);
+  opacity: 1;
+}
+
+.jf-node4-landing #capabilities > div:last-child article > span:first-child {
+  position: relative;
+  z-index: 1;
+  transition: transform 240ms var(--motion-ease), box-shadow 240ms var(--motion-ease);
+}
+
+.jf-node4-landing #capabilities > div:last-child article:hover > span:first-child {
+  transform: translateY(-2px) rotate(-3deg) scale(1.05);
+  box-shadow: var(--shadow-sm);
+}
+
+/* Workflow and privacy cards */
+.jf-node4-landing #workflow li,
+.jf-node4-landing #privacy .finance-surface {
+  transition:
+    transform 220ms var(--motion-ease),
+    border-color 220ms var(--motion-ease),
+    box-shadow 220ms var(--motion-ease);
+}
+
+.jf-node4-landing #workflow li:hover,
+.jf-node4-landing #privacy .finance-surface:hover {
+  transform: translateX(5px);
+  border-color: color-mix(in srgb, var(--brand) 34%, var(--border));
+  box-shadow: var(--shadow-soft);
+}
+
+/* Final CTA */
+.jf-node4-landing .jf-node4-cta {
+  position: relative;
+  background:
+    radial-gradient(circle at 12% 18%, color-mix(in srgb, var(--brand) 14%, transparent), transparent 30%),
+    radial-gradient(circle at 88% 82%, color-mix(in srgb, var(--investment) 12%, transparent), transparent 32%),
+    var(--surface-primary);
+  border-color: color-mix(in srgb, var(--brand) 26%, var(--border));
+  box-shadow:
+    0 24px 60px rgb(15 23 42 / 0.1),
+    inset 0 1px 0 rgb(255 255 255 / 0.3);
+}
+
+.jf-node4-landing .jf-node4-cta::before {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background-image: radial-gradient(color-mix(in srgb, var(--brand) 18%, transparent) 1px, transparent 1px);
+  background-size: 22px 22px;
+  mask-image: linear-gradient(135deg, #000, transparent 68%);
+  pointer-events: none;
+  content: "";
+  opacity: 0.35;
+}
+
+/* Motion: only transform/opacity/background-position for smooth rendering. */
+@media (prefers-reduced-motion: no-preference) {
+  .jf-node4-landing::before {
+    animation: landing-ambient-drift 14s ease-in-out infinite alternate;
+  }
+
+  .jf-node4-landing > header + section > div:first-child {
+    animation: landing-copy-in 720ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  .jf-node4-landing > header + section > figure {
+    animation: landing-preview-in 900ms 120ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  .jf-node4-landing > header + section > figure > div {
+    animation: landing-preview-float 6.5s 1.1s ease-in-out infinite;
+  }
+
+  .jf-node4-landing > header + section > div:first-child > p:first-child::after {
+    animation: landing-badge-shine 5.5s 1.2s ease-in-out infinite;
+  }
+
+  .jf-node4-landing > header + section a[href*="mode=signup"]::before,
+  .jf-node4-landing .jf-node4-cta a:first-of-type::before {
+    animation: landing-button-shine 4.8s 1.5s ease-in-out infinite;
+  }
+
+  .jf-node4-landing figure [role="img"] > span {
+    animation: landing-bar-rise 760ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  .jf-node4-landing figure [role="img"] > span:nth-child(2) { animation-delay: 60ms; }
+  .jf-node4-landing figure [role="img"] > span:nth-child(3) { animation-delay: 120ms; }
+  .jf-node4-landing figure [role="img"] > span:nth-child(4) { animation-delay: 180ms; }
+  .jf-node4-landing figure [role="img"] > span:nth-child(5) { animation-delay: 240ms; }
+  .jf-node4-landing figure [role="img"] > span:nth-child(6) { animation-delay: 300ms; }
+  .jf-node4-landing figure [role="img"] > span:nth-child(7) { animation-delay: 360ms; }
+  .jf-node4-landing figure [role="img"] > span:nth-child(8) { animation-delay: 420ms; }
+
+  @supports (animation-timeline: view()) {
+    .jf-node4-landing #capabilities > div:last-child article,
+    .jf-node4-landing #workflow li,
+    .jf-node4-landing #preview > figure,
+    .jf-node4-landing #privacy .finance-surface,
+    .jf-node4-landing .jf-node4-cta {
+      animation-name: landing-scroll-reveal;
+      animation-duration: 1ms;
+      animation-fill-mode: both;
+      animation-timeline: view();
+      animation-range: entry 8% cover 26%;
+    }
+  }
+}
+
+@keyframes landing-copy-in {
+  from { opacity: 0; transform: translate3d(-24px, 18px, 0); }
+  to { opacity: 1; transform: translate3d(0, 0, 0); }
+}
+
+@keyframes landing-preview-in {
+  from { opacity: 0; transform: translate3d(34px, 26px, 0) scale(0.975); }
+  to { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
+}
+
+@keyframes landing-preview-float {
+  0%, 100% { transform: translate3d(0, 0, 0); }
+  50% { transform: translate3d(0, -8px, 0); }
+}
+
+@keyframes landing-ambient-drift {
+  0% { transform: translate3d(-2.5%, -1.5%, 0) scale(0.98); }
+  100% { transform: translate3d(3%, 2%, 0) scale(1.05); }
+}
+
+@keyframes landing-badge-shine {
+  0%, 58% { translate: -130% 0; }
+  78%, 100% { translate: 230% 0; }
+}
+
+@keyframes landing-button-shine {
+  0%, 62% { transform: translateX(0); }
+  82%, 100% { transform: translateX(460%); }
+}
+
+@keyframes landing-bar-rise {
+  from { opacity: 0.25; transform: scaleY(0.08); }
+  to { opacity: 1; transform: scaleY(1); }
+}
+
+@keyframes landing-scroll-reveal {
+  from { opacity: 0; transform: translate3d(0, 28px, 0) scale(0.985); }
+  to { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
+}
+
+@media (max-width: 639px) {
+  .jf-node4-landing::after {
+    background-size: 38px 38px;
+    opacity: 0.18;
+  }
+
+  .jf-node4-landing > header + section {
+    min-height: auto;
+  }
+
+  .jf-node4-landing > header + section h1 {
+    max-width: 14ch !important;
+  }
+
+  .jf-node4-landing > header + section > figure,
+  .jf-node4-landing #preview > figure {
+    overflow: hidden !important;
+    box-shadow: var(--shadow-soft);
+  }
+
+  .jf-node4-landing #capabilities > div:last-child article {
+    min-height: auto;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .jf-node4-landing *,
+  .jf-node4-landing *::before,
+  .jf-node4-landing *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}
