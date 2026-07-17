@@ -205,6 +205,7 @@ export default function IncomeExpenseChart({
           >
             {({ width, height }) => (
               <ComposedChart
+                key={`cash-flow-${range}`}
                 accessibilityLayer
                 data={visibleRows}
                 height={height}
@@ -212,39 +213,51 @@ export default function IncomeExpenseChart({
                 width={width}
               >
                 <defs>
-                  <linearGradient id="dailyIncomeFill" x1="0" y1="0" x2="0" y2="1">
+                  <linearGradient
+                    id="incomeExpenseIncomeFill"
+                    x1="0"
+                    y1="0"
+                    x2="0"
+                    y2="1"
+                  >
                     <stop
                       offset="0%"
-                      stopColor="var(--dashboard-chart-income)"
-                      stopOpacity={0.2}
+                      stopColor="var(--income)"
+                      stopOpacity={0.3}
                     />
                     <stop
                       offset="100%"
-                      stopColor="var(--dashboard-chart-income)"
-                      stopOpacity={0.015}
+                      stopColor="var(--income)"
+                      stopOpacity={0.025}
                     />
                   </linearGradient>
-                  <linearGradient id="dailyExpenseFill" x1="0" y1="0" x2="0" y2="1">
+                  <linearGradient
+                    id="incomeExpenseExpenseFill"
+                    x1="0"
+                    y1="0"
+                    x2="0"
+                    y2="1"
+                  >
                     <stop
                       offset="0%"
-                      stopColor="var(--dashboard-chart-expense)"
-                      stopOpacity={0.15}
+                      stopColor="var(--expense)"
+                      stopOpacity={0.24}
                     />
                     <stop
                       offset="100%"
-                      stopColor="var(--dashboard-chart-expense)"
-                      stopOpacity={0.01}
+                      stopColor="var(--expense)"
+                      stopOpacity={0.02}
                     />
                   </linearGradient>
                 </defs>
                 <CartesianGrid
                   strokeDasharray="2 8"
-                  stroke="var(--dashboard-chart-grid)"
+                  stroke="var(--chart-grid)"
                   vertical={false}
                 />
                 <XAxis
                   dataKey="day"
-                  tick={{ fill: "var(--dashboard-chart-muted)", fontSize: 10 }}
+                  tick={{ fill: "var(--text-secondary)", fontSize: 10 }}
                   axisLine={false}
                   tickLine={false}
                   interval="preserveStartEnd"
@@ -253,7 +266,7 @@ export default function IncomeExpenseChart({
                 />
                 <YAxis
                   domain={[0, Math.ceil(maxValue / 250) * 250]}
-                  tick={{ fill: "var(--dashboard-chart-muted)", fontSize: 10 }}
+                  tick={{ fill: "var(--text-secondary)", fontSize: 10 }}
                   axisLine={false}
                   tickLine={false}
                   width={50}
@@ -269,10 +282,10 @@ export default function IncomeExpenseChart({
                   dot={false}
                   activeDot={{ r: 4, strokeWidth: 2, stroke: "var(--card)" }}
                   isAnimationActive
-                  stroke="var(--dashboard-chart-income)"
+                  stroke="var(--income)"
                   strokeLinecap="round"
-                  strokeWidth={2.3}
-                  fill="url(#dailyIncomeFill)"
+                  strokeWidth={2.5}
+                  fill="url(#incomeExpenseIncomeFill)"
                   {...chartMotion}
                 />
                 <Area
@@ -281,10 +294,11 @@ export default function IncomeExpenseChart({
                   dot={false}
                   activeDot={{ r: 4, strokeWidth: 2, stroke: "var(--card)" }}
                   isAnimationActive
-                  stroke="var(--dashboard-chart-expense)"
+                  stroke="var(--expense)"
+                  strokeDasharray="4 4"
                   strokeLinecap="round"
-                  strokeWidth={2.25}
-                  fill="url(#dailyExpenseFill)"
+                  strokeWidth={2.4}
+                  fill="url(#incomeExpenseExpenseFill)"
                   {...chartMotion}
                 />
               </ComposedChart>
