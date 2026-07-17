@@ -49,6 +49,83 @@ export type AggregatedInvestment = {
 
 const ASSET_COLORS = CHART_COLOR_PALETTE;
 
+const ASSET_BRAND_COLORS: Record<string, string> = {
+  bitcoin: "#f7931a",
+  btc: "#f7931a",
+  ethereum: "#627eea",
+  eth: "#627eea",
+  solana: "#7c3aed",
+  sol: "#7c3aed",
+  render: "#e60012",
+  rendertoken: "#e60012",
+  rndr: "#e60012",
+  tether: "#26a17b",
+  usdt: "#26a17b",
+  usdcoin: "#2775ca",
+  usdc: "#2775ca",
+  binancecoin: "#f3ba2f",
+  bnb: "#f3ba2f",
+  ripple: "#23292f",
+  xrp: "#23292f",
+  cardano: "#3468d4",
+  ada: "#3468d4",
+  dogecoin: "#c2a633",
+  doge: "#c2a633",
+  litecoin: "#345d9d",
+  ltc: "#345d9d",
+  polkadot: "#e6007a",
+  dot: "#e6007a",
+  avalanche: "#e84142",
+  avax: "#e84142",
+  chainlink: "#2a5ada",
+  link: "#2a5ada",
+  polygon: "#8247e5",
+  polygonpos: "#8247e5",
+  matic: "#8247e5",
+  tron: "#ef0027",
+  trx: "#ef0027",
+  uniswap: "#ff007a",
+  uni: "#ff007a",
+  cosmos: "#2e3148",
+  atom: "#2e3148",
+  near: "#111111",
+  stellar: "#7d00ff",
+  xlm: "#7d00ff",
+  algorand: "#111111",
+  algo: "#111111",
+  aptos: "#2dd8a3",
+  apt: "#2dd8a3",
+  arbitrum: "#28a0f0",
+  arb: "#28a0f0",
+  optimism: "#ff0420",
+  op: "#ff0420",
+  apple: "#555555",
+  aapl: "#555555",
+  tesla: "#e82127",
+  tsla: "#e82127",
+  microsoft: "#737373",
+  msft: "#737373",
+  alphabet: "#4285f4",
+  google: "#4285f4",
+  goog: "#4285f4",
+  googl: "#4285f4",
+  amazon: "#ff9900",
+  amzn: "#ff9900",
+  nvidia: "#76b900",
+  nvda: "#76b900",
+  meta: "#0668e1",
+  netflix: "#e50914",
+  nflx: "#e50914",
+  adobe: "#ff0000",
+  adbe: "#ff0000",
+  coinbase: "#0052ff",
+  coin: "#0052ff",
+};
+
+const ASSET_BRAND_ALIASES = Object.keys(ASSET_BRAND_COLORS).sort(
+  (left, right) => right.length - left.length,
+);
+
 function toFiniteNumber(value: number | string | null | undefined) {
   const parsed = Number(value);
   return Number.isFinite(parsed) ? parsed : 0;
@@ -60,6 +137,19 @@ function normalizeText(value: string | null | undefined) {
 
 function normalizeKeyText(value: string | null | undefined) {
   return normalizeText(value).toLowerCase();
+}
+
+function normalizeAssetColorKey(value: string) {
+  return value.toLowerCase().replace(/[^a-z0-9]+/g, "");
+}
+
+function getBrandAssetColor(groupKey: string) {
+  const normalizedGroupKey = normalizeAssetColorKey(groupKey);
+  const alias = ASSET_BRAND_ALIASES.find((candidate) =>
+    normalizedGroupKey.endsWith(candidate),
+  );
+
+  return alias ? ASSET_BRAND_COLORS[alias] : null;
 }
 
 export function getInvestmentGroupKey(investment: InvestmentLike) {
@@ -79,6 +169,9 @@ export function getInvestmentGroupKey(investment: InvestmentLike) {
 }
 
 export function getStableAssetColor(groupKey: string) {
+  const brandColor = getBrandAssetColor(groupKey);
+  if (brandColor) return brandColor;
+
   let hash = 0;
 
   for (let index = 0; index < groupKey.length; index += 1) {
