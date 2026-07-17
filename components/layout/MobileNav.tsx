@@ -30,14 +30,14 @@ export default function MobileNav({ notificationSlot }: MobileNavProps) {
       <SheetTrigger
         type="button"
         aria-label="Open navigation menu"
-        className="finance-focus fixed left-3 top-[max(0.75rem,env(safe-area-inset-top))] z-40 grid size-14 shrink-0 place-items-center rounded-full border border-border/80 bg-text-primary p-0 text-text-inverse shadow-[0_14px_34px_rgb(15_23_42_/_0.24)] transition-[transform,background-color,border-color,box-shadow] hover:-translate-y-0.5 hover:shadow-[0_18px_42px_rgb(15_23_42_/_0.3)] active:scale-[0.97] dark:bg-surface-elevated dark:text-text-primary dark:shadow-[0_16px_38px_rgb(0_0_0_/_0.42)] print:hidden lg:hidden"
+        className="finance-focus fixed left-4 top-[max(1rem,env(safe-area-inset-top))] z-40 grid size-12 shrink-0 place-items-center rounded-[1rem] border border-border bg-card/95 p-0 text-text-primary shadow-[0_8px_22px_rgb(15_23_42_/_0.12)] backdrop-blur-sm transition-[transform,background-color,border-color,box-shadow] hover:-translate-y-0.5 hover:border-brand/30 hover:bg-surface-elevated hover:shadow-[0_12px_28px_rgb(15_23_42_/_0.16)] active:scale-[0.97] dark:border-border-strong/70 dark:bg-surface-elevated/95 dark:shadow-[0_10px_24px_rgb(0_0_0_/_0.3)] print:hidden lg:hidden"
       >
         <span
           aria-hidden="true"
-          className="flex flex-col items-center justify-center gap-2"
+          className="flex flex-col items-center justify-center gap-1.5"
         >
-          <span className="h-[3px] w-7 rounded-full bg-current" />
-          <span className="h-[3px] w-4 rounded-full bg-current" />
+          <span className="h-0.5 w-5.5 rounded-full bg-current" />
+          <span className="h-0.5 w-3.5 rounded-full bg-current" />
         </span>
       </SheetTrigger>
 
