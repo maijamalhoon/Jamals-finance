@@ -5,6 +5,7 @@ import SettingsOneUI, {
 } from "@/components/settings/SettingsOneUI";
 
 import "./settings-polish.css";
+import "./settings-polish-fixes.css";
 
 export const dynamic = "force-dynamic";
 
