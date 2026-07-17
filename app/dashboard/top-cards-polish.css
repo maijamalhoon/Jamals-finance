@@ -1,0 +1,357 @@
+/* Responsive polish for the dashboard balance, metric, and daily-pulse cards.
+   Presentation only: data, actions, modal loading, routes, and calculations stay unchanged. */
+
+.dashboard-balance-hero {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  min-width: 0;
+  padding: clamp(1rem, 2.1vw, 1.55rem);
+  border: 1px solid color-mix(in srgb, var(--border-strong), transparent 18%);
+  border-radius: clamp(1.1rem, 1.7vw, 1.45rem);
+  background:
+    radial-gradient(circle at 92% 4%, color-mix(in srgb, var(--primary), transparent 88%) 0, transparent 36%),
+    linear-gradient(135deg, color-mix(in srgb, var(--surface-primary), var(--primary) 2%), var(--surface-primary) 58%);
+  box-shadow: var(--surface-highlight), 0 12px 34px rgb(23 35 58 / 0.075);
+}
+
+.dark .dashboard-balance-hero {
+  background:
+    radial-gradient(circle at 90% 2%, color-mix(in srgb, var(--primary), transparent 78%) 0, transparent 38%),
+    linear-gradient(135deg, color-mix(in srgb, var(--surface-primary), var(--primary) 6%), var(--surface-primary) 62%);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.045), 0 18px 44px rgb(0 0 0 / 0.2);
+}
+
+.dashboard-balance-hero::after {
+  content: "";
+  position: absolute;
+  inset: auto 1rem 0 1rem;
+  z-index: -1;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--primary), transparent 55%), transparent);
+}
+
+.dashboard-balance-accent {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 4px;
+  background: linear-gradient(180deg, var(--primary), color-mix(in srgb, var(--primary), var(--investment) 35%));
+  box-shadow: 0 0 18px color-mix(in srgb, var(--primary), transparent 45%);
+}
+
+.dashboard-balance-shape {
+  opacity: 0.28;
+  filter: blur(0.2px);
+}
+
+.dashboard-balance-amount {
+  max-width: 100%;
+  font-size: clamp(2rem, 4vw, 4rem);
+  line-height: 0.98;
+  letter-spacing: -0.052em;
+  text-wrap: balance;
+}
+
+.dashboard-balance-amount[data-balance-size="long"] {
+  font-size: clamp(1.75rem, 3.35vw, 3.3rem);
+  letter-spacing: -0.045em;
+}
+
+.dashboard-balance-amount[data-balance-size="xlong"] {
+  font-size: clamp(1.45rem, 2.75vw, 2.75rem);
+  letter-spacing: -0.038em;
+}
+
+.dashboard-quick-action {
+  display: grid;
+  min-width: 0;
+  min-height: 4.7rem;
+  place-items: center;
+  align-content: center;
+  gap: 0.45rem;
+  padding: 0.65rem 0.45rem;
+  border: 1px solid color-mix(in srgb, var(--border), transparent 12%);
+  border-radius: 1rem;
+  background: color-mix(in srgb, var(--surface-secondary), transparent 18%);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.32), var(--shadow-xs);
+  transition:
+    transform var(--motion-duration-fast) var(--motion-ease),
+    border-color var(--motion-duration-fast) ease,
+    background-color var(--motion-duration-fast) ease,
+    box-shadow var(--motion-duration-fast) ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.dark .dashboard-quick-action {
+  background: color-mix(in srgb, var(--surface-secondary), transparent 8%);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.035), var(--shadow-xs);
+}
+
+.dashboard-quick-action .finance-feature-accent {
+  width: 2.45rem;
+  height: 2.45rem;
+  border-radius: 0.82rem;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .dashboard-quick-action:hover {
+    transform: translateY(-2px);
+    border-color: color-mix(in srgb, var(--primary), transparent 64%);
+    background: color-mix(in srgb, var(--surface-secondary), var(--primary) 3%);
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.42), 0 10px 24px rgb(23 35 58 / 0.09);
+  }
+}
+
+.dashboard-quick-action:active {
+  transform: scale(0.975);
+}
+
+/* Main month-to-date metrics */
+.dashboard-metric-card {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  min-height: 11.25rem !important;
+  padding: 1rem !important;
+  border: 1px solid color-mix(in srgb, var(--border), transparent 5%);
+  border-radius: 1.15rem;
+  background:
+    radial-gradient(circle at 100% 0, color-mix(in srgb, var(--metric-accent), transparent 91%) 0, transparent 34%),
+    var(--surface-primary);
+  box-shadow: var(--surface-highlight), 0 8px 24px rgb(23 35 58 / 0.065);
+  transition:
+    transform var(--motion-duration-fast) var(--motion-ease),
+    border-color var(--motion-duration-fast) ease,
+    box-shadow var(--motion-duration-fast) ease;
+}
+
+.dark .dashboard-metric-card {
+  background:
+    radial-gradient(circle at 100% 0, color-mix(in srgb, var(--metric-accent), transparent 82%) 0, transparent 36%),
+    var(--surface-primary);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.04), 0 14px 32px rgb(0 0 0 / 0.16);
+}
+
+.dashboard-metric-card::before {
+  content: "";
+  position: absolute;
+  inset: 0.7rem auto 0.7rem 0;
+  width: 3px;
+  border-radius: 0 999px 999px 0;
+  background: var(--metric-accent);
+  box-shadow: 0 0 16px color-mix(in srgb, var(--metric-accent), transparent 50%);
+}
+
+.dashboard-metric-shape {
+  opacity: 0.34;
+  transform: scale(0.86);
+  transform-origin: top right;
+}
+
+.dashboard-metric-icon {
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 0.85rem;
+}
+
+.dashboard-comparison-badge {
+  min-width: 0;
+  max-width: min(54%, 9.75rem) !important;
+  overflow: hidden;
+  padding-inline: 0.58rem !important;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dashboard-comparison-badge > span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dashboard-metric-title {
+  min-height: 2rem;
+}
+
+.dashboard-metric-amount {
+  max-width: 100%;
+  font-size: clamp(1.25rem, 1.65vw, 1.62rem) !important;
+  line-height: 1.12;
+  text-wrap: balance;
+}
+
+.dashboard-metric-amount[data-amount-size="long"] {
+  font-size: clamp(1.05rem, 1.35vw, 1.38rem) !important;
+  letter-spacing: -0.035em;
+}
+
+.dashboard-metric-amount[data-amount-size="xlong"] {
+  font-size: clamp(0.9rem, 1.08vw, 1.16rem) !important;
+  letter-spacing: -0.028em;
+}
+
+.dashboard-metric-footer {
+  border-top: 1px solid color-mix(in srgb, var(--divider), transparent 18%);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .dashboard-metric-card:hover {
+    transform: translateY(-2px);
+    border-color: color-mix(in srgb, var(--metric-accent), transparent 62%);
+    box-shadow: var(--surface-highlight), 0 14px 34px rgb(23 35 58 / 0.09);
+  }
+}
+
+/* Daily snapshot cards */
+section[aria-label="Today’s financial pulse"] {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.dashboard-pulse-tile {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  min-width: 0;
+  min-height: 7.25rem;
+  padding: 0.9rem;
+  border: 1px solid color-mix(in srgb, var(--border), transparent 8%);
+  border-radius: 1rem;
+  background:
+    radial-gradient(circle at 100% 0, color-mix(in srgb, var(--pulse-accent), transparent 91%) 0, transparent 42%),
+    var(--surface-primary);
+  box-shadow: var(--surface-highlight), 0 7px 20px rgb(23 35 58 / 0.055);
+}
+
+.dark .dashboard-pulse-tile {
+  background:
+    radial-gradient(circle at 100% 0, color-mix(in srgb, var(--pulse-accent), transparent 84%) 0, transparent 42%),
+    var(--surface-primary);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.035), 0 12px 28px rgb(0 0 0 / 0.14);
+}
+
+.dashboard-pulse-accent {
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--pulse-accent), color-mix(in srgb, var(--pulse-accent), transparent 62%));
+}
+
+.dashboard-pulse-icon {
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.28), var(--shadow-xs);
+}
+
+.dashboard-pulse-value {
+  font-size: clamp(0.95rem, 2vw, 1.1rem);
+  letter-spacing: -0.018em;
+}
+
+@media (min-width: 400px) {
+  section[aria-label="Today’s financial pulse"] {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1280px) {
+  section[aria-label="Today’s financial pulse"] {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 639px) {
+  .dashboard-balance-hero {
+    padding: 1rem;
+    border-radius: 1.1rem;
+  }
+
+  .dashboard-balance-hero > .relative {
+    gap: 1rem;
+  }
+
+  .dashboard-balance-amount {
+    font-size: clamp(1.75rem, 9vw, 2.6rem);
+    line-height: 1.02;
+  }
+
+  .dashboard-balance-amount[data-balance-size="long"] {
+    font-size: clamp(1.45rem, 7.4vw, 2.15rem);
+  }
+
+  .dashboard-balance-amount[data-balance-size="xlong"] {
+    font-size: clamp(1.2rem, 6.2vw, 1.8rem);
+  }
+
+  .dashboard-quick-action {
+    min-height: 4.35rem;
+    border-radius: 0.92rem;
+  }
+
+  .dashboard-metric-card {
+    min-height: 9.65rem !important;
+    padding: 0.9rem !important;
+    border-radius: 1rem;
+  }
+
+  .dashboard-metric-icon {
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: 0.75rem;
+  }
+
+  .dashboard-comparison-badge {
+    max-width: min(56%, 8.6rem) !important;
+    font-size: 0.62rem !important;
+  }
+
+  .dashboard-metric-title {
+    min-height: 0;
+  }
+
+  .dashboard-metric-amount {
+    font-size: clamp(1.25rem, 6vw, 1.62rem) !important;
+  }
+
+  .dashboard-metric-amount[data-amount-size="long"] {
+    font-size: clamp(1.02rem, 4.9vw, 1.35rem) !important;
+  }
+
+  .dashboard-metric-amount[data-amount-size="xlong"] {
+    font-size: clamp(0.86rem, 4vw, 1.12rem) !important;
+  }
+
+  .dashboard-pulse-tile {
+    min-height: 6.85rem;
+    padding: 0.8rem;
+  }
+}
+
+@media (min-width: 640px) and (max-width: 1279px) {
+  .dashboard-balance-hero > .relative {
+    gap: 1.25rem;
+  }
+
+  .dashboard-metric-card {
+    min-height: 10.75rem !important;
+  }
+}
+
+@media (min-width: 1024px) {
+  .dashboard-balance-hero > .relative {
+    gap: clamp(1.5rem, 3vw, 3rem);
+  }
+
+  .dashboard-balance-hero [role="group"][aria-label="Quick actions"] {
+    flex: 0 0 auto;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dashboard-quick-action,
+  .dashboard-metric-card {
+    transition: none !important;
+  }
+
+  .dashboard-quick-action:hover,
+  .dashboard-metric-card:hover {
+    transform: none !important;
+  }
+}
