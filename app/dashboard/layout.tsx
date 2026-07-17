@@ -14,6 +14,7 @@ import { loadDashboardNotifications } from "@/lib/notifications-server";
 import "./dashboard-performance.css";
 import "./desktop-dashboard-layout.css";
 import "./portfolio-amount.css";
+import "./mobile-dashboard-safety.css";
 
 export const dynamic = "force-dynamic";
 
