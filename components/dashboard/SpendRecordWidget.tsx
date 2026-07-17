@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
-import { Activity } from "lucide-react";
+import { Activity, CalendarDays, TrendingUp } from "lucide-react";
 import {
   Area,
   AreaChart,
@@ -62,19 +62,37 @@ export default function SpendRecordWidget({
       eyebrow="Spend Record"
       eyebrowIcon={<Activity />}
       title="Month-to-Date"
+      className="relative bg-[linear-gradient(180deg,color-mix(in_srgb,var(--card)_96%,var(--danger)_4%),var(--card))]"
     >
       <div className="flex min-h-0 flex-1 flex-col">
-        <div className="pt-1">
-          <p className="text-[25px] font-semibold leading-none tracking-normal text-[var(--dashboard-chart-spend)]">
-            {monthlySpend === null ? displaySpend : <CountedAmount amount={displaySpend} duration={0.85} />}
-          </p>
-          <p className="mt-1.5 text-[11px] leading-4 text-text-secondary">
-            {status === "available" ? `${displayDailyAverage} daily average across elapsed days` : "Spend data is temporarily unavailable"}
-          </p>
+        <div className="grid gap-3 pt-1 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end">
+          <div className="min-w-0">
+            <p className="text-[clamp(1.65rem,5vw,2.15rem)] font-black leading-none tracking-[-0.035em] text-text-primary tabular-nums [overflow-wrap:anywhere]">
+              {monthlySpend === null ? displaySpend : <CountedAmount amount={displaySpend} duration={0.85} />}
+            </p>
+            <div className="mt-2 inline-flex max-w-full items-center gap-2 rounded-full border border-danger/20 bg-danger/8 px-2.5 py-1 text-[10px] font-semibold text-text-secondary sm:text-[11px]">
+              <TrendingUp size={13} className="shrink-0 text-danger" aria-hidden="true" />
+              <span className="truncate">
+                {status === "available" ? `${displayDailyAverage} daily average` : "Spend data is temporarily unavailable"}
+              </span>
+            </div>
+          </div>
+
+          {status === "available" && peakPoint ? (
+            <div className="hidden min-w-[96px] rounded-[14px] border border-border bg-surface-secondary px-3 py-2 text-right shadow-[inset_0_1px_0_rgb(255_255_255_/_0.14)] sm:block">
+              <div className="flex items-center justify-end gap-1.5 text-[9px] font-bold uppercase tracking-[0.1em] text-text-tertiary">
+                <CalendarDays size={12} aria-hidden="true" />
+                Peak day
+              </div>
+              <p className="mt-1 text-sm font-black text-text-primary tabular-nums">
+                Day {peakPoint.day}
+              </p>
+            </div>
+          ) : null}
         </div>
 
         {status === "unavailable" ? (
-          <div className="dashboard-chart-empty mt-auto h-[118px] min-h-[118px]">
+          <div className="dashboard-chart-empty mt-4 h-[132px] min-h-[132px]">
             <div>
               <span className="dashboard-chart-empty-icon">
                 <Activity size={16} />
@@ -84,87 +102,108 @@ export default function SpendRecordWidget({
             </div>
           </div>
         ) : hasSpendData ? (
-          <ChartFrame
-            className="mt-auto h-[118px] min-h-[118px] min-w-0 overflow-hidden"
-            tone="orange"
-          >
-            {({ width, height }) => (
-              <AreaChart
-                accessibilityLayer
-                data={data}
-                height={height}
-                margin={{ top: 16, right: 2, left: 2, bottom: 2 }}
-                width={width}
-              >
-                <defs>
-                  <linearGradient
-                    id="spendRecordFill"
-                    x1="0"
-                    y1="0"
-                    x2="0"
-                    y2="1"
-                  >
-                    <stop
-                      offset="0%"
-                      stopColor="var(--dashboard-chart-spend)"
-                      stopOpacity={0.24}
-                    />
-                    <stop
-                      offset="100%"
-                      stopColor="var(--dashboard-chart-spend)"
-                      stopOpacity={0.03}
-                    />
-                  </linearGradient>
-                </defs>
-                <XAxis dataKey="day" hide />
-                <YAxis hide domain={[0, "dataMax"]} />
-                <Tooltip
-                  cursor={{
-                    stroke: "var(--dashboard-chart-grid)",
-                    strokeDasharray: "4 5",
-                  }}
-                  contentStyle={{
-                    border: "1px solid var(--border)",
-                    borderRadius: 16,
-                    background: "var(--card)",
-                    color: "var(--text-primary)",
-                    boxShadow: "var(--shadow-soft)",
-                  }}
-                  formatter={(value) => [
-                    formatCurrency(Number(value ?? 0)),
-                    "Spend",
-                  ]}
-                  labelFormatter={(label) => `Day ${label}`}
-                />
-                {peakPoint ? (
-                  <ReferenceDot
-                    x={peakPoint.day}
-                    y={peakPoint.spend}
-                    r={4.5}
-                    fill="var(--dashboard-chart-spend)"
-                    stroke="var(--card)"
-                    strokeWidth={2.5}
-                    ifOverflow="extendDomain"
+          <div className="mt-4 rounded-[18px] border border-border bg-surface-secondary/72 p-2.5 shadow-[inset_0_1px_0_rgb(255_255_255_/_0.14)] sm:p-3">
+            <div className="mb-2 flex items-center justify-between gap-3 px-1">
+              <p className="text-[10px] font-bold uppercase tracking-[0.1em] text-text-tertiary">
+                Daily spending
+              </p>
+              <span className="text-[10px] font-semibold text-text-tertiary tabular-nums">
+                {data.length} days
+              </span>
+            </div>
+
+            <ChartFrame
+              className="h-[124px] min-h-[124px] min-w-0 overflow-hidden sm:h-[138px] sm:min-h-[138px]"
+              tone="danger"
+            >
+              {({ width, height }) => (
+                <AreaChart
+                  accessibilityLayer
+                  data={data}
+                  height={height}
+                  margin={{ top: 14, right: 4, left: 4, bottom: 2 }}
+                  width={width}
+                >
+                  <defs>
+                    <linearGradient
+                      id="spendRecordFill"
+                      x1="0"
+                      y1="0"
+                      x2="0"
+                      y2="1"
+                    >
+                      <stop
+                        offset="0%"
+                        stopColor="var(--danger)"
+                        stopOpacity={0.2}
+                      />
+                      <stop
+                        offset="58%"
+                        stopColor="var(--danger)"
+                        stopOpacity={0.07}
+                      />
+                      <stop
+                        offset="100%"
+                        stopColor="var(--danger)"
+                        stopOpacity={0}
+                      />
+                    </linearGradient>
+                  </defs>
+                  <XAxis dataKey="day" hide />
+                  <YAxis hide domain={[0, "dataMax"]} />
+                  <Tooltip
+                    cursor={{
+                      stroke: "var(--dashboard-chart-grid)",
+                      strokeDasharray: "4 5",
+                    }}
+                    contentStyle={{
+                      border: "1px solid var(--border)",
+                      borderRadius: 16,
+                      background: "var(--card)",
+                      color: "var(--text-primary)",
+                      boxShadow: "var(--shadow-soft)",
+                    }}
+                    formatter={(value) => [
+                      formatCurrency(Number(value ?? 0)),
+                      "Spend",
+                    ]}
+                    labelFormatter={(label) => `Day ${label}`}
                   />
-                ) : null}
-                <Area
-                  type="monotone"
-                  dataKey="spend"
-                  activeDot={false}
-                  dot={false}
-                  stroke="var(--dashboard-chart-spend)"
-                  strokeLinecap="round"
-                  strokeWidth={2.7}
-                  fill="url(#spendRecordFill)"
-                  baseValue={0}
-                  isAnimationActive
-                  {...chartMotion}
-                />
-              </AreaChart>
-            )}
-          </ChartFrame>
+                  {peakPoint ? (
+                    <ReferenceDot
+                      x={peakPoint.day}
+                      y={peakPoint.spend}
+                      r={4.5}
+                      fill="var(--danger)"
+                      stroke="var(--card)"
+                      strokeWidth={2.5}
+                      ifOverflow="extendDomain"
+                    />
+                  ) : null}
+                  <Area
+                    type="monotone"
+                    dataKey="spend"
+                    activeDot={{
+                      r: 4,
+                      fill: "var(--card)",
+                      stroke: "var(--danger)",
+                      strokeWidth: 2.5,
+                    }}
+                    dot={false}
+                    stroke="var(--danger)"
+                    strokeLinecap="round"
+                    strokeWidth={2.6}
+                    fill="url(#spendRecordFill)"
+                    baseValue={0}
+                    isAnimationActive
+                    {...chartMotion}
+                  />
+                </AreaChart>
+              )}
+            </ChartFrame>
+          </div>
         ) : (
-          <div className="dashboard-chart-empty mt-auto h-[118px] min-h-[118px]">
+          <div className="dashboard-chart-empty mt-4 h-[132px] min-h-[132px]">
             <div>
               <span className="dashboard-chart-empty-icon">
                 <Activity size={16} />
