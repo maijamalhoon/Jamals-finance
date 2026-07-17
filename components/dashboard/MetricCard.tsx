@@ -48,6 +48,29 @@ const SENTIMENT_COLORS = {
   warning: "var(--warning)",
 } as const;
 
+function compactPercentageLabel(label: string) {
+  const compactSource = label.trim().replaceAll(" ", "");
+  const match = compactSource.match(/^([+-]?)([\d,]+(?:\.\d+)?)%$/);
+  if (!match) return label;
+
+  const signedValue = Number(`${match[1]}${match[2].replaceAll(",", "")}`);
+  if (!Number.isFinite(signedValue) || Math.abs(signedValue) < 1000) return label;
+
+  const compactValue = new Intl.NumberFormat("en-US", {
+    notation: "compact",
+    maximumFractionDigits: 1,
+  }).format(Math.abs(signedValue));
+  const sign = signedValue < 0 ? "-" : match[1] === "+" ? "+" : "";
+
+  return `${sign}${compactValue}%`;
+}
+
+function getAmountSize(value: string) {
+  if (value.length > 22) return "xlong";
+  if (value.length > 15) return "long";
+  return "normal";
+}
+
 export default function MetricCard({
   title,
   subtitle,
@@ -63,6 +86,7 @@ export default function MetricCard({
     amount === null ? "Unavailable"
     : typeof amount === "number" ? formatCurrency(amount)
     : amount;
+  const amountSize = getAmountSize(displayAmount);
   const displayComparison =
     availability === "partial" ?
       {
@@ -85,6 +109,7 @@ export default function MetricCard({
     displayComparison.basis === "vs same period last month" ?
       "vs last month"
     : displayComparison.basis;
+  const compactComparison = compactPercentageLabel(displayComparison.label);
   const toneColor = SENTIMENT_COLORS[displayComparison.sentiment];
   const DirectionIcon =
     displayComparison.direction === "up" ? ArrowUpRight
@@ -114,15 +139,15 @@ export default function MetricCard({
         </span>
         <span
           className={`dashboard-comparison-badge ${styles.badge}`}
+          title={displayComparison.label}
           style={{
             "--comparison-color": toneColor,
             flexShrink: 0,
-            maxWidth: "none",
             whiteSpace: "nowrap",
           } as CSSProperties}
         >
           <DirectionIcon aria-hidden="true" size={12} />
-          <span>{displayComparison.label}</span>
+          <span>{compactComparison}</span>
         </span>
       </div>
 
@@ -130,17 +155,19 @@ export default function MetricCard({
         className={`relative z-10 mt-4 flex min-w-0 flex-1 flex-col ${styles.body}`}
       >
         <p
-          className={`min-h-8 text-[10.5px] font-semibold uppercase leading-4 tracking-[0.08em] text-text-secondary ${styles.title}`}
+          className={`dashboard-metric-title min-h-8 text-[10.5px] font-semibold uppercase leading-4 tracking-[0.08em] text-text-secondary ${styles.title}`}
         >
           {title}
         </p>
         <p
-          className={`mt-1 min-w-0 break-words text-[clamp(1.2rem,1.65vw,1.55rem)] font-extrabold leading-tight tracking-[-0.025em] text-text-primary tabular-nums [overflow-wrap:anywhere] ${styles.amount}`}
+          className={`dashboard-metric-amount mt-1 min-w-0 break-words font-extrabold text-text-primary tabular-nums [overflow-wrap:anywhere] ${styles.amount}`}
+          data-amount-size={amountSize}
+          title={displayAmount}
         >
           {amount === null ? displayAmount : <CountedAmount amount={displayAmount} />}
         </p>
         <div
-          className={`mt-auto grid min-w-0 grid-cols-[auto_minmax(0,1fr)] items-end gap-x-2 pt-3 text-[10px] font-medium leading-4 text-text-secondary ${styles.footer}`}
+          className={`dashboard-metric-footer mt-auto grid min-w-0 grid-cols-[auto_minmax(0,1fr)] items-end gap-x-2 pt-3 text-[10px] font-medium leading-4 text-text-secondary ${styles.footer}`}
         >
           <span>{subtitle ?? "Current period"}</span>
           <span className={`text-right ${styles.basis}`}>{compactBasis}</span>
