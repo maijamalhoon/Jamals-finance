@@ -377,62 +377,57 @@ export default function InvestmentOverviewWidget({
                 : ""}
             </p>
 
-            <div className="relative mx-auto aspect-square w-full max-w-[270px] sm:max-w-[310px] 2xl:max-w-[290px]">
+            <div className="relative mx-auto aspect-square w-full max-w-[280px] min-[420px]:max-w-[300px] sm:max-w-[320px] lg:max-w-[340px] 2xl:max-w-[300px]">
               <ChartFrame>
-                {({ width, height }) => {
-                  const radius = Math.max(58, Math.min(width, height) * 0.43);
-
-                  return (
-                    <PieChart width={width} height={height} accessibilityLayer>
-                      <Pie
-                        data={allocationData}
-                        dataKey="value"
-                        nameKey="name"
-                        innerRadius={radius * 0.72}
-                        outerRadius={radius}
-                        paddingAngle={2.4}
-                        cornerRadius={3}
-                        isAnimationActive
-                        animationBegin={80}
-                        animationDuration={820}
-                        animationEasing="ease-out"
-                        stroke="var(--card)"
-                        strokeWidth={3}
-                      >
-                        {allocationData.map((entry) => (
-                          <Cell key={entry.id} fill={entry.color} />
-                        ))}
-                      </Pie>
-                      <Tooltip
-                        contentStyle={{
-                          borderRadius: 16,
-                          borderColor: "var(--border)",
-                          background: "var(--card)",
-                          color: "var(--text-primary)",
-                          boxShadow: "var(--shadow-soft)",
-                        }}
-                        formatter={(value) => [
-                          formatCurrency(Number(value ?? 0)),
-                          "Priced value",
-                        ]}
-                        labelFormatter={(label) => {
-                          const item = allocationData.find(
-                            (entry) => entry.name === label,
-                          );
-                          return item
-                            ? `${label} - ${formatAllocation(
-                                (item.value / allocationTotalValue) * 100,
-                              )}`
-                            : String(label);
-                        }}
-                      />
-                    </PieChart>
-                  );
-                }}
+                {({ width, height }) => (
+                  <PieChart width={width} height={height} accessibilityLayer>
+                    <Pie
+                      data={allocationData}
+                      dataKey="value"
+                      nameKey="name"
+                      innerRadius="52%"
+                      outerRadius="78%"
+                      paddingAngle={2}
+                      isAnimationActive
+                      animationBegin={0}
+                      animationDuration={700}
+                      animationEasing="ease-out"
+                      stroke="var(--card)"
+                      strokeWidth={3}
+                    >
+                      {allocationData.map((entry) => (
+                        <Cell key={entry.id} fill={entry.color} />
+                      ))}
+                    </Pie>
+                    <Tooltip
+                      contentStyle={{
+                        borderRadius: 16,
+                        borderColor: "var(--border)",
+                        background: "var(--card)",
+                        color: "var(--text-primary)",
+                        boxShadow: "var(--shadow-soft)",
+                      }}
+                      formatter={(value) => [
+                        formatCurrency(Number(value ?? 0)),
+                        "Priced value",
+                      ]}
+                      labelFormatter={(label) => {
+                        const item = allocationData.find(
+                          (entry) => entry.name === label,
+                        );
+                        return item
+                          ? `${label} - ${formatAllocation(
+                              (item.value / allocationTotalValue) * 100,
+                            )}`
+                          : String(label);
+                      }}
+                    />
+                  </PieChart>
+                )}
               </ChartFrame>
 
-              <div className="pointer-events-none absolute inset-[22%] grid place-items-center rounded-full border border-border/70 bg-card/95 text-center shadow-[inset_0_1px_0_rgb(255_255_255_/_0.28)]">
-                <div className="min-w-0 px-2">
+              <div className="pointer-events-none absolute inset-0 grid place-items-center text-center">
+                <div className="min-w-0 max-w-[46%] px-2">
                   <p className="truncate text-2xl font-black leading-none tracking-tight text-text-primary tabular-nums sm:text-3xl">
                     <CountedAmount
                       amount={formatCurrency(allocationTotalValue, {
