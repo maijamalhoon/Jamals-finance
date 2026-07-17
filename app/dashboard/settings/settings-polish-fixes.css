@@ -1,9 +1,26 @@
-/* Final responsive rebalance for Settings.
-   Keeps all existing data, dialogs, theme, notification, export, and sign-out logic unchanged. */
+/*
+ * Settings responsive rebuild.
+ * Presentation only: profile/security dialogs, theme persistence, notification
+ * writes, export, navigation, and sign-out logic remain unchanged.
+ */
 
+.settings-page-polish {
+  min-width: 0;
+  container-type: inline-size;
+}
+
+.settings-page-polish,
+.settings-page-polish * {
+  min-inline-size: 0;
+}
+
+/* Keep narrow and medium devices readable. The earlier viewport-based desktop
+   grid is deliberately cancelled here and re-enabled with a container query. */
 .settings-page-polish > div > div {
-  width: min(100%, 68rem) !important;
-  max-width: 68rem !important;
+  display: block !important;
+  width: min(100%, 48rem) !important;
+  max-width: 48rem !important;
+  margin-inline: auto;
 }
 
 .settings-page-polish > div > div > * + * {
@@ -11,37 +28,75 @@
 }
 
 .settings-page-polish .page-heading {
-  min-height: 6.25rem;
-  padding: 1.15rem 1.25rem;
+  min-height: auto;
+  padding: clamp(1rem, 2.5vw, 1.35rem);
+  border-radius: clamp(1rem, 2vw, 1.3rem);
+}
+
+.settings-page-polish .page-heading::after {
+  width: clamp(6.5rem, 20vw, 10rem);
+  right: clamp(-4.7rem, -7vw, -2.8rem);
+  opacity: 0.42;
 }
 
 .settings-page-polish .page-title {
-  font-size: clamp(1.55rem, 2.5vw, 2rem);
+  font-size: clamp(1.55rem, 4vw, 2rem);
+  line-height: 1.05;
 }
 
 .settings-page-polish .page-subtitle {
-  max-width: 34rem;
-  margin-top: 0.4rem;
+  max-width: 38rem;
+  margin-top: 0.45rem;
+  font-size: clamp(0.78rem, 1.6vw, 0.9rem);
+  line-height: 1.5;
+}
+
+.settings-page-polish section {
+  min-width: 0;
 }
 
 .settings-page-polish section > p:first-child {
-  padding: 0 0.35rem 0.45rem;
+  padding: 0 0.3rem 0.45rem;
+  font-size: 0.66rem;
+  letter-spacing: 0.15em;
 }
 
 .settings-page-polish .finance-panel {
+  min-width: 0;
+  overflow: hidden;
   border-radius: 1.05rem;
+}
+
+.settings-page-polish .finance-panel > :where(button, a, div) {
+  max-width: 100%;
 }
 
 .settings-page-polish .finance-panel > :where(button, a) {
   min-height: 4rem;
   gap: 0.75rem;
-  padding-block: 0.72rem;
+  padding: 0.72rem 1rem;
+}
+
+.settings-page-polish .finance-panel :where(.min-w-0.flex-1) {
+  overflow: hidden;
+}
+
+.settings-page-polish .finance-panel :where(p, span) {
+  overflow-wrap: anywhere;
+}
+
+.settings-page-polish .finance-panel > :where(button, a) > svg,
+.settings-page-polish .finance-panel > :where(button, a) > span:last-child,
+.settings-page-polish .finance-state-pill,
+.settings-page-polish [role="switch"] {
+  flex-shrink: 0;
 }
 
 .settings-page-polish .finance-icon-bubble {
   width: 2.35rem !important;
   height: 2.35rem !important;
   border-radius: 0.76rem !important;
+  flex: 0 0 auto;
 }
 
 .settings-page-polish .finance-icon-bubble svg {
@@ -53,9 +108,18 @@
   margin-left: 4.1rem;
 }
 
+.settings-page-polish .finance-state-pill {
+  max-width: 8rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Profile summary */
 .settings-page-polish section:first-of-type .finance-panel > div:first-child {
   min-height: 5.8rem;
-  padding-block: 0.9rem;
+  gap: 0.85rem;
+  padding: 0.9rem 1rem;
 }
 
 .settings-page-polish section:first-of-type .finance-panel > div:first-child > div:first-child {
@@ -64,90 +128,195 @@
   border-radius: 0.95rem;
 }
 
+.settings-page-polish section:first-of-type .finance-panel h3 {
+  font-size: clamp(1rem, 2.4vw, 1.18rem);
+}
+
+/* Theme selector. Use one safe column on the smallest screens, compact three
+   columns on regular phones/tablets, and full descriptions on wider layouts. */
+.settings-page-polish .finance-panel > div:has([role="radiogroup"]) {
+  padding: 1rem !important;
+}
+
 .settings-page-polish [role="radiogroup"] {
-  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  grid-template-columns: minmax(0, 1fr) !important;
   gap: 0.55rem;
 }
 
 .settings-page-polish [role="radiogroup"] > button {
   position: relative;
-  min-height: 4.7rem;
-  flex-direction: column;
-  justify-content: center;
-  gap: 0.35rem;
-  padding: 0.6rem 0.35rem;
-  text-align: center;
+  min-width: 0;
+  min-height: 3.85rem;
+  padding: 0.62rem 0.7rem;
+  border-radius: 0.88rem;
 }
 
 .settings-page-polish [role="radiogroup"] > button > span:first-child {
-  width: 1.85rem;
-  height: 1.85rem;
+  width: 1.9rem;
+  height: 1.9rem;
+  flex: 0 0 auto;
+}
+
+.settings-page-polish [role="radiogroup"] > button > span:nth-child(2) {
+  overflow: hidden;
 }
 
 .settings-page-polish [role="radiogroup"] > button > span:nth-child(2) > span:first-child {
-  font-size: 0.76rem;
-  line-height: 1.1;
+  font-size: 0.78rem;
+  line-height: 1.15;
 }
 
 .settings-page-polish [role="radiogroup"] > button > span:nth-child(2) > span:last-child {
-  display: none;
+  font-size: 0.65rem;
+  line-height: 1.3;
 }
 
 .settings-page-polish [role="radiogroup"] > button > span:last-child {
-  position: absolute;
-  top: 0.35rem;
-  right: 0.35rem;
+  flex: 0 0 auto;
 }
 
-.settings-page-polish [role="radiogroup"] > button > span:last-child > span {
-  display: none;
-}
-
+/* Switch geometry is pixel-based so the thumb can never escape the track. */
 .settings-page-polish [role="switch"] {
-  width: 3rem !important;
-  height: 1.75rem !important;
-  min-width: 3rem;
+  position: relative;
+  width: 44px !important;
+  min-width: 44px !important;
+  height: 26px !important;
+  min-height: 26px !important;
   padding: 0 !important;
+  overflow: hidden;
+  border-radius: 999px;
 }
 
 .settings-page-polish [role="switch"] > span {
-  width: 1.25rem !important;
-  height: 1.25rem !important;
-  top: 0.19rem !important;
-  left: 0.2rem !important;
+  position: absolute;
+  width: 20px !important;
+  height: 20px !important;
+  left: 3px !important;
+  top: 2px !important;
+  transform: translateX(0) !important;
 }
 
 .settings-page-polish [role="switch"][aria-checked="true"] > span {
-  transform: translateX(1.24rem) !important;
+  transform: translateX(18px) !important;
 }
 
+/* Notification rows keep a protected column for the switch. */
+.settings-page-polish #notifications .finance-panel > div {
+  display: grid !important;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  column-gap: 0.75rem;
+  padding: 0.8rem 1rem;
+}
+
+/* Long export copy may wrap, but action icons remain inside the card. */
+.settings-page-polish .finance-panel > button:has(.lucide-download) {
+  align-items: center;
+}
+
+.settings-page-polish .finance-panel > button:has(.lucide-download) > span:last-child {
+  gap: 0.3rem;
+}
+
+/* Account stats */
 .settings-page-polish section:nth-of-type(7) > div {
-  gap: 0.7rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 0.65rem;
 }
 
 .settings-page-polish section:nth-of-type(7) .summary-card {
-  min-height: 5.6rem;
-  border-radius: 0.95rem;
+  min-height: 5.15rem;
+  padding: 0.75rem 0.5rem;
+  border-radius: 0.92rem;
 }
 
 .settings-page-polish section:nth-of-type(7) .summary-card p:first-child {
-  font-size: clamp(1.35rem, 3vw, 1.65rem);
+  font-size: clamp(1.35rem, 4vw, 1.65rem);
 }
 
 .settings-page-polish section:nth-of-type(7) .summary-card p:last-child {
-  margin-top: 0.4rem;
+  margin-top: 0.38rem;
   font-size: 0.65rem;
 }
 
+/* Sign out and footer */
 .settings-page-polish > div > div > button:last-of-type {
-  min-height: 3.2rem;
-  border-radius: 0.9rem;
-  padding-block: 0.7rem;
+  min-height: 3.15rem;
+  padding: 0.7rem 1rem;
+  border-radius: 0.92rem;
 }
 
 .settings-page-polish footer {
-  padding-block: 0.15rem 0.5rem;
+  padding: 0.15rem 0 0.45rem;
   line-height: 1.55;
+}
+
+@media (min-width: 360px) {
+  .settings-page-polish [role="radiogroup"] {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  }
+
+  .settings-page-polish [role="radiogroup"] > button {
+    min-height: 4.5rem;
+    flex-direction: column;
+    justify-content: center;
+    gap: 0.35rem;
+    padding: 0.55rem 0.25rem;
+    text-align: center;
+  }
+
+  .settings-page-polish [role="radiogroup"] > button > span:nth-child(2) > span:last-child {
+    display: none;
+  }
+
+  .settings-page-polish [role="radiogroup"] > button > span:last-child {
+    position: absolute;
+    top: 0.28rem;
+    right: 0.28rem;
+  }
+
+  .settings-page-polish [role="radiogroup"] > button > span:last-child > span {
+    display: none;
+  }
+}
+
+@media (min-width: 640px) {
+  .settings-page-polish > div > div > * + * {
+    margin-block-start: 1.15rem !important;
+  }
+
+  .settings-page-polish .finance-panel > :where(button, a) {
+    padding-inline: 1.15rem;
+  }
+
+  .settings-page-polish #notifications .finance-panel > div {
+    padding-inline: 1.15rem;
+  }
+
+  .settings-page-polish [role="radiogroup"] > button {
+    min-height: 4.8rem;
+    flex-direction: row;
+    justify-content: flex-start;
+    gap: 0.65rem;
+    padding: 0.7rem;
+    text-align: left;
+  }
+
+  .settings-page-polish [role="radiogroup"] > button > span:nth-child(2) > span:last-child {
+    display: block;
+  }
+
+  .settings-page-polish [role="radiogroup"] > button > span:last-child {
+    position: static;
+  }
+
+  .settings-page-polish [role="radiogroup"] > button > span:last-child > span {
+    display: none;
+  }
+
+  .settings-page-polish section:nth-of-type(7) > div {
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  }
 }
 
 @media (max-width: 639px) {
@@ -157,19 +326,16 @@
   }
 
   .settings-page-polish > div > div > * + * {
-    margin-block-start: 0.85rem !important;
+    margin-block-start: 0.88rem !important;
   }
 
   .settings-page-polish .page-heading {
-    min-height: 5.55rem;
     padding: 0.9rem 1rem;
-    border-radius: 1rem;
   }
 
   .settings-page-polish .page-heading::after {
-    width: 7.5rem;
     right: -4.8rem;
-    opacity: 0.35;
+    opacity: 0.3;
   }
 
   .settings-page-polish .page-title {
@@ -177,29 +343,19 @@
   }
 
   .settings-page-polish .page-subtitle {
-    max-width: 17rem;
+    max-width: 18rem;
     font-size: 0.76rem;
-    line-height: 1.45;
   }
 
   .settings-page-polish section > p:first-child {
-    padding: 0 0.35rem 0.38rem;
-    font-size: 0.63rem;
-  }
-
-  .settings-page-polish .finance-panel {
-    border-radius: 0.95rem;
-  }
-
-  .settings-page-polish .finance-panel > :where(button, a, div) {
-    padding-left: 0.78rem;
-    padding-right: 0.78rem;
+    padding-bottom: 0.38rem;
+    font-size: 0.62rem;
   }
 
   .settings-page-polish .finance-panel > :where(button, a) {
-    min-height: 3.75rem;
-    gap: 0.65rem;
-    padding-block: 0.62rem;
+    min-height: 3.7rem;
+    gap: 0.62rem;
+    padding: 0.62rem 0.78rem;
   }
 
   .settings-page-polish .finance-panel > :where(button, a) span.min-w-0.flex-1 > span:first-child {
@@ -208,31 +364,31 @@
   }
 
   .settings-page-polish .finance-panel > :where(button, a) span.min-w-0.flex-1 > span:last-child {
-    margin-top: 0.15rem;
-    font-size: 0.67rem;
+    margin-top: 0.12rem;
+    font-size: 0.66rem;
     line-height: 1.35;
   }
 
   .settings-page-polish .finance-icon-bubble {
-    width: 2.15rem !important;
-    height: 2.15rem !important;
+    width: 2.1rem !important;
+    height: 2.1rem !important;
     border-radius: 0.68rem !important;
   }
 
   .settings-page-polish .finance-panel [class*="ml-[76px]"] {
-    margin-left: 3.55rem;
+    margin-left: 3.45rem;
   }
 
   .settings-page-polish section:first-of-type .finance-panel > div:first-child {
-    min-height: 5rem;
+    min-height: 4.9rem;
     gap: 0.7rem;
-    padding-block: 0.72rem;
+    padding: 0.72rem 0.78rem;
   }
 
   .settings-page-polish section:first-of-type .finance-panel > div:first-child > div:first-child {
-    width: 2.8rem;
-    height: 2.8rem;
-    border-radius: 0.85rem;
+    width: 2.75rem;
+    height: 2.75rem;
+    border-radius: 0.82rem;
   }
 
   .settings-page-polish section:first-of-type .finance-panel h3 {
@@ -240,87 +396,75 @@
   }
 
   .settings-page-polish section:first-of-type .finance-panel p {
-    font-size: 0.72rem;
-  }
-
-  .settings-page-polish [role="radiogroup"] {
-    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
-    gap: 0.42rem;
-  }
-
-  .settings-page-polish [role="radiogroup"] > button {
-    min-height: 4.25rem;
-    padding: 0.48rem 0.18rem;
-    border-radius: 0.78rem;
-  }
-
-  .settings-page-polish [role="radiogroup"] > button > span:first-child {
-    width: 1.7rem;
-    height: 1.7rem;
-  }
-
-  .settings-page-polish [role="radiogroup"] > button > span:nth-child(2) > span:first-child {
     font-size: 0.7rem;
   }
 
-  .settings-page-polish [role="radiogroup"] > button > span:last-child {
-    top: 0.25rem;
-    right: 0.25rem;
+  .settings-page-polish .finance-panel > div:has([role="radiogroup"]) {
+    padding: 0.8rem 0.78rem !important;
   }
 
-  .settings-page-polish [role="radiogroup"] > button > span:last-child svg {
-    width: 0.72rem;
-    height: 0.72rem;
+  .settings-page-polish #notifications .finance-panel > div {
+    column-gap: 0.62rem;
+    padding: 0.72rem 0.78rem;
   }
 
-  .settings-page-polish [role="switch"] {
-    width: 2.75rem !important;
-    min-width: 2.75rem;
-    height: 1.6rem !important;
+  .settings-page-polish #notifications .finance-panel > div > span:nth-child(2) > span:first-child {
+    font-size: 0.82rem;
+    line-height: 1.25;
   }
 
-  .settings-page-polish [role="switch"] > span {
-    width: 1.12rem !important;
-    height: 1.12rem !important;
-    top: 0.17rem !important;
-    left: 0.18rem !important;
+  .settings-page-polish #notifications .finance-panel > div > span:nth-child(2) > span:last-child {
+    font-size: 0.66rem;
+    line-height: 1.35;
   }
 
-  .settings-page-polish [role="switch"][aria-checked="true"] > span {
-    transform: translateX(1.18rem) !important;
+  .settings-page-polish .finance-panel > button:has(.lucide-download) > span:last-child .lucide-download {
+    display: none;
   }
 
-  .settings-page-polish section:nth-of-type(7) > div {
-    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-    gap: 0.6rem;
-  }
-
-  .settings-page-polish section:nth-of-type(7) .summary-card {
-    min-height: 4.9rem;
-    border-radius: 0.85rem;
-  }
-
-  .settings-page-polish section:nth-of-type(7) .summary-card p:first-child {
-    font-size: 1.45rem;
+  .settings-page-polish .finance-panel > button:has(.lucide-download) span.min-w-0.flex-1 > span:last-child {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+    overflow: hidden;
   }
 
   .settings-page-polish > div > div > button:last-of-type {
     min-height: 3rem;
-    margin-top: 0.95rem !important;
     font-size: 0.82rem;
   }
 
   .settings-page-polish footer {
-    padding-bottom: 0.35rem;
     font-size: 0.66rem;
   }
 }
 
-/* Switch to two columns only when the Settings content itself is genuinely wide.
-   This prevents "desktop site" mode on phones and narrow tablets from becoming tiny. */
-@container (min-width: 66rem) {
+@media (max-width: 359px) {
+  .settings-page-polish [role="radiogroup"] > button {
+    flex-direction: row;
+    justify-content: flex-start;
+    text-align: left;
+  }
+
+  .settings-page-polish [role="radiogroup"] > button > span:nth-child(2) > span:last-child {
+    display: block;
+  }
+
+  .settings-page-polish [role="radiogroup"] > button > span:last-child {
+    position: static;
+  }
+
+  .settings-page-polish [role="radiogroup"] > button > span:last-child > span {
+    display: none;
+  }
+}
+
+/* Two columns only when the Settings content itself is genuinely wide. */
+@container (min-width: 68rem) {
   .settings-page-polish > div > div {
-    display: grid;
+    display: grid !important;
+    width: min(100%, 72rem) !important;
+    max-width: 72rem !important;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     grid-template-areas:
       "hero hero"
@@ -349,15 +493,11 @@
   .settings-page-polish > div > div > section:nth-of-type(7) { grid-area: stats; }
   .settings-page-polish > div > div > button:last-of-type { grid-area: signout; }
   .settings-page-polish > div > div > footer { grid-area: footer; }
-
-  .settings-page-polish section:nth-of-type(7) > div {
-    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
-  }
 }
 
 @media (hover: hover) and (pointer: fine) {
   .settings-page-polish .finance-panel > :where(button, a):hover {
-    transform: translateX(1px);
+    transform: translateX(2px);
   }
 
   .settings-page-polish [role="radiogroup"] > button:hover {
