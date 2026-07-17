@@ -1,6 +1,7 @@
 import "@/app/auth-experience.css";
 import "@/app/auth-mobile-refinement.css";
 import "@/app/auth-responsive-final.css";
+import "@/app/auth-premium-redesign.css";
 
 import Link from "next/link";
 import {
@@ -149,7 +150,7 @@ export default function AuthShell({
         </aside>
 
         <section className="jf-auth-card motion-reveal mx-auto w-full min-w-0 p-5 sm:p-7">
-          <div className="mb-5 min-w-0">
+          <div className="jf-auth-card-head min-w-0">
             <div className="mb-4 flex min-w-0 items-center justify-between gap-3">
               <div className="flex min-w-0 flex-wrap items-center gap-2">
                 <span className="auth-eyebrow">{eyebrow}</span>
@@ -167,7 +168,7 @@ export default function AuthShell({
             </p>
           </div>
 
-          {children}
+          <div className="jf-auth-card-body">{children}</div>
         </section>
       </div>
 
