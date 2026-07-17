@@ -1175,22 +1175,6 @@
       transform var(--motion-duration-fast) var(--motion-ease);
   }
 
-  .dashboard-list-row[data-rank="1"] {
-    margin-inline: -0.5rem;
-    border-radius: 1rem;
-    padding-inline: 0.5rem;
-    background:
-      linear-gradient(
-        90deg,
-        color-mix(in srgb, var(--category-accent, var(--active)), transparent 92%),
-        transparent 72%
-      );
-  }
-
-  .dashboard-list-row:hover {
-    background-color: color-mix(in srgb, var(--hover), transparent 36%);
-  }
-
   .dashboard-progress-track {
     @apply h-2 overflow-hidden rounded-full;
     background-color: color-mix(
@@ -5709,10 +5693,6 @@ tbody tr:hover {
 .dashboard-overview .dashboard-list-rows {
   overflow: visible;
   padding-right: 0;
-}
-
-.dashboard-overview .dashboard-list-row[data-rank="1"] {
-  background: color-mix(in srgb, var(--card) 94%, var(--category-accent, var(--active)) 6%);
 }
 
 .dashboard-overview .dashboard-chart-empty {

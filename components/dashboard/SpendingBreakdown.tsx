@@ -142,7 +142,6 @@ export default function SpendingBreakdown({
             <div
               key={item.id ?? `${item.name}-${i}`}
               className="dashboard-list-row motion-card-entry overflow-hidden"
-              data-rank={i + 1}
               style={rowStyle}
             >
               <div className="mb-2.5 grid min-w-0 grid-cols-[minmax(0,1fr)_auto_auto] items-center gap-x-2.5 sm:gap-x-3">
