@@ -766,9 +766,10 @@ function CategoriesExperience({
       <FinanceFormField label="Parent category" htmlFor={id}>
         <Select
           value={value || ROOT_CATEGORY_VALUE}
-          onValueChange={(nextValue: string) =>
-            onChange(nextValue === ROOT_CATEGORY_VALUE ? "" : nextValue)
-          }
+          onValueChange={(nextValue) => {
+            if (!nextValue) return;
+            onChange(nextValue === ROOT_CATEGORY_VALUE ? "" : nextValue);
+          }}
           disabled={disabled}
         >
           <SelectTrigger id={id} className="w-full">
