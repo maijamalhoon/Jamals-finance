@@ -2,6 +2,7 @@ import "@/app/auth-experience.css";
 import "@/app/auth-mobile-refinement.css";
 import "@/app/auth-responsive-final.css";
 import "@/app/auth-premium-redesign.css";
+import "@/app/landing-math-symbols.css";
 
 import Link from "next/link";
 import {
@@ -13,6 +14,8 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import type { ReactNode } from "react";
+
+import MathSymbolField from "@/components/landing/MathSymbolField";
 
 const trustItems = [
   {
@@ -67,6 +70,7 @@ export default function AuthShell({
       data-auth-compact={compact || undefined}
     >
       <div className="jf-auth-ambient pointer-events-none absolute inset-0" aria-hidden="true" />
+      <MathSymbolField variant="auth" />
 
       <header className="jf-auth-header relative z-20 mx-auto flex w-full min-w-0 items-center justify-between gap-3 px-4 sm:px-6 lg:px-8">
         <Link
