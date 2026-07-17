@@ -46,15 +46,24 @@ export default function AuthShell({
   compact?: boolean;
   minimal?: boolean;
 }) {
+  const contextEyebrow = minimal ? "Secure account access" : "Calm by design";
+  const contextTitle = minimal
+    ? "A clearer money picture starts with protected access."
+    : "Make the next money decision with a clearer picture.";
+  const contextCopy = minimal
+    ? "Sign in, create your workspace, or recover access without leaving the focused finance experience."
+    : "A focused personal-finance workspace for recording what happened, reviewing what matters, and planning the next step.";
+
   return (
     <main
       className="jf-auth-root relative flex min-h-dvh min-w-0 flex-col overflow-x-clip bg-background text-text-primary"
       data-auth-root
       data-auth-minimal={minimal || undefined}
+      data-auth-compact={compact || undefined}
     >
       <div className="jf-auth-ambient pointer-events-none absolute inset-0" aria-hidden="true" />
 
-      <header className="jf-auth-header relative z-20 mx-auto flex w-full max-w-[1240px] min-w-0 items-center justify-between gap-3 px-4 sm:px-6 lg:px-8">
+      <header className="jf-auth-header relative z-20 mx-auto flex w-full min-w-0 items-center justify-between gap-3 px-4 sm:px-6 lg:px-8">
         <Link
           href="/"
           aria-label="Jamal's Finance home"
@@ -78,24 +87,41 @@ export default function AuthShell({
 
       <div
         className={`jf-auth-layout relative z-10 mx-auto grid w-full min-w-0 flex-1 items-center px-4 sm:px-6 lg:px-8 ${
-          minimal
-            ? "max-w-[540px] grid-cols-1 justify-items-center"
-            : "max-w-[1180px] gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(460px,480px)] xl:gap-14"
-        } ${
           compact ? "jf-auth-layout-compact" : ""
         }`}
       >
-        {!minimal ? <aside className="jf-auth-context hidden min-w-0 lg:block" aria-label="Why use Jamal's Finance">
-          <p className="text-sm font-semibold text-brand">Calm by design</p>
-          <h2 className="mt-4 max-w-xl text-balance text-4xl font-semibold leading-[1.08] text-text-primary xl:text-[2.8rem]">
-            Make the next money decision with a clearer picture.
-          </h2>
-          <p className="mt-4 max-w-xl text-pretty text-base leading-7 text-text-secondary">
-            A focused personal-finance workspace for recording what happened,
-            reviewing what matters, and planning the next step.
+        <aside className="jf-auth-context min-w-0" aria-label="Why use Jamal's Finance">
+          <p className="auth-context-eyebrow">
+            <ShieldCheck className="h-4 w-4" aria-hidden="true" />
+            {contextEyebrow}
           </p>
+          <h2 className="auth-context-title">{contextTitle}</h2>
+          <p className="auth-context-copy">{contextCopy}</p>
 
-          <div className="mt-7 grid max-w-xl gap-3">
+          <div className="auth-showcase-panel" aria-hidden="true">
+            <div className="auth-showcase-head">
+              <strong>Private finance workspace</strong>
+              <span>
+                <ShieldCheck className="h-4 w-4" /> Protected
+              </span>
+            </div>
+            <div className="auth-showcase-grid">
+              <div className="auth-showcase-tile">
+                <ChartNoAxesCombined className="h-5 w-5" />
+                <span>Clear activity</span>
+              </div>
+              <div className="auth-showcase-tile">
+                <LockKeyhole className="h-5 w-5" />
+                <span>Secure access</span>
+              </div>
+              <div className="auth-showcase-tile">
+                <CircleDollarSign className="h-5 w-5" />
+                <span>Money context</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="auth-trust-list">
             {trustItems.map((item) => {
               const ItemIcon = item.icon;
 
@@ -116,9 +142,9 @@ export default function AuthShell({
               );
             })}
           </div>
-        </aside> : null}
+        </aside>
 
-        <section className={`jf-auth-card motion-reveal mx-auto w-full min-w-0 p-5 sm:p-7 ${minimal ? "max-w-[460px]" : "max-w-[480px]"}`}>
+        <section className="jf-auth-card motion-reveal mx-auto w-full min-w-0 p-5 sm:p-7">
           <div className="mb-5 min-w-0">
             <div className="mb-4 flex min-w-0 items-center justify-between gap-3">
               <div className="flex min-w-0 flex-wrap items-center gap-2">
@@ -142,7 +168,7 @@ export default function AuthShell({
       </div>
 
       {minimal ? (
-        <footer className="jf-auth-footer relative z-10 mx-auto flex w-full max-w-[540px] flex-wrap items-center justify-center gap-x-4 gap-y-1 px-5 pb-[max(1rem,env(safe-area-inset-bottom))] text-xs text-text-tertiary">
+        <footer className="jf-auth-footer relative z-10 mx-auto flex w-full flex-wrap items-center justify-center gap-x-4 gap-y-1 px-5 pb-[max(1rem,env(safe-area-inset-bottom))] text-xs text-text-tertiary">
           <span>Jamal&apos;s Finance account access</span>
           <Link
             href="/#privacy"
