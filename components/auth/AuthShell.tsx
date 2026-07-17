@@ -1,3 +1,5 @@
+import "@/app/auth-experience.css";
+
 import Link from "next/link";
 import {
   ArrowLeft,
