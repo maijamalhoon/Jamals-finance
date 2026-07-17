@@ -1,11 +1,13 @@
 import type { Metadata } from "next";
 import LandingScrollReveal from "@/components/landing/LandingScrollReveal";
+import MathSymbolField from "@/components/landing/MathSymbolField";
 import PremiumLandingPage from "@/components/landing/PremiumLandingPage";
 
 import "./landing-enhancements.css";
 import "./landing-polish.css";
 import "./landing-mobile-header.css";
 import "./landing-footer-polish.css";
+import "./landing-math-symbols.css";
 
 export const metadata: Metadata = {
   title: "Jamal's Finance - Calm Personal Finance Workspace",
@@ -35,6 +37,7 @@ export default function HomePage() {
     <>
       <LandingScrollReveal />
       <PremiumLandingPage />
+      <MathSymbolField />
     </>
   );
 }
