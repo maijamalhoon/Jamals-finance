@@ -327,7 +327,7 @@ export default function PremiumLandingPage() {
               Login
             </Link>
             <Link
-              href="/login"
+              href="/login?mode=signup"
               className="finance-focus hidden min-h-11 items-center gap-2 rounded-[var(--radius-button)] bg-brand px-4 text-sm font-semibold text-primary-foreground shadow-[var(--shadow-xs)] hover:bg-brand-hover md:inline-flex"
             >
               Start your workspace
@@ -382,8 +382,8 @@ export default function PremiumLandingPage() {
           </p>
 
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-            <CTA href="/login">Start your workspace</CTA>
-            <CTA href="/login" secondary>Login or sign up</CTA>
+            <CTA href="/login?mode=signup">Create your workspace</CTA>
+            <CTA href="/login" secondary>Sign in</CTA>
           </div>
 
           <div className="mt-6 grid gap-2 text-sm text-text-secondary sm:grid-cols-2">

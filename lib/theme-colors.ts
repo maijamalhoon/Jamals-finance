@@ -13,16 +13,16 @@ export const FEATURE_COLOR_CSS = {
 // Persisted category colors use the light-palette values because CSS variables
 // cannot be stored as portable database color values.
 export const FEATURE_COLOR_HEX = {
-  income: "#1F9D6A",
-  expense: "#D96C63",
-  transfer: "#2E7DD7",
-  investment: "#7C5CE0",
-  goals: "#0F9F8F",
-  payables: "#C48A1C",
-  primary: "#3559E0",
-  secondary: "#0F766E",
-  accent: "#4F46E5",
-  muted: "#64748B",
+  income: "#147A55",
+  expense: "#B84F4A",
+  transfer: "#2366B1",
+  investment: "#6849B8",
+  goals: "#0B777B",
+  payables: "#9A650C",
+  primary: "#2956C8",
+  secondary: "#0C766F",
+  accent: "#6849B8",
+  muted: "#607187",
 } as const;
 
 export const CATEGORY_COLOR_PALETTE = [
@@ -83,5 +83,5 @@ export function getReadableTextColor(backgroundColor: string) {
   const blue = Number.parseInt(normalized.slice(4, 6), 16);
   const luminance = (red * 299 + green * 587 + blue * 114) / 1000;
 
-  return luminance >= 150 ? "#0F172A" : "#F8FAFC";
+  return luminance >= 150 ? "#17233A" : "#FFFFFF";
 }

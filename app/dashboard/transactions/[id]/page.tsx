@@ -149,7 +149,7 @@ function getCategoryText(category: ReceiptCategory | null) {
 
 function buildReceiptText(receipt: Omit<ReceiptData, "receiptText">) {
   return [
-    "Jamal Finance - Transaction Receipt",
+    "Jamal's Finance - Transaction Receipt",
     "",
     `Type: ${receipt.typeLabel}`,
     `Amount: ${receipt.amountText}`,
@@ -440,7 +440,7 @@ export default async function TransactionReceiptPage({
                 </h1>
 
                 <p className="mt-2 text-sm font-semibold text-text-secondary">
-                  Jamal Finance • {receipt.typeLabel}
+                  Jamal&apos;s Finance • {receipt.typeLabel}
                 </p>
               </div>
             </div>

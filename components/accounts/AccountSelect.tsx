@@ -101,7 +101,7 @@ export default function AccountSelect({
 
   return (
     <Select
-      value={value || undefined}
+      value={value}
       onValueChange={(nextValue) => {
         if (typeof nextValue === "string") {
           onValueChange(nextValue);

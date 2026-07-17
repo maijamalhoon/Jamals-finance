@@ -173,7 +173,7 @@ export default function GoalModal({ open, onClose, onSuccess, goal, accounts }: 
         <FinanceModalBody>
           <div>
             <label className="field-label mb-2">Icon</label>
-            <div className="grid grid-cols-5 gap-2">
+            <div className="grid grid-cols-3 gap-2 sm:grid-cols-5">
               {GOAL_ICONS.map(({ value, label, icon: Icon }) => (
                 <Button
                   key={value}

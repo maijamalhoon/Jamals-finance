@@ -1,6 +1,6 @@
 "use client";
 
-import { BarChart3, LogOut, Settings } from "lucide-react";
+import { CircleDollarSign, LogOut, Settings } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 
@@ -107,7 +107,7 @@ export default function JamalMenu({
         <Avatar className={compact ? "size-8" : "size-9"}>
           {avatarUrl ? <AvatarImage src={avatarUrl} alt={displayName} /> : null}
           <AvatarFallback className="bg-brand text-sm font-bold text-primary-foreground">
-            <BarChart3 size={15} aria-hidden="true" />
+            <CircleDollarSign size={15} aria-hidden="true" />
           </AvatarFallback>
         </Avatar>
 
@@ -137,7 +137,7 @@ export default function JamalMenu({
               {displayName}
             </span>
             <span className="mt-0.5 block text-[10px] font-medium text-text-tertiary">
-              Jamals Finance
+              Jamal&apos;s Finance
             </span>
           </DropdownMenuLabel>
         </DropdownMenuGroup>

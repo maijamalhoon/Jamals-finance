@@ -54,18 +54,18 @@ export default function AuthShell({
       <header className="jf-auth-header relative z-20 mx-auto flex w-full max-w-[1240px] min-w-0 items-center justify-between gap-3 px-4 sm:px-6 lg:px-8">
         <Link
           href="/"
-          aria-label="Jamals Finance home"
+          aria-label="Jamal's Finance home"
           className="finance-focus inline-flex min-h-11 min-w-0 items-center gap-2.5 rounded-[var(--radius-control)] px-1 text-sm font-bold text-text-primary"
         >
           <span className="grid h-9 w-9 shrink-0 place-items-center rounded-[var(--radius-control)] border border-brand/25 bg-brand/10 text-brand">
             <CircleDollarSign className="h-5 w-5" aria-hidden="true" />
           </span>
-          <span className="truncate">Jamals Finance</span>
+          <span className="truncate">Jamal&apos;s Finance</span>
         </Link>
 
         <Link
           href="/"
-          aria-label="Return to Jamals Finance home"
+          aria-label="Return to Jamal's Finance home"
           className="finance-focus inline-flex min-h-11 shrink-0 items-center gap-2 rounded-[var(--radius-control)] border border-border bg-surface-primary px-3 text-sm font-semibold text-text-secondary shadow-[var(--shadow-xs)] transition-colors hover:bg-surface-soft hover:text-text-primary"
         >
           <ArrowLeft className="h-4 w-4" aria-hidden="true" />
@@ -78,7 +78,7 @@ export default function AuthShell({
           compact ? "jf-auth-layout-compact" : ""
         }`}
       >
-        <aside className="jf-auth-context hidden min-w-0 lg:block" aria-label="Why use Jamals Finance">
+        <aside className="jf-auth-context hidden min-w-0 lg:block" aria-label="Why use Jamal's Finance">
           <p className="text-sm font-semibold text-brand">Calm by design</p>
           <h2 className="mt-4 max-w-xl text-balance text-4xl font-semibold leading-[1.08] text-text-primary xl:text-[2.8rem]">
             Make the next money decision with a clearer picture.

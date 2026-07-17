@@ -193,7 +193,7 @@ export default function FloatingActions() {
         aria-hidden={modalOpen ? "true" : undefined}
       >
         <AnimatePresence>
-          {open && (
+          {open && !modalOpen && (
             <>
               <motion.button
                 type="button"
