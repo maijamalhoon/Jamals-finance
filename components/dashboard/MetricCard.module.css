@@ -1,0 +1,94 @@
+.card {
+  min-width: 0;
+}
+
+@media (max-width: 479px) {
+  :global(section[aria-label="Month-to-date financial metrics"]) {
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 0.75rem !important;
+  }
+
+  .card {
+    min-height: 9.25rem !important;
+    padding: 0.875rem !important;
+  }
+
+  .shape {
+    display: none;
+  }
+
+  .top {
+    gap: 0.75rem;
+  }
+
+  .icon {
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: 0.75rem;
+  }
+
+  .badge {
+    min-height: 1.5rem;
+    padding-inline: 0.5rem;
+    font-size: 0.6rem;
+  }
+
+  .body {
+    margin-top: 0.65rem;
+  }
+
+  .title {
+    min-height: 0;
+    font-size: 0.68rem;
+    line-height: 1rem;
+    letter-spacing: 0.07em;
+  }
+
+  .amount {
+    margin-top: 0.2rem;
+    font-size: clamp(1.35rem, 7vw, 1.7rem);
+    line-height: 1.15;
+  }
+
+  .footer {
+    padding-top: 0.65rem;
+    font-size: 0.65rem;
+    line-height: 1rem;
+  }
+}
+
+@media (min-width: 480px) and (max-width: 639px) {
+  .card {
+    min-height: 11.75rem !important;
+    padding: 0.875rem !important;
+  }
+
+  .shape {
+    opacity: 0.55;
+  }
+
+  .body {
+    margin-top: 0.75rem;
+  }
+
+  .title {
+    min-height: 2rem;
+    font-size: 0.625rem;
+    line-height: 0.95rem;
+  }
+
+  .amount {
+    margin-top: 0.15rem;
+    font-size: clamp(1.05rem, 3.8vw, 1.35rem);
+  }
+
+  .footer {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.1rem;
+    padding-top: 0.7rem;
+  }
+
+  .basis {
+    text-align: left;
+  }
+}
