@@ -79,6 +79,10 @@ export default function MetricCard({
         accessibleLabel: `${title} is unavailable.`,
       }
     : comparison;
+  const compactBasis =
+    displayComparison.basis === "vs same period last month" ?
+      "vs last month"
+    : displayComparison.basis;
   const toneColor = SENTIMENT_COLORS[displayComparison.sentiment];
   const DirectionIcon =
     displayComparison.direction === "up" ? ArrowUpRight
@@ -89,12 +93,12 @@ export default function MetricCard({
   return (
     <article
       aria-label={`${title}. ${displayAmount}. ${displayComparison.accessibleLabel}`}
-      className="dashboard-metric-card"
+      className="dashboard-metric-card flex h-full min-h-[14.25rem] min-w-0 flex-col"
       style={{ "--metric-accent": accentColor } as CSSProperties}
     >
       <span aria-hidden="true" className="dashboard-metric-shape" />
 
-      <div className="relative z-10 flex min-w-0 items-start justify-between gap-2">
+      <div className="relative z-10 flex min-w-0 items-start justify-between gap-1.5">
         <span className="dashboard-metric-icon" aria-hidden="true">
           <Icon size={17} strokeWidth={2.2} />
         </span>
@@ -112,16 +116,16 @@ export default function MetricCard({
         </span>
       </div>
 
-      <div className="relative z-10 mt-5 min-w-0">
-        <p className="text-[11px] font-bold uppercase tracking-[0.1em] text-text-secondary">
+      <div className="relative z-10 mt-4 flex min-w-0 flex-1 flex-col">
+        <p className="min-h-8 text-[10.5px] font-semibold uppercase leading-4 tracking-[0.08em] text-text-secondary">
           {title}
         </p>
-        <p className="mt-1.5 min-w-0 break-words text-[clamp(1.2rem,1.65vw,1.55rem)] font-black leading-tight tracking-[-0.035em] text-text-primary tabular-nums [overflow-wrap:anywhere]">
+        <p className="mt-1 min-w-0 break-words text-[clamp(1.2rem,1.65vw,1.55rem)] font-extrabold leading-tight tracking-[-0.025em] text-text-primary tabular-nums [overflow-wrap:anywhere]">
           {amount === null ? displayAmount : <CountedAmount amount={displayAmount} />}
         </p>
-        <div className="mt-3 flex min-w-0 flex-wrap items-center justify-between gap-x-3 gap-y-1 text-[10.5px] font-semibold leading-4 text-text-secondary">
+        <div className="mt-auto grid min-w-0 grid-cols-[auto_minmax(0,1fr)] items-end gap-x-2 pt-3 text-[10px] font-medium leading-4 text-text-secondary">
           <span>{subtitle ?? "Current period"}</span>
-          <span className="text-right">{displayComparison.basis}</span>
+          <span className="text-right">{compactBasis}</span>
         </div>
       </div>
     </article>
