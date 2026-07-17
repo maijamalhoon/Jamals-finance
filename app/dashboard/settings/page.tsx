@@ -4,6 +4,8 @@ import SettingsOneUI, {
   type SettingsCategory,
 } from "@/components/settings/SettingsOneUI";
 
+import "./settings-polish.css";
+
 export const dynamic = "force-dynamic";
 
 function logSettingsQueryError(
@@ -102,26 +104,28 @@ export default async function SettingsPage() {
         : "";
 
   return (
-    <SettingsOneUI
-      email={user.email ?? ""}
-      userId={user.id}
-      displayName={displayName}
-      categories={(categories ?? []) as SettingsCategory[]}
-      categoryUsage={categoryUsage}
-      categoriesAvailable={categoriesAvailable}
-      stats={{
-        accounts: accountsResult.error ? null : accountsResult.count,
-        transactions: transactionsResult.error ? null : transactionsResult.count,
-        goals: goalsResult.error ? null : goalsResult.count,
-        investments: investmentsResult.error ? null : investmentsResult.count,
-      }}
-      notificationPreferences={
-        notificationPreferencesResult.data ?? {
-          goal_alerts_enabled: true,
-          payable_alerts_enabled: true,
+    <div className="settings-page-polish">
+      <SettingsOneUI
+        email={user.email ?? ""}
+        userId={user.id}
+        displayName={displayName}
+        categories={(categories ?? []) as SettingsCategory[]}
+        categoryUsage={categoryUsage}
+        categoriesAvailable={categoriesAvailable}
+        stats={{
+          accounts: accountsResult.error ? null : accountsResult.count,
+          transactions: transactionsResult.error ? null : transactionsResult.count,
+          goals: goalsResult.error ? null : goalsResult.count,
+          investments: investmentsResult.error ? null : investmentsResult.count,
+        }}
+        notificationPreferences={
+          notificationPreferencesResult.data ?? {
+            goal_alerts_enabled: true,
+            payable_alerts_enabled: true,
+          }
         }
-      }
-      notificationPreferencesAvailable={!notificationPreferencesResult.error}
-    />
+        notificationPreferencesAvailable={!notificationPreferencesResult.error}
+      />
+    </div>
   );
 }
