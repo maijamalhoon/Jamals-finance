@@ -81,14 +81,24 @@ describe("dashboard navigation hierarchy", () => {
   it("keeps styling out of navigation data", () => {
     for (const item of NAV_ITEMS) {
       expect(item).not.toHaveProperty("tone");
-      expect(Object.values(item).some((value) => typeof value === "string" && value.includes("text-"))).toBe(false);
-      expect(Object.values(item).some((value) => typeof value === "string" && value.includes("bg-"))).toBe(false);
+      expect(
+        Object.values(item).some(
+          (value) => typeof value === "string" && value.includes("text-"),
+        ),
+      ).toBe(false);
+      expect(
+        Object.values(item).some(
+          (value) => typeof value === "string" && value.includes("bg-"),
+        ),
+      ).toBe(false);
     }
   });
 
   it("activates Dashboard only at the exact root", () => {
     expect(isNavItemActive("/dashboard", "/dashboard")).toBe(true);
-    expect(isNavItemActive("/dashboard/transactions", "/dashboard")).toBe(false);
+    expect(isNavItemActive("/dashboard/transactions", "/dashboard")).toBe(
+      false,
+    );
     expect(isNavItemActive("/dashboarding", "/dashboard")).toBe(false);
   });
 
@@ -191,6 +201,13 @@ describe("dashboard shell contracts", () => {
     new URL("../app/dashboard/layout.tsx", import.meta.url),
     "utf8",
   );
+  const responsiveHeaderSource = readFileSync(
+    new URL(
+      "../components/layout/ResponsiveDashboardHeader.tsx",
+      import.meta.url,
+    ),
+    "utf8",
+  );
   const headerSource = readFileSync(
     new URL("../components/layout/Header.tsx", import.meta.url),
     "utf8",
@@ -235,18 +252,23 @@ describe("dashboard shell contracts", () => {
     }
   });
 
-  it("streams one shared notification promise into both header slots", () => {
+  it("streams one shared notification promise into only the active header", () => {
     expect(layoutSource).toContain(
       "const notificationStatePromise = loadDashboardNotifications();",
     );
-    expect(layoutSource).not.toContain(
-      "await loadDashboardNotifications()",
-    );
+    expect(layoutSource).not.toContain("await loadDashboardNotifications()");
     expect(layoutSource).toContain(
       "statePromise={notificationStatePromise}",
     );
-    expect(layoutSource.match(/notificationSlot={notificationSlot}/g)).toHaveLength(
-      2,
+    expect(
+      layoutSource.match(/notificationSlot={notificationSlot}/g) ?? [],
+    ).toHaveLength(1);
+    expect(
+      responsiveHeaderSource.match(/notificationSlot={notificationSlot}/g) ??
+        [],
+    ).toHaveLength(2);
+    expect(responsiveHeaderSource).toContain(
+      'window.matchMedia("(min-width: 1024px)")',
     );
     expect(headerSource).toContain("{notificationSlot}");
     expect(mobileHeaderSource).toContain("{notificationSlot}");
@@ -323,8 +345,8 @@ describe("dashboard shell contracts", () => {
     expect(headerSource).toContain(
       'aria-label="Desktop dashboard navigation"',
     );
-    expect(headerSource.match(/<Sheet(?=[\s>])/g)).toHaveLength(1);
-    expect(headerSource.match(/<DropdownMenu(?=[\s>])/g)).toHaveLength(2);
+    expect(headerSource.match(/<Sheet(?=[\s>])/g) ?? []).toHaveLength(1);
+    expect(headerSource.match(/<DropdownMenu(?=[\s>])/g) ?? []).toHaveLength(2);
     expect(headerSource).toContain('aria-label="Open transaction search"');
     expect(headerSource).toContain(
       'aria-label="Open more dashboard navigation"',
