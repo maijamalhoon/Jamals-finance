@@ -5,6 +5,7 @@ import PremiumLandingPage from "@/components/landing/PremiumLandingPage";
 import "./landing-enhancements.css";
 import "./landing-polish.css";
 import "./landing-mobile-header.css";
+import "./landing-footer-polish.css";
 
 export const metadata: Metadata = {
   title: "Jamal's Finance - Calm Personal Finance Workspace",
