@@ -1,4 +1,4 @@
-/* Lightweight decorative math-symbol field for the public landing page.
+/* Lightweight decorative math-symbol field for the public landing and auth pages.
    CSS-only motion keeps runtime work near zero and never intercepts input. */
 
 .landing-math-field {
@@ -11,6 +11,12 @@
   contain: layout paint style;
   opacity: 1;
   filter: saturate(1.08);
+}
+
+.auth-math-field {
+  z-index: 4;
+  opacity: 0.78;
+  filter: saturate(0.98);
 }
 
 .landing-math-symbol {
@@ -39,6 +45,12 @@
   animation-iteration-count: infinite;
 }
 
+.auth-math-field .landing-math-symbol {
+  text-shadow:
+    0 3px 12px color-mix(in srgb, var(--math-symbol-color) 18%, transparent),
+    0 0 1px color-mix(in srgb, var(--math-symbol-color) 38%, transparent);
+}
+
 .landing-math-symbol-plus {
   --math-symbol-color: #249a6d;
 }
@@ -59,9 +71,18 @@
   --math-symbol-color: #b77b2c;
 }
 
+.landing-math-symbol-dollar {
+  --math-symbol-color: #2f6ed8;
+}
+
 .dark .landing-math-field {
   opacity: 1;
   filter: saturate(1.12) brightness(1.08);
+}
+
+.dark .auth-math-field {
+  opacity: 0.72;
+  filter: saturate(1.02) brightness(1.05);
 }
 
 .dark .landing-math-symbol-plus {
@@ -82,6 +103,10 @@
 
 .dark .landing-math-symbol-equals {
   --math-symbol-color: #efba68;
+}
+
+.dark .landing-math-symbol-dollar {
+  --math-symbol-color: #78a8ff;
 }
 
 @keyframes landing-math-fall {
@@ -130,6 +155,10 @@
 @media (max-width: 639px) {
   .landing-math-field {
     opacity: 0.96;
+  }
+
+  .auth-math-field {
+    opacity: 0.68;
   }
 
   .landing-math-symbol {
