@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
+import LandingScrollReveal from "@/components/landing/LandingScrollReveal";
 import PremiumLandingPage from "@/components/landing/PremiumLandingPage";
 
 import "./landing-enhancements.css";
+import "./landing-polish.css";
 
 export const metadata: Metadata = {
   title: "Jamal's Finance - Calm Personal Finance Workspace",
@@ -27,5 +29,10 @@ export const metadata: Metadata = {
 };
 
 export default function HomePage() {
-  return <PremiumLandingPage />;
+  return (
+    <>
+      <LandingScrollReveal />
+      <PremiumLandingPage />
+    </>
+  );
 }
