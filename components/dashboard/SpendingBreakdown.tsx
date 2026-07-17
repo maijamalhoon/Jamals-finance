@@ -200,16 +200,30 @@ export default function SpendingBreakdown({
                     ))}
                   </Pie>
                   <Tooltip
+                    cursor={false}
                     contentStyle={{
+                      maxWidth: "min(78vw, 260px)",
                       background: "var(--chart-tooltip)",
                       border: "1px solid var(--border)",
-                      borderRadius: 12,
+                      borderRadius: 14,
                       color: "var(--text-primary)",
+                      boxShadow: "var(--shadow-soft)",
+                      padding: "10px 12px",
                     }}
-                    formatter={(value) => [
-                      formatCurrency(Number(value ?? 0)),
-                      "Spending",
-                    ]}
+                    itemStyle={{
+                      color: "var(--text-primary)",
+                      fontSize: 12,
+                      fontWeight: 750,
+                      padding: 0,
+                    }}
+                    labelStyle={{ display: "none" }}
+                    formatter={(value, _name, item) => {
+                      const segment = item.payload as SpendingSegment | undefined;
+                      return [
+                        formatCurrency(Number(value ?? 0)),
+                        segment?.name ?? "Spending",
+                      ];
+                    }}
                   />
                 </PieChart>
               )}
@@ -244,9 +258,14 @@ export default function SpendingBreakdown({
                   {item.name}
                 </span>
               </div>
-              <span className="whitespace-nowrap text-[11px] font-bold tabular-nums text-text-secondary sm:text-xs">
-                {formatPercentage(item.percentage)}
-              </span>
+              <div className="flex shrink-0 items-baseline gap-1.5 text-right tabular-nums">
+                <span className="max-w-[8.5rem] truncate text-[10px] font-extrabold text-text-primary sm:text-[11px]">
+                  {formatCurrency(item.value)}
+                </span>
+                <span className="whitespace-nowrap text-[10px] font-bold text-text-secondary sm:text-[11px]">
+                  {formatPercentage(item.percentage)}
+                </span>
+              </div>
             </div>
           ))}
         </div>
