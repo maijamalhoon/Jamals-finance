@@ -40,13 +40,13 @@ const dashboardOverviewStyles = `
     }
 
     .dashboard-overview-layout > *,
-    .dashboard-overview-layout > div.grid:nth-last-child(-n + 2) > * {
+    .dashboard-overview-layout > div.grid:nth-last-child(-n+2) > * {
       min-width: 0;
       grid-column: 1 / -1;
       margin-top: 0 !important;
     }
 
-    .dashboard-overview-layout > div.grid:nth-last-child(-n + 2) {
+    .dashboard-overview-layout > div.grid:nth-last-child(-n+2) {
       display: contents;
     }
 
