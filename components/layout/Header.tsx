@@ -19,7 +19,13 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
-import { Fragment, useState, type ReactNode } from "react";
+import {
+  Fragment,
+  useEffect,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
 
 import JamalMenu from "@/components/layout/JamalMenu";
 import {
@@ -31,15 +37,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  Sheet,
-  SheetClose,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet";
 import {
   DESKTOP_MORE_NAV_GROUPS,
   DESKTOP_PRIMARY_NAV_ITEMS,
@@ -163,6 +160,7 @@ const DESKTOP_NAV_MENU_ENTRIES: Record<string, DesktopNavMenuEntry[]> = {
 export default function Header({ notificationSlot }: HeaderProps) {
   const router = useRouter();
   const pathname = usePathname();
+  const searchInputRef = useRef<HTMLInputElement>(null);
   const [query, setQuery] = useState("");
   const [searchOpen, setSearchOpen] = useState(false);
   const [transactionType, setTransactionType] = useState<
@@ -170,16 +168,33 @@ export default function Header({ notificationSlot }: HeaderProps) {
   >(null);
   const moreActive = isDesktopMoreActive(pathname);
 
+  useEffect(() => {
+    if (!searchOpen) return;
+
+    const frame = window.requestAnimationFrame(() => {
+      searchInputRef.current?.focus();
+    });
+
+    return () => window.cancelAnimationFrame(frame);
+  }, [searchOpen]);
+
+  function closeSearch() {
+    setSearchOpen(false);
+  }
+
   function handleSearch(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const trimmedQuery = query.trim();
-    if (!trimmedQuery) return;
+    if (!trimmedQuery) {
+      searchInputRef.current?.focus();
+      return;
+    }
 
     router.push(
       `/dashboard/transactions?search=${encodeURIComponent(trimmedQuery)}`,
     );
     setQuery("");
-    setSearchOpen(false);
+    closeSearch();
   }
 
   function handleMenuEntry(entry: DesktopNavMenuEntry) {
@@ -390,78 +405,70 @@ export default function Header({ notificationSlot }: HeaderProps) {
             className="mx-1 hidden h-8 w-px shrink-0 bg-border min-[1180px]:block"
           />
 
-          <div className="flex shrink-0 items-center gap-1.5 [&>button]:!border-transparent [&>button]:!bg-transparent [&>button]:!shadow-none">
-            <Sheet open={searchOpen} onOpenChange={setSearchOpen}>
-              <SheetTrigger
-                type="button"
-                aria-label="Open transaction search"
-                className="finance-focus grid h-11 w-11 shrink-0 place-items-center rounded-full text-text-secondary transition-colors hover:bg-hover hover:text-text-primary"
+          <div className="flex min-w-0 shrink-0 items-center gap-1.5 [&>button]:!border-transparent [&>button]:!bg-transparent [&>button]:!shadow-none">
+            <form
+              role="search"
+              aria-label="Search transactions"
+              onSubmit={handleSearch}
+              className={`finance-focus flex h-11 shrink-0 items-center overflow-hidden rounded-full border transition-[width,background-color,border-color,box-shadow] duration-300 ease-out ${
+                searchOpen
+                  ? "w-[clamp(12rem,22vw,18rem)] border-border bg-surface-inset shadow-none"
+                  : "w-11 border-transparent bg-transparent hover:bg-hover"
+              }`}
+            >
+              <button
+                type={searchOpen ? "submit" : "button"}
+                aria-label={
+                  searchOpen ? "Search transactions" : "Open transaction search"
+                }
+                onClick={() => {
+                  if (!searchOpen) setSearchOpen(true);
+                }}
+                className="finance-focus grid h-11 w-11 shrink-0 place-items-center rounded-full text-text-secondary transition-colors hover:text-text-primary"
               >
                 <Search size={20} strokeWidth={2.1} aria-hidden="true" />
-              </SheetTrigger>
-              <SheetContent
-                side="right"
-                showCloseButton={false}
-                className="h-dvh w-[min(100vw,24rem)] max-w-full gap-0 border-border bg-surface-elevated p-0 sm:w-96 sm:max-w-96"
+              </button>
+
+              <label htmlFor="desktop-inline-transaction-search" className="sr-only">
+                Search transactions
+              </label>
+              <input
+                ref={searchInputRef}
+                id="desktop-inline-transaction-search"
+                type="search"
+                autoComplete="off"
+                tabIndex={searchOpen ? 0 : -1}
+                aria-hidden={!searchOpen}
+                value={query}
+                onChange={(event) => setQuery(event.target.value)}
+                onKeyDown={(event) => {
+                  if (event.key === "Escape") {
+                    event.preventDefault();
+                    closeSearch();
+                  }
+                }}
+                placeholder="Search transactions..."
+                className={`min-w-0 bg-transparent text-sm text-text-primary outline-none placeholder:text-text-secondary transition-[width,opacity] duration-200 ${
+                  searchOpen
+                    ? "mr-1 w-full flex-1 opacity-100"
+                    : "pointer-events-none w-0 opacity-0"
+                }`}
+              />
+
+              <button
+                type="button"
+                aria-label="Close transaction search"
+                tabIndex={searchOpen ? 0 : -1}
+                onClick={closeSearch}
+                className={`finance-focus mr-1 grid h-9 w-9 shrink-0 place-items-center rounded-full text-text-secondary transition-[opacity,transform,background-color,color] duration-200 hover:bg-hover hover:text-text-primary ${
+                  searchOpen
+                    ? "scale-100 opacity-100"
+                    : "pointer-events-none scale-90 opacity-0"
+                }`}
               >
-                <SheetHeader className="border-b border-border px-4 pb-4 pt-[max(1rem,env(safe-area-inset-top))]">
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="min-w-0">
-                      <SheetTitle className="text-lg font-bold text-text-primary">
-                        Search transactions
-                      </SheetTitle>
-                      <SheetDescription className="mt-1 leading-5 text-text-secondary">
-                        Find transactions by the terms already supported on the
-                        transactions page.
-                      </SheetDescription>
-                    </div>
-                    <SheetClose
-                      className="finance-focus grid h-11 w-11 shrink-0 place-items-center rounded-[var(--radius-control)] text-text-secondary hover:bg-hover hover:text-text-primary"
-                      aria-label="Close transaction search"
-                    >
-                      <X size={18} aria-hidden="true" />
-                    </SheetClose>
-                  </div>
-                </SheetHeader>
-                <form
-                  role="search"
-                  aria-label="Search transactions"
-                  onSubmit={handleSearch}
-                  className="p-4"
-                >
-                  <label
-                    htmlFor="compact-desktop-transaction-search"
-                    className="mb-2 block text-sm font-semibold text-text-primary"
-                  >
-                    Search terms
-                  </label>
-                  <div className="finance-control finance-search-control flex min-h-11 items-center gap-2 px-3">
-                    <Search
-                      size={16}
-                      className="shrink-0 text-text-secondary"
-                      aria-hidden="true"
-                    />
-                    <input
-                      id="compact-desktop-transaction-search"
-                      type="search"
-                      autoComplete="off"
-                      autoFocus
-                      value={query}
-                      onChange={(event) => setQuery(event.target.value)}
-                      placeholder="Search transactions..."
-                      className="min-w-0 flex-1 bg-transparent text-sm text-text-primary outline-none placeholder:text-text-secondary"
-                    />
-                  </div>
-                  <button
-                    type="submit"
-                    className="finance-focus mt-3 flex min-h-11 w-full items-center justify-center gap-2 rounded-[var(--radius-button)] bg-brand px-4 text-sm font-bold text-primary-foreground hover:bg-brand-hover"
-                  >
-                    <Search size={16} aria-hidden="true" />
-                    Search transactions
-                  </button>
-                </form>
-              </SheetContent>
-            </Sheet>
+                <X size={16} strokeWidth={2.1} aria-hidden="true" />
+              </button>
+            </form>
 
             {notificationSlot}
             <JamalMenu align="right" placement="bottom" variant="avatar" />
