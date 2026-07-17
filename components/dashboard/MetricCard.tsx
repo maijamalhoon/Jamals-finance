@@ -94,13 +94,18 @@ export default function MetricCard({
     >
       <span aria-hidden="true" className="dashboard-metric-shape" />
 
-      <div className="relative z-10 flex items-start justify-between gap-3">
+      <div className="relative z-10 flex min-w-0 items-start justify-between gap-2">
         <span className="dashboard-metric-icon" aria-hidden="true">
           <Icon size={17} strokeWidth={2.2} />
         </span>
         <span
           className="dashboard-comparison-badge"
-          style={{ "--comparison-color": toneColor } as CSSProperties}
+          style={{
+            "--comparison-color": toneColor,
+            flexShrink: 0,
+            maxWidth: "none",
+            whiteSpace: "nowrap",
+          } as CSSProperties}
         >
           <DirectionIcon aria-hidden="true" size={12} />
           <span>{displayComparison.label}</span>
