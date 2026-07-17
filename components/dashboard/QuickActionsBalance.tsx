@@ -66,6 +66,12 @@ const actions: Array<{
   },
 ];
 
+function getBalanceSize(value: string) {
+  if (value.length > 22) return "xlong";
+  if (value.length > 16) return "long";
+  return "normal";
+}
+
 export default function QuickActionsBalance({
   summary,
 }: {
@@ -75,6 +81,7 @@ export default function QuickActionsBalance({
   const { formatCurrency } = useCurrency();
   const displayTotalBalance =
     summary.value === null ? "Unavailable" : formatCurrency(summary.value);
+  const balanceSize = getBalanceSize(displayTotalBalance);
 
   const [transactionType, setTransactionType] =
     useState<TransactionType>("income");
@@ -130,7 +137,11 @@ export default function QuickActionsBalance({
               ) : null}
             </div>
 
-            <h2 className="max-w-full break-words text-[clamp(2rem,4vw,4rem)] font-black leading-[0.98] tracking-[-0.05em] text-text-primary tabular-nums [overflow-wrap:anywhere]">
+            <h2
+              className="dashboard-balance-amount max-w-full break-words font-black text-text-primary tabular-nums [overflow-wrap:anywhere]"
+              data-balance-size={balanceSize}
+              title={displayTotalBalance}
+            >
               {displayTotalBalance}
             </h2>
             <p className="mt-3 max-w-2xl text-xs leading-5 text-text-secondary sm:text-sm sm:leading-6">
@@ -141,7 +152,7 @@ export default function QuickActionsBalance({
           <div
             role="group"
             aria-label="Quick actions"
-            className="grid w-full grid-cols-2 gap-1.5 sm:grid-cols-4 sm:gap-1 lg:w-auto lg:min-w-[360px]"
+            className="grid w-full grid-cols-2 gap-2 sm:grid-cols-4 lg:w-auto lg:min-w-[380px]"
           >
             {actions.map((action) => {
               const Icon = action.icon;
