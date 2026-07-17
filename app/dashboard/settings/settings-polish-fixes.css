@@ -1,44 +1,376 @@
-/* Final selector corrections loaded after the main Settings polish. */
-.settings-page-polish section:nth-of-type(7) > div {
+/* Final responsive rebalance for Settings.
+   Keeps all existing data, dialogs, theme, notification, export, and sign-out logic unchanged. */
+
+.settings-page-polish > div > div {
+  width: min(100%, 68rem) !important;
+  max-width: 68rem !important;
+}
+
+.settings-page-polish > div > div > * + * {
+  margin-block-start: 1rem !important;
+}
+
+.settings-page-polish .page-heading {
+  min-height: 6.25rem;
+  padding: 1.15rem 1.25rem;
+}
+
+.settings-page-polish .page-title {
+  font-size: clamp(1.55rem, 2.5vw, 2rem);
+}
+
+.settings-page-polish .page-subtitle {
+  max-width: 34rem;
+  margin-top: 0.4rem;
+}
+
+.settings-page-polish section > p:first-child {
+  padding: 0 0.35rem 0.45rem;
+}
+
+.settings-page-polish .finance-panel {
+  border-radius: 1.05rem;
+}
+
+.settings-page-polish .finance-panel > :where(button, a) {
+  min-height: 4rem;
   gap: 0.75rem;
+  padding-block: 0.72rem;
+}
+
+.settings-page-polish .finance-icon-bubble {
+  width: 2.35rem !important;
+  height: 2.35rem !important;
+  border-radius: 0.76rem !important;
+}
+
+.settings-page-polish .finance-icon-bubble svg {
+  width: 1.05rem;
+  height: 1.05rem;
+}
+
+.settings-page-polish .finance-panel [class*="ml-[76px]"] {
+  margin-left: 4.1rem;
+}
+
+.settings-page-polish section:first-of-type .finance-panel > div:first-child {
+  min-height: 5.8rem;
+  padding-block: 0.9rem;
+}
+
+.settings-page-polish section:first-of-type .finance-panel > div:first-child > div:first-child {
+  width: 3.15rem;
+  height: 3.15rem;
+  border-radius: 0.95rem;
+}
+
+.settings-page-polish [role="radiogroup"] {
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  gap: 0.55rem;
+}
+
+.settings-page-polish [role="radiogroup"] > button {
+  position: relative;
+  min-height: 4.7rem;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.35rem;
+  padding: 0.6rem 0.35rem;
+  text-align: center;
+}
+
+.settings-page-polish [role="radiogroup"] > button > span:first-child {
+  width: 1.85rem;
+  height: 1.85rem;
+}
+
+.settings-page-polish [role="radiogroup"] > button > span:nth-child(2) > span:first-child {
+  font-size: 0.76rem;
+  line-height: 1.1;
+}
+
+.settings-page-polish [role="radiogroup"] > button > span:nth-child(2) > span:last-child {
+  display: none;
+}
+
+.settings-page-polish [role="radiogroup"] > button > span:last-child {
+  position: absolute;
+  top: 0.35rem;
+  right: 0.35rem;
+}
+
+.settings-page-polish [role="radiogroup"] > button > span:last-child > span {
+  display: none;
+}
+
+.settings-page-polish [role="switch"] {
+  width: 3rem !important;
+  height: 1.75rem !important;
+  min-width: 3rem;
+  padding: 0 !important;
+}
+
+.settings-page-polish [role="switch"] > span {
+  width: 1.25rem !important;
+  height: 1.25rem !important;
+  top: 0.19rem !important;
+  left: 0.2rem !important;
+}
+
+.settings-page-polish [role="switch"][aria-checked="true"] > span {
+  transform: translateX(1.24rem) !important;
+}
+
+.settings-page-polish section:nth-of-type(7) > div {
+  gap: 0.7rem;
 }
 
 .settings-page-polish section:nth-of-type(7) .summary-card {
-  position: relative;
-  overflow: hidden;
-  min-height: 6.6rem;
-  display: grid;
-  place-content: center;
-  border: 1px solid color-mix(in srgb, var(--border), transparent 5%);
-  border-radius: 1rem;
-  background:
-    radial-gradient(circle at 100% 0, color-mix(in srgb, var(--primary), transparent 87%) 0, transparent 42%),
-    var(--surface-primary);
-  box-shadow: var(--surface-highlight), 0 8px 22px rgb(23 35 58 / 0.055);
-}
-
-.dark .settings-page-polish section:nth-of-type(7) .summary-card {
-  background:
-    radial-gradient(circle at 100% 0, color-mix(in srgb, var(--primary), transparent 78%) 0, transparent 44%),
-    var(--surface-primary);
-  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.035), 0 12px 28px rgb(0 0 0 / 0.14);
+  min-height: 5.6rem;
+  border-radius: 0.95rem;
 }
 
 .settings-page-polish section:nth-of-type(7) .summary-card p:first-child {
-  font-size: clamp(1.35rem, 3vw, 1.8rem);
-  line-height: 1;
-  letter-spacing: -0.04em;
+  font-size: clamp(1.35rem, 3vw, 1.65rem);
 }
 
 .settings-page-polish section:nth-of-type(7) .summary-card p:last-child {
-  margin-top: 0.5rem;
-  font-size: 0.68rem;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
+  margin-top: 0.4rem;
+  font-size: 0.65rem;
+}
+
+.settings-page-polish > div > div > button:last-of-type {
+  min-height: 3.2rem;
+  border-radius: 0.9rem;
+  padding-block: 0.7rem;
+}
+
+.settings-page-polish footer {
+  padding-block: 0.15rem 0.5rem;
+  line-height: 1.55;
 }
 
 @media (max-width: 639px) {
+  .settings-page-polish > div > div {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  .settings-page-polish > div > div > * + * {
+    margin-block-start: 0.85rem !important;
+  }
+
+  .settings-page-polish .page-heading {
+    min-height: 5.55rem;
+    padding: 0.9rem 1rem;
+    border-radius: 1rem;
+  }
+
+  .settings-page-polish .page-heading::after {
+    width: 7.5rem;
+    right: -4.8rem;
+    opacity: 0.35;
+  }
+
+  .settings-page-polish .page-title {
+    font-size: 1.55rem;
+  }
+
+  .settings-page-polish .page-subtitle {
+    max-width: 17rem;
+    font-size: 0.76rem;
+    line-height: 1.45;
+  }
+
+  .settings-page-polish section > p:first-child {
+    padding: 0 0.35rem 0.38rem;
+    font-size: 0.63rem;
+  }
+
+  .settings-page-polish .finance-panel {
+    border-radius: 0.95rem;
+  }
+
+  .settings-page-polish .finance-panel > :where(button, a, div) {
+    padding-left: 0.78rem;
+    padding-right: 0.78rem;
+  }
+
+  .settings-page-polish .finance-panel > :where(button, a) {
+    min-height: 3.75rem;
+    gap: 0.65rem;
+    padding-block: 0.62rem;
+  }
+
+  .settings-page-polish .finance-panel > :where(button, a) span.min-w-0.flex-1 > span:first-child {
+    font-size: 0.82rem;
+    line-height: 1.25;
+  }
+
+  .settings-page-polish .finance-panel > :where(button, a) span.min-w-0.flex-1 > span:last-child {
+    margin-top: 0.15rem;
+    font-size: 0.67rem;
+    line-height: 1.35;
+  }
+
+  .settings-page-polish .finance-icon-bubble {
+    width: 2.15rem !important;
+    height: 2.15rem !important;
+    border-radius: 0.68rem !important;
+  }
+
+  .settings-page-polish .finance-panel [class*="ml-[76px]"] {
+    margin-left: 3.55rem;
+  }
+
+  .settings-page-polish section:first-of-type .finance-panel > div:first-child {
+    min-height: 5rem;
+    gap: 0.7rem;
+    padding-block: 0.72rem;
+  }
+
+  .settings-page-polish section:first-of-type .finance-panel > div:first-child > div:first-child {
+    width: 2.8rem;
+    height: 2.8rem;
+    border-radius: 0.85rem;
+  }
+
+  .settings-page-polish section:first-of-type .finance-panel h3 {
+    font-size: 0.98rem;
+  }
+
+  .settings-page-polish section:first-of-type .finance-panel p {
+    font-size: 0.72rem;
+  }
+
+  .settings-page-polish [role="radiogroup"] {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 0.42rem;
+  }
+
+  .settings-page-polish [role="radiogroup"] > button {
+    min-height: 4.25rem;
+    padding: 0.48rem 0.18rem;
+    border-radius: 0.78rem;
+  }
+
+  .settings-page-polish [role="radiogroup"] > button > span:first-child {
+    width: 1.7rem;
+    height: 1.7rem;
+  }
+
+  .settings-page-polish [role="radiogroup"] > button > span:nth-child(2) > span:first-child {
+    font-size: 0.7rem;
+  }
+
+  .settings-page-polish [role="radiogroup"] > button > span:last-child {
+    top: 0.25rem;
+    right: 0.25rem;
+  }
+
+  .settings-page-polish [role="radiogroup"] > button > span:last-child svg {
+    width: 0.72rem;
+    height: 0.72rem;
+  }
+
+  .settings-page-polish [role="switch"] {
+    width: 2.75rem !important;
+    min-width: 2.75rem;
+    height: 1.6rem !important;
+  }
+
+  .settings-page-polish [role="switch"] > span {
+    width: 1.12rem !important;
+    height: 1.12rem !important;
+    top: 0.17rem !important;
+    left: 0.18rem !important;
+  }
+
+  .settings-page-polish [role="switch"][aria-checked="true"] > span {
+    transform: translateX(1.18rem) !important;
+  }
+
+  .settings-page-polish section:nth-of-type(7) > div {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 0.6rem;
+  }
+
   .settings-page-polish section:nth-of-type(7) .summary-card {
-    min-height: 5.4rem;
+    min-height: 4.9rem;
+    border-radius: 0.85rem;
+  }
+
+  .settings-page-polish section:nth-of-type(7) .summary-card p:first-child {
+    font-size: 1.45rem;
+  }
+
+  .settings-page-polish > div > div > button:last-of-type {
+    min-height: 3rem;
+    margin-top: 0.95rem !important;
+    font-size: 0.82rem;
+  }
+
+  .settings-page-polish footer {
+    padding-bottom: 0.35rem;
+    font-size: 0.66rem;
+  }
+}
+
+/* Switch to two columns only when the Settings content itself is genuinely wide.
+   This prevents "desktop site" mode on phones and narrow tablets from becoming tiny. */
+@container (min-width: 66rem) {
+  .settings-page-polish > div > div {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-areas:
+      "hero hero"
+      "profile appearance"
+      "preferences appearance"
+      "notifications data"
+      "tools data"
+      "stats stats"
+      "signout signout"
+      "footer footer";
+    gap: 1rem 1.1rem;
+    align-items: start;
+  }
+
+  .settings-page-polish > div > div > * + * {
+    margin-block-start: 0 !important;
+  }
+
+  .settings-page-polish > div > div > .page-heading { grid-area: hero; }
+  .settings-page-polish > div > div > section:nth-of-type(1) { grid-area: profile; }
+  .settings-page-polish > div > div > section:nth-of-type(2) { grid-area: appearance; }
+  .settings-page-polish > div > div > section:nth-of-type(3) { grid-area: preferences; }
+  .settings-page-polish > div > div > section:nth-of-type(4) { grid-area: notifications; }
+  .settings-page-polish > div > div > section:nth-of-type(5) { grid-area: tools; }
+  .settings-page-polish > div > div > section:nth-of-type(6) { grid-area: data; }
+  .settings-page-polish > div > div > section:nth-of-type(7) { grid-area: stats; }
+  .settings-page-polish > div > div > button:last-of-type { grid-area: signout; }
+  .settings-page-polish > div > div > footer { grid-area: footer; }
+
+  .settings-page-polish section:nth-of-type(7) > div {
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  }
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .settings-page-polish .finance-panel > :where(button, a):hover {
+    transform: translateX(1px);
+  }
+
+  .settings-page-polish [role="radiogroup"] > button:hover {
+    transform: translateY(-1px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .settings-page-polish *,
+  .settings-page-polish *::before,
+  .settings-page-polish *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
   }
 }
