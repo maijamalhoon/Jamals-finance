@@ -1,9 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { CircleDollarSign, Menu, X } from "lucide-react";
+import { CircleDollarSign, X } from "lucide-react";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 
 import JamalMenu from "@/components/layout/JamalMenu";
 import {
@@ -17,7 +17,11 @@ import {
 } from "@/components/ui/sheet";
 import { isNavItemActive, NAV_GROUPS } from "@/lib/navigation";
 
-export default function MobileNav() {
+type MobileNavProps = {
+  notificationSlot: ReactNode;
+};
+
+export default function MobileNav({ notificationSlot }: MobileNavProps) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
 
@@ -26,16 +30,22 @@ export default function MobileNav() {
       <SheetTrigger
         type="button"
         aria-label="Open navigation menu"
-        className="finance-focus finance-control grid h-11 w-11 shrink-0 place-items-center rounded-[var(--radius-control)] border-border bg-surface-primary p-0 text-text-primary shadow-none hover:bg-hover"
+        className="finance-focus fixed left-3 top-[max(0.75rem,env(safe-area-inset-top))] z-40 grid size-14 shrink-0 place-items-center rounded-full border border-border/80 bg-text-primary p-0 text-text-inverse shadow-[0_14px_34px_rgb(15_23_42_/_0.24)] transition-[transform,background-color,border-color,box-shadow] hover:-translate-y-0.5 hover:shadow-[0_18px_42px_rgb(15_23_42_/_0.3)] active:scale-[0.97] dark:bg-surface-elevated dark:text-text-primary dark:shadow-[0_16px_38px_rgb(0_0_0_/_0.42)] print:hidden lg:hidden"
       >
-        <Menu size={20} strokeWidth={2.2} aria-hidden="true" />
+        <span
+          aria-hidden="true"
+          className="flex flex-col items-center justify-center gap-2"
+        >
+          <span className="h-[3px] w-7 rounded-full bg-current" />
+          <span className="h-[3px] w-4 rounded-full bg-current" />
+        </span>
       </SheetTrigger>
 
       <SheetContent
         data-mobile-navigation-drawer
         side="left"
         showCloseButton={false}
-        className="h-dvh max-h-dvh !w-[min(88vw,21rem)] max-w-[21rem] gap-0 overflow-hidden border-border bg-surface-elevated p-0"
+        className="h-dvh max-h-dvh !w-[min(92vw,22rem)] max-w-[22rem] gap-0 overflow-hidden border-border bg-surface-elevated p-0 shadow-[24px_0_70px_rgb(15_23_42_/_0.22)] dark:shadow-[24px_0_70px_rgb(0_0_0_/_0.5)]"
       >
         <SheetHeader className="border-b border-border px-4 pb-4 pt-[max(1rem,env(safe-area-inset-top))]">
           <div className="flex min-w-0 items-start justify-between gap-3">
@@ -53,12 +63,15 @@ export default function MobileNav() {
               </div>
             </div>
 
-            <SheetClose
-              className="finance-focus grid h-11 w-11 shrink-0 place-items-center rounded-[var(--radius-control)] text-text-secondary transition-colors hover:bg-hover hover:text-text-primary"
-              aria-label="Close navigation menu"
-            >
-              <X size={19} strokeWidth={2.2} aria-hidden="true" />
-            </SheetClose>
+            <div className="flex shrink-0 items-center gap-1">
+              <div className="flex items-center">{notificationSlot}</div>
+              <SheetClose
+                className="finance-focus grid h-11 w-11 shrink-0 place-items-center rounded-[var(--radius-control)] text-text-secondary transition-colors hover:bg-hover hover:text-text-primary"
+                aria-label="Close navigation menu"
+              >
+                <X size={19} strokeWidth={2.2} aria-hidden="true" />
+              </SheetClose>
+            </div>
           </div>
         </SheetHeader>
 
