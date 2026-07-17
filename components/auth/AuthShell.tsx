@@ -3,6 +3,7 @@ import "@/app/auth-mobile-refinement.css";
 import "@/app/auth-responsive-final.css";
 import "@/app/auth-premium-redesign.css";
 import "@/app/landing-math-symbols.css";
+import "@/app/auth-form-composition.css";
 
 import Link from "next/link";
 import {
