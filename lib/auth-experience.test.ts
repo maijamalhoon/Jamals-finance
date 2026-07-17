@@ -45,6 +45,11 @@ describe("Node 8 authentication experience contracts", () => {
     expect(loginSource).toContain('type Step = "login" | "signup" | "forgot" | "check-email"');
   });
 
+  it("keeps credentials out of the URL before client hydration", () => {
+    expect(loginSource.match(/method="post"/g) ?? []).toHaveLength(3);
+    expect(loginSource.match(/action="\/login"/g) ?? []).toHaveLength(3);
+  });
+
   it("keeps safe redirect sanitization in login and onboarding", () => {
     expect(loginSource).toContain("sanitizeInternalRedirect(params.get(\"next\"))");
     expect(loginSource).toContain("router.replace(safeNext)");
@@ -87,8 +92,11 @@ describe("Node 8 authentication experience contracts", () => {
     expect(onboardingSource).toContain("numericAge < 10");
     expect(onboardingSource).toContain("numericAge > 120");
 
+    const completionSource = onboardingSource.slice(
+      onboardingSource.indexOf("async function completeOnboarding"),
+    );
     const upsertCall = getObjectCall(
-      onboardingSource,
+      completionSource,
       'supabase.from("profiles").upsert({',
     );
     for (const field of [
@@ -103,6 +111,11 @@ describe("Node 8 authentication experience contracts", () => {
       expect(upsertCall).toContain(field);
     }
     expect(onboardingSource.match(/onboarding_completed:\s*true/g) ?? []).toHaveLength(1);
+    expect(onboardingSource.match(/onboarding_completed:\s*false/g) ?? []).toHaveLength(1);
+    expect(onboardingSource).toContain('supabase.from("accounts").insert({');
+    expect(onboardingSource).toContain("Step ${step} of 4");
+    expect(onboardingSource).toContain("Skip for now");
+    expect(onboardingSource).toContain("Your first transaction");
     expect(onboardingSource.indexOf("if (saveError)")).toBeLessThan(
       onboardingSource.indexOf("router.replace(safeNext)"),
     );
@@ -176,7 +189,7 @@ describe("Node 8 authentication experience contracts", () => {
     expect(loginSource).toContain("const actionInFlight = useRef(false)");
     expect(loginSource.match(/catch \{/g) ?? []).toHaveLength(4);
     expect(onboardingSource).toContain("const saveInFlight = useRef(false)");
-    expect(onboardingSource.match(/catch \{/g) ?? []).toHaveLength(3);
+    expect(onboardingSource.match(/catch \{/g)?.length ?? 0).toBeGreaterThanOrEqual(6);
     expect(resetPasswordSource).toContain('if (recoveryState !== "ready") return');
   });
 
@@ -186,7 +199,7 @@ describe("Node 8 authentication experience contracts", () => {
       expect(source).toContain("<AuthShell");
       expect(source).not.toMatch(/ThemeSelector|theme selector|jamal-theme|setTheme/i);
     }
-    expect(authShellSource).toContain("Jamals Finance");
+    expect(authShellSource).toContain("Jamal&apos;s Finance");
     expect(authShellSource).toContain("data-auth-root");
   });
 

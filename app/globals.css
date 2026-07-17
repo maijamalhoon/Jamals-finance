@@ -110,61 +110,61 @@
 
 :root {
   color-scheme: light;
-  --page-background: #f6f8fb;
-  --background-subtle: #eef3f8;
+  --page-background: #f3f6fa;
+  --background-subtle: #e9eff6;
   --surface: #ffffff;
   --surface-elevated: #ffffff;
-  --surface-tinted: #f8fafc;
+  --surface-tinted: #f7f9fc;
   --surface-primary: #ffffff;
-  --surface-secondary: #eef3f8;
-  --surface-inset: #f8fafc;
-  --surface-soft: #f8fafc;
-  --surface-glass: color-mix(in srgb, var(--surface-primary), transparent 8%);
-  --border: #d8e1ec;
-  --border-strong: #c2cedc;
-  --divider: #d8e1ec;
-  --text-primary: #0f172a;
-  --text-secondary: #334155;
-  --text-muted: #64748b;
+  --surface-secondary: #edf2f7;
+  --surface-inset: #f3f6fa;
+  --surface-soft: #f6f8fb;
+  --surface-glass: color-mix(in srgb, var(--surface-primary), transparent 4%);
+  --border: #d4deea;
+  --border-strong: #b7c5d7;
+  --divider: #dce4ee;
+  --text-primary: #17233a;
+  --text-secondary: #44536a;
+  --text-muted: #607187;
   --text-tertiary: var(--text-muted);
-  --text-inverse: #f8fafc;
-  --disabled: #94a3b8;
+  --text-inverse: #ffffff;
+  --disabled: #8694a7;
   --text-disabled: var(--disabled);
-  --primary: #3559e0;
-  --primary-hover: #2f4fc8;
-  --primary-active: #2845ae;
-  --primary-soft: #e9eeff;
-  --secondary: #0f766e;
-  --secondary-hover: #0b625c;
-  --accent: #4f46e5;
-  --focus-color: #7c9bff;
+  --primary: #2956c8;
+  --primary-hover: #2147ac;
+  --primary-active: #1a398f;
+  --primary-soft: #e7edff;
+  --secondary: #0c766f;
+  --secondary-hover: #095f5a;
+  --accent: #6849b8;
+  --focus-color: #4b74e6;
   --brand-accent: var(--primary);
   --brand-accent-hover: var(--primary-hover);
   --brand-accent-pressed: var(--primary-active);
   --brand-on-accent: var(--text-inverse);
-  --status-foreground: #0f172a;
-  --success: #1f9d6a;
-  --success-soft: #e8f7f0;
-  --warning: #c48a1c;
-  --warning-soft: #fff6e0;
-  --danger: #d96c63;
-  --danger-soft: #fdedec;
-  --info: #2e7dd7;
-  --info-soft: #eaf3ff;
-  --income: #1f9d6a;
-  --income-soft: #e8f7f0;
-  --expense: #d96c63;
-  --expense-soft: #fdedec;
-  --transfer: #2e7dd7;
-  --transfer-soft: #eaf3ff;
-  --investment: #7c5ce0;
-  --investment-soft: #f0edff;
-  --goals: #0f9f8f;
-  --goals-soft: #e7f8f5;
-  --payables: #c48a1c;
-  --payables-soft: #fff6e0;
-  --overlay: rgb(15 23 42 / 0.45);
-  --chart-grid: #d8e1ec;
+  --status-foreground: #ffffff;
+  --success: #147a55;
+  --success-soft: #e5f4ed;
+  --warning: #9a650c;
+  --warning-soft: #fbf1da;
+  --danger: #b84f4a;
+  --danger-soft: #f9e9e7;
+  --info: #2366b1;
+  --info-soft: #e6f0fb;
+  --income: #147a55;
+  --income-soft: #e5f4ed;
+  --expense: #b84f4a;
+  --expense-soft: #f9e9e7;
+  --transfer: #2366b1;
+  --transfer-soft: #e6f0fb;
+  --investment: #6849b8;
+  --investment-soft: #eee9fa;
+  --goals: #0b777b;
+  --goals-soft: #e2f2f2;
+  --payables: #9a650c;
+  --payables-soft: #fbf1da;
+  --overlay: rgb(13 23 40 / 0.5);
+  --chart-grid: #dce4ee;
   --chart-tooltip: #ffffff;
   --chart-series-1: var(--primary);
   --chart-series-2: var(--income);
@@ -172,23 +172,23 @@
   --chart-series-4: var(--investment);
   --chart-series-5: var(--transfer);
   --loader: var(--background-subtle);
-  --skeleton: #e4eaf2;
-  --shadow-xs: 0 1px 2px rgb(15 23 42 / 0.035);
-  --shadow-sm: 0 1px 3px rgb(15 23 42 / 0.06), 0 1px 2px rgb(15 23 42 / 0.035);
-  --shadow-md: 0 12px 30px rgb(15 23 42 / 0.075), 0 2px 8px rgb(15 23 42 / 0.04);
-  --shadow-lg: 0 22px 56px rgb(15 23 42 / 0.11), 0 4px 14px rgb(15 23 42 / 0.05);
-  --shadow-overlay: 0 30px 80px rgb(15 23 42 / 0.16), 0 8px 24px rgb(15 23 42 / 0.07);
+  --skeleton: #e1e8f0;
+  --shadow-xs: 0 1px 2px rgb(23 35 58 / 0.04);
+  --shadow-sm: 0 2px 8px rgb(23 35 58 / 0.06);
+  --shadow-md: 0 10px 28px rgb(23 35 58 / 0.08);
+  --shadow-lg: 0 18px 48px rgb(23 35 58 / 0.12);
+  --shadow-overlay: 0 28px 72px rgb(23 35 58 / 0.18);
   --shadow: var(--shadow-sm);
   --shadow-soft: var(--shadow-md);
   --shadow-premium: var(--shadow-lg);
   --glow-soft: 0 0 0 1px color-mix(in srgb, var(--brand-accent), transparent 88%);
   --focus-ring: 0 0 0 3px color-mix(in srgb, var(--focus-color), transparent 78%);
-  --surface-highlight: inset 0 1px 0 rgb(255 255 255 / 0.68);
-  --radius-card: 1.25rem;
-  --radius-tile: 1rem;
-  --radius-control: 0.875rem;
-  --radius-button: 0.875rem;
-  --space-page: clamp(0.875rem, 1.7vw, 1.75rem);
+  --surface-highlight: inset 0 1px 0 rgb(255 255 255 / 0.78);
+  --radius-card: 1rem;
+  --radius-tile: 0.875rem;
+  --radius-control: 0.75rem;
+  --radius-button: 0.75rem;
+  --space-page: clamp(1rem, 2vw, 2rem);
   --touch-target: 2.75rem;
   --safe-area-bottom: env(safe-area-inset-bottom);
   --oneui-page-gutter: clamp(0.875rem, 1.7vw, 1.75rem);
@@ -253,86 +253,86 @@
 
 .dark {
   color-scheme: dark;
-  --page-background: #0b1220;
-  --background-subtle: #0f172a;
-  --surface: #111a2b;
-  --surface-primary: #111a2b;
-  --surface-secondary: #0f172a;
-  --surface-elevated: #162235;
-  --surface-tinted: #132033;
-  --surface-inset: #132033;
-  --surface-soft: #132033;
-  --surface-glass: color-mix(in srgb, var(--surface-primary), transparent 8%);
-  --border: #24344d;
-  --border-strong: #324664;
-  --divider: #24344d;
-  --text-primary: #e7eef8;
-  --text-secondary: #c4d0e0;
-  --text-muted: #93a4bc;
+  --page-background: #0c1422;
+  --background-subtle: #111c2d;
+  --surface: #152136;
+  --surface-primary: #152136;
+  --surface-secondary: #101b2c;
+  --surface-elevated: #1a2940;
+  --surface-tinted: #18263b;
+  --surface-inset: #101b2c;
+  --surface-soft: #18263b;
+  --surface-glass: color-mix(in srgb, var(--surface-primary), transparent 4%);
+  --border: #2b3b55;
+  --border-strong: #3b4e6c;
+  --divider: #263750;
+  --text-primary: #edf3fb;
+  --text-secondary: #c2cedd;
+  --text-muted: #94a4ba;
   --text-tertiary: var(--text-muted);
-  --text-inverse: #0b1220;
-  --disabled: #64748b;
+  --text-inverse: #0c1422;
+  --disabled: #6b7d96;
   --text-disabled: var(--disabled);
-  --primary: #8aa4ff;
-  --primary-hover: #7693ff;
-  --primary-active: #6384f5;
-  --primary-soft: #1b2642;
-  --secondary: #3cb7aa;
-  --secondary-hover: #32a397;
-  --accent: #9a8cff;
-  --focus-color: #8aa4ff;
+  --primary: #9bb0ff;
+  --primary-hover: #adc0ff;
+  --primary-active: #8da4f7;
+  --primary-soft: #202e4e;
+  --secondary: #55c5ba;
+  --secondary-hover: #6bd2c8;
+  --accent: #b39af2;
+  --focus-color: #9bb0ff;
   --brand-accent: var(--primary);
   --brand-accent-hover: var(--primary-hover);
   --brand-accent-pressed: var(--primary-active);
   --brand-on-accent: var(--text-inverse);
-  --status-foreground: #0b1220;
-  --success: #33c78b;
-  --success-soft: #102a22;
-  --warning: #e6b450;
-  --warning-soft: #2b2211;
-  --danger: #f08a7b;
-  --danger-soft: #311a1c;
-  --info: #62a5ff;
-  --info-soft: #15253d;
-  --income: #33c78b;
-  --income-soft: #102a22;
-  --expense: #f08a7b;
-  --expense-soft: #311a1c;
-  --transfer: #62a5ff;
-  --transfer-soft: #15253d;
-  --investment: #a78bfa;
-  --investment-soft: #261f43;
-  --goals: #2fc6b2;
-  --goals-soft: #102d2a;
-  --payables: #e6b450;
-  --payables-soft: #2b2211;
-  --overlay: rgb(2 6 23 / 0.68);
-  --chart-grid: #24344d;
-  --chart-tooltip: #162235;
+  --status-foreground: #0c1422;
+  --success: #48c691;
+  --success-soft: #122f27;
+  --warning: #e4b45d;
+  --warning-soft: #332816;
+  --danger: #f09189;
+  --danger-soft: #351e23;
+  --info: #70adef;
+  --info-soft: #182b43;
+  --income: #48c691;
+  --income-soft: #122f27;
+  --expense: #f09189;
+  --expense-soft: #351e23;
+  --transfer: #70adef;
+  --transfer-soft: #182b43;
+  --investment: #b39af2;
+  --investment-soft: #2b2546;
+  --goals: #56c9c2;
+  --goals-soft: #14302f;
+  --payables: #e4b45d;
+  --payables-soft: #332816;
+  --overlay: rgb(4 9 18 / 0.72);
+  --chart-grid: #2b3b55;
+  --chart-tooltip: #1a2940;
   --chart-series-1: var(--primary);
   --chart-series-2: var(--income);
   --chart-series-3: var(--expense);
   --chart-series-4: var(--investment);
   --chart-series-5: var(--transfer);
   --loader: var(--background-subtle);
-  --skeleton: #1d2a40;
-  --shadow-xs: 0 1px 2px rgb(0 0 0 / 0.24);
-  --shadow-sm: 0 2px 5px rgb(0 0 0 / 0.28), 0 1px 2px rgb(0 0 0 / 0.22);
-  --shadow-md: 0 16px 40px rgb(0 0 0 / 0.34), 0 3px 10px rgb(0 0 0 / 0.24);
-  --shadow-lg: 0 28px 72px rgb(0 0 0 / 0.46), 0 6px 18px rgb(0 0 0 / 0.28);
-  --shadow-overlay: 0 34px 90px rgb(0 0 0 / 0.56), 0 10px 28px rgb(0 0 0 / 0.32);
+  --skeleton: #213149;
+  --shadow-xs: 0 1px 2px rgb(0 0 0 / 0.22);
+  --shadow-sm: 0 3px 10px rgb(0 0 0 / 0.24);
+  --shadow-md: 0 14px 34px rgb(0 0 0 / 0.3);
+  --shadow-lg: 0 24px 58px rgb(0 0 0 / 0.38);
+  --shadow-overlay: 0 32px 80px rgb(0 0 0 / 0.52);
   --shadow: var(--shadow-sm);
   --shadow-soft: var(--shadow-md);
   --shadow-premium: var(--shadow-lg);
   --glow-soft: 0 0 0 1px color-mix(in srgb, var(--brand-accent), transparent 80%);
   --focus-ring: 0 0 0 3px color-mix(in srgb, var(--focus-color), transparent 72%);
-  --surface-highlight: inset 0 1px 0 rgb(255 255 255 / 0.08);
+  --surface-highlight: inset 0 1px 0 rgb(255 255 255 / 0.055);
   --oneui-page-gutter: clamp(0.875rem, 1.7vw, 1.75rem);
-  --oneui-card-radius: 1.25rem;
-  --oneui-tile-radius: 1rem;
-  --oneui-control-radius: 0.875rem;
-  --oneui-button-radius: 0.875rem;
-  --oneui-input-radius: 0.875rem;
+  --oneui-card-radius: 1rem;
+  --oneui-tile-radius: 0.875rem;
+  --oneui-control-radius: 0.75rem;
+  --oneui-button-radius: 0.75rem;
+  --oneui-input-radius: 0.75rem;
   --oneui-touch-target: 2.75rem;
   --oneui-control-height-sm: 2rem;
   --oneui-control-height: 2.5rem;
@@ -5848,6 +5848,435 @@ tbody tr:hover {
   }
 }
 
+/* -------------------------------------------------------------------------- */
+/* 2026 Atlas visual system: calm, semantic, and consistent across all routes. */
+/* -------------------------------------------------------------------------- */
+
+body {
+  background: var(--background);
+  color: var(--text-primary);
+  letter-spacing: -0.006em;
+}
+
+::selection {
+  background: var(--primary-soft);
+  color: var(--text-primary);
+}
+
+:where(svg.lucide) {
+  stroke-width: 1.9;
+}
+
+:where(
+  .jf-node4-dashboard-ambient,
+  .jf-dashboard-grid,
+  .dashboard-balance-shape,
+  .dashboard-metric-shape
+) {
+  display: none !important;
+}
+
+:where(.jf-page-shell, .jf-node4-landing, .jf-auth-root, [data-dashboard-shell]) {
+  background: var(--background);
+}
+
+:where(.jf-node4-landing-ambient, .jf-auth-ambient) {
+  opacity: 0.72;
+  background:
+    radial-gradient(
+      circle at 14% 2%,
+      color-mix(in srgb, var(--primary), transparent 91%),
+      transparent 30rem
+    ),
+    radial-gradient(
+      circle at 88% 0%,
+      color-mix(in srgb, var(--secondary), transparent 94%),
+      transparent 26rem
+    );
+}
+
+:where(
+  .finance-panel,
+  .finance-surface,
+  .finance-surface-glass,
+  .jf-card,
+  .jf-card-premium,
+  .summary-card,
+  .page-heading,
+  [data-slot="card"]
+) {
+  border-color: var(--border);
+  background: var(--card);
+  box-shadow: var(--shadow-sm);
+}
+
+:where(.finance-panel-soft, .finance-surface-soft, .jf-card-soft) {
+  border-color: var(--border);
+  background: var(--surface-secondary);
+  box-shadow: none;
+}
+
+:where(.finance-surface-glass) {
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+:where(.finance-panel, .finance-surface, .summary-card, [data-slot="card"]):hover {
+  border-color: var(--border-strong);
+}
+
+:where(.finance-hover-lift, .jf-card-hover):hover {
+  border-color: var(--border-strong);
+  box-shadow: var(--shadow-md);
+  transform: translate3d(0, -1px, 0);
+}
+
+:where(.page-heading, .page-heading.finance-surface-glass) {
+  gap: 1rem;
+  border-color: var(--border);
+  background: var(--card);
+  box-shadow: var(--shadow-sm);
+}
+
+.page-title {
+  font-weight: 650;
+  letter-spacing: -0.03em;
+}
+
+.page-subtitle {
+  max-width: 68ch;
+  color: var(--text-secondary);
+}
+
+:where(
+  .finance-icon-container,
+  .finance-icon-bubble,
+  .dashboard-metric-icon,
+  .auth-status-icon
+) {
+  border-color: color-mix(in srgb, currentColor, var(--border) 72%);
+  border-radius: var(--radius-control);
+  background: color-mix(in srgb, currentColor, transparent 91%);
+  color: var(--active);
+  box-shadow: none;
+}
+
+:where(
+  .finance-icon-container,
+  .finance-icon-bubble,
+  .dashboard-metric-icon,
+  .auth-status-icon
+) > svg {
+  width: 1.125rem;
+  height: 1.125rem;
+}
+
+:where(.finance-control, .field-input, .auth-input, [data-slot="input"]) {
+  border-color: var(--border);
+  border-radius: var(--radius-control);
+  background: var(--surface-inset);
+  color: var(--text-primary);
+  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--text-primary), transparent 97%);
+}
+
+:where(.finance-control, .field-input, .auth-input, [data-slot="input"]):hover {
+  border-color: var(--border-strong);
+  background: var(--surface-primary);
+  transform: none;
+}
+
+:where(.finance-control, .field-input, .auth-input, [data-slot="input"]):focus,
+:where(.finance-control, .field-input, .auth-input, [data-slot="input"]):focus-visible,
+:where(.finance-control, .field-input, .auth-input, [data-slot="input"]):focus-within {
+  border-color: var(--focus-color);
+  background: var(--surface-primary);
+  box-shadow: var(--focus-ring);
+}
+
+:where(.field-input, .auth-input, [data-slot="input"])::placeholder {
+  color: var(--text-muted);
+  opacity: 0.88;
+}
+
+:where(
+  .primary-action,
+  .danger-action,
+  .success-action,
+  .investment-action,
+  .warning-action,
+  [data-slot="button"]
+) {
+  border-radius: var(--radius-button);
+  font-weight: 650;
+  letter-spacing: -0.008em;
+  box-shadow: var(--shadow-xs);
+}
+
+:where(.icon-button, [data-slot="button"]):has(> svg:only-child) {
+  border-radius: var(--radius-control);
+}
+
+:where(.finance-state-pill, .dashboard-comparison-badge) {
+  border-radius: 999px;
+  box-shadow: none;
+  font-weight: 650;
+  letter-spacing: 0;
+}
+
+:where(
+  [data-slot="dialog-content"],
+  [data-slot="sheet-content"],
+  [data-slot="dropdown-menu-content"],
+  [data-slot="dropdown-menu-sub-content"],
+  [data-slot="select-content"]
+) {
+  border-color: var(--border);
+  background: var(--surface-elevated);
+  color: var(--text-primary);
+}
+
+.dark :where(
+  [data-slot="dialog-content"],
+  [data-slot="sheet-content"],
+  [data-slot="dropdown-menu-content"],
+  [data-slot="dropdown-menu-sub-content"],
+  [data-slot="select-content"]
+) {
+  border-color: var(--border-strong);
+  background: var(--surface-elevated);
+  box-shadow: var(--shadow-overlay);
+}
+
+:where(table, [data-slot="table"]) {
+  border-color: var(--divider);
+}
+
+:where(table thead, [data-slot="table-header"]) {
+  background: var(--surface-secondary);
+}
+
+:where(table th, [data-slot="table-head"]) {
+  color: var(--text-secondary);
+  font-size: 0.72rem;
+  font-weight: 650;
+  letter-spacing: 0.045em;
+}
+
+:where(table tbody tr, [data-slot="table-row"]) {
+  border-color: var(--divider);
+}
+
+:where(table tbody tr, [data-slot="table-row"]):hover {
+  background: var(--surface-soft);
+}
+
+:where([data-empty-state]) {
+  border-radius: var(--radius-card);
+}
+
+:where([data-empty-state] .finance-icon-bubble) {
+  width: 3rem;
+  height: 3rem;
+  margin-bottom: 0.875rem;
+}
+
+:where(.finance-skeleton, [data-slot="skeleton"]) {
+  border-color: transparent;
+  border-radius: var(--radius-control);
+  background-image: linear-gradient(
+    90deg,
+    var(--skeleton),
+    color-mix(in srgb, var(--skeleton), var(--surface-primary) 42%),
+    var(--skeleton)
+  );
+}
+
+/* Public and authentication surfaces use the same brand grammar. */
+
+.jf-node4-landing > header,
+.jf-auth-header,
+.jf-desktop-header,
+[data-dashboard-shell] > header {
+  box-shadow: none;
+}
+
+.jf-node4-landing > header {
+  background: color-mix(in srgb, var(--background), transparent 4%);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+.jf-auth-card {
+  border-color: var(--border);
+  border-radius: var(--radius-card);
+  background: var(--card);
+  box-shadow: var(--shadow-lg);
+}
+
+.jf-auth-root .auth-trust-item {
+  border-color: var(--border);
+  border-radius: var(--radius-card);
+  background: var(--surface-secondary);
+  box-shadow: none;
+}
+
+.jf-auth-root .auth-mode-tabs {
+  border-color: var(--border);
+  background: var(--surface-secondary);
+}
+
+.jf-auth-root .auth-mode-tab[data-active="true"] {
+  background: var(--card);
+  color: var(--primary);
+  box-shadow: var(--shadow-xs);
+}
+
+.jf-auth-root .auth-provider-action {
+  border-color: var(--border);
+  background: var(--card);
+  box-shadow: none;
+}
+
+.jf-auth-root .auth-provider-action:hover {
+  border-color: var(--border-strong);
+  background: var(--surface-soft);
+  box-shadow: none;
+}
+
+/* Application shell and dashboard surfaces. */
+
+.jf-dashboard-scroll {
+  background: var(--background);
+  scrollbar-color: var(--border-strong) transparent;
+}
+
+.jf-desktop-header,
+[data-dashboard-shell] > div > header,
+[data-dashboard-shell] .jf-dashboard-header-wrap {
+  border-color: var(--divider);
+  background: var(--surface-primary);
+  box-shadow: none;
+}
+
+.finance-nav-item:hover,
+.finance-interactive-tile:hover {
+  border-color: var(--border);
+  background: var(--surface-soft);
+  box-shadow: none;
+  transform: none;
+}
+
+.finance-nav-item.is-active,
+.finance-nav-item[aria-current="page"] {
+  border-color: color-mix(in srgb, var(--primary), var(--border) 68%);
+  background: var(--primary-soft);
+  color: var(--primary);
+}
+
+.jf-mobile-nav-shell > div {
+  border-color: var(--border-strong);
+  border-radius: calc(var(--radius-card) + 0.125rem);
+  background: var(--surface-elevated);
+  box-shadow: var(--shadow-lg);
+}
+
+.jf-mobile-nav-shell a[aria-current="page"],
+.jf-mobile-nav-shell button[aria-current="page"] {
+  background: var(--primary-soft);
+  color: var(--primary);
+  box-shadow: none;
+}
+
+.dashboard-overview :where(.finance-panel, .finance-reference-card, .dashboard-graph-card) {
+  border-color: var(--border);
+  background: var(--card);
+  box-shadow: var(--shadow-sm);
+}
+
+.dashboard-overview :where(.finance-panel, .finance-reference-card, .dashboard-graph-card):hover {
+  border-color: var(--border-strong);
+  box-shadow: var(--shadow-md);
+}
+
+.dashboard-balance-hero {
+  border-color: color-mix(in srgb, var(--primary), var(--border) 78%);
+  background: var(--card);
+  box-shadow: var(--shadow-sm);
+}
+
+.dashboard-balance-accent {
+  width: 0.25rem;
+  background: var(--primary);
+}
+
+.dashboard-quick-action {
+  border-color: var(--border);
+  background: var(--surface-secondary);
+}
+
+.dashboard-quick-action:hover {
+  border-color: var(--border-strong);
+  background: var(--surface-primary);
+  box-shadow: var(--shadow-sm);
+}
+
+.dashboard-metric-card {
+  min-height: 9.5rem;
+  border-color: var(--border);
+  background: var(--card);
+  box-shadow: var(--shadow-sm);
+}
+
+.dashboard-metric-card::after {
+  inset-inline: 0;
+  height: 0.18rem;
+  border-radius: 0;
+}
+
+.dashboard-pulse-tile {
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-sm);
+}
+
+.dashboard-card-action {
+  border-radius: var(--radius-button);
+  background: var(--surface-secondary);
+  color: var(--primary);
+}
+
+.jf-floating-actions [role="group"] {
+  border-radius: var(--radius-card) !important;
+  background: var(--surface-elevated) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+.jf-floating-actions > button:last-of-type {
+  border-radius: var(--radius-card) !important;
+  background: var(--primary) !important;
+  box-shadow: var(--shadow-lg) !important;
+}
+
+@media (max-width: 640px) {
+  :where(.page-heading, .page-heading.finance-surface-glass) {
+    padding: 1rem;
+  }
+
+  :where(.finance-panel, .summary-card, .dashboard-metric-card) {
+    box-shadow: var(--shadow-xs);
+  }
+
+  .dashboard-quick-action {
+    min-height: 4.25rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :where(.finance-hover-lift, .jf-card-hover):hover {
+    transform: none;
+  }
+}
+
 /* Node 2: canonical typography, icon, elevation, motion, and loading behavior. */
 body {
   font-family: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
@@ -5969,5 +6398,113 @@ body {
 
   [data-print-report] :where(article, section, .finance-panel, .summary-card) {
     break-inside: avoid;
+  }
+}
+
+/* Canonical cascade guard for the Atlas layer. Keep this final. */
+:root body {
+  background: var(--background);
+}
+
+:root :is(
+  .finance-panel,
+  .finance-surface,
+  .finance-surface-glass,
+  .jf-card,
+  .jf-card-premium,
+  .summary-card,
+  .page-heading,
+  [data-slot="card"]
+) {
+  border-color: var(--border);
+  background: var(--card);
+  box-shadow: var(--shadow-sm);
+}
+
+:root :is(.finance-panel-soft, .finance-surface-soft, .jf-card-soft) {
+  border-color: var(--border);
+  background: var(--surface-secondary);
+  box-shadow: none;
+}
+
+:root :is(.finance-surface-glass) {
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+:root .page-heading.finance-surface-glass {
+  border-color: var(--border);
+  background: var(--card);
+  box-shadow: var(--shadow-sm);
+}
+
+:root :is(.finance-hover-lift, .jf-card-hover):hover {
+  border-color: var(--border-strong);
+  box-shadow: var(--shadow-md);
+  transform: translate3d(0, -1px, 0);
+}
+
+:root :is(
+  .finance-icon-container,
+  .finance-icon-bubble,
+  .dashboard-metric-icon,
+  .auth-status-icon
+) {
+  border-radius: var(--radius-control);
+  box-shadow: none;
+}
+
+:root :is(.finance-control, .field-input, .auth-input, [data-slot="input"]) {
+  border-color: var(--border);
+  border-radius: var(--radius-control);
+  background: var(--surface-inset);
+  color: var(--text-primary);
+}
+
+:root :is(.finance-control, .field-input, .auth-input, [data-slot="input"]):hover {
+  border-color: var(--border-strong);
+  background: var(--surface-primary);
+  transform: none;
+}
+
+:root :is(.finance-control, .field-input, .auth-input, [data-slot="input"]):focus,
+:root :is(.finance-control, .field-input, .auth-input, [data-slot="input"]):focus-visible,
+:root :is(.finance-control, .field-input, .auth-input, [data-slot="input"]):focus-within {
+  border-color: var(--focus-color);
+  background: var(--surface-primary);
+  box-shadow: var(--focus-ring);
+}
+
+:root :is(
+  [data-slot="dialog-content"],
+  [data-slot="sheet-content"],
+  [data-slot="dropdown-menu-content"],
+  [data-slot="dropdown-menu-sub-content"],
+  [data-slot="select-content"]
+) {
+  border-color: var(--border);
+  background: var(--surface-elevated);
+  color: var(--text-primary);
+}
+
+:root :is(.jf-node4-dashboard-ambient, .jf-dashboard-grid, .dashboard-balance-shape, .dashboard-metric-shape) {
+  display: none !important;
+}
+
+:root :is(svg.lucide) {
+  stroke-width: 1.9;
+}
+
+@media (max-width: 639px) {
+  :root [data-slot="dialog-content"].finance-modal-content {
+    top: auto;
+    right: 0.375rem;
+    bottom: max(0.375rem, env(safe-area-inset-bottom));
+    left: 0.375rem;
+    width: auto;
+    max-width: none;
+    max-height: calc(100dvh - max(0.75rem, env(safe-area-inset-bottom)));
+    translate: none !important;
+    transform: none !important;
   }
 }

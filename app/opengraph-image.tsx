@@ -1,6 +1,6 @@
 import { ImageResponse } from "next/og";
 
-export const alt = "Jamal's Finance — Premium Personal Finance Dashboard";
+export const alt = "Jamal's Finance — calm personal finance workspace";
 
 export const size = {
   width: 1200,
@@ -8,6 +8,9 @@ export const size = {
 };
 
 export const contentType = "image/png";
+
+const modules = ["Accounts", "Activity", "Goals", "Reports"] as const;
+const bars = [54, 82, 66, 104, 76, 126, 92] as const;
 
 export default function Image() {
   return new ImageResponse(
@@ -18,55 +21,31 @@ export default function Image() {
         display: "flex",
         position: "relative",
         overflow: "hidden",
-        background:
-          "linear-gradient(135deg, #0B1220 0%, #111A2B 48%, #162235 100%)",
-        color: "#E7EEF8",
+        background: "#0C1422",
+        color: "#EDF3FB",
         fontFamily: "Arial, Helvetica, sans-serif",
       }}
     >
       <div
         style={{
           position: "absolute",
-          top: -160,
+          top: -220,
           right: -120,
-          width: 460,
-          height: 460,
+          width: 620,
+          height: 620,
           borderRadius: 999,
-          background: "rgba(56, 189, 248, 0.18)",
+          background: "rgba(155, 176, 255, 0.10)",
         }}
       />
-
       <div
         style={{
           position: "absolute",
-          bottom: -180,
-          left: -120,
-          width: 520,
-          height: 520,
+          bottom: -260,
+          left: 220,
+          width: 620,
+          height: 620,
           borderRadius: 999,
-          background: "rgba(34, 197, 94, 0.16)",
-        }}
-      />
-
-      <div
-        style={{
-          position: "absolute",
-          inset: 0,
-          background:
-            "linear-gradient(90deg, rgba(255,255,255,0.045) 1px, transparent 1px), linear-gradient(0deg, rgba(255,255,255,0.035) 1px, transparent 1px)",
-          backgroundSize: "54px 54px",
-          opacity: 0.75,
-        }}
-      />
-
-      <div
-        style={{
-          position: "absolute",
-          top: 0,
-          left: 0,
-          right: 0,
-          height: 10,
-          background: "linear-gradient(90deg, #33C78B, #62A5FF, #E6B450)",
+          background: "rgba(85, 197, 186, 0.07)",
         }}
       />
 
@@ -76,6 +55,7 @@ export default function Image() {
           width: "100%",
           height: "100%",
           display: "flex",
+          alignItems: "center",
           padding: 64,
         }}
       >
@@ -84,76 +64,78 @@ export default function Image() {
             width: "58%",
             display: "flex",
             flexDirection: "column",
-            justifyContent: "space-between",
+            justifyContent: "center",
           }}
         >
-          <div style={{ display: "flex", flexDirection: "column" }}>
+          <div style={{ display: "flex", alignItems: "center" }}>
             <div
               style={{
+                width: 44,
+                height: 44,
                 display: "flex",
                 alignItems: "center",
-                width: 310,
-                borderRadius: 999,
-                border: "1px solid rgba(255,255,255,0.16)",
-                background: "rgba(255,255,255,0.08)",
-                padding: "12px 18px",
-                color: "rgba(248,251,255,0.78)",
-                fontSize: 26,
+                justifyContent: "center",
+                borderRadius: 13,
+                border: "1px solid rgba(155,176,255,0.38)",
+                background: "rgba(155,176,255,0.14)",
+                color: "#9BB0FF",
+                fontSize: 25,
+                fontWeight: 800,
+              }}
+            >
+              J
+            </div>
+            <div
+              style={{
+                marginLeft: 14,
+                color: "#C2CEDD",
+                fontSize: 25,
                 fontWeight: 700,
               }}
             >
-              <div
-                style={{
-                  width: 32,
-                  height: 32,
-                  borderRadius: 10,
-                  marginRight: 12,
-                  background: "linear-gradient(135deg, #33C78B, #62A5FF)",
-                }}
-              />
               Jamal&apos;s Finance
-            </div>
-
-            <div
-              style={{
-                marginTop: 42,
-                fontSize: 72,
-                lineHeight: 1.02,
-                letterSpacing: "-0.055em",
-                fontWeight: 800,
-                color: "#E7EEF8",
-              }}
-            >
-              Manage money with clarity.
-            </div>
-
-            <div
-              style={{
-                marginTop: 24,
-                maxWidth: 620,
-                fontSize: 31,
-                lineHeight: 1.35,
-                color: "rgba(248,251,255,0.68)",
-                fontWeight: 500,
-              }}
-            >
-              Track accounts, expenses, goals, liabilities, investments and
-              savings in one secure workspace.
             </div>
           </div>
 
-          <div style={{ display: "flex", alignItems: "center" }}>
-            {["Accounts", "Expenses", "Goals", "Investments"].map((item) => (
+          <div
+            style={{
+              marginTop: 44,
+              maxWidth: 640,
+              fontSize: 76,
+              lineHeight: 1.01,
+              letterSpacing: "-0.052em",
+              fontWeight: 800,
+            }}
+          >
+            Your money picture, made clear.
+          </div>
+
+          <div
+            style={{
+              marginTop: 26,
+              maxWidth: 610,
+              color: "#94A4BA",
+              fontSize: 29,
+              lineHeight: 1.4,
+              fontWeight: 500,
+            }}
+          >
+            A private workspace for accurate tracking, thoughtful review, and
+            practical planning.
+          </div>
+
+          <div style={{ display: "flex", marginTop: 38 }}>
+            {modules.map((item) => (
               <div
                 key={item}
                 style={{
-                  marginRight: 14,
-                  borderRadius: 999,
-                  border: "1px solid rgba(255,255,255,0.14)",
-                  background: "rgba(255,255,255,0.08)",
-                  padding: "10px 16px",
-                  color: "rgba(248,251,255,0.76)",
-                  fontSize: 22,
+                  marginRight: 12,
+                  borderRadius: 12,
+                  border: "1px solid #2B3B55",
+                  background: "#152136",
+                  padding: "10px 14px",
+                  color: "#C2CEDD",
+                  fontSize: 19,
                   fontWeight: 700,
                 }}
               >
@@ -173,14 +155,15 @@ export default function Image() {
         >
           <div
             style={{
-              width: 410,
-              height: 440,
-              borderRadius: 36,
-              border: "1px solid rgba(255,255,255,0.16)",
-              background: "rgba(255,255,255,0.10)",
-              padding: 28,
+              width: 420,
+              height: 448,
               display: "flex",
               flexDirection: "column",
+              borderRadius: 24,
+              border: "1px solid #3B4E6C",
+              background: "#152136",
+              padding: 28,
+              boxShadow: "0 26px 64px rgba(0,0,0,0.28)",
             }}
           >
             <div
@@ -193,115 +176,95 @@ export default function Image() {
               <div style={{ display: "flex", flexDirection: "column" }}>
                 <div
                   style={{
-                    color: "rgba(248,251,255,0.52)",
-                    fontSize: 22,
+                    color: "#94A4BA",
+                    fontSize: 18,
                     fontWeight: 700,
                   }}
                 >
-                  Net Balance
+                  Workspace overview
                 </div>
                 <div
                   style={{
-                    color: "#E7EEF8",
-                    fontSize: 50,
+                    color: "#EDF3FB",
+                    fontSize: 34,
                     fontWeight: 800,
-                    marginTop: 6,
+                    marginTop: 7,
                   }}
                 >
-                  $24,850
+                  Financial clarity
                 </div>
               </div>
-
               <div
                 style={{
-                  borderRadius: 999,
-                  background: "rgba(34,197,94,0.16)",
-                  color: "#33C78B",
-                  padding: "9px 14px",
-                  fontSize: 18,
-                  fontWeight: 800,
+                  width: 44,
+                  height: 44,
+                  borderRadius: 13,
+                  border: "1px solid rgba(72,198,145,0.34)",
+                  background: "rgba(72,198,145,0.12)",
                 }}
-              >
-                +18.4%
-              </div>
+              />
             </div>
 
             <div
               style={{
-                marginTop: 34,
-                height: 150,
+                height: 160,
                 display: "flex",
                 alignItems: "flex-end",
+                marginTop: 34,
+                borderBottom: "1px solid #2B3B55",
               }}
             >
-              {[72, 92, 62, 112, 82, 130, 104].map((height, index) => (
+              {bars.map((height, index) => (
                 <div
-                  key={index}
+                  key={height}
                   style={{
                     width: 34,
                     height,
-                    marginRight: 14,
-                    borderRadius: 999,
-                    background:
-                      "linear-gradient(180deg, #E7EEF8 0%, #8AA4FF 100%)",
+                    marginRight: index === bars.length - 1 ? 0 : 17,
+                    borderRadius: "8px 8px 0 0",
+                    background: index % 3 === 1 ? "#55C5BA" : "#9BB0FF",
+                    opacity: 0.72 + index * 0.035,
                   }}
                 />
               ))}
             </div>
 
-            <div
-              style={{
-                marginTop: 30,
-                display: "flex",
-                flexDirection: "column",
-              }}
-            >
-              {[
-                ["Income", "+$4,280", "#33C78B"],
-                ["Expenses", "-$1,940", "#F08A7B"],
-                ["Savings", "$2,340", "#8AA4FF"],
-              ].map(([label, value, color]) => (
-                <div
-                  key={label}
-                  style={{
-                    height: 46,
-                    marginBottom: 12,
-                    borderRadius: 18,
-                    background: "rgba(255,255,255,0.08)",
-                    border: "1px solid rgba(255,255,255,0.11)",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                    padding: "0 18px",
-                  }}
-                >
+            <div style={{ display: "flex", flexDirection: "column", marginTop: 26 }}>
+              {["Recent activity", "Savings progress", "Upcoming obligations"].map(
+                (label, index) => (
                   <div
+                    key={label}
                     style={{
-                      color: "rgba(248,251,255,0.60)",
-                      fontSize: 20,
-                      fontWeight: 700,
+                      height: 46,
+                      display: "flex",
+                      alignItems: "center",
+                      marginBottom: 11,
+                      borderRadius: 12,
+                      border: "1px solid #2B3B55",
+                      background: "#101B2C",
+                      padding: "0 14px",
                     }}
                   >
-                    {label}
+                    <div
+                      style={{
+                        width: 9,
+                        height: 9,
+                        marginRight: 12,
+                        borderRadius: 999,
+                        background: ["#70ADEF", "#48C691", "#E4B45D"][index],
+                      }}
+                    />
+                    <div style={{ color: "#C2CEDD", fontSize: 18, fontWeight: 700 }}>
+                      {label}
+                    </div>
                   </div>
-                  <div
-                    style={{
-                      color,
-                      fontSize: 21,
-                      fontWeight: 800,
-                    }}
-                  >
-                    {value}
-                  </div>
-                </div>
-              ))}
+                ),
+              )}
             </div>
           </div>
         </div>
       </div>
     </div>,
-    {
-      ...size,
-    },
+    size,
   );
 }

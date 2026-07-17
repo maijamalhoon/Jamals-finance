@@ -134,9 +134,10 @@ describe("theme contracts", () => {
     );
     expect(THEME_BOOTSTRAP_SCRIPT).toContain('media.addEventListener("change"');
     expect(THEME_BOOTSTRAP_SCRIPT).toContain('root.classList.toggle("dark"');
+    expect(THEME_BOOTSTRAP_SCRIPT).toContain('meta[name="theme-color"]');
     expect(THEME_VIEWPORT_COLORS).toEqual({
-      light: "#F6F8FB",
-      dark: "#0B1220",
+      light: "#F3F6FA",
+      dark: "#0C1422",
     });
   });
 
@@ -145,48 +146,48 @@ describe("theme contracts", () => {
     const darkRule = getCssRule(globalsCssSource, "\n.dark {");
 
     for (const declaration of [
-      "--page-background: #f6f8fb;",
-      "--background-subtle: #eef3f8;",
+      "--page-background: #f3f6fa;",
+      "--background-subtle: #e9eff6;",
       "--surface: #ffffff;",
-      "--surface-tinted: #f8fafc;",
-      "--primary: #3559e0;",
-      "--secondary: #0f766e;",
-      "--success: #1f9d6a;",
-      "--danger: #d96c63;",
-      "--income: #1f9d6a;",
-      "--expense: #d96c63;",
-      "--transfer: #2e7dd7;",
-      "--investment: #7c5ce0;",
-      "--goals: #0f9f8f;",
-      "--payables: #c48a1c;",
+      "--surface-tinted: #f7f9fc;",
+      "--primary: #2956c8;",
+      "--secondary: #0c766f;",
+      "--success: #147a55;",
+      "--danger: #b84f4a;",
+      "--income: #147a55;",
+      "--expense: #b84f4a;",
+      "--transfer: #2366b1;",
+      "--investment: #6849b8;",
+      "--goals: #0b777b;",
+      "--payables: #9a650c;",
     ]) {
       expect(lightRule).toContain(declaration);
     }
 
     for (const declaration of [
-      "--page-background: #0b1220;",
-      "--background-subtle: #0f172a;",
-      "--surface: #111a2b;",
-      "--surface-elevated: #162235;",
-      "--surface-tinted: #132033;",
-      "--primary: #8aa4ff;",
-      "--secondary: #3cb7aa;",
-      "--success: #33c78b;",
-      "--danger: #f08a7b;",
-      "--income: #33c78b;",
-      "--expense: #f08a7b;",
-      "--transfer: #62a5ff;",
-      "--investment: #a78bfa;",
-      "--goals: #2fc6b2;",
-      "--payables: #e6b450;",
+      "--page-background: #0c1422;",
+      "--background-subtle: #111c2d;",
+      "--surface: #152136;",
+      "--surface-elevated: #1a2940;",
+      "--surface-tinted: #18263b;",
+      "--primary: #9bb0ff;",
+      "--secondary: #55c5ba;",
+      "--success: #48c691;",
+      "--danger: #f09189;",
+      "--income: #48c691;",
+      "--expense: #f09189;",
+      "--transfer: #70adef;",
+      "--investment: #b39af2;",
+      "--goals: #56c9c2;",
+      "--payables: #e4b45d;",
     ]) {
       expect(darkRule).toContain(declaration);
     }
   });
 
   it("keeps persisted category swatch labels readable", () => {
-    expect(getReadableTextColor("#3559E0")).toBe("#F8FAFC");
-    expect(getReadableTextColor("#E8F7F0")).toBe("#0F172A");
+    expect(getReadableTextColor("#2956C8")).toBe("#FFFFFF");
+    expect(getReadableTextColor("#E5F4ED")).toBe("#17233A");
   });
 
   it("keeps dark shared repairs on the approved semantic tokens", () => {

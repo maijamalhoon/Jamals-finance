@@ -170,7 +170,9 @@ export default function LoginPage() {
     const params = new URLSearchParams(window.location.search);
     setSafeNext(sanitizeInternalRedirect(params.get("next")));
 
-    if (params.get("mode") === "forgot") setStep("forgot");
+    const requestedMode = params.get("mode");
+    if (requestedMode === "forgot") setStep("forgot");
+    if (requestedMode === "signup") setStep("signup");
 
     const reason = normalizeLoginReason(params.get("reason"));
     if (reason) setReasonMessage(loginReasonMessages[reason]);
@@ -408,7 +410,7 @@ export default function LoginPage() {
 
   const description =
     step === "login" ? "Log in to continue to your private finance workspace."
-    : step === "signup" ? "Create your Jamals Finance account, then complete one short profile step."
+    : step === "signup" ? "Create your Jamal's Finance account, then follow the guided workspace setup."
     : step === "forgot" ? "Enter your email and we will send password-recovery instructions without revealing account status."
     : checkEmailPurpose === "signup"
       ? "Confirm your email to continue to profile setup."
@@ -464,7 +466,7 @@ export default function LoginPage() {
       ) : null}
 
       {step === "login" ? (
-        <form id="auth-login-panel" onSubmit={handleLogin} noValidate className="mt-4 space-y-1" aria-busy={isLoading}>
+        <form id="auth-login-panel" method="post" action="/login" onSubmit={handleLogin} noValidate className="mt-4 space-y-1" aria-busy={isLoading}>
           <AuthField
             id="login-email"
             name="email"
@@ -514,7 +516,7 @@ export default function LoginPage() {
       ) : null}
 
       {step === "signup" ? (
-        <form id="auth-signup-panel" onSubmit={handleSignup} noValidate className="mt-4 space-y-1" aria-busy={isLoading}>
+        <form id="auth-signup-panel" method="post" action="/login" onSubmit={handleSignup} noValidate className="mt-4 space-y-1" aria-busy={isLoading}>
           <AuthField
             id="signup-full-name"
             name="full_name"
@@ -578,7 +580,7 @@ export default function LoginPage() {
       ) : null}
 
       {step === "forgot" ? (
-        <form onSubmit={handleForgotPassword} noValidate className="space-y-2" aria-busy={isLoading}>
+        <form method="post" action="/login" onSubmit={handleForgotPassword} noValidate className="space-y-2" aria-busy={isLoading}>
           <Button type="button" variant="ghost" onClick={() => switchStep("login")} disabled={isLoading} className="-ml-2 text-text-secondary">
             <ArrowLeft className="h-4 w-4" /> Back to login
           </Button>

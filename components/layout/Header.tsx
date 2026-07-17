@@ -2,9 +2,9 @@
 
 import Link from "next/link";
 import {
-  BarChart3,
   Check,
   ChevronDown,
+  CircleDollarSign,
   Search,
   X,
 } from "lucide-react";
@@ -76,12 +76,12 @@ export default function Header({ notificationSlot }: HeaderProps) {
       <div className="mx-auto flex min-h-[68px] w-full max-w-[1600px] min-w-0 items-center justify-between gap-3 px-3 xl:px-5">
         <div className="flex min-w-0 flex-1 items-center gap-3">
           <div className="grid h-10 w-10 shrink-0 place-items-center rounded-[var(--radius-control)] border border-brand/25 bg-brand text-primary-foreground shadow-theme">
-            <BarChart3 size={17} strokeWidth={2.2} aria-hidden="true" />
+            <CircleDollarSign size={18} aria-hidden="true" />
           </div>
 
           <div className="min-w-0 shrink-0">
             <p className="truncate text-sm font-bold leading-4 text-text-primary">
-              Jamals Finance
+              Jamal&apos;s Finance
             </p>
             <p className="mt-1 truncate text-[10px] font-semibold uppercase tracking-[0.1em] text-text-tertiary">
               Personal workspace

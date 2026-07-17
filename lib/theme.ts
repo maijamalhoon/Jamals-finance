@@ -1,8 +1,8 @@
 export const THEME_STORAGE_KEY = "jamal-theme";
 export const THEME_CHANGE_EVENT = "jamal-theme-change";
 export const THEME_VIEWPORT_COLORS = {
-  light: "#F6F8FB",
-  dark: "#0B1220",
+  light: "#F3F6FA",
+  dark: "#0C1422",
 } as const;
 
 export const THEME_PREFERENCES = ["system", "light", "dark"] as const;
@@ -83,6 +83,9 @@ export function applyThemePreference(
     root.style.colorScheme = state.colorScheme;
     root.dataset.themePreference = state.dataThemePreference;
     root.dataset.theme = state.dataTheme;
+    document
+      .querySelector('meta[name="theme-color"]')
+      ?.setAttribute("content", THEME_VIEWPORT_COLORS[state.resolvedTheme]);
   }
 
   if (persist && typeof window !== "undefined") {
@@ -117,6 +120,8 @@ try {
       root.style.colorScheme = shouldUseDark ? "dark" : "light";
       root.dataset.themePreference = theme;
       root.dataset.theme = shouldUseDark ? "dark" : "light";
+      var themeColor = document.querySelector('meta[name="theme-color"]');
+      if (themeColor) themeColor.setAttribute("content", shouldUseDark ? ${JSON.stringify(THEME_VIEWPORT_COLORS.dark)} : ${JSON.stringify(THEME_VIEWPORT_COLORS.light)});
     };
 
     applyPreference(readPreference());

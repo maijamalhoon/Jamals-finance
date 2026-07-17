@@ -381,7 +381,7 @@ export default function NewUserSetupGuide({
                   id="new-user-setup-title"
                   className="text-xl font-black tracking-normal text-text-primary"
                 >
-                  Make Jamals Finance yours
+                  Make Jamal&apos;s Finance yours
                 </h2>
               </div>
             </div>

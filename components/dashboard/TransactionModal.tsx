@@ -437,7 +437,7 @@ export default function TransactionModal({
 
           <FinanceFormField label="Category" htmlFor="transaction-category">
             <Select
-              value={categoryId || undefined}
+              value={categoryId}
               onValueChange={(nextValue) => {
                 if (nextValue) setCategoryId(nextValue);
               }}
