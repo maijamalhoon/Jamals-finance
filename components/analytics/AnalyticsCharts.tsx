@@ -188,8 +188,30 @@ export function SpendingDistributionChart({ data }: { data: CategoryBreakdownIte
                 {data.map((item) => <Cell key={item.id} fill={item.color} />)}
               </Pie>
               <Tooltip
-                contentStyle={{ background: "var(--chart-tooltip)", border: "1px solid var(--border)", borderRadius: 12, color: "var(--text-primary)" }}
-                formatter={(value) => formatCurrency(Number(value ?? 0))}
+                cursor={false}
+                contentStyle={{
+                  maxWidth: "min(78vw, 260px)",
+                  background: "var(--chart-tooltip)",
+                  border: "1px solid var(--border)",
+                  borderRadius: 14,
+                  color: "var(--text-primary)",
+                  boxShadow: "var(--shadow-soft)",
+                  padding: "10px 12px",
+                }}
+                itemStyle={{
+                  color: "var(--text-primary)",
+                  fontSize: 12,
+                  fontWeight: 750,
+                  padding: 0,
+                }}
+                labelStyle={{ display: "none" }}
+                formatter={(value, _name, item) => {
+                  const category = item.payload as CategoryBreakdownItem | undefined;
+                  return [
+                    formatCurrency(Number(value ?? 0)),
+                    category?.name ?? "Spending",
+                  ];
+                }}
               />
             </PieChart>
           )}
