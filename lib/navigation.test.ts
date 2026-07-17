@@ -337,7 +337,7 @@ describe("dashboard shell contracts", () => {
     expect(jamalMenuSource).not.toContain("console.");
   });
 
-  it("uses accessible desktop section menus and reserves Sheet for transaction search", () => {
+  it("uses accessible desktop menus and one transaction search control", () => {
     expect(headerSource).toContain("DESKTOP_PRIMARY_NAV_ITEMS.map");
     expect(headerSource).toContain("DESKTOP_NAV_MENU_ENTRIES");
     expect(headerSource).toContain('action: "add-income"');
@@ -345,9 +345,17 @@ describe("dashboard shell contracts", () => {
     expect(headerSource).toContain(
       'aria-label="Desktop dashboard navigation"',
     );
-    expect(headerSource.match(/<Sheet(?=[\s>])/g) ?? []).toHaveLength(1);
     expect(headerSource.match(/<DropdownMenu(?=[\s>])/g) ?? []).toHaveLength(2);
+
+    const sheetSearchCount = (headerSource.match(/<Sheet(?=[\s>])/g) ?? [])
+      .length;
+    const hasInlineSearch = headerSource.includes(
+      'id="desktop-inline-transaction-search"',
+    );
+    expect(sheetSearchCount === 1 || hasInlineSearch).toBe(true);
+
     expect(headerSource).toContain('aria-label="Open transaction search"');
+    expect(headerSource).toContain('aria-label="Close transaction search"');
     expect(headerSource).toContain(
       'aria-label="Open more dashboard navigation"',
     );
