@@ -1,6 +1,6 @@
 "use client";
 
-import { CircleDollarSign, LogOut, Settings } from "lucide-react";
+import { ChevronDown, CircleDollarSign, LogOut, Settings } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 
@@ -100,19 +100,32 @@ export default function JamalMenu({
         aria-label={`Open profile menu for ${displayName}`}
         className={
           compact
-            ? "finance-focus finance-control relative grid h-11 w-11 place-items-center rounded-[var(--radius-control)] p-0 shadow-theme"
+            ? "finance-focus flex h-11 min-w-[3.75rem] items-center justify-center gap-1 rounded-full border border-transparent bg-transparent px-1.5 text-text-secondary shadow-none hover:bg-hover hover:text-text-primary data-popup-open:bg-hover data-popup-open:text-text-primary"
             : "finance-focus flex min-h-11 w-full min-w-0 items-center gap-3 rounded-[var(--radius-tile)] border border-border bg-surface-primary px-3 py-2 text-left shadow-theme hover:bg-surface-soft"
         }
       >
-        <Avatar className={compact ? "size-8" : "size-9"}>
+        <Avatar className="size-9">
           {avatarUrl ? <AvatarImage src={avatarUrl} alt={displayName} /> : null}
-          <AvatarFallback className="bg-brand text-sm font-bold text-primary-foreground">
-            <CircleDollarSign size={15} aria-hidden="true" />
+          <AvatarFallback
+            className={
+              compact
+                ? "bg-success/18 text-sm font-bold text-success"
+                : "bg-brand text-sm font-bold text-primary-foreground"
+            }
+          >
+            {compact ? (
+              displayName.slice(0, 2).toUpperCase()
+            ) : (
+              <CircleDollarSign size={15} aria-hidden="true" />
+            )}
           </AvatarFallback>
         </Avatar>
 
         {compact ? (
-          <span className="sr-only">{displayName}</span>
+          <>
+            <span className="sr-only">{displayName}</span>
+            <ChevronDown size={14} strokeWidth={2.1} aria-hidden="true" />
+          </>
         ) : (
           <span className="min-w-0 flex-1">
             <span className="block truncate text-sm font-bold text-text-primary">
