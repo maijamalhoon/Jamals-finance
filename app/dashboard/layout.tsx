@@ -15,6 +15,7 @@ import "./dashboard-performance.css";
 import "./desktop-dashboard-layout.css";
 import "./portfolio-amount.css";
 import "./mobile-dashboard-safety.css";
+import "./card-actions-polish.css";
 
 export const dynamic = "force-dynamic";
 
