@@ -377,7 +377,7 @@ export default function InvestmentOverviewWidget({
                 : ""}
             </p>
 
-            <div className="relative mx-auto aspect-square w-full max-w-[280px] min-[420px]:max-w-[300px] sm:max-w-[320px] lg:max-w-[340px] 2xl:max-w-[300px]">
+            <div className="relative mx-auto aspect-square w-full max-w-[240px] min-[420px]:max-w-[248px] sm:max-w-[256px] md:max-w-[272px] lg:max-w-[288px] xl:max-w-[300px] 2xl:max-w-[260px]">
               <ChartFrame>
                 {({ width, height }) => (
                   <PieChart width={width} height={height} accessibilityLayer>
