@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, Package, Zap } from "lucide-react";
 import { Cell, Pie, PieChart, Tooltip } from "recharts";
@@ -65,11 +66,41 @@ function buildAllocationData(investments: Investment[]): AllocationEntry[] {
     .filter((holding) => holding.value > 0 && holding.holding.current_price > 0);
 }
 
+function isCoinGeckoImage(imageUrl: string) {
+  try {
+    return new URL(imageUrl).hostname === "coin-images.coingecko.com";
+  } catch {
+    return false;
+  }
+}
+
 function LegendIcon({ entry }: { entry: AllocationEntry }) {
+  if (entry.imageUrl && isCoinGeckoImage(entry.imageUrl)) {
+    return (
+      <Image
+        src={entry.imageUrl}
+        alt=""
+        width={20}
+        height={20}
+        sizes="20px"
+        className="h-5 w-5 shrink-0 rounded-full"
+      />
+    );
+  }
+
   if (entry.imageUrl) {
     return (
+      // Asset providers can vary; keep unknown hosts outside the Next image allowlist.
       // eslint-disable-next-line @next/next/no-img-element
-      <img src={entry.imageUrl} alt="" className="h-5 w-5 shrink-0 rounded-full" />
+      <img
+        src={entry.imageUrl}
+        alt=""
+        width={20}
+        height={20}
+        loading="lazy"
+        decoding="async"
+        className="h-5 w-5 shrink-0 rounded-full"
+      />
     );
   }
 
@@ -103,7 +134,10 @@ export default function InvestmentOverviewWidget({
   );
   const isProfit = totalPnLPct !== null && totalPnLPct > 0;
   const isLoss = totalPnLPct !== null && totalPnLPct < 0;
-  const pnlColor = isProfit ? "var(--success)" : isLoss ? "var(--danger)" : "var(--text-secondary)";
+  const pnlColor =
+    isProfit ? "var(--success)"
+    : isLoss ? "var(--danger)"
+    : "var(--text-secondary)";
   const pnlLabel =
     totalPnLPct === null ? "P&L unavailable"
     : `${isProfit ? "+" : ""}${totalPnLPct.toFixed(1)}%`;
@@ -148,7 +182,9 @@ export default function InvestmentOverviewWidget({
                   className="ml-auto shrink-0 text-[10px] font-bold tabular-nums"
                   style={{ color: investment.color }}
                 >
-                  {formatAllocation((investment.value / allocationTotalValue) * 100)}
+                  {formatAllocation(
+                    (investment.value / allocationTotalValue) * 100,
+                  )}
                 </span>
               </div>
             ))}
@@ -162,59 +198,83 @@ export default function InvestmentOverviewWidget({
             <span className="dashboard-chart-empty-icon">
               <Package size={16} />
             </span>
-            <p className="text-xs font-semibold text-text-primary">{emptyTitle}</p>
-            <p className="mt-1 text-[11px] text-text-secondary">{emptyDescription}</p>
+            <p className="text-xs font-semibold text-text-primary">
+              {emptyTitle}
+            </p>
+            <p className="mt-1 text-[11px] text-text-secondary">
+              {emptyDescription}
+            </p>
           </div>
         </div>
       ) : (
         <div className="flex min-h-[142px] flex-col items-center justify-center">
           <p className="sr-only">
             Priced portfolio value {allocationTotalValue}. Performance is {pnlLabel}.
-            {unpricedCount > 0 ? ` ${unpricedCount} holdings are excluded because current pricing is unavailable.` : ""}
+            {unpricedCount > 0 ?
+              ` ${unpricedCount} holdings are excluded because current pricing is unavailable.`
+            : ""}
           </p>
           <div className="relative h-[132px] w-[132px]">
             <ChartFrame>
               {({ width, height }) => (
                 <PieChart width={width} height={height} accessibilityLayer>
-                <Pie
-                  data={allocationData}
-                  dataKey="value"
-                  nameKey="name"
-                  innerRadius={43}
-                  outerRadius={60}
-                  paddingAngle={3}
-                  isAnimationActive
-                  animationBegin={120}
-                  animationDuration={760}
-                  stroke="var(--card)"
-                  strokeWidth={3}
-                >
-                  {allocationData.map((entry) => <Cell key={entry.id} fill={entry.color} />)}
-                </Pie>
-                <Tooltip
-                  contentStyle={{
-                    borderRadius: 16,
-                    borderColor: "var(--border)",
-                    background: "var(--card)",
-                    color: "var(--text-primary)",
-                    boxShadow: "var(--shadow-soft)",
-                  }}
-                  formatter={(value) => [formatCurrency(Number(value ?? 0)), "Priced value"]}
-                  labelFormatter={(label) => {
-                    const item = allocationData.find((entry) => entry.name === label);
-                    return item ? `${label} - ${formatAllocation((item.value / allocationTotalValue) * 100)}` : String(label);
-                  }}
-                />
+                  <Pie
+                    data={allocationData}
+                    dataKey="value"
+                    nameKey="name"
+                    innerRadius={43}
+                    outerRadius={60}
+                    paddingAngle={3}
+                    isAnimationActive={false}
+                    stroke="var(--card)"
+                    strokeWidth={3}
+                  >
+                    {allocationData.map((entry) => (
+                      <Cell key={entry.id} fill={entry.color} />
+                    ))}
+                  </Pie>
+                  <Tooltip
+                    contentStyle={{
+                      borderRadius: 16,
+                      borderColor: "var(--border)",
+                      background: "var(--card)",
+                      color: "var(--text-primary)",
+                      boxShadow: "var(--shadow-soft)",
+                    }}
+                    formatter={(value) => [
+                      formatCurrency(Number(value ?? 0)),
+                      "Priced value",
+                    ]}
+                    labelFormatter={(label) => {
+                      const item = allocationData.find(
+                        (entry) => entry.name === label,
+                      );
+                      return item ?
+                          `${label} - ${formatAllocation(
+                            (item.value / allocationTotalValue) * 100,
+                          )}`
+                        : String(label);
+                    }}
+                  />
                 </PieChart>
               )}
             </ChartFrame>
             <div className="absolute inset-[24px] grid place-items-center rounded-full border border-border bg-card text-center">
               <div>
                 <p className="max-w-[4.8rem] truncate text-[13px] font-black leading-none text-text-primary tabular-nums">
-                  <CountedAmount amount={formatCurrency(allocationTotalValue, { compact: true })} />
+                  <CountedAmount
+                    amount={formatCurrency(allocationTotalValue, {
+                      compact: true,
+                    })}
+                  />
                 </p>
-                <p className="mt-1 text-[10px] font-bold leading-none tabular-nums" style={{ color: pnlColor }}>
-                  {totalPnLPct === null ? pnlLabel : <CountedAmount amount={pnlLabel} />}
+                <p
+                  className="mt-1 text-[10px] font-bold leading-none tabular-nums"
+                  style={{ color: pnlColor }}
+                >
+                  {totalPnLPct === null ?
+                    pnlLabel
+                  : <CountedAmount amount={pnlLabel} />}
                 </p>
                 <p className="mt-1 text-[10px] font-semibold leading-none tracking-[0.1em] text-text-secondary">
                   priced value

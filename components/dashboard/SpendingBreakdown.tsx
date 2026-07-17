@@ -19,6 +19,12 @@ interface SpendingData {
   color: string;
 }
 
+type SpendingSegment = SpendingData & {
+  accent: string;
+  start: number;
+  end: number;
+};
+
 function isUsableColor(color: string | null | undefined): color is string {
   return (
     typeof color === "string" && /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(color)
@@ -105,23 +111,35 @@ export default function SpendingBreakdown({
     );
   }
 
-  let cursor = 0;
-  const segments = sortedData.map((item, index) => {
-    const accent = getCategoryAccent(item, index);
-    const share =
-      safeTotal > 0
-        ? Math.max(0, Math.min((item.value / safeTotal) * 100, 100))
-        : Math.max(0, Math.min(item.percentage, 100));
-    const start = cursor;
-    const end = Math.min(100, cursor + share);
-    cursor = end;
-    return {
-      ...item,
-      accent,
-      start,
-      end,
-    };
-  });
+  const segmentState = sortedData.reduce<{
+    cursor: number;
+    segments: SpendingSegment[];
+  }>(
+    (state, item, index) => {
+      const accent = getCategoryAccent(item, index);
+      const share =
+        safeTotal > 0
+          ? Math.max(0, Math.min((item.value / safeTotal) * 100, 100))
+          : Math.max(0, Math.min(item.percentage, 100));
+      const start = state.cursor;
+      const end = Math.min(100, state.cursor + share);
+
+      return {
+        cursor: end,
+        segments: [
+          ...state.segments,
+          {
+            ...item,
+            accent,
+            start,
+            end,
+          },
+        ],
+      };
+    },
+    { cursor: 0, segments: [] },
+  );
+  const { cursor, segments } = segmentState;
   const gradientParts = segments.map(
     (item) => `${item.accent} ${item.start}% ${item.end}%`,
   );

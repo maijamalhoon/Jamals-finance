@@ -1,35 +1,4 @@
-"use client";
-
-import { motion, useReducedMotion } from "framer-motion";
-import type { Variants } from "framer-motion";
 import type { ReactNode } from "react";
-
-import { useHasMounted } from "@/components/motion/useHasMounted";
-
-const smoothEase = [0.16, 1, 0.3, 1] as const;
-
-const container: Variants = {
-  hidden: { opacity: 0 },
-  show: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.07,
-      delayChildren: 0.04,
-    },
-  },
-};
-
-const item: Variants = {
-  hidden: { opacity: 0, y: 18 },
-  show: {
-    opacity: 1,
-    y: 0,
-    transition: {
-      duration: 0.42,
-      ease: smoothEase,
-    },
-  },
-};
 
 const dashboardOverviewStyles = `
   @media (min-width: 1024px) {
@@ -116,6 +85,10 @@ const dashboardOverviewStyles = `
   }
 `;
 
+function joinClassNames(...classNames: Array<string | undefined>) {
+  return classNames.filter(Boolean).join(" ");
+}
+
 export function DashboardMotion({
   children,
   className = "",
@@ -123,8 +96,6 @@ export function DashboardMotion({
   children: ReactNode;
   className?: string;
 }) {
-  const reduceMotion = useReducedMotion();
-  const mounted = useHasMounted();
   const overviewLayout = className.split(/\s+/).includes("dashboard-overview");
   const resolvedClassName = overviewLayout
     ? `${className} dashboard-overview-layout`
@@ -133,14 +104,9 @@ export function DashboardMotion({
   return (
     <>
       {overviewLayout ? <style>{dashboardOverviewStyles}</style> : null}
-      <motion.div
-        variants={container}
-        initial={!mounted || reduceMotion ? false : "hidden"}
-        animate="show"
-        className={resolvedClassName}
-      >
+      <div className={joinClassNames("jf-dashboard-motion", resolvedClassName)}>
         {children}
-      </motion.div>
+      </div>
     </>
   );
 }
@@ -152,18 +118,9 @@ export function DashboardMotionItem({
   children: ReactNode;
   className?: string;
 }) {
-  const reduceMotion = useReducedMotion();
-  const mounted = useHasMounted();
-
   return (
-    <motion.div
-      variants={item}
-      initial={!mounted || reduceMotion ? false : "hidden"}
-      whileInView="show"
-      viewport={{ once: true, amount: 0.18, margin: "0px 0px -8% 0px" }}
-      className={className}
-    >
+    <div className={joinClassNames("jf-dashboard-motion-item", className)}>
       {children}
-    </motion.div>
+    </div>
   );
 }

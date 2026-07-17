@@ -1,12 +1,9 @@
 "use client";
 
-import { useMemo } from "react";
-import CountUp from "react-countup";
-import { useHasMounted } from "@/components/motion/useHasMounted";
+import { useLayoutEffect, useMemo, useRef } from "react";
 
 function splitAmount(amount: string) {
   const cleanAmount = String(amount ?? "").trim();
-
   const match = cleanAmount.match(/^([^0-9-]*)(-?[\d,]+(?:\.\d+)?)(.*)$/);
 
   if (!match) return null;
@@ -29,26 +26,53 @@ export default function CountedAmount({
   amount: string;
   duration?: number;
 }) {
-  const mounted = useHasMounted();
-
+  const elementRef = useRef<HTMLSpanElement>(null);
   const parsedAmount = useMemo(() => splitAmount(amount), [amount]);
 
-  if (!mounted || !parsedAmount) return <>{amount}</>;
+  useLayoutEffect(() => {
+    const element = elementRef.current;
+    if (!element || !parsedAmount || !Number.isFinite(parsedAmount.value)) return;
+
+    const reduceMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
+    const compactViewport = window.matchMedia("(max-width: 1023px)").matches;
+
+    if (reduceMotion || compactViewport || duration <= 0) {
+      element.textContent = amount;
+      return;
+    }
+
+    const formatter = new Intl.NumberFormat("en-US", {
+      minimumFractionDigits: parsedAmount.decimals,
+      maximumFractionDigits: parsedAmount.decimals,
+    });
+    const durationMs = duration * 1000;
+    const startedAt = performance.now();
+    let frameId = 0;
+
+    const renderFrame = (time: number) => {
+      const progress = Math.min((time - startedAt) / durationMs, 1);
+      const easedProgress = 1 - Math.pow(1 - progress, 3);
+      const currentValue = parsedAmount.value * easedProgress;
+
+      element.textContent = `${parsedAmount.prefix}${formatter.format(
+        currentValue,
+      )}${parsedAmount.suffix}`;
+
+      if (progress < 1) {
+        frameId = requestAnimationFrame(renderFrame);
+      }
+    };
+
+    frameId = requestAnimationFrame(renderFrame);
+
+    return () => cancelAnimationFrame(frameId);
+  }, [amount, duration, parsedAmount]);
 
   return (
-    <span className="tabular-nums">
-      {parsedAmount.prefix}
-      <CountUp
-        key={amount}
-        start={0}
-        end={parsedAmount.value}
-        duration={duration}
-        decimals={parsedAmount.decimals}
-        separator=","
-        useEasing
-        redraw
-      />
-      {parsedAmount.suffix}
+    <span ref={elementRef} className="tabular-nums">
+      {amount}
     </span>
   );
 }

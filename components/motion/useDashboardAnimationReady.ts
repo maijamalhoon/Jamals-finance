@@ -1,35 +1,48 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useReducedMotion } from "framer-motion";
 
 export function useDashboardAnimationReady() {
-  const reduceMotion = useReducedMotion();
   const [ready, setReady] = useState(false);
+  const [reduceMotion, setReduceMotion] = useState(false);
 
   useEffect(() => {
-    if (reduceMotion) {
-      setReady(true);
-      return;
-    }
-
-    setReady(false);
-
+    const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+    let frameId = 0;
     let secondFrameId = 0;
-    const frameId = requestAnimationFrame(() => {
-      secondFrameId = requestAnimationFrame(() => {
-        setReady(true);
-      });
-    });
 
-    return () => {
+    const cancelFrames = () => {
       cancelAnimationFrame(frameId);
       cancelAnimationFrame(secondFrameId);
     };
-  }, [reduceMotion]);
+
+    const prepareAnimation = () => {
+      cancelFrames();
+      const shouldReduceMotion = mediaQuery.matches;
+      setReduceMotion(shouldReduceMotion);
+
+      if (shouldReduceMotion) {
+        setReady(true);
+        return;
+      }
+
+      setReady(false);
+      frameId = requestAnimationFrame(() => {
+        secondFrameId = requestAnimationFrame(() => setReady(true));
+      });
+    };
+
+    prepareAnimation();
+    mediaQuery.addEventListener("change", prepareAnimation);
+
+    return () => {
+      cancelFrames();
+      mediaQuery.removeEventListener("change", prepareAnimation);
+    };
+  }, []);
 
   return {
     ready,
-    reduceMotion: Boolean(reduceMotion),
+    reduceMotion,
   };
 }
