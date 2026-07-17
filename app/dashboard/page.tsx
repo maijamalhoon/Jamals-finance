@@ -477,7 +477,7 @@ export default async function DashboardPage() {
         </DashboardMotionItem>
       ) : null}
 
-      <section aria-label="Month-to-date financial metrics" className="grid w-full grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <section aria-label="Month-to-date financial metrics" className="grid w-full grid-cols-1 gap-4 min-[360px]:grid-cols-2 xl:grid-cols-4">
         <h2 className="sr-only">Month-to-date financial metrics</h2>
         <DashboardMotionItem>
           <MetricCard

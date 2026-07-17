@@ -255,15 +255,15 @@ function SoftSwitch({
         event.stopPropagation();
         onCheckedChange(!checked);
       }}
-      className={`finance-focus relative h-8 w-14 shrink-0 rounded-full border transition-colors ${
+      className={`finance-focus relative h-11 w-16 shrink-0 rounded-full border transition-colors ${
         checked ?
           "border-active bg-active"
         : "border-border bg-surface-secondary"
       }`}
     >
       <span
-        className={`absolute top-0.5 grid h-7 w-7 place-items-center rounded-full bg-card shadow-theme transition-transform ${
-          checked ? "translate-x-6" : "translate-x-0.5"
+        className={`absolute left-1 top-1 grid h-9 w-9 place-items-center rounded-full bg-card shadow-theme transition-transform ${
+          checked ? "translate-x-5" : "translate-x-0"
         }`}
       />
     </button>
@@ -712,7 +712,7 @@ function SecurityDialog({ email }: { email: string }) {
                     <button
                       type="button"
                       onClick={() => setShowPasswords((visible) => !visible)}
-                      className="finance-focus absolute right-2 top-1/2 grid h-8 w-8 -translate-y-1/2 place-items-center rounded-full text-text-secondary"
+                      className="finance-focus absolute right-0 top-1/2 grid h-11 w-11 -translate-y-1/2 place-items-center rounded-full text-text-secondary hover:bg-hover hover:text-text-primary"
                       aria-label={showPasswords ? "Hide passwords" : "Show passwords"}
                     >
                       {showPasswords ? <EyeOff size={16} /> : <Eye size={16} />}
@@ -1157,7 +1157,7 @@ function CategoriesDialog({
               onClick={() => onChange(color)}
               aria-label={`Pick ${color}`}
               aria-pressed={value === color}
-              className="finance-focus grid h-8 w-8 place-items-center rounded-full border border-border transition-transform hover:scale-105"
+              className="finance-focus grid h-11 w-11 place-items-center rounded-full border border-border transition-transform hover:scale-105"
               style={{
                 backgroundColor: color,
                 color: getReadableTextColor(color),

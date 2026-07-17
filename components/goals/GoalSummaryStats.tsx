@@ -61,11 +61,14 @@ export default function GoalSummaryStats({
   ];
 
   return (
-    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
+    <div
+      data-mobile-summary-grid
+      className="grid grid-cols-2 gap-3 xl:grid-cols-4"
+    >
       {stats.map(({ label, value, icon: Icon, accent }) => (
         <article
           key={label}
-          className="summary-card flex min-h-[118px] min-w-0 items-start gap-3"
+          className="summary-card flex min-h-[118px] min-w-0 flex-col items-start gap-3 sm:flex-row"
         >
           <span
             className="grid h-10 w-10 shrink-0 place-items-center rounded-full border"
@@ -89,7 +92,7 @@ export default function GoalSummaryStats({
       ))}
 
       <article className="summary-card flex min-h-[118px] min-w-0 flex-col justify-between">
-        <div className="flex min-w-0 items-start gap-3">
+        <div className="flex min-w-0 flex-col items-start gap-3 sm:flex-row">
           <span
             className="grid h-10 w-10 shrink-0 place-items-center rounded-full border"
             style={{

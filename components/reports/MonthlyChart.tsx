@@ -4,7 +4,6 @@ import {
   Bar,
   BarChart,
   CartesianGrid,
-  ResponsiveContainer,
   Tooltip,
   XAxis,
   YAxis,
@@ -72,14 +71,10 @@ export default function MonthlyChart({ data, title = "Cash-flow overview" }: Pro
               .join(". ")}
       </p>
       <ChartFrame className="h-[260px] min-h-[260px] min-w-0 overflow-hidden">
-        <ResponsiveContainer
-          width="100%"
-          height="100%"
-          minWidth={1}
-          minHeight={1}
-          initialDimension={{ width: 720, height: 280 }}
-        >
+        {({ width, height }) => (
           <BarChart
+            width={width}
+            height={height}
             data={data}
             margin={{ top: 5, right: 5, left: -20, bottom: 0 }}
           >
@@ -123,7 +118,7 @@ export default function MonthlyChart({ data, title = "Cash-flow overview" }: Pro
               animationBegin={140}
             />
           </BarChart>
-        </ResponsiveContainer>
+        )}
       </ChartFrame>
     </div>
   );

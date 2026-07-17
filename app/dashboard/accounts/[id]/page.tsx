@@ -202,7 +202,7 @@ export default async function AccountHistoryPage({
       <section className="page-heading finance-surface-glass overflow-hidden">
         <Link
           href="/dashboard/accounts"
-          className="finance-focus mb-4 inline-flex items-center gap-2 rounded-lg text-sm font-semibold text-text-secondary hover:text-text-primary"
+          className="finance-focus mb-4 inline-flex min-h-11 items-center gap-2 rounded-lg text-sm font-semibold text-text-secondary hover:text-text-primary"
         >
           <ArrowLeft size={16} aria-hidden="true" />
           Back to accounts
@@ -213,7 +213,7 @@ export default async function AccountHistoryPage({
               <span className="dashboard-list-card-kicker-icon"><Landmark /></span>
               <span>{account.status === "archived" ? "Archived account" : "Account history"}</span>
             </div>
-            <h1 className="page-title break-words">{account.name}</h1>
+            <h2 className="page-title break-words">{account.name}</h2>
             <p className="page-subtitle">
               {maskAccountNumber(account.account_number)} · {activity.length} ledger entries
             </p>

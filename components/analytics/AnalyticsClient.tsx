@@ -115,7 +115,7 @@ export default function AnalyticsClient({
         <header className="page-heading min-w-0 overflow-hidden">
           <div className="grid min-w-0 gap-5 xl:grid-cols-[minmax(0,1fr)_auto] xl:items-end">
             <div className="min-w-0">
-              <h1 className="page-title">Analytics</h1>
+              <h2 className="page-title">Analytics</h2>
               <p className="page-subtitle">A truthful view of cash flow, spending, income sources, and your current portfolio.</p>
               <p className="mt-3 inline-flex max-w-full items-center gap-2 rounded-full border border-border bg-muted/60 px-3 py-1.5 text-xs font-semibold text-text-secondary">
                 <Database aria-hidden="true" className="size-3.5 shrink-0" />
@@ -172,9 +172,13 @@ export default function AnalyticsClient({
 
             <KpiSummary kpis={analysis.kpis} />
             <PeriodContext facts={analysis.facts} ranges={selection} />
-            <CashFlowCharts data={analysis.cashFlow} />
+            <section id="cash-flow" className="scroll-mt-32">
+              <CashFlowCharts data={analysis.cashFlow} />
+            </section>
             <IncomeSources summary={analysis.incomeSources} />
-            <SpendingAnalysis categories={analysis.categories} accounts={analysis.accounts} accountsStatus={accountsStatus} />
+            <section id="spending-analysis" className="scroll-mt-32">
+              <SpendingAnalysis categories={analysis.categories} accounts={analysis.accounts} accountsStatus={accountsStatus} />
+            </section>
             <LargestEntries expenses={analysis.largestExpenses} income={analysis.largestIncome} />
           </>
         )}

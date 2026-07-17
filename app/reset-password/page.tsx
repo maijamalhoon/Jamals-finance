@@ -671,6 +671,7 @@ export default function ResetPasswordPage() {
   return (
     <AuthShell
       compact
+      minimal
       eyebrow={recoveryPresentation.eyebrow}
       title={recoveryPresentation.title}
       description={recoveryPresentation.description}

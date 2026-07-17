@@ -3,6 +3,7 @@
 import {
   Check,
   CheckCircle2,
+  Circle,
   Eye,
   EyeOff,
   Info,
@@ -97,15 +98,33 @@ export function AuthField({
 
 export function AuthPasswordField({
   disabled,
+  helper,
+  onBlur,
+  onKeyDown,
+  onKeyUp,
   ...props
 }: Omit<AuthFieldProps, "type" | "endAction">) {
   const [visible, setVisible] = useState(false);
+  const [capsLock, setCapsLock] = useState(false);
 
   return (
     <AuthField
       {...props}
       type={visible ? "text" : "password"}
       disabled={disabled}
+      helper={capsLock ? "Caps Lock is on." : helper}
+      onKeyDown={(event) => {
+        setCapsLock(event.getModifierState("CapsLock"));
+        onKeyDown?.(event);
+      }}
+      onKeyUp={(event) => {
+        setCapsLock(event.getModifierState("CapsLock"));
+        onKeyUp?.(event);
+      }}
+      onBlur={(event) => {
+        setCapsLock(false);
+        onBlur?.(event);
+      }}
       endAction={
         <button
           type="button"
@@ -123,6 +142,30 @@ export function AuthPasswordField({
         </button>
       }
     />
+  );
+}
+
+export function AuthPasswordRequirements({
+  password,
+  minimumLength,
+}: {
+  password: string;
+  minimumLength: number;
+}) {
+  const hasMinimumLength = password.length >= minimumLength;
+
+  return (
+    <div className="auth-password-requirements" aria-live="polite">
+      <p>Password requirement</p>
+      <div data-met={hasMinimumLength || undefined}>
+        {hasMinimumLength ? (
+          <CheckCircle2 className="h-4 w-4" aria-hidden="true" />
+        ) : (
+          <Circle className="h-4 w-4" aria-hidden="true" />
+        )}
+        <span>At least {minimumLength} characters</span>
+      </div>
+    </div>
   );
 }
 

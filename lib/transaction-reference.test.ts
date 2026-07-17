@@ -43,4 +43,18 @@ describe("transaction references and receipts", () => {
     expect(actions).toContain("Print / Save PDF");
     expect(actions).toContain("Record refund");
   });
+
+  it("loads owner-scoped receipt labels without an implicit category relationship", () => {
+    const receiptPage = readFileSync(
+      join(process.cwd(), "app/dashboard/transactions/[id]/page.tsx"),
+      "utf8",
+    );
+
+    expect(receiptPage).toContain('const { data: transaction, error: transactionError }');
+    expect(receiptPage).toContain('.from("categories")');
+    expect(receiptPage).toContain('.eq("user_id", user.id)');
+    expect(receiptPage).not.toContain("categories (\n        name");
+    expect(receiptPage).toContain("Failed to load transaction receipt");
+    expect(receiptPage).toContain("Failed to load transfer receipt");
+  });
 });

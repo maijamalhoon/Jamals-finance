@@ -118,6 +118,12 @@ describe("dashboard navigation hierarchy", () => {
 
   it("resolves route titles and groups for nested routes", () => {
     expect(getRouteTitle("/dashboard/ai-insights/history")).toBe("AI Insights");
+    expect(getRouteTitle("/dashboard/transactions/receipt-id")).toBe(
+      "Transaction receipt",
+    );
+    expect(getRouteTitle("/dashboard/accounts/account-id")).toBe(
+      "Account details",
+    );
     expect(getRouteGroup("/dashboard/ai-insights/history")).toBe(
       "Intelligence",
     );
@@ -249,18 +255,17 @@ describe("dashboard shell contracts", () => {
     );
   });
 
-  it("keeps the mobile nav centered, readable, and semantically pressed", () => {
-    const inactiveClass = mobileNavSource.match(
-      /const inactivePrimaryNavItemClass =\s*\n\s*"([^"]+)"/,
-    )?.[1];
-
-    expect(mobileNavSource).toContain("mx-auto grid w-full max-w-[32rem]");
-    expect(mobileNavSource).toContain("text-[10px]");
-    expect(mobileNavSource).toContain("min-[360px]:text-[11px]");
-    expect(mobileNavSource).not.toContain("text-[9px]");
-    expect(inactiveClass).toBeDefined();
-    expect(inactiveClass).toContain("active:bg-surface-inset");
-    expect(inactiveClass).not.toContain("bg-brand");
+  it("uses one minimal mobile header with a complete left navigation drawer", () => {
+    expect(layoutSource).not.toContain("<MobileNav />");
+    expect(mobileHeaderSource).toContain("<MobileNav />");
+    expect(mobileHeaderSource).not.toContain("<JamalMenu");
+    expect(mobileNavSource).toContain("data-mobile-navigation-drawer");
+    expect(mobileNavSource).toContain('side="left"');
+    expect(mobileNavSource).toContain("NAV_GROUPS.map");
+    expect(mobileNavSource).toContain('<JamalMenu align="left"');
+    expect(mobileNavSource).toContain('aria-label="Open navigation menu"');
+    expect(mobileNavSource).toContain('aria-label="Close navigation menu"');
+    expect(mobileNavSource).not.toContain("fixed inset-x");
   });
 
   it("guarantees a 44px notification loading and Retry target", () => {
@@ -310,17 +315,28 @@ describe("dashboard shell contracts", () => {
     expect(jamalMenuSource).not.toContain("console.");
   });
 
-  it("uses direct desktop navigation and reserves Sheet for transaction search", () => {
+  it("uses accessible desktop section menus and reserves Sheet for transaction search", () => {
     expect(headerSource).toContain("DESKTOP_PRIMARY_NAV_ITEMS.map");
+    expect(headerSource).toContain("DESKTOP_NAV_MENU_ENTRIES");
+    expect(headerSource).toContain('action: "add-income"');
+    expect(headerSource).toContain('action: "add-expense"');
     expect(headerSource).toContain(
       'aria-label="Desktop dashboard navigation"',
     );
     expect(headerSource.match(/<Sheet(?=[\s>])/g)).toHaveLength(1);
-    expect(headerSource.match(/<DropdownMenu(?=[\s>])/g)).toHaveLength(1);
+    expect(headerSource.match(/<DropdownMenu(?=[\s>])/g)).toHaveLength(2);
     expect(headerSource).toContain('aria-label="Open transaction search"');
     expect(headerSource).toContain(
       'aria-label="Open more dashboard navigation"',
     );
     expect(headerSource).not.toContain(">Pages<");
+  });
+
+  it("shows focus treatment only for keyboard-visible focus", () => {
+    expect(globalsSource).toContain("-webkit-tap-highlight-color: transparent");
+    expect(globalsSource).toContain(".finance-focus:focus-visible");
+    expect(globalsSource).not.toContain(
+      ":where(.finance-control, .finance-focus):focus-within",
+    );
   });
 });

@@ -57,6 +57,8 @@ type ReceiptCategory = {
   parent?: { name?: string | null } | null;
 };
 
+type ReceiptTransactionBaseRow = Omit<ReceiptTransactionRow, "accounts" | "categories">;
+
 type ReceiptTransactionRow = {
   id: string;
   type: string;
@@ -165,7 +167,7 @@ function buildReceiptText(receipt: Omit<ReceiptData, "receiptText">) {
     receipt.refundOfText ? `Original Expense ID: ${receipt.refundOfText}` : null,
     receipt.referenceText ? `Reference: ${receipt.referenceText}` : null,
     `Status: ${receipt.statusText}`,
-    `Transaction ID: ${receipt.id}`,
+    `Receipt ID: ${receipt.id}`,
     receipt.createdText ? `Created: ${receipt.createdText}` : null,
   ]
     .filter(Boolean)
@@ -293,12 +295,14 @@ export default async function TransactionReceiptPage({
     redirect("/login");
   }
 
-  const { data: transaction } = await supabase
+  // Load the transaction first, then resolve its display labels separately.
+  // The owner-safe category foreign key is composite, so relying on an implicit
+  // PostgREST relationship here can turn a valid receipt into a false 404.
+  const { data: transaction, error: transactionError } = await supabase
     .from("transactions")
     .select(
       `
       id,
-      user_id,
       type,
       amount,
       account_id,
@@ -310,31 +314,87 @@ export default async function TransactionReceiptPage({
       created_at,
       source_name,
       person_name,
-      item_name,
-      accounts (
-        name
-      ),
-      categories (
-        name,
-        color,
-        parent:parent_id (
-          name
-        )
-      )
+      item_name
     `,
     )
     .eq("id", id)
     .eq("user_id", user.id)
     .maybeSingle();
 
+  if (transactionError) {
+    console.error("Failed to load transaction receipt", { code: transactionError.code });
+    throw new Error("Transaction receipt could not be loaded.");
+  }
+
+  let account: ReceiptTransactionRow["accounts"] = null;
+  let category: ReceiptCategory | null = null;
+
+  if (transaction?.account_id) {
+    const { data: accountRow, error: accountError } = await supabase
+      .from("accounts")
+      .select("name")
+      .eq("id", transaction.account_id)
+      .eq("user_id", user.id)
+      .maybeSingle();
+
+    if (accountError) {
+      console.error("Failed to load receipt account label", { code: accountError.code });
+    } else {
+      account = accountRow;
+    }
+  }
+
+  if (transaction?.category_id) {
+    const { data: categoryRow, error: categoryError } = await supabase
+      .from("categories")
+      .select("name,color,parent_id")
+      .eq("id", transaction.category_id)
+      .eq("user_id", user.id)
+      .maybeSingle();
+
+    if (categoryError) {
+      console.error("Failed to load receipt category label", { code: categoryError.code });
+    } else if (categoryRow) {
+      category = {
+        name: categoryRow.name,
+        color: categoryRow.color,
+        parent: null,
+      };
+
+      if (categoryRow.parent_id) {
+        const { data: parentRow, error: parentError } = await supabase
+          .from("categories")
+          .select("name")
+          .eq("id", categoryRow.parent_id)
+          .eq("user_id", user.id)
+          .maybeSingle();
+
+        if (parentError) {
+          console.error("Failed to load receipt parent category label", {
+            code: parentError.code,
+          });
+        } else {
+          category.parent = parentRow;
+        }
+      }
+    }
+  }
+
   let receipt: ReceiptData | null =
-    transaction ? mapTransactionReceipt(transaction as unknown as ReceiptTransactionRow) : null;
+    transaction
+      ? mapTransactionReceipt({
+          ...(transaction as ReceiptTransactionBaseRow),
+          accounts: account,
+          categories: category,
+        })
+      : null;
 
   if (receipt?.type === "expense") {
     const { data: refunds, error: refundsError } = await supabase
       .from("transactions")
       .select("amount")
       .eq("refund_of_transaction_id", receipt.id)
+      .eq("user_id", user.id)
       .eq("type", "refund");
 
     if (refundsError) {
@@ -348,7 +408,7 @@ export default async function TransactionReceiptPage({
   }
 
   if (!receipt) {
-    const { data: transfer } = await supabase
+    const { data: transfer, error: transferError } = await supabase
       .from("account_transfers")
       .select(
         `
@@ -371,6 +431,11 @@ export default async function TransactionReceiptPage({
       .eq("user_id", user.id)
       .maybeSingle();
 
+    if (transferError) {
+      console.error("Failed to load transfer receipt", { code: transferError.code });
+      throw new Error("Transaction receipt could not be loaded.");
+    }
+
     receipt = transfer ? mapTransferReceipt(transfer as unknown as ReceiptTransferRow) : null;
   }
 
@@ -385,7 +450,7 @@ export default async function TransactionReceiptPage({
       <div className="print:hidden flex min-w-0 flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <Link
           href="/dashboard/transactions"
-          className="finance-focus inline-flex w-fit items-center gap-2 rounded-[var(--oneui-control-radius)] border border-border bg-surface px-4 py-2.5 text-sm font-bold text-text-primary shadow-sm transition-all hover:-translate-y-0.5 hover:bg-hover hover:shadow-md"
+          className="finance-focus inline-flex min-h-11 w-fit items-center gap-2 rounded-[var(--oneui-control-radius)] border border-border bg-surface px-4 py-2.5 text-sm font-bold text-text-primary shadow-sm transition-all hover:-translate-y-0.5 hover:bg-hover hover:shadow-md"
         >
           <ArrowLeft size={17} />
           Back to transactions
@@ -435,9 +500,9 @@ export default async function TransactionReceiptPage({
                   Transaction Receipt
                 </p>
 
-                <h1 className="mt-2 break-words text-2xl font-black tracking-tight text-text-primary sm:text-3xl">
+                <h2 className="mt-2 break-words text-2xl font-black tracking-tight text-text-primary sm:text-3xl">
                   {receipt.title}
-                </h1>
+                </h2>
 
                 <p className="mt-2 text-sm font-semibold text-text-secondary">
                   Jamal&apos;s Finance • {receipt.typeLabel}

@@ -2,7 +2,6 @@ import { Suspense } from "react";
 
 import Header from "@/components/layout/Header";
 import MobileHeader from "@/components/layout/MobileHeader";
-import MobileNav from "@/components/layout/MobileNav";
 import FloatingActions from "@/components/layout/FloatingActions";
 import NotificationCenter, {
   NotificationCenterLoading,
@@ -68,7 +67,6 @@ export default function DashboardLayout({
           </div>
         </main>
 
-        <MobileNav />
         <FloatingActions />
       </div>
     </div>

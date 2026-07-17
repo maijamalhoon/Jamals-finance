@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import {
   ArrowDown,
@@ -10,11 +11,20 @@ import {
   type LucideIcon,
 } from "lucide-react";
 
-import TransferModal from "@/components/accounts/TransferModal";
-import TransactionModal from "@/components/dashboard/TransactionModal";
-import InvestmentModal from "@/components/investments/InvestmentModal";
 import { useCurrency } from "@/components/currency/CurrencyProvider";
 import type { DashboardBalanceSummary } from "@/lib/dashboard-financial-semantics";
+
+const TransferModal = dynamic(() => import("@/components/accounts/TransferModal"), {
+  ssr: false,
+});
+const TransactionModal = dynamic(
+  () => import("@/components/dashboard/TransactionModal"),
+  { ssr: false },
+);
+const InvestmentModal = dynamic(
+  () => import("@/components/investments/InvestmentModal"),
+  { ssr: false },
+);
 
 type TransactionType = "income" | "expense";
 type QuickAction = TransactionType | "transfer" | "invest";
@@ -28,28 +38,28 @@ const actions: Array<{
 }> = [
   {
     key: "income",
-    label: "income",
+    label: "Income",
     icon: ArrowUp,
     ariaLabel: "Add income",
     tone: "income",
   },
   {
     key: "expense",
-    label: "expense",
+    label: "Expense",
     icon: ArrowDown,
     ariaLabel: "Add expense",
     tone: "expense",
   },
   {
     key: "transfer",
-    label: "transfer",
+    label: "Transfer",
     icon: ArrowUpDown,
     ariaLabel: "Transfer money",
     tone: "transfer",
   },
   {
     key: "invest",
-    label: "invest",
+    label: "Invest",
     icon: TrendingUp,
     ariaLabel: "Add investment",
     tone: "investment",
@@ -120,15 +130,19 @@ export default function QuickActionsBalance({
               ) : null}
             </div>
 
-            <h1 className="max-w-full break-words text-[clamp(2rem,4vw,4rem)] font-black leading-[0.98] tracking-[-0.05em] text-text-primary tabular-nums [overflow-wrap:anywhere]">
+            <h2 className="max-w-full break-words text-[clamp(2rem,4vw,4rem)] font-black leading-[0.98] tracking-[-0.05em] text-text-primary tabular-nums [overflow-wrap:anywhere]">
               {displayTotalBalance}
-            </h1>
+            </h2>
             <p className="mt-3 max-w-2xl text-xs leading-5 text-text-secondary sm:text-sm sm:leading-6">
               {summary.description}
             </p>
           </div>
 
-          <div role="group" aria-label="Quick actions" className="grid w-full grid-cols-4 gap-1.5 sm:gap-2 lg:w-auto lg:min-w-[392px]">
+          <div
+            role="group"
+            aria-label="Quick actions"
+            className="grid w-full grid-cols-2 gap-1.5 sm:grid-cols-4 sm:gap-1 lg:w-auto lg:min-w-[360px]"
+          >
             {actions.map((action) => {
               const Icon = action.icon;
 
@@ -137,20 +151,22 @@ export default function QuickActionsBalance({
                   key={action.key}
                   type="button"
                   aria-label={action.ariaLabel}
+                  title={action.ariaLabel}
                   onClick={() => openAction(action.key)}
                   className="dashboard-quick-action finance-focus group"
                 >
                   <span
                     data-tone={action.tone}
-                    className="finance-feature-accent grid h-11 w-11 place-items-center rounded-[16px] border shadow-[var(--shadow-xs)] transition-colors duration-200 sm:h-12 sm:w-12"
+                    className="finance-feature-accent grid h-10 w-10 shrink-0 place-items-center rounded-[14px] border shadow-[var(--shadow-xs)] transition-[background-color,border-color,transform] duration-200 group-hover:-translate-y-0.5 group-active:translate-y-0"
                   >
                     <Icon
                       aria-hidden="true"
-                      className="h-5 w-5 stroke-[2.5] lg:h-6 lg:w-6"
+                      className="h-5 w-5"
+                      strokeWidth={2.2}
                     />
                   </span>
 
-                  <span className="max-w-full truncate text-[10px] font-bold capitalize text-text-primary sm:text-[11px]">
+                  <span className="max-w-full truncate text-xs font-bold text-text-primary">
                     {action.label}
                   </span>
                 </button>
@@ -160,33 +176,39 @@ export default function QuickActionsBalance({
         </div>
       </section>
 
-      <TransactionModal
-        open={transactionOpen}
-        defaultType={transactionType}
-        onClose={() => setTransactionOpen(false)}
-        onSuccess={() => {
-          setTransactionOpen(false);
-          router.refresh();
-        }}
-      />
+      {transactionOpen ? (
+        <TransactionModal
+          open
+          defaultType={transactionType}
+          onClose={() => setTransactionOpen(false)}
+          onSuccess={() => {
+            setTransactionOpen(false);
+            router.refresh();
+          }}
+        />
+      ) : null}
 
-      <TransferModal
-        open={transferOpen}
-        onClose={() => setTransferOpen(false)}
-        onSuccess={() => {
-          setTransferOpen(false);
-          router.refresh();
-        }}
-      />
+      {transferOpen ? (
+        <TransferModal
+          open
+          onClose={() => setTransferOpen(false)}
+          onSuccess={() => {
+            setTransferOpen(false);
+            router.refresh();
+          }}
+        />
+      ) : null}
 
-      <InvestmentModal
-        open={investmentOpen}
-        onClose={() => setInvestmentOpen(false)}
-        onSuccess={() => {
-          setInvestmentOpen(false);
-          router.refresh();
-        }}
-      />
+      {investmentOpen ? (
+        <InvestmentModal
+          open
+          onClose={() => setInvestmentOpen(false)}
+          onSuccess={() => {
+            setInvestmentOpen(false);
+            router.refresh();
+          }}
+        />
+      ) : null}
     </>
   );
 }

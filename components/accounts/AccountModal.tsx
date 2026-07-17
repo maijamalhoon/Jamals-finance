@@ -322,7 +322,7 @@ export default function AccountModal({
               </span>
             </div>
 
-            <div className="grid grid-cols-8 gap-2">
+            <div className="grid grid-cols-4 gap-2 sm:grid-cols-8">
               {ACCOUNT_ACCENT_OPTIONS.map((color) => {
                 const active = accentColor === color.value;
 
@@ -333,7 +333,7 @@ export default function AccountModal({
                     aria-label={color.label}
                     title={color.label}
                     onClick={() => setAccentColor(color.value)}
-                    className="finance-focus grid h-9 w-full place-items-center rounded-full border p-0 transition-all"
+                    className="finance-focus grid h-11 min-w-11 place-items-center rounded-full border p-0 transition-all"
                     style={{
                       borderColor: active ? color.color : "var(--border)",
                       background:
