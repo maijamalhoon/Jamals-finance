@@ -70,56 +70,63 @@ export default function MonthlyChart({ data, title = "Cash-flow overview" }: Pro
               )
               .join(". ")}
       </p>
-      <ChartFrame className="h-[260px] min-h-[260px] min-w-0 overflow-hidden">
-        {({ width, height }) => (
-          <BarChart
-            width={width}
-            height={height}
-            data={data}
-            margin={{ top: 5, right: 5, left: -20, bottom: 0 }}
-          >
-            <CartesianGrid
-              strokeDasharray="3 3"
-              stroke="var(--border)"
-              vertical={false}
-            />
-            <XAxis
-              dataKey="month"
-              tick={{ fill: "var(--text-secondary)", fontSize: 11 }}
-              axisLine={false}
-              tickLine={false}
-            />
-            <YAxis
-              tick={{ fill: "var(--text-secondary)", fontSize: 11 }}
-              axisLine={false}
-              tickLine={false}
-              tickFormatter={(value) =>
-                formatCurrency(Number(value), { compact: true })
-              }
-            />
-            <Tooltip content={<CustomTooltip />} />
-            <Bar
-              dataKey="income"
-              name="Income"
-              fill="var(--active)"
-              radius={[4, 4, 0, 0]}
-              maxBarSize={32}
-              isAnimationActive
-              {...chartMotion}
-            />
-            <Bar
-              dataKey="expenses"
-              name="Expenses"
-              fill="var(--text-secondary)"
-              radius={[4, 4, 0, 0]}
-              maxBarSize={32}
-              isAnimationActive
-              {...chartMotion}
-              animationBegin={140}
-            />
-          </BarChart>
-        )}
-      </ChartFrame>
+
+      <div
+        data-report-chart-viewport
+        className="h-[240px] min-h-[240px] max-h-[240px] w-full min-w-0 overflow-hidden sm:h-[260px] sm:min-h-[260px] sm:max-h-[260px]"
+        style={{ contain: "layout size" }}
+      >
+        <ChartFrame className="h-full min-h-0 max-h-full min-w-0 overflow-hidden">
+          {({ width, height }) => (
+            <BarChart
+              width={width}
+              height={height}
+              data={data}
+              margin={{ top: 5, right: 5, left: -20, bottom: 0 }}
+            >
+              <CartesianGrid
+                strokeDasharray="3 3"
+                stroke="var(--border)"
+                vertical={false}
+              />
+              <XAxis
+                dataKey="month"
+                tick={{ fill: "var(--text-secondary)", fontSize: 11 }}
+                axisLine={false}
+                tickLine={false}
+              />
+              <YAxis
+                tick={{ fill: "var(--text-secondary)", fontSize: 11 }}
+                axisLine={false}
+                tickLine={false}
+                tickFormatter={(value) =>
+                  formatCurrency(Number(value), { compact: true })
+                }
+              />
+              <Tooltip content={<CustomTooltip />} />
+              <Bar
+                dataKey="income"
+                name="Income"
+                fill="var(--active)"
+                radius={[4, 4, 0, 0]}
+                maxBarSize={32}
+                isAnimationActive
+                {...chartMotion}
+              />
+              <Bar
+                dataKey="expenses"
+                name="Expenses"
+                fill="var(--text-secondary)"
+                radius={[4, 4, 0, 0]}
+                maxBarSize={32}
+                isAnimationActive
+                {...chartMotion}
+                animationBegin={140}
+              />
+            </BarChart>
+          )}
+        </ChartFrame>
+      </div>
     </div>
   );
 }
