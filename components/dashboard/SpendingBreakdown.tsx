@@ -178,20 +178,20 @@ export default function SpendingBreakdown({
         </Link>
       </div>
 
-      <div className="mt-4 grid min-h-0 flex-1 items-center gap-5 sm:grid-cols-[minmax(130px,0.8fr)_minmax(0,1.2fr)] sm:gap-4 2xl:grid-cols-1">
-        <div className="flex justify-center 2xl:justify-start">
+      <div className="mt-4 grid min-h-0 flex-1 items-center gap-6 sm:grid-cols-[minmax(210px,0.95fr)_minmax(0,1.05fr)] sm:gap-5 2xl:grid-cols-1">
+        <div className="flex justify-center">
           <div
             aria-label={`Total spending ${formatCurrency(safeTotal)}`}
-            className="relative grid size-[150px] shrink-0 place-items-center rounded-full transition-[opacity,transform] sm:size-[160px] 2xl:size-[150px]"
+            className="relative grid size-[190px] shrink-0 place-items-center rounded-full transition-[opacity,transform] min-[420px]:size-[210px] sm:size-[220px] lg:size-[240px] 2xl:size-[230px]"
             role="img"
             style={donutStyle}
           >
-            <div className="absolute inset-[18px] rounded-full border border-border/60 bg-card shadow-[inset_0_1px_5px_rgb(15_23_42_/_0.06)]" />
-            <div className="relative z-10 max-w-[105px] text-center">
-              <p className="break-words text-[15px] font-black leading-tight tracking-[-0.02em] text-text-primary tabular-nums [overflow-wrap:anywhere]">
+            <div className="absolute inset-[23px] rounded-full border border-border/60 bg-card shadow-[inset_0_1px_5px_rgb(15_23_42_/_0.06)] min-[420px]:inset-[25px] sm:inset-[27px] lg:inset-[30px] 2xl:inset-[28px]" />
+            <div className="relative z-10 max-w-[132px] text-center sm:max-w-[150px]">
+              <p className="break-words text-[17px] font-black leading-tight tracking-[-0.02em] text-text-primary tabular-nums [overflow-wrap:anywhere] sm:text-[19px] lg:text-xl">
                 <CountedAmount amount={formatCurrency(safeTotal)} duration={0.82} />
               </p>
-              <p className="mt-1 text-[10px] font-semibold text-text-secondary">
+              <p className="mt-1.5 text-[10px] font-semibold text-text-secondary sm:text-[11px]">
                 Total spent
               </p>
             </div>
