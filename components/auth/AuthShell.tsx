@@ -1,5 +1,6 @@
 import "@/app/auth-experience.css";
 import "@/app/auth-mobile-refinement.css";
+import "@/app/auth-responsive-final.css";
 
 import Link from "next/link";
 import {
