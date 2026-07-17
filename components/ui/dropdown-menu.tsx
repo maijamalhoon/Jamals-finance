@@ -32,6 +32,17 @@ function DropdownMenuContent({
   >) {
   return (
     <MenuPrimitive.Portal>
+      <div
+        aria-hidden="true"
+        data-slot="dropdown-menu-backdrop"
+        className="fixed inset-0 z-40"
+        style={{
+          backgroundColor:
+            "color-mix(in srgb, var(--overlay), transparent 84%)",
+          backdropFilter: "blur(3px)",
+          WebkitBackdropFilter: "blur(3px)",
+        }}
+      />
       <MenuPrimitive.Positioner
         className="isolate z-50 outline-none"
         align={align}
