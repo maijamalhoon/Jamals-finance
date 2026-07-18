@@ -19,6 +19,7 @@ import "./card-actions-polish.css";
 import "./top-cards-polish.css";
 import "./card-hover-policy.css";
 import "./top-cards-responsive-tuning.css";
+import "./transactions-responsive-polish.css";
 import "./header-search-polish.css";
 
 export const dynamic = "force-dynamic";
