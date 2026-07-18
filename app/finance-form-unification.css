@@ -1,4 +1,6 @@
 .finance-modal-content[style*="--finance-action"] {
+  --finance-control-height: clamp(3rem, 6.7dvh, 3.35rem);
+  --finance-action-height: clamp(3rem, 6.7dvh, 3.35rem);
   width: min(calc(100vw - 0.75rem), 32rem) !important;
   max-width: 32rem !important;
   height: auto !important;
@@ -6,24 +8,25 @@
   max-height: calc(100dvh - 0.5rem) !important;
   overflow: hidden !important;
   border: 0 !important;
+  font-family: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif !important;
 }
 
 .finance-modal-content[style*="--finance-action"] .finance-modal-header {
   position: relative;
-  min-height: clamp(3rem, 7dvh, 3.65rem);
+  min-height: clamp(3.1rem, 7dvh, 3.65rem);
   flex: 0 0 auto;
   justify-content: center;
   gap: 0 !important;
-  border: 0 !important;
-  padding: clamp(0.58rem, 1.45dvh, 0.82rem) 3.75rem
-    clamp(0.54rem, 1.35dvh, 0.76rem) 1rem !important;
+  border-bottom: 1px solid var(--border) !important;
+  padding: clamp(0.62rem, 1.45dvh, 0.84rem) 3.75rem
+    clamp(0.58rem, 1.35dvh, 0.78rem) 1rem !important;
 }
 
 .finance-modal-content[style*="--finance-action"] .finance-modal-header::before {
   content: "";
   position: absolute;
   inset: 0 auto 0 0;
-  width: 3px;
+  width: 4px;
   border-radius: 0 999px 999px 0;
   background: var(--finance-action);
 }
@@ -40,17 +43,31 @@
 .finance-modal-content[style*="--finance-action"]
   .finance-modal-header
   [data-slot="dialog-title"] {
-  font-size: clamp(0.95rem, 1.8vw, 1.05rem) !important;
-  font-weight: 750 !important;
+  font-family: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif !important;
+  font-size: clamp(1rem, 1.9vw, 1.08rem) !important;
+  font-weight: 700 !important;
   line-height: 1.25rem !important;
   letter-spacing: -0.018em !important;
-  text-transform: lowercase;
 }
 
-.finance-modal-content[style*="--finance-action"]
-  .finance-modal-header
-  [data-slot="dialog-title"]::first-letter {
-  text-transform: uppercase;
+.finance-modal-content[style*="--finance-action"] .finance-dialog-close {
+  top: 0.68rem !important;
+  right: 0.68rem !important;
+  width: 2.25rem !important;
+  height: 2.25rem !important;
+  color: var(--finance-action) !important;
+}
+
+.finance-modal-content[style*="--finance-action"] .finance-dialog-close svg {
+  width: 1.25rem !important;
+  height: 1.25rem !important;
+  stroke-width: 1.9 !important;
+}
+
+.finance-modal-content[style*="--finance-action"] .lucide {
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
 .finance-modal-content[style*="--finance-action"] .finance-modal-body {
@@ -58,11 +75,11 @@
   min-height: 0 !important;
   flex: 0 1 auto !important;
   align-content: start;
-  gap: clamp(0.42rem, 1.05dvh, 0.66rem) !important;
+  gap: clamp(0.46rem, 1.05dvh, 0.68rem) !important;
   overflow-x: hidden !important;
   overflow-y: auto !important;
   overscroll-behavior: contain !important;
-  padding: clamp(0.52rem, 1.3dvh, 0.78rem) 1rem !important;
+  padding: clamp(0.58rem, 1.3dvh, 0.82rem) 1rem !important;
   scrollbar-width: none;
   -ms-overflow-style: none;
 }
@@ -76,6 +93,7 @@
 
 .finance-modal-content[style*="--finance-action"] .finance-modal-body > * {
   min-width: 0;
+  width: 100%;
   margin-block: 0 !important;
 }
 
@@ -83,39 +101,19 @@
   .finance-modal-body
   > .grid {
   grid-template-columns: minmax(0, 1fr) !important;
-  gap: clamp(0.42rem, 1.05dvh, 0.66rem) !important;
-}
-
-.finance-modal-content[style*="--finance-action"]
-  .finance-modal-body
-  > .border-border {
-  border: 0 !important;
-  border-radius: 0 !important;
-  background: transparent !important;
-  padding: 0 !important;
-}
-
-.finance-modal-content[style*="--finance-action"]
-  .finance-modal-body
-  .border-border:not(.field-input):not([data-slot="select-trigger"]) {
-  border: 0 !important;
-}
-
-.finance-modal-content[style*="--finance-action"]
-  .finance-modal-body
-  .h-px.bg-border {
-  display: none !important;
+  gap: clamp(0.46rem, 1.05dvh, 0.68rem) !important;
 }
 
 .finance-modal-content[style*="--finance-action"]
   .finance-modal-body
   .field-label {
-  margin-bottom: clamp(0.15rem, 0.42dvh, 0.28rem) !important;
+  margin-bottom: clamp(0.2rem, 0.45dvh, 0.3rem) !important;
   color: var(--text-secondary);
-  font-size: clamp(0.61rem, 1.2dvh, 0.69rem) !important;
-  font-weight: 700 !important;
-  line-height: 0.88rem !important;
-  letter-spacing: 0.025em;
+  font-family: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif !important;
+  font-size: clamp(0.68rem, 1.28dvh, 0.74rem) !important;
+  font-weight: 600 !important;
+  line-height: 0.95rem !important;
+  letter-spacing: 0.015em;
 }
 
 .finance-modal-content[style*="--finance-action"]
@@ -127,49 +125,56 @@
 .finance-modal-content[style*="--finance-action"]
   .finance-modal-body
   select.finance-control {
-  min-height: clamp(2.32rem, 5.4dvh, 2.72rem) !important;
+  box-sizing: border-box;
+  width: 100% !important;
+  height: var(--finance-control-height) !important;
+  min-height: var(--finance-control-height) !important;
+  max-height: var(--finance-control-height) !important;
+  border-radius: 0.9rem !important;
+  font-family: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif !important;
+  font-size: clamp(0.86rem, 1.75dvh, 0.96rem) !important;
+  font-weight: 500 !important;
 }
 
 .finance-modal-content[style*="--finance-action"]
   .finance-modal-body
   textarea.field-input {
-  min-height: clamp(2.7rem, 6.4dvh, 3.2rem) !important;
-  max-height: clamp(2.7rem, 6.4dvh, 3.2rem) !important;
+  height: var(--finance-control-height) !important;
+  min-height: var(--finance-control-height) !important;
+  max-height: var(--finance-control-height) !important;
   resize: none !important;
-  padding-top: 0.48rem !important;
-  padding-bottom: 0.48rem !important;
+  padding-top: 0.72rem !important;
+  padding-bottom: 0.72rem !important;
 }
 
 .finance-modal-content[style*="--finance-action"]
   .finance-modal-body
-  .mt-2.flex.flex-wrap {
-  display: grid !important;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  margin-top: 0.34rem !important;
-  gap: 0.36rem !important;
+  input[type="number"] {
+  font-variant-numeric: tabular-nums;
 }
 
 .finance-modal-content[style*="--finance-action"]
   .finance-modal-body
-  .mt-2.flex.flex-wrap
-  > button {
-  width: 100%;
-  min-height: 2rem !important;
-  justify-content: flex-start;
+  > div:has(button[aria-label="Swap source and destination accounts"]) {
   border: 0 !important;
-  border-radius: 0.68rem !important;
-  padding: 0.28rem 0.52rem !important;
-  font-size: 0.64rem !important;
-  line-height: 0.8rem !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  padding: 0 !important;
+}
+
+.finance-modal-content[style*="--finance-action"]
+  button[aria-label="Swap source and destination accounts"] {
+  justify-self: center !important;
+  margin-inline: auto !important;
 }
 
 .finance-modal-content[style*="--finance-action"] .finance-modal-footer {
   flex: 0 0 auto;
   gap: 0.5rem !important;
-  border: 0 !important;
+  border-top: 1px solid var(--border) !important;
   background: var(--card) !important;
-  padding: clamp(0.48rem, 1.18dvh, 0.7rem) 1rem
-    calc(clamp(0.48rem, 1.18dvh, 0.7rem) + env(safe-area-inset-bottom)) !important;
+  padding: clamp(0.52rem, 1.18dvh, 0.74rem) 1rem
+    calc(clamp(0.52rem, 1.18dvh, 0.74rem) + env(safe-area-inset-bottom)) !important;
 }
 
 .finance-modal-content[style*="--finance-action"]
@@ -180,11 +185,14 @@
 .finance-modal-content[style*="--finance-action"]
   .finance-modal-footer
   > button {
-  min-height: clamp(2.38rem, 5.7dvh, 2.85rem) !important;
-  border: 0 !important;
-  border-radius: 0.78rem !important;
-  font-size: 0.84rem !important;
-  font-weight: 750 !important;
+  width: 100%;
+  height: var(--finance-action-height) !important;
+  min-height: var(--finance-action-height) !important;
+  max-height: var(--finance-action-height) !important;
+  border-radius: 0.9rem !important;
+  font-family: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif !important;
+  font-size: clamp(0.88rem, 1.8dvh, 0.98rem) !important;
+  font-weight: 650 !important;
   transition:
     filter var(--motion-duration-fast),
     transform var(--motion-duration-fast),
@@ -239,12 +247,6 @@
   .finance-modal-content[style*="--finance-action"] .finance-modal-footer {
     padding-inline: 1.2rem !important;
   }
-
-  .finance-modal-content[style*="--finance-action"]
-    .finance-modal-body
-    > .grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-  }
 }
 
 @media (max-width: 430px) {
@@ -259,6 +261,11 @@
 }
 
 @media (max-height: 760px) {
+  .finance-modal-content[style*="--finance-action"] {
+    --finance-control-height: 2.85rem;
+    --finance-action-height: 2.95rem;
+  }
+
   .finance-modal-content[style*="--finance-action"] .finance-modal-header {
     min-height: 2.9rem;
     padding-top: 0.48rem !important;
@@ -277,25 +284,6 @@
     gap: 0.38rem !important;
   }
 
-  .finance-modal-content[style*="--finance-action"]
-    .finance-modal-body
-    .field-input,
-  .finance-modal-content[style*="--finance-action"]
-    .finance-modal-body
-    [data-slot="select-trigger"],
-  .finance-modal-content[style*="--finance-action"]
-    .finance-modal-body
-    select.finance-control {
-    min-height: 2.28rem !important;
-  }
-
-  .finance-modal-content[style*="--finance-action"]
-    .finance-modal-body
-    textarea.field-input {
-    min-height: 2.55rem !important;
-    max-height: 2.55rem !important;
-  }
-
   .finance-modal-content[style*="--finance-action"] .finance-modal-footer {
     padding-top: 0.42rem !important;
     padding-bottom: calc(0.42rem + env(safe-area-inset-bottom)) !important;
@@ -304,56 +292,77 @@
 
 @media (max-height: 620px) {
   .finance-modal-content[style*="--finance-action"] {
+    --finance-control-height: 2.58rem;
+    --finance-action-height: 2.7rem;
     max-height: calc(100dvh - 0.25rem) !important;
   }
 
   .finance-modal-content[style*="--finance-action"] .finance-modal-header {
-    min-height: 2.7rem;
-    padding-top: 0.38rem !important;
-    padding-bottom: 0.34rem !important;
+    min-height: 2.68rem;
+    padding-top: 0.36rem !important;
+    padding-bottom: 0.32rem !important;
   }
 
   .finance-modal-content[style*="--finance-action"] .finance-modal-body {
-    gap: 0.3rem !important;
-    padding-top: 0.34rem !important;
-    padding-bottom: 0.34rem !important;
+    gap: 0.28rem !important;
+    padding-top: 0.32rem !important;
+    padding-bottom: 0.32rem !important;
+  }
+
+  .finance-modal-content[style*="--finance-action"]
+    .finance-modal-body
+    > .grid {
+    gap: 0.28rem !important;
   }
 
   .finance-modal-content[style*="--finance-action"]
     .finance-modal-body
     .field-label {
     margin-bottom: 0.08rem !important;
-    font-size: 0.58rem !important;
-    line-height: 0.72rem !important;
-  }
-
-  .finance-modal-content[style*="--finance-action"]
-    .finance-modal-body
-    .field-input,
-  .finance-modal-content[style*="--finance-action"]
-    .finance-modal-body
-    [data-slot="select-trigger"],
-  .finance-modal-content[style*="--finance-action"]
-    .finance-modal-body
-    select.finance-control {
-    min-height: 2.12rem !important;
-  }
-
-  .finance-modal-content[style*="--finance-action"]
-    .finance-modal-body
-    textarea.field-input {
-    min-height: 2.3rem !important;
-    max-height: 2.3rem !important;
+    font-size: 0.62rem !important;
+    line-height: 0.75rem !important;
   }
 
   .finance-modal-content[style*="--finance-action"] .finance-modal-footer {
-    padding-top: 0.34rem !important;
-    padding-bottom: calc(0.34rem + env(safe-area-inset-bottom)) !important;
+    padding-top: 0.32rem !important;
+    padding-bottom: calc(0.32rem + env(safe-area-inset-bottom)) !important;
+  }
+}
+
+@media (max-height: 520px) {
+  .finance-modal-content[style*="--finance-action"] {
+    --finance-control-height: 2.3rem;
+    --finance-action-height: 2.42rem;
+  }
+
+  .finance-modal-content[style*="--finance-action"] .finance-modal-header {
+    min-height: 2.42rem;
+    padding-top: 0.25rem !important;
+    padding-bottom: 0.22rem !important;
+  }
+
+  .finance-modal-content[style*="--finance-action"] .finance-modal-body {
+    gap: 0.2rem !important;
+    padding-top: 0.22rem !important;
+    padding-bottom: 0.22rem !important;
   }
 
   .finance-modal-content[style*="--finance-action"]
-    .finance-modal-footer
-    > button {
-    min-height: 2.18rem !important;
+    .finance-modal-body
+    > .grid {
+    gap: 0.2rem !important;
+  }
+
+  .finance-modal-content[style*="--finance-action"]
+    .finance-modal-body
+    .field-label {
+    margin-bottom: 0.04rem !important;
+    font-size: 0.56rem !important;
+    line-height: 0.66rem !important;
+  }
+
+  .finance-modal-content[style*="--finance-action"] .finance-modal-footer {
+    padding-top: 0.22rem !important;
+    padding-bottom: calc(0.22rem + env(safe-area-inset-bottom)) !important;
   }
 }
