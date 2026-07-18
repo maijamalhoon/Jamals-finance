@@ -206,10 +206,12 @@ function RealSparkline({
   values,
   color,
   label,
+  delayMs = 0,
 }: {
   values: number[];
   color: string;
   label: string;
+  delayMs?: number;
 }) {
   const width = 150;
   const height = 36;
@@ -249,6 +251,7 @@ function RealSparkline({
         strokeLinejoin="round"
         pathLength="1"
         className="investment-sparkline-line"
+        style={{ animationDelay: `${delayMs}ms` }}
       />
       <circle
         cx={lastPoint[0]}
@@ -256,35 +259,57 @@ function RealSparkline({
         r="2.6"
         fill={color}
         className="investment-sparkline-point"
+        style={{ animationDelay: `${delayMs + 780}ms` }}
       />
       <style>{`
         .investment-sparkline-line {
           stroke-dasharray: 1;
           stroke-dashoffset: 1;
-          animation: investment-sparkline-draw 760ms var(--motion-ease) forwards;
+          opacity: 0;
+          animation: investment-sparkline-draw 900ms cubic-bezier(0.22, 1, 0.36, 1) both;
+          will-change: stroke-dashoffset, opacity;
         }
 
         .investment-sparkline-point {
           opacity: 0;
-          animation: investment-sparkline-point-in 180ms var(--motion-ease) 620ms forwards;
+          animation: investment-sparkline-point-in 220ms cubic-bezier(0.22, 1, 0.36, 1) both;
+          will-change: opacity, transform;
         }
 
         @keyframes investment-sparkline-draw {
-          to { stroke-dashoffset: 0; }
+          from {
+            stroke-dashoffset: 1;
+            opacity: 0.18;
+          }
+          to {
+            stroke-dashoffset: 0;
+            opacity: 1;
+          }
         }
 
         @keyframes investment-sparkline-point-in {
-          to { opacity: 1; }
+          from {
+            opacity: 0;
+            transform: scale(0.45);
+            transform-origin: center;
+          }
+          to {
+            opacity: 1;
+            transform: scale(1);
+            transform-origin: center;
+          }
         }
 
         @media (prefers-reduced-motion: reduce) {
           .investment-sparkline-line {
             stroke-dashoffset: 0;
+            opacity: 1;
             animation: none;
           }
 
           .investment-sparkline-point {
             opacity: 1;
+            transform: none;
             animation: none;
           }
         }
@@ -459,7 +484,7 @@ export default function InvestmentOverviewWidget({
           </div>
 
           <div className="min-w-0 space-y-2.5">
-            {visibleInvestments.map((investment) => {
+            {visibleInvestments.map((investment, index) => {
               const allocation =
                 allocationTotalValue > 0
                   ? (investment.value / allocationTotalValue) * 100
@@ -468,7 +493,7 @@ export default function InvestmentOverviewWidget({
               return (
                 <div
                   key={investment.id}
-                  className="grid min-w-0 grid-cols-[auto_minmax(0,1fr)_minmax(76px,0.9fr)_auto] items-center gap-2.5 rounded-[18px] border border-border bg-surface-secondary px-3 py-2.5 shadow-[inset_0_1px_0_rgb(255_255_255_/_0.22)] sm:grid-cols-[auto_minmax(110px,1fr)_minmax(110px,1.2fr)_auto] sm:gap-3 sm:px-4 sm:py-3"
+                  className="grid min-w-0 grid-cols-[auto_minmax(0,1fr)_minmax(76px,0.9fr)_auto] items-center gap-2.5 rounded-[18px] border border-transparent bg-transparent px-3 py-2.5 shadow-none sm:grid-cols-[auto_minmax(110px,1fr)_minmax(110px,1.2fr)_auto] sm:gap-3 sm:border-border sm:bg-surface-secondary sm:px-4 sm:py-3 sm:shadow-[inset_0_1px_0_rgb(255_255_255_/_0.22)]"
                 >
                   <AssetLogo entry={investment} size={34} />
 
@@ -487,6 +512,7 @@ export default function InvestmentOverviewWidget({
                     values={investment.trend}
                     color={investment.color}
                     label={investment.name}
+                    delayMs={120 + index * 120}
                   />
 
                   <span
