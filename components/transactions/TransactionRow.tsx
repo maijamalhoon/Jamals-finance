@@ -146,27 +146,13 @@ export default function TransactionRow({ tx }: { tx: Transaction }) {
   }
 
   async function deletePayablePayment() {
-    const { data: payment, error: paymentLookupError } = await supabase
-      .from("liability_payments")
-      .select("id")
-      .eq("transaction_id", tx.id)
-      .maybeSingle();
-
-    if (paymentLookupError) throw paymentLookupError;
-
-    if (payment?.id) {
-      const { error: paymentDeleteError } = await supabase
-        .from("liability_payments")
-        .delete()
-        .eq("id", payment.id);
-      if (paymentDeleteError) throw paymentDeleteError;
-    }
-
-    const { error: transactionDeleteError } = await supabase
-      .from("transactions")
-      .delete()
-      .eq("id", tx.id);
-    if (transactionDeleteError) throw transactionDeleteError;
+    const { error } = await supabase.rpc(
+      "delete_liability_payment_transaction",
+      {
+        p_transaction_id: tx.id,
+      },
+    );
+    if (error) throw error;
   }
 
   async function handleDelete() {
@@ -248,6 +234,7 @@ export default function TransactionRow({ tx }: { tx: Transaction }) {
         <p
           className={`max-w-[44vw] shrink-0 truncate text-right text-sm font-black tracking-[-0.015em] tabular-nums sm:max-w-none ${getTransactionToneClass(
             type,
+            iconMeta.semanticType,
           )}`}
           title={displayAmount}
         >
