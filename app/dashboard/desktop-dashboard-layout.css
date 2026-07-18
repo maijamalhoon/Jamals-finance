@@ -209,3 +209,90 @@
     align-items: start;
   }
 }
+
+/* Replace only dashboard card label glyphs. Card sizing, data icons and animations stay unchanged. */
+@supports ((-webkit-mask-image: url("")) or (mask-image: url(""))) {
+  .dashboard-overview-layout
+    .finance-reference-card
+    > div:first-child
+    span:has(> svg.lucide-arrow-left-right) {
+    --dashboard-label-icon-size: 15px;
+    --dashboard-label-icon-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.9' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 3h12v18l-3-2-3 2-3-2-3 2V3Z'/%3E%3Cpath d='M9 8h6M9 12h6M9 16h3'/%3E%3C/svg%3E");
+  }
+
+  .dashboard-overview-layout
+    .finance-reference-card
+    > div:first-child
+    .dashboard-list-card-kicker-icon:has(> svg.lucide-pie-chart) {
+    --dashboard-label-icon-size: 15px;
+    --dashboard-label-icon-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.9' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3 20h18'/%3E%3Cpath d='M5 17V9M11 17V5M17 17v-6'/%3E%3Cpath d='m5 9 6-4 6 6 3-3'/%3E%3C/svg%3E");
+  }
+
+  .dashboard-overview-layout
+    .finance-reference-card
+    > header:first-child
+    .dashboard-list-card-kicker-icon:has(> svg.lucide-zap) {
+    --dashboard-label-icon-size: 15px;
+    --dashboard-label-icon-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 3v18M12 3v18M18 3v18'/%3E%3Crect x='3' y='7' width='6' height='6' rx='1'/%3E%3Crect x='9' y='10' width='6' height='7' rx='1'/%3E%3Crect x='15' y='5' width='6' height='8' rx='1'/%3E%3C/svg%3E");
+  }
+
+  .dashboard-overview-layout
+    .finance-reference-card
+    > div:first-child
+    .dashboard-list-card-kicker-icon:has(> svg.lucide-target) {
+    --dashboard-label-icon-size: 15px;
+    --dashboard-label-icon-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.9' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 21V4'/%3E%3Cpath d='M5 5h11l-2 3 2 3H5'/%3E%3Cpath d='M9 16h8'/%3E%3C/svg%3E");
+  }
+
+  .dashboard-overview-layout
+    .dashboard-graph-card
+    > div:first-child
+    span:has(> svg.lucide-activity) {
+    --dashboard-label-icon-size: 12px;
+    --dashboard-label-icon-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.9' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3 3v18h18'/%3E%3Cpath d='m6 16 4-5 4 3 5-8'/%3E%3Ccircle cx='6' cy='16' r='1' fill='black' stroke='none'/%3E%3Ccircle cx='10' cy='11' r='1' fill='black' stroke='none'/%3E%3Ccircle cx='14' cy='14' r='1' fill='black' stroke='none'/%3E%3Ccircle cx='19' cy='6' r='1' fill='black' stroke='none'/%3E%3C/svg%3E");
+  }
+
+  .dashboard-overview-layout
+    :is(
+      .finance-reference-card > div:first-child span:has(> svg.lucide-arrow-left-right),
+      .finance-reference-card > div:first-child .dashboard-list-card-kicker-icon:has(> svg.lucide-pie-chart),
+      .finance-reference-card > header:first-child .dashboard-list-card-kicker-icon:has(> svg.lucide-zap),
+      .finance-reference-card > div:first-child .dashboard-list-card-kicker-icon:has(> svg.lucide-target),
+      .dashboard-graph-card > div:first-child span:has(> svg.lucide-activity)
+    ) {
+    position: relative;
+  }
+
+  .dashboard-overview-layout
+    :is(
+      .finance-reference-card > div:first-child span:has(> svg.lucide-arrow-left-right),
+      .finance-reference-card > div:first-child .dashboard-list-card-kicker-icon:has(> svg.lucide-pie-chart),
+      .finance-reference-card > header:first-child .dashboard-list-card-kicker-icon:has(> svg.lucide-zap),
+      .finance-reference-card > div:first-child .dashboard-list-card-kicker-icon:has(> svg.lucide-target),
+      .dashboard-graph-card > div:first-child span:has(> svg.lucide-activity)
+    )
+    > svg {
+    opacity: 0;
+  }
+
+  .dashboard-overview-layout
+    :is(
+      .finance-reference-card > div:first-child span:has(> svg.lucide-arrow-left-right),
+      .finance-reference-card > div:first-child .dashboard-list-card-kicker-icon:has(> svg.lucide-pie-chart),
+      .finance-reference-card > header:first-child .dashboard-list-card-kicker-icon:has(> svg.lucide-zap),
+      .finance-reference-card > div:first-child .dashboard-list-card-kicker-icon:has(> svg.lucide-target),
+      .dashboard-graph-card > div:first-child span:has(> svg.lucide-activity)
+    )::after {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: var(--dashboard-label-icon-size);
+    height: var(--dashboard-label-icon-size);
+    content: "";
+    pointer-events: none;
+    background-color: currentColor;
+    transform: translate(-50%, -50%);
+    -webkit-mask: var(--dashboard-label-icon-image) center / contain no-repeat;
+    mask: var(--dashboard-label-icon-image) center / contain no-repeat;
+  }
+}
