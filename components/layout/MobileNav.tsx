@@ -111,6 +111,7 @@ export default function MobileNav({ notificationSlot }: MobileNavProps) {
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [controlsVisible, setControlsVisible] = useState(false);
+  const [viewportWidth, setViewportWidth] = useState(390);
   const hideTimerRef = useRef<number | null>(null);
   const tapRevealTimerRef = useRef<number | null>(null);
   const scrollIdleTimerRef = useRef<number | null>(null);
@@ -161,6 +162,14 @@ export default function MobileNav({ notificationSlot }: MobileNavProps) {
   }, [clearHideTimer]);
 
   const interactionOpen = open || portalOpen || searchOpen;
+
+  useEffect(() => {
+    const updateViewportWidth = () => setViewportWidth(window.innerWidth);
+
+    updateViewportWidth();
+    window.addEventListener("resize", updateViewportWidth);
+    return () => window.removeEventListener("resize", updateViewportWidth);
+  }, []);
 
   useEffect(() => {
     const updatePortalState = () => {
@@ -397,26 +406,31 @@ export default function MobileNav({ notificationSlot }: MobileNavProps) {
     ? { duration: 0.01 }
     : { duration: 0.22, ease: SEARCH_EASE };
 
+  const expandedSearchWidth = Math.max(44, Math.min(544, viewportWidth - 32));
+  const expandedSearchLeft = Math.max(
+    16,
+    (viewportWidth - expandedSearchWidth) / 2,
+  );
   const searchMotion = searchOpen
     ? {
-        left: "50%",
-        x: "-50%",
-        width: "min(34rem, calc(100vw - 2rem))",
+        left: expandedSearchLeft,
+        x: 0,
+        width: expandedSearchWidth,
         opacity: 1,
         scale: 1,
       }
     : controlsVisible
       ? {
-          left: "4.25rem",
+          left: 68,
           x: 0,
-          width: "2.75rem",
+          width: 44,
           opacity: 1,
           scale: 1,
         }
       : {
-          left: "-4rem",
+          left: -64,
           x: 0,
-          width: "2.75rem",
+          width: 44,
           opacity: 0,
           scale: 0.96,
         };
