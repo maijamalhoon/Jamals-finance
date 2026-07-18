@@ -65,6 +65,12 @@ export default function SpendingBreakdown({
   const { reduceMotion } = useDashboardAnimationReady();
   const { formatCurrency } = useCurrency();
   const safeTotal = Number.isFinite(total) ? Math.max(total, 0) : 0;
+  const donutTotalLabel = formatCurrency(
+    safeTotal,
+    safeTotal >= 1_000_000
+      ? { compact: true, maximumFractionDigits: 1 }
+      : undefined,
+  );
   const sortedData = [...data]
     .map((item) => ({
       ...item,
@@ -172,7 +178,7 @@ export default function SpendingBreakdown({
         <div className="flex min-w-0 justify-center">
           <div
             aria-label={`Total spending ${formatCurrency(safeTotal)}`}
-            className="relative aspect-square w-full max-w-[240px] min-[420px]:max-w-[248px] sm:max-w-[256px] md:max-w-[272px] lg:max-w-[288px] xl:max-w-[300px] 2xl:max-w-[260px]"
+            className="relative aspect-square w-full max-w-[240px] [container-type:inline-size] min-[420px]:max-w-[248px] sm:max-w-[256px] md:max-w-[272px] lg:max-w-[288px] xl:max-w-[300px] 2xl:max-w-[260px]"
             role="img"
           >
             <ChartFrame>
@@ -230,9 +236,12 @@ export default function SpendingBreakdown({
             </ChartFrame>
 
             <div className="pointer-events-none absolute inset-0 grid place-items-center text-center">
-              <div className="max-w-[46%] min-w-0">
-                <p className="break-words text-[17px] font-black leading-tight tracking-[-0.02em] text-text-primary tabular-nums [overflow-wrap:anywhere] sm:text-[19px] lg:text-xl">
-                  <CountedAmount amount={formatCurrency(safeTotal)} duration={0.82} />
+              <div className="w-[54%] max-w-[54%] min-w-0">
+                <p
+                  className="whitespace-nowrap text-[clamp(0.9rem,8.2cqw,1.35rem)] font-black leading-none tracking-[-0.035em] text-text-primary tabular-nums"
+                  title={formatCurrency(safeTotal)}
+                >
+                  <CountedAmount amount={donutTotalLabel} duration={0.82} />
                 </p>
                 <p className="mt-1.5 text-[10px] font-semibold text-text-secondary sm:text-[11px]">
                   Total spent
