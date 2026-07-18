@@ -1,0 +1,86 @@
+/* Large-screen Settings composition.
+   Presentation only: all existing settings logic, dialogs, writes, exports,
+   theme behavior, notification controls, and mobile/tablet layouts are unchanged. */
+
+@media (min-width: 1200px) {
+  .settings-page-polish {
+    width: 100%;
+  }
+
+  .settings-page-polish > div > div {
+    display: grid !important;
+    width: min(100%, 90rem) !important;
+    max-width: 90rem !important;
+    margin-inline: auto !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-areas:
+      "hero hero"
+      "profile appearance"
+      "preferences appearance"
+      "notifications data"
+      "tools data"
+      "stats stats"
+      "signout signout"
+      "footer footer";
+    column-gap: 1.5rem;
+    row-gap: 1.25rem;
+    align-items: start;
+  }
+
+  .settings-page-polish > div > div > * + * {
+    margin-block-start: 0 !important;
+  }
+
+  .settings-page-polish > div > div > .page-heading {
+    grid-area: hero;
+  }
+
+  .settings-page-polish > div > div > section:nth-of-type(1) {
+    grid-area: profile;
+  }
+
+  .settings-page-polish > div > div > section:nth-of-type(2) {
+    grid-area: appearance;
+  }
+
+  .settings-page-polish > div > div > section:nth-of-type(3) {
+    grid-area: preferences;
+  }
+
+  .settings-page-polish > div > div > section:nth-of-type(4) {
+    grid-area: notifications;
+  }
+
+  .settings-page-polish > div > div > section:nth-of-type(5) {
+    grid-area: tools;
+  }
+
+  .settings-page-polish > div > div > section:nth-of-type(6) {
+    grid-area: data;
+  }
+
+  .settings-page-polish > div > div > section:nth-of-type(7) {
+    grid-area: stats;
+  }
+
+  .settings-page-polish > div > div > button:last-of-type {
+    grid-area: signout;
+  }
+
+  .settings-page-polish > div > div > footer {
+    grid-area: footer;
+  }
+
+  .settings-page-polish section:nth-of-type(7) > div {
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  }
+
+  .settings-page-polish .page-heading {
+    min-height: 7rem;
+  }
+
+  .settings-page-polish .finance-panel,
+  .settings-page-polish .summary-card {
+    width: 100%;
+  }
+}
