@@ -162,7 +162,7 @@
 
 @media (min-width: 640px) {
   .dialog {
-    --finance-modal-max-width: 34rem;
+    --finance-modal-max-width: 36rem;
   }
 
   .header {
@@ -170,19 +170,37 @@
   }
 
   .body {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 0.78rem 0.8rem !important;
-    padding: 0.9rem 1.2rem !important;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.78rem !important;
+    padding: 0.95rem 1.2rem !important;
   }
 
-  .amountField,
-  .typeSwitch,
-  .error {
-    grid-column: 1 / -1;
+  .amountInput {
+    min-height: 3rem !important;
+  }
+
+  .compactSelect,
+  .categoryTrigger {
+    min-height: 3.05rem !important;
+  }
+
+  .dateControl :global(.field-input) {
+    min-height: 3rem !important;
+  }
+
+  .noteInput {
+    min-height: 4rem !important;
+    max-height: 4rem !important;
   }
 
   .footer {
     padding-inline: 1.2rem !important;
+  }
+}
+
+@media (min-width: 1024px) and (min-height: 621px) {
+  .dialog {
+    --finance-modal-max-width: 38rem;
   }
 }
 
