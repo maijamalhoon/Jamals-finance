@@ -8,43 +8,23 @@ import {
   ArchiveRestore,
   ArrowDownLeft,
   ArrowUpRight,
-  Banknote,
-  BriefcaseBusiness,
-  CreditCard,
-  Landmark,
   Pencil,
-  PiggyBank,
-  Smartphone,
   ScrollText,
-  Wallet,
 } from "lucide-react";
 import { toast } from "sonner";
 
 import { createClient } from "@/lib/supabase/client";
 import AccountModal, { ExistingAccount } from "./AccountModal";
+import AccountIdentityIcon from "./AccountIdentityIcon";
 import { useCurrency } from "@/components/currency/CurrencyProvider";
 import { getAccountAccentColor } from "@/lib/theme-colors";
-import { AccountBrandMark, detectAccountBrand } from "@/lib/account-brand";
+import { detectAccountBrand } from "@/lib/account-identity";
 import { getUserMutationError } from "@/lib/user-errors";
 
 type AccountWithTotals = ExistingAccount & {
   inflow?: number;
   outflow?: number;
 };
-
-const ICON_MAP = {
-  bank: Landmark,
-  wallet: Wallet,
-  card: CreditCard,
-  phone: Smartphone,
-  cash: Banknote,
-  business: BriefcaseBusiness,
-  savings: PiggyBank,
-};
-
-function getIcon(iconKey?: string | null) {
-  return ICON_MAP[(iconKey ?? "bank") as keyof typeof ICON_MAP] ?? Landmark;
-}
 
 function getAccountKindLabel(value?: string | null) {
   return value === "current" ? "Current Account" : "Savings Account";
@@ -76,7 +56,6 @@ export default function AccountCard({ account }: AccountCardProps) {
   const [changingStatus, setChangingStatus] = useState(false);
 
   const brand = detectAccountBrand(account.name, account.icon_key);
-  const Icon = getIcon(account.icon_key);
   const accent = brand?.accentColor ?? getAccountAccentColor(account.accent_color);
   const archived = account.status === "archived";
 
@@ -126,13 +105,12 @@ export default function AccountCard({ account }: AccountCardProps) {
         />
 
         <div className="relative flex items-start justify-between gap-3">
-          {brand ? (
-            <AccountBrandMark brand={brand} size="lg" />
-          ) : (
-            <div className="account-accent-tile grid h-12 w-12 shrink-0 place-items-center rounded-[18px] border">
-              <Icon size={20} strokeWidth={2.2} />
-            </div>
-          )}
+          <AccountIdentityIcon
+            name={account.name}
+            iconKey={account.icon_key}
+            type={account.type}
+            size="lg"
+          />
 
           <div className="flex gap-1 opacity-100 transition-opacity sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100">
             {!archived ? (
