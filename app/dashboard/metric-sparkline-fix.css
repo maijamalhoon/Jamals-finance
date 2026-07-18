@@ -32,8 +32,8 @@
 
 .dashboard-metric-graph-path {
   fill: none;
-  stroke-dasharray: 1;
-  stroke-dashoffset: 1;
+  stroke-dasharray: 100;
+  stroke-dashoffset: 100;
   stroke-linecap: round;
   stroke-linejoin: round;
   stroke-width: 1.9;
@@ -55,33 +55,54 @@
 }
 
 @media (max-width: 639px) {
+  /* The four primary financial metrics must remain visually stronger than the pulse tiles below. */
   [data-dashboard-scroll] .dashboard-overview .dashboard-metric-card {
     height: auto !important;
-    min-height: 7.35rem !important;
-    padding: 0.72rem !important;
+    min-height: 8.85rem !important;
+    padding: 0.82rem !important;
+  }
+
+  [data-dashboard-scroll] .dashboard-overview .dashboard-metric-card-title {
+    font-size: clamp(0.66rem, 5.15cqi, 0.8rem) !important;
+    font-weight: 780 !important;
+    letter-spacing: 0.09em !important;
   }
 
   [data-dashboard-scroll] .dashboard-overview .dashboard-metric-card-amount {
-    margin-top: 0.48rem !important;
+    margin-top: 0.58rem !important;
+    font-size: clamp(1.34rem, 14.2cqi, 1.78rem) !important;
+    font-weight: 800 !important;
+  }
+
+  [data-dashboard-scroll] .dashboard-overview .dashboard-metric-card-amount[data-amount-size="long"] {
+    font-size: clamp(1.08rem, 11.4cqi, 1.42rem) !important;
+  }
+
+  [data-dashboard-scroll] .dashboard-overview .dashboard-metric-card-amount[data-amount-size="xlong"] {
+    font-size: clamp(0.9rem, 9.6cqi, 1.18rem) !important;
   }
 
   [data-dashboard-scroll] .dashboard-overview .dashboard-metric-card-footer {
-    margin-top: 0.56rem !important;
+    margin-top: 0.72rem !important;
   }
 
   .dashboard-metric-graph {
-    height: 1.15rem;
+    height: 1.35rem;
   }
 
   .dashboard-metric-graph-path {
-    stroke-width: 1.75;
+    stroke-width: 1.9;
   }
 }
 
 @media (max-width: 389px) {
   [data-dashboard-scroll] .dashboard-overview .dashboard-metric-card {
-    min-height: 7.05rem !important;
-    padding: 0.68rem !important;
+    min-height: 8.45rem !important;
+    padding: 0.76rem !important;
+  }
+
+  [data-dashboard-scroll] .dashboard-overview .dashboard-metric-card-amount {
+    font-size: clamp(1.24rem, 13.6cqi, 1.62rem) !important;
   }
 }
 
