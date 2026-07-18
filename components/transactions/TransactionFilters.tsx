@@ -211,6 +211,7 @@ export default function TransactionFilters({
               <option value="all">All</option>
               <option value="income">Income</option>
               <option value="expense">Expense</option>
+              <option value="payable">Payable payment</option>
               <option value="refund">Expense refund</option>
               <option value="investment">Investment contribution</option>
               <option value="goal">Goal contribution</option>
