@@ -120,6 +120,35 @@ const dashboardOverviewStyles = `
       gap: 1.25rem !important;
     }
 
+    /* Keep only the donut and three compact holding lines in the portfolio body.
+       Data, allocation logic, sparklines and animations stay unchanged. */
+    .dashboard-overview-layout
+      > div.grid:nth-last-child(2)
+      > :nth-child(2)
+      > section
+      > header
+      + div.grid
+      > div:last-child {
+      display: flex !important;
+      width: min(100%, 360px) !important;
+      max-width: 360px !important;
+      min-width: 0 !important;
+      flex-direction: column !important;
+      justify-self: center !important;
+      gap: 0.2rem !important;
+    }
+
+    .dashboard-overview-layout
+      > div.grid:nth-last-child(2)
+      > :nth-child(2)
+      > section
+      > header
+      + div.grid
+      > div:last-child
+      > * {
+      margin-top: 0 !important;
+    }
+
     .dashboard-overview-layout
       > div.grid:nth-last-child(2)
       > :nth-child(2)
@@ -128,9 +157,50 @@ const dashboardOverviewStyles = `
       + div.grid
       > div:last-child
       > div {
-      grid-template-columns: auto minmax(0, 1fr) minmax(72px, 0.85fr) auto !important;
-      gap: 0.5rem !important;
-      padding: 0.625rem 0.75rem !important;
+      grid-template-columns: auto minmax(0, 1fr) minmax(64px, 0.72fr) auto !important;
+      gap: 0.4rem !important;
+      border: 0 !important;
+      border-radius: 0 !important;
+      background: transparent !important;
+      box-shadow: none !important;
+      padding: 0.35rem 0.2rem !important;
+    }
+
+    .dashboard-overview-layout
+      > div.grid:nth-last-child(2)
+      > :nth-child(2)
+      > section
+      > header
+      + div.grid
+      > div:last-child
+      > div
+      > :first-child {
+      width: 28px !important;
+      height: 28px !important;
+    }
+
+    .dashboard-overview-layout
+      > div.grid:nth-last-child(2)
+      > :nth-child(2)
+      > section
+      > header
+      + div.grid
+      > div:last-child
+      > div
+      > svg {
+      height: 1.65rem !important;
+      min-width: 60px !important;
+    }
+
+    .dashboard-overview-layout
+      > div.grid:nth-last-child(2)
+      > :nth-child(2)
+      > section
+      > header
+      + div.grid
+      > div:last-child
+      > p {
+      display: none !important;
     }
   }
 
