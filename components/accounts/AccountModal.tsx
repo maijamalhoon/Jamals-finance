@@ -24,7 +24,7 @@ import {
   financePrimaryButtonClass,
 } from "@/components/ui/finance-modal";
 import { BASE_CURRENCY } from "@/lib/currency";
-import { getAutomaticAccountVisual } from "@/lib/account-brand";
+import { getAutomaticAccountVisual } from "@/lib/account-identity";
 import { getUserMutationError } from "@/lib/user-errors";
 
 export interface ExistingAccount {
@@ -182,7 +182,7 @@ export default function AccountModal({
               id="account-name"
               value={name}
               onChange={(event) => setName(event.target.value)}
-              placeholder="e.g. UBL, Meezan Bank, JazzCash"
+              placeholder="e.g. UBL, Bank of America, JazzCash"
               autoComplete="off"
             />
           </FinanceFormField>
