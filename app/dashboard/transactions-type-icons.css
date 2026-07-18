@@ -1,0 +1,100 @@
+/*
+ * Transactions page typography and icon system.
+ *
+ * This scope is applied only to the exact /dashboard/transactions route.
+ * Authored font sizes, component dimensions, spacing, data, interactions,
+ * responsive behavior, and motion remain unchanged.
+ */
+
+.transactions-page-type-icons {
+  font-family: var(--font-sans);
+  font-weight: 400;
+  font-kerning: normal;
+  font-synthesis: none;
+  text-rendering: geometricPrecision;
+}
+
+/* Headings and transaction titles: Geist Sans 650–700. */
+.transactions-page-type-icons :where(h1, h2, h3, h4, h5, h6, [role="heading"]) {
+  font-family: var(--font-sans);
+  font-weight: 700;
+}
+
+/* Keep existing utility intent inside the requested weight ranges. */
+.transactions-page-type-icons :where(.font-black, .font-extrabold, .font-bold) {
+  font-weight: 700;
+}
+
+.transactions-page-type-icons :where(.font-semibold) {
+  font-weight: 600;
+}
+
+.transactions-page-type-icons :where(.font-medium) {
+  font-weight: 500;
+}
+
+.transactions-page-type-icons :where(.font-normal) {
+  font-weight: 400;
+}
+
+/* Buttons, filter labels, list labels, and transaction pills: 550–650. */
+.transactions-page-type-icons :where(
+    button,
+    a,
+    label,
+    summary,
+    [role="button"],
+    [role="link"],
+    [role="tab"],
+    [role="menuitem"],
+    [role="option"],
+    .desktop-list-header p
+  ) {
+  font-family: var(--font-sans);
+  font-weight: 600;
+}
+
+.transactions-page-type-icons [data-transaction-row] :where(span.font-bold) {
+  font-weight: 600;
+}
+
+/* Body copy remains Geist Sans 400–500 via inheritance and utilities. */
+.transactions-page-type-icons :where(
+    p,
+    li,
+    dd,
+    dt,
+    figcaption,
+    input,
+    textarea,
+    select,
+    option
+  ) {
+  font-family: var(--font-sans);
+}
+
+/* Amounts retain their authored size and use aligned tabular numerals. */
+.transactions-page-type-icons :where(
+    .tabular-nums,
+    [data-amount],
+    [class*="amount"],
+    [data-transaction-row] p.font-black
+  ) {
+  font-family: var(--font-sans);
+  font-variant-numeric: tabular-nums lining-nums;
+  font-feature-settings: "tnum" 1, "lnum" 1;
+}
+
+/* Lucide rounded monoline outlines; authored icon dimensions stay intact. */
+.transactions-page-type-icons svg.lucide {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  shape-rendering: geometricPrecision;
+}
+
+.transactions-page-type-icons svg.lucide[aria-hidden="true"] {
+  pointer-events: none;
+}
