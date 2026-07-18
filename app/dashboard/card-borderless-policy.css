@@ -1,4 +1,4 @@
-/* Dashboard overview card shells are intentionally borderless in every state.
+/* Dashboard overview card shells are intentionally flat and borderless in every state.
    Internal controls, charts, tooltips, and list items keep their own interaction styles. */
 
 [data-dashboard-scroll] .dashboard-overview :is(
@@ -11,6 +11,13 @@
   border: 0 !important;
   border-color: transparent !important;
   outline: 0 !important;
+  box-shadow: none !important;
+  filter: none !important;
+  background-clip: padding-box !important;
+  --tw-shadow: 0 0 #0000 !important;
+  --tw-shadow-colored: 0 0 #0000 !important;
+  --tw-ring-offset-shadow: 0 0 #0000 !important;
+  --tw-ring-shadow: 0 0 #0000 !important;
 }
 
 [data-dashboard-scroll] .dashboard-overview :is(
@@ -23,11 +30,15 @@
   border: 0 !important;
   border-color: transparent !important;
   outline: 0 !important;
+  box-shadow: none !important;
+  filter: none !important;
+  --tw-shadow: 0 0 #0000 !important;
+  --tw-shadow-colored: 0 0 #0000 !important;
   --tw-ring-offset-shadow: 0 0 #0000 !important;
   --tw-ring-shadow: 0 0 #0000 !important;
 }
 
-/* Remove the tiny decorative corner strokes left by legacy card pseudo-elements. */
+/* Remove every legacy corner stroke or highlight layer. */
 [data-dashboard-scroll] .dashboard-overview :is(
   .finance-reference-card,
   .dashboard-graph-card,
@@ -46,21 +57,47 @@
   display: none !important;
   border: 0 !important;
   border-color: transparent !important;
+  outline: 0 !important;
+  box-shadow: none !important;
+  filter: none !important;
 }
 
-/* Compact dashboard top controls use shadows and surfaces, never visible borders. */
+/* Compact dashboard top controls are also completely free of borders and rings. */
 @media (max-width: 1023px) {
-  [data-dashboard-shell] :is(
-    .fixed.right-4 button.finance-control,
-    button[aria-label^="Open profile menu"],
-    button[aria-label="Open navigation menu"]
+  [data-dashboard-shell] .fixed.right-4 button.finance-control,
+  [data-dashboard-shell] .fixed.right-4 button[aria-label^="Open profile menu"],
+  [data-dashboard-shell] .fixed.left-4 button[aria-label="Open navigation menu"],
+  [data-dashboard-shell] .fixed.right-4 button.finance-control:is(
+    :hover,
+    :active,
+    :focus,
+    :focus-visible,
+    :focus-within
   ),
-  [data-dashboard-shell] :is(
-    .fixed.right-4 button.finance-control,
-    button[aria-label^="Open profile menu"],
-    button[aria-label="Open navigation menu"]
-  ):is(:hover, :active, :focus, :focus-visible, :focus-within, [data-popup-open]) {
+  [data-dashboard-shell] .fixed.right-4 button[aria-label^="Open profile menu"]:is(
+    :hover,
+    :active,
+    :focus,
+    :focus-visible,
+    :focus-within,
+    [data-popup-open]
+  ),
+  [data-dashboard-shell] .fixed.left-4 button[aria-label="Open navigation menu"]:is(
+    :hover,
+    :active,
+    :focus,
+    :focus-visible,
+    :focus-within
+  ) {
     border: 0 !important;
     border-color: transparent !important;
+    outline: 0 !important;
+    box-shadow: none !important;
+    filter: none !important;
+    background-clip: padding-box !important;
+    --tw-shadow: 0 0 #0000 !important;
+    --tw-shadow-colored: 0 0 #0000 !important;
+    --tw-ring-offset-shadow: 0 0 #0000 !important;
+    --tw-ring-shadow: 0 0 #0000 !important;
   }
 }
