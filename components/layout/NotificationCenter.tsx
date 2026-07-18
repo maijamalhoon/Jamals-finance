@@ -18,6 +18,11 @@ type NotificationCenterProps = {
   state: NotificationState;
 };
 
+type NotificationPanelContentProps = {
+  state: NotificationState;
+  onNavigate: (alert: NotificationInboxAlert) => void;
+};
+
 const toneStyles: Record<NotificationTone, string> = {
   danger: "bg-danger/10 text-danger",
   warning: "bg-warning/10 text-warning",
@@ -25,7 +30,7 @@ const toneStyles: Record<NotificationTone, string> = {
 };
 
 const notificationTriggerClassName =
-  "finance-control finance-focus relative grid h-11 w-11 shrink-0 place-items-center rounded-[var(--radius-control)] text-text-secondary hover:text-text-primary";
+  "finance-control finance-focus relative grid h-11 w-11 shrink-0 place-items-center rounded-[14px] text-text-secondary outline-none transition-[transform,background-color,border-color,box-shadow,color] hover:-translate-y-0.5 hover:text-text-primary active:scale-[0.97]";
 const GLASS_EASE = [0.22, 1, 0.36, 1] as const;
 
 function formatAlertDate(dateKey: string) {
@@ -83,6 +88,47 @@ function NotificationSummaryRow({
   );
 }
 
+function NotificationPanelContent({
+  state,
+  onNavigate,
+}: NotificationPanelContentProps) {
+  return (
+    <>
+      <div className="px-2 pb-1 pt-0.5">
+        <p className="text-[11px] font-bold leading-5 text-text-primary">
+          Notifications
+        </p>
+      </div>
+
+      {state.status === "error" ? (
+        <div className="flex items-center gap-2 rounded-[10px] px-2 py-2.5 text-[12px] text-text-secondary">
+          <span className="grid size-7 shrink-0 place-items-center rounded-[9px] bg-danger/10 text-danger">
+            <AlertTriangle size={13} aria-hidden="true" />
+          </span>
+          <span>Unavailable</span>
+        </div>
+      ) : state.visibleAlerts.length === 0 ? (
+        <div className="flex items-center gap-2 rounded-[10px] px-2 py-2.5 text-[12px] text-text-secondary">
+          <span className="grid size-7 shrink-0 place-items-center rounded-[9px] bg-surface-soft text-text-tertiary">
+            <Bell size={13} aria-hidden="true" />
+          </span>
+          <span>No notifications</span>
+        </div>
+      ) : (
+        <div className="max-h-[min(15rem,calc(100dvh-7rem))] overflow-y-auto overscroll-contain">
+          {state.visibleAlerts.map((alert) => (
+            <NotificationSummaryRow
+              key={alert.id}
+              alert={alert}
+              onNavigate={onNavigate}
+            />
+          ))}
+        </div>
+      )}
+    </>
+  );
+}
+
 export function NotificationCenterLoading() {
   return (
     <button
@@ -100,6 +146,7 @@ export default function NotificationCenter({ state }: NotificationCenterProps) {
   const supabase = createClient();
   const reduceMotion = useReducedMotion();
   const rootRef = useRef<HTMLDivElement>(null);
+  const mobilePanelRef = useRef<HTMLDivElement>(null);
   const [open, setOpen] = useState(false);
 
   const displayedCount =
@@ -110,12 +157,19 @@ export default function NotificationCenter({ state }: NotificationCenterProps) {
   const glassTransition = reduceMotion
     ? { duration: 0.01 }
     : { duration: 0.24, ease: GLASS_EASE };
+  const panelTransition = reduceMotion
+    ? { duration: 0.01 }
+    : { duration: 0.22, ease: GLASS_EASE };
 
   useEffect(() => {
     if (!open) return;
 
     const handlePointerDown = (event: PointerEvent) => {
-      if (!rootRef.current?.contains(event.target as Node)) {
+      const target = event.target as Node;
+      if (
+        !rootRef.current?.contains(target) &&
+        !mobilePanelRef.current?.contains(target)
+      ) {
         setOpen(false);
       }
     };
@@ -160,25 +214,52 @@ export default function NotificationCenter({ state }: NotificationCenterProps) {
     <>
       {typeof document !== "undefined"
         ? createPortal(
-            <AnimatePresence>
-              {open ? (
-                <motion.div
-                  key="mobile-notification-glass"
-                  aria-hidden="true"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={glassTransition}
-                  onPointerDown={() => setOpen(false)}
-                  className="fixed inset-0 z-30 bg-brand/12 backdrop-blur-md backdrop-saturate-125 dark:bg-brand/18 lg:hidden"
-                />
-              ) : null}
-            </AnimatePresence>,
+            <>
+              <AnimatePresence>
+                {open ? (
+                  <motion.div
+                    key="mobile-notification-glass"
+                    aria-hidden="true"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={glassTransition}
+                    onPointerDown={() => setOpen(false)}
+                    className="fixed inset-0 z-30 bg-[rgb(41_86_200_/_0.07)] backdrop-blur-[4px] backdrop-saturate-105 dark:bg-[rgb(41_86_200_/_0.1)] lg:hidden"
+                  />
+                ) : null}
+              </AnimatePresence>
+
+              <AnimatePresence>
+                {open ? (
+                  <motion.div
+                    ref={mobilePanelRef}
+                    key="mobile-notification-panel"
+                    data-slot="dropdown-menu-content"
+                    role="menu"
+                    aria-label="Notifications"
+                    initial={{ opacity: 0, y: -6, scale: 0.985 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: -4, scale: 0.985 }}
+                    transition={panelTransition}
+                    className="fixed right-4 z-[70] w-[15.5rem] max-w-[calc(100vw-2rem)] overflow-hidden rounded-[16px] border border-border/80 bg-surface-elevated/98 p-1.5 shadow-[0_18px_44px_rgb(15_23_42_/_0.18)] backdrop-blur-xl dark:shadow-[0_18px_48px_rgb(0_0_0_/_0.36)] sm:w-[16.5rem] lg:hidden"
+                    style={{
+                      top: "calc(max(1rem, env(safe-area-inset-top)) + 3.25rem)",
+                    }}
+                  >
+                    <NotificationPanelContent
+                      state={state}
+                      onNavigate={handleNavigate}
+                    />
+                  </motion.div>
+                ) : null}
+              </AnimatePresence>
+            </>,
             document.body,
           )
         : null}
 
-      <div ref={rootRef} className="relative">
+      <div ref={rootRef} className="relative z-[80]">
         <button
           type="button"
           aria-label={triggerLabel}
@@ -203,44 +284,12 @@ export default function NotificationCenter({ state }: NotificationCenterProps) {
             data-slot="dropdown-menu-content"
             role="menu"
             aria-label="Notifications"
-            className="absolute right-0 top-[calc(100%+0.5rem)] z-[70] w-[15rem] max-w-[calc(100vw-4rem)] rounded-[14px] border border-border/70 bg-surface-elevated/98 p-1.5 shadow-[0_14px_36px_rgb(15_23_42_/_0.16)] backdrop-blur-xl dark:shadow-[0_16px_40px_rgb(0_0_0_/_0.34)] sm:w-[16.5rem]"
+            className="absolute right-0 top-[calc(100%+0.5rem)] z-[70] hidden w-[15rem] max-w-[calc(100vw-4rem)] overflow-hidden rounded-[14px] border border-border/70 bg-surface-elevated/98 p-1.5 shadow-[0_14px_36px_rgb(15_23_42_/_0.16)] backdrop-blur-xl dark:shadow-[0_16px_40px_rgb(0_0_0_/_0.34)] lg:block"
           >
-            <span
-              aria-hidden="true"
-              className="absolute -top-1.5 right-4 size-3 rotate-45 border-l border-t border-border/70 bg-surface-elevated"
+            <NotificationPanelContent
+              state={state}
+              onNavigate={handleNavigate}
             />
-
-            <div className="px-2 pb-1 pt-0.5">
-              <p className="text-[11px] font-bold leading-5 text-text-primary">
-                Notifications
-              </p>
-            </div>
-
-            {state.status === "error" ? (
-              <div className="flex items-center gap-2 rounded-[10px] px-2 py-2.5 text-[12px] text-text-secondary">
-                <span className="grid size-7 shrink-0 place-items-center rounded-[9px] bg-danger/10 text-danger">
-                  <AlertTriangle size={13} aria-hidden="true" />
-                </span>
-                <span>Unavailable</span>
-              </div>
-            ) : state.visibleAlerts.length === 0 ? (
-              <div className="flex items-center gap-2 rounded-[10px] px-2 py-2.5 text-[12px] text-text-secondary">
-                <span className="grid size-7 shrink-0 place-items-center rounded-[9px] bg-surface-soft text-text-tertiary">
-                  <Bell size={13} aria-hidden="true" />
-                </span>
-                <span>No notifications</span>
-              </div>
-            ) : (
-              <div className="max-h-[min(15rem,calc(100dvh-7rem))] overflow-y-auto overscroll-contain">
-                {state.visibleAlerts.map((alert) => (
-                  <NotificationSummaryRow
-                    key={alert.id}
-                    alert={alert}
-                    onNavigate={handleNavigate}
-                  />
-                ))}
-              </div>
-            )}
           </div>
         ) : null}
       </div>
