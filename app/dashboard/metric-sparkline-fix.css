@@ -55,6 +55,12 @@
 }
 
 @media (max-width: 639px) {
+  /* The four primary metrics are intentionally one full-width card per row on mobile. */
+  [data-dashboard-scroll] .dashboard-overview section[aria-label="Month-to-date financial metrics"] {
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 0.85rem !important;
+  }
+
   /* The four primary financial metrics must remain visually stronger than the pulse tiles below. */
   [data-dashboard-scroll] .dashboard-overview .dashboard-metric-card {
     height: auto !important;
