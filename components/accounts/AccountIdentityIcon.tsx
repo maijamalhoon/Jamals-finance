@@ -46,6 +46,7 @@ type AccountIdentityIconProps = {
   type?: string | null;
   size?: "sm" | "md" | "lg";
   className?: string;
+  forceLucide?: boolean;
 };
 
 export default function AccountIdentityIcon({
@@ -54,9 +55,11 @@ export default function AccountIdentityIcon({
   type,
   size = "md",
   className,
+  forceLucide = false,
 }: AccountIdentityIconProps) {
   const [logoFailed, setLogoFailed] = useState(false);
-  const shouldLoadLogo = shouldAttemptAccountLogo(name, iconKey, type);
+  const shouldLoadLogo =
+    !forceLucide && shouldAttemptAccountLogo(name, iconKey, type);
   const logoUrl = useMemo(
     () =>
       shouldLoadLogo && name?.trim()
@@ -97,7 +100,7 @@ export default function AccountIdentityIcon({
     <span className={wrapperClass} title={name ?? "Account"}>
       <Icon
         size={ICON_SIZES[size]}
-        strokeWidth={1.8}
+        strokeWidth={forceLucide ? 2.2 : 1.8}
         aria-hidden="true"
       />
     </span>
