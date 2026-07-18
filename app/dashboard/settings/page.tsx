@@ -7,6 +7,7 @@ import "./settings-polish.css";
 import "./settings-polish-fixes.css";
 import "./settings-desktop-layout.css";
 import "./settings-restructure.css";
+import "./settings-windows-switch.css";
 
 export const dynamic = "force-dynamic";
 
