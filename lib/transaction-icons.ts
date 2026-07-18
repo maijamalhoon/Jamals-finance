@@ -5,8 +5,6 @@ import {
   ReceiptText,
   RotateCcw,
   Target,
-  TrendingDown,
-  TrendingUp,
   type LucideIcon,
 } from "lucide-react";
 
@@ -17,19 +15,21 @@ import {
 } from "@/lib/category-visuals";
 import { FEATURE_COLOR_CSS } from "@/lib/theme-colors";
 
+export type TransactionSemanticType =
+  | "income"
+  | "expense"
+  | "transfer"
+  | "investment"
+  | "payable"
+  | "goal"
+  | "refund"
+  | "transaction";
+
 export type TransactionIconMeta = {
   label: string;
   icon: LucideIcon;
   accent: string;
-  semanticType:
-    | "income"
-    | "expense"
-    | "transfer"
-    | "investment"
-    | "payable"
-    | "goal"
-    | "refund"
-    | "transaction";
+  semanticType: TransactionSemanticType;
 };
 
 type TransactionIconInput = {
@@ -88,10 +88,8 @@ function getCategoryIcon(
 }
 
 /**
- * One shared visual resolver for the Transactions page and dashboard Recent
- * Transactions card. Category icon identity stays stable, while transaction
- * direction controls the display colour: income green, expense red, and the
- * dedicated finance tones for transfers, investments, payables and goals.
+ * Shared resolver for the Transactions page and dashboard Recent Transactions.
+ * Category identity controls the glyph; transaction meaning controls its colour.
  */
 export function getTransactionIconMeta({
   type,
@@ -190,12 +188,18 @@ export function getTransactionIconMeta({
   };
 }
 
-export function getTransactionToneClass(type?: string | null) {
-  if (type === "income") return "text-income";
-  if (type === "expense") return "text-expense";
-  if (type === "investment") return "text-investment";
-  if (type === "goal") return "text-goals";
-  if (type === "refund") return "text-info";
+export function getTransactionToneClass(
+  type?: string | null,
+  semanticType?: TransactionSemanticType,
+) {
+  if (semanticType === "payable") return "text-payables";
+  if (semanticType === "goal" || type === "goal") return "text-goals";
+  if (semanticType === "investment" || type === "investment") {
+    return "text-investment";
+  }
+  if (semanticType === "income" || type === "income") return "text-income";
+  if (semanticType === "expense" || type === "expense") return "text-expense";
+  if (semanticType === "refund" || type === "refund") return "text-info";
   return "text-transfer";
 }
 
