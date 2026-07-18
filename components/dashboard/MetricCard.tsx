@@ -69,23 +69,22 @@ function MetricProgressLine({
 }) {
   const path =
     direction === "up"
-      ? "M2 21 C14 20 19 15 31 16 C43 18 49 12 61 13 C74 14 83 9 98 6"
+      ? "M2 15 C14 15 19 11 31 12 C43 14 49 9 61 10 C74 11 83 7 98 4"
       : direction === "down"
-        ? "M2 7 C14 8 19 6 31 10 C43 14 49 18 61 17 C74 15 83 20 98 22"
-        : "M2 14 C15 13 20 15 33 14 C46 13 53 15 66 14 C79 13 87 15 98 14";
+        ? "M2 4 C14 5 19 4 31 7 C43 10 49 14 61 13 C74 12 83 15 98 17"
+        : "M2 10 C15 9 20 11 33 10 C46 9 53 11 66 10 C79 9 87 11 98 10";
 
   return (
     <svg
       key={animationKey}
       aria-hidden="true"
       className={`${styles.sparkline} dashboard-metric-progress`}
-      viewBox="0 0 100 28"
+      viewBox="0 0 100 20"
       preserveAspectRatio="none"
     >
       <path
         className={`${styles.sparklinePath} dashboard-metric-progress-path`}
         d={path}
-        pathLength={1}
         style={{ stroke: accent }}
       />
     </svg>
