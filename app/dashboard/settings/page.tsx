@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import SettingsExperience from "@/components/settings/SettingsExperience";
-import type { SettingsCategory } from "@/components/settings/SettingsOneUI";
+import SettingsExperienceV2 from "@/components/settings/SettingsExperienceV2";
+import type { PersistentSettingsCategory } from "@/components/settings/CategoryManagementExperience";
 
 import "./settings-polish.css";
 import "./settings-polish-fixes.css";
@@ -35,7 +35,7 @@ export default async function SettingsPage() {
   ] = await Promise.all([
     supabase
       .from("categories")
-      .select("id, name, type, color, parent_id")
+      .select("id, name, type, color, icon_key, parent_id")
       .eq("user_id", user.id)
       .order("type")
       .order("parent_id", { ascending: true, nullsFirst: true })
@@ -105,11 +105,11 @@ export default async function SettingsPage() {
 
   return (
     <div className="settings-page-polish">
-      <SettingsExperience
+      <SettingsExperienceV2
         email={user.email ?? ""}
         userId={user.id}
         displayName={displayName}
-        categories={(categories ?? []) as SettingsCategory[]}
+        categories={(categories ?? []) as PersistentSettingsCategory[]}
         categoryUsage={categoryUsage}
         categoriesAvailable={categoriesAvailable}
         stats={{
