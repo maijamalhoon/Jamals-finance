@@ -1,30 +1,29 @@
 /*
- * Final Appearance selector treatment.
+ * Appearance option list.
  *
- * This is a presentation-only layer. Theme persistence, keyboard navigation,
- * system detection, and light/dark behavior continue to use the existing
- * SettingsOneUI implementation.
+ * Presentation only: the existing theme state, persistence, keyboard controls,
+ * system detection, and light/dark behavior remain unchanged.
  */
 
 .settings-page-polish {
-  --appearance-track-border: color-mix(
+  --appearance-option-border: color-mix(
     in srgb,
     var(--border-strong),
-    transparent 38%
+    transparent 34%
   );
-  --appearance-track-surface: color-mix(
+  --appearance-option-surface: color-mix(
     in srgb,
     var(--surface-secondary),
-    var(--surface-primary) 26%
+    var(--surface-primary) 32%
   );
-  --appearance-selected-border: color-mix(
+  --appearance-option-active: color-mix(
     in srgb,
-    var(--text-primary),
-    transparent 76%
+    var(--primary),
+    transparent 92%
   );
 }
 
-/* Keep the whole section calm, compact, and consistent with global settings UIs. */
+/* Section spacing */
 .settings-page-polish
   .settings-core
   > div
@@ -43,9 +42,11 @@
   .finance-panel
   > div:first-child
   > div:first-child {
+  align-items: center !important;
   gap: 0.8rem !important;
 }
 
+/* Three clean full-width setting rows instead of tiles or segmented tabs. */
 .settings-page-polish
   .settings-core
   > div
@@ -53,25 +54,15 @@
   > section:nth-of-type(2)
   [role="radiogroup"] {
   display: grid !important;
-  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
-  gap: 0.28rem !important;
-  margin-top: 0.9rem !important;
-  padding: 0.28rem !important;
-  overflow: hidden;
-  border: 1px solid var(--appearance-track-border) !important;
-  border-radius: 1rem !important;
-  background: var(--appearance-track-surface) !important;
-  box-shadow: inset 0 1px 0 color-mix(in srgb, white, transparent 58%);
-}
-
-.dark
-  .settings-page-polish
-  .settings-core
-  > div
-  > div
-  > section:nth-of-type(2)
-  [role="radiogroup"] {
-  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.035);
+  grid-template-columns: minmax(0, 1fr) !important;
+  gap: 0.55rem !important;
+  margin-top: 0.95rem !important;
+  padding: 0 !important;
+  overflow: visible !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
 }
 
 .settings-page-polish
@@ -81,20 +72,21 @@
   > section:nth-of-type(2)
   [role="radio"] {
   position: relative;
-  display: flex !important;
-  min-height: 4.15rem !important;
-  min-width: 0;
-  flex-direction: column !important;
+  display: grid !important;
+  width: 100%;
+  min-height: 4.35rem !important;
+  grid-template-columns: 2.5rem minmax(0, 1fr) 1.2rem;
+  grid-template-rows: auto;
   align-items: center !important;
-  justify-content: center !important;
-  gap: 0.35rem !important;
-  padding: 0.55rem 0.3rem !important;
+  justify-content: initial !important;
+  gap: 0.75rem !important;
+  padding: 0.62rem 0.78rem !important;
   overflow: hidden;
-  border: 1px solid transparent !important;
-  border-radius: 0.76rem !important;
-  background: transparent !important;
+  border: 1px solid var(--appearance-option-border) !important;
+  border-radius: 0.9rem !important;
+  background: var(--appearance-option-surface) !important;
   color: var(--text-secondary) !important;
-  text-align: center !important;
+  text-align: left !important;
   box-shadow: none !important;
   transform: translateZ(0);
   transition:
@@ -111,7 +103,8 @@
   > div
   > section:nth-of-type(2)
   [role="radio"]:hover {
-  background: color-mix(in srgb, var(--surface-primary), transparent 48%) !important;
+  border-color: color-mix(in srgb, var(--text-primary), transparent 68%) !important;
+  background: var(--hover) !important;
   color: var(--text-primary) !important;
 }
 
@@ -121,7 +114,7 @@
   > div
   > section:nth-of-type(2)
   [role="radio"]:active {
-  transform: scale(0.975);
+  transform: scale(0.988);
 }
 
 .settings-page-polish
@@ -130,7 +123,7 @@
   > div
   > section:nth-of-type(2)
   [role="radio"]:focus-visible {
-  outline: 2px solid color-mix(in srgb, var(--primary), transparent 25%) !important;
+  outline: 2px solid color-mix(in srgb, var(--primary), transparent 30%) !important;
   outline-offset: 2px !important;
 }
 
@@ -140,28 +133,13 @@
   > div
   > section:nth-of-type(2)
   [role="radio"][aria-checked="true"] {
-  z-index: 1;
-  border-color: var(--appearance-selected-border) !important;
-  background: var(--surface-primary) !important;
+  border-color: color-mix(in srgb, var(--primary), transparent 48%) !important;
+  background: var(--appearance-option-active) !important;
   color: var(--text-primary) !important;
-  box-shadow:
-    0 1px 2px color-mix(in srgb, var(--text-primary), transparent 91%),
-    0 5px 14px color-mix(in srgb, var(--text-primary), transparent 92%) !important;
+  box-shadow: inset 3px 0 0 var(--primary) !important;
 }
 
-.dark
-  .settings-page-polish
-  .settings-core
-  > div
-  > div
-  > section:nth-of-type(2)
-  [role="radio"][aria-checked="true"] {
-  box-shadow:
-    0 1px 2px rgb(0 0 0 / 0.26),
-    0 6px 16px rgb(0 0 0 / 0.2) !important;
-}
-
-/* Small outline icons: no loud tiles or decorative colour blocks. */
+/* Left icon */
 .settings-page-polish
   .settings-core
   > div
@@ -170,16 +148,17 @@
   [role="radio"]
   > span:first-child {
   display: grid !important;
-  width: 1.75rem !important;
-  height: 1.75rem !important;
-  flex: 0 0 auto;
+  width: 2.5rem !important;
+  height: 2.5rem !important;
+  grid-column: 1;
   place-items: center;
-  border: 0 !important;
-  border-radius: 0.55rem !important;
-  background: transparent !important;
-  color: currentColor !important;
+  border: 1px solid color-mix(in srgb, var(--text-primary), transparent 76%) !important;
+  border-radius: 0.78rem !important;
+  background: var(--surface-primary) !important;
+  color: var(--text-primary) !important;
   box-shadow: none !important;
   transition:
+    border-color 160ms ease,
     background-color 160ms ease,
     color 160ms ease,
     transform 160ms ease !important;
@@ -193,8 +172,8 @@
   [role="radio"]
   > span:first-child
   svg {
-  width: 1.08rem !important;
-  height: 1.08rem !important;
+  width: 1.12rem !important;
+  height: 1.12rem !important;
   stroke-width: 2.15 !important;
 }
 
@@ -205,12 +184,12 @@
   > section:nth-of-type(2)
   [role="radio"][aria-checked="true"]
   > span:first-child {
+  border-color: color-mix(in srgb, var(--primary), transparent 64%) !important;
   background: color-mix(in srgb, var(--primary), transparent 90%) !important;
   color: var(--primary) !important;
-  transform: translateY(-1px);
 }
 
-/* Keep all three labels visible and aligned on every viewport. */
+/* Label and supporting copy */
 .settings-page-polish
   .settings-core
   > div
@@ -221,7 +200,8 @@
   display: block !important;
   width: 100% !important;
   min-width: 0;
-  text-align: center !important;
+  grid-column: 2;
+  text-align: left !important;
 }
 
 .settings-page-polish
@@ -234,11 +214,11 @@
   > span:first-child {
   display: block !important;
   overflow: hidden;
-  color: currentColor !important;
-  font-size: clamp(0.72rem, 2.7vw, 0.82rem) !important;
+  color: var(--text-primary) !important;
+  font-size: clamp(0.85rem, 2vw, 0.94rem) !important;
   font-weight: 720 !important;
-  line-height: 1.15 !important;
-  letter-spacing: -0.01em;
+  line-height: 1.2 !important;
+  letter-spacing: -0.012em;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -251,10 +231,77 @@
   [role="radio"]
   > span:nth-child(2)
   > span:last-child {
-  display: none !important;
+  display: block !important;
+  margin-top: 0.2rem !important;
+  overflow: hidden;
+  color: var(--text-muted) !important;
+  font-size: 0 !important;
+  font-weight: 540 !important;
+  line-height: 1.3 !important;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-/* Selection is communicated by the raised segment, so the extra check stays quiet. */
+.settings-page-polish
+  .settings-core
+  > div
+  > div
+  > section:nth-of-type(2)
+  [role="radio"]:nth-child(1)
+  > span:nth-child(2)
+  > span:first-child {
+  font-size: 0 !important;
+}
+
+.settings-page-polish
+  .settings-core
+  > div
+  > div
+  > section:nth-of-type(2)
+  [role="radio"]:nth-child(1)
+  > span:nth-child(2)
+  > span:first-child::after {
+  content: "System default";
+  font-size: clamp(0.85rem, 2vw, 0.94rem);
+}
+
+.settings-page-polish
+  .settings-core
+  > div
+  > div
+  > section:nth-of-type(2)
+  [role="radio"]:nth-child(1)
+  > span:nth-child(2)
+  > span:last-child::after {
+  content: "Match your device theme";
+  font-size: clamp(0.7rem, 1.7vw, 0.78rem);
+}
+
+.settings-page-polish
+  .settings-core
+  > div
+  > div
+  > section:nth-of-type(2)
+  [role="radio"]:nth-child(2)
+  > span:nth-child(2)
+  > span:last-child::after {
+  content: "Use a bright interface";
+  font-size: clamp(0.7rem, 1.7vw, 0.78rem);
+}
+
+.settings-page-polish
+  .settings-core
+  > div
+  > div
+  > section:nth-of-type(2)
+  [role="radio"]:nth-child(3)
+  > span:nth-child(2)
+  > span:last-child::after {
+  content: "Use a low-light interface";
+  font-size: clamp(0.7rem, 1.7vw, 0.78rem);
+}
+
+/* Hide the old Selected text/check and use a quiet radio indicator. */
 .settings-page-polish
   .settings-core
   > div
@@ -265,29 +312,46 @@
   display: none !important;
 }
 
-@media (min-width: 40rem) {
-  .settings-page-polish
-    .settings-core
-    > div
-    > div
-    > section:nth-of-type(2)
-    [role="radio"] {
-    min-height: 3.85rem !important;
-    flex-direction: row !important;
-    gap: 0.5rem !important;
-    padding-inline: 0.65rem !important;
-  }
+.settings-page-polish
+  .settings-core
+  > div
+  > div
+  > section:nth-of-type(2)
+  [role="radio"]::after {
+  content: "";
+  display: block;
+  width: 1.05rem;
+  height: 1.05rem;
+  grid-column: 3;
+  border: 1.5px solid color-mix(in srgb, var(--text-secondary), transparent 36%);
+  border-radius: 999px;
+  background: var(--surface-primary);
+  box-shadow: inset 0 0 0 0.24rem transparent;
+  transition:
+    border-color 160ms ease,
+    background-color 160ms ease,
+    box-shadow 160ms ease;
+}
 
+.settings-page-polish
+  .settings-core
+  > div
+  > div
+  > section:nth-of-type(2)
+  [role="radio"][aria-checked="true"]::after {
+  border-color: var(--primary);
+  background: var(--primary);
+  box-shadow: inset 0 0 0 0.24rem var(--surface-primary);
+}
+
+.dark
   .settings-page-polish
-    .settings-core
-    > div
-    > div
-    > section:nth-of-type(2)
-    [role="radio"]
-    > span:nth-child(2) {
-    width: auto !important;
-    text-align: left !important;
-  }
+  .settings-core
+  > div
+  > div
+  > section:nth-of-type(2)
+  [role="radio"][aria-checked="true"] {
+  box-shadow: inset 3px 0 0 var(--primary) !important;
 }
 
 @media (max-width: 23rem) {
@@ -296,21 +360,12 @@
     > div
     > div
     > section:nth-of-type(2)
-    [role="radiogroup"] {
-    gap: 0.2rem !important;
-    padding: 0.22rem !important;
-    border-radius: 0.88rem !important;
-  }
-
-  .settings-page-polish
-    .settings-core
-    > div
-    > div
-    > section:nth-of-type(2)
     [role="radio"] {
-    min-height: 3.85rem !important;
-    padding-inline: 0.2rem !important;
-    border-radius: 0.68rem !important;
+    min-height: 4.05rem !important;
+    grid-template-columns: 2.25rem minmax(0, 1fr) 1.05rem;
+    gap: 0.62rem !important;
+    padding: 0.55rem 0.65rem !important;
+    border-radius: 0.82rem !important;
   }
 
   .settings-page-polish
@@ -320,8 +375,9 @@
     > section:nth-of-type(2)
     [role="radio"]
     > span:first-child {
-    width: 1.55rem !important;
-    height: 1.55rem !important;
+    width: 2.25rem !important;
+    height: 2.25rem !important;
+    border-radius: 0.7rem !important;
   }
 }
 
@@ -338,7 +394,13 @@
     > div
     > section:nth-of-type(2)
     [role="radio"]
-    > span:first-child {
+    > span:first-child,
+  .settings-page-polish
+    .settings-core
+    > div
+    > div
+    > section:nth-of-type(2)
+    [role="radio"]::after {
     transition: none !important;
   }
 }
