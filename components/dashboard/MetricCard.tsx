@@ -86,15 +86,15 @@ function getGraphPath(
   direction: DashboardComparison["direction"] | "none",
 ) {
   const templates: Record<DashboardComparison["direction"] | "none", number[]> = {
-    up: [16, 15, 12, 13, 9, 10, 6, 4],
-    down: [4, 6, 5, 9, 10, 14, 13, 17],
-    flat: [10, 9, 11, 10, 9, 11, 10, 10],
+    up: [15, 14.5, 13, 10.5, 11, 7.5, 7, 4],
+    down: [4, 5.5, 6, 8.5, 9.5, 12.5, 13, 16],
+    flat: [10, 9.6, 10.3, 10, 9.7, 10.25, 10, 10],
     none: [10, 10, 10, 10, 10, 10, 10, 10],
   };
-  const strength = 0.5 + Math.min(1, Math.max(0, value / 100)) * 0.75;
+  const strength = 0.55 + Math.min(1, Math.max(0, value / 100)) * 0.7;
   const source = templates[direction];
   const points = source.map((rawY, index) => ({
-    x: 2 + (index * 96) / Math.max(source.length - 1, 1),
+    x: 1 + (index * 98) / Math.max(source.length - 1, 1),
     y: 10 + (rawY - 10) * strength,
   }));
 
@@ -120,15 +120,16 @@ function MetricGraphLine({
     <svg
       key={animationKey}
       aria-hidden="true"
-      className="dashboard-metric-graph"
+      className={`${styles.graph} dashboard-metric-graph`}
       viewBox="0 0 100 20"
       preserveAspectRatio="none"
     >
       <path
-        className="dashboard-metric-graph-path"
+        className={`${styles.graphPath} dashboard-metric-graph-path`}
         d={getGraphPath(value, direction)}
-        pathLength={100}
+        pathLength={1}
         style={{ stroke: accent }}
+        vectorEffect="non-scaling-stroke"
       />
     </svg>
   );
@@ -172,7 +173,11 @@ export default function MetricCard({
           data-amount-size={amountSize}
           title={displayAmount}
         >
-          {amount === null ? displayAmount : <CountedAmount amount={displayAmount} />}
+          {amount === null ? (
+            displayAmount
+          ) : (
+            <CountedAmount amount={displayAmount} animateOnCompact duration={1.25} />
+          )}
         </p>
 
         <div className={`${styles.footer} dashboard-metric-card-footer`}>
