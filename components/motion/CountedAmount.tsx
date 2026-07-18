@@ -54,30 +54,86 @@ export default function CountedAmount({
     const formatValue = (value: number) =>
       `${parsedAmount.prefix}${formatter.format(value)}${parsedAmount.suffix}`;
     const durationMs = duration * 1000;
-    const startedAt = performance.now();
+    const frameIntervalMs = compactViewport ? 1000 / 30 : 1000 / 45;
+
     let frameId = 0;
+    let observer: IntersectionObserver | null = null;
+    let visibilityListener: (() => void) | null = null;
+    let cancelled = false;
+    let started = false;
 
     element.textContent = formatValue(0);
 
-    const renderFrame = (time: number) => {
-      const progress = Math.min((time - startedAt) / durationMs, 1);
-      const easedProgress = 1 - Math.pow(1 - progress, 3);
-      const currentValue = parsedAmount.value * easedProgress;
+    const startAnimation = () => {
+      if (cancelled || started) return;
 
-      element.textContent = progress >= 1 ? amount : formatValue(currentValue);
-
-      if (progress < 1) {
-        frameId = requestAnimationFrame(renderFrame);
+      if (document.visibilityState === "hidden") {
+        visibilityListener = () => {
+          if (document.visibilityState !== "visible") return;
+          document.removeEventListener("visibilitychange", visibilityListener!);
+          visibilityListener = null;
+          startAnimation();
+        };
+        document.addEventListener("visibilitychange", visibilityListener);
+        return;
       }
+
+      started = true;
+      observer?.disconnect();
+      observer = null;
+
+      const startedAt = performance.now();
+      let lastRenderedAt = startedAt - frameIntervalMs;
+
+      const renderFrame = (time: number) => {
+        if (cancelled) return;
+
+        const progress = Math.min((time - startedAt) / durationMs, 1);
+        const easedProgress = 1 - Math.pow(1 - progress, 3);
+
+        if (time - lastRenderedAt >= frameIntervalMs || progress >= 1) {
+          const currentValue = parsedAmount.value * easedProgress;
+          element.textContent = progress >= 1 ? amount : formatValue(currentValue);
+          lastRenderedAt = time;
+        }
+
+        if (progress < 1) {
+          frameId = requestAnimationFrame(renderFrame);
+        }
+      };
+
+      frameId = requestAnimationFrame(renderFrame);
     };
 
-    frameId = requestAnimationFrame(renderFrame);
+    if ("IntersectionObserver" in window) {
+      observer = new IntersectionObserver(
+        (entries) => {
+          if (entries.some((entry) => entry.isIntersecting)) {
+            startAnimation();
+          }
+        },
+        {
+          rootMargin: "120px 0px",
+          threshold: 0.01,
+        },
+      );
+      observer.observe(element);
+    } else {
+      startAnimation();
+    }
 
-    return () => cancelAnimationFrame(frameId);
+    return () => {
+      cancelled = true;
+      observer?.disconnect();
+      cancelAnimationFrame(frameId);
+      if (visibilityListener) {
+        document.removeEventListener("visibilitychange", visibilityListener);
+      }
+    };
   }, [amount, animateOnCompact, duration, parsedAmount]);
 
   return (
-    <span ref={elementRef} className="tabular-nums">
+    <span ref={elementRef} aria-label={amount} className="tabular-nums">
       {amount}
     </span>
   );
