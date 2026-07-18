@@ -7,6 +7,7 @@ import NotificationCenter, {
   NotificationCenterLoading,
 } from "@/components/layout/NotificationCenter";
 import ResponsiveDashboardHeader from "@/components/layout/ResponsiveDashboardHeader";
+import VisualViewportMetrics from "@/components/layout/VisualViewportMetrics";
 import DashboardScrollRestoration from "@/components/motion/DashboardScrollRestoration";
 import type { NotificationState } from "@/lib/notifications";
 import { loadDashboardNotifications } from "@/lib/notifications-server";
@@ -62,6 +63,7 @@ export default function DashboardLayout({
       data-dashboard-shell
       className="relative flex h-dvh min-w-0 overflow-hidden bg-background text-foreground"
     >
+      <VisualViewportMetrics />
       <div
         aria-hidden="true"
         className="jf-node4-dashboard-ambient pointer-events-none absolute inset-0 z-0"
