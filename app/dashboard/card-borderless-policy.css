@@ -51,12 +51,12 @@
 /* Compact dashboard top controls use shadows and surfaces, never visible borders. */
 @media (max-width: 1023px) {
   [data-dashboard-shell] :is(
-    button.finance-control,
+    .fixed.right-4 button.finance-control,
     button[aria-label^="Open profile menu"],
     button[aria-label="Open navigation menu"]
   ),
   [data-dashboard-shell] :is(
-    button.finance-control,
+    .fixed.right-4 button.finance-control,
     button[aria-label^="Open profile menu"],
     button[aria-label="Open navigation menu"]
   ):is(:hover, :active, :focus, :focus-visible, :focus-within, [data-popup-open]) {
