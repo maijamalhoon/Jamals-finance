@@ -1,0 +1,155 @@
+/* Final responsive tuning for the dashboard balance, metric, and daily pulse cards.
+   Presentation only: calculations, data, modals, actions, routes, and animations stay unchanged. */
+
+/* Give the balance summary a little more presence while keeping long values safe. */
+.dashboard-balance-amount {
+  font-size: clamp(2.35rem, 4.65vw, 4.1rem) !important;
+}
+
+.dashboard-balance-amount[data-balance-size="long"] {
+  font-size: clamp(1.95rem, 3.85vw, 3.45rem) !important;
+}
+
+.dashboard-balance-amount[data-balance-size="xlong"] {
+  font-size: clamp(1.62rem, 3.15vw, 2.9rem) !important;
+}
+
+/* Slightly enlarge the four quick actions without changing their behavior. */
+.dashboard-quick-action {
+  min-height: 4.65rem !important;
+  gap: 0.42rem !important;
+}
+
+.dashboard-quick-action .dashboard-quick-action-icon {
+  width: 2.7rem !important;
+  height: 2.7rem !important;
+}
+
+.dashboard-quick-action-label {
+  font-size: 0.65rem !important;
+}
+
+/* Amount typography responds to the actual card width and value length. */
+.dashboard-metric-card {
+  container-type: inline-size;
+}
+
+.dashboard-metric-amount {
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
+  overflow-wrap: normal !important;
+  text-overflow: clip;
+  white-space: nowrap;
+  font-size: clamp(1.08rem, 10.5cqi, 1.62rem) !important;
+}
+
+.dashboard-metric-amount[data-amount-size="long"] {
+  font-size: clamp(0.82rem, 8.4cqi, 1.3rem) !important;
+  letter-spacing: -0.04em !important;
+}
+
+.dashboard-metric-amount[data-amount-size="xlong"] {
+  font-size: clamp(0.7rem, 7.15cqi, 1.08rem) !important;
+  letter-spacing: -0.035em !important;
+}
+
+/* Reduce the lower four summary cards slightly on every viewport. */
+.dashboard-pulse-tile {
+  min-height: 6.25rem !important;
+  padding: 0.78rem !important;
+}
+
+@media (min-width: 640px) and (max-width: 1279px) {
+  .dashboard-metric-card {
+    min-height: 10.15rem !important;
+    padding: 0.88rem !important;
+  }
+
+  .dashboard-metric-amount {
+    font-size: clamp(1.08rem, 8.6cqi, 1.5rem) !important;
+  }
+
+  .dashboard-metric-amount[data-amount-size="long"] {
+    font-size: clamp(0.82rem, 7.2cqi, 1.18rem) !important;
+  }
+
+  .dashboard-metric-amount[data-amount-size="xlong"] {
+    font-size: clamp(0.7rem, 6.25cqi, 0.98rem) !important;
+  }
+}
+
+@media (max-width: 639px) {
+  .dashboard-balance-amount {
+    font-size: clamp(2.05rem, 10.3vw, 3rem) !important;
+  }
+
+  .dashboard-balance-amount[data-balance-size="long"] {
+    font-size: clamp(1.65rem, 8.3vw, 2.45rem) !important;
+  }
+
+  .dashboard-balance-amount[data-balance-size="xlong"] {
+    font-size: clamp(1.34rem, 6.8vw, 2.05rem) !important;
+  }
+
+  .dashboard-quick-action {
+    min-height: 4.3rem !important;
+    gap: 0.34rem !important;
+  }
+
+  .dashboard-quick-action .dashboard-quick-action-icon {
+    width: 2.45rem !important;
+    height: 2.45rem !important;
+  }
+
+  .dashboard-quick-action-label {
+    font-size: 0.59rem !important;
+  }
+
+  .dashboard-metric-card {
+    min-height: 9.35rem !important;
+    padding: 0.8rem !important;
+  }
+
+  .dashboard-metric-amount {
+    margin-top: 0.42rem !important;
+    font-size: clamp(1rem, 11.8cqi, 1.42rem) !important;
+  }
+
+  .dashboard-metric-amount[data-amount-size="long"] {
+    font-size: clamp(0.76rem, 8.8cqi, 1.08rem) !important;
+  }
+
+  .dashboard-metric-amount[data-amount-size="xlong"] {
+    font-size: clamp(0.66rem, 7.3cqi, 0.9rem) !important;
+  }
+
+  .dashboard-pulse-tile {
+    min-height: 5.7rem !important;
+    padding: 0.7rem !important;
+  }
+}
+
+@media (max-width: 389px) {
+  .dashboard-metric-card {
+    min-height: 9rem !important;
+    padding: 0.72rem !important;
+  }
+
+  .dashboard-metric-amount {
+    font-size: clamp(0.96rem, 11.5cqi, 1.28rem) !important;
+  }
+
+  .dashboard-metric-amount[data-amount-size="long"] {
+    font-size: clamp(0.72rem, 8.35cqi, 0.98rem) !important;
+  }
+
+  .dashboard-metric-amount[data-amount-size="xlong"] {
+    font-size: clamp(0.62rem, 6.95cqi, 0.82rem) !important;
+  }
+
+  .dashboard-pulse-tile {
+    min-height: 5.45rem !important;
+    padding: 0.66rem !important;
+  }
+}
