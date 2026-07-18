@@ -5,7 +5,11 @@ import { useMemo, type CSSProperties, type ReactNode } from "react";
 import { CheckCircle2, Target } from "lucide-react";
 
 import { useCurrency } from "@/components/currency/CurrencyProvider";
-import { getGoalPresentation } from "@/components/goals/goal-icons";
+import {
+  getDistinctGoalPresentationAssignments,
+  getGoalPresentation,
+  type GoalPresentationAssignment,
+} from "@/components/goals/goal-icons";
 import {
   useAnimatedGoalValue,
   useProgressReveal,
@@ -59,19 +63,21 @@ function GoalRow({
   goal,
   index,
   reduceMotion,
+  presentation,
 }: {
   goal: Goal;
   index: number;
   reduceMotion: boolean;
+  presentation: GoalPresentationAssignment;
 }) {
   const { current, target, percentage, done, targetValid } = getGoalProgress(goal);
   const progressReady = useProgressReveal(
     reduceMotion,
     `${goal.id}:${percentage}`,
   );
-  const presentation = getGoalPresentation(goal);
-  const GoalIcon = done ? CheckCircle2 : presentation.entry.icon;
-  const accent = presentation.accent;
+  const resolvedPresentation = getGoalPresentation(goal, presentation);
+  const GoalIcon = done ? CheckCircle2 : resolvedPresentation.entry.icon;
+  const accent = resolvedPresentation.accent;
   const progressScale =
     progressReady && percentage > 0 ? Math.min(percentage, 100) / 100 : 0;
   const rowStyle = {
@@ -141,6 +147,10 @@ export default function GoalsProgress({
     () => goals.slice(0, maxVisible),
     [goals, maxVisible],
   );
+  const presentations = useMemo(
+    () => getDistinctGoalPresentationAssignments(goals),
+    [goals],
+  );
   const hasHiddenGoals = goals.length > visibleGoals.length;
 
   let content: ReactNode;
@@ -168,6 +178,7 @@ export default function GoalsProgress({
             goal={goal}
             index={index}
             reduceMotion={reduceMotion}
+            presentation={presentations[index]}
           />
         ))}
       </div>
