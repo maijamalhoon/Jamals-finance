@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/server";
 import TransactionFilters from "@/components/transactions/TransactionFilters";
 import TransactionRow from "@/components/transactions/TransactionRow";
 import EmptyState from "@/components/ui/empty-state";
+import { getTransactionIconMeta } from "@/lib/transaction-icons";
 import { loadTransactions } from "@/lib/transactions";
 
 export const dynamic = "force-dynamic";
@@ -99,17 +100,21 @@ export default async function TransactionsPage({
   const minAmount = cleanAmount(min);
   const maxAmount = cleanAmount(max);
 
+  const requestedDatabaseType =
+    type === "payable"
+      ? "expense"
+      : type === "income" ||
+          type === "expense" ||
+          type === "refund" ||
+          type === "investment" ||
+          type === "goal" ||
+          type === "transfer"
+        ? type
+        : undefined;
+
   const [rawTransactions, categoriesResult, accountsResult] = await Promise.all([
     loadTransactions(supabase, {
-      type:
-        type === "income" ||
-        type === "expense" ||
-        type === "refund" ||
-        type === "investment" ||
-        type === "goal" ||
-        type === "transfer"
-          ? type
-          : undefined,
+      type: requestedDatabaseType,
       from,
       to,
       category,
@@ -162,6 +167,15 @@ export default async function TransactionsPage({
         : (transaction?.categories?.name ?? "");
 
       const accountName = transaction?.accounts?.name ?? "";
+      const semanticType = getTransactionIconMeta({
+        type: transaction?.type,
+        note: transaction?.note,
+        categoryName: transaction?.categories?.name,
+        categoryIconKey: transaction?.categories?.icon_key,
+        parentCategoryName: transaction?.categories?.parent?.name,
+        sourceName: transaction?.source_name,
+        itemName: transaction?.item_name,
+      }).semanticType;
 
       const haystack = [
         transaction?.note,
@@ -172,10 +186,15 @@ export default async function TransactionsPage({
         categoryName,
         accountName,
         transaction?.type,
+        semanticType,
       ]
         .filter(Boolean)
         .join(" ")
         .toLowerCase();
+
+      if (type === "payable" && semanticType !== "payable") {
+        return false;
+      }
 
       if (
         (type === "income" ||
