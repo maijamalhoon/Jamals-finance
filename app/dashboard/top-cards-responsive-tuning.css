@@ -1,32 +1,37 @@
 /* Final responsive tuning for the dashboard balance, metric, and daily pulse cards.
    Presentation only: calculations, data, modals, actions, routes, and animations stay unchanged. */
 
-/* Give the balance summary a little more presence while keeping long values safe. */
+/* Keep the main balance visually dominant while scaling long values safely. */
 .dashboard-balance-amount {
-  font-size: clamp(2.35rem, 4.65vw, 4.1rem) !important;
+  font-size: clamp(2.55rem, 5vw, 4.55rem) !important;
 }
 
 .dashboard-balance-amount[data-balance-size="long"] {
-  font-size: clamp(1.95rem, 3.85vw, 3.45rem) !important;
+  font-size: clamp(2.08rem, 4.1vw, 3.75rem) !important;
 }
 
 .dashboard-balance-amount[data-balance-size="xlong"] {
-  font-size: clamp(1.62rem, 3.15vw, 2.9rem) !important;
+  font-size: clamp(1.72rem, 3.4vw, 3.15rem) !important;
 }
 
-/* Slightly enlarge the four quick actions without changing their behavior. */
+/* Give the four quick actions slightly more presence without changing behavior. */
 .dashboard-quick-action {
-  min-height: 4.65rem !important;
-  gap: 0.42rem !important;
+  min-height: 5rem !important;
+  gap: 0.46rem !important;
 }
 
 .dashboard-quick-action .dashboard-quick-action-icon {
-  width: 2.7rem !important;
-  height: 2.7rem !important;
+  width: 3rem !important;
+  height: 3rem !important;
+}
+
+.dashboard-quick-action-glyph {
+  width: 1.18rem;
+  height: 1.18rem;
 }
 
 .dashboard-quick-action-label {
-  font-size: 0.65rem !important;
+  font-size: 0.68rem !important;
 }
 
 /* Amount typography responds to the actual card width and value length. */
@@ -81,29 +86,34 @@
 
 @media (max-width: 639px) {
   .dashboard-balance-amount {
-    font-size: clamp(2.05rem, 10.3vw, 3rem) !important;
+    font-size: clamp(2.2rem, 10.8vw, 3.2rem) !important;
   }
 
   .dashboard-balance-amount[data-balance-size="long"] {
-    font-size: clamp(1.65rem, 8.3vw, 2.45rem) !important;
+    font-size: clamp(1.78rem, 8.8vw, 2.6rem) !important;
   }
 
   .dashboard-balance-amount[data-balance-size="xlong"] {
-    font-size: clamp(1.34rem, 6.8vw, 2.05rem) !important;
+    font-size: clamp(1.46rem, 7.2vw, 2.18rem) !important;
   }
 
   .dashboard-quick-action {
-    min-height: 4.3rem !important;
-    gap: 0.34rem !important;
+    min-height: 4.55rem !important;
+    gap: 0.36rem !important;
   }
 
   .dashboard-quick-action .dashboard-quick-action-icon {
-    width: 2.45rem !important;
-    height: 2.45rem !important;
+    width: 2.65rem !important;
+    height: 2.65rem !important;
+  }
+
+  .dashboard-quick-action-glyph {
+    width: 1.08rem;
+    height: 1.08rem;
   }
 
   .dashboard-quick-action-label {
-    font-size: 0.59rem !important;
+    font-size: 0.61rem !important;
   }
 
   .dashboard-metric-card {
