@@ -1,14 +1,26 @@
 import {
+  Baby,
+  Bike,
   Briefcase,
+  Camera,
   Car,
+  Dumbbell,
+  Gamepad2,
+  Gem,
+  Gift,
   GraduationCap,
-  Heart,
+  Hammer,
+  HeartPulse,
   Home,
+  Laptop,
+  PiggyBank,
   Plane,
   Shield,
   ShoppingBag,
   Smartphone,
+  Tablet,
   Target,
+  Tv,
   type LucideIcon,
 } from "lucide-react";
 
@@ -16,12 +28,24 @@ export type GoalIconValue =
   | "home"
   | "shield"
   | "car"
+  | "bike"
   | "plane"
   | "graduation"
   | "heart"
+  | "gem"
   | "briefcase"
   | "smartphone"
+  | "laptop"
+  | "tablet"
+  | "camera"
+  | "tv"
+  | "gamepad"
   | "shopping"
+  | "gift"
+  | "hammer"
+  | "piggybank"
+  | "baby"
+  | "dumbbell"
   | "target";
 
 export type GoalIconEntry = {
@@ -39,12 +63,24 @@ export const GOAL_ICONS: GoalIconEntry[] = [
   { value: "home", label: "House", icon: Home },
   { value: "shield", label: "Emergency", icon: Shield },
   { value: "car", label: "Car", icon: Car },
+  { value: "bike", label: "Motorcycle", icon: Bike },
   { value: "plane", label: "Travel", icon: Plane },
   { value: "graduation", label: "Education", icon: GraduationCap },
-  { value: "heart", label: "Health", icon: Heart },
+  { value: "heart", label: "Health", icon: HeartPulse },
+  { value: "gem", label: "Wedding", icon: Gem },
   { value: "briefcase", label: "Business", icon: Briefcase },
-  { value: "smartphone", label: "Electronics", icon: Smartphone },
+  { value: "smartphone", label: "Phone", icon: Smartphone },
+  { value: "laptop", label: "Laptop", icon: Laptop },
+  { value: "tablet", label: "Tablet", icon: Tablet },
+  { value: "camera", label: "Camera", icon: Camera },
+  { value: "tv", label: "Television", icon: Tv },
+  { value: "gamepad", label: "Gaming", icon: Gamepad2 },
   { value: "shopping", label: "Shopping", icon: ShoppingBag },
+  { value: "gift", label: "Gift", icon: Gift },
+  { value: "hammer", label: "Renovation", icon: Hammer },
+  { value: "piggybank", label: "Savings", icon: PiggyBank },
+  { value: "baby", label: "Family", icon: Baby },
+  { value: "dumbbell", label: "Fitness", icon: Dumbbell },
   { value: "target", label: "Other", icon: Target },
 ];
 
@@ -54,6 +90,24 @@ const AUTO_ICON_RULES: Array<{
   value: GoalIconValue;
   keywords: readonly string[];
 }> = [
+  {
+    value: "bike",
+    keywords: [
+      "bike",
+      "bikes",
+      "motorbike",
+      "motorcycle",
+      "scooter",
+      "honda 125",
+      "honda 150",
+      "suzuki 150",
+      "yamaha",
+      "cd 70",
+      "cd70",
+      "cg 125",
+      "cg125",
+    ],
+  },
   {
     value: "car",
     keywords: [
@@ -92,8 +146,62 @@ const AUTO_ICON_RULES: Array<{
       "prius",
       "cultus",
       "mehran",
-      "bike",
-      "motorcycle",
+    ],
+  },
+  {
+    value: "laptop",
+    keywords: [
+      "laptop",
+      "notebook",
+      "macbook",
+      "computer",
+      "desktop",
+      "workstation",
+      "gaming pc",
+      "personal computer",
+      "chromebook",
+    ],
+  },
+  {
+    value: "tablet",
+    keywords: ["tablet", "ipad", "galaxy tab", "surface pro", "kindle"],
+  },
+  {
+    value: "camera",
+    keywords: [
+      "camera",
+      "dslr",
+      "mirrorless",
+      "gopro",
+      "lens",
+      "canon",
+      "nikon",
+      "fujifilm",
+    ],
+  },
+  {
+    value: "tv",
+    keywords: [
+      "television",
+      "smart tv",
+      "led tv",
+      "oled",
+      "qled",
+      "monitor",
+      "projector",
+    ],
+  },
+  {
+    value: "gamepad",
+    keywords: [
+      "gaming",
+      "playstation",
+      "ps4",
+      "ps5",
+      "xbox",
+      "console",
+      "nintendo",
+      "steam deck",
     ],
   },
   {
@@ -113,22 +221,23 @@ const AUTO_ICON_RULES: Array<{
       "vivo",
       "realme",
       "huawei",
-      "laptop",
-      "computer",
-      "pc",
-      "tablet",
-      "ipad",
-      "macbook",
-      "camera",
-      "television",
-      "tv",
-      "playstation",
-      "xbox",
-      "console",
       "s22",
       "s23",
       "s24",
       "s25",
+    ],
+  },
+  {
+    value: "hammer",
+    keywords: [
+      "renovation",
+      "construction",
+      "remodel",
+      "repair house",
+      "home repair",
+      "interior",
+      "kitchen upgrade",
+      "room upgrade",
     ],
   },
   {
@@ -143,8 +252,6 @@ const AUTO_ICON_RULES: Array<{
       "flat",
       "property",
       "plot",
-      "renovation",
-      "construction",
     ],
   },
   {
@@ -159,6 +266,7 @@ const AUTO_ICON_RULES: Array<{
       "safar",
       "umrah",
       "hajj",
+      "honeymoon",
     ],
   },
   {
@@ -176,6 +284,20 @@ const AUTO_ICON_RULES: Array<{
       "taleem",
       "parhai",
       "padhai",
+      "certification",
+      "academy",
+    ],
+  },
+  {
+    value: "dumbbell",
+    keywords: [
+      "fitness",
+      "gym",
+      "workout",
+      "exercise",
+      "sports",
+      "equipment",
+      "treadmill",
     ],
   },
   {
@@ -186,13 +308,25 @@ const AUTO_ICON_RULES: Array<{
       "hospital",
       "surgery",
       "treatment",
-      "fitness",
       "sehat",
       "ilaj",
       "ilaaj",
       "dawa",
+      "medicine",
+      "dental",
+    ],
+  },
+  {
+    value: "gem",
+    keywords: [
       "wedding",
       "shadi",
+      "shaadi",
+      "engagement",
+      "ring",
+      "jewelry",
+      "jewellery",
+      "gold set",
     ],
   },
   {
@@ -206,6 +340,19 @@ const AUTO_ICON_RULES: Array<{
       "kaarobar",
       "dukan",
       "shop setup",
+      "freelance",
+      "agency",
+    ],
+  },
+  {
+    value: "gift",
+    keywords: [
+      "gift",
+      "present",
+      "birthday",
+      "anniversary",
+      "surprise",
+      "eid gift",
     ],
   },
   {
@@ -216,9 +363,10 @@ const AUTO_ICON_RULES: Array<{
       "fashion",
       "furniture",
       "appliance",
-      "gift",
       "kapray",
       "kapre",
+      "wardrobe",
+      "sofa",
     ],
   },
   {
@@ -229,23 +377,61 @@ const AUTO_ICON_RULES: Array<{
       "backup",
       "safety fund",
       "reserve",
+      "emergency fund",
+      "backup fund",
+    ],
+  },
+  {
+    value: "piggybank",
+    keywords: [
+      "savings",
+      "saving",
       "bachat",
       "saving fund",
+      "retirement",
+      "future fund",
+      "deposit",
+      "investment fund",
+      "cash reserve",
+    ],
+  },
+  {
+    value: "baby",
+    keywords: [
+      "baby",
+      "child",
+      "children",
+      "family",
+      "newborn",
+      "kids",
+      "kid",
     ],
   },
 ];
 
 const BASE_HUES: Record<GoalIconValue, number> = {
   home: 150,
-  shield: 170,
+  shield: 172,
   car: 198,
+  bike: 185,
   plane: 28,
-  graduation: 225,
+  graduation: 226,
   heart: 350,
+  gem: 326,
   briefcase: 42,
   smartphone: 265,
+  laptop: 214,
+  tablet: 246,
+  camera: 14,
+  tv: 292,
+  gamepad: 278,
   shopping: 305,
-  target: 215,
+  gift: 338,
+  hammer: 32,
+  piggybank: 136,
+  baby: 8,
+  dumbbell: 112,
+  target: 205,
 };
 
 function normalizeGoalText(value: string) {
@@ -297,10 +483,10 @@ export function getGoalPresentation(goal: GoalPresentationInput) {
   const entry = getGoalIconEntry(goal);
   const seed = `${normalizeGoalText(goal.name) || "goal"}:${entry.value}`;
   const hash = hashGoalSeed(seed);
-  const hueOffset = (hash % 49) - 24;
-  const hue = (BASE_HUES[entry.value] + hueOffset + 360) % 360;
-  const saturation = 64 + (hash % 9);
-  const lightness = 40 + ((hash >>> 8) % 6);
+  const hueStep = (hash % 7) - 3;
+  const hue = (BASE_HUES[entry.value] + hueStep * 9 + 360) % 360;
+  const saturation = 66 + ((hash >>> 4) % 9);
+  const lightness = 40 + ((hash >>> 10) % 7);
 
   return {
     entry,
