@@ -119,3 +119,12 @@
     width: 100%;
   }
 }
+
+/* The notification row grid selector also matched the Divider component and
+   turned its 1px rule into a padded block. Keep the intended thin separator. */
+.settings-page-polish #notifications .finance-panel > div[class*="ml-[76px]"] {
+  display: block !important;
+  height: 1px !important;
+  min-height: 1px !important;
+  padding: 0 !important;
+}
