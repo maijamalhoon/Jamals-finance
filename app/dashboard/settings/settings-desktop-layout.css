@@ -128,3 +128,152 @@
   min-height: 1px !important;
   padding: 0 !important;
 }
+
+/* Compact, clearly labelled notification switches with a calmer motion curve.
+   This only changes presentation; the existing switch semantics and save logic remain intact. */
+.settings-page-polish #notifications [role="switch"] {
+  position: relative;
+  isolation: isolate;
+  width: 3.5rem !important;
+  height: 2rem !important;
+  min-width: 3.5rem;
+  padding: 0 !important;
+  overflow: hidden;
+  cursor: pointer;
+  touch-action: manipulation;
+  border-width: 1px !important;
+  border-color: color-mix(in srgb, var(--border) 88%, transparent) !important;
+  border-radius: 999px !important;
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--surface-secondary) 94%, white 6%),
+    var(--surface-secondary)
+  ) !important;
+  box-shadow:
+    inset 0 1px 2px color-mix(in srgb, var(--text-primary) 8%, transparent),
+    0 2px 6px color-mix(in srgb, var(--text-primary) 8%, transparent);
+  transition:
+    background-color 220ms ease,
+    border-color 220ms ease,
+    box-shadow 220ms ease,
+    transform 160ms ease !important;
+}
+
+.settings-page-polish #notifications [role="switch"]::after {
+  content: "OFF";
+  position: absolute;
+  z-index: 0;
+  top: 50%;
+  right: 0.48rem;
+  transform: translateY(-50%);
+  color: var(--text-secondary);
+  font-size: 0.48rem;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: 0.07em;
+  opacity: 0.72;
+  pointer-events: none;
+}
+
+.settings-page-polish #notifications [role="switch"] > span {
+  position: absolute !important;
+  z-index: 1;
+  top: 0.2rem !important;
+  left: 0.2rem !important;
+  display: grid !important;
+  width: 1.5rem !important;
+  height: 1.5rem !important;
+  place-items: center;
+  border: 1px solid color-mix(in srgb, var(--border) 80%, transparent);
+  border-radius: 999px !important;
+  background: var(--card) !important;
+  box-shadow:
+    0 3px 8px color-mix(in srgb, var(--text-primary) 20%, transparent),
+    inset 0 1px 0 color-mix(in srgb, white 75%, transparent) !important;
+  transform: translateX(0) !important;
+  transition:
+    transform 240ms cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 220ms ease,
+    border-color 220ms ease !important;
+}
+
+.settings-page-polish #notifications [role="switch"] > span::after {
+  content: "";
+  width: 0.34rem;
+  height: 0.34rem;
+  border-radius: 999px;
+  background: var(--text-secondary);
+  opacity: 0.38;
+  transition:
+    background-color 220ms ease,
+    box-shadow 220ms ease,
+    opacity 220ms ease;
+}
+
+.settings-page-polish #notifications [role="switch"][aria-checked="true"] {
+  border-color: color-mix(in srgb, var(--primary) 72%, transparent) !important;
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--primary) 86%, white 14%),
+    var(--primary)
+  ) !important;
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, white 28%, transparent),
+    0 7px 18px color-mix(in srgb, var(--primary) 24%, transparent);
+}
+
+.settings-page-polish #notifications [role="switch"][aria-checked="true"]::after {
+  content: "ON";
+  right: auto;
+  left: 0.48rem;
+  color: var(--primary-foreground);
+  opacity: 0.9;
+}
+
+.settings-page-polish #notifications [role="switch"][aria-checked="true"] > span {
+  border-color: color-mix(in srgb, var(--primary) 24%, var(--border)) !important;
+  transform: translateX(1.5rem) !important;
+  box-shadow:
+    0 4px 10px color-mix(in srgb, var(--text-primary) 24%, transparent),
+    inset 0 1px 0 color-mix(in srgb, white 82%, transparent) !important;
+}
+
+.settings-page-polish #notifications [role="switch"][aria-checked="true"] > span::after {
+  background: var(--primary);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 15%, transparent);
+  opacity: 1;
+}
+
+@media (hover: hover) {
+  .settings-page-polish #notifications [role="switch"]:hover {
+    border-color: color-mix(in srgb, var(--primary) 36%, var(--border)) !important;
+    box-shadow:
+      inset 0 1px 2px color-mix(in srgb, var(--text-primary) 8%, transparent),
+      0 5px 14px color-mix(in srgb, var(--text-primary) 12%, transparent);
+    transform: translateY(-1px);
+  }
+
+  .settings-page-polish #notifications [role="switch"][aria-checked="true"]:hover {
+    box-shadow:
+      inset 0 1px 0 color-mix(in srgb, white 30%, transparent),
+      0 9px 22px color-mix(in srgb, var(--primary) 30%, transparent);
+  }
+}
+
+.settings-page-polish #notifications [role="switch"]:active {
+  transform: scale(0.96);
+}
+
+.settings-page-polish #notifications [role="switch"]:disabled {
+  cursor: not-allowed;
+  opacity: 0.58;
+  transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .settings-page-polish #notifications [role="switch"],
+  .settings-page-polish #notifications [role="switch"] > span,
+  .settings-page-polish #notifications [role="switch"] > span::after {
+    transition: none !important;
+  }
+}
