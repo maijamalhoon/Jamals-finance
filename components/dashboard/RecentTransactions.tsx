@@ -2,7 +2,7 @@
 
 import type { CSSProperties } from "react";
 import Link from "next/link";
-import { ArrowLeftRight } from "lucide-react";
+import { ArrowLeftRight, ArrowRight } from "lucide-react";
 
 import { useCurrency } from "@/components/currency/CurrencyProvider";
 import CountedAmount from "@/components/motion/CountedAmount";
@@ -92,17 +92,13 @@ function getCategoryLabel(tx: Transaction) {
   return tx.categories?.name || "Expense";
 }
 
-function Amount({
-  transaction,
-}: {
-  transaction: Transaction;
-}) {
+function Amount({ transaction }: { transaction: Transaction }) {
   const { formatCurrency } = useCurrency();
   const safeAmount = getRenderableTransactionAmount(transaction.amount);
 
   return (
     <span
-      className={`inline-flex items-baseline justify-end gap-0.5 font-black tracking-[-0.015em] tabular-nums ${getTransactionToneClass(
+      className={`inline-flex min-w-0 items-baseline justify-end gap-0.5 whitespace-nowrap font-bold tracking-[-0.018em] tabular-nums ${getTransactionToneClass(
         transaction.type,
       )}`}
     >
@@ -111,9 +107,7 @@ function Amount({
       ) : (
         <>
           {getTransactionPrefix(transaction.type)}
-          <CountedAmount
-            amount={formatCurrency(safeAmount, { absolute: true })}
-          />
+          <CountedAmount amount={formatCurrency(safeAmount, { absolute: true })} />
         </>
       )}
     </span>
@@ -131,12 +125,12 @@ export default function RecentTransactions({
 
   return (
     <section className="finance-reference-card motion-card-entry flex min-h-[280px] min-w-0 flex-col overflow-hidden p-4 sm:p-5">
-      <div className="flex min-w-0 items-start justify-between gap-3">
-        <div className="flex min-w-0 items-center gap-2">
-          <span className="dashboard-list-card-kicker-icon">
-            <ArrowLeftRight />
+      <div className="flex min-w-0 items-center justify-between gap-3 border-b border-border/55 pb-3">
+        <div className="flex min-w-0 items-center gap-2.5">
+          <span className="grid size-8 shrink-0 place-items-center rounded-[10px] border border-brand/20 bg-brand/8 text-brand">
+            <ArrowLeftRight size={15} strokeWidth={2.2} aria-hidden="true" />
           </span>
-          <h3 className="truncate text-[11px] font-bold uppercase tracking-[0.12em] text-text-secondary">
+          <h3 className="truncate text-[11px] font-bold uppercase tracking-[0.13em] text-text-secondary sm:text-[12px]">
             Recent Transactions
           </h3>
         </div>
@@ -144,9 +138,15 @@ export default function RecentTransactions({
         {status !== "unavailable" && transactions.length > 0 ? (
           <Link
             href="/dashboard/transactions"
-            className="dashboard-list-card-action"
+            className="finance-focus group inline-flex min-h-9 shrink-0 items-center gap-1.5 rounded-[10px] px-2.5 text-[11px] font-bold text-text-secondary transition-colors hover:bg-surface-secondary hover:text-text-primary"
           >
             View all
+            <ArrowRight
+              size={14}
+              strokeWidth={2.2}
+              className="transition-transform duration-200 group-hover:translate-x-0.5"
+              aria-hidden="true"
+            />
           </Link>
         ) : null}
       </div>
@@ -170,22 +170,22 @@ export default function RecentTransactions({
         </div>
       ) : (
         <>
-          <div className="mt-3 hidden min-w-0 overflow-x-auto md:block">
-            <table className="w-full min-w-[760px] table-fixed border-collapse text-left">
+          <div className="mt-1.5 hidden min-w-0 overflow-x-auto md:block">
+            <table className="w-full min-w-[620px] table-fixed border-collapse text-left lg:min-w-[760px]">
               <colgroup>
-                <col className="w-[38%]" />
-                <col className="w-[17%]" />
-                <col className="w-[15%]" />
-                <col className="w-[13%]" />
-                <col className="w-[17%]" />
+                <col className="w-[59%] lg:w-[38%]" />
+                <col className="hidden lg:table-column lg:w-[17%]" />
+                <col className="hidden lg:table-column lg:w-[15%]" />
+                <col className="w-[18%] lg:w-[13%]" />
+                <col className="w-[23%] lg:w-[17%]" />
               </colgroup>
               <thead>
-                <tr className="border-b border-border text-[10px] font-bold uppercase tracking-[0.08em] text-text-tertiary">
-                  <th className="pb-2 pr-4">Description</th>
-                  <th className="px-4 pb-2">Account</th>
-                  <th className="px-4 pb-2">Category</th>
-                  <th className="px-4 pb-2">Date</th>
-                  <th className="pb-2 pl-4 text-right">Amount</th>
+                <tr className="border-b border-border/65 text-[9px] font-bold uppercase tracking-[0.11em] text-text-tertiary lg:text-[10px]">
+                  <th className="py-2 pr-4">Description</th>
+                  <th className="hidden px-4 py-2 lg:table-cell">Account</th>
+                  <th className="hidden px-4 py-2 lg:table-cell">Category</th>
+                  <th className="px-3 py-2 lg:px-4">Date</th>
+                  <th className="py-2 pl-3 text-right lg:pl-4">Amount</th>
                 </tr>
               </thead>
               <tbody>
@@ -205,25 +205,25 @@ export default function RecentTransactions({
                     <tr
                       key={tx.id}
                       style={rowStyle}
-                      className="motion-table-row group border-b border-border/55 transition-colors duration-200 last:border-b-0 hover:bg-surface-secondary/40"
+                      className="motion-table-row group border-b border-border/45 transition-colors duration-200 last:border-b-0 hover:bg-surface-secondary/30"
                     >
                       <td className="py-2.5 pr-4">
                         <div className="flex min-w-0 items-center gap-2.5">
                           <span
-                            className="grid size-8 shrink-0 place-items-center rounded-full border transition-transform duration-200 group-hover:scale-105"
+                            className="grid size-8 shrink-0 place-items-center rounded-[11px] border transition-[transform,border-color,background-color] duration-200 group-hover:-translate-y-px"
                             style={getTransactionSoftStyle(iconMeta.accent)}
                           >
-                            <Icon size={14} strokeWidth={2.3} />
+                            <Icon size={14} strokeWidth={2.2} aria-hidden="true" />
                           </span>
                           <div className="min-w-0">
                             <p
-                              className="truncate text-[12px] font-bold leading-4 text-text-primary"
+                              className="truncate text-[12px] font-bold leading-4 text-text-primary lg:text-[13px]"
                               title={getFlowTitle(tx)}
                             >
                               {getFlowTitle(tx)}
                             </p>
                             <p
-                              className="truncate text-[10px] font-medium leading-4 text-text-secondary"
+                              className="mt-0.5 truncate text-[9px] font-medium leading-3.5 text-text-secondary lg:text-[10px] lg:leading-4"
                               title={getFlowSubtitle(tx, false)}
                             >
                               {getFlowSubtitle(tx, false)}
@@ -232,12 +232,12 @@ export default function RecentTransactions({
                         </div>
                       </td>
                       <td
-                        className="max-w-[180px] truncate px-4 py-2.5 text-[11px] font-medium text-text-secondary"
+                        className="hidden max-w-[180px] truncate px-4 py-2.5 text-[11px] font-medium text-text-secondary lg:table-cell"
                         title={tx.accounts?.name || "No account"}
                       >
                         {tx.accounts?.name || "No account"}
                       </td>
-                      <td className="px-4 py-2.5">
+                      <td className="hidden px-4 py-2.5 lg:table-cell">
                         <span
                           className="inline-flex max-w-[150px] items-center gap-1.5 text-[10px] font-bold"
                           style={{ color: iconMeta.accent }}
@@ -251,10 +251,10 @@ export default function RecentTransactions({
                           <span className="truncate">{getCategoryLabel(tx)}</span>
                         </span>
                       </td>
-                      <td className="whitespace-nowrap px-4 py-2.5 text-[11px] font-medium text-text-secondary tabular-nums">
+                      <td className="whitespace-nowrap px-3 py-2.5 text-[10px] font-medium text-text-secondary tabular-nums lg:px-4 lg:text-[11px]">
                         {formatFullDate(tx.date)}
                       </td>
-                      <td className="whitespace-nowrap py-2.5 pl-4 text-right text-[12px]">
+                      <td className="whitespace-nowrap py-2.5 pl-3 text-right text-[11px] lg:pl-4 lg:text-[12px]">
                         <Amount transaction={tx} />
                       </td>
                     </tr>
@@ -264,7 +264,7 @@ export default function RecentTransactions({
             </table>
           </div>
 
-          <div className="mt-3 flex min-w-0 flex-col md:hidden">
+          <div className="mt-1.5 flex min-w-0 flex-col md:hidden">
             {visibleTransactions.map((tx, index) => {
               const iconMeta = getTransactionIconMeta({
                 type: tx.type,
@@ -281,14 +281,15 @@ export default function RecentTransactions({
                 <article
                   key={tx.id}
                   style={rowStyle}
-                  className="motion-table-row grid grid-cols-[36px_minmax(0,1fr)_auto] items-center gap-2.5 border-b border-border/55 py-3 first:pt-0 last:border-b-0 last:pb-0"
+                  className="motion-table-row grid grid-cols-[34px_minmax(0,1fr)] items-center gap-2.5 border-b border-border/45 py-3 first:pt-2 last:border-b-0 last:pb-0"
                 >
                   <span
-                    className="grid size-9 shrink-0 place-items-center rounded-full border"
+                    className="grid size-8.5 shrink-0 place-items-center rounded-[12px] border"
                     style={getTransactionSoftStyle(iconMeta.accent)}
                   >
-                    <Icon size={15} strokeWidth={2.3} />
+                    <Icon size={15} strokeWidth={2.2} aria-hidden="true" />
                   </span>
+
                   <div className="min-w-0">
                     <p
                       className="truncate text-[12px] font-bold leading-4 text-text-primary"
@@ -296,16 +297,18 @@ export default function RecentTransactions({
                     >
                       {getFlowTitle(tx)}
                     </p>
-                    <p
-                      className="truncate text-[10px] font-medium leading-4 text-text-secondary"
-                      title={getFlowSubtitle(tx)}
-                    >
-                      {getFlowSubtitle(tx)}
-                    </p>
+                    <div className="mt-0.5 flex min-w-0 items-center justify-between gap-2">
+                      <p
+                        className="min-w-0 truncate text-[10px] font-medium leading-4 text-text-secondary"
+                        title={getFlowSubtitle(tx)}
+                      >
+                        {getFlowSubtitle(tx)}
+                      </p>
+                      <p className="shrink-0 text-right text-[clamp(9px,2.75vw,11px)] leading-4">
+                        <Amount transaction={tx} />
+                      </p>
+                    </div>
                   </div>
-                  <p className="max-w-[8rem] break-words text-right text-[11px] leading-4 [overflow-wrap:anywhere]">
-                    <Amount transaction={tx} />
-                  </p>
                 </article>
               );
             })}
