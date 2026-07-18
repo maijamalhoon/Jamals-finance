@@ -24,16 +24,17 @@
 }
 
 /* Keep one clean, solid-color sparkline on every viewport.
-   The inactive duplicate is hidden so no pale/dark segmented line can appear. */
+   Reveal the complete line with a clipping animation instead of a dashed stroke,
+   which prevents the broken half-line rendering seen in mobile Chromium. */
 .dashboard-metric-graph {
   display: block;
   width: 100%;
   max-width: 100%;
   height: 1.45rem;
   overflow: visible !important;
-  -webkit-clip-path: none !important;
-  clip-path: none !important;
-  animation: none !important;
+  -webkit-clip-path: inset(-25% 100% -25% 0);
+  clip-path: inset(-25% 100% -25% 0);
+  animation: dashboard-metric-graph-reveal 900ms var(--motion-ease) 100ms forwards !important;
 }
 
 .dashboard-metric-graph-path {
@@ -48,16 +49,17 @@
 }
 
 .dashboard-metric-graph-active {
-  stroke-dasharray: 1 !important;
-  stroke-dashoffset: 1 !important;
+  stroke-dasharray: none !important;
+  stroke-dashoffset: 0 !important;
   stroke-width: 2.05 !important;
   opacity: 0.94 !important;
-  animation: dashboard-metric-graph-draw 900ms var(--motion-ease) 100ms forwards !important;
+  animation: none !important;
 }
 
-@keyframes dashboard-metric-graph-draw {
+@keyframes dashboard-metric-graph-reveal {
   to {
-    stroke-dashoffset: 0;
+    -webkit-clip-path: inset(-25% 0 -25% 0);
+    clip-path: inset(-25% 0 -25% 0);
   }
 }
 
@@ -131,6 +133,12 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .dashboard-metric-graph {
+    -webkit-clip-path: none !important;
+    clip-path: none !important;
+    animation: none !important;
+  }
+
   .dashboard-metric-graph-active {
     stroke-dasharray: none !important;
     stroke-dashoffset: 0 !important;
