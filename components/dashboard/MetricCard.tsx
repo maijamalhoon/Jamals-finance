@@ -76,6 +76,8 @@ function getMetricAccent(
   amount: MetricCardProps["amount"],
   accentColor: string,
 ) {
+  if (iconName === "income") return "var(--success)";
+  if (iconName === "expenses") return "var(--warning)";
   if (iconName !== "wallet" || typeof amount !== "number" || !Number.isFinite(amount)) {
     return accentColor;
   }
@@ -91,6 +93,13 @@ function getCompactBasis(basis: string) {
   if (normalized.includes("cost")) return "vs cost";
   if (normalized.includes("withheld") || normalized.includes("try again")) return "";
   return basis.length <= 11 ? basis : "";
+}
+
+function getDisplayTitle(title: string) {
+  if (title === "Month-to-date income") return "MTD income";
+  if (title === "Month-to-date expenses") return "MTD expenses";
+  if (title === "Investment contributions") return "Investments";
+  return title;
 }
 
 function MetricSparkline({
@@ -134,6 +143,9 @@ export default function MetricCard({
 }: MetricCardProps) {
   const { formatCurrency } = useCurrency();
   const Icon = ICONS[iconName];
+  const displayTitle = getDisplayTitle(title);
+  const displaySubtitle =
+    title === "Investment contributions" ? "MTD contributions" : subtitle ?? "Current period";
   const displayAmount =
     amount === null
       ? "Unavailable"
@@ -181,8 +193,8 @@ export default function MetricCard({
       <div className={styles.content}>
         <div className={styles.header}>
           <div className={styles.headingCopy}>
-            <p className={styles.title}>{title}</p>
-            <p className={styles.subtitle}>{subtitle ?? "Current period"}</p>
+            <p className={styles.title}>{displayTitle}</p>
+            <p className={styles.subtitle}>{displaySubtitle}</p>
           </div>
 
           <span
