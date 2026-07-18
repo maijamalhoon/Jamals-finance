@@ -1,7 +1,7 @@
 @layer base {
   /*
    * Keep every Lucide icon on the same rounded monoline system without
-   * changing its authored width, height, or stroke width.
+   * changing authored dimensions or component behavior.
    */
   :where(svg.lucide) {
     fill: none;
@@ -12,9 +12,8 @@
   }
 
   /*
-   * Icon-led controls use the same Geist text voice as the rest of the
-   * product. Existing font sizes, weights, spacing, and component geometry
-   * remain untouched.
+   * Icon-led controls use the same Geist voice as the product shell.
+   * Existing font sizes, spacing, control dimensions, and interactions stay intact.
    */
   :where(
       button,
@@ -29,6 +28,7 @@
     ):has(svg.lucide) {
     font-family: var(--font-sans);
     font-kerning: normal;
+    font-optical-sizing: auto;
     font-synthesis: none;
     text-rendering: geometricPrecision;
   }
@@ -43,9 +43,8 @@
  * - mobile/tablet sidebar and floating controls
  * - desktop/large-screen dashboard header
  *
- * These rules are intentionally unlayered so they can normalize existing
- * Tailwind font-weight utilities without changing font sizes, control
- * dimensions, spacing, data, responsive behavior, or motion.
+ * Rules are deliberately scoped so page content, forms, data, layout,
+ * responsive behavior, and animations are not altered.
  */
 :where(
     .jf-desktop-header,
@@ -55,6 +54,7 @@
   font-family: var(--font-sans);
   font-weight: 400;
   font-kerning: normal;
+  font-optical-sizing: auto;
   font-synthesis: none;
   font-variant-numeric: tabular-nums lining-nums;
   font-feature-settings: "tnum" 1, "lnum" 1;
@@ -74,7 +74,7 @@
     [data-mobile-navigation-drawer],
     [data-mobile-control-cluster]
   ) :where(.font-semibold) {
-  font-weight: 600;
+  font-weight: 625;
 }
 
 :where(
@@ -110,7 +110,8 @@
     [role="option"]
   ) {
   font-family: var(--font-sans);
-  font-weight: 600;
+  font-weight: 625;
+  letter-spacing: -0.006em;
 }
 
 :where(
@@ -120,6 +121,7 @@
   ) :where(h1, h2, h3, h4, h5, h6, [role="heading"], [data-slot="sheet-title"]) {
   font-family: var(--font-sans);
   font-weight: 700;
+  letter-spacing: -0.018em;
 }
 
 :where(
@@ -129,10 +131,27 @@
   ) :where(svg.lucide) {
   fill: none;
   stroke: currentColor;
-  stroke-width: 2;
+  stroke-width: 2.2;
   stroke-linecap: round;
   stroke-linejoin: round;
   shape-rendering: geometricPrecision;
+}
+
+/* Outline-only icon presentation inside mobile/tablet navigation tiles. */
+[data-mobile-navigation-drawer] nav a > span:first-child {
+  border-color: transparent !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+[data-mobile-navigation-drawer] nav a[aria-current="page"] > span:first-child {
+  background: transparent !important;
+}
+
+/* Keep section labels crisp without changing their authored size or spacing. */
+[data-mobile-navigation-drawer] nav section h2 {
+  font-weight: 700;
+  letter-spacing: 0.17em;
 }
 
 /* Match the existing mobile menu glyph to Lucide's rounded Menu outline. */
