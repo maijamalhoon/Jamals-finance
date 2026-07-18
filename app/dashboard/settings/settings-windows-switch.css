@@ -1,10 +1,12 @@
 /* Windows 11 / Fluent-style notification toggles.
-   Presentation only: the existing switch semantics, database writes, toast
-   feedback, optimistic updates, and accessibility labels remain unchanged. */
+   Presentation only: existing switch semantics, database writes, optimistic
+   updates, toast feedback, and accessibility labels remain unchanged. */
 
 .settings-page-polish #notifications [role="switch"] {
   position: relative !important;
   isolation: isolate;
+  box-sizing: border-box !important;
+  contain: paint;
   width: 40px !important;
   min-width: 40px !important;
   max-width: 40px !important;
@@ -12,7 +14,8 @@
   min-height: 20px !important;
   max-height: 20px !important;
   padding: 0 !important;
-  overflow: visible !important;
+  overflow: hidden !important;
+  line-height: 0;
   cursor: pointer;
   touch-action: manipulation;
   border: 1px solid color-mix(in srgb, var(--text-secondary), transparent 18%) !important;
@@ -37,21 +40,26 @@
   position: absolute !important;
   z-index: 1;
   top: 2px !important;
-  left: 3px !important;
+  left: 2px !important;
   display: block !important;
+  box-sizing: border-box !important;
   width: 14px !important;
   min-width: 14px !important;
+  max-width: 14px !important;
   height: 14px !important;
   min-height: 14px !important;
+  max-height: 14px !important;
+  margin: 0 !important;
   padding: 0 !important;
   border: 0 !important;
   border-radius: 999px !important;
   background: color-mix(in srgb, var(--text-secondary), var(--text-primary) 18%) !important;
   box-shadow: none !important;
-  transform: translateX(0) !important;
+  transform: translate3d(0, 0, 0) !important;
   transition:
     transform 160ms cubic-bezier(0.33, 1, 0.68, 1),
     background-color 120ms ease !important;
+  will-change: transform;
 }
 
 .settings-page-polish #notifications [role="switch"] > span::before,
@@ -67,15 +75,22 @@
 }
 
 .settings-page-polish #notifications [role="switch"][aria-checked="true"] > span {
+  left: 2px !important;
+  width: 14px !important;
   background: var(--primary-foreground) !important;
-  transform: translateX(19px) !important;
+  transform: translate3d(20px, 0, 0) !important;
 }
 
 .settings-page-polish #notifications [role="switch"]:focus-visible {
   outline: none !important;
+  overflow: visible !important;
   box-shadow:
     0 0 0 2px var(--surface-primary),
     0 0 0 4px color-mix(in srgb, var(--primary), transparent 28%) !important;
+}
+
+.settings-page-polish #notifications [role="switch"]:focus-visible > span {
+  clip-path: inset(0 round 999px);
 }
 
 @media (hover: hover) and (pointer: fine) {
@@ -91,16 +106,19 @@
   }
 }
 
-.settings-page-polish #notifications [role="switch"]:active {
-  transform: none !important;
+.settings-page-polish #notifications [role="switch"]:active,
+.settings-page-polish #notifications [role="switch"]:active > span,
+.settings-page-polish #notifications [role="switch"][aria-checked="true"]:active > span {
+  left: 2px !important;
+  width: 14px !important;
 }
 
 .settings-page-polish #notifications [role="switch"]:active > span {
-  width: 16px !important;
+  transform: translate3d(0, 0, 0) !important;
 }
 
 .settings-page-polish #notifications [role="switch"][aria-checked="true"]:active > span {
-  left: 1px !important;
+  transform: translate3d(20px, 0, 0) !important;
 }
 
 .settings-page-polish #notifications [role="switch"]:disabled {
