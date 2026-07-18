@@ -1,0 +1,98 @@
+/*
+ * Authentication-only typography and icon system.
+ * Scoped to AuthShell so application sizing, layout, data, and behavior stay unchanged.
+ */
+.jf-auth-root {
+  font-family:
+    var(--font-geist-sans),
+    "Geist Sans",
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
+  font-weight: 450;
+}
+
+.jf-auth-root :where(input, textarea, select, button) {
+  font-family: inherit;
+}
+
+/* Headings: Geist Sans, 650–700. */
+.jf-auth-root :where(
+    h1,
+    h2,
+    h3,
+    .auth-context-title,
+    .auth-showcase-title strong
+  ) {
+  font-weight: 675;
+}
+
+/* Body copy: Geist Sans, 400–500. */
+.jf-auth-root :where(
+    p,
+    input,
+    textarea,
+    select,
+    .auth-context-copy,
+    .auth-field-helper,
+    .auth-field-error,
+    .auth-feedback,
+    .auth-trust-item > span > span
+  ) {
+  font-weight: 450;
+}
+
+.jf-auth-root :where(.auth-field-error, .auth-feedback) {
+  font-weight: 500;
+}
+
+/* Buttons and labels: Geist Sans, 550–650. */
+.jf-auth-root :where(
+    button,
+    label,
+    .auth-field-label,
+    .auth-eyebrow,
+    .auth-progress,
+    .auth-context-eyebrow,
+    .auth-showcase-badge,
+    .auth-showcase-balance small,
+    .auth-showcase-tile small,
+    .auth-trust-item strong,
+    .jf-auth-brand,
+    .jf-auth-home-link
+  ) {
+  font-weight: 600;
+}
+
+/* Numeric and monetary values use Geist Sans tabular figures. */
+.jf-auth-root :where(
+    input[type="number"],
+    input[inputmode="numeric"],
+    input[inputmode="decimal"],
+    input[name*="amount" i],
+    input[name*="balance" i],
+    input[id*="amount" i],
+    input[id*="balance" i],
+    .auth-showcase-balance strong,
+    .auth-showcase-tile strong,
+    .auth-progress,
+    .tabular-nums
+  ) {
+  font-family:
+    var(--font-geist-sans),
+    "Geist Sans",
+    system-ui,
+    sans-serif;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
+}
+
+/* Lucide-only rounded monoline outline treatment; dimensions remain untouched. */
+.jf-auth-root svg.lucide {
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.8;
+}
