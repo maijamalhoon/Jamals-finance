@@ -26,3 +26,41 @@
   --tw-ring-offset-shadow: 0 0 #0000 !important;
   --tw-ring-shadow: 0 0 #0000 !important;
 }
+
+/* Remove the tiny decorative corner strokes left by legacy card pseudo-elements. */
+[data-dashboard-scroll] .dashboard-overview :is(
+  .finance-reference-card,
+  .dashboard-graph-card,
+  .dashboard-pulse-tile,
+  .dashboard-metric-card,
+  .finance-panel.card-hover
+)::before,
+[data-dashboard-scroll] .dashboard-overview :is(
+  .finance-reference-card,
+  .dashboard-graph-card,
+  .dashboard-pulse-tile,
+  .dashboard-metric-card,
+  .finance-panel.card-hover
+)::after {
+  content: none !important;
+  display: none !important;
+  border: 0 !important;
+  border-color: transparent !important;
+}
+
+/* Compact dashboard top controls use shadows and surfaces, never visible borders. */
+@media (max-width: 1023px) {
+  [data-dashboard-shell] :is(
+    button.finance-control,
+    button[aria-label^="Open profile menu"],
+    button[aria-label="Open navigation menu"]
+  ),
+  [data-dashboard-shell] :is(
+    button.finance-control,
+    button[aria-label^="Open profile menu"],
+    button[aria-label="Open navigation menu"]
+  ):is(:hover, :active, :focus, :focus-visible, :focus-within, [data-popup-open]) {
+    border: 0 !important;
+    border-color: transparent !important;
+  }
+}
