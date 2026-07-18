@@ -1,87 +1,145 @@
-/* Large-screen dashboard composition. Mobile and tablet layouts remain unchanged. */
+/* Desktop dashboard composition. Mobile and tablet layouts remain unchanged. */
 @media (min-width: 1280px) {
-  .dashboard-overview {
+  .dashboard-overview-layout {
     display: grid;
-    grid-template-columns: repeat(12, minmax(0, 1fr));
-    align-items: start;
+    grid-template-columns: repeat(20, minmax(0, 1fr));
+    align-items: stretch;
     gap: 1rem;
   }
 
-  .dashboard-overview > * {
+  .dashboard-overview-layout > * {
+    min-width: 0;
     grid-column: 1 / -1;
     margin-top: 0 !important;
   }
 
-  .dashboard-overview
-    > div[class*="xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,2fr)]"],
-  .dashboard-overview > div[class*="lg:grid-cols-3"] {
+  .dashboard-overview-layout > div.grid:nth-last-child(-n + 2) {
     display: contents;
   }
 
-  .dashboard-overview
-    > div[class*="xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,2fr)]"]
-    > *,
-  .dashboard-overview > div[class*="lg:grid-cols-3"] > * {
+  .dashboard-overview-layout > div.grid:nth-last-child(-n + 2) > * {
     min-width: 0;
-    height: auto !important;
-    align-self: start;
+    height: 470px !important;
+    min-height: 470px !important;
+    margin-top: 0 !important;
+    align-self: stretch;
   }
 
-  .dashboard-overview
-    > div[class*="xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,2fr)]"]
-    > *
-    > :where(section, div),
-  .dashboard-overview > div[class*="lg:grid-cols-3"] > * > :where(section, div) {
-    height: auto !important;
+  .dashboard-overview-layout > div.grid:nth-last-child(-n + 2) > * > * {
+    height: 100% !important;
+    min-height: 0;
   }
 
-  /* Primary insight row: wide cash-flow chart with compact supporting cards. */
-  .dashboard-overview
-    > div[class*="xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,2fr)]"]
-    > :nth-child(3) {
+  /* Primary row: Income vs Expenses 45%, Portfolio Overview 55%. */
+  .dashboard-overview-layout > div.grid:nth-last-child(2) > :nth-child(3) {
     order: 10;
-    grid-column: span 6;
+    grid-column: 1 / span 9;
   }
 
-  .dashboard-overview > div[class*="lg:grid-cols-3"] > :nth-child(1) {
+  .dashboard-overview-layout > div.grid:nth-last-child(2) > :nth-child(2) {
     order: 11;
-    grid-column: span 3;
+    grid-column: 10 / -1;
   }
 
-  .dashboard-overview > div[class*="lg:grid-cols-3"] > :nth-child(2) {
-    order: 12;
-    grid-column: span 3;
+  /* Supporting row: Spending 50%, Month-to-Date 25%, Goals 25%. */
+  .dashboard-overview-layout > div.grid:last-child > :nth-child(1) {
+    order: 20;
+    grid-column: 1 / span 10;
   }
 
-  /* Activity row: compact spend record beside the wider transaction table. */
-  .dashboard-overview
-    > div[class*="xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,2fr)]"]
-    > :nth-child(1) {
-    order: 13;
-    grid-column: span 4;
+  .dashboard-overview-layout > div.grid:nth-last-child(2) > :nth-child(1) {
+    order: 21;
+    grid-column: 11 / span 5;
   }
 
-  .dashboard-overview > div[class*="lg:grid-cols-3"] > :nth-child(3) {
-    order: 14;
-    grid-column: span 8;
+  .dashboard-overview-layout > div.grid:last-child > :nth-child(2) {
+    order: 22;
+    grid-column: 16 / -1;
   }
 
-  /* Portfolio uses the full width so its donut and top holdings sit side by side. */
-  .dashboard-overview
-    > div[class*="xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,2fr)]"]
-    > :nth-child(2) {
-    order: 15;
+  /* Recent transactions remain full width and use the same desktop height. */
+  .dashboard-overview-layout > div.grid:last-child > :nth-child(3) {
+    order: 30;
     grid-column: 1 / -1;
   }
 
-  .dashboard-overview
-    > div[class*="xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,2fr)]"]
+  /* Portfolio and spending use identical 240px donuts on desktop. */
+  .dashboard-overview-layout
+    > div.grid:nth-last-child(2)
     > :nth-child(2)
     > section
     > header
-    + div[class*="grid"] {
-    grid-template-columns: minmax(220px, 0.82fr) minmax(320px, 1.18fr) !important;
-    align-items: center;
+    + div.grid {
+    grid-template-columns: minmax(220px, 0.82fr) minmax(0, 1.18fr) !important;
+    align-items: center !important;
+    gap: 1rem !important;
+  }
+
+  .dashboard-overview-layout
+    > div.grid:nth-last-child(2)
+    > :nth-child(2)
+    > section
+    > header
+    + div.grid
+    > div:first-child
+    > div,
+  .dashboard-overview-layout
+    > div.grid:last-child
+    > :nth-child(1)
+    > section
+    > div.mt-4.grid
+    > div:first-child
+    > div {
+    width: min(100%, 240px) !important;
+    max-width: 240px !important;
+  }
+
+  .dashboard-overview-layout
+    > div.grid:last-child
+    > :nth-child(1)
+    > section
+    > div.mt-4.grid {
+    grid-template-columns: minmax(240px, 0.9fr) minmax(0, 1.1fr) !important;
+    align-items: center !important;
+    gap: 1.25rem !important;
+  }
+
+  .dashboard-overview-layout
+    > div.grid:nth-last-child(2)
+    > :nth-child(2)
+    > section
+    > header
+    + div.grid
+    > div:last-child
+    > div {
+    grid-template-columns: auto minmax(0, 1fr) minmax(72px, 0.85fr) auto !important;
+    gap: 0.5rem !important;
+    padding: 0.625rem 0.75rem !important;
+  }
+}
+
+@media (min-width: 1280px) and (max-width: 1535px) {
+  .dashboard-overview-layout
+    > div.grid:nth-last-child(2)
+    > :nth-child(1)
+    > section
+    > div:nth-child(2)
+    > div
+    > div:first-child {
+    grid-template-columns: minmax(0, 1fr) !important;
+    align-items: stretch !important;
+  }
+
+  .dashboard-overview-layout
+    > div.grid:nth-last-child(2)
+    > :nth-child(1)
+    > section
+    > div:nth-child(2)
+    > div
+    > div:first-child
+    > div:last-child {
+    justify-self: start;
+    text-align: left;
   }
 }
 
