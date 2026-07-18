@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { WalletCards } from "lucide-react";
 import {
   Select,
@@ -8,6 +8,9 @@ import {
   SelectItem,
   SelectTrigger,
 } from "@/components/ui/select";
+import TouchWheelPicker, {
+  useTouchWheelPickerMode,
+} from "@/components/ui/touch-wheel-picker";
 import { useScrollSelectBehavior } from "@/components/ui/use-scroll-select-behavior";
 import scrollSelectStyles from "@/components/ui/ScrollSelect.module.css";
 import { cn } from "@/lib/utils";
@@ -102,6 +105,7 @@ export default function AccountSelect({
 }: AccountSelectProps) {
   const { formatCurrency } = useCurrency();
   const [open, setOpen] = useState(false);
+  const touchPickerMode = useTouchWheelPickerMode(scrollPicker);
   const selectedAccount = accounts.find((account) => account.id === value);
   const unavailable = disabled || loading || accounts.length === 0;
   const scrollBehavior = useScrollSelectBehavior({
@@ -111,6 +115,38 @@ export default function AccountSelect({
     values: accounts.map((account) => account.id),
     onValueChange,
   });
+
+  useEffect(() => {
+    if (touchPickerMode) setOpen(false);
+  }, [touchPickerMode]);
+
+  if (scrollPicker && touchPickerMode) {
+    return (
+      <TouchWheelPicker
+        id={id}
+        value={value}
+        onValueChange={onValueChange}
+        options={accounts.map((account) => ({
+          value: account.id,
+          ariaLabel: `${account.name}, ${formatType(account.type)}`,
+          content: <AccountSummary account={account} placeholder={placeholder} />,
+        }))}
+        ariaLabel={ariaLabel ?? placeholder}
+        disabled={unavailable}
+        className={cn(
+          "field-input h-auto min-h-12 w-full gap-3 px-3 py-2 pr-3 text-left",
+          className,
+        )}
+        itemClassName="px-3 py-2"
+        emptyContent={
+          <AccountSummary
+            account={selectedAccount}
+            placeholder={loading ? "Loading accounts..." : emptyText}
+          />
+        }
+      />
+    );
+  }
 
   return (
     <Select
