@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, Package, Zap } from "lucide-react";
+import { ArrowRight, Boxes, Package, Zap } from "lucide-react";
 import { Cell, Pie, PieChart, Tooltip } from "recharts";
 
 import ChartFrame from "@/components/ui/chart-frame";
@@ -74,6 +74,8 @@ const ASSET_ACCENTS: Record<string, string> = {
   polygon: "#8247e5",
   matic: "#8247e5",
 };
+
+const OTHER_ASSETS_COLOR = "#8b8cf5";
 
 function toFiniteNumber(value: number | string | null | undefined) {
   const parsed = Number(value);
@@ -332,10 +334,17 @@ export default function InvestmentOverviewWidget({
   const { formatCurrency } = useCurrency();
   const allocationData = buildAllocationData(investments);
   const visibleInvestments = allocationData.slice(0, 3);
+  const otherInvestments = allocationData.slice(3);
   const allocationTotalValue = allocationData.reduce(
     (sum, investment) => sum + investment.value,
     0,
   );
+  const otherAssetsValue = otherInvestments.reduce(
+    (sum, investment) => sum + investment.value,
+    0,
+  );
+  const otherAssetsAllocation =
+    allocationTotalValue > 0 ? (otherAssetsValue / allocationTotalValue) * 100 : 0;
   const isProfit = totalPnLPct !== null && totalPnLPct > 0;
   const isLoss = totalPnLPct !== null && totalPnLPct < 0;
   const pnlColor =
@@ -525,10 +534,44 @@ export default function InvestmentOverviewWidget({
               );
             })}
 
-            {allocationData.length > 3 ? (
-              <p className="px-1 text-[10px] font-medium leading-4 text-text-secondary">
-                Top 3 holdings shown from {allocationData.length} priced assets.
-              </p>
+            {otherInvestments.length > 0 ? (
+              <div className="grid min-w-0 grid-cols-[auto_minmax(0,1fr)_minmax(76px,0.9fr)_auto] items-center gap-2.5 px-3 py-2.5 sm:grid-cols-[auto_minmax(110px,1fr)_minmax(110px,1.2fr)_auto] sm:gap-3 sm:px-4 sm:py-3">
+                <span
+                  className="grid shrink-0 place-items-center rounded-full"
+                  style={{
+                    width: 34,
+                    height: 34,
+                    color: OTHER_ASSETS_COLOR,
+                    backgroundColor: "rgba(139, 140, 245, 0.14)",
+                  }}
+                  aria-label="Other assets icon"
+                >
+                  <Boxes size={17} strokeWidth={2.2} />
+                </span>
+
+                <div className="min-w-0">
+                  <p className="truncate text-xs font-semibold text-text-primary sm:text-sm">
+                    Other assets
+                  </p>
+                </div>
+
+                <span
+                  className="flex h-9 w-full min-w-[76px] items-center"
+                  aria-hidden="true"
+                >
+                  <span
+                    className="h-0.5 w-full rounded-full"
+                    style={{ backgroundColor: OTHER_ASSETS_COLOR }}
+                  />
+                </span>
+
+                <span
+                  className="shrink-0 text-xs font-black tabular-nums sm:text-sm"
+                  style={{ color: OTHER_ASSETS_COLOR }}
+                >
+                  {formatAllocation(otherAssetsAllocation)}
+                </span>
+              </div>
             ) : null}
 
             {unpricedCount > 0 ? (
