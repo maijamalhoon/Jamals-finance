@@ -1,12 +1,516 @@
-/* Final selector correction for compact onboarding screens. */
+/* Final authentication cascade corrections.
+   This file is intentionally imported after globals.css and auth-clean.css.
+   It only resolves presentation conflicts; authentication, validation,
+   redirects, Supabase calls, and onboarding state remain unchanged. */
+
+/* Shared cleanup: override legacy high-specificity auth rules. */
+.jf-auth-root .auth-eyebrow,
+.jf-auth-root .auth-progress {
+  min-height: auto !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  font-size: 11px !important;
+  line-height: 1.2 !important;
+}
+
+.jf-auth-root .auth-eyebrow { color: var(--text-muted) !important; }
+.jf-auth-root .auth-progress { color: var(--primary) !important; }
+.jf-auth-root .jf-auth-card { border: 0 !important; }
+
+.jf-auth-root .auth-input {
+  min-width: 0 !important;
+  border: 1px solid transparent !important;
+  background: var(--surface-secondary) !important;
+  box-shadow: none !important;
+  text-overflow: ellipsis;
+}
+
+.jf-auth-root .auth-input:hover:not(:disabled) {
+  border-color: transparent !important;
+  background: color-mix(in srgb, var(--surface-secondary) 82%, var(--surface-primary)) !important;
+}
+
+.jf-auth-root .auth-input:focus,
+.jf-auth-root .auth-input:focus-visible {
+  border-color: color-mix(in srgb, var(--focus-color) 72%, transparent) !important;
+  background: var(--surface-primary) !important;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--focus-color) 13%, transparent) !important;
+}
+
+.jf-auth-root .auth-input[aria-invalid="true"] {
+  border-color: color-mix(in srgb, var(--danger) 75%, transparent) !important;
+}
+
+.jf-auth-root .auth-provider-action,
+.jf-auth-root .auth-password-requirements,
+.jf-auth-root .auth-identity-row,
+.jf-auth-root .auth-identity-summary > div {
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+.jf-auth-root .auth-provider-action { background: var(--surface-secondary) !important; }
+.jf-auth-root .auth-provider-action:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--surface-secondary) 78%, var(--primary-soft)) !important;
+}
+
+.jf-auth-root .auth-feedback-slot { min-height: 0 !important; }
+.jf-auth-root .auth-field-message:empty,
+.jf-auth-root .auth-feedback-slot:empty {
+  min-height: 0 !important;
+  padding: 0 !important;
+  display: none !important;
+}
+
+.jf-auth-root .auth-primary-action { box-shadow: none !important; }
+.jf-auth-root .auth-step-back,
+.jf-auth-root form > button.w-full.text-text-secondary {
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.jf-auth-root .auth-inline-field-action,
+.jf-auth-root .auth-password-toggle {
+  transform: none !important;
+  translate: 0 -50% !important;
+}
+
+.jf-auth-root .auth-password-toggle {
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+.jf-auth-root .auth-password-toggle:hover { background: var(--surface-soft) !important; }
+
+/* Phones. */
 @media (max-width: 759px) {
-  .jf-auth-root:not([data-auth-minimal="true"]) .jf-auth-card-body > div:last-child {
-    display: block;
+  .jf-auth-root {
+    --auth-header-height: 52px;
+    --auth-footer-height: 0px;
+    width: 100%;
+    height: 100dvh;
+    min-height: 100svh;
+    overflow: hidden;
   }
 
-  .jf-auth-root:not([data-auth-minimal="true"])
-    .jf-auth-card-body
-    > .mt-5.flex.items-start.justify-center {
-    display: none;
+  .jf-auth-root .jf-auth-header {
+    width: 100%;
+    height: var(--auth-header-height);
+    min-height: var(--auth-header-height);
+    padding: 0 12px !important;
+    border: 0 !important;
+    background: transparent !important;
+  }
+
+  .jf-auth-root .jf-auth-brand { gap: 9px; font-size: 14px !important; }
+  .jf-auth-root .jf-auth-brand-mark {
+    width: 34px;
+    height: 34px;
+    border: 0 !important;
+    border-radius: 11px;
+    background: var(--primary-soft) !important;
+    box-shadow: none !important;
+  }
+  .jf-auth-root .jf-auth-brand-mark svg { width: 19px; height: 19px; }
+
+  .jf-auth-root .jf-auth-home-link {
+    width: 38px;
+    min-width: 38px;
+    height: 38px;
+    min-height: 38px;
+    justify-content: center;
+    padding: 0 !important;
+    border: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+  .jf-auth-root .jf-auth-home-link span { display: none; }
+
+  .jf-auth-root .jf-auth-layout,
+  .jf-auth-root[data-auth-minimal="true"] .jf-auth-layout {
+    width: 100%;
+    min-height: 0;
+    flex: 1 1 auto;
+    place-items: center;
+    align-items: center !important;
+    padding: 8px 10px max(10px, env(safe-area-inset-bottom)) !important;
+    overflow: hidden;
+  }
+
+  .jf-auth-root .jf-auth-card,
+  .jf-auth-root[data-auth-minimal="true"] .jf-auth-card,
+  .jf-auth-root:not([data-auth-minimal="true"]) .jf-auth-card {
+    width: min(100%, 430px) !important;
+    max-width: 430px !important;
+    max-height: 100%;
+    min-width: 0;
+    padding: 15px !important;
+    border: 0 !important;
+    border-radius: 19px !important;
+    background: var(--surface-primary) !important;
+    box-shadow: 0 12px 34px rgb(0 0 0 / 0.13) !important;
+    overflow: hidden;
+  }
+
+  .jf-auth-root .jf-auth-card-head { margin-bottom: 12px !important; }
+  .jf-auth-root .jf-auth-card-meta { min-width: 0; margin-bottom: 6px !important; gap: 8px; }
+  .jf-auth-root .jf-auth-card-labels { min-width: 0; gap: 6px 12px !important; }
+
+  .jf-auth-root .auth-eyebrow,
+  .jf-auth-root .auth-progress {
+    min-height: auto !important;
+    padding: 0 !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    font-size: 10px !important;
+    letter-spacing: 0.075em !important;
+  }
+
+  .jf-auth-root .jf-auth-card-head h1 {
+    max-width: 100%;
+    font-size: clamp(22px, 6.6vw, 27px) !important;
+    font-weight: 680 !important;
+    letter-spacing: -0.04em !important;
+    line-height: 1.06 !important;
+  }
+  .jf-auth-root .jf-auth-card-head p { display: none !important; }
+
+  .jf-auth-root .jf-auth-card-body,
+  .jf-auth-root .auth-step,
+  .jf-auth-root .jf-auth-card-body form,
+  .jf-auth-root .auth-field,
+  .jf-auth-root .auth-field-control {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .jf-auth-root .jf-auth-card-body form > .auth-field + .auth-field,
+  .jf-auth-root .jf-auth-card-body form > .auth-field + label.auth-field,
+  .jf-auth-root .jf-auth-card-body form > label.auth-field + .auth-field,
+  .jf-auth-root .jf-auth-card-body form > label.auth-field + label.auth-field {
+    margin-top: 9px !important;
+  }
+
+  .jf-auth-root .auth-field-label {
+    margin-bottom: 4px !important;
+    font-size: 11px !important;
+    font-weight: 620 !important;
+    letter-spacing: 0.035em !important;
+  }
+
+  .jf-auth-root .auth-input,
+  .jf-auth-root .auth-primary-action,
+  .jf-auth-root .auth-provider-action {
+    min-height: 46px !important;
+    height: 46px;
+    border-radius: 12px !important;
+  }
+
+  .jf-auth-root .auth-input {
+    width: 100%;
+    padding-inline: 13px !important;
+    border: 1px solid transparent !important;
+    background: var(--surface-secondary) !important;
+    box-shadow: none !important;
+    font-size: 16px !important;
+    font-weight: 500 !important;
+    overflow: hidden;
+  }
+
+  .jf-auth-root .auth-input-with-start { padding-left: 43px !important; }
+  .jf-auth-root .auth-input-with-end { padding-right: 52px !important; }
+  .jf-auth-root .auth-input-with-inline-action { padding-right: 96px !important; }
+
+  .jf-auth-root .auth-input[readonly] {
+    min-width: 0;
+    padding-right: 96px !important;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 15px !important;
+  }
+
+  .jf-auth-root .auth-field-icon {
+    left: 13px !important;
+    transform: none !important;
+    translate: 0 -50% !important;
+  }
+  .jf-auth-root .auth-field-icon svg { width: 18px; height: 18px; }
+
+  .jf-auth-root .auth-inline-field-action {
+    top: 50% !important;
+    right: 7px !important;
+    width: auto !important;
+    min-width: 70px;
+    max-width: none !important;
+    min-height: 34px !important;
+    padding: 0 8px !important;
+    overflow: visible !important;
+    text-overflow: clip !important;
+    white-space: nowrap;
+    border: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    font-size: 12px !important;
+    line-height: 1 !important;
+    translate: 0 -50% !important;
+    transform: none !important;
+  }
+
+  .jf-auth-root .auth-password-toggle {
+    top: 50% !important;
+    right: 4px !important;
+    width: 38px !important;
+    height: 38px !important;
+    min-width: 38px !important;
+    min-height: 38px !important;
+    padding: 0 !important;
+    translate: 0 -50% !important;
+    transform: none !important;
+  }
+  .jf-auth-root .auth-password-toggle svg { width: 18px; height: 18px; }
+
+  .jf-auth-root .auth-field-message { min-height: 0 !important; padding-top: 3px !important; }
+  .jf-auth-root .auth-field-helper,
+  .jf-auth-root .auth-field-error { font-size: 10.5px !important; line-height: 1.35 !important; }
+
+  .jf-auth-root .auth-step-back {
+    width: fit-content !important;
+    min-height: 30px !important;
+    margin: 0 0 6px !important;
+    padding: 0 4px !important;
+    font-size: 12px !important;
+  }
+
+  .jf-auth-root .auth-text-action {
+    min-height: 30px !important;
+    padding: 0 3px !important;
+    font-size: 12px !important;
+  }
+
+  .jf-auth-root .auth-primary-action {
+    margin-top: 9px !important;
+    border: 0 !important;
+    font-size: 14px !important;
+    font-weight: 650 !important;
+  }
+
+  .jf-auth-root .auth-provider-action {
+    border: 0 !important;
+    background: var(--surface-secondary) !important;
+    box-shadow: none !important;
+    font-size: 14px !important;
+  }
+
+  .jf-auth-root .auth-divider { gap: 9px !important; margin: 10px 0 !important; }
+  .jf-auth-root .auth-divider strong { font-size: 10.5px !important; }
+
+  .jf-auth-root .auth-mode-switch {
+    gap: 3px 6px !important;
+    margin-top: 10px !important;
+    font-size: 12px !important;
+    line-height: 1.4 !important;
+  }
+  .jf-auth-root .auth-mode-switch button { margin-left: 0 !important; font-size: inherit !important; }
+
+  .jf-auth-root .auth-legal-copy {
+    margin-top: 6px !important;
+    font-size: 10px !important;
+    line-height: 1.35 !important;
+  }
+
+  .jf-auth-root .auth-password-requirements {
+    margin: 7px 0 0 !important;
+    padding: 8px 10px !important;
+    border: 0 !important;
+    border-radius: 11px !important;
+    background: var(--surface-secondary) !important;
+  }
+  .jf-auth-root .auth-password-requirements > div { font-size: 11px !important; }
+
+  .jf-auth-root .auth-feedback {
+    margin-top: 7px !important;
+    padding: 8px 10px !important;
+    border: 0 !important;
+    box-shadow: none !important;
+    font-size: 10.5px !important;
+  }
+
+  .jf-auth-root .auth-identity-summary {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 7px !important;
+    margin-bottom: 10px !important;
+  }
+  .jf-auth-root .auth-identity-summary > div {
+    padding: 8px 9px !important;
+    border: 0 !important;
+    background: var(--surface-secondary) !important;
+  }
+  .jf-auth-root .auth-identity-summary dd { font-size: 11px !important; }
+
+  .jf-auth-root [aria-label^="Onboarding progress"] { gap: 5px !important; margin-bottom: 10px !important; }
+  .jf-auth-root [aria-label^="Onboarding progress"] > span { height: 3px !important; }
+
+  .jf-auth-root:not([data-auth-minimal="true"]) .jf-auth-card-body > div > .grid:has(> article) {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 7px !important;
+  }
+
+  .jf-auth-root:not([data-auth-minimal="true"]) article {
+    min-width: 0;
+    padding: 9px !important;
+    border: 0 !important;
+    border-radius: 11px !important;
+    background: var(--surface-secondary) !important;
+    box-shadow: none !important;
+  }
+  .jf-auth-root:not([data-auth-minimal="true"]) article > span {
+    width: 22px !important;
+    height: 22px !important;
+    border: 0 !important;
+    background: transparent !important;
+  }
+  .jf-auth-root:not([data-auth-minimal="true"]) article > span svg { width: 17px !important; height: 17px !important; }
+  .jf-auth-root:not([data-auth-minimal="true"]) article h2 {
+    margin-top: 4px !important;
+    font-size: 11.5px !important;
+    line-height: 1.25 !important;
+  }
+  .jf-auth-root:not([data-auth-minimal="true"]) article p { display: none !important; }
+
+  .jf-auth-root:not([data-auth-minimal="true"]) .jf-auth-card-body > div > .grid:has(> article) + .auth-feedback {
+    display: none !important;
+  }
+
+  .jf-auth-root:not([data-auth-minimal="true"]) .jf-auth-card-body .grid:has(> button + button) {
+    grid-template-columns: auto minmax(0, 1fr) !important;
+    align-items: center;
+    gap: 7px !important;
+  }
+  .jf-auth-root:not([data-auth-minimal="true"]) .jf-auth-card-body .grid:has(> button + button) > button:first-child {
+    width: auto !important;
+    min-width: 74px !important;
+    min-height: 42px !important;
+    padding-inline: 8px !important;
+    border: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    font-size: 12px !important;
+  }
+  .jf-auth-root:not([data-auth-minimal="true"]) .jf-auth-card-body .grid:has(> button + button) > button:last-child {
+    min-width: 0;
+    min-height: 46px !important;
+    font-size: 14px !important;
+  }
+
+  .jf-auth-root:not([data-auth-minimal="true"]) .jf-auth-card-body > div:last-child { display: block; }
+  .jf-auth-root:not([data-auth-minimal="true"]) .jf-auth-card-body > .mt-5.flex.items-start.justify-center {
+    display: none !important;
+  }
+
+  .jf-auth-root .jf-auth-footer { display: none !important; }
+}
+
+/* Narrow phones. */
+@media (max-width: 420px) {
+  .jf-auth-root .jf-auth-brand span:last-child {
+    max-width: 190px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .jf-auth-root .jf-auth-card,
+  .jf-auth-root[data-auth-minimal="true"] .jf-auth-card,
+  .jf-auth-root:not([data-auth-minimal="true"]) .jf-auth-card {
+    padding: 14px !important;
+    border-radius: 17px !important;
+  }
+  .jf-auth-root .jf-auth-card-head h1 { font-size: clamp(22px, 7vw, 26px) !important; }
+  .jf-auth-root .auth-input-with-inline-action,
+  .jf-auth-root .auth-input[readonly] { padding-right: 92px !important; }
+  .jf-auth-root .auth-inline-field-action {
+    right: 5px !important;
+    min-width: 68px;
+    padding-inline: 6px !important;
+  }
+}
+
+/* Short phone viewports: compact rather than clip. */
+@media (max-width: 759px) and (max-height: 720px) {
+  .jf-auth-root { --auth-header-height: 48px; }
+  .jf-auth-root .jf-auth-brand-mark { width: 31px; height: 31px; }
+  .jf-auth-root .jf-auth-layout,
+  .jf-auth-root[data-auth-minimal="true"] .jf-auth-layout {
+    padding-top: 5px !important;
+    padding-bottom: max(6px, env(safe-area-inset-bottom)) !important;
+  }
+  .jf-auth-root .jf-auth-card,
+  .jf-auth-root[data-auth-minimal="true"] .jf-auth-card,
+  .jf-auth-root:not([data-auth-minimal="true"]) .jf-auth-card { padding-block: 12px !important; }
+  .jf-auth-root .jf-auth-card-head { margin-bottom: 9px !important; }
+  .jf-auth-root .jf-auth-card-meta { margin-bottom: 4px !important; }
+  .jf-auth-root .jf-auth-card-head h1 { font-size: clamp(21px, 6vw, 25px) !important; }
+  .jf-auth-root .auth-step-back { min-height: 27px !important; margin-bottom: 4px !important; }
+  .jf-auth-root .jf-auth-card-body form > .auth-field + .auth-field,
+  .jf-auth-root .jf-auth-card-body form > .auth-field + label.auth-field,
+  .jf-auth-root .jf-auth-card-body form > label.auth-field + .auth-field,
+  .jf-auth-root .jf-auth-card-body form > label.auth-field + label.auth-field { margin-top: 7px !important; }
+  .jf-auth-root .auth-input,
+  .jf-auth-root .auth-primary-action,
+  .jf-auth-root .auth-provider-action { min-height: 43px !important; height: 43px; }
+  .jf-auth-root .auth-primary-action { margin-top: 7px !important; }
+  .jf-auth-root .auth-password-requirements { margin-top: 6px !important; padding-block: 7px !important; }
+  .jf-auth-root .auth-divider { margin-block: 8px !important; }
+  .jf-auth-root .auth-mode-switch { margin-top: 7px !important; }
+  .jf-auth-root .auth-legal-copy,
+  .jf-auth-root .auth-field-helper { display: none !important; }
+}
+
+@media (max-width: 759px) and (max-height: 590px) {
+  .jf-auth-root .jf-auth-brand span:last-child,
+  .jf-auth-root .auth-eyebrow { display: none !important; }
+  .jf-auth-root .jf-auth-card {
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-width: none;
+  }
+  .jf-auth-root .jf-auth-card::-webkit-scrollbar { display: none; }
+  .jf-auth-root .jf-auth-card-head { margin-bottom: 7px !important; }
+  .jf-auth-root .jf-auth-card-head h1 { font-size: 20px !important; }
+  .jf-auth-root .auth-mode-switch { font-size: 11px !important; }
+  .jf-auth-root:not([data-auth-minimal="true"]) article { padding: 6px 8px !important; }
+  .jf-auth-root:not([data-auth-minimal="true"]) article > span { display: none !important; }
+  .jf-auth-root:not([data-auth-minimal="true"]) article h2 { margin-top: 0 !important; }
+}
+
+/* Tablets. */
+@media (min-width: 760px) and (max-width: 1023px) {
+  .jf-auth-root .jf-auth-layout { padding: 18px !important; }
+  .jf-auth-root .jf-auth-card,
+  .jf-auth-root:not([data-auth-minimal="true"]) .jf-auth-card {
+    width: min(100%, 650px) !important;
+    border: 0 !important;
+    box-shadow: 0 16px 42px rgb(0 0 0 / 0.12) !important;
+  }
+  .jf-auth-root[data-auth-minimal="true"] .jf-auth-card { width: min(100%, 470px) !important; }
+  .jf-auth-root:not([data-auth-minimal="true"]) .jf-auth-card-body > div > .grid:has(> article) {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .jf-auth-root *,
+  .jf-auth-root *::before,
+  .jf-auth-root *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
   }
 }
