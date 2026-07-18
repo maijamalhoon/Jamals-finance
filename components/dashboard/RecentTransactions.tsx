@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { type CSSProperties, useEffect, useMemo, useState } from "react";
 import { ArrowLeftRight, ArrowRight, ReceiptText } from "lucide-react";
 
 import { useCurrency } from "@/components/currency/CurrencyProvider";
@@ -30,7 +30,14 @@ interface TransactionCategory {
 
 interface Transaction {
   id: string;
-  type: "income" | "expense" | "investment" | "goal" | "refund" | "transfer" | string;
+  type:
+    | "income"
+    | "expense"
+    | "investment"
+    | "goal"
+    | "refund"
+    | "transfer"
+    | string;
   amount: number | string | null;
   note: string | null;
   date: string;
@@ -74,11 +81,21 @@ function getTransactionLabel(
 function Amount({ transaction }: { transaction: Transaction }) {
   const { formatCurrency } = useCurrency();
   const safeAmount = getRenderableTransactionAmount(transaction.amount);
+  const iconMeta = getTransactionIconMeta({
+    type: transaction.type,
+    note: transaction.note,
+    categoryName: transaction.categories?.name,
+    categoryIconKey: transaction.categories?.icon_key,
+    parentCategoryName: transaction.categories?.parent?.name,
+    sourceName: transaction.source_name,
+    itemName: transaction.item_name,
+  });
 
   return (
     <span
       className={`inline-flex min-w-0 items-baseline justify-end gap-0.5 whitespace-nowrap text-[12px] font-black tracking-[-0.018em] tabular-nums sm:text-[13px] ${getTransactionToneClass(
         transaction.type,
+        iconMeta.semanticType,
       )}`}
     >
       {safeAmount === null ? (
@@ -156,7 +173,9 @@ export default function RecentTransactions({
       }
 
       if (!goalResult.error) {
-        setGoalTransactions((goalResult.data ?? []) as unknown as Transaction[]);
+        setGoalTransactions(
+          (goalResult.data ?? []) as unknown as Transaction[],
+        );
       }
     }
 
@@ -260,9 +279,11 @@ export default function RecentTransactions({
               <article
                 key={`${transaction.type}:${transaction.id}`}
                 className="motion-table-row grid min-w-0 grid-cols-[34px_minmax(0,1fr)_auto] items-center gap-2.5 border-b border-border/45 py-3 first:pt-2 last:border-b-0 last:pb-0"
-                style={{
-                  "--motion-reveal-delay": `${index * 35}ms`,
-                } as React.CSSProperties}
+                style={
+                  {
+                    "--motion-reveal-delay": `${index * 35}ms`,
+                  } as CSSProperties
+                }
                 aria-label={`${label}, ${transaction.type}, ${transaction.amount}`}
               >
                 <span
