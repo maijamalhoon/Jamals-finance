@@ -1,10 +1,16 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
-import { BriefcaseBusiness, Loader2, Search, X } from "lucide-react";
+import {
+  type CSSProperties,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
+import { Loader2, Search, X } from "lucide-react";
 import { toast } from "sonner";
+
 import { createClient } from "@/lib/supabase/client";
-import AccountSelect from "@/components/accounts/AccountSelect";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import DatePicker from "@/components/ui/date-picker";
@@ -16,22 +22,17 @@ import {
   FinanceModalFooter,
   FinanceFormField,
   FinanceModalHeader,
-  financeCancelButtonClass,
   financeErrorClass,
   financeModalContentClass,
+  financePrimaryButtonClass,
 } from "@/components/ui/finance-modal";
 import { getUserMutationError } from "@/lib/user-errors";
 
-const TYPES = [
-  { value: "crypto", label: "Crypto" },
-  { value: "stocks", label: "Stocks" },
-  { value: "savings", label: "Savings" },
-  { value: "real_estate", label: "Real Estate" },
-  { value: "other", label: "Other" },
-];
+const INVESTMENT_ACTION_COLOR = "#6849B8";
 
 type MarketKind = "crypto" | "stock";
 type MarketProvider = "coingecko" | "alpha_vantage";
+type CurrencyCode = "PKR" | "USD";
 
 type MarketSearchResult = {
   id: string;
@@ -60,8 +61,6 @@ type SearchResponse = {
 type ExchangeRateResponse = {
   rate?: number;
 };
-
-type CurrencyCode = "PKR" | "USD";
 
 type Account = {
   id: string;
@@ -117,17 +116,6 @@ function formatUsd(value: number | null | undefined) {
   });
 }
 
-function formatMarketChange(asset: MarketSearchResult | null) {
-  const value =
-    asset?.kind === "crypto" ? asset.change24h : asset?.changePercent;
-
-  if (typeof value !== "number" || !Number.isFinite(value)) return null;
-
-  return `${value >= 0 ? "+" : ""}${value.toFixed(2)}%${
-    asset?.kind === "crypto" ? " 24h" : ""
-  }`;
-}
-
 function normalizeCurrency(value: string | null | undefined): CurrencyCode {
   return value === "USD" ? "USD" : "PKR";
 }
@@ -147,8 +135,43 @@ function getAssetInitials(name: string, symbol?: string | null) {
   const words = name.trim().split(/\s+/).filter(Boolean);
   if (words.length === 0) return "IN";
   if (words.length === 1) return words[0].slice(0, 2).toUpperCase();
-
   return `${words[0][0] ?? ""}${words[1][0] ?? ""}`.toUpperCase();
+}
+
+function CurrencyToggle({
+  value,
+  onChange,
+  disableUsd = false,
+}: {
+  value: CurrencyCode;
+  onChange: (value: CurrencyCode) => void;
+  disableUsd?: boolean;
+}) {
+  return (
+    <div className="grid grid-cols-2 rounded-[12px] border border-border bg-surface-secondary p-0.5">
+      {(["PKR", "USD"] as CurrencyCode[]).map((currency) => {
+        const disabled = currency === "USD" && disableUsd;
+        const active = value === currency;
+
+        return (
+          <button
+            key={currency}
+            type="button"
+            onClick={() => onChange(currency)}
+            disabled={disabled}
+            aria-pressed={active}
+            className={`finance-focus min-h-9 min-w-12 rounded-[9px] px-2 text-[10px] font-black transition-colors disabled:cursor-not-allowed disabled:opacity-35 ${
+              active
+                ? "bg-card text-text-primary shadow-theme"
+                : "text-text-secondary hover:text-text-primary"
+            }`}
+          >
+            {currency}
+          </button>
+        );
+      })}
+    </div>
+  );
 }
 
 export interface ExistingInvestment {
@@ -188,18 +211,19 @@ export default function InvestmentModal({
   investment,
 }: Props) {
   const supabase = useMemo(() => createClient(), []);
-  const isEditing = !!investment;
+  const isEditing = Boolean(investment);
   const searchContainerRef = useRef<HTMLDivElement>(null);
 
   const [name, setName] = useState("");
   const [type, setType] = useState("crypto");
   const [quantity, setQuantity] = useState("");
   const [purchasePrice, setPurchasePrice] = useState("");
-  const [purchaseCurrency, setPurchaseCurrency] = useState<CurrencyCode>("PKR");
+  const [purchaseCurrency, setPurchaseCurrency] =
+    useState<CurrencyCode>("PKR");
   const [currentPrice, setCurrentPrice] = useState("");
-  const [currentPriceOriginal, setCurrentPriceOriginal] = useState<number | null>(
-    null,
-  );
+  const [currentPriceOriginal, setCurrentPriceOriginal] = useState<
+    number | null
+  >(null);
   const [currentPriceCurrency, setCurrentPriceCurrency] =
     useState<CurrencyCode>("PKR");
   const [purchasedAt, setPurchasedAt] = useState(getAppDateKey());
@@ -211,14 +235,13 @@ export default function InvestmentModal({
   const [priceChange24h, setPriceChange24h] = useState<number | null>(null);
   const [isLivePriced, setIsLivePriced] = useState(false);
   const [accountId, setAccountId] = useState("");
-  const [accounts, setAccounts] = useState<Account[]>([]);
+  const [, setAccounts] = useState<Account[]>([]);
   const [loadingOptions, setLoadingOptions] = useState(false);
   const [manualMode, setManualMode] = useState(false);
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<MarketSearchResult[]>([]);
-  const [selectedAsset, setSelectedAsset] = useState<MarketSearchResult | null>(
-    null,
-  );
+  const [selectedAsset, setSelectedAsset] =
+    useState<MarketSearchResult | null>(null);
   const [searchFocused, setSearchFocused] = useState(false);
   const [searchLoading, setSearchLoading] = useState(false);
   const [searchError, setSearchError] = useState("");
@@ -242,14 +265,14 @@ export default function InvestmentModal({
     !manualMode;
   const marketPricePkr = selectedAsset?.pricePkr ?? parseNumber(currentPrice);
   const marketPriceUsd = selectedAsset?.priceUsd ?? currentPriceOriginal;
-  const marketSourceLabel =
-    priceSource === "alpha_vantage"
-      ? "Latest quote via Alpha Vantage"
-      : "Live via CoinGecko";
-  const marketPriceLabel =
-    priceSource === "alpha_vantage"
-      ? "Current market quote"
-      : "Current live price";
+  const displayedCurrentPrice = marketPricedSelected
+    ? currentPriceCurrency === "USD"
+      ? currentPriceOriginal === null
+        ? ""
+        : String(currentPriceOriginal)
+      : currentPrice
+    : currentPrice;
+
   const groupedResults = useMemo(
     () => [
       {
@@ -257,7 +280,7 @@ export default function InvestmentModal({
         items: results.filter((result) => result.kind === "crypto"),
       },
       {
-        label: "International Stocks",
+        label: "Stocks",
         items: results.filter((result) => result.kind === "stock"),
       },
     ],
@@ -266,8 +289,11 @@ export default function InvestmentModal({
 
   useEffect(() => {
     if (!open) return;
+
     if (investment) {
-      const savedPurchaseCurrency = normalizeCurrency(investment.purchase_currency);
+      const savedPurchaseCurrency = normalizeCurrency(
+        investment.purchase_currency,
+      );
       const savedCurrentCurrency = normalizeCurrency(
         investment.current_price_currency,
       );
@@ -277,7 +303,9 @@ export default function InvestmentModal({
       setType(investment.type);
       setQuantity(String(investment.quantity));
       setPurchasePrice(
-        savedPurchaseCurrency === "USD" && investment.purchase_price_original
+        savedPurchaseCurrency === "USD" &&
+          investment.purchase_price_original !== null &&
+          investment.purchase_price_original !== undefined
           ? String(investment.purchase_price_original)
           : String(investment.purchase_price),
       );
@@ -321,11 +349,12 @@ export default function InvestmentModal({
       setQuery("");
       setSelectedAsset(null);
     }
+
     setResults([]);
     setSearchFocused(false);
     setSearchError("");
     setError("");
-  }, [open, investment]);
+  }, [investment, open]);
 
   useEffect(() => {
     if (!open) return;
@@ -341,20 +370,18 @@ export default function InvestmentModal({
         .eq("status", "active")
         .order("name");
 
-      const linkedTransactionRequest =
-        investment?.id
-          ? supabase
-              .from("transactions")
-              .select("account_id")
-              .eq("investment_id", investment.id)
-              .maybeSingle()
-          : Promise.resolve({ data: null, error: null });
+      const linkedTransactionRequest = investment?.id
+        ? supabase
+            .from("transactions")
+            .select("account_id")
+            .eq("investment_id", investment.id)
+            .maybeSingle()
+        : Promise.resolve({ data: null, error: null });
 
       const [{ data: accountRows, error: accountsError }, linkedTransaction] =
         await Promise.all([accountsRequest, linkedTransactionRequest]);
 
       if (cancelled) return;
-
       setLoadingOptions(false);
 
       if (accountsError) {
@@ -374,16 +401,14 @@ export default function InvestmentModal({
       setAccounts(nextAccounts);
       setAccountId((current) => {
         const preferred = linkedAccountId || current;
-
         if (nextAccounts.some((account) => account.id === preferred)) {
           return preferred;
         }
-
         return nextAccounts[0]?.id ?? "";
       });
     }
 
-    loadOptions();
+    void loadOptions();
 
     return () => {
       cancelled = true;
@@ -433,9 +458,7 @@ export default function InvestmentModal({
             : "Asset search is unavailable.",
         );
       } finally {
-        if (!controller.signal.aborted) {
-          setSearchLoading(false);
-        }
+        if (!controller.signal.aborted) setSearchLoading(false);
       }
     }, 350);
 
@@ -458,7 +481,6 @@ export default function InvestmentModal({
     }
 
     document.addEventListener("pointerdown", handlePointerDown);
-
     return () => document.removeEventListener("pointerdown", handlePointerDown);
   }, [isEditing, manualMode, open]);
 
@@ -494,9 +516,11 @@ export default function InvestmentModal({
   function handleManualMode() {
     setManualMode(true);
     setName((current) => current || query.trim());
+    setType("other");
     setPurchaseCurrency("PKR");
     setCurrentPriceCurrency("PKR");
     clearMarketSelection();
+    setCurrentPrice("");
     setResults([]);
     setSearchFocused(false);
     setSearchError("");
@@ -535,8 +559,10 @@ export default function InvestmentModal({
         ? "USD"
         : "PKR",
     );
-    setCurrentPrice(hasQuote && asset.pricePkr ? asset.pricePkr.toFixed(2) : "");
-    setPurchaseCurrency(asset.kind === "stock" ? "USD" : purchaseCurrency);
+    setCurrentPrice(
+      hasQuote && asset.pricePkr ? String(asset.pricePkr) : "",
+    );
+    setPurchaseCurrency(asset.kind === "stock" ? "USD" : "PKR");
     setQuery(asset.name);
     setSearchFocused(false);
     setResults([]);
@@ -545,18 +571,12 @@ export default function InvestmentModal({
 
   function handleClearSearch() {
     setQuery("");
+    setName("");
     clearMarketSelection();
+    setCurrentPrice("");
     setResults([]);
     setSearchError("");
     setSearchFocused(false);
-  }
-
-  function handleTypeChange(nextType: string) {
-    setType(nextType);
-
-    if (!isEditing || nextType !== "crypto") {
-      clearMarketSelection();
-    }
   }
 
   async function handleSave() {
@@ -569,44 +589,40 @@ export default function InvestmentModal({
     const purchaseDate = purchasedAt.trim();
 
     if (!assetName) {
-      setError("Enter an asset name.");
+      setError("Enter or select an asset.");
       return;
     }
-
     if (parsedQuantity === null || parsedQuantity <= 0) {
       setError("Enter a quantity greater than 0.");
       return;
     }
-
     if (parsedPurchasePrice === null || parsedPurchasePrice <= 0) {
-      setError("Enter a buy price greater than 0.");
+      setError("Enter a buying price greater than 0.");
       return;
     }
-
-    if (!marketPricedSelected && parsedCurrentPrice !== null && parsedCurrentPrice <= 0) {
+    if (
+      !marketPricedSelected &&
+      parsedCurrentPrice !== null &&
+      parsedCurrentPrice <= 0
+    ) {
       setError("Enter a current price greater than 0, or leave it blank.");
       return;
     }
-
     if (!accountId) {
-      setError("Choose the account used to buy this investment.");
+      setError("Add an account before adding an investment.");
       return;
     }
-
     if (!isValidDateKey(purchaseDate)) {
       setError("Enter a valid purchase date.");
       return;
     }
-
     if (
       marketPricedSelected &&
       (typeof marketPricePkr !== "number" ||
         !Number.isFinite(marketPricePkr) ||
         marketPricePkr <= 0)
     ) {
-      setError(
-        "Market price is unavailable for this asset. Enter a manual current price or choose another asset.",
-      );
+      setError("The current market price is unavailable. Choose another asset or add it manually.");
       return;
     }
 
@@ -620,7 +636,6 @@ export default function InvestmentModal({
         currentPriceCurrency === "USD");
 
     let usdPkrRate = 1;
-
     if (needsUsdConversion) {
       try {
         usdPkrRate = await getUsdPkrRateForSave();
@@ -642,7 +657,7 @@ export default function InvestmentModal({
 
     if (!Number.isFinite(purchasePricePkr) || purchasePricePkr <= 0) {
       setLoading(false);
-      setError("Buy price could not be converted safely. Try again.");
+      setError("Buying price could not be converted safely. Try again.");
       return;
     }
 
@@ -702,11 +717,15 @@ export default function InvestmentModal({
 
     if (saveError) {
       setError(
-        getUserMutationError(saveError, "Investment could not be saved. Try again."),
+        getUserMutationError(
+          saveError,
+          "Investment could not be saved. Try again.",
+        ),
       );
       toast.error("Failed to save investment");
       return;
     }
+
     toast.success(isEditing ? "Investment updated!" : "Investment added!");
     onSuccess();
     onClose();
@@ -729,169 +748,135 @@ export default function InvestmentModal({
 
   return (
     <Dialog open={open} onOpenChange={(nextOpen) => !nextOpen && onClose()}>
-      <DialogContent className={`${financeModalContentClass} sm:[--finance-modal-max-width:32rem]`}>
+      <DialogContent
+        className={`${financeModalContentClass} sm:[--finance-modal-max-width:32rem] sm:max-w-lg`}
+        style={
+          {
+            "--finance-action": INVESTMENT_ACTION_COLOR,
+          } as CSSProperties
+        }
+      >
         <FinanceModalHeader
-          title={isEditing ? "Edit Investment" : "Add Investment"}
-          description="Enter asset details, pricing, and purchase date."
-          icon={BriefcaseBusiness}
-          tone="investment"
+          title={isEditing ? "Edit Investment" : "Investment"}
         />
 
         <FinanceModalBody>
           {!isEditing && !manualMode ? (
-            <div className="space-y-3">
-              <div ref={searchContainerRef} className="relative">
-                <label className="field-label" htmlFor="investment-asset-search">
-                  Search Asset
-                </label>
-                <div className="relative">
-                  <Search
-                    aria-hidden="true"
-                    className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-text-secondary"
-                  />
-                  <Input
-                    id="investment-asset-search"
-                    value={query}
-                    onChange={(event) => {
-                      setQuery(event.target.value);
-                      setSearchFocused(true);
-                      if (selectedAsset || assetId) clearMarketSelection();
-                    }}
-                    onFocus={() => setSearchFocused(true)}
-                    onKeyDown={(event) => {
-                      if (event.key === "Escape") {
-                        setSearchFocused(false);
-                      }
-                    }}
-                    placeholder="Search crypto or stocks e.g. Bitcoin, Apple, AAPL"
-                    className="field-input pl-9 pr-10"
-                    autoComplete="off"
-                  />
-                  {query ? (
-                    <button
-                      type="button"
-                      onClick={handleClearSearch}
-                      className="finance-focus absolute right-0 top-1/2 grid h-11 w-11 -translate-y-1/2 place-items-center rounded-full text-text-secondary transition-colors hover:bg-hover hover:text-text-primary"
-                      aria-label="Clear asset search"
-                    >
-                      <X className="h-3.5 w-3.5" />
-                    </button>
-                  ) : null}
-                </div>
-
-                {showSearchDropdown ? (
-                  <div className="absolute left-0 right-0 top-[calc(100%+0.35rem)] z-40 rounded-[16px] border border-border bg-card p-1.5 shadow-premium">
-                    {searchLoading ? (
-                      <div className="flex items-center justify-center gap-2 px-2 py-4 text-xs font-medium text-text-secondary">
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                        Searching assets...
-                      </div>
-                    ) : results.length === 0 ? (
-                      <div className="px-2 py-4 text-center text-xs">
-                        <p className="text-text-secondary">No assets found.</p>
-                        {searchError ? (
-                          <p className="mt-1 text-danger">{searchError}</p>
-                        ) : null}
-                      </div>
-                    ) : (
-                      <div className="max-h-[286px] overflow-y-auto pr-1">
-                        {groupedResults.map((group) =>
-                          group.items.length > 0 ? (
-                            <div key={group.label} className="py-1">
-                              <p className="px-2 pb-1 text-[10px] font-bold uppercase tracking-[0.16em] text-text-secondary">
-                                {group.label}
-                              </p>
-                              {group.items.map((asset) => {
-                                const changeText = formatMarketChange(asset);
-                                const changeValue =
-                                  asset.kind === "crypto"
-                                    ? asset.change24h
-                                    : asset.changePercent;
-                                const isPositive =
-                                  typeof changeValue === "number" &&
-                                  changeValue >= 0;
-
-                                return (
-                                  <button
-                                    key={`${asset.kind}-${asset.id}`}
-                                    type="button"
-                                    onClick={() => handleSelectAsset(asset)}
-                                    className="finance-focus flex w-full items-center gap-3 rounded-[12px] px-2.5 py-2.5 text-left transition-colors hover:bg-hover"
-                                  >
-                                    {renderAssetAvatar(asset)}
-                                    <span className="min-w-0 flex-1">
-                                      <span className="flex min-w-0 items-center gap-2">
-                                        <span className="truncate text-sm font-semibold text-text-primary">
-                                          {asset.name}
-                                        </span>
-                                        <span className="text-[11px] font-bold uppercase text-text-secondary">
-                                          {asset.symbol}
-                                        </span>
-                                      </span>
-                                      <span className="mt-0.5 flex flex-wrap items-center gap-2 text-[11px] text-text-secondary">
-                                        <span>{formatPkr(asset.pricePkr)}</span>
-                                        <span>{formatUsd(asset.priceUsd)}</span>
-                                        {changeText ? (
-                                          <span
-                                            className={
-                                              isPositive
-                                                ? "text-success"
-                                                : "text-danger"
-                                            }
-                                          >
-                                            {changeText}
-                                          </span>
-                                        ) : null}
-                                      </span>
-                                    </span>
-                                    <span className="rounded-full border border-border bg-surface-secondary px-2 py-0.5 text-[10px] font-bold uppercase text-text-secondary">
-                                      {asset.kind === "crypto" ? "Crypto" : "Stock"}
-                                    </span>
-                                  </button>
-                                );
-                              })}
-                            </div>
-                          ) : null,
-                        )}
-                        {searchError ? (
-                          <p className="px-2 py-2 text-[11px] text-warning">
-                            {searchError}
-                          </p>
-                        ) : null}
-                      </div>
-                    )}
-                  </div>
+            <div ref={searchContainerRef} className="relative">
+              <label className="field-label" htmlFor="investment-asset-search">
+                Search Asset
+              </label>
+              <div className="relative">
+                <Search
+                  aria-hidden="true"
+                  className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-text-secondary"
+                />
+                <Input
+                  id="investment-asset-search"
+                  value={query}
+                  onChange={(event) => {
+                    setQuery(event.target.value);
+                    setSearchFocused(true);
+                    if (selectedAsset || assetId) {
+                      clearMarketSelection();
+                      setCurrentPrice("");
+                    }
+                  }}
+                  onFocus={() => setSearchFocused(true)}
+                  onKeyDown={(event) => {
+                    if (event.key === "Escape") setSearchFocused(false);
+                  }}
+                  placeholder="Search crypto or stocks"
+                  className="pl-9 pr-10"
+                  autoComplete="off"
+                />
+                {query ? (
+                  <button
+                    type="button"
+                    onClick={handleClearSearch}
+                    className="finance-focus absolute right-0 top-1/2 grid h-11 w-11 -translate-y-1/2 place-items-center rounded-full text-text-secondary transition-colors hover:bg-hover hover:text-text-primary"
+                    aria-label="Clear asset search"
+                  >
+                    <X className="h-3.5 w-3.5" />
+                  </button>
                 ) : null}
               </div>
 
               <button
                 type="button"
                 onClick={handleManualMode}
-                className="finance-focus inline-flex min-h-11 items-center rounded-[var(--radius-button)] text-xs font-semibold text-active transition-colors hover:text-active-hover"
+                className="finance-focus mt-1.5 inline-flex min-h-8 items-center text-[11px] font-semibold text-active hover:text-active-hover"
               >
-                Can't find asset? Add manually
+                Can&apos;t find it? Add manually
               </button>
+
+              {showSearchDropdown ? (
+                <div className="absolute left-0 right-0 top-[calc(100%+0.35rem)] z-40 rounded-[16px] border border-border bg-card p-1.5 shadow-premium">
+                  {searchLoading ? (
+                    <div className="flex items-center justify-center gap-2 px-2 py-4 text-xs font-medium text-text-secondary">
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      Searching assets…
+                    </div>
+                  ) : results.length === 0 ? (
+                    <div className="px-2 py-4 text-center text-xs text-text-secondary">
+                      {searchError || "No assets found."}
+                    </div>
+                  ) : (
+                    <div className="max-h-64 overflow-y-auto pr-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                      {groupedResults.map((group) =>
+                        group.items.length ? (
+                          <div key={group.label} className="py-1">
+                            <p className="px-2 pb-1 text-[10px] font-bold uppercase tracking-[0.14em] text-text-secondary">
+                              {group.label}
+                            </p>
+                            {group.items.map((asset) => (
+                              <button
+                                key={`${asset.kind}-${asset.id}`}
+                                type="button"
+                                onClick={() => handleSelectAsset(asset)}
+                                className="finance-focus flex w-full items-center gap-3 rounded-[12px] px-2.5 py-2 text-left transition-colors hover:bg-hover"
+                              >
+                                {renderAssetAvatar(asset)}
+                                <span className="min-w-0 flex-1">
+                                  <span className="block truncate text-sm font-semibold text-text-primary">
+                                    {asset.name}
+                                  </span>
+                                  <span className="mt-0.5 flex gap-2 text-[10px] text-text-secondary">
+                                    <span>{asset.symbol}</span>
+                                    <span>{formatPkr(asset.pricePkr)}</span>
+                                    <span>{formatUsd(asset.priceUsd)}</span>
+                                  </span>
+                                </span>
+                              </button>
+                            ))}
+                          </div>
+                        ) : null,
+                      )}
+                    </div>
+                  )}
+                </div>
+              ) : null}
             </div>
           ) : (
             <FinanceFormField label="Asset Name" htmlFor="investment-name">
               <Input
                 id="investment-name"
                 value={name}
-                onChange={(event) => {
-                  setName(event.target.value);
-                  if (!isEditing) clearMarketSelection();
-                }}
-                placeholder="e.g. Bitcoin, Apple Stock"
+                onChange={(event) => setName(event.target.value)}
+                placeholder="e.g. Gold, property, private business"
               />
               {!isEditing ? (
                 <button
                   type="button"
                   onClick={() => {
                     setManualMode(false);
+                    setName("");
                     setQuery("");
+                    setType("crypto");
                     clearMarketSelection();
+                    setCurrentPrice("");
                   }}
-                  className="finance-focus mt-2 inline-flex min-h-11 items-center rounded-[var(--radius-button)] text-xs font-semibold text-active transition-colors hover:text-active-hover"
+                  className="finance-focus mt-1.5 inline-flex min-h-8 items-center text-[11px] font-semibold text-active hover:text-active-hover"
                 >
                   Search crypto or stocks instead
                 </button>
@@ -899,236 +884,82 @@ export default function InvestmentModal({
             </FinanceFormField>
           )}
 
-          {selectedAsset ? (
-            <div className="rounded-[18px] border border-success/25 bg-success/10 p-3">
-              <div className="flex items-start gap-3">
-                {selectedAsset.logoUrl ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={selectedAsset.logoUrl}
-                    alt=""
-                    className="h-10 w-10 flex-shrink-0 rounded-full"
-                  />
-                ) : (
-                  <span className="grid h-10 w-10 flex-shrink-0 place-items-center rounded-full bg-surface-secondary text-xs font-bold text-active">
-                    {getAssetInitials(selectedAsset.name, selectedAsset.symbol)}
-                  </span>
-                )}
-                <div className="min-w-0 flex-1">
-                  <div className="flex min-w-0 items-start justify-between gap-3">
-                    <div className="min-w-0">
-                      <p className="truncate text-sm font-semibold text-text-primary">
-                        {selectedAsset.name}{" "}
-                        <span className="text-xs uppercase text-text-secondary">
-                          {selectedAsset.symbol}
-                        </span>
-                      </p>
-                      <div className="mt-1 flex flex-wrap items-center gap-2">
-                        <span className="rounded-full border border-border bg-card px-2 py-0.5 text-[10px] font-bold uppercase text-text-secondary">
-                          {selectedAsset.kind === "crypto" ? "Crypto" : "Stock"}
-                        </span>
-                        <p className="text-[11px] font-medium text-text-secondary">
-                          {selectedAsset.sourceLabel}
-                        </p>
-                      </div>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setSearchFocused(true);
-                        setQuery("");
-                        clearMarketSelection();
-                      }}
-                      className="finance-focus min-h-11 rounded-full border border-border bg-card px-2.5 py-1 text-[11px] font-semibold text-text-primary transition-colors hover:bg-hover"
-                    >
-                      Change
-                    </button>
-                  </div>
-                  <div className="mt-2 flex flex-wrap items-end gap-x-3 gap-y-1">
-                    <span className="text-sm font-bold text-text-primary">
-                      {formatPkr(selectedAsset.pricePkr)}
-                    </span>
-                    <span className="text-[11px] text-text-secondary">
-                      {formatUsd(selectedAsset.priceUsd)}
-                    </span>
-                    {formatMarketChange(selectedAsset) ? (
-                      <span
-                        className={`text-[11px] font-semibold ${
-                          Number(
-                            selectedAsset.change24h ??
-                              selectedAsset.changePercent ??
-                              0,
-                          ) >= 0
-                            ? "text-success"
-                            : "text-danger"
-                        }`}
-                      >
-                        {formatMarketChange(selectedAsset)}
-                      </span>
-                    ) : null}
-                  </div>
-                  {!hasPkrPrice(selectedAsset) ? (
-                    <p className="mt-2 text-[11px] text-warning">
-                      Quote unavailable. Enter a manual current price below.
-                    </p>
-                  ) : null}
-                </div>
-              </div>
-            </div>
-          ) : null}
-
-          {(manualMode || isEditing) && (
-            <div>
-              <label className="field-label">Type</label>
-              <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-                {TYPES.map((item) => (
-                  <button
-                    key={item.value}
-                    type="button"
-                    onClick={() => handleTypeChange(item.value)}
-                    aria-pressed={type === item.value}
-                    className={`finance-focus min-h-11 rounded-[16px] border px-3 py-2 text-sm font-semibold transition-colors ${
-                      type === item.value
-                        ? "border-border bg-card text-text-primary shadow-theme"
-                        : "border-border bg-surface-secondary text-text-secondary hover:bg-hover hover:text-text-primary"
-                    }`}
-                  >
-                    {item.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
+          <FinanceFormField label="Quantity" htmlFor="investment-quantity">
+            <Input
+              id="investment-quantity"
+              type="number"
+              inputMode="decimal"
+              min="0"
+              step="any"
+              value={quantity}
+              onChange={(event) => setQuantity(event.target.value)}
+              placeholder="1"
+              className="font-semibold tabular-nums"
+            />
+          </FinanceFormField>
 
           <div className="grid gap-3 sm:grid-cols-2">
-            <FinanceFormField label="Quantity" htmlFor="investment-quantity">
-              <Input
-                id="investment-quantity"
-                type="number"
-                value={quantity}
-                onChange={(e) => setQuantity(e.target.value)}
-                placeholder="1"
-              />
-            </FinanceFormField>
             <div>
               <div className="mb-1.5 flex items-center justify-between gap-2">
-                <label className="field-label mb-0" htmlFor="investment-purchase-price">
-                  Buy Price ({purchaseCurrency})
+                <label
+                  className="field-label mb-0"
+                  htmlFor="investment-purchase-price"
+                >
+                  Buying Price
                 </label>
-                <div className="grid grid-cols-2 rounded-full border border-border bg-surface-secondary p-0.5">
-                  {(["PKR", "USD"] as CurrencyCode[]).map((currency) => (
-                    <button
-                      key={currency}
-                      type="button"
-                      onClick={() => setPurchaseCurrency(currency)}
-                      aria-pressed={purchaseCurrency === currency}
-                      className={`finance-focus min-h-11 min-w-11 rounded-full px-2 py-1 text-[10px] font-bold transition-colors ${
-                        purchaseCurrency === currency
-                          ? "bg-card text-text-primary shadow-theme"
-                          : "text-text-secondary hover:text-text-primary"
-                      }`}
-                    >
-                      {currency}
-                    </button>
-                  ))}
-                </div>
+                <CurrencyToggle
+                  value={purchaseCurrency}
+                  onChange={setPurchaseCurrency}
+                />
               </div>
               <Input
                 id="investment-purchase-price"
                 type="number"
+                inputMode="decimal"
+                min="0"
+                step="any"
                 value={purchasePrice}
-                onChange={(e) => setPurchasePrice(e.target.value)}
+                onChange={(event) => setPurchasePrice(event.target.value)}
                 placeholder="0"
+                className="font-semibold tabular-nums"
               />
             </div>
-          </div>
 
-          {marketPricedSelected ? (
-            <div className="rounded-[18px] border border-border bg-surface-secondary p-3">
-              <div className="flex items-center justify-between gap-3">
-                <div>
-                  <p className="text-[11px] font-medium text-text-secondary">
-                    {marketPriceLabel}
-                  </p>
-                  <p className="mt-1 text-sm font-bold text-text-primary">
-                    {formatPkr(marketPricePkr)}
-                  </p>
-                  <p className="mt-0.5 text-[11px] text-text-secondary">
-                    {formatUsd(marketPriceUsd)}
-                  </p>
-                </div>
-                {priceChange24h !== null ? (
-                  <span
-                    className={`rounded-full border px-2.5 py-1 text-[11px] font-bold ${
-                      Number(priceChange24h) >= 0
-                        ? "border-success/25 bg-success/10 text-success"
-                        : "border-danger/25 bg-danger/10 text-danger"
-                    }`}
-                  >
-                    {priceChange24h >= 0 ? "+" : ""}
-                    {priceChange24h.toFixed(2)}%
-                    {priceSource === "coingecko" ? " 24h" : ""}
-                  </span>
-                ) : null}
-              </div>
-              <p className="mt-2 text-[11px] text-text-secondary">
-                {marketSourceLabel}. This value is saved in {BASE_CURRENCY} for portfolio math.
-              </p>
-            </div>
-          ) : (
             <div>
               <div className="mb-1.5 flex items-center justify-between gap-2">
-                <label className="field-label mb-0" htmlFor="investment-current-price">
-                  Current Price ({currentPriceCurrency})
+                <label
+                  className="field-label mb-0"
+                  htmlFor="investment-current-price"
+                >
+                  Current Price
                 </label>
-                <div className="grid grid-cols-2 rounded-full border border-border bg-surface-secondary p-0.5">
-                  {(["PKR", "USD"] as CurrencyCode[]).map((currency) => (
-                    <button
-                      key={currency}
-                      type="button"
-                      onClick={() => setCurrentPriceCurrency(currency)}
-                      aria-pressed={currentPriceCurrency === currency}
-                      className={`finance-focus min-h-11 min-w-11 rounded-full px-2 py-1 text-[10px] font-bold transition-colors ${
-                        currentPriceCurrency === currency
-                          ? "bg-card text-text-primary shadow-theme"
-                          : "text-text-secondary hover:text-text-primary"
-                      }`}
-                    >
-                      {currency}
-                    </button>
-                  ))}
-                </div>
+                <CurrencyToggle
+                  value={currentPriceCurrency}
+                  onChange={setCurrentPriceCurrency}
+                  disableUsd={
+                    marketPricedSelected && currentPriceOriginal === null
+                  }
+                />
               </div>
               <Input
                 id="investment-current-price"
                 type="number"
-                value={currentPrice}
+                inputMode="decimal"
+                min="0"
+                step="any"
+                value={displayedCurrentPrice}
                 onChange={(event) => {
+                  if (marketPricedSelected) return;
                   setCurrentPrice(event.target.value);
-                  if (!isEditing && manualMode) clearMarketSelection();
                 }}
-                placeholder="Leave blank to match buy price"
+                readOnly={marketPricedSelected}
+                placeholder="Leave blank to match buying price"
+                className="font-semibold tabular-nums read-only:bg-surface-secondary read-only:text-text-secondary"
               />
             </div>
-          )}
+          </div>
 
-          <FinanceFormField label="Paid From Account">
-            <AccountSelect
-              value={accountId}
-              onValueChange={setAccountId}
-              accounts={accounts}
-              loading={loadingOptions}
-              placeholder="Select account"
-              emptyText="Add an account before buying investments"
-            />
-            {isEditing ? (
-              <p className="mt-2 text-[11px] leading-4 text-text-secondary">
-                This keeps the linked purchase transaction and account balance in sync.
-              </p>
-            ) : null}
-          </FinanceFormField>
-
-          <FinanceFormField label="Purchase Date" htmlFor="investment-purchased-at">
+          <FinanceFormField label="Date" htmlFor="investment-purchased-at">
             <DatePicker
               id="investment-purchased-at"
               value={purchasedAt}
@@ -1138,25 +969,18 @@ export default function InvestmentModal({
             />
           </FinanceFormField>
 
-          {error && <p className={financeErrorClass}>{error}</p>}
+          {error ? <p className={financeErrorClass}>{error}</p> : null}
         </FinanceModalBody>
 
         <FinanceModalFooter>
-          <Button
-            type="button"
-            onClick={onClose}
-            disabled={loading}
-            className={financeCancelButtonClass}
-          >
-            Cancel
-          </Button>
           <Button
             type="button"
             onClick={handleSave}
             disabled={loading || loadingOptions}
             loading={loading}
             loadingLabel="Saving investment…"
-            className="primary-action py-3"
+            className={financePrimaryButtonClass}
+            style={{ background: INVESTMENT_ACTION_COLOR }}
           >
             {isEditing ? "Update Investment" : "Add Investment"}
           </Button>
