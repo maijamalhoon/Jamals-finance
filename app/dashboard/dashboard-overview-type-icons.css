@@ -1,0 +1,101 @@
+/*
+ * Dashboard overview typography and icon system.
+ *
+ * This file is deliberately scoped to `.dashboard-overview`, the root of the
+ * main dashboard page. It must not affect nested dashboard routes, settings,
+ * forms, the landing page, authored sizes, card geometry, data, or motion.
+ */
+
+.dashboard-overview {
+  font-family: var(--font-sans);
+  font-weight: 400;
+  font-kerning: normal;
+  font-synthesis: none;
+  text-rendering: geometricPrecision;
+}
+
+/* Headings: Geist Sans 650–700. Use 700 for consistent rendering. */
+.dashboard-overview :where(h1, h2, h3, h4, h5, h6, [role="heading"]),
+.dashboard-overview :where(
+    .dashboard-metric-card-title,
+    .dashboard-card-title,
+    .dashboard-section-title,
+    .dashboard-list-card-title
+  ) {
+  font-family: var(--font-sans);
+  font-weight: 700;
+}
+
+/* Keep existing utility intent inside the requested dashboard weight ranges. */
+.dashboard-overview :where(.font-black, .font-extrabold, .font-bold) {
+  font-weight: 700;
+}
+
+.dashboard-overview :where(.font-semibold) {
+  font-weight: 600;
+}
+
+.dashboard-overview :where(.font-medium) {
+  font-weight: 500;
+}
+
+.dashboard-overview :where(.font-normal) {
+  font-weight: 400;
+}
+
+/* Buttons and labels: Geist Sans 550–650. */
+.dashboard-overview :where(
+    button,
+    label,
+    summary,
+    [role="button"],
+    [role="tab"],
+    [role="menuitem"],
+    [role="option"],
+    .dashboard-card-action,
+    .dashboard-list-card-action,
+    .dashboard-quick-action-label,
+    [class*="label"],
+    [class*="kicker"],
+    [class*="eyebrow"]
+  ) {
+  font-family: var(--font-sans);
+  font-weight: 600;
+}
+
+/* Body text stays in the Geist Sans 400–500 range by inheritance/utilities. */
+.dashboard-overview :where(p, li, dd, dt, figcaption, input, textarea, select) {
+  font-family: var(--font-sans);
+}
+
+/* Amounts keep their authored size while using stable, aligned numerals. */
+.dashboard-overview :where(
+    .tabular-nums,
+    [data-amount-size],
+    [data-balance-size],
+    [class*="amount"],
+    [class*="balance"]
+  ) {
+  font-family: var(--font-sans);
+  font-variant-numeric: tabular-nums lining-nums;
+  font-feature-settings: "tnum" 1, "lnum" 1;
+}
+
+/*
+ * Every Lucide glyph inside a dashboard card/control uses one rounded,
+ * monoline outline treatment. Width, height, containers, spacing, and motion
+ * remain authored by each component. Recharts and custom graph SVGs are not
+ * selected because they do not use the `.lucide` class.
+ */
+.dashboard-overview svg.lucide {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  shape-rendering: geometricPrecision;
+}
+
+.dashboard-overview svg.lucide[aria-hidden="true"] {
+  pointer-events: none;
+}
