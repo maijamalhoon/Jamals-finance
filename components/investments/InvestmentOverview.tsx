@@ -8,19 +8,19 @@ import {
   ArrowDownRight,
   ArrowRight,
   ArrowUpRight,
+  Banknote,
   Brain,
+  Building2,
   Coins,
   LucideIcon,
+  Package,
   PieChart,
   Sparkles,
   TrendingUp,
   WalletCards,
 } from "lucide-react";
 import { useCurrency } from "@/components/currency/CurrencyProvider";
-import {
-  getAssetInitials,
-  getInvestmentGroupKey,
-} from "@/lib/investments/aggregation";
+import { getInvestmentGroupKey } from "@/lib/investments/aggregation";
 import type { AggregatedInvestment } from "@/lib/investments/aggregation";
 import InvestmentCard from "./InvestmentCard";
 import { ExistingInvestment } from "./InvestmentModal";
@@ -31,6 +31,14 @@ const TYPE_META: Record<string, { label: string; color: string }> = {
   savings: { label: "Savings", color: "var(--success)" },
   real_estate: { label: "Real Estate", color: "var(--investment)" },
   other: { label: "Other", color: "var(--text-secondary)" },
+};
+
+const HOLDING_ICON_MAP: Record<string, LucideIcon> = {
+  crypto: Coins,
+  stocks: TrendingUp,
+  savings: Banknote,
+  real_estate: Building2,
+  other: Package,
 };
 
 interface Insight {
@@ -44,23 +52,15 @@ function getTypeLabel(type: string) {
 }
 
 function HoldingAvatar({ holding }: { holding: AggregatedInvestment }) {
-  if (holding.image_url) {
-    return (
-      // eslint-disable-next-line @next/next/no-img-element
-      <img
-        src={holding.image_url}
-        alt=""
-        className="h-8 w-8 flex-shrink-0 rounded-full"
-      />
-    );
-  }
+  const Icon = HOLDING_ICON_MAP[holding.type] ?? Package;
 
   return (
     <span
-      className="grid h-8 w-8 flex-shrink-0 place-items-center rounded-full text-[10px] font-bold text-text-inverse"
-      style={{ backgroundColor: holding.color }}
+      className="grid h-8 w-8 flex-shrink-0 place-items-center rounded-full bg-surface-secondary"
+      style={{ color: holding.color }}
+      title={holding.name}
     >
-      {getAssetInitials(holding.name, holding.symbol)}
+      <Icon size={15} strokeWidth={2.2} aria-hidden="true" />
     </span>
   );
 }
