@@ -22,6 +22,9 @@ import {
   SelectItem,
   SelectTrigger,
 } from "@/components/ui/select";
+import TouchWheelPicker, {
+  useTouchWheelPickerMode,
+} from "@/components/ui/touch-wheel-picker";
 import { useScrollSelectBehavior } from "@/components/ui/use-scroll-select-behavior";
 import scrollSelectStyles from "@/components/ui/ScrollSelect.module.css";
 import {
@@ -146,6 +149,7 @@ export default function TransactionModal({
   const [loadingOptions, setLoadingOptions] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const touchPickerMode = useTouchWheelPickerMode(true);
 
   useEffect(() => {
     if (!open) return;
@@ -175,6 +179,10 @@ export default function TransactionModal({
     }
     setError("");
   }, [open, transaction, defaultType]);
+
+  useEffect(() => {
+    if (touchPickerMode) setCategoryOpen(false);
+  }, [touchPickerMode]);
 
   useEffect(() => {
     if (!open) return;
@@ -388,6 +396,9 @@ export default function TransactionModal({
     : isIncome
       ? "Income"
       : "Expense";
+  const categoryPlaceholder = loadingOptions
+    ? "Loading categories..."
+    : `Select ${isIncome ? "income" : "expense"} category`;
 
   return (
     <Dialog open={open} onOpenChange={(nextOpen) => !nextOpen && onClose()}>
@@ -463,78 +474,102 @@ export default function TransactionModal({
             htmlFor="transaction-category"
             className={styles.categoryField}
           >
-            <Select
-              value={categoryId}
-              onValueChange={(nextValue) => {
-                if (nextValue) setCategoryId(nextValue);
-              }}
-              disabled={loadingOptions || categoryOptions.length === 0}
-              open={categoryOpen}
-              onOpenChange={setCategoryOpen}
-            >
-              <SelectTrigger
+            {touchPickerMode ? (
+              <TouchWheelPicker
                 id="transaction-category"
-                aria-label={`${isIncome ? "Income" : "Expense"} category`}
-                aria-describedby="transaction-category-help"
-                onWheel={categoryScrollBehavior.onTriggerWheel}
-                className={`field-input h-auto w-full gap-3 px-3 pr-3 text-left data-placeholder:text-text-secondary [&>svg]:ml-1 ${styles.categoryTrigger} ${scrollSelectStyles.trigger}`}
-              >
-                <CategorySummary
-                  option={selectedCategoryOption}
-                  placeholder={
-                    loadingOptions
-                      ? "Loading categories..."
-                      : `Select ${isIncome ? "income" : "expense"} category`
-                  }
-                />
-              </SelectTrigger>
-              <SelectContent
-                ref={categoryScrollBehavior.contentRef}
-                align="start"
-                sideOffset={8}
-                alignItemWithTrigger={false}
-                data-scroll-touch={
-                  categoryScrollBehavior.isTouchScrollOnly ? "true" : undefined
+                value={categoryId}
+                onValueChange={setCategoryId}
+                options={categoryOptions.map((option) => ({
+                  value: option.category.id,
+                  ariaLabel: option.label,
+                  content: (
+                    <CategorySummary
+                      option={option}
+                      placeholder={categoryPlaceholder}
+                    />
+                  ),
+                }))}
+                ariaLabel={`${isIncome ? "Income" : "Expense"} category`}
+                disabled={loadingOptions || categoryOptions.length === 0}
+                className={`field-input h-auto w-full gap-3 px-3 pr-3 text-left ${styles.categoryTrigger}`}
+                itemClassName="px-3"
+                emptyContent={
+                  <CategorySummary
+                    option={selectedCategoryOption}
+                    placeholder={categoryPlaceholder}
+                  />
                 }
-                onScroll={categoryScrollBehavior.onContentScroll}
-                onWheel={categoryScrollBehavior.onContentWheel}
-                onTouchStart={categoryScrollBehavior.onContentTouchStart}
-                onTouchMove={categoryScrollBehavior.onContentTouchMove}
-                className={`z-[90] max-h-[min(20rem,var(--available-height))] max-w-[calc(100vw-1.5rem)] rounded-[18px] p-1.5 ${scrollSelectStyles.content}`}
+              />
+            ) : (
+              <Select
+                value={categoryId}
+                onValueChange={(nextValue) => {
+                  if (nextValue) setCategoryId(nextValue);
+                }}
+                disabled={loadingOptions || categoryOptions.length === 0}
+                open={categoryOpen}
+                onOpenChange={setCategoryOpen}
               >
-                {categoryOptions.map((option) => {
-                  const visual = getCategoryVisual(option.category);
-                  return (
-                    <SelectItem
-                      key={option.category.id}
-                      value={option.category.id}
-                      data-scroll-select-value={option.category.id}
-                      className={`min-h-16 py-2 pr-8 pl-2.5 ${scrollSelectStyles.item}`}
-                    >
-                      <span className="flex min-w-0 flex-1 items-center gap-3">
-                        <CategoryVisualIcon category={option.category} size="sm" />
-                        <span
-                          className="min-w-0 flex-1"
-                          style={{ paddingLeft: option.depth ? "0.5rem" : 0 }}
-                        >
-                          <span className="block truncate text-sm font-semibold">
-                            {option.label}
-                          </span>
-                          <span className="block truncate text-[11px] text-text-secondary">
-                            {option.parentLabel
-                              ? `Under ${option.parentLabel}`
-                              : "Parent category"}
-                          </span>
-                          <span className="sr-only">
-                            Category color {visual.color}
+                <SelectTrigger
+                  id="transaction-category"
+                  aria-label={`${isIncome ? "Income" : "Expense"} category`}
+                  aria-describedby="transaction-category-help"
+                  onWheel={categoryScrollBehavior.onTriggerWheel}
+                  className={`field-input h-auto w-full gap-3 px-3 pr-3 text-left data-placeholder:text-text-secondary [&>svg]:ml-1 ${styles.categoryTrigger} ${scrollSelectStyles.trigger}`}
+                >
+                  <CategorySummary
+                    option={selectedCategoryOption}
+                    placeholder={categoryPlaceholder}
+                  />
+                </SelectTrigger>
+                <SelectContent
+                  ref={categoryScrollBehavior.contentRef}
+                  align="start"
+                  sideOffset={8}
+                  alignItemWithTrigger={false}
+                  data-scroll-touch={
+                    categoryScrollBehavior.isTouchScrollOnly ? "true" : undefined
+                  }
+                  onScroll={categoryScrollBehavior.onContentScroll}
+                  onWheel={categoryScrollBehavior.onContentWheel}
+                  onTouchStart={categoryScrollBehavior.onContentTouchStart}
+                  onTouchMove={categoryScrollBehavior.onContentTouchMove}
+                  className={`z-[90] max-h-[min(20rem,var(--available-height))] max-w-[calc(100vw-1.5rem)] rounded-[18px] p-1.5 ${scrollSelectStyles.content}`}
+                >
+                  {categoryOptions.map((option) => {
+                    const visual = getCategoryVisual(option.category);
+                    return (
+                      <SelectItem
+                        key={option.category.id}
+                        value={option.category.id}
+                        data-scroll-select-value={option.category.id}
+                        className={`min-h-16 py-2 pr-8 pl-2.5 ${scrollSelectStyles.item}`}
+                      >
+                        <span className="flex min-w-0 flex-1 items-center gap-3">
+                          <CategoryVisualIcon category={option.category} size="sm" />
+                          <span
+                            className="min-w-0 flex-1"
+                            style={{ paddingLeft: option.depth ? "0.5rem" : 0 }}
+                          >
+                            <span className="block truncate text-sm font-semibold">
+                              {option.label}
+                            </span>
+                            <span className="block truncate text-[11px] text-text-secondary">
+                              {option.parentLabel
+                                ? `Under ${option.parentLabel}`
+                                : "Parent category"}
+                            </span>
+                            <span className="sr-only">
+                              Category color {visual.color}
+                            </span>
                           </span>
                         </span>
-                      </span>
-                    </SelectItem>
-                  );
-                })}
-              </SelectContent>
-            </Select>
+                      </SelectItem>
+                    );
+                  })}
+                </SelectContent>
+              </Select>
+            )}
             <div id="transaction-category-help">
               {!loadingOptions && categoryOptions.length === 0 ? (
                 <div className={styles.emptyCategory}>
