@@ -110,17 +110,17 @@ function AlertRow({
 
   return (
     <article
-      className={`rounded-[var(--radius-tile)] border bg-surface-primary p-3.5 shadow-theme transition-colors ${
+      className={`rounded-[1.125rem] border bg-surface-primary p-3 shadow-theme transition-colors sm:p-3.5 ${
         alert.read === false ? "border-brand/35" : "border-border"
       }`}
     >
       <Link
         href={alert.href}
         onClick={() => onNavigate(alert)}
-        className="finance-focus group flex min-h-11 min-w-0 gap-3 rounded-[calc(var(--radius-tile)-0.35rem)] text-left hover:bg-surface-soft"
+        className="finance-focus group flex min-h-11 min-w-0 gap-2.5 rounded-[calc(var(--radius-tile)-0.35rem)] text-left hover:bg-surface-soft sm:gap-3"
       >
         <span
-          className={`grid h-10 w-10 shrink-0 place-items-center rounded-[var(--radius-control)] border ${tone.className}`}
+          className={`grid h-9 w-9 shrink-0 place-items-center rounded-[var(--radius-control)] border sm:h-10 sm:w-10 ${tone.className}`}
         >
           <Icon size={17} strokeWidth={2.2} aria-hidden="true" />
         </span>
@@ -144,7 +144,7 @@ function AlertRow({
               {alert.source === "goal" ? "Goal" : "Payable"}
             </span>
           </span>
-          <span className="mt-2 block break-words text-sm font-bold leading-5 text-text-primary">
+          <span className="mt-2 block break-words text-[13px] font-bold leading-5 text-text-primary sm:text-sm">
             {alert.title}
           </span>
           <span className="mt-1 block text-xs leading-5 text-text-secondary">
@@ -157,7 +157,7 @@ function AlertRow({
       </Link>
 
       {persistenceAvailable ? (
-        <div className="mt-3 flex flex-wrap justify-end gap-1.5 border-t border-border pt-2.5">
+        <div className="mt-3 flex flex-wrap justify-start gap-1.5 border-t border-border pt-2.5 sm:justify-end">
           {alert.read === false ? (
             <Button
               type="button"
@@ -165,7 +165,7 @@ function AlertRow({
               size="sm"
               disabled={pending}
               onClick={() => onMarkRead(alert)}
-              className="min-h-10 text-xs"
+              className="min-h-10 flex-1 px-2 text-xs sm:flex-none sm:px-3"
             >
               <Check aria-hidden="true" size={14} />
               Mark read
@@ -177,7 +177,7 @@ function AlertRow({
             size="sm"
             disabled={pending}
             onClick={() => onSnooze(alert)}
-            className="min-h-10 text-xs"
+            className="min-h-10 flex-1 px-2 text-xs sm:flex-none sm:px-3"
           >
             <Timer aria-hidden="true" size={14} />
             Snooze 1 day
@@ -188,7 +188,7 @@ function AlertRow({
             size="sm"
             disabled={pending}
             onClick={() => onDismiss(alert)}
-            className="min-h-10 text-xs text-danger hover:text-danger"
+            className="min-h-10 flex-1 px-2 text-xs text-danger hover:text-danger sm:flex-none sm:px-3"
           >
             <BellOff aria-hidden="true" size={14} />
             Dismiss
@@ -260,6 +260,10 @@ export default function NotificationCenter({ state }: NotificationCenterProps) {
   const badgeCount = displayedCount ?? 0;
   const triggerLabel = getNotificationTriggerLabel(state);
   const alertGroups = groupAlerts(state.visibleAlerts);
+  const notificationSummary =
+    state.status === "ready" && state.visibleAlerts.length === 0
+      ? "All caught up"
+      : getNotificationSummary(state);
 
   async function persistAlertState(
     notificationId: string,
@@ -397,84 +401,84 @@ export default function NotificationCenter({ state }: NotificationCenterProps) {
       <SheetContent
         side="right"
         showCloseButton={false}
-        className="h-dvh max-h-dvh w-[min(100vw,26rem)] max-w-full gap-0 overflow-hidden border-border bg-surface-elevated p-0 sm:w-[26rem] sm:max-w-[26rem]"
+        className="h-[100dvh] max-h-[100dvh] w-full max-w-none gap-0 overflow-hidden border-l-0 border-border bg-surface-elevated p-0 sm:w-[26rem] sm:max-w-[calc(100vw-1rem)] sm:rounded-l-[1.25rem] sm:border-l lg:w-[28rem] lg:max-w-[28rem]"
       >
-        <SheetHeader className="border-b border-border px-4 pb-4 pt-[max(1rem,env(safe-area-inset-top))] sm:px-5">
-          <div className="flex items-start justify-between gap-3 pr-0">
-            <div className="min-w-0">
-              <SheetTitle className="text-lg font-bold text-text-primary">
-                Notification center
-              </SheetTitle>
-              <SheetDescription className="mt-1 text-sm leading-5 text-text-secondary">
-                Goal and payable alerts with persistent read controls.
-              </SheetDescription>
+        <SheetHeader className="shrink-0 border-b border-border bg-surface-elevated px-4 pb-3 pt-[max(0.75rem,env(safe-area-inset-top))] sm:px-5 sm:pb-4 sm:pt-[max(1rem,env(safe-area-inset-top))]">
+          <div className="flex min-w-0 items-center justify-between gap-3">
+            <div className="flex min-w-0 items-center gap-3">
+              <span className="grid size-10 shrink-0 place-items-center rounded-[var(--radius-control)] border border-border bg-surface-primary text-text-primary shadow-theme">
+                <Bell size={18} aria-hidden="true" />
+              </span>
+              <div className="min-w-0">
+                <SheetTitle className="truncate text-[1.05rem] font-bold leading-6 text-text-primary sm:text-lg">
+                  Notifications
+                </SheetTitle>
+                <SheetDescription className="mt-0.5 line-clamp-1 text-xs leading-5 text-text-secondary sm:text-sm">
+                  Goal and payable alerts in one place.
+                </SheetDescription>
+              </div>
             </div>
             <SheetClose
-              className="finance-focus grid h-11 w-11 shrink-0 place-items-center rounded-[var(--radius-control)] text-text-secondary hover:bg-hover hover:text-text-primary"
+              className="finance-focus grid size-10 shrink-0 place-items-center rounded-[var(--radius-control)] border border-border bg-surface-primary text-text-secondary shadow-theme transition-colors hover:bg-hover hover:text-text-primary"
               aria-label="Close notification center"
             >
               <X size={18} aria-hidden="true" />
             </SheetClose>
           </div>
-        </SheetHeader>
 
-        <div className="flex min-w-0 items-start justify-between gap-3 border-b border-border bg-surface-primary px-4 py-3 sm:px-5">
-          <div className="min-w-0 flex-1">
-            <p className="text-sm font-semibold text-text-primary">
-              {getNotificationSummary(state)}
-            </p>
-            <p className="mt-0.5 text-xs text-text-secondary">
-              {state.status === "error"
-                ? "Goals and payables could not be checked."
-                : state.status === "partial"
-                  ? "One alert source could not be checked; the count uses available checked records."
-                  : "The count reflects the bounded records checked for current deadlines."}
-            </p>
-            <BackgroundRefreshStatus
-              refreshing={refreshing}
-              label="Refreshing alerts…"
-              className="mt-1.5"
-            />
-          </div>
-          <div className="flex shrink-0 items-center gap-1">
-            {state.persistenceStatus === "ready" && (state.unreadAlertCount ?? 0) > 0 ? (
+          <div className="mt-3 flex min-w-0 items-center justify-between gap-3">
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-xs font-semibold text-text-secondary sm:text-sm">
+                {notificationSummary}
+              </p>
+              <BackgroundRefreshStatus
+                refreshing={refreshing}
+                label="Refreshing alerts…"
+                className="mt-1"
+              />
+            </div>
+            <div className="flex shrink-0 items-center gap-1.5">
+              {state.persistenceStatus === "ready" && (state.unreadAlertCount ?? 0) > 0 ? (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => void markAllRead()}
+                  disabled={Boolean(actionId)}
+                  aria-label="Mark all alerts as read"
+                  title="Mark all as read"
+                  className="size-10 rounded-[var(--radius-control)] border border-border bg-surface-primary shadow-theme"
+                >
+                  <CheckCheck aria-hidden="true" />
+                </Button>
+              ) : null}
               <Button
                 type="button"
                 variant="ghost"
                 size="icon"
-                onClick={() => void markAllRead()}
-                disabled={Boolean(actionId)}
-                aria-label="Mark all alerts as read"
-                title="Mark all as read"
+                onClick={retry}
+                loading={refreshing}
+                disabled={!online}
+                aria-label="Refresh current alerts"
+                title="Refresh current alerts"
+                className="size-10 rounded-[var(--radius-control)] border border-border bg-surface-primary shadow-theme"
               >
-                <CheckCheck aria-hidden="true" />
+                <RefreshCw aria-hidden="true" />
               </Button>
-            ) : null}
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              onClick={retry}
-              loading={refreshing}
-              disabled={!online}
-              aria-label="Refresh current alerts"
-              title="Refresh current alerts"
-            >
-              <RefreshCw aria-hidden="true" />
-            </Button>
-            <Link
-              href="/dashboard/settings#notifications"
-              onClick={() => setOpen(false)}
-              aria-label="Open notification preferences"
-              title="Notification preferences"
-              className="finance-focus grid size-11 place-items-center rounded-[var(--radius-button)] text-text-secondary hover:bg-primary-soft hover:text-text-primary"
-            >
-              <Settings aria-hidden="true" size={16} />
-            </Link>
+              <Link
+                href="/dashboard/settings#notifications"
+                onClick={() => setOpen(false)}
+                aria-label="Open notification preferences"
+                title="Notification preferences"
+                className="finance-focus grid size-10 place-items-center rounded-[var(--radius-control)] border border-border bg-surface-primary text-text-secondary shadow-theme transition-colors hover:bg-primary-soft hover:text-text-primary"
+              >
+                <Settings aria-hidden="true" size={16} />
+              </Link>
+            </div>
           </div>
-        </div>
+        </SheetHeader>
 
-        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 py-4 pb-[max(1rem,env(safe-area-inset-bottom))] sm:px-5">
+        <div className="flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain px-4 py-4 pb-[max(1rem,env(safe-area-inset-bottom))] sm:px-5 sm:py-5">
           {!online ? (
             <div
               role="status"
@@ -519,14 +523,14 @@ export default function NotificationCenter({ state }: NotificationCenterProps) {
           ) : null}
 
           {state.status === "error" ? (
-            <div className="flex min-h-[320px] flex-col items-center justify-center text-center">
-              <span className="grid h-12 w-12 place-items-center rounded-[var(--radius-tile)] border border-danger/25 bg-danger/10 text-danger">
-                <AlertTriangle size={21} aria-hidden="true" />
+            <div className="mx-auto flex min-h-[20rem] w-full max-w-sm flex-1 flex-col items-center justify-center px-4 py-8 text-center">
+              <span className="grid size-14 place-items-center rounded-full border border-danger/25 bg-danger/10 text-danger">
+                <AlertTriangle size={22} aria-hidden="true" />
               </span>
-              <h3 className="mt-4 text-base font-bold text-text-primary">
+              <h3 className="mt-5 text-lg font-bold text-text-primary">
                 Alerts are unavailable
               </h3>
-              <p className="mt-2 max-w-xs text-sm leading-6 text-text-secondary">
+              <p className="mt-2 max-w-[18rem] text-sm leading-6 text-text-secondary">
                 Goals and payables could not be checked. Retry when your connection is available.
               </p>
               <Button
@@ -536,35 +540,35 @@ export default function NotificationCenter({ state }: NotificationCenterProps) {
                 disabled={!online}
                 loading={refreshing}
                 loadingLabel="Retrying…"
-                className="mt-4 min-h-11"
+                className="mt-5 min-h-11"
               >
                 <RefreshCw size={15} aria-hidden="true" />
                 {online ? "Retry" : "Reconnect to retry"}
               </Button>
             </div>
           ) : state.visibleAlerts.length === 0 ? (
-            <div className="flex min-h-[320px] flex-col items-center justify-center text-center">
-              <span className="grid h-12 w-12 place-items-center rounded-[var(--radius-tile)] border border-border bg-surface-soft text-text-secondary">
-                <Bell size={21} aria-hidden="true" />
+            <div className="mx-auto flex min-h-[20rem] w-full max-w-sm flex-1 flex-col items-center justify-center px-4 py-8 text-center">
+              <span className="grid size-14 place-items-center rounded-full border border-border bg-surface-soft text-text-secondary">
+                <Bell size={22} aria-hidden="true" />
               </span>
-              <h3 className="mt-4 text-base font-bold text-text-primary">
+              <h3 className="mt-5 text-lg font-bold text-text-primary">
                 {state.status === "partial"
                   ? "No alerts in available data"
                   : "No current alerts"}
               </h3>
-              <p className="mt-2 max-w-xs text-sm leading-6 text-text-secondary">
+              <p className="mt-2 max-w-[18rem] text-sm leading-6 text-text-secondary">
                 {state.status === "partial"
                   ? `The available source has no current alerts. ${formatUnavailableSources(state.unavailableSources)} could not be checked.`
                   : "Nothing in your goals or payables needs near-term attention."}
               </p>
             </div>
           ) : (
-            <div className="space-y-5" aria-label="Current active alerts">
+            <div className="space-y-6 pb-1" aria-label="Current active alerts">
               {alertGroups.map((group) => (
                 <section key={group.label} aria-labelledby={`notification-group-${group.label.replace(/\s+/g, "-").toLowerCase()}`}>
                   <h3
                     id={`notification-group-${group.label.replace(/\s+/g, "-").toLowerCase()}`}
-                    className="mb-2 px-1 text-[11px] font-bold uppercase tracking-[0.14em] text-text-secondary"
+                    className="mb-2.5 px-1 text-[10px] font-bold uppercase tracking-[0.16em] text-text-secondary"
                   >
                     {group.label}
                   </h3>
