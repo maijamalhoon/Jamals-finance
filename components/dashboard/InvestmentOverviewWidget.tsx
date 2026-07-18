@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, Boxes, Package, Zap } from "lucide-react";
+import { ArrowRight, Layers3, Package, Zap } from "lucide-react";
 import { Cell, Pie, PieChart, Tooltip } from "recharts";
 
 import ChartFrame from "@/components/ui/chart-frame";
@@ -11,7 +11,6 @@ import CountedAmount from "@/components/motion/CountedAmount";
 import {
   aggregateInvestmentHoldings,
   getAssetInitials,
-  getInvestmentGroupKey,
   type AggregatedInvestment,
 } from "@/lib/investments/aggregation";
 import type { DashboardAvailability } from "@/lib/dashboard-financial-semantics";
@@ -42,7 +41,6 @@ type AllocationEntry = {
   imageUrl: string | null;
   value: number;
   color: string;
-  trend: number[];
   holding: AggregatedInvestment;
 };
 
@@ -75,63 +73,13 @@ const ASSET_ACCENTS: Record<string, string> = {
   matic: "#8247e5",
 };
 
-const OTHER_ASSETS_COLOR = "#8b8cf5";
-
-function toFiniteNumber(value: number | string | null | undefined) {
-  const parsed = Number(value);
-  return Number.isFinite(parsed) ? parsed : 0;
-}
-
-function getTimestamp(value: string | null | undefined) {
-  if (!value) return 0;
-  const timestamp = new Date(value).getTime();
-  return Number.isFinite(timestamp) ? timestamp : 0;
-}
+const OTHER_ASSETS_COLOR = "#5b7187";
 
 function getAssetAccent(holding: AggregatedInvestment) {
   const symbol = holding.symbol?.trim().toLowerCase() ?? "";
   const assetId = holding.asset_id?.trim().toLowerCase() ?? "";
 
   return ASSET_ACCENTS[symbol] ?? ASSET_ACCENTS[assetId] ?? holding.color;
-}
-
-function buildRealTrend(
-  investments: Investment[],
-  holding: AggregatedInvestment,
-) {
-  const purchasePrices = investments
-    .filter((investment) => getInvestmentGroupKey(investment) === holding.groupKey)
-    .sort((a, b) => getTimestamp(a.purchased_at) - getTimestamp(b.purchased_at))
-    .map((investment) => toFiniteNumber(investment.purchase_price))
-    .filter((price) => price > 0);
-
-  const realPoints = [...purchasePrices];
-  const change24h = holding.price_change_24h;
-
-  if (
-    holding.current_price > 0 &&
-    typeof change24h === "number" &&
-    Number.isFinite(change24h) &&
-    change24h > -100
-  ) {
-    const previousPrice = holding.current_price / (1 + change24h / 100);
-    if (Number.isFinite(previousPrice) && previousPrice > 0) {
-      realPoints.push(previousPrice);
-    }
-  }
-
-  if (holding.current_price > 0) {
-    realPoints.push(holding.current_price);
-  }
-
-  const compactPoints = realPoints.filter(
-    (point, index) => index === 0 || point !== realPoints[index - 1],
-  );
-
-  if (compactPoints.length === 0) return [0, 0];
-  if (compactPoints.length === 1) return [compactPoints[0], compactPoints[0]];
-
-  return compactPoints.slice(-12);
 }
 
 function buildAllocationData(investments: Investment[]): AllocationEntry[] {
@@ -143,7 +91,6 @@ function buildAllocationData(investments: Investment[]): AllocationEntry[] {
       imageUrl: holding.image_url,
       value: Number.isFinite(holding.currentValue) ? holding.currentValue : 0,
       color: getAssetAccent(holding),
-      trend: buildRealTrend(investments, holding),
       holding,
     }))
     .filter((holding) => holding.value > 0 && holding.holding.current_price > 0);
@@ -204,119 +151,36 @@ function AssetLogo({ entry, size = 32 }: { entry: AllocationEntry; size?: number
   );
 }
 
-function RealSparkline({
-  values,
+function AllocationBar({
+  value,
   color,
   label,
   delayMs = 0,
 }: {
-  values: number[];
+  value: number;
   color: string;
   label: string;
   delayMs?: number;
 }) {
-  const width = 150;
-  const height = 36;
-  const padding = 3;
-  const min = Math.min(...values);
-  const max = Math.max(...values);
-  const range = max - min;
-  const points = values
-    .map((value, index) => {
-      const x =
-        values.length === 1
-          ? width / 2
-          : padding + (index / (values.length - 1)) * (width - padding * 2);
-      const y =
-        range === 0
-          ? height / 2
-          : padding + ((max - value) / range) * (height - padding * 2);
-      return `${x.toFixed(2)},${y.toFixed(2)}`;
-    })
-    .join(" ");
-  const lastPoint = points.split(" ").at(-1)?.split(",") ?? ["0", "0"];
+  const clampedValue = Math.min(Math.max(value, 0), 100);
 
   return (
-    <svg
-      viewBox={`0 0 ${width} ${height}`}
-      preserveAspectRatio="none"
-      className="h-9 w-full min-w-[76px] overflow-visible"
+    <span
+      className="flex h-9 w-full min-w-[76px] items-center"
       role="img"
-      aria-label={`${label} real price trend`}
+      aria-label={`${label} allocation ${formatAllocation(value)}`}
     >
-      <polyline
-        points={points}
-        fill="none"
-        stroke={color}
-        strokeWidth="2.2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        pathLength="1"
-        className="investment-sparkline-line"
-        style={{ animationDelay: `${delayMs}ms` }}
-      />
-      <circle
-        cx={lastPoint[0]}
-        cy={lastPoint[1]}
-        r="2.6"
-        fill={color}
-        className="investment-sparkline-point"
-        style={{ animationDelay: `${delayMs + 780}ms` }}
-      />
-      <style>{`
-        .investment-sparkline-line {
-          stroke-dasharray: 1;
-          stroke-dashoffset: 1;
-          opacity: 0;
-          animation: investment-sparkline-draw 900ms cubic-bezier(0.22, 1, 0.36, 1) both;
-          will-change: stroke-dashoffset, opacity;
-        }
-
-        .investment-sparkline-point {
-          opacity: 0;
-          animation: investment-sparkline-point-in 220ms cubic-bezier(0.22, 1, 0.36, 1) both;
-          will-change: opacity, transform;
-        }
-
-        @keyframes investment-sparkline-draw {
-          from {
-            stroke-dashoffset: 1;
-            opacity: 0.18;
-          }
-          to {
-            stroke-dashoffset: 0;
-            opacity: 1;
-          }
-        }
-
-        @keyframes investment-sparkline-point-in {
-          from {
-            opacity: 0;
-            transform: scale(0.45);
-            transform-origin: center;
-          }
-          to {
-            opacity: 1;
-            transform: scale(1);
-            transform-origin: center;
-          }
-        }
-
-        @media (prefers-reduced-motion: reduce) {
-          .investment-sparkline-line {
-            stroke-dashoffset: 0;
-            opacity: 1;
-            animation: none;
-          }
-
-          .investment-sparkline-point {
-            opacity: 1;
-            transform: none;
-            animation: none;
-          }
-        }
-      `}</style>
-    </svg>
+      <span className="relative h-[3px] w-full">
+        <span
+          className="investment-allocation-bar absolute inset-y-0 left-0 rounded-full"
+          style={{
+            width: `${clampedValue}%`,
+            backgroundColor: color,
+            animationDelay: `${delayMs}ms`,
+          }}
+        />
+      </span>
+    </span>
   );
 }
 
@@ -517,8 +381,8 @@ export default function InvestmentOverviewWidget({
                     ) : null}
                   </div>
 
-                  <RealSparkline
-                    values={investment.trend}
+                  <AllocationBar
+                    value={allocation}
                     color={investment.color}
                     label={investment.name}
                     delayMs={120 + index * 120}
@@ -542,11 +406,11 @@ export default function InvestmentOverviewWidget({
                     width: 34,
                     height: 34,
                     color: OTHER_ASSETS_COLOR,
-                    backgroundColor: "rgba(139, 140, 245, 0.14)",
+                    backgroundColor: "rgba(91, 113, 135, 0.13)",
                   }}
                   aria-label="Other assets icon"
                 >
-                  <Boxes size={17} strokeWidth={2.2} />
+                  <Layers3 size={17} strokeWidth={2.1} />
                 </span>
 
                 <div className="min-w-0">
@@ -555,15 +419,12 @@ export default function InvestmentOverviewWidget({
                   </p>
                 </div>
 
-                <span
-                  className="flex h-9 w-full min-w-[76px] items-center"
-                  aria-hidden="true"
-                >
-                  <span
-                    className="h-0.5 w-full rounded-full"
-                    style={{ backgroundColor: OTHER_ASSETS_COLOR }}
-                  />
-                </span>
+                <AllocationBar
+                  value={otherAssetsAllocation}
+                  color={OTHER_ASSETS_COLOR}
+                  label="Other assets"
+                  delayMs={480}
+                />
 
                 <span
                   className="shrink-0 text-xs font-black tabular-nums sm:text-sm"
@@ -582,6 +443,35 @@ export default function InvestmentOverviewWidget({
           </div>
         </div>
       )}
+
+      <style>{`
+        .investment-allocation-bar {
+          opacity: 0.35;
+          transform: scaleX(0);
+          transform-origin: left center;
+          animation: investment-allocation-fill 900ms cubic-bezier(0.22, 1, 0.36, 1) both;
+          will-change: transform, opacity;
+        }
+
+        @keyframes investment-allocation-fill {
+          from {
+            opacity: 0.35;
+            transform: scaleX(0);
+          }
+          to {
+            opacity: 1;
+            transform: scaleX(1);
+          }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+          .investment-allocation-bar {
+            opacity: 1;
+            transform: scaleX(1);
+            animation: none;
+          }
+        }
+      `}</style>
     </section>
   );
 }
