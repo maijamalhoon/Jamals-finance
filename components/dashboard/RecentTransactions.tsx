@@ -1,95 +1,74 @@
 "use client";
 
-import type { CSSProperties } from "react";
 import Link from "next/link";
+import { useEffect, useMemo, useState } from "react";
 import { ArrowLeftRight, ArrowRight, ReceiptText } from "lucide-react";
 
 import { useCurrency } from "@/components/currency/CurrencyProvider";
 import CountedAmount from "@/components/motion/CountedAmount";
 import EmptyState from "@/components/ui/empty-state";
-import type { DashboardAvailability } from "@/lib/dashboard-financial-semantics";
+import {
+  getRenderableTransactionAmount,
+  type DashboardAvailability,
+} from "@/lib/dashboard-financial-semantics";
+import { createClient } from "@/lib/supabase/client";
 import {
   getTransactionIconMeta,
   getTransactionPrefix,
-  getTransactionSoftStyle,
   getTransactionToneClass,
 } from "@/lib/transaction-icons";
-import { getRenderableTransactionAmount } from "@/lib/dashboard-financial-semantics";
+import { sortTransactionsNewestFirst } from "@/lib/transactions";
+
+interface TransactionCategory {
+  id?: string | null;
+  name: string;
+  color?: string | null;
+  icon_key?: string | null;
+  type?: string | null;
+  parent?: { name: string } | null;
+}
 
 interface Transaction {
   id: string;
-  type: "income" | "expense" | "transfer" | string;
+  type: "income" | "expense" | "investment" | "goal" | "refund" | "transfer" | string;
   amount: number | string | null;
   note: string | null;
   date: string;
+  created_at?: string | null;
   source_name?: string | null;
   person_name?: string | null;
   item_name?: string | null;
-  categories: {
-    name: string;
-    color?: string | null;
-    parent?: { name: string } | null;
-  } | null;
+  categories: TransactionCategory | null;
   accounts: { name: string } | null;
 }
 
-function parseDate(value: string) {
-  const parsed = new Date(value);
-  return Number.isNaN(parsed.getTime()) ? null : parsed;
-}
+type CategoryVisualRow = {
+  id: string;
+  icon_key: string | null;
+  type: string | null;
+};
 
-function formatCompactDate(value: string) {
-  const parsed = parseDate(value);
-  if (!parsed) return "No date";
-  return parsed.toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-  });
-}
-
-function formatFullDate(value: string) {
-  const parsed = parseDate(value);
-  if (!parsed) return "No date";
-  return parsed.toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  });
-}
-
-function getFlowTitle(tx: Transaction) {
-  if (tx.type === "income") {
-    return tx.source_name || tx.categories?.name || tx.note || "Income";
+function getTransactionLabel(
+  transaction: Transaction,
+  fallbackLabel: string,
+) {
+  if (transaction.type === "goal") {
+    return transaction.item_name || "Goal contribution";
   }
-  if (tx.type === "expense") {
-    return tx.categories?.name || tx.note || "Expense";
+  if (transaction.type === "transfer") return "Transfer";
+  if (transaction.type === "investment") {
+    return transaction.item_name || "Investment";
   }
-  if (tx.type === "investment") {
-    return tx.note || tx.item_name || "Investment contribution";
+  if (transaction.type === "refund") {
+    return transaction.categories?.name || "Expense refund";
   }
-  if (tx.type === "refund") {
-    return tx.note || tx.categories?.name || "Expense refund";
-  }
-  return tx.note || "Transfer";
-}
 
-function getFlowSubtitle(tx: Transaction, includeDate = true) {
-  const account = tx.accounts?.name || "No account";
-  const suffix = includeDate ? ` · ${formatCompactDate(tx.date)}` : "";
-
-  if (tx.type === "income") return `Came to ${account}${suffix}`;
-  if (tx.type === "expense") return `Paid from ${account}${suffix}`;
-  if (tx.type === "investment") return `Invested from ${account}${suffix}`;
-  if (tx.type === "refund") return `Returned to ${account}${suffix}`;
-  return `${account}${suffix}`;
-}
-
-function getCategoryLabel(tx: Transaction) {
-  if (tx.type === "transfer") return "Transfer";
-  if (tx.type === "income") return tx.categories?.name || "Income";
-  if (tx.type === "investment") return "Investment";
-  if (tx.type === "refund") return "Refund";
-  return tx.categories?.name || "Expense";
+  return (
+    transaction.categories?.name ||
+    transaction.source_name ||
+    transaction.note ||
+    fallbackLabel
+  );
 }
 
 function Amount({ transaction }: { transaction: Transaction }) {
@@ -98,16 +77,20 @@ function Amount({ transaction }: { transaction: Transaction }) {
 
   return (
     <span
-      className={`inline-flex min-w-0 items-baseline justify-end gap-0.5 whitespace-nowrap font-bold tracking-[-0.018em] tabular-nums ${getTransactionToneClass(
+      className={`inline-flex min-w-0 items-baseline justify-end gap-0.5 whitespace-nowrap text-[12px] font-black tracking-[-0.018em] tabular-nums sm:text-[13px] ${getTransactionToneClass(
         transaction.type,
       )}`}
     >
       {safeAmount === null ? (
-        <span className="font-semibold tracking-normal text-text-secondary">Unavailable</span>
+        <span className="font-semibold tracking-normal text-text-secondary">
+          Unavailable
+        </span>
       ) : (
         <>
           {getTransactionPrefix(transaction.type)}
-          <CountedAmount amount={formatCurrency(safeAmount, { absolute: true })} />
+          <CountedAmount
+            amount={formatCurrency(safeAmount, { absolute: true })}
+          />
         </>
       )}
     </span>
@@ -121,21 +104,111 @@ export default function RecentTransactions({
   transactions: Transaction[];
   status: DashboardAvailability;
 }) {
-  const visibleTransactions = transactions.slice(0, 5);
+  const supabase = useMemo(() => createClient(), []);
+  const [categoryVisuals, setCategoryVisuals] = useState<
+    Record<string, CategoryVisualRow>
+  >({});
+  const [goalTransactions, setGoalTransactions] = useState<Transaction[]>([]);
+
+  useEffect(() => {
+    let cancelled = false;
+    const categoryIds = Array.from(
+      new Set(
+        transactions
+          .map((transaction) => transaction.categories?.id)
+          .filter((value): value is string => Boolean(value)),
+      ),
+    );
+
+    async function loadPersistentVisualsAndGoals() {
+      const categoryRequest =
+        categoryIds.length > 0
+          ? supabase
+              .from("categories")
+              .select("id, icon_key, type")
+              .in("id", categoryIds)
+          : Promise.resolve({ data: [], error: null });
+
+      const goalsRequest = supabase
+        .from("transactions")
+        .select(
+          "id, type, amount, note, date, created_at, source_name, person_name, item_name, categories(id, name, color, icon_key, type), accounts(name)",
+        )
+        .eq("type", "goal")
+        .order("date", { ascending: false })
+        .order("created_at", { ascending: false })
+        .limit(5);
+
+      const [categoryResult, goalResult] = await Promise.all([
+        categoryRequest,
+        goalsRequest,
+      ]);
+      if (cancelled) return;
+
+      if (!categoryResult.error) {
+        const nextVisuals = Object.fromEntries(
+          ((categoryResult.data ?? []) as CategoryVisualRow[]).map((row) => [
+            row.id,
+            row,
+          ]),
+        );
+        setCategoryVisuals(nextVisuals);
+      }
+
+      if (!goalResult.error) {
+        setGoalTransactions((goalResult.data ?? []) as unknown as Transaction[]);
+      }
+    }
+
+    void loadPersistentVisualsAndGoals();
+    return () => {
+      cancelled = true;
+    };
+  }, [supabase, transactions]);
+
+  const visibleTransactions = useMemo(() => {
+    const enrichedTransactions = transactions.map((transaction) => {
+      const categoryId = transaction.categories?.id;
+      const visual = categoryId ? categoryVisuals[categoryId] : null;
+      if (!transaction.categories || !visual) return transaction;
+
+      return {
+        ...transaction,
+        categories: {
+          ...transaction.categories,
+          icon_key: visual.icon_key,
+          type: visual.type,
+        },
+      };
+    });
+
+    const unique = new Map<string, Transaction>();
+    [...enrichedTransactions, ...goalTransactions].forEach((transaction) => {
+      unique.set(`${transaction.type}:${transaction.id}`, transaction);
+    });
+
+    return sortTransactionsNewestFirst(Array.from(unique.values())).slice(0, 5);
+  }, [categoryVisuals, goalTransactions, transactions]);
 
   return (
     <section className="finance-reference-card motion-card-entry flex min-h-[280px] min-w-0 flex-col overflow-hidden p-4 sm:p-5">
       <div className="flex min-w-0 items-center justify-between gap-3 border-b border-border/55 pb-3">
         <div className="flex min-w-0 items-center gap-2.5">
-          <span className="grid size-8 shrink-0 place-items-center bg-transparent text-text-secondary shadow-none">
-            <ReceiptText size={15} strokeWidth={2.3} aria-hidden="true" />
+          <span className="grid size-8 shrink-0 place-items-center bg-transparent text-info shadow-none">
+            <ReceiptText
+              size={20}
+              strokeWidth={2.4}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            />
           </span>
           <h3 className="truncate text-[11px] font-bold uppercase tracking-[0.13em] text-text-secondary sm:text-[12px]">
             Recent Transactions
           </h3>
         </div>
 
-        {status !== "unavailable" && transactions.length > 0 ? (
+        {status !== "unavailable" && visibleTransactions.length > 0 ? (
           <Link
             href="/dashboard/transactions"
             className="dashboard-card-action finance-focus group inline-flex min-h-10 shrink-0 items-center gap-1.5 rounded-xl px-3 text-xs sm:px-4 sm:text-sm"
@@ -169,154 +242,56 @@ export default function RecentTransactions({
           />
         </div>
       ) : (
-        <>
-          <div className="mt-1.5 hidden min-w-0 overflow-x-auto md:block">
-            <table className="w-full min-w-[620px] table-fixed border-collapse text-left lg:min-w-[760px]">
-              <colgroup>
-                <col className="w-[59%] lg:w-[38%]" />
-                <col className="hidden lg:table-column lg:w-[17%]" />
-                <col className="hidden lg:table-column lg:w-[15%]" />
-                <col className="w-[18%] lg:w-[13%]" />
-                <col className="w-[23%] lg:w-[17%]" />
-              </colgroup>
-              <thead>
-                <tr className="border-b border-border/65 text-[9px] font-bold uppercase tracking-[0.11em] text-text-tertiary lg:text-[10px]">
-                  <th className="py-2 pr-4">Description</th>
-                  <th className="hidden px-4 py-2 lg:table-cell">Account</th>
-                  <th className="hidden px-4 py-2 lg:table-cell">Category</th>
-                  <th className="px-3 py-2 lg:px-4">Date</th>
-                  <th className="py-2 pl-3 text-right lg:pl-4">Amount</th>
-                </tr>
-              </thead>
-              <tbody>
-                {visibleTransactions.map((tx, index) => {
-                  const iconMeta = getTransactionIconMeta({
-                    type: tx.type,
-                    note: tx.note,
-                    categoryName: tx.categories?.name,
-                    parentCategoryName: tx.categories?.parent?.name,
-                  });
-                  const Icon = iconMeta.icon;
-                  const rowStyle = {
-                    "--motion-reveal-delay": `${index * 35}ms`,
-                    backgroundColor: "transparent",
-                    boxShadow: "none",
-                    borderLeft: "0",
-                  } as CSSProperties;
+        <div className="mt-1.5 flex min-w-0 flex-1 flex-col">
+          {visibleTransactions.map((transaction, index) => {
+            const iconMeta = getTransactionIconMeta({
+              type: transaction.type,
+              note: transaction.note,
+              categoryName: transaction.categories?.name,
+              categoryIconKey: transaction.categories?.icon_key,
+              parentCategoryName: transaction.categories?.parent?.name,
+              sourceName: transaction.source_name,
+              itemName: transaction.item_name,
+            });
+            const Icon = iconMeta.icon;
+            const label = getTransactionLabel(transaction, iconMeta.label);
 
-                  return (
-                    <tr
-                      key={tx.id}
-                      style={rowStyle}
-                      className="motion-table-row border-b border-border/45 last:border-b-0"
-                    >
-                      <td className="py-2.5 pr-4">
-                        <div className="flex min-w-0 items-center gap-2.5">
-                          <span
-                            className="grid size-8 shrink-0 place-items-center rounded-[11px] border"
-                            style={getTransactionSoftStyle(iconMeta.accent)}
-                          >
-                            <Icon size={14} strokeWidth={2.2} aria-hidden="true" />
-                          </span>
-                          <div className="min-w-0">
-                            <p
-                              className="truncate text-[12px] font-bold leading-4 text-text-primary lg:text-[13px]"
-                              title={getFlowTitle(tx)}
-                            >
-                              {getFlowTitle(tx)}
-                            </p>
-                            <p
-                              className="mt-0.5 truncate text-[9px] font-medium leading-[14px] text-text-secondary lg:text-[10px] lg:leading-4"
-                              title={getFlowSubtitle(tx, false)}
-                            >
-                              {getFlowSubtitle(tx, false)}
-                            </p>
-                          </div>
-                        </div>
-                      </td>
-                      <td
-                        className="hidden max-w-[180px] truncate px-4 py-2.5 text-[11px] font-medium text-text-secondary lg:table-cell"
-                        title={tx.accounts?.name || "No account"}
-                      >
-                        {tx.accounts?.name || "No account"}
-                      </td>
-                      <td className="hidden px-4 py-2.5 lg:table-cell">
-                        <span
-                          className="inline-flex max-w-[150px] items-center gap-1.5 text-[10px] font-bold"
-                          style={{ color: iconMeta.accent }}
-                          title={getCategoryLabel(tx)}
-                        >
-                          <span
-                            className="size-1.5 shrink-0 rounded-full"
-                            style={{ backgroundColor: iconMeta.accent }}
-                            aria-hidden="true"
-                          />
-                          <span className="truncate">{getCategoryLabel(tx)}</span>
-                        </span>
-                      </td>
-                      <td className="whitespace-nowrap px-3 py-2.5 text-[10px] font-medium text-text-secondary tabular-nums lg:px-4 lg:text-[11px]">
-                        {formatFullDate(tx.date)}
-                      </td>
-                      <td className="whitespace-nowrap py-2.5 pl-3 text-right text-[11px] lg:pl-4 lg:text-[12px]">
-                        <Amount transaction={tx} />
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-
-          <div className="mt-1.5 flex min-w-0 flex-col md:hidden">
-            {visibleTransactions.map((tx, index) => {
-              const iconMeta = getTransactionIconMeta({
-                type: tx.type,
-                note: tx.note,
-                categoryName: tx.categories?.name,
-                parentCategoryName: tx.categories?.parent?.name,
-              });
-              const Icon = iconMeta.icon;
-              const rowStyle = {
-                "--motion-reveal-delay": `${index * 35}ms`,
-              } as CSSProperties;
-
-              return (
-                <article
-                  key={tx.id}
-                  style={rowStyle}
-                  className="motion-table-row grid grid-cols-[34px_minmax(0,1fr)] items-center gap-2.5 border-b border-border/45 py-3 first:pt-2 last:border-b-0 last:pb-0"
+            return (
+              <article
+                key={`${transaction.type}:${transaction.id}`}
+                className="motion-table-row grid min-w-0 grid-cols-[34px_minmax(0,1fr)_auto] items-center gap-2.5 border-b border-border/45 py-3 first:pt-2 last:border-b-0 last:pb-0"
+                style={{
+                  "--motion-reveal-delay": `${index * 35}ms`,
+                } as React.CSSProperties}
+                aria-label={`${label}, ${transaction.type}, ${transaction.amount}`}
+              >
+                <span
+                  className="grid size-[34px] shrink-0 place-items-center"
+                  style={{ color: iconMeta.accent }}
                 >
-                  <span
-                    className="grid size-[34px] shrink-0 place-items-center rounded-[12px] border"
-                    style={getTransactionSoftStyle(iconMeta.accent)}
-                  >
-                    <Icon size={15} strokeWidth={2.2} aria-hidden="true" />
-                  </span>
+                  <Icon
+                    size={20}
+                    strokeWidth={2.4}
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden="true"
+                  />
+                </span>
 
-                  <div className="min-w-0">
-                    <p
-                      className="truncate text-[12px] font-bold leading-4 text-text-primary"
-                      title={getFlowTitle(tx)}
-                    >
-                      {getFlowTitle(tx)}
-                    </p>
-                    <div className="mt-0.5 flex min-w-0 items-center justify-between gap-2">
-                      <p
-                        className="min-w-0 truncate text-[10px] font-medium leading-4 text-text-secondary"
-                        title={getFlowSubtitle(tx)}
-                      >
-                        {getFlowSubtitle(tx)}
-                      </p>
-                      <p className="shrink-0 text-right text-[clamp(9px,2.75vw,11px)] leading-4">
-                        <Amount transaction={tx} />
-                      </p>
-                    </div>
-                  </div>
-                </article>
-              );
-            })}
-          </div>
-        </>
+                <p
+                  className="min-w-0 truncate text-[12px] font-bold leading-4 text-text-primary sm:text-[13px]"
+                  title={label}
+                >
+                  {label}
+                </p>
+
+                <p className="shrink-0 text-right leading-4">
+                  <Amount transaction={transaction} />
+                </p>
+              </article>
+            );
+          })}
+        </div>
       )}
     </section>
   );
