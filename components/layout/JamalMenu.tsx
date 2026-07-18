@@ -1,6 +1,12 @@
 "use client";
 
-import { ChevronDown, CircleDollarSign, LogOut, Settings } from "lucide-react";
+import {
+  ChevronDown,
+  CircleDollarSign,
+  LogOut,
+  Settings,
+  UserRound,
+} from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 
@@ -19,7 +25,7 @@ import { createClient } from "@/lib/supabase/client";
 type JamalMenuProps = {
   align?: "left" | "right";
   placement?: "bottom" | "top";
-  variant?: "card" | "avatar" | "drawer";
+  variant?: "card" | "avatar" | "drawer" | "floating";
 };
 
 type ProfileSummary = {
@@ -93,6 +99,7 @@ export default function JamalMenu({
 
   const compact = variant === "avatar";
   const drawer = variant === "drawer";
+  const floating = variant === "floating";
 
   return (
     <DropdownMenu>
@@ -100,23 +107,29 @@ export default function JamalMenu({
         type="button"
         aria-label={`Open profile menu for ${displayName}`}
         className={
-          compact
-            ? "finance-focus flex h-11 min-w-[3.75rem] items-center justify-center gap-1 rounded-full border border-transparent bg-transparent px-1.5 text-text-secondary shadow-none hover:bg-hover hover:text-text-primary data-popup-open:bg-hover data-popup-open:text-text-primary"
-            : drawer
-              ? "finance-focus flex min-h-14 w-full min-w-0 items-center gap-2.5 rounded-[18px] border border-border bg-surface-secondary/75 px-3 py-2 text-left shadow-[inset_0_1px_0_rgb(255_255_255_/_0.24)] transition-[background-color,border-color,box-shadow,transform] hover:-translate-y-px hover:border-brand/25 hover:bg-surface-soft hover:shadow-[var(--shadow-xs)]"
-              : "finance-focus flex min-h-11 w-full min-w-0 items-center gap-3 rounded-[var(--radius-tile)] border border-border bg-surface-primary px-3 py-2 text-left shadow-theme hover:bg-surface-soft"
+          floating
+            ? "finance-focus grid size-11 shrink-0 place-items-center rounded-[14px] border border-border bg-card/92 p-0 text-text-primary shadow-[0_8px_20px_rgb(15_23_42_/_0.1)] backdrop-blur-md transition-[transform,background-color,border-color,box-shadow] hover:-translate-y-0.5 hover:border-brand/30 hover:bg-surface-elevated data-popup-open:border-brand/30 data-popup-open:bg-surface-elevated active:scale-[0.97] dark:border-border-strong/70 dark:bg-surface-elevated/92 dark:shadow-[0_10px_24px_rgb(0_0_0_/_0.28)]"
+            : compact
+              ? "finance-focus flex h-11 min-w-[3.75rem] items-center justify-center gap-1 rounded-full border border-transparent bg-transparent px-1.5 text-text-secondary shadow-none hover:bg-hover hover:text-text-primary data-popup-open:bg-hover data-popup-open:text-text-primary"
+              : drawer
+                ? "finance-focus flex min-h-14 w-full min-w-0 items-center gap-2.5 rounded-[18px] border border-border bg-surface-secondary/75 px-3 py-2 text-left shadow-[inset_0_1px_0_rgb(255_255_255_/_0.24)] transition-[background-color,border-color,box-shadow,transform] hover:-translate-y-px hover:border-brand/25 hover:bg-surface-soft hover:shadow-[var(--shadow-xs)]"
+                : "finance-focus flex min-h-11 w-full min-w-0 items-center gap-3 rounded-[var(--radius-tile)] border border-border bg-surface-primary px-3 py-2 text-left shadow-theme hover:bg-surface-soft"
         }
       >
-        <Avatar className={drawer ? "size-9" : "size-9"}>
+        <Avatar className={floating ? "size-8" : "size-9"}>
           {avatarUrl ? <AvatarImage src={avatarUrl} alt={displayName} /> : null}
           <AvatarFallback
             className={
-              compact
-                ? "bg-success/18 text-sm font-bold text-success"
-                : "bg-brand text-sm font-bold text-primary-foreground"
+              floating
+                ? "bg-brand/12 text-brand"
+                : compact
+                  ? "bg-success/18 text-sm font-bold text-success"
+                  : "bg-brand text-sm font-bold text-primary-foreground"
             }
           >
-            {compact ? (
+            {floating ? (
+              <UserRound size={16} strokeWidth={2.15} aria-hidden="true" />
+            ) : compact ? (
               displayName.slice(0, 2).toUpperCase()
             ) : (
               <CircleDollarSign size={15} aria-hidden="true" />
@@ -124,7 +137,9 @@ export default function JamalMenu({
           </AvatarFallback>
         </Avatar>
 
-        {compact ? (
+        {floating ? (
+          <span className="sr-only">{displayName}</span>
+        ) : compact ? (
           <>
             <span className="sr-only">{displayName}</span>
             <ChevronDown size={14} strokeWidth={2.1} aria-hidden="true" />
