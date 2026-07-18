@@ -128,6 +128,24 @@
   margin-top: 0.6rem !important;
 }
 
+/* Type is already clear in the receipt header; do not repeat it in Extra Details. */
+[data-transaction-receipt] aside.finance-panel-soft > div > div.finance-panel-soft:first-child {
+  display: none !important;
+}
+
+/* When no source, person, or item exists, remove the now-empty secondary column. */
+[data-transaction-receipt] aside.finance-panel-soft:has(
+    > div > div.finance-panel-soft:first-child:last-child
+  ) {
+  display: none !important;
+}
+
+[data-transaction-receipt] > div:nth-child(2):has(
+    > aside.finance-panel-soft > div > div.finance-panel-soft:first-child:last-child
+  ) {
+  grid-template-columns: minmax(0, 1fr) !important;
+}
+
 @media (max-width: 767px) {
   [data-transaction-row] {
     gap: 0.72rem !important;
