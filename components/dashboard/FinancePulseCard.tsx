@@ -1,16 +1,12 @@
 "use client";
 
-import {
-  Activity,
-  CalendarDays,
-  Target,
-  Wallet,
-} from "lucide-react";
 import type { CSSProperties } from "react";
 
 import CountedAmount from "@/components/motion/CountedAmount";
 import { useCurrency } from "@/components/currency/CurrencyProvider";
 import type { DashboardAvailability } from "@/lib/dashboard-financial-semantics";
+
+import styles from "./FinancePulseCard.module.css";
 
 interface FinancePulseCardProps {
   income: number | string | null;
@@ -19,6 +15,13 @@ interface FinancePulseCardProps {
   netTone: "positive" | "negative" | "neutral";
   remainingDays: number;
   status: DashboardAvailability;
+}
+
+function toFiniteNumber(value: number | string | null) {
+  if (typeof value === "number") return Number.isFinite(value) ? value : null;
+  if (typeof value !== "string") return null;
+  const parsed = Number(value.replace(/[^\d.-]/g, ""));
+  return Number.isFinite(parsed) ? parsed : null;
 }
 
 export default function FinancePulseCard({
@@ -30,83 +33,92 @@ export default function FinancePulseCard({
   status,
 }: FinancePulseCardProps) {
   const { formatCurrency } = useCurrency();
-  const displayIncome = income === null ? "Unavailable" : typeof income === "number" ? formatCurrency(income) : income;
-  const displayExpenses = expenses === null ? "Unavailable" : typeof expenses === "number" ? formatCurrency(expenses) : expenses;
+  const displayIncome =
+    income === null ? "Unavailable" : typeof income === "number" ? formatCurrency(income) : income;
+  const displayExpenses =
+    expenses === null ? "Unavailable" : typeof expenses === "number" ? formatCurrency(expenses) : expenses;
   const displayNet = net === null ? "Unavailable" : typeof net === "number" ? formatCurrency(net) : net;
+  const numericIncome = toFiniteNumber(income);
+  const numericExpenses = toFiniteNumber(expenses);
   const netDetail =
-    status !== "available" ? "Today’s data unavailable"
-    : netTone === "positive" ? "Positive cash flow"
-    : netTone === "negative" ? "Expense pressure"
-    : "Break-even today";
+    status !== "available"
+      ? "Today’s data unavailable"
+      : netTone === "positive"
+        ? "Positive cash flow"
+        : netTone === "negative"
+          ? "Expense pressure"
+          : "Break-even today";
   const summaryTiles = [
     {
-      label: "Income",
+      label: "Income Today",
       value: displayIncome,
-      detail: status === "available" ? "Today" : "Temporarily unavailable",
+      detail:
+        status !== "available"
+          ? "Temporarily unavailable"
+          : numericIncome === 0
+            ? "No deposits yet"
+            : "Deposits recorded",
       accent: "var(--success)",
-      icon: Wallet,
     },
     {
-      label: "Expenses",
+      label: "Expenses Today",
       value: displayExpenses,
-      detail: status === "available" ? "Today spend" : "Temporarily unavailable",
-      accent: "var(--danger)",
-      icon: Activity,
+      detail:
+        status !== "available"
+          ? "Temporarily unavailable"
+          : numericExpenses === 0
+            ? "No spending yet"
+            : "Spending recorded",
+      accent: "var(--warning)",
     },
     {
       label: "Net Today",
       value: displayNet,
       detail: netDetail,
       accent:
-        netTone === "positive" ? "var(--success)"
-        : netTone === "negative" ? "var(--danger)"
-        : "var(--text-secondary)",
-      icon: Target,
+        netTone === "positive"
+          ? "var(--success)"
+          : netTone === "negative"
+            ? "var(--danger)"
+            : "var(--text-secondary)",
     },
     {
       label: "Days Remaining",
       value: String(remainingDays),
-      detail: "Month cycle",
+      detail: "In monthly cycle",
       accent: "var(--active)",
-      icon: CalendarDays,
     },
   ];
 
   return (
-    <section aria-label="Today’s financial pulse" className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-      {summaryTiles.map(({ label, value, detail, accent, icon: Icon }) => (
+    <section
+      aria-label="Today’s financial pulse"
+      className={`${styles.grid} grid gap-3 sm:grid-cols-2 xl:grid-cols-4`}
+    >
+      {summaryTiles.map(({ label, value, detail, accent }) => (
         <article
           key={label}
-          className="dashboard-pulse-tile"
+          aria-label={`${label}. ${value}. ${detail}`}
+          className={`dashboard-pulse-tile ${styles.tile}`}
           style={{ "--pulse-accent": accent } as CSSProperties}
         >
-          <span aria-hidden="true" className="dashboard-pulse-accent" />
-          <div className="flex items-start justify-between gap-3">
-            <div className="min-w-0">
-              <p className="text-[10px] font-bold uppercase tracking-[0.1em] text-text-secondary">
-                {label}
-              </p>
-              <p
-                className="dashboard-pulse-value mt-1.5 break-words font-black leading-tight text-text-primary tabular-nums [overflow-wrap:anywhere]"
-                title={value}
-              >
-                {value === "Unavailable" ? value : <CountedAmount amount={value} />}
-              </p>
-            </div>
+          <div className={styles.header}>
+            <p className={styles.label}>{label}</p>
             <span
-              className="dashboard-pulse-icon grid h-8 w-8 shrink-0 place-items-center rounded-[13px] border"
+              aria-hidden="true"
+              className={styles.dot}
               style={{
-                color: accent,
-                borderColor: `color-mix(in srgb, ${accent}, transparent 74%)`,
-                backgroundColor: `color-mix(in srgb, ${accent}, transparent 90%)`,
+                backgroundColor: accent,
+                boxShadow: `0 0 0 3px color-mix(in srgb, ${accent}, transparent 90%)`,
               }}
-            >
-              <Icon size={13} strokeWidth={2.2} />
-            </span>
+            />
           </div>
-          <p className="mt-1.5 line-clamp-2 text-[10.5px] font-semibold leading-4 text-text-secondary">
-            {detail}
+
+          <p className={styles.value} title={value}>
+            {value === "Unavailable" ? value : <CountedAmount amount={value} />}
           </p>
+
+          <p className={styles.detail}>{detail}</p>
         </article>
       ))}
     </section>
