@@ -1,0 +1,612 @@
+/*
+ * Settings page layout reset.
+ *
+ * This file is intentionally loaded after the existing Settings styles. It
+ * removes the table-like grouped rows, hides the unrelated Payables launcher,
+ * introduces a responsive settings workspace, and refreshes the notification
+ * switches without changing any data, dialogs, writes, or actions.
+ */
+
+.settings-page-polish {
+  container-type: inline-size;
+  min-width: 0;
+}
+
+.settings-page-polish,
+.settings-page-polish * {
+  box-sizing: border-box;
+  min-inline-size: 0;
+}
+
+/* The animated SettingsOneUI content wrapper. */
+.settings-page-polish div:has(> .page-heading) {
+  display: grid !important;
+  width: min(100%, 92rem) !important;
+  max-width: 92rem !important;
+  margin-inline: auto !important;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-areas:
+    "hero"
+    "profile"
+    "appearance"
+    "preferences"
+    "notifications"
+    "data"
+    "stats"
+    "signout"
+    "footer";
+  gap: clamp(0.9rem, 2vw, 1.25rem) !important;
+  align-items: start;
+}
+
+.settings-page-polish div:has(> .page-heading) > * {
+  margin-block: 0 !important;
+}
+
+.settings-page-polish div:has(> .page-heading) > .page-heading {
+  grid-area: hero;
+}
+
+.settings-page-polish div:has(> .page-heading) > section:nth-of-type(1) {
+  grid-area: profile;
+}
+
+.settings-page-polish div:has(> .page-heading) > section:nth-of-type(2) {
+  grid-area: appearance;
+}
+
+.settings-page-polish div:has(> .page-heading) > section:nth-of-type(3) {
+  grid-area: preferences;
+}
+
+.settings-page-polish div:has(> .page-heading) > section:nth-of-type(4) {
+  grid-area: notifications;
+}
+
+.settings-page-polish div:has(> .page-heading) > section:nth-of-type(6) {
+  grid-area: data;
+}
+
+.settings-page-polish div:has(> .page-heading) > section:nth-of-type(7) {
+  grid-area: stats;
+}
+
+.settings-page-polish div:has(> .page-heading) > button:last-of-type {
+  grid-area: signout;
+}
+
+.settings-page-polish div:has(> .page-heading) > footer {
+  grid-area: footer;
+}
+
+/* Payables is a separate money tool and does not belong inside Settings. */
+.settings-page-polish section:has(a[href="/dashboard/payables"]) {
+  display: none !important;
+}
+
+/* Cleaner page introduction. */
+.settings-page-polish .page-heading {
+  position: relative;
+  isolation: isolate;
+  min-height: 0 !important;
+  padding: clamp(1.05rem, 2.5vw, 1.6rem) !important;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--border-strong), transparent 18%) !important;
+  border-radius: clamp(1.05rem, 2vw, 1.45rem) !important;
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--surface-primary), var(--primary) 4%), var(--surface-primary) 72%) !important;
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, white 55%, transparent),
+    0 14px 34px color-mix(in srgb, var(--text-primary) 7%, transparent) !important;
+}
+
+.settings-page-polish .page-heading::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 3px;
+  border-radius: inherit;
+  background: var(--primary) !important;
+  box-shadow: none !important;
+}
+
+.settings-page-polish .page-heading::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  top: -4.5rem;
+  right: -3.5rem;
+  width: 10rem !important;
+  height: 10rem;
+  border: 1px solid color-mix(in srgb, var(--primary), transparent 82%);
+  border-radius: 999px !important;
+  background: color-mix(in srgb, var(--primary), transparent 96%);
+  opacity: 1 !important;
+  rotate: 0deg !important;
+  translate: 0 0 !important;
+}
+
+.settings-page-polish .page-title {
+  font-size: clamp(1.65rem, 4vw, 2.35rem) !important;
+  line-height: 1.02;
+  letter-spacing: -0.045em;
+}
+
+.settings-page-polish .page-subtitle {
+  max-width: 42rem;
+  margin-top: 0.48rem !important;
+  font-size: clamp(0.78rem, 1.35vw, 0.92rem) !important;
+  line-height: 1.5;
+}
+
+/* Section labels now read like navigation landmarks instead of table headers. */
+.settings-page-polish section > p:first-child {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0 0.2rem 0.48rem !important;
+  color: var(--text-secondary);
+  font-size: 0.66rem !important;
+  font-weight: 800;
+  letter-spacing: 0.14em !important;
+}
+
+.settings-page-polish section > p:first-child::before {
+  content: "";
+  width: 0.42rem !important;
+  height: 0.42rem !important;
+  flex: 0 0 auto;
+  border-radius: 999px !important;
+  background: var(--primary) !important;
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--primary), transparent 90%);
+}
+
+/* Remove the grouped/table appearance. Every action is its own surface. */
+.settings-page-polish .finance-panel {
+  display: grid;
+  gap: 0.62rem;
+  overflow: visible !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.settings-page-polish .finance-panel > div[class*="ml-[76px]"] {
+  display: none !important;
+}
+
+.settings-page-polish .finance-panel > :where(button, a, div):not([class*="ml-[76px]"]) {
+  width: 100%;
+  max-width: 100%;
+  border: 1px solid color-mix(in srgb, var(--border), transparent 5%);
+  border-radius: 1rem;
+  background:
+    linear-gradient(145deg, color-mix(in srgb, var(--surface-primary), white 2%), var(--surface-primary));
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, white 48%, transparent),
+    0 7px 20px color-mix(in srgb, var(--text-primary) 5%, transparent);
+}
+
+.dark .settings-page-polish .finance-panel > :where(button, a, div):not([class*="ml-[76px]"]) {
+  background: color-mix(in srgb, var(--surface-primary), var(--primary) 1.5%);
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, white 5%, transparent),
+    0 10px 24px rgb(0 0 0 / 0.13);
+}
+
+.settings-page-polish .finance-panel > :where(button, a) {
+  min-height: 4.25rem !important;
+  gap: 0.78rem !important;
+  padding: 0.8rem 0.95rem !important;
+  transition:
+    border-color 180ms ease,
+    background-color 180ms ease,
+    box-shadow 180ms ease,
+    transform 180ms ease !important;
+}
+
+.settings-page-polish .finance-panel > div:not([class*="ml-[76px]"]) {
+  padding: 0.95rem !important;
+}
+
+.settings-page-polish .finance-panel :where(p, span) {
+  overflow-wrap: anywhere;
+}
+
+.settings-page-polish .finance-panel .min-w-0.flex-1 {
+  overflow: hidden;
+}
+
+.settings-page-polish .finance-icon-bubble {
+  width: 2.45rem !important;
+  height: 2.45rem !important;
+  flex: 0 0 auto;
+  border: 1px solid color-mix(in srgb, currentColor, transparent 76%) !important;
+  border-radius: 0.78rem !important;
+  background: color-mix(in srgb, currentColor, transparent 92%) !important;
+  box-shadow: none !important;
+}
+
+.settings-page-polish .finance-icon-bubble svg {
+  width: 1.08rem;
+  height: 1.08rem;
+}
+
+.settings-page-polish .finance-state-pill {
+  min-height: 1.55rem;
+  max-width: 8rem;
+  padding-inline: 0.56rem;
+  overflow: hidden;
+  border-color: color-mix(in srgb, var(--border-strong), transparent 34%);
+  background: var(--surface-secondary);
+  box-shadow: none;
+  font-size: 0.6rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Profile summary gets a clear identity without becoming oversized. */
+.settings-page-polish section:first-of-type .finance-panel > div:first-child {
+  min-height: 6.1rem !important;
+  gap: 0.9rem;
+  padding: 1rem !important;
+  background:
+    linear-gradient(120deg, color-mix(in srgb, var(--primary-soft), transparent 20%), var(--surface-primary) 62%) !important;
+}
+
+.settings-page-polish section:first-of-type .finance-panel > div:first-child > div:first-child {
+  width: 3.35rem !important;
+  height: 3.35rem !important;
+  border-radius: 1rem !important;
+  background: linear-gradient(145deg, var(--primary), color-mix(in srgb, var(--primary), black 10%)) !important;
+  box-shadow: 0 9px 22px color-mix(in srgb, var(--primary), transparent 73%) !important;
+}
+
+.settings-page-polish section:first-of-type .finance-panel h3 {
+  font-size: clamp(1.05rem, 2vw, 1.25rem) !important;
+  letter-spacing: -0.025em;
+}
+
+/* Theme choices feel like a segmented workspace control rather than a table row. */
+.settings-page-polish .finance-panel > div:has([role="radiogroup"]) {
+  padding: 1rem !important;
+}
+
+.settings-page-polish [role="radiogroup"] {
+  grid-template-columns: minmax(0, 1fr) !important;
+  gap: 0.55rem !important;
+}
+
+.settings-page-polish [role="radiogroup"] > button {
+  position: relative;
+  min-height: 3.85rem;
+  padding: 0.62rem 0.72rem !important;
+  border-radius: 0.86rem !important;
+  background: var(--surface-secondary) !important;
+  box-shadow: none !important;
+}
+
+.settings-page-polish [role="radiogroup"] > button[aria-checked="true"] {
+  border-color: color-mix(in srgb, var(--primary), transparent 36%) !important;
+  background: color-mix(in srgb, var(--primary-soft), var(--surface-primary) 20%) !important;
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--primary), transparent 88%) !important;
+}
+
+.settings-page-polish [role="radiogroup"] > button > span:first-child {
+  width: 1.95rem;
+  height: 1.95rem;
+  flex: 0 0 auto;
+  border-radius: 0.65rem;
+}
+
+/* Notification rows and refreshed switches. */
+.settings-page-polish #notifications .finance-panel > div:not([class*="ml-[76px]"]) {
+  display: grid !important;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  column-gap: 0.75rem;
+  min-height: 4.35rem;
+  padding: 0.82rem 0.95rem !important;
+}
+
+.settings-page-polish #notifications [role="switch"] {
+  position: relative;
+  isolation: isolate;
+  width: 48px !important;
+  min-width: 48px !important;
+  height: 28px !important;
+  min-height: 28px !important;
+  padding: 0 !important;
+  overflow: hidden;
+  cursor: pointer;
+  touch-action: manipulation;
+  border: 1px solid color-mix(in srgb, var(--border-strong), transparent 20%) !important;
+  border-radius: 999px !important;
+  background: color-mix(in srgb, var(--surface-secondary), var(--text-secondary) 4%) !important;
+  box-shadow: inset 0 1px 3px color-mix(in srgb, var(--text-primary) 12%, transparent) !important;
+  transition:
+    background-color 180ms ease,
+    border-color 180ms ease,
+    box-shadow 180ms ease,
+    transform 140ms ease !important;
+}
+
+.settings-page-polish #notifications [role="switch"]::after {
+  content: "" !important;
+  display: none !important;
+}
+
+.settings-page-polish #notifications [role="switch"] > span {
+  position: absolute !important;
+  z-index: 1;
+  top: 3px !important;
+  left: 3px !important;
+  display: grid !important;
+  width: 20px !important;
+  height: 20px !important;
+  place-items: center;
+  border: 1px solid color-mix(in srgb, var(--border), transparent 18%) !important;
+  border-radius: 999px !important;
+  background: var(--card) !important;
+  box-shadow: 0 2px 7px color-mix(in srgb, var(--text-primary) 20%, transparent) !important;
+  transform: translateX(0) !important;
+  transition:
+    transform 220ms cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 180ms ease,
+    box-shadow 180ms ease !important;
+}
+
+.settings-page-polish #notifications [role="switch"] > span::after {
+  content: "";
+  width: 0.32rem;
+  height: 0.32rem;
+  border-radius: 999px;
+  background: var(--text-secondary);
+  opacity: 0.45;
+  box-shadow: none;
+}
+
+.settings-page-polish #notifications [role="switch"][aria-checked="true"] {
+  border-color: color-mix(in srgb, var(--primary), transparent 22%) !important;
+  background: var(--primary) !important;
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, white 25%, transparent),
+    0 5px 14px color-mix(in srgb, var(--primary), transparent 72%) !important;
+}
+
+.settings-page-polish #notifications [role="switch"][aria-checked="true"] > span {
+  border-color: color-mix(in srgb, var(--primary), transparent 70%) !important;
+  transform: translateX(20px) !important;
+}
+
+.settings-page-polish #notifications [role="switch"][aria-checked="true"] > span::after {
+  background: var(--primary);
+  opacity: 1;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary), transparent 87%);
+}
+
+/* Export action remains readable even with the detailed description. */
+.settings-page-polish .finance-panel > button:has(.lucide-download) {
+  align-items: center;
+}
+
+.settings-page-polish .finance-panel > button:has(.lucide-download) > span:last-child {
+  gap: 0.28rem;
+}
+
+/* Statistics become compact information tiles, not another table. */
+.settings-page-polish section:has(.summary-card) > div {
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 0.62rem !important;
+}
+
+.settings-page-polish section:has(.summary-card) .summary-card {
+  min-height: 5.8rem !important;
+  display: grid;
+  place-content: center;
+  padding: 0.8rem 0.5rem;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--border), transparent 5%);
+  border-radius: 1rem !important;
+  background: var(--surface-primary);
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, white 48%, transparent),
+    0 7px 18px color-mix(in srgb, var(--text-primary) 5%, transparent);
+}
+
+.settings-page-polish section:has(.summary-card) .summary-card p:first-child {
+  font-size: clamp(1.4rem, 4vw, 1.8rem) !important;
+  line-height: 1;
+  letter-spacing: -0.045em;
+}
+
+.settings-page-polish section:has(.summary-card) .summary-card p:last-child {
+  margin-top: 0.42rem;
+  font-size: 0.64rem !important;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+/* Destructive action remains visible but calmer than the previous full-width banner. */
+.settings-page-polish div:has(> .page-heading) > button:last-of-type {
+  width: min(100%, 34rem);
+  min-height: 3.2rem !important;
+  justify-self: center;
+  padding: 0.72rem 1rem !important;
+  border-color: color-mix(in srgb, var(--danger), transparent 58%) !important;
+  border-radius: 0.95rem !important;
+  background: color-mix(in srgb, var(--danger-soft), transparent 14%) !important;
+  box-shadow: none !important;
+}
+
+.settings-page-polish footer {
+  padding: 0.1rem 0 0.4rem !important;
+  color: var(--text-tertiary);
+  line-height: 1.55;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .settings-page-polish .finance-panel > :where(button, a):hover {
+    border-color: color-mix(in srgb, var(--primary), transparent 68%);
+    background: color-mix(in srgb, var(--surface-primary), var(--primary) 2.5%);
+    box-shadow:
+      inset 0 1px 0 color-mix(in srgb, white 48%, transparent),
+      0 10px 24px color-mix(in srgb, var(--text-primary) 7%, transparent);
+    transform: translateY(-1px) !important;
+  }
+
+  .settings-page-polish [role="radiogroup"] > button:hover {
+    border-color: color-mix(in srgb, var(--primary), transparent 66%) !important;
+    transform: translateY(-1px) !important;
+  }
+
+  .settings-page-polish #notifications [role="switch"]:hover {
+    border-color: color-mix(in srgb, var(--primary), transparent 55%) !important;
+    transform: none !important;
+  }
+}
+
+.settings-page-polish #notifications [role="switch"]:active {
+  transform: scale(0.96) !important;
+}
+
+/* Regular phones: three compact theme choices without horizontal overflow. */
+@container (min-width: 24rem) {
+  .settings-page-polish [role="radiogroup"] {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  }
+
+  .settings-page-polish [role="radiogroup"] > button {
+    min-height: 4.35rem;
+    flex-direction: column;
+    justify-content: center;
+    gap: 0.35rem;
+    padding: 0.55rem 0.25rem !important;
+    text-align: center;
+  }
+
+  .settings-page-polish [role="radiogroup"] > button > span:nth-child(2) > span:last-child,
+  .settings-page-polish [role="radiogroup"] > button > span:last-child > span {
+    display: none;
+  }
+
+  .settings-page-polish [role="radiogroup"] > button > span:last-child {
+    position: absolute;
+    top: 0.3rem;
+    right: 0.3rem;
+  }
+}
+
+/* Tablet and compact desktop: balanced two-column workspace. */
+@container (min-width: 43rem) {
+  .settings-page-polish div:has(> .page-heading) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-areas:
+      "hero hero"
+      "profile appearance"
+      "preferences appearance"
+      "notifications data"
+      "stats stats"
+      "signout signout"
+      "footer footer";
+    column-gap: 1rem !important;
+    row-gap: 1rem !important;
+  }
+
+  .settings-page-polish div:has(> .page-heading) > section:nth-of-type(1),
+  .settings-page-polish div:has(> .page-heading) > section:nth-of-type(2),
+  .settings-page-polish div:has(> .page-heading) > section:nth-of-type(3),
+  .settings-page-polish div:has(> .page-heading) > section:nth-of-type(4),
+  .settings-page-polish div:has(> .page-heading) > section:nth-of-type(6) {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+  }
+
+  .settings-page-polish div:has(> .page-heading) > section:nth-of-type(1) > .finance-panel,
+  .settings-page-polish div:has(> .page-heading) > section:nth-of-type(2) > .finance-panel,
+  .settings-page-polish div:has(> .page-heading) > section:nth-of-type(3) > .finance-panel,
+  .settings-page-polish div:has(> .page-heading) > section:nth-of-type(4) > .finance-panel,
+  .settings-page-polish div:has(> .page-heading) > section:nth-of-type(6) > .finance-panel {
+    flex: 1;
+  }
+
+  .settings-page-polish [role="radiogroup"] > button {
+    min-height: 4.55rem;
+  }
+
+  .settings-page-polish section:has(.summary-card) > div {
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  }
+}
+
+/* Wide screens use three purposeful columns instead of stretching long rows. */
+@container (min-width: 72rem) {
+  .settings-page-polish div:has(> .page-heading) {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-areas:
+      "hero hero hero"
+      "profile appearance appearance"
+      "preferences notifications data"
+      "stats stats stats"
+      "signout signout signout"
+      "footer footer footer";
+    column-gap: 1.15rem !important;
+    row-gap: 1.1rem !important;
+  }
+
+  .settings-page-polish [role="radiogroup"] > button {
+    min-height: 4.65rem;
+    flex-direction: row;
+    justify-content: flex-start;
+    gap: 0.65rem;
+    padding: 0.7rem !important;
+    text-align: left;
+  }
+
+  .settings-page-polish [role="radiogroup"] > button > span:nth-child(2) > span:last-child {
+    display: block;
+  }
+
+  .settings-page-polish [role="radiogroup"] > button > span:last-child {
+    position: static;
+  }
+}
+
+@container (max-width: 23.99rem) {
+  .settings-page-polish .finance-panel > :where(button, a) {
+    gap: 0.62rem !important;
+    padding-inline: 0.78rem !important;
+  }
+
+  .settings-page-polish .finance-panel > div:not([class*="ml-[76px]"]) {
+    padding-inline: 0.8rem !important;
+  }
+
+  .settings-page-polish .finance-icon-bubble {
+    width: 2.22rem !important;
+    height: 2.22rem !important;
+    border-radius: 0.7rem !important;
+  }
+
+  .settings-page-polish #notifications [role="switch"] {
+    width: 44px !important;
+    min-width: 44px !important;
+  }
+
+  .settings-page-polish #notifications [role="switch"][aria-checked="true"] > span {
+    transform: translateX(16px) !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .settings-page-polish *,
+  .settings-page-polish *::before,
+  .settings-page-polish *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}
