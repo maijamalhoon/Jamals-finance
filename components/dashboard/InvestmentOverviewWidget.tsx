@@ -493,7 +493,7 @@ export default function InvestmentOverviewWidget({
               return (
                 <div
                   key={investment.id}
-                  className="grid min-w-0 grid-cols-[auto_minmax(0,1fr)_minmax(76px,0.9fr)_auto] items-center gap-2.5 rounded-[18px] border border-transparent bg-transparent px-3 py-2.5 shadow-none sm:grid-cols-[auto_minmax(110px,1fr)_minmax(110px,1.2fr)_auto] sm:gap-3 sm:border-border sm:bg-surface-secondary sm:px-4 sm:py-3 sm:shadow-[inset_0_1px_0_rgb(255_255_255_/_0.22)]"
+                  className="grid min-w-0 grid-cols-[auto_minmax(0,1fr)_minmax(76px,0.9fr)_auto] items-center gap-2.5 px-3 py-2.5 sm:grid-cols-[auto_minmax(110px,1fr)_minmax(110px,1.2fr)_auto] sm:gap-3 sm:px-4 sm:py-3"
                 >
                   <AssetLogo entry={investment} size={34} />
 
