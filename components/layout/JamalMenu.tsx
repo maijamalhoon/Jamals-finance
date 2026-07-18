@@ -41,6 +41,7 @@ const FALLBACK_PROFILE: ProfileSummary = {
 };
 
 const GLASS_EASE = [0.22, 1, 0.36, 1] as const;
+const MENU_ICON_STROKE_WIDTH = 2;
 
 let profileRequest: Promise<ProfileSummary> | null = null;
 
@@ -138,12 +139,12 @@ export default function JamalMenu({
           aria-label={`Open profile menu for ${displayName}`}
           className={
             floating
-              ? "finance-focus grid size-11 shrink-0 place-items-center rounded-[14px] border border-border bg-card/92 p-0 text-text-primary shadow-[0_8px_20px_rgb(15_23_42_/_0.1)] backdrop-blur-md transition-[transform,background-color,border-color,box-shadow] hover:-translate-y-0.5 hover:border-brand/30 hover:bg-surface-elevated data-popup-open:border-brand/30 data-popup-open:bg-surface-elevated active:scale-[0.97] dark:border-border-strong/70 dark:bg-surface-elevated/92 dark:shadow-[0_10px_24px_rgb(0_0_0_/_0.28)]"
+              ? "finance-focus font-sans grid size-11 shrink-0 place-items-center rounded-[14px] border border-border bg-card/92 p-0 text-text-primary shadow-[0_8px_20px_rgb(15_23_42_/_0.1)] backdrop-blur-md transition-[transform,background-color,border-color,box-shadow] hover:-translate-y-0.5 hover:border-brand/30 hover:bg-surface-elevated data-popup-open:border-brand/30 data-popup-open:bg-surface-elevated active:scale-[0.97] dark:border-border-strong/70 dark:bg-surface-elevated/92 dark:shadow-[0_10px_24px_rgb(0_0_0_/_0.28)]"
               : compact
-                ? "finance-focus flex h-11 min-w-[3.75rem] items-center justify-center gap-1 rounded-full border border-transparent bg-transparent px-1.5 text-text-secondary shadow-none hover:bg-hover hover:text-text-primary data-popup-open:bg-hover data-popup-open:text-text-primary"
+                ? "finance-focus font-sans flex h-11 min-w-[3.75rem] items-center justify-center gap-1 rounded-full border border-transparent bg-transparent px-1.5 text-text-secondary shadow-none hover:bg-hover hover:text-text-primary data-popup-open:bg-hover data-popup-open:text-text-primary"
                 : drawer
-                  ? "finance-focus flex min-h-14 w-full min-w-0 items-center gap-2.5 rounded-[18px] border border-border bg-surface-secondary/75 px-3 py-2 text-left shadow-[inset_0_1px_0_rgb(255_255_255_/_0.24)] transition-[background-color,border-color,box-shadow,transform] hover:-translate-y-px hover:border-brand/25 hover:bg-surface-soft hover:shadow-[var(--shadow-xs)]"
-                  : "finance-focus flex min-h-11 w-full min-w-0 items-center gap-3 rounded-[var(--radius-tile)] border border-border bg-surface-primary px-3 py-2 text-left shadow-theme hover:bg-surface-soft"
+                  ? "finance-focus font-sans flex min-h-14 w-full min-w-0 items-center gap-2.5 rounded-[18px] border border-border bg-surface-secondary/75 px-3 py-2 text-left shadow-[inset_0_1px_0_rgb(255_255_255_/_0.24)] transition-[background-color,border-color,box-shadow,transform] hover:-translate-y-px hover:border-brand/25 hover:bg-surface-soft hover:shadow-[var(--shadow-xs)]"
+                  : "finance-focus font-sans flex min-h-11 w-full min-w-0 items-center gap-3 rounded-[var(--radius-tile)] border border-border bg-surface-primary px-3 py-2 text-left shadow-theme hover:bg-surface-soft"
           }
         >
           <Avatar className={floating ? "size-8" : "size-9"}>
@@ -158,11 +159,19 @@ export default function JamalMenu({
               }
             >
               {floating ? (
-                <UserRound size={16} strokeWidth={2.15} aria-hidden="true" />
+                <UserRound
+                  size={16}
+                  strokeWidth={MENU_ICON_STROKE_WIDTH}
+                  aria-hidden="true"
+                />
               ) : compact ? (
                 displayName.slice(0, 2).toUpperCase()
               ) : (
-                <CircleDollarSign size={15} aria-hidden="true" />
+                <CircleDollarSign
+                  size={15}
+                  strokeWidth={MENU_ICON_STROKE_WIDTH}
+                  aria-hidden="true"
+                />
               )}
             </AvatarFallback>
           </Avatar>
@@ -172,7 +181,11 @@ export default function JamalMenu({
           ) : compact ? (
             <>
               <span className="sr-only">{displayName}</span>
-              <ChevronDown size={14} strokeWidth={2.1} aria-hidden="true" />
+              <ChevronDown
+                size={14}
+                strokeWidth={MENU_ICON_STROKE_WIDTH}
+                aria-hidden="true"
+              />
             </>
           ) : (
             <>
@@ -186,7 +199,11 @@ export default function JamalMenu({
               </span>
               {drawer ? (
                 <span className="grid size-8 shrink-0 place-items-center rounded-[10px] border border-border bg-surface-primary text-text-secondary">
-                  <Settings size={15} strokeWidth={2.1} aria-hidden="true" />
+                  <Settings
+                    size={15}
+                    strokeWidth={MENU_ICON_STROKE_WIDTH}
+                    aria-hidden="true"
+                  />
                 </span>
               ) : null}
             </>
@@ -197,7 +214,7 @@ export default function JamalMenu({
           align={align === "right" ? "end" : "start"}
           side={placement}
           sideOffset={8}
-          className="w-56 rounded-[var(--radius-tile)] border border-border bg-surface-elevated p-1.5 shadow-[var(--shadow-soft)]"
+          className="font-sans w-56 rounded-[var(--radius-tile)] border border-border bg-surface-elevated p-1.5 shadow-[var(--shadow-soft)]"
         >
           <DropdownMenuGroup>
             <DropdownMenuLabel className="px-2.5 py-2">
@@ -215,7 +232,11 @@ export default function JamalMenu({
               onClick={() => router.push("/dashboard/settings")}
               className="min-h-11 cursor-pointer gap-3 rounded-[var(--radius-control)] px-2.5 py-2 text-sm font-semibold text-text-secondary focus:bg-hover focus:text-text-primary"
             >
-              <Settings size={16} aria-hidden="true" />
+              <Settings
+                size={16}
+                strokeWidth={MENU_ICON_STROKE_WIDTH}
+                aria-hidden="true"
+              />
               Settings
             </DropdownMenuItem>
           </DropdownMenuGroup>
@@ -225,7 +246,11 @@ export default function JamalMenu({
             onClick={handleSignOut}
             className="min-h-11 cursor-pointer gap-3 rounded-[var(--radius-control)] px-2.5 py-2 text-sm font-semibold"
           >
-            <LogOut size={16} aria-hidden="true" />
+            <LogOut
+              size={16}
+              strokeWidth={MENU_ICON_STROKE_WIDTH}
+              aria-hidden="true"
+            />
             Sign Out
           </DropdownMenuItem>
         </DropdownMenuContent>
