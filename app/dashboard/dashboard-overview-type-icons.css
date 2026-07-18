@@ -46,6 +46,7 @@
 /* Buttons and labels: Geist Sans 550–650. */
 .dashboard-overview :where(
     button,
+    a,
     label,
     summary,
     [role="button"],
