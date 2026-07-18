@@ -99,31 +99,36 @@
   letter-spacing: -0.034em !important;
 }
 
+/* The progress line sits directly below the amount and grows to the real comparison value. */
 .dashboard-metric-card-footer {
   width: 100%;
-  margin-top: clamp(0.72rem, 5.5cqi, 1rem) !important;
+  margin-top: clamp(0.8rem, 5.5cqi, 1.05rem) !important;
   padding-top: 0 !important;
 }
 
 .dashboard-metric-progress {
   display: block;
   width: 100% !important;
-  height: clamp(1.05rem, 7cqi, 1.4rem) !important;
+  height: 0.32rem !important;
   flex: 0 0 auto !important;
-  overflow: visible !important;
+  overflow: hidden !important;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--metric-accent), transparent 88%);
 }
 
-.dashboard-metric-progress-path {
-  stroke-dasharray: 140 !important;
-  stroke-dashoffset: 140 !important;
-  stroke-width: 2.15 !important;
-  opacity: 0.84 !important;
-  animation: dashboard-metric-progress-draw 900ms var(--motion-ease) 120ms forwards !important;
+.dashboard-metric-progress-fill {
+  display: block;
+  width: var(--metric-progress, 0%);
+  height: 100%;
+  border-radius: inherit;
+  transform: scaleX(0);
+  transform-origin: left center;
+  animation: dashboard-metric-progress-grow 900ms var(--motion-ease) 120ms forwards;
 }
 
-@keyframes dashboard-metric-progress-draw {
+@keyframes dashboard-metric-progress-grow {
   to {
-    stroke-dashoffset: 0;
+    transform: scaleX(1);
   }
 }
 
@@ -171,8 +176,18 @@
 }
 
 @media (max-width: 639px) {
+  .dashboard-balance-copy {
+    text-align: center !important;
+  }
+
+  .dashboard-balance-heading-row {
+    justify-content: center !important;
+  }
+
   .dashboard-balance-amount {
+    margin-inline: auto !important;
     font-size: clamp(2.25rem, 11.2vw, 3.3rem) !important;
+    text-align: center !important;
   }
 
   .dashboard-balance-amount[data-balance-size="long"] {
@@ -184,12 +199,18 @@
   }
 
   .dashboard-balance-actions {
+    display: flex !important;
     width: 100% !important;
     max-width: none !important;
     margin-inline: auto !important;
-    grid-template-columns: repeat(4, minmax(0, 4.35rem)) !important;
+    align-items: flex-start;
     justify-content: center !important;
-    gap: clamp(0.4rem, 2.4vw, 0.75rem) !important;
+    gap: clamp(0.45rem, 2.8vw, 0.78rem) !important;
+  }
+
+  .dashboard-balance-actions .dashboard-quick-action {
+    width: clamp(3.65rem, 19vw, 4.35rem) !important;
+    flex: 0 0 clamp(3.65rem, 19vw, 4.35rem) !important;
   }
 
   .dashboard-metric-card {
@@ -215,12 +236,12 @@
   }
 
   .dashboard-metric-card-footer {
-    margin-top: clamp(0.62rem, 5cqi, 0.82rem) !important;
+    margin-top: clamp(0.7rem, 5cqi, 0.9rem) !important;
     padding-top: 0 !important;
   }
 
   .dashboard-metric-progress {
-    height: clamp(0.95rem, 7cqi, 1.15rem) !important;
+    height: 0.28rem !important;
   }
 }
 
@@ -240,8 +261,8 @@
     transform: none !important;
   }
 
-  .dashboard-metric-progress-path {
-    stroke-dashoffset: 0 !important;
+  .dashboard-metric-progress-fill {
+    transform: scaleX(1) !important;
     animation: none !important;
   }
 }
