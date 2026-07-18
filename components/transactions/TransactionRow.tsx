@@ -2,26 +2,27 @@
 
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import {
-  ArrowLeftRight,
-  ChartNoAxesCombined,
-  Eye,
-  Pencil,
-  RotateCcw,
-  Trash2,
-  TrendingDown,
-  TrendingUp,
-  type LucideIcon,
-} from "lucide-react";
+import { Eye, Pencil, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
-import { createClient } from "@/lib/supabase/client";
 import TransactionModal, {
   ExistingTransaction,
 } from "@/components/dashboard/TransactionModal";
 import { useCurrency } from "@/components/currency/CurrencyProvider";
+import { createClient } from "@/lib/supabase/client";
+import {
+  getTransactionIconMeta,
+  getTransactionPrefix,
+  getTransactionToneClass,
+} from "@/lib/transaction-icons";
 
-type TransactionType = "income" | "expense" | "investment" | "refund" | "transfer";
+type TransactionType =
+  | "income"
+  | "expense"
+  | "investment"
+  | "goal"
+  | "refund"
+  | "transfer";
 
 type Transaction = Omit<ExistingTransaction, "type"> & {
   type?: TransactionType | string | null;
@@ -33,79 +34,24 @@ type Transaction = Omit<ExistingTransaction, "type"> & {
   person_name?: string | null;
   item_name?: string | null;
   reference?: string | null;
+  goal_contribution_id?: string | null;
   categories: {
+    id?: string | null;
     name?: string | null;
     color?: string | null;
+    icon_key?: string | null;
+    type?: string | null;
     parent?: { name?: string | null } | null;
   } | null;
   accounts: { name?: string | null } | null;
 };
-
-function getTypeMeta(type?: string | null): {
-  label: string;
-  icon: LucideIcon;
-  softClass: string;
-  amountClass: string;
-  prefix: string;
-} {
-  if (type === "income") {
-    return {
-      label: "Income",
-      icon: TrendingUp,
-      softClass:
-        "border-success/30 bg-success/10 text-success",
-      amountClass: "text-success",
-      prefix: "+",
-    };
-  }
-
-  if (type === "expense") {
-    return {
-      label: "Expense",
-      icon: TrendingDown,
-      softClass:
-        "border-danger/30 bg-danger/10 text-danger",
-      amountClass: "text-danger",
-      prefix: "-",
-    };
-  }
-
-  if (type === "investment") {
-    return {
-      label: "Investment contribution",
-      icon: ChartNoAxesCombined,
-      softClass:
-        "border-investment/30 bg-investment/10 text-investment",
-      amountClass: "text-investment",
-      prefix: "-",
-    };
-  }
-
-  if (type === "refund") {
-    return {
-      label: "Expense refund",
-      icon: RotateCcw,
-      softClass: "border-info/30 bg-info/10 text-info",
-      amountClass: "text-info",
-      prefix: "+",
-    };
-  }
-
-  return {
-    label: "Transfer",
-    icon: ArrowLeftRight,
-    softClass:
-      "border-active/30 bg-active/10 text-active",
-    amountClass: "text-active",
-    prefix: "",
-  };
-}
 
 function normalizeType(type?: string | null): TransactionType {
   if (
     type === "income" ||
     type === "expense" ||
     type === "investment" ||
+    type === "goal" ||
     type === "refund" ||
     type === "transfer"
   ) {
@@ -119,7 +65,6 @@ function formatDate(date?: string | null) {
   if (!date) return "No date";
 
   const parsed = new Date(date);
-
   if (Number.isNaN(parsed.getTime())) return date;
 
   return parsed.toLocaleDateString("en-US", {
@@ -129,198 +74,228 @@ function formatDate(date?: string | null) {
   });
 }
 
-function getCategoryLabel(tx: Transaction) {
-  if (tx.type === "transfer") return "Transfer";
+function getCategoryLabel(tx: Transaction, type: TransactionType) {
+  if (type === "transfer") return "Transfer";
+  if (type === "goal") return tx.item_name || "Goal contribution";
+  if (type === "investment") {
+    return tx.item_name || tx.categories?.name || "Investment";
+  }
+  if (type === "refund") return tx.categories?.name || "Expense refund";
 
   const parentName = tx.categories?.parent?.name;
   const categoryName = tx.categories?.name;
-
   if (parentName && categoryName) return `${parentName} / ${categoryName}`;
 
-  return categoryName || "Uncategorized";
+  if (categoryName) return categoryName;
+  if (type === "income") return tx.source_name || "Income";
+  return "Expense";
 }
 
 export default function TransactionRow({ tx }: { tx: Transaction }) {
   const router = useRouter();
-  const supabase = createClient();
+  const supabase = useMemo(() => createClient(), []);
   const { formatCurrency } = useCurrency();
 
   const [editOpen, setEditOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
   const type = normalizeType(tx.type);
-  const meta = getTypeMeta(type);
-  const TypeIcon = meta.icon;
-  const canEdit = type === "income" || type === "expense";
-  const canDelete = type !== "investment";
-
-  const categoryLabel = getCategoryLabel(tx);
-  const title = tx.note || tx.categories?.name || meta.label;
+  const iconMeta = getTransactionIconMeta({
+    type,
+    note: tx.note,
+    categoryName: tx.categories?.name,
+    categoryIconKey: tx.categories?.icon_key,
+    parentCategoryName: tx.categories?.parent?.name,
+    sourceName: tx.source_name,
+    itemName: tx.item_name,
+  });
+  const TransactionIcon = iconMeta.icon;
+  const categoryLabel = getCategoryLabel(tx, type);
   const accountName = tx.accounts?.name || "No account";
-  const displayAmount = `${meta.prefix}${formatCurrency(Number(tx.amount ?? 0))}`;
-
-  const receiptHref =
-    tx.id ?
-      `/dashboard/transactions/${encodeURIComponent(String(tx.id))}`
+  const amount = Number(tx.amount ?? 0);
+  const displayAmount = `${getTransactionPrefix(type)}${formatCurrency(
+    Number.isFinite(amount) ? Math.abs(amount) : 0,
+  )}`;
+  const receiptHref = tx.id
+    ? `/dashboard/transactions/${encodeURIComponent(String(tx.id))}`
     : "/dashboard/transactions";
 
-  const smallDetail = useMemo(() => {
-    const details = [
-      type === "income" && tx.source_name ? `Source: ${tx.source_name}` : null,
-      tx.person_name ? `Person: ${tx.person_name}` : null,
-      tx.item_name ? `Item: ${tx.item_name}` : null,
-      tx.reference ? `Ref: ${tx.reference}` : null,
-    ].filter(Boolean);
+  const canEdit =
+    (type === "income" || type === "expense") &&
+    iconMeta.semanticType !== "payable";
+  const canDelete = type !== "investment";
 
-    return details.join(" - ");
-  }, [tx.item_name, tx.person_name, tx.reference, tx.source_name, type]);
+  const secondaryText = useMemo(() => {
+    const details = [
+      accountName,
+      formatDate(tx.date),
+      tx.note && tx.note !== categoryLabel ? tx.note : null,
+    ].filter(Boolean);
+    return details.join(" · ");
+  }, [accountName, categoryLabel, tx.date, tx.note]);
+
+  async function deleteGoalContribution() {
+    if (!tx.goal_contribution_id) {
+      throw new Error("This goal contribution is missing its ledger link.");
+    }
+
+    const { error } = await supabase.rpc("delete_goal_contribution", {
+      p_contribution_id: tx.goal_contribution_id,
+    });
+    if (error) throw error;
+  }
+
+  async function deletePayablePayment() {
+    const { data: payment, error: paymentLookupError } = await supabase
+      .from("liability_payments")
+      .select("id")
+      .eq("transaction_id", tx.id)
+      .maybeSingle();
+
+    if (paymentLookupError) throw paymentLookupError;
+
+    if (payment?.id) {
+      const { error: paymentDeleteError } = await supabase
+        .from("liability_payments")
+        .delete()
+        .eq("id", payment.id);
+      if (paymentDeleteError) throw paymentDeleteError;
+    }
+
+    const { error: transactionDeleteError } = await supabase
+      .from("transactions")
+      .delete()
+      .eq("id", tx.id);
+    if (transactionDeleteError) throw transactionDeleteError;
+  }
 
   async function handleDelete() {
-    if (!tx.id) return;
+    if (!tx.id || deleting) return;
 
-    if (!confirm("Delete this transaction? This cannot be undone.")) return;
+    const confirmed = confirm(
+      iconMeta.semanticType === "goal"
+        ? "Delete this goal contribution? Goal progress will be reduced by the same amount."
+        : iconMeta.semanticType === "payable"
+          ? "Delete this payable payment? The payable balance will be restored."
+          : "Delete this transaction? This cannot be undone.",
+    );
+    if (!confirmed) return;
 
     setDeleting(true);
 
-    const tableName =
-      type === "transfer" ? "account_transfers" : "transactions";
+    try {
+      if (iconMeta.semanticType === "goal") {
+        await deleteGoalContribution();
+      } else if (iconMeta.semanticType === "payable") {
+        await deletePayablePayment();
+      } else {
+        const tableName =
+          type === "transfer" ? "account_transfers" : "transactions";
+        const { error } = await supabase
+          .from(tableName)
+          .delete()
+          .eq("id", tx.id);
+        if (error) throw error;
+      }
 
-    const { error } = await supabase.from(tableName).delete().eq("id", tx.id);
-
-    setDeleting(false);
-
-    if (error) {
+      toast.success("Transaction deleted.");
+      router.refresh();
+    } catch {
       toast.error("Could not delete this transaction. Please try again.");
-      return;
+    } finally {
+      setDeleting(false);
     }
-
-    router.refresh();
   }
 
   return (
     <>
+      <style jsx global>{`
+        .finance-panel:has([data-transaction-row]) > .desktop-list-header {
+          display: none !important;
+        }
+      `}</style>
+
       <article
         data-transaction-row
-        className="group grid min-w-0 grid-cols-[auto,minmax(0,1fr)] gap-3 rounded-[var(--oneui-tile-radius)] border border-transparent px-3 py-3 transition-all duration-200 hover:-translate-y-0.5 hover:bg-hover hover:shadow-sm md:flex md:items-center"
+        className="group grid min-w-0 grid-cols-[40px_minmax(0,1fr)_auto] items-center gap-x-3 gap-y-2 border-b border-border/55 px-2 py-3.5 last:border-b-0 sm:px-3 md:grid-cols-[40px_minmax(0,1fr)_minmax(110px,auto)_auto] md:gap-x-4"
       >
-        <div
-          className={`grid h-10 w-10 shrink-0 place-items-center rounded-2xl border transition-all duration-200 group-hover:scale-105 ${meta.softClass}`}
+        <span
+          className="grid size-10 shrink-0 place-items-center"
+          style={{ color: iconMeta.accent }}
+          aria-label={`${iconMeta.label} icon`}
         >
-          <TypeIcon size={18} strokeWidth={2.4} />
-        </div>
+          <TransactionIcon
+            size={22}
+            strokeWidth={2.4}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
+          />
+        </span>
 
-        <div className="min-w-0 md:flex-1">
-          <div className="flex min-w-0 items-start justify-between gap-3">
-            <div className="min-w-0">
-              <p className="break-words text-sm font-bold text-text-primary [overflow-wrap:anywhere] sm:truncate">
-                {title}
-              </p>
-
-              <p className="mt-0.5 break-words text-xs font-medium text-text-secondary [overflow-wrap:anywhere] sm:truncate">
-                {accountName}
-              </p>
-
-              {smallDetail ?
-                <p className="mt-1 break-words text-[11px] text-text-secondary [overflow-wrap:anywhere] sm:truncate">
-                  {smallDetail}
-                </p>
-              : null}
-            </div>
-
-            <p
-              className={`max-w-[52%] shrink-0 break-words text-right text-[13px] font-black leading-tight [overflow-wrap:anywhere] sm:text-sm md:hidden ${meta.amountClass}`}
-            >
-              {displayAmount}
-            </p>
-          </div>
-
-          <div className="mt-2 flex flex-wrap items-center gap-2 md:hidden">
-            <TypePill meta={meta} TypeIcon={TypeIcon} />
-
-            <span className="max-w-full break-words rounded-full bg-hover px-2 py-1 text-[11px] font-medium text-text-secondary [overflow-wrap:anywhere]">
-              {type === "income" && tx.source_name ?
-                tx.source_name
-              : categoryLabel}
-            </span>
-
-            <span className="text-[11px] font-medium text-text-secondary">
-              {formatDate(tx.date)}
-            </span>
-          </div>
-        </div>
-
-        <p className="hidden w-32 truncate text-xs font-medium text-text-secondary md:block">
-          {type === "income" && tx.source_name ? tx.source_name : categoryLabel}
-        </p>
-
-        <div className="hidden w-24 shrink-0 justify-center md:flex">
-          <TypePill meta={meta} TypeIcon={TypeIcon} />
+        <div className="min-w-0">
+          <p className="truncate text-sm font-bold text-text-primary">
+            {categoryLabel}
+          </p>
+          <p
+            className="mt-0.5 truncate text-[11px] font-medium leading-4 text-text-secondary sm:text-xs"
+            title={secondaryText}
+          >
+            {secondaryText}
+          </p>
         </div>
 
         <p
-          className={`hidden w-32 shrink-0 break-words text-right text-sm font-black [overflow-wrap:anywhere] md:block ${meta.amountClass}`}
+          className={`max-w-[44vw] shrink-0 truncate text-right text-sm font-black tracking-[-0.015em] tabular-nums sm:max-w-none ${getTransactionToneClass(
+            type,
+          )}`}
+          title={displayAmount}
         >
           {displayAmount}
         </p>
 
-        <p className="hidden w-24 shrink-0 text-right text-xs font-medium text-text-secondary md:block">
-          {formatDate(tx.date)}
-        </p>
-
-        <div className="col-span-2 flex items-center justify-end gap-1.5 md:col-span-1 md:w-24 md:shrink-0 md:opacity-0 md:transition-opacity md:group-hover:opacity-100 md:group-focus-within:opacity-100">
+        <div className="col-start-2 col-span-2 flex items-center justify-end gap-1.5 md:col-span-1 md:col-start-auto">
           <button
-            onMouseDown={(event) => event.preventDefault()}
-            onClick={(event) => {
-              event.stopPropagation();
-              router.push(receiptHref);
-            }}
-            className="finance-focus grid h-11 w-11 place-items-center rounded-full border border-border bg-surface text-text-secondary shadow-sm transition-all hover:-translate-y-0.5 hover:bg-hover hover:text-active hover:shadow-md md:h-8 md:w-8"
-            aria-label="View receipt"
-            title="View receipt"
+            onClick={() => router.push(receiptHref)}
+            className="finance-focus grid size-9 place-items-center rounded-full text-text-secondary transition-colors hover:bg-hover hover:text-active"
+            aria-label={`View ${categoryLabel}`}
+            title="View"
             type="button"
           >
-            <Eye size={14} />
+            <Eye size={15} strokeWidth={2.3} />
           </button>
 
-          {canEdit ?
+          {canEdit ? (
             <button
-              onMouseDown={(event) => event.preventDefault()}
-              onClick={(event) => {
-                event.stopPropagation();
-                setEditOpen(true);
-              }}
-              className="finance-focus grid h-11 w-11 place-items-center rounded-full border border-border bg-surface text-text-secondary shadow-sm transition-all hover:-translate-y-0.5 hover:bg-hover hover:text-active hover:shadow-md md:h-8 md:w-8"
-              aria-label="Edit transaction"
+              onClick={() => setEditOpen(true)}
+              className="finance-focus grid size-9 place-items-center rounded-full text-text-secondary transition-colors hover:bg-hover hover:text-active"
+              aria-label={`Edit ${categoryLabel}`}
               title="Edit"
               type="button"
             >
-              <Pencil size={14} />
+              <Pencil size={15} strokeWidth={2.3} />
             </button>
-          : null}
+          ) : null}
 
-          {canDelete ?
+          {canDelete ? (
             <button
-              onMouseDown={(event) => event.preventDefault()}
-              onClick={(event) => {
-                event.stopPropagation();
-                void handleDelete();
-              }}
+              onClick={() => void handleDelete()}
               disabled={deleting}
-              className="finance-focus grid h-11 w-11 place-items-center rounded-full border border-border bg-surface text-text-secondary shadow-sm transition-all hover:-translate-y-0.5 hover:border-danger/30 hover:bg-danger/10 hover:text-danger hover:shadow-md disabled:cursor-not-allowed disabled:opacity-50 md:h-8 md:w-8"
-              aria-label="Delete transaction"
+              className="finance-focus grid size-9 place-items-center rounded-full text-text-secondary transition-colors hover:bg-danger/10 hover:text-danger disabled:cursor-not-allowed disabled:opacity-45"
+              aria-label={`Delete ${categoryLabel}`}
               title="Delete"
               type="button"
             >
-              <Trash2 size={14} />
+              <Trash2 size={15} strokeWidth={2.3} />
             </button>
-          : null}
+          ) : null}
         </div>
       </article>
 
-      {canEdit ?
+      {canEdit ? (
         <TransactionModal
           open={editOpen}
-          defaultType={type}
+          defaultType={type as "income" | "expense"}
           transaction={tx as ExistingTransaction}
           onClose={() => setEditOpen(false)}
           onSuccess={() => {
@@ -328,27 +303,7 @@ export default function TransactionRow({ tx }: { tx: Transaction }) {
             router.refresh();
           }}
         />
-      : null}
+      ) : null}
     </>
-  );
-}
-
-function TypePill({
-  meta,
-  TypeIcon,
-}: {
-  meta: {
-    label: string;
-    softClass: string;
-  };
-  TypeIcon: LucideIcon;
-}) {
-  return (
-    <span
-      className={`inline-flex items-center justify-center gap-1 rounded-full border px-2.5 py-1 text-[11px] font-bold ${meta.softClass}`}
-    >
-      <TypeIcon size={12} strokeWidth={2.4} />
-      {meta.label}
-    </span>
   );
 }
