@@ -24,6 +24,7 @@ import { createClient } from "@/lib/supabase/client";
 import AccountModal, { ExistingAccount } from "./AccountModal";
 import { useCurrency } from "@/components/currency/CurrencyProvider";
 import { getAccountAccentColor } from "@/lib/theme-colors";
+import { AccountBrandMark, detectAccountBrand } from "@/lib/account-brand";
 import { getUserMutationError } from "@/lib/user-errors";
 
 type AccountWithTotals = ExistingAccount & {
@@ -51,11 +52,8 @@ function getAccountKindLabel(value?: string | null) {
 
 function maskAccountNumber(value?: string | null) {
   if (!value) return "No account number";
-
   const clean = value.replace(/\s+/g, "");
-
   if (clean.length <= 4) return clean;
-
   return `**** ${clean.slice(-4)}`;
 }
 
@@ -77,15 +75,17 @@ export default function AccountCard({ account }: AccountCardProps) {
   const [editOpen, setEditOpen] = useState(false);
   const [changingStatus, setChangingStatus] = useState(false);
 
+  const brand = detectAccountBrand(account.name, account.icon_key);
   const Icon = getIcon(account.icon_key);
-  const accent = getAccountAccentColor(account.accent_color);
-
+  const accent = brand?.accentColor ?? getAccountAccentColor(account.accent_color);
   const archived = account.status === "archived";
 
   async function handleStatusChange() {
     if (changingStatus) return;
     const action = archived ? "restore" : "archive";
-    if (!confirm(`${archived ? "Restore" : "Archive"} "${account.name}"?`)) return;
+    if (!confirm(`${archived ? "Restore" : "Archive"} "${account.name}"?`)) {
+      return;
+    }
 
     setChangingStatus(true);
 
@@ -95,7 +95,12 @@ export default function AccountCard({ account }: AccountCardProps) {
     });
 
     if (error) {
-      toast.error(getUserMutationError(error, `Account could not be ${action}d. Try again.`));
+      toast.error(
+        getUserMutationError(
+          error,
+          `Account could not be ${action}d. Try again.`,
+        ),
+      );
       setChangingStatus(false);
       return;
     }
@@ -121,9 +126,13 @@ export default function AccountCard({ account }: AccountCardProps) {
         />
 
         <div className="relative flex items-start justify-between gap-3">
-          <div className="account-accent-tile grid h-12 w-12 shrink-0 place-items-center rounded-[18px] border">
-            <Icon size={20} strokeWidth={2.2} />
-          </div>
+          {brand ? (
+            <AccountBrandMark brand={brand} size="lg" />
+          ) : (
+            <div className="account-accent-tile grid h-12 w-12 shrink-0 place-items-center rounded-[18px] border">
+              <Icon size={20} strokeWidth={2.2} />
+            </div>
+          )}
 
           <div className="flex gap-1 opacity-100 transition-opacity sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100">
             {!archived ? (
