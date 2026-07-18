@@ -1,3 +1,4 @@
+/* Single-slot picker preserves the existing field footprint. */
 .root {
   position: relative;
   overflow: hidden;
