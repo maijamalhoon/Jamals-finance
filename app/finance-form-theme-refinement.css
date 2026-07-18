@@ -1,0 +1,91 @@
+/*
+ * Final finance-form refinement.
+ * Keep layout and behavior unchanged while improving touch target height and
+ * theme contrast inside finance modals only.
+ */
+
+html:not(.dark) .finance-modal-content {
+  --card: #ffffff;
+  --surface-primary: #ffffff;
+  --surface-secondary: #f0f4f8;
+  --surface-inset: #f7f9fc;
+  --surface-soft: #eef3f8;
+  --surface-elevated: #ffffff;
+  --border: #d4deea;
+  --border-strong: #b9c7d8;
+  --divider: #dce4ee;
+  --text-primary: #17233a;
+  --text-secondary: #4d5f76;
+  --text-muted: #68798e;
+  --text-tertiary: #68798e;
+  --text-inverse: #ffffff;
+  --status-foreground: #ffffff;
+}
+
+.dark .finance-modal-content {
+  --card: #1b2a40;
+  --surface-primary: #1b2a40;
+  --surface-secondary: #22344d;
+  --surface-inset: #203149;
+  --surface-soft: #273a53;
+  --surface-elevated: #263a54;
+  --border: #405775;
+  --border-strong: #526b8b;
+  --divider: #354a65;
+  --text-primary: #f7faff;
+  --text-secondary: #d6dfeb;
+  --text-muted: #b5c2d2;
+  --text-tertiary: #a8b7c9;
+  --text-inverse: #ffffff;
+  --status-foreground: #ffffff;
+  --hover: #2a3f59;
+  --muted: #22344d;
+  --input: #203149;
+  --popover: #263a54;
+  --popover-foreground: #f7faff;
+  --card-foreground: #f7faff;
+  --muted-foreground: #b5c2d2;
+
+  background: var(--card) !important;
+}
+
+.dark .finance-modal-content .finance-modal-header,
+.dark .finance-modal-content .finance-modal-footer {
+  background: var(--card) !important;
+}
+
+.dark .finance-modal-content .finance-modal-body {
+  background: color-mix(in srgb, var(--surface-primary), white 2.5%);
+}
+
+.finance-modal-content .field-input,
+.finance-modal-content [data-slot="select-trigger"],
+.finance-modal-content select.finance-control,
+.finance-modal-content textarea.field-input {
+  border-color: var(--border) !important;
+  background: var(--surface-inset) !important;
+  color: var(--text-primary) !important;
+}
+
+.finance-modal-content .field-input::placeholder,
+.finance-modal-content textarea.field-input::placeholder {
+  color: var(--text-muted) !important;
+  opacity: 1;
+}
+
+.dark .finance-modal-content .finance-primary-action,
+.dark .finance-modal-content .success-action,
+.dark .finance-modal-content .danger-action {
+  color: #ffffff !important;
+}
+
+/*
+ * Account and category are touch-wheel listboxes on phones and tablets.
+ * Increase only these two controls by a few pixels; desktop geometry and every
+ * other field remain untouched.
+ */
+@media (max-width: 1024px) and (pointer: coarse) {
+  .finance-modal-content [role="listbox"].field-input {
+    min-height: 3.125rem !important;
+  }
+}
