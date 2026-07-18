@@ -1,0 +1,73 @@
+/*
+ * Typography and icon treatment for content-heavy finance pages only.
+ * Form controls and dialogs are intentionally excluded so transaction,
+ * investment, goal, payable, and search forms keep their existing styling.
+ */
+.finance-content-typography {
+  font-family: var(--font-sans);
+  font-weight: 450;
+  font-synthesis: none;
+  text-rendering: geometricPrecision;
+}
+
+.finance-content-typography
+  :where(h1, h2, h3, h4, h5, h6):not(
+    form *,
+    [role="dialog"] *,
+    [data-finance-form] *
+  ) {
+  font-family: var(--font-sans);
+  font-weight: 675;
+}
+
+.finance-content-typography
+  :where(.page-title):not(
+    form *,
+    [role="dialog"] *,
+    [data-finance-form] *
+  ) {
+  font-family: var(--font-sans);
+  font-weight: 700;
+}
+
+.finance-content-typography
+  :where(
+    button,
+    a,
+    label,
+    summary,
+    [role="button"],
+    [role="link"],
+    [role="tab"],
+    [role="menuitem"],
+    [role="option"]
+  ):not(form *, [role="dialog"] *, [data-finance-form] *) {
+  font-family: var(--font-sans);
+  font-weight: 600;
+}
+
+.finance-content-typography
+  :where([data-slot="money"], .finance-amount, [data-amount]):not(
+    form *,
+    [role="dialog"] *,
+    [data-finance-form] *
+  ) {
+  font-family: var(--font-sans);
+  font-variant-numeric: tabular-nums lining-nums;
+  font-feature-settings:
+    "tnum" 1,
+    "lnum" 1;
+}
+
+.finance-content-typography
+  :where(svg.lucide):not(
+    form *,
+    [role="dialog"] *,
+    [data-finance-form] *
+  ) {
+  fill: none;
+  flex-shrink: 0;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  shape-rendering: geometricPrecision;
+}
