@@ -1,0 +1,320 @@
+/* Viewport-fit refinement for authentication and onboarding.
+   Normal states fit inside the visual viewport. Exceptional validation states
+   remain reachable while native scrollbars stay visually hidden. */
+
+.jf-auth-root {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.jf-auth-root::-webkit-scrollbar,
+.jf-auth-root *::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  display: none;
+}
+
+/* Auth journeys become a focused single-card experience on tablets and phones.
+   This avoids stacking a decorative context panel above the actual form. */
+@media (max-width: 1100px) {
+  .jf-auth-root[data-auth-minimal="true"] {
+    height: 100dvh !important;
+    min-height: 100dvh !important;
+    overflow: hidden !important;
+  }
+
+  .jf-auth-root[data-auth-minimal="true"] .jf-auth-header {
+    min-height: 3.6rem !important;
+    flex-basis: 3.6rem !important;
+  }
+
+  .jf-auth-root[data-auth-minimal="true"] .jf-auth-context,
+  .jf-auth-root[data-auth-minimal="true"] .jf-auth-footer {
+    display: none !important;
+  }
+
+  .jf-auth-root[data-auth-minimal="true"] .jf-auth-layout,
+  .jf-auth-root[data-auth-minimal="true"] .jf-auth-layout-compact {
+    display: grid !important;
+    width: min(100%, 38rem) !important;
+    height: calc(100dvh - 3.6rem) !important;
+    min-height: 0 !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    place-items: center !important;
+    align-content: center !important;
+    padding: clamp(0.65rem, 2vh, 1.15rem) clamp(0.8rem, 2.4vw, 1.25rem) max(0.75rem, env(safe-area-inset-bottom)) !important;
+  }
+
+  .jf-auth-root[data-auth-minimal="true"] .jf-auth-card {
+    width: min(100%, 32.5rem) !important;
+    max-width: 32.5rem !important;
+    max-height: 100% !important;
+    margin: 0 auto !important;
+  }
+}
+
+/* Mobile foundation: keep the page visually calm and remove unnecessary height. */
+@media (max-width: 767px) {
+  .jf-auth-root[data-auth-minimal="true"] .jf-auth-header {
+    min-height: 3.35rem !important;
+    flex-basis: 3.35rem !important;
+    padding-inline: 0.75rem !important;
+  }
+
+  .jf-auth-root[data-auth-minimal="true"] .jf-auth-layout,
+  .jf-auth-root[data-auth-minimal="true"] .jf-auth-layout-compact {
+    height: calc(100dvh - 3.35rem) !important;
+    padding: clamp(0.45rem, 1.5vh, 0.8rem) clamp(0.62rem, 2.8vw, 0.9rem) max(0.55rem, env(safe-area-inset-bottom)) !important;
+  }
+
+  .jf-auth-root[data-auth-minimal="true"] .jf-auth-card {
+    padding: clamp(0.82rem, 3.4vw, 1rem) !important;
+    border-radius: 1.15rem !important;
+  }
+
+  .jf-auth-root[data-auth-minimal="true"] .jf-auth-card-head {
+    margin-bottom: 0.72rem !important;
+    padding-bottom: 0.68rem !important;
+  }
+
+  .jf-auth-root[data-auth-minimal="true"] .jf-auth-card-meta {
+    margin-bottom: 0.48rem !important;
+  }
+
+  .jf-auth-root[data-auth-minimal="true"] .auth-eyebrow,
+  .jf-auth-root[data-auth-minimal="true"] .auth-progress {
+    min-height: 1.5rem !important;
+    padding: 0.25rem 0.5rem !important;
+    font-size: 0.63rem !important;
+  }
+
+  .jf-auth-root[data-auth-minimal="true"] .jf-auth-card-icon {
+    width: 2rem !important;
+    height: 2rem !important;
+  }
+
+  .jf-auth-root[data-auth-minimal="true"] .jf-auth-card-head h1 {
+    font-size: clamp(1.42rem, 6.7vw, 1.72rem) !important;
+    line-height: 1.05 !important;
+    letter-spacing: -0.04em !important;
+  }
+
+  .jf-auth-root[data-auth-minimal="true"] .jf-auth-card-head p {
+    margin-top: 0.38rem !important;
+    font-size: 0.76rem !important;
+    line-height: 1.42 !important;
+  }
+
+  .jf-auth-root[data-auth-minimal="true"] .auth-step-back {
+    display: inline-flex !important;
+    width: auto !important;
+    min-width: 0 !important;
+    min-height: 2.2rem !important;
+    align-self: flex-start !important;
+    margin: 0 0 0.48rem !important;
+    padding: 0 0.35rem !important;
+    border: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    font-size: 0.75rem !important;
+  }
+
+  .jf-auth-root[data-auth-minimal="true"] .auth-field-label {
+    margin-bottom: 0.3rem !important;
+    font-size: 0.64rem !important;
+    letter-spacing: 0.065em !important;
+  }
+
+  .jf-auth-root[data-auth-minimal="true"] .auth-input,
+  .jf-auth-root[data-auth-minimal="true"] .auth-primary-action,
+  .jf-auth-root[data-auth-minimal="true"] .auth-provider-action {
+    min-height: 2.8rem !important;
+    border-radius: 0.82rem !important;
+  }
+
+  .jf-auth-root[data-auth-minimal="true"] .auth-input {
+    font-size: 16px !important;
+  }
+
+  .jf-auth-root[data-auth-minimal="true"] .auth-field-message {
+    min-height: 0 !important;
+    padding-top: 0.2rem !important;
+  }
+
+  .jf-auth-root[data-auth-minimal="true"] .auth-field-message:empty,
+  .jf-auth-root[data-auth-minimal="true"] .auth-feedback-slot:empty {
+    display: none !important;
+  }
+
+  .jf-auth-root[data-auth-minimal="true"] .auth-field-helper,
+  .jf-auth-root[data-auth-minimal="true"] .auth-field-error {
+    font-size: 0.65rem !important;
+    line-height: 1.35 !important;
+  }
+
+  .jf-auth-root[data-auth-minimal="true"] .auth-primary-action {
+    margin-top: 0.65rem !important;
+  }
+}
+
+/* The longest account-creation step gets a dedicated compact composition.
+   The requirement row already explains the password rule, so the duplicated
+   helper paragraph is removed visually. */
+@media (max-width: 767px) {
+  .jf-auth-root[data-auth-minimal="true"][data-auth-theme="signup"]:has(.auth-password-requirements) .jf-auth-layout {
+    align-content: start !important;
+    padding-top: 0.45rem !important;
+  }
+
+  .jf-auth-root[data-auth-minimal="true"][data-auth-theme="signup"]:has(.auth-password-requirements) .jf-auth-card {
+    padding: 0.78rem 0.82rem !important;
+  }
+
+  .jf-auth-root[data-auth-minimal="true"][data-auth-theme="signup"]:has(.auth-password-requirements) .jf-auth-card-head {
+    margin-bottom: 0.52rem !important;
+    padding-bottom: 0.52rem !important;
+  }
+
+  .jf-auth-root[data-auth-minimal="true"][data-auth-theme="signup"]:has(.auth-password-requirements) .jf-auth-card-icon {
+    display: none !important;
+  }
+
+  .jf-auth-root[data-auth-minimal="true"][data-auth-theme="signup"]:has(.auth-password-requirements) .jf-auth-card-head p {
+    display: none !important;
+  }
+
+  .jf-auth-root[data-auth-minimal="true"][data-auth-theme="signup"]:has(.auth-password-requirements) .jf-auth-card-head h1 {
+    font-size: clamp(1.34rem, 6.2vw, 1.62rem) !important;
+  }
+
+  .jf-auth-root[data-auth-minimal="true"][data-auth-theme="signup"]:has(.auth-password-requirements) form {
+    gap: 0 !important;
+  }
+
+  .jf-auth-root[data-auth-minimal="true"][data-auth-theme="signup"]:has(.auth-password-requirements) form > .auth-field + .auth-field {
+    margin-top: 0.52rem !important;
+  }
+
+  .jf-auth-root[data-auth-minimal="true"][data-auth-theme="signup"]:has(.auth-password-requirements) .auth-field-helper {
+    display: none !important;
+  }
+
+  .jf-auth-root[data-auth-minimal="true"][data-auth-theme="signup"]:has(.auth-password-requirements) .auth-password-requirements {
+    display: flex !important;
+    min-height: 2.55rem !important;
+    align-items: center !important;
+    margin-top: 0.52rem !important;
+    padding: 0.48rem 0.68rem !important;
+    border-radius: 0.78rem !important;
+  }
+
+  .jf-auth-root[data-auth-minimal="true"][data-auth-theme="signup"]:has(.auth-password-requirements) .auth-password-requirements > p {
+    display: none !important;
+  }
+
+  .jf-auth-root[data-auth-minimal="true"][data-auth-theme="signup"]:has(.auth-password-requirements) .auth-password-requirements > div {
+    display: flex !important;
+    align-items: center !important;
+    gap: 0.48rem !important;
+    font-size: 0.72rem !important;
+    line-height: 1.25 !important;
+  }
+
+  .jf-auth-root[data-auth-minimal="true"][data-auth-theme="signup"]:has(.auth-password-requirements) .auth-feedback-slot {
+    min-height: 0 !important;
+    margin: 0 !important;
+  }
+
+  .jf-auth-root[data-auth-minimal="true"][data-auth-theme="signup"]:has(.auth-password-requirements) .auth-primary-action {
+    min-height: 2.85rem !important;
+    margin-top: 0.58rem !important;
+  }
+}
+
+/* Very short devices and landscape phones need an additional vertical pass. */
+@media (max-width: 767px) and (max-height: 760px) {
+  .jf-auth-root[data-auth-minimal="true"] .jf-auth-header {
+    min-height: 3rem !important;
+    flex-basis: 3rem !important;
+  }
+
+  .jf-auth-root[data-auth-minimal="true"] .jf-auth-brand-mark {
+    width: 2rem !important;
+    height: 2rem !important;
+  }
+
+  .jf-auth-root[data-auth-minimal="true"] .jf-auth-layout,
+  .jf-auth-root[data-auth-minimal="true"] .jf-auth-layout-compact {
+    height: calc(100dvh - 3rem) !important;
+    padding-block: 0.32rem max(0.4rem, env(safe-area-inset-bottom)) !important;
+  }
+
+  .jf-auth-root[data-auth-minimal="true"] .jf-auth-card {
+    padding: 0.68rem 0.76rem !important;
+  }
+
+  .jf-auth-root[data-auth-minimal="true"] .jf-auth-card-head {
+    margin-bottom: 0.42rem !important;
+    padding-bottom: 0.42rem !important;
+  }
+
+  .jf-auth-root[data-auth-minimal="true"] .jf-auth-card-head p,
+  .jf-auth-root[data-auth-minimal="true"] .jf-auth-card-icon {
+    display: none !important;
+  }
+
+  .jf-auth-root[data-auth-minimal="true"] .jf-auth-card-head h1 {
+    font-size: 1.3rem !important;
+  }
+
+  .jf-auth-root[data-auth-minimal="true"] .auth-step-back {
+    min-height: 1.95rem !important;
+    margin-bottom: 0.3rem !important;
+  }
+
+  .jf-auth-root[data-auth-minimal="true"] .auth-input,
+  .jf-auth-root[data-auth-minimal="true"] .auth-primary-action,
+  .jf-auth-root[data-auth-minimal="true"] .auth-provider-action {
+    min-height: 2.65rem !important;
+  }
+}
+
+/* Onboarding normal states are compact enough to fit common phones. When an
+   inline error increases content height, scrolling remains possible but clean. */
+@media (max-width: 767px) {
+  .jf-auth-root[data-auth-theme="onboarding"] {
+    min-height: 100dvh !important;
+    overflow-y: auto !important;
+  }
+
+  .jf-auth-root[data-auth-theme="onboarding"] .jf-auth-layout {
+    min-height: calc(100dvh - 3.35rem) !important;
+    padding-top: 0.55rem !important;
+    padding-bottom: max(0.65rem, env(safe-area-inset-bottom)) !important;
+  }
+
+  .jf-auth-root[data-auth-theme="onboarding"] .jf-auth-card-head {
+    margin-bottom: 0.6rem !important;
+    padding-bottom: 0.55rem !important;
+  }
+
+  .jf-auth-root[data-auth-theme="onboarding"] [aria-label^="Onboarding progress"] {
+    margin-bottom: 0.65rem !important;
+  }
+
+  .jf-auth-root[data-auth-theme="onboarding"] .auth-primary-action,
+  .jf-auth-root[data-auth-theme="onboarding"] form button {
+    min-height: 2.75rem !important;
+  }
+}
+
+@media (max-width: 370px) {
+  .jf-auth-root[data-auth-minimal="true"] .jf-auth-brand > span:last-child {
+    max-width: 8.2rem !important;
+  }
+
+  .jf-auth-root[data-auth-minimal="true"] .auth-input-with-end,
+  .jf-auth-root[data-auth-minimal="true"] .auth-input-with-inline-action {
+    padding-right: 5.25rem !important;
+  }
+}
