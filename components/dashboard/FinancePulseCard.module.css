@@ -46,6 +46,20 @@
   flex: 0 0 auto;
   border-radius: 999px;
   transform-origin: center;
+  animation: pulse-dot-loop 1.85s ease-in-out infinite;
+  will-change: transform, opacity, box-shadow;
+}
+
+.tile:nth-child(2) .dot {
+  animation-delay: -0.35s;
+}
+
+.tile:nth-child(3) .dot {
+  animation-delay: -0.7s;
+}
+
+.tile:nth-child(4) .dot {
+  animation-delay: -1.05s;
 }
 
 .value {
@@ -74,7 +88,7 @@
   -webkit-line-clamp: 2;
 }
 
-@keyframes mobile-pulse-dot-loop {
+@keyframes pulse-dot-loop {
   0%,
   100% {
     transform: scale(0.82);
@@ -127,23 +141,6 @@
   .detail {
     font-size: 0.55rem;
     line-height: 0.88rem;
-  }
-
-  .dot {
-    animation: mobile-pulse-dot-loop 1.85s ease-in-out infinite;
-    will-change: transform, opacity, box-shadow;
-  }
-
-  .tile:nth-child(2) .dot {
-    animation-delay: -0.35s;
-  }
-
-  .tile:nth-child(3) .dot {
-    animation-delay: -0.7s;
-  }
-
-  .tile:nth-child(4) .dot {
-    animation-delay: -1.05s;
   }
 }
 
