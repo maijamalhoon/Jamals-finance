@@ -6,6 +6,7 @@ import "@/app/landing-math-symbols.css";
 import "@/app/auth-form-composition.css";
 import "@/app/auth-spacing-guard.css";
 import "@/app/auth-artist-touch.css";
+import "@/app/auth-type-icon-system.css";
 
 import Link from "next/link";
 import {
