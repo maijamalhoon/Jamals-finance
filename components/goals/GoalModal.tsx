@@ -17,7 +17,7 @@ import {
   financeErrorClass,
   financeModalContentClass,
 } from "@/components/ui/finance-modal";
-import { GOAL_ICONS } from "./goal-icons";
+import { getGoalPresentation } from "./goal-icons";
 import { BASE_CURRENCY } from "@/lib/currency";
 import { getUserMutationError } from "@/lib/user-errors";
 
@@ -33,7 +33,7 @@ export interface ExistingGoal {
   target_amount: number;
   current_amount: number;
   deadline: string | null;
-  icon: string;
+  icon: string | null;
   account_id?: string | null;
 }
 
@@ -56,11 +56,13 @@ export default function GoalModal({ open, onClose, onSuccess, goal, accounts }: 
   const [targetAmount, setTargetAmount] = useState("");
   const [currentAmount, setCurrentAmount] = useState("0");
   const [deadline, setDeadline] = useState("");
-  const [icon, setIcon] = useState("target");
   const [accountId, setAccountId] = useState("");
   const [availableAccounts, setAvailableAccounts] = useState<GoalAccount[]>(suppliedAccounts);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  const autoPresentation = getGoalPresentation({ name });
+  const AutoGoalIcon = autoPresentation.entry.icon;
 
   useEffect(() => {
     if (!open) return;
@@ -69,14 +71,12 @@ export default function GoalModal({ open, onClose, onSuccess, goal, accounts }: 
       setTargetAmount(String(goal.target_amount));
       setCurrentAmount(String(goal.current_amount));
       setDeadline(goal.deadline || "");
-      setIcon(goal.icon || "target");
       setAccountId(goal.account_id || "");
     } else {
       setName("");
       setTargetAmount("");
       setCurrentAmount("0");
       setDeadline("");
-      setIcon("target");
       setAccountId("");
     }
     setError("");
@@ -137,7 +137,7 @@ export default function GoalModal({ open, onClose, onSuccess, goal, accounts }: 
       name: name.trim(),
       target_amount: parsedTarget,
       deadline: deadline || null,
-      icon,
+      icon: autoPresentation.entry.value,
       account_id: accountId || null,
     };
 
@@ -165,43 +165,40 @@ export default function GoalModal({ open, onClose, onSuccess, goal, accounts }: 
       <DialogContent className={financeModalContentClass}>
         <FinanceModalHeader
           title={isEditing ? "Edit Goal" : "Add Goal"}
-          description="Set the target, optional linked account, and deadline."
+          description="The icon, unique color, and progress accent are selected automatically from the goal name."
           icon={Target}
           tone="info"
         />
 
         <FinanceModalBody>
-          <div>
-            <label className="field-label mb-2">Icon</label>
-            <div className="grid grid-cols-3 gap-2 sm:grid-cols-5">
-              {GOAL_ICONS.map(({ value, label, icon: Icon }) => (
-                <Button
-                  key={value}
-                  type="button"
-                  variant="ghost"
-                  onClick={() => setIcon(value)}
-                  title={label}
-                  aria-pressed={icon === value}
-                  className={`finance-focus flex h-auto min-h-[58px] flex-col items-center justify-center gap-1 rounded-[14px] border p-2 transition-all ${
-                    icon === value
-                      ? "border-active bg-active/10 text-active shadow-theme"
-                      : "border-border bg-surface-secondary text-text-secondary hover:bg-hover hover:text-text-primary"
-                  }`}
-                >
-                  <Icon size={16} />
-                  <span className="max-w-full truncate text-[10px]">{label}</span>
-                </Button>
-              ))}
-            </div>
-          </div>
-
           <FinanceFormField label="Goal Name" htmlFor="goal-name">
             <Input
               id="goal-name"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="e.g. New House, Emergency Fund"
+              placeholder="e.g. Toyota Mark X, New House, Samsung S24 Ultra"
             />
+            <div className="mt-2 flex min-w-0 items-center gap-2.5 text-xs text-text-secondary">
+              <span
+                className="grid size-8 shrink-0 place-items-center rounded-full border"
+                style={{
+                  color: autoPresentation.accent,
+                  borderColor: `color-mix(in srgb, ${autoPresentation.accent}, transparent 76%)`,
+                  backgroundColor: `color-mix(in srgb, ${autoPresentation.accent}, transparent 92%)`,
+                }}
+                aria-hidden="true"
+              >
+                <AutoGoalIcon size={14} strokeWidth={2.15} />
+              </span>
+              <div className="min-w-0">
+                <p className="truncate font-semibold text-text-primary">
+                  {autoPresentation.label} icon selected automatically
+                </p>
+                <p className="truncate text-[11px]">
+                  The progress line will use the same unique color.
+                </p>
+              </div>
+            </div>
           </FinanceFormField>
 
           <div className="grid gap-3 sm:grid-cols-2">
