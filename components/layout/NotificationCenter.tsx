@@ -2,15 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
-import {
-  AlertTriangle,
-  Bell,
-  ChevronRight,
-  Clock3,
-  Info,
-  Target,
-  X,
-} from "lucide-react";
+import { AlertTriangle, Bell, Clock3, Target } from "lucide-react";
 
 import { createClient } from "@/lib/supabase/client";
 import type {
@@ -25,9 +17,9 @@ type NotificationCenterProps = {
 };
 
 const toneStyles: Record<NotificationTone, string> = {
-  danger: "border-danger/25 bg-danger/10 text-danger",
-  warning: "border-warning/25 bg-warning/10 text-warning",
-  info: "border-info/25 bg-info/10 text-info",
+  danger: "bg-danger/10 text-danger",
+  warning: "bg-warning/10 text-warning",
+  info: "bg-info/10 text-info",
 };
 
 const notificationTriggerClassName =
@@ -55,23 +47,24 @@ function NotificationSummaryRow({
   return (
     <Link
       href={alert.href}
+      role="menuitem"
       onClick={() => onNavigate(alert)}
-      className={`finance-focus group flex min-w-0 items-center gap-2.5 rounded-[0.8rem] px-2.5 py-2.5 text-left transition-colors hover:bg-surface-soft ${
+      className={`finance-focus flex min-w-0 items-center gap-2 rounded-[10px] px-2 py-2 text-left transition-colors hover:bg-surface-soft ${
         alert.read === false ? "bg-brand/5" : ""
       }`}
       aria-label={`${alert.title}. Open ${sourceLabel.toLowerCase()}`}
     >
       <span
-        className={`grid size-8 shrink-0 place-items-center rounded-[0.65rem] border ${toneStyles[alert.tone]}`}
+        className={`grid size-7 shrink-0 place-items-center rounded-[9px] ${toneStyles[alert.tone]}`}
       >
-        <SourceIcon size={15} strokeWidth={2.2} aria-hidden="true" />
+        <SourceIcon size={13} strokeWidth={2.2} aria-hidden="true" />
       </span>
 
       <span className="min-w-0 flex-1">
-        <span className="line-clamp-2 block text-[13px] font-semibold leading-[1.15rem] text-text-primary">
+        <span className="line-clamp-2 block text-[12px] font-semibold leading-4 text-text-primary">
           {alert.title}
         </span>
-        <span className="mt-0.5 flex min-w-0 items-center gap-1.5 text-[10.5px] font-medium leading-4 text-text-tertiary">
+        <span className="mt-0.5 flex min-w-0 items-center gap-1 text-[9.5px] font-medium leading-3.5 text-text-tertiary">
           <span>{sourceLabel}</span>
           <span aria-hidden="true">•</span>
           <span>{alert.urgency}</span>
@@ -83,11 +76,6 @@ function NotificationSummaryRow({
       {alert.read === false ? (
         <span className="size-1.5 shrink-0 rounded-full bg-brand" aria-label="Unread" />
       ) : null}
-      <ChevronRight
-        size={14}
-        className="shrink-0 text-text-tertiary transition-transform group-hover:translate-x-0.5"
-        aria-hidden="true"
-      />
     </Link>
   );
 }
@@ -166,7 +154,7 @@ export default function NotificationCenter({ state }: NotificationCenterProps) {
       <button
         type="button"
         aria-label={triggerLabel}
-        aria-haspopup="dialog"
+        aria-haspopup="menu"
         aria-expanded={open}
         onClick={() => setOpen((value) => !value)}
         className={notificationTriggerClassName}
@@ -185,39 +173,37 @@ export default function NotificationCenter({ state }: NotificationCenterProps) {
       {open ? (
         <div
           data-slot="dropdown-menu-content"
-          role="dialog"
-          aria-modal="false"
+          role="menu"
           aria-label="Notifications"
-          className="absolute right-0 top-[calc(100%+0.65rem)] z-[70] w-[min(18.5rem,calc(100vw-1.5rem))] overflow-hidden rounded-[1rem] border border-border bg-surface-elevated shadow-[var(--shadow-overlay)]"
+          className="absolute right-0 top-[calc(100%+0.5rem)] z-[70] w-[15rem] max-w-[calc(100vw-4rem)] rounded-[14px] border border-border/70 bg-surface-elevated/98 p-1.5 shadow-[0_14px_36px_rgb(15_23_42_/_0.16)] backdrop-blur-xl dark:shadow-[0_16px_40px_rgb(0_0_0_/_0.34)] sm:w-[16.5rem]"
         >
-          <div className="flex h-11 items-center justify-between border-b border-border px-3.5">
-            <h2 className="text-sm font-bold text-text-primary">Notifications</h2>
-            <button
-              type="button"
-              onClick={() => setOpen(false)}
-              aria-label="Close notifications"
-              className="finance-focus grid size-8 place-items-center rounded-[0.6rem] text-text-secondary transition-colors hover:bg-surface-soft hover:text-text-primary"
-            >
-              <X size={16} aria-hidden="true" />
-            </button>
+          <span
+            aria-hidden="true"
+            className="absolute -top-1.5 right-4 size-3 rotate-45 border-l border-t border-border/70 bg-surface-elevated"
+          />
+
+          <div className="px-2 pb-1 pt-0.5">
+            <p className="text-[11px] font-bold leading-5 text-text-primary">
+              Notifications
+            </p>
           </div>
 
           {state.status === "error" ? (
-            <div className="flex items-center gap-2.5 px-3.5 py-4 text-sm text-text-secondary">
-              <span className="grid size-8 shrink-0 place-items-center rounded-[0.65rem] border border-danger/25 bg-danger/10 text-danger">
-                <AlertTriangle size={15} aria-hidden="true" />
+            <div className="flex items-center gap-2 rounded-[10px] px-2 py-2.5 text-[12px] text-text-secondary">
+              <span className="grid size-7 shrink-0 place-items-center rounded-[9px] bg-danger/10 text-danger">
+                <AlertTriangle size={13} aria-hidden="true" />
               </span>
-              <span>Notifications unavailable</span>
+              <span>Unavailable</span>
             </div>
           ) : state.visibleAlerts.length === 0 ? (
-            <div className="flex items-center gap-2.5 px-3.5 py-4 text-sm text-text-secondary">
-              <span className="grid size-8 shrink-0 place-items-center rounded-[0.65rem] border border-border bg-surface-soft">
-                <Bell size={15} aria-hidden="true" />
+            <div className="flex items-center gap-2 rounded-[10px] px-2 py-2.5 text-[12px] text-text-secondary">
+              <span className="grid size-7 shrink-0 place-items-center rounded-[9px] bg-surface-soft text-text-tertiary">
+                <Bell size={13} aria-hidden="true" />
               </span>
               <span>No notifications</span>
             </div>
           ) : (
-            <div className="max-h-[min(20rem,calc(100dvh-7rem))] overflow-y-auto overscroll-contain p-1.5">
+            <div className="max-h-[min(15rem,calc(100dvh-7rem))] overflow-y-auto overscroll-contain">
               {state.visibleAlerts.map((alert) => (
                 <NotificationSummaryRow
                   key={alert.id}
