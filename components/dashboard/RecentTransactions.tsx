@@ -2,7 +2,7 @@
 
 import type { CSSProperties } from "react";
 import Link from "next/link";
-import { ArrowLeftRight, ArrowRight } from "lucide-react";
+import { ArrowLeftRight, ArrowRight, ReceiptText } from "lucide-react";
 
 import { useCurrency } from "@/components/currency/CurrencyProvider";
 import CountedAmount from "@/components/motion/CountedAmount";
@@ -127,8 +127,8 @@ export default function RecentTransactions({
     <section className="finance-reference-card motion-card-entry flex min-h-[280px] min-w-0 flex-col overflow-hidden p-4 sm:p-5">
       <div className="flex min-w-0 items-center justify-between gap-3 border-b border-border/55 pb-3">
         <div className="flex min-w-0 items-center gap-2.5">
-          <span className="grid size-8 shrink-0 place-items-center rounded-[10px] border border-brand/20 bg-brand/10 text-brand">
-            <ArrowLeftRight size={15} strokeWidth={2.2} aria-hidden="true" />
+          <span className="grid size-8 shrink-0 place-items-center bg-transparent text-text-secondary shadow-none">
+            <ReceiptText size={15} strokeWidth={2.3} aria-hidden="true" />
           </span>
           <h3 className="truncate text-[11px] font-bold uppercase tracking-[0.13em] text-text-secondary sm:text-[12px]">
             Recent Transactions
