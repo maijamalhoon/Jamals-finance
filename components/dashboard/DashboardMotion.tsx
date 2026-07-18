@@ -1,12 +1,12 @@
 import type { ReactNode } from "react";
 
 const dashboardOverviewStyles = `
-  @media (min-width: 1024px) {
+  @media (min-width: 1536px) {
     .dashboard-overview-layout {
       display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
+      grid-template-columns: minmax(0, 7fr) minmax(300px, 3fr);
       align-items: stretch;
-      gap: 1rem;
+      gap: 1.5rem;
     }
 
     .dashboard-overview-layout > * {
@@ -22,59 +22,55 @@ const dashboardOverviewStyles = `
     .dashboard-overview-layout > div.grid:nth-last-child(-n+2) > * {
       min-width: 0;
       height: 100%;
-      grid-column: 1 / -1;
       margin-top: 0 !important;
+      align-self: stretch;
     }
 
     .dashboard-overview-layout > div.grid:nth-last-child(-n+2) > * > * {
       height: 100%;
     }
 
-    .dashboard-overview-layout > div.grid:nth-last-child(2) > :nth-child(1) {
+    /* Large-screen dashboard order requested in the design reference. */
+    .dashboard-overview-layout > div.grid:last-child > :nth-child(1) {
       order: 10;
+      grid-column: 1;
     }
 
-    .dashboard-overview-layout > div.grid:nth-last-child(2) > :nth-child(2) {
+    .dashboard-overview-layout > div.grid:last-child > :nth-child(2) {
       order: 11;
+      grid-column: 2;
     }
 
     .dashboard-overview-layout > div.grid:nth-last-child(2) > :nth-child(3) {
       order: 20;
+      grid-column: 1;
     }
 
-    .dashboard-overview-layout > div.grid:last-child > :nth-child(1) {
+    .dashboard-overview-layout > div.grid:nth-last-child(2) > :nth-child(1) {
       order: 21;
-    }
-
-    .dashboard-overview-layout > div.grid:last-child > :nth-child(2) {
-      order: 30;
+      grid-column: 2;
     }
 
     .dashboard-overview-layout > div.grid:last-child > :nth-child(3) {
-      order: 31;
+      order: 30;
+      grid-column: 1 / -1;
     }
 
-    /* The portfolio uses its horizontal desktop composition as soon as there
-       is enough card width, rather than waiting for an ultra-wide viewport. */
-    .dashboard-overview-layout
-      > div.grid:nth-last-child(2)
-      > :nth-child(2)
-      > section
-      > .mt-5.grid {
-      grid-template-columns: minmax(220px, 0.86fr) minmax(280px, 1.14fr);
-      align-items: center;
+    /* The portfolio card is retained on tablet and mobile, while the exact
+       five-card structure is used on large viewports. */
+    .dashboard-overview-layout > div.grid:nth-last-child(2) > :nth-child(2) {
+      display: none;
     }
 
-    /* Spending stays compact on desktop by keeping the donut and legend next
-       to one another. Data, chart logic, and animation remain unchanged. */
+    /* Keep the 70% spending card compact and aligned with the goals card. */
     .dashboard-overview-layout
       > div.grid:last-child
       > :nth-child(1)
       > section
       > .mt-4.grid {
-      grid-template-columns: minmax(190px, 0.9fr) minmax(0, 1.1fr);
+      grid-template-columns: minmax(220px, 0.82fr) minmax(0, 1.18fr);
       align-items: center;
-      gap: 1.25rem;
+      gap: 1.5rem;
     }
 
     .dashboard-overview-layout
@@ -84,47 +80,7 @@ const dashboardOverviewStyles = `
       > .mt-4.grid
       > div:first-child
       > div {
-      max-width: 230px;
-    }
-  }
-
-  @media (min-width: 1280px) {
-    .dashboard-overview-layout {
-      grid-template-columns: repeat(12, minmax(0, 1fr));
-      gap: 1.25rem;
-    }
-
-    /* Primary visual row: compact spend story plus the richer portfolio. */
-    .dashboard-overview-layout > div.grid:nth-last-child(2) > :nth-child(1) {
-      grid-column: 1 / span 5;
-      min-height: 400px;
-    }
-
-    .dashboard-overview-layout > div.grid:nth-last-child(2) > :nth-child(2) {
-      grid-column: 6 / -1;
-      min-height: 400px;
-    }
-
-    /* Analysis row: the wider trend chart and a compact horizontal breakdown. */
-    .dashboard-overview-layout > div.grid:nth-last-child(2) > :nth-child(3) {
-      grid-column: 1 / span 7;
-      min-height: 350px;
-    }
-
-    .dashboard-overview-layout > div.grid:last-child > :nth-child(1) {
-      grid-column: 8 / -1;
-      min-height: 350px;
-    }
-
-    /* Activity row: goals get a focused rail while transactions keep table room. */
-    .dashboard-overview-layout > div.grid:last-child > :nth-child(2) {
-      grid-column: 1 / span 4;
-      min-height: 330px;
-    }
-
-    .dashboard-overview-layout > div.grid:last-child > :nth-child(3) {
-      grid-column: 5 / -1;
-      min-height: 330px;
+      max-width: 260px;
     }
   }
 `;
