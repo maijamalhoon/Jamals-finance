@@ -16,7 +16,10 @@ import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
 import GoalModal, { ExistingGoal, type GoalAccount } from "./GoalModal";
 import GoalContributionModal from "./GoalContributionModal";
-import { getGoalPresentation } from "./goal-icons";
+import {
+  getGoalPresentation,
+  type GoalPresentationAssignment,
+} from "./goal-icons";
 import { useProgressReveal, useReducedMotion } from "./use-animated-goal-value";
 import { useCurrency } from "@/components/currency/CurrencyProvider";
 import { Button } from "@/components/ui/button";
@@ -38,9 +41,11 @@ interface GoalWithContributions extends ExistingGoal {
 export default function GoalCard({
   goal,
   accounts,
+  presentation,
 }: {
   goal: GoalWithContributions;
   accounts: GoalAccount[];
+  presentation?: GoalPresentationAssignment;
 }) {
   const router = useRouter();
   const supabase = createClient();
@@ -65,9 +70,9 @@ export default function GoalCard({
     reduceMotion,
     `${goal.id}:${safeCurrent}:${safeTarget}`,
   );
-  const presentation = getGoalPresentation(goal);
-  const accent = presentation.accent;
-  const GoalIcon = done ? CheckCircle2 : presentation.entry.icon;
+  const resolvedPresentation = getGoalPresentation(goal, presentation);
+  const accent = resolvedPresentation.accent;
+  const GoalIcon = done ? CheckCircle2 : resolvedPresentation.entry.icon;
 
   let daysLeft: number | null = null;
   if (goal.deadline) {
@@ -121,7 +126,7 @@ export default function GoalCard({
     backgroundColor: `color-mix(in srgb, ${accent}, transparent 82%)`,
   } as CSSProperties;
 
-  const statusText = done ? "Completed" : presentation.label;
+  const statusText = done ? "Completed" : resolvedPresentation.label;
 
   return (
     <>
