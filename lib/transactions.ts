@@ -1,5 +1,7 @@
+import type { SupabaseClient } from "@supabase/supabase-js";
+
 type TransactionLoadOptions = {
-  type?: "income" | "expense" | "investment" | "refund" | "transfer";
+  type?: "income" | "expense" | "investment" | "goal" | "refund" | "transfer";
   from?: string;
   to?: string;
   category?: string;
@@ -12,6 +14,8 @@ type CategoryRow = {
   id: string;
   name: string;
   color: string;
+  icon_key?: string | null;
+  type?: string | null;
   parent_id?: string | null;
 };
 
@@ -44,6 +48,7 @@ export type LoadedTransaction = DatedTransaction & {
   source_name?: string | null;
   person_name?: string | null;
   item_name?: string | null;
+  goal_contribution_id?: string | null;
   categories?: (CategoryRow & { parent?: { name?: string | null } | null }) | null;
   accounts?: { name?: string | null } | null;
   from_account_id?: string | null;
@@ -79,6 +84,7 @@ function mapAccountTransfer(row: AccountTransferRow) {
     source_name: null,
     person_name: null,
     item_name: null,
+    goal_contribution_id: null,
     categories: null,
     accounts: { name: `${fromName} -> ${toName}` },
     from_account_id: row.from_account_id,
@@ -109,7 +115,9 @@ export async function loadTransactions(
   if (options.type !== "transfer") {
     let query = supabase
       .from("transactions")
-      .select("*, categories(id, name, color, parent_id), accounts(name)")
+      .select(
+        "*, categories(id, name, color, icon_key, type, parent_id), accounts(name)",
+      )
       .order("date", { ascending: false })
       .order("created_at", { ascending: false });
 
@@ -194,11 +202,12 @@ export async function loadTransactions(
       rows = [...rows, ...mappedTransfers];
     }
   }
+
   const parentIds = Array.from(
     new Set(
       rows
         .map((transaction) => transaction.categories?.parent_id)
-        .filter(Boolean),
+        .filter((value): value is string => Boolean(value)),
     ),
   );
 
@@ -238,4 +247,3 @@ export async function loadTransactions(
     }),
   );
 }
-import type { SupabaseClient } from "@supabase/supabase-js";
