@@ -127,7 +127,7 @@ function MetricGraphLine({
       <path
         className="dashboard-metric-graph-path"
         d={getGraphPath(value, direction)}
-        pathLength={1}
+        pathLength={100}
         style={{ stroke: accent }}
       />
     </svg>
