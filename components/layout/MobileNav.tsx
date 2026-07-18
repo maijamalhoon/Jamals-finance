@@ -38,10 +38,8 @@ export default function MobileNav({ notificationSlot }: MobileNavProps) {
   const [open, setOpen] = useState(false);
   const [portalOpen, setPortalOpen] = useState(false);
   const [controlsVisible, setControlsVisible] = useState(true);
-  const hideTimerRef = useRef<ReturnType<typeof window.setTimeout> | null>(null);
-  const scrollIdleTimerRef = useRef<ReturnType<typeof window.setTimeout> | null>(
-    null,
-  );
+  const hideTimerRef = useRef<number | null>(null);
+  const scrollIdleTimerRef = useRef<number | null>(null);
 
   const clearHideTimer = useCallback(() => {
     if (hideTimerRef.current === null) return;
