@@ -1,0 +1,82 @@
+/*
+ * Settings-only typography and icon normalization.
+ * Keeps all authored sizes, spacing, colors, data, interactions, and motion intact.
+ */
+
+:where(.settings-page-polish),
+:where(body:has(.settings-page-polish) [data-slot="dialog-content"]),
+:where(body:has(.settings-page-polish) [role="dialog"]) {
+  font-family: var(--font-geist-sans), var(--font-sans);
+  font-kerning: normal;
+  font-synthesis: none;
+  text-rendering: geometricPrecision;
+}
+
+/* Headings: Geist Sans 650–700. */
+:where(.settings-page-polish) :where(h1, h2, h3, h4, h5, h6, [role="heading"], .page-title),
+:where(body:has(.settings-page-polish) [data-slot="dialog-content"]) :where(h1, h2, h3, h4, h5, h6, [role="heading"], [data-slot="dialog-title"]),
+:where(body:has(.settings-page-polish) [role="dialog"]) :where(h1, h2, h3, h4, h5, h6, [role="heading"]) {
+  font-family: var(--font-geist-sans), var(--font-sans);
+  font-weight: 700;
+}
+
+/* Body copy: Geist Sans 400–500. */
+:where(.settings-page-polish) :where(p, input, textarea, select, [data-slot="dialog-description"]),
+:where(body:has(.settings-page-polish) [data-slot="dialog-content"]) :where(p, input, textarea, select, [data-slot="dialog-description"]),
+:where(body:has(.settings-page-polish) [role="dialog"]) :where(p, input, textarea, select) {
+  font-family: var(--font-geist-sans), var(--font-sans);
+  font-weight: 450;
+}
+
+:where(.settings-page-polish, body:has(.settings-page-polish) [data-slot="dialog-content"], body:has(.settings-page-polish) [role="dialog"]) :where(.font-medium) {
+  font-weight: 500;
+}
+
+/* Buttons and labels: Geist Sans 550–650. */
+:where(.settings-page-polish, body:has(.settings-page-polish) [data-slot="dialog-content"], body:has(.settings-page-polish) [role="dialog"]) :where(
+    button,
+    a,
+    label,
+    summary,
+    [role="button"],
+    [role="link"],
+    [role="tab"],
+    [role="menuitem"],
+    [role="option"],
+    .font-semibold,
+    .font-bold
+  ) {
+  font-family: var(--font-geist-sans), var(--font-sans);
+  font-weight: 600;
+}
+
+/* Preserve stronger hierarchy only for actual headings. */
+:where(.settings-page-polish, body:has(.settings-page-polish) [data-slot="dialog-content"], body:has(.settings-page-polish) [role="dialog"]) :where(h1, h2, h3, h4, h5, h6, [role="heading"], .page-title).font-bold,
+:where(.settings-page-polish, body:has(.settings-page-polish) [data-slot="dialog-content"], body:has(.settings-page-polish) [role="dialog"]) :where(h1, h2, h3, h4, h5, h6, [role="heading"], .page-title) :where(.font-bold, .font-extrabold, .font-black) {
+  font-weight: 700;
+}
+
+/* Amounts and numeric summaries use stable tabular figures. */
+:where(.settings-page-polish, body:has(.settings-page-polish) [data-slot="dialog-content"], body:has(.settings-page-polish) [role="dialog"]) :where(
+    .tabular-nums,
+    [data-amount],
+    [inputmode="decimal"],
+    input[type="number"],
+    .summary-card > p:first-child,
+    .finance-state-pill
+  ) {
+  font-family: var(--font-geist-sans), var(--font-sans);
+  font-variant-numeric: tabular-nums lining-nums;
+  font-feature-settings: "tnum" 1, "lnum" 1;
+}
+
+/* Lucide React rounded monoline outline icons, without changing icon dimensions. */
+:where(.settings-page-polish, body:has(.settings-page-polish) [data-slot="dialog-content"], body:has(.settings-page-polish) [role="dialog"]) :where(svg.lucide) {
+  fill: none !important;
+  stroke: currentColor;
+  stroke-width: 1.8 !important;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  shape-rendering: geometricPrecision;
+  vector-effect: non-scaling-stroke;
+}
