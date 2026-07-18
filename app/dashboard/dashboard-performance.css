@@ -19,7 +19,7 @@
   animation: jf-dashboard-enter 320ms cubic-bezier(0.16, 1, 0.3, 1)
     var(--jf-dashboard-enter-delay) both;
   backface-visibility: hidden;
-  contain: paint;
+  contain: layout style;
   transform-origin: center top;
 }
 
