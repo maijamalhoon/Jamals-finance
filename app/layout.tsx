@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import "./icon-system.css";
 import "./finance-form-unification.css";
+import "./finance-form-theme-refinement.css";
 import "./auth-clean.css";
 import "./auth-clean-fixes.css";
 import { Toaster } from "sonner";
