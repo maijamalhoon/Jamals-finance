@@ -28,6 +28,54 @@ interface Goal {
 
 const DEFAULT_VISIBLE_GOALS = 4;
 
+function getDashboardGoalAccent(
+  iconValue: GoalPresentationAssignment["iconValue"],
+) {
+  switch (iconValue) {
+    case "home":
+    case "building":
+    case "landmark":
+    case "paintbrush":
+    case "hammer":
+      return "var(--goals)";
+    case "car":
+    case "key":
+    case "gauge":
+    case "route":
+    case "bike":
+      return "var(--warning)";
+    case "plane":
+    case "gem":
+    case "gift":
+    case "shopping":
+      return "var(--investment)";
+    case "smartphone":
+    case "laptop":
+    case "monitor":
+    case "cpu":
+    case "headphones":
+    case "tablet":
+    case "camera":
+    case "tv":
+    case "gamepad":
+      return "var(--info)";
+    case "shield":
+    case "piggybank":
+    case "wallet":
+    case "dumbbell":
+      return "var(--success)";
+    case "heart":
+      return "var(--danger)";
+    case "baby":
+      return "var(--secondary)";
+    case "graduation":
+    case "briefcase":
+      return "var(--primary)";
+    default:
+      return "var(--goals)";
+  }
+}
+
 function AnimatedCurrency({
   value,
   delay = 0,
@@ -77,7 +125,7 @@ function GoalRow({
   );
   const resolvedPresentation = getGoalPresentation(goal, presentation);
   const GoalIcon = done ? CheckCircle2 : resolvedPresentation.entry.icon;
-  const accent = resolvedPresentation.accent;
+  const accent = getDashboardGoalAccent(resolvedPresentation.entry.value);
   const progressScale =
     progressReady && percentage > 0 ? Math.min(percentage, 100) / 100 : 0;
   const rowStyle = {
@@ -98,14 +146,10 @@ function GoalRow({
     >
       <div className="grid min-w-0 grid-cols-[36px_minmax(0,1fr)] items-center gap-2.5">
         <span
-          className="grid size-9 shrink-0 place-items-center rounded-full border"
-          style={{
-            color: accent,
-            borderColor: `color-mix(in srgb, ${accent}, transparent 76%)`,
-            backgroundColor: `color-mix(in srgb, ${accent}, transparent 92%)`,
-          }}
+          className="grid size-9 shrink-0 place-items-center"
+          style={{ color: accent }}
         >
-          <GoalIcon size={15} strokeWidth={2.15} />
+          <GoalIcon size={21} strokeWidth={2.4} />
         </span>
 
         <div className="min-w-0">
