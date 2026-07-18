@@ -34,16 +34,19 @@ const dashboardOverviewStyles = `
     .dashboard-overview-layout > div.grid:nth-last-child(2) > :nth-child(3) {
       order: 10;
       grid-column: 1 / span 8;
+      height: clamp(430px, 24vw, 480px);
     }
 
     .dashboard-overview-layout > div.grid:nth-last-child(2) > :nth-child(2) {
       order: 11;
       grid-column: 9 / span 7;
+      height: clamp(430px, 24vw, 480px);
     }
 
     .dashboard-overview-layout > div.grid:nth-last-child(2) > :nth-child(1) {
       order: 12;
       grid-column: 16 / -1;
+      height: clamp(430px, 24vw, 480px);
     }
 
     /* Keep the requested 70% / 30% supporting row. */
@@ -62,24 +65,16 @@ const dashboardOverviewStyles = `
       grid-column: 1 / -1;
     }
 
-    /* Let the existing portfolio design adapt to its 35% card width without
-       changing its data, chart, holdings, animation, or interaction logic. */
-    .dashboard-overview-layout
-      > div.grid:nth-last-child(2)
-      > :nth-child(2)
-      > section {
-      container-type: inline-size;
-      container-name: dashboard-portfolio-card;
-    }
-
+    /* The existing portfolio widget keeps all data and interactions, but its
+       internal columns are compacted so the 35% card never clips or spills. */
     .dashboard-overview-layout
       > div.grid:nth-last-child(2)
       > :nth-child(2)
       > section
       > .mt-5.grid {
-      grid-template-columns: minmax(0, 1fr);
-      align-items: start;
-      gap: 1rem;
+      grid-template-columns: minmax(150px, 0.7fr) minmax(0, 1.3fr);
+      align-items: center;
+      gap: 0.75rem;
     }
 
     .dashboard-overview-layout
@@ -89,7 +84,41 @@ const dashboardOverviewStyles = `
       > .mt-5.grid
       > div:first-child
       > div {
-      max-width: 190px;
+      max-width: 180px;
+    }
+
+    .dashboard-overview-layout
+      > div.grid:nth-last-child(2)
+      > :nth-child(2)
+      > section
+      > .mt-5.grid
+      > div:last-child {
+      min-width: 0;
+      gap: 0.55rem;
+    }
+
+    .dashboard-overview-layout
+      > div.grid:nth-last-child(2)
+      > :nth-child(2)
+      > section
+      > .mt-5.grid
+      > div:last-child
+      > div {
+      min-width: 0;
+      grid-template-columns: auto minmax(0, 1fr) minmax(54px, 0.72fr) auto;
+      gap: 0.45rem;
+      padding: 0.55rem 0.65rem;
+    }
+
+    .dashboard-overview-layout
+      > div.grid:nth-last-child(2)
+      > :nth-child(2)
+      > section
+      > .mt-5.grid
+      > div:last-child
+      > div
+      > * {
+      min-width: 0;
     }
 
     /* Keep the 70% spending card compact and aligned with the goals card. */
@@ -111,18 +140,6 @@ const dashboardOverviewStyles = `
       > div:first-child
       > div {
       max-width: 260px;
-    }
-  }
-
-  @container dashboard-portfolio-card (min-width: 560px) {
-    .dashboard-overview-layout
-      > div.grid:nth-last-child(2)
-      > :nth-child(2)
-      > section
-      > .mt-5.grid {
-      grid-template-columns: minmax(180px, 0.82fr) minmax(0, 1.18fr);
-      align-items: center;
-      gap: 1rem;
     }
   }
 `;
