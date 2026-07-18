@@ -4,18 +4,20 @@ import { useLayoutEffect, useMemo, useRef } from "react";
 
 function splitAmount(amount: string) {
   const cleanAmount = String(amount ?? "").trim();
-  const match = cleanAmount.match(/^([^0-9-]*)(-?[\d,]+(?:\.\d+)?)(.*)$/);
+  const match = cleanAmount.match(/-?[\d,]+(?:\.\d+)?/);
 
-  if (!match) return null;
+  if (!match || match.index === undefined) return null;
 
-  const numericText = match[2];
+  const numericText = match[0];
+  const numericStart = match.index;
+  const numericEnd = numericStart + numericText.length;
 
   return {
-    prefix: match[1],
+    prefix: cleanAmount.slice(0, numericStart),
     value: Number(numericText.replace(/,/g, "")),
     decimals:
       numericText.includes(".") ? (numericText.split(".")[1]?.length ?? 0) : 0,
-    suffix: match[3],
+    suffix: cleanAmount.slice(numericEnd),
   };
 }
 
@@ -49,18 +51,20 @@ export default function CountedAmount({
       minimumFractionDigits: parsedAmount.decimals,
       maximumFractionDigits: parsedAmount.decimals,
     });
+    const formatValue = (value: number) =>
+      `${parsedAmount.prefix}${formatter.format(value)}${parsedAmount.suffix}`;
     const durationMs = duration * 1000;
     const startedAt = performance.now();
     let frameId = 0;
+
+    element.textContent = formatValue(0);
 
     const renderFrame = (time: number) => {
       const progress = Math.min((time - startedAt) / durationMs, 1);
       const easedProgress = 1 - Math.pow(1 - progress, 3);
       const currentValue = parsedAmount.value * easedProgress;
 
-      element.textContent = `${parsedAmount.prefix}${formatter.format(
-        currentValue,
-      )}${parsedAmount.suffix}`;
+      element.textContent = progress >= 1 ? amount : formatValue(currentValue);
 
       if (progress < 1) {
         frameId = requestAnimationFrame(renderFrame);
