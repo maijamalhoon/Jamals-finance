@@ -1,189 +1,127 @@
-/* Lightweight decorative math-symbol field for the public landing and auth pages.
-   CSS-only motion keeps runtime work near zero and never intercepts input. */
+/* Subtle financial-symbol atmosphere. The symbols stay behind content,
+   use only transform/opacity for motion, and reduce density on smaller screens. */
 
 .landing-math-field {
   position: fixed;
   inset: 0;
-  z-index: 8;
+  z-index: 3;
   overflow: hidden;
   pointer-events: none;
   user-select: none;
   contain: layout paint style;
-  opacity: 1;
-  filter: saturate(1.08);
+  opacity: 0.62;
 }
 
 .auth-math-field {
   z-index: 4;
-  opacity: 0.78;
-  filter: saturate(0.98);
+  opacity: 0.5;
 }
 
 .landing-math-symbol {
   position: absolute;
-  top: -14vh;
+  top: -12vh;
   left: var(--math-x);
   display: block;
   width: 1em;
   height: 1em;
   color: var(--math-symbol-color);
   font-family: ui-rounded, "SF Pro Rounded", "Segoe UI Symbol", system-ui, sans-serif;
-  font-size: calc(clamp(1.2rem, 2.15vw, 2.65rem) * var(--math-size));
+  font-size: calc(clamp(1rem, 1.7vw, 2rem) * var(--math-size));
   font-weight: 680;
   line-height: 1;
   text-align: center;
-  text-shadow:
-    0 4px 15px color-mix(in srgb, var(--math-symbol-color) 24%, transparent),
-    0 0 1px color-mix(in srgb, var(--math-symbol-color) 52%, transparent);
+  text-shadow: 0 8px 24px color-mix(in srgb, var(--math-symbol-color) 20%, transparent);
   opacity: 0;
-  transform: translate3d(0, -14vh, 0) rotate(var(--math-rotate-start)) scale(0.82);
+  filter: blur(0.15px);
+  transform: translate3d(0, -12vh, 0) rotate(var(--math-rotate-start)) scale(0.78);
   will-change: transform, opacity;
-  animation-name: landing-math-fall;
-  animation-duration: var(--math-duration);
-  animation-delay: var(--math-delay);
-  animation-timing-function: linear;
-  animation-iteration-count: infinite;
+  animation: jf-symbol-drift var(--math-duration) var(--math-delay) linear infinite;
 }
 
-.auth-math-field .landing-math-symbol {
-  text-shadow:
-    0 3px 12px color-mix(in srgb, var(--math-symbol-color) 18%, transparent),
-    0 0 1px color-mix(in srgb, var(--math-symbol-color) 38%, transparent);
+.landing-math-symbol:nth-child(n + 13) {
+  display: none;
 }
 
-.landing-math-symbol-plus {
-  --math-symbol-color: #249a6d;
-}
-
-.landing-math-symbol-minus {
-  --math-symbol-color: #d65f69;
-}
-
-.landing-math-symbol-multiply {
-  --math-symbol-color: #7f6fd2;
-}
-
-.landing-math-symbol-divide {
-  --math-symbol-color: #368eaf;
-}
-
-.landing-math-symbol-equals {
-  --math-symbol-color: #b77b2c;
-}
-
-.landing-math-symbol-dollar {
-  --math-symbol-color: #2f6ed8;
-}
+.landing-math-symbol-plus { --math-symbol-color: #249a6d; }
+.landing-math-symbol-minus { --math-symbol-color: #d65f69; }
+.landing-math-symbol-multiply { --math-symbol-color: #7f6fd2; }
+.landing-math-symbol-divide { --math-symbol-color: #368eaf; }
+.landing-math-symbol-equals { --math-symbol-color: #b77b2c; }
+.landing-math-symbol-dollar { --math-symbol-color: #2f6ed8; }
 
 .dark .landing-math-field {
-  opacity: 1;
-  filter: saturate(1.12) brightness(1.08);
+  opacity: 0.72;
+  filter: saturate(1.06) brightness(1.05);
 }
 
 .dark .auth-math-field {
-  opacity: 0.72;
-  filter: saturate(1.02) brightness(1.05);
+  opacity: 0.48;
 }
 
-.dark .landing-math-symbol-plus {
-  --math-symbol-color: #6bdba2;
-}
+.dark .landing-math-symbol-plus { --math-symbol-color: #6bdba2; }
+.dark .landing-math-symbol-minus { --math-symbol-color: #fa8c93; }
+.dark .landing-math-symbol-multiply { --math-symbol-color: #b3a2ff; }
+.dark .landing-math-symbol-divide { --math-symbol-color: #72cee9; }
+.dark .landing-math-symbol-equals { --math-symbol-color: #efba68; }
+.dark .landing-math-symbol-dollar { --math-symbol-color: #78a8ff; }
 
-.dark .landing-math-symbol-minus {
-  --math-symbol-color: #fa8c93;
-}
-
-.dark .landing-math-symbol-multiply {
-  --math-symbol-color: #b3a2ff;
-}
-
-.dark .landing-math-symbol-divide {
-  --math-symbol-color: #72cee9;
-}
-
-.dark .landing-math-symbol-equals {
-  --math-symbol-color: #efba68;
-}
-
-.dark .landing-math-symbol-dollar {
-  --math-symbol-color: #78a8ff;
-}
-
-@keyframes landing-math-fall {
+@keyframes jf-symbol-drift {
   0% {
     opacity: 0;
-    transform: translate3d(0, -14vh, 0) rotate(var(--math-rotate-start)) scale(0.82);
+    transform: translate3d(0, -12vh, 0) rotate(var(--math-rotate-start)) scale(0.78);
   }
-
-  8% {
-    opacity: var(--math-opacity);
+  10% {
+    opacity: calc(var(--math-opacity) * 0.65);
   }
-
-  36% {
-    opacity: var(--math-opacity);
-    transform: translate3d(var(--math-drift-a), 30vh, 0) rotate(0deg) scale(0.94);
-  }
-
-  68% {
-    opacity: var(--math-opacity);
-    transform: translate3d(var(--math-drift-b), 69vh, 0) rotate(var(--math-rotate-end)) scale(1.02);
-  }
-
-  88% {
+  38% {
     opacity: calc(var(--math-opacity) * 0.72);
+    transform: translate3d(var(--math-drift-a), 31vh, 0) rotate(-2deg) scale(0.9);
   }
-
+  70% {
+    opacity: calc(var(--math-opacity) * 0.58);
+    transform: translate3d(var(--math-drift-b), 72vh, 0) rotate(var(--math-rotate-end)) scale(0.98);
+  }
   100% {
     opacity: 0;
-    transform: translate3d(var(--math-drift-c), 114vh, 0) rotate(var(--math-rotate-end)) scale(1.08);
+    transform: translate3d(var(--math-drift-c), 112vh, 0) rotate(var(--math-rotate-end)) scale(1.04);
   }
 }
 
 @media (max-width: 1023px) {
-  .landing-math-symbol {
-    font-size: calc(clamp(1.1rem, 3.4vw, 2rem) * var(--math-size));
-    text-shadow:
-      0 4px 14px color-mix(in srgb, var(--math-symbol-color) 22%, transparent),
-      0 0 1px color-mix(in srgb, var(--math-symbol-color) 48%, transparent);
+  .landing-math-field {
+    opacity: 0.5;
   }
 
-  .landing-math-symbol:nth-child(n + 13) {
+  .landing-math-symbol {
+    font-size: calc(clamp(0.95rem, 2.8vw, 1.55rem) * var(--math-size));
+  }
+
+  .landing-math-symbol:nth-child(n + 9) {
     display: none;
   }
 }
 
 @media (max-width: 639px) {
   .landing-math-field {
-    opacity: 0.96;
+    z-index: 2;
+    opacity: 0.4;
   }
 
   .auth-math-field {
-    opacity: 0.68;
+    opacity: 0.38;
   }
 
   .landing-math-symbol {
-    font-size: calc(clamp(1rem, 6vw, 1.75rem) * var(--math-size));
-    font-weight: 660;
+    font-size: calc(clamp(0.85rem, 5vw, 1.3rem) * var(--math-size));
+    text-shadow: 0 5px 18px color-mix(in srgb, var(--math-symbol-color) 15%, transparent);
   }
 
-  .landing-math-symbol:nth-child(n + 10) {
+  .landing-math-symbol:nth-child(n + 7) {
     display: none;
   }
 }
 
-@media (max-width: 379px) {
-  .landing-math-symbol:nth-child(n + 8) {
-    display: none;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .landing-math-field {
-    display: none;
-  }
-}
-
-@media (forced-colors: active) {
+@media (prefers-reduced-motion: reduce), (forced-colors: active) {
   .landing-math-field {
     display: none;
   }
