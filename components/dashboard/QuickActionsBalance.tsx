@@ -124,7 +124,7 @@ export default function QuickActionsBalance({
             </div>
 
             <h2
-              className="dashboard-balance-amount max-w-full break-words font-black text-text-primary tabular-nums [overflow-wrap:anywhere]"
+              className="dashboard-balance-amount max-w-full whitespace-nowrap font-black text-text-primary tabular-nums"
               data-balance-size={balanceSize}
               title={displayTotalBalance}
             >
@@ -138,7 +138,6 @@ export default function QuickActionsBalance({
                 />
               )}
             </h2>
-            <p className="dashboard-balance-description">{summary.description}</p>
           </div>
 
           <div
