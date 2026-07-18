@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import type { CSSProperties } from "react";
-import { PieChart as PieChartIcon } from "lucide-react";
+import { BarChart3, PieChart as PieChartIcon } from "lucide-react";
 import { Cell, Pie, PieChart, Tooltip } from "recharts";
 
 import { useCurrency } from "@/components/currency/CurrencyProvider";
@@ -86,8 +86,8 @@ export default function SpendingBreakdown({
       <section className="finance-reference-card motion-card-entry flex h-full min-h-[300px] flex-col overflow-hidden p-4 sm:p-5">
         <div className="flex min-w-0 items-start justify-between gap-3">
           <div className="flex min-w-0 items-center gap-2">
-            <span className="dashboard-list-card-kicker-icon">
-              <PieChartIcon />
+            <span className="dashboard-list-card-kicker-icon !border-transparent !bg-transparent !text-text-secondary !shadow-none">
+              <BarChart3 size={15} strokeWidth={2.3} aria-hidden="true" />
             </span>
             <div className="min-w-0">
               <h3 className="truncate text-[11px] font-bold uppercase tracking-[0.12em] text-text-secondary">
@@ -153,8 +153,8 @@ export default function SpendingBreakdown({
     <section className="finance-reference-card motion-card-entry flex h-full min-h-[300px] min-w-0 flex-col overflow-hidden p-4 sm:p-5">
       <div className="flex min-w-0 items-start justify-between gap-3">
         <div className="flex min-w-0 items-center gap-2">
-          <span className="dashboard-list-card-kicker-icon">
-            <PieChartIcon />
+          <span className="dashboard-list-card-kicker-icon !border-transparent !bg-transparent !text-text-secondary !shadow-none">
+            <BarChart3 size={15} strokeWidth={2.3} aria-hidden="true" />
           </span>
           <div className="min-w-0">
             <h3 className="truncate text-[11px] font-bold uppercase tracking-[0.12em] text-text-secondary">
