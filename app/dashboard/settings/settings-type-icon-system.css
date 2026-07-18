@@ -1,6 +1,7 @@
 /*
  * Settings-only typography and icon normalization.
- * Keeps all authored sizes, spacing, colors, data, interactions, and motion intact.
+ * Auth, data, calculations, component geometry, responsive behavior,
+ * interactions, and motion remain untouched.
  */
 
 :where(.settings-page-polish),
@@ -8,7 +9,10 @@
 :where(body:has(.settings-page-polish) [role="dialog"]) {
   font-family: var(--font-geist-sans), var(--font-sans);
   font-kerning: normal;
+  font-optical-sizing: auto;
   font-synthesis: none;
+  font-variant-numeric: tabular-nums lining-nums;
+  font-feature-settings: "tnum" 1, "lnum" 1;
   text-rendering: geometricPrecision;
 }
 
@@ -18,6 +22,7 @@
 :where(body:has(.settings-page-polish) [role="dialog"]) :where(h1, h2, h3, h4, h5, h6, [role="heading"]) {
   font-family: var(--font-geist-sans), var(--font-sans);
   font-weight: 700;
+  letter-spacing: -0.018em;
 }
 
 /* Body copy: Geist Sans 400–500. */
@@ -28,12 +33,20 @@
   font-weight: 450;
 }
 
-:where(.settings-page-polish, body:has(.settings-page-polish) [data-slot="dialog-content"], body:has(.settings-page-polish) [role="dialog"]) :where(.font-medium) {
+:where(
+    .settings-page-polish,
+    body:has(.settings-page-polish) [data-slot="dialog-content"],
+    body:has(.settings-page-polish) [role="dialog"]
+  ) :where(.font-medium) {
   font-weight: 500;
 }
 
 /* Buttons and labels: Geist Sans 550–650. */
-:where(.settings-page-polish, body:has(.settings-page-polish) [data-slot="dialog-content"], body:has(.settings-page-polish) [role="dialog"]) :where(
+:where(
+    .settings-page-polish,
+    body:has(.settings-page-polish) [data-slot="dialog-content"],
+    body:has(.settings-page-polish) [role="dialog"]
+  ) :where(
     button,
     a,
     label,
@@ -47,17 +60,37 @@
     .font-bold
   ) {
   font-family: var(--font-geist-sans), var(--font-sans);
-  font-weight: 600;
+  font-weight: 625;
+  letter-spacing: -0.006em;
 }
 
-/* Preserve stronger hierarchy only for actual headings. */
-:where(.settings-page-polish, body:has(.settings-page-polish) [data-slot="dialog-content"], body:has(.settings-page-polish) [role="dialog"]) :where(h1, h2, h3, h4, h5, h6, [role="heading"], .page-title).font-bold,
-:where(.settings-page-polish, body:has(.settings-page-polish) [data-slot="dialog-content"], body:has(.settings-page-polish) [role="dialog"]) :where(h1, h2, h3, h4, h5, h6, [role="heading"], .page-title) :where(.font-bold, .font-extrabold, .font-black) {
+/* Preserve stronger hierarchy only for actual headings and key totals. */
+:where(
+    .settings-page-polish,
+    body:has(.settings-page-polish) [data-slot="dialog-content"],
+    body:has(.settings-page-polish) [role="dialog"]
+  ) :where(h1, h2, h3, h4, h5, h6, [role="heading"], .page-title).font-bold,
+:where(
+    .settings-page-polish,
+    body:has(.settings-page-polish) [data-slot="dialog-content"],
+    body:has(.settings-page-polish) [role="dialog"]
+  ) :where(h1, h2, h3, h4, h5, h6, [role="heading"], .page-title) :where(.font-bold, .font-extrabold, .font-black),
+:where(.settings-page-polish) .summary-card > p:first-child {
   font-weight: 700;
 }
 
+/* Section labels keep their authored size and spacing, with a cleaner UI weight. */
+:where(.settings-page-polish) section > p:first-child {
+  font-weight: 700;
+  text-rendering: geometricPrecision;
+}
+
 /* Amounts and numeric summaries use stable tabular figures. */
-:where(.settings-page-polish, body:has(.settings-page-polish) [data-slot="dialog-content"], body:has(.settings-page-polish) [role="dialog"]) :where(
+:where(
+    .settings-page-polish,
+    body:has(.settings-page-polish) [data-slot="dialog-content"],
+    body:has(.settings-page-polish) [role="dialog"]
+  ) :where(
     .tabular-nums,
     [data-amount],
     [inputmode="decimal"],
@@ -70,13 +103,55 @@
   font-feature-settings: "tnum" 1, "lnum" 1;
 }
 
-/* Lucide React rounded monoline outline icons, without changing icon dimensions. */
-:where(.settings-page-polish, body:has(.settings-page-polish) [data-slot="dialog-content"], body:has(.settings-page-polish) [role="dialog"]) :where(svg.lucide) {
+/* Lucide React rounded monoline outline icons. Authored dimensions stay intact. */
+:where(
+    .settings-page-polish,
+    body:has(.settings-page-polish) [data-slot="dialog-content"],
+    body:has(.settings-page-polish) [role="dialog"]
+  ) :where(svg.lucide) {
   fill: none !important;
   stroke: currentColor;
-  stroke-width: 1.8 !important;
+  stroke-width: 2.2 !important;
   stroke-linecap: round;
   stroke-linejoin: round;
   shape-rendering: geometricPrecision;
   vector-effect: non-scaling-stroke;
+}
+
+:where(
+    .settings-page-polish,
+    body:has(.settings-page-polish) [data-slot="dialog-content"],
+    body:has(.settings-page-polish) [role="dialog"]
+  ) :where(svg.lucide[aria-hidden="true"]) {
+  pointer-events: none;
+}
+
+/*
+ * Settings row icons use the same clean outline-only presentation as the
+ * dashboard labels. Frames retain their original dimensions for alignment.
+ */
+:where(.settings-page-polish, body:has(.settings-page-polish) [role="dialog"])
+  .finance-icon-bubble {
+  border-color: transparent !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+/* Appearance choices remain the same size, but their glyphs no longer sit in a nested bubble. */
+:where(.settings-page-polish, body:has(.settings-page-polish) [role="dialog"])
+  [role="radiogroup"]
+  [role="radio"]
+  > span:first-child:has(svg.lucide) {
+  border-color: transparent !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+/* Edit, delete, close, navigation, and status glyphs share one optical weight. */
+:where(
+    .settings-page-polish,
+    body:has(.settings-page-polish) [data-slot="dialog-content"],
+    body:has(.settings-page-polish) [role="dialog"]
+  ) :where(button, a, [role="button"], [role="tab"]) > svg.lucide {
+  stroke-width: 2.2 !important;
 }
