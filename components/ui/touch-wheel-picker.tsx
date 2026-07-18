@@ -38,6 +38,7 @@ interface TouchWheelPickerProps {
   className?: string;
   itemClassName?: string;
   emptyContent?: ReactNode;
+  onTap?: () => void;
 }
 
 function clamp(value: number, minimum: number, maximum: number) {
@@ -79,6 +80,7 @@ export default function TouchWheelPicker({
   className,
   itemClassName,
   emptyContent,
+  onTap,
 }: TouchWheelPickerProps) {
   const valuesKey = useMemo(
     () => options.map((option) => option.value).join("\u001f"),
@@ -87,6 +89,7 @@ export default function TouchWheelPicker({
   const optionsRef = useRef(options);
   const valueRef = useRef(value);
   const onValueChangeRef = useRef(onValueChange);
+  const onTapRef = useRef(onTap);
   const positionRef = useRef(0);
   const pointerIdRef = useRef<number | null>(null);
   const startYRef = useRef(0);
@@ -105,6 +108,7 @@ export default function TouchWheelPicker({
   optionsRef.current = options;
   valueRef.current = value;
   onValueChangeRef.current = onValueChange;
+  onTapRef.current = onTap;
 
   const selectedIndex = Math.max(
     0,
@@ -233,6 +237,15 @@ export default function TouchWheelPicker({
       }
       pointerIdRef.current = null;
       setIsDragging(false);
+
+      if (!cancelled && !movedRef.current && onTapRef.current) {
+        settleAt(
+          clamp(Math.round(positionRef.current), 0, maximumIndex),
+          0,
+        );
+        onTapRef.current();
+        return;
+      }
 
       const idleFor = performance.now() - lastTimeRef.current;
       const velocity = cancelled || idleFor > 90 ? 0 : velocityRef.current;
