@@ -1,136 +1,184 @@
 import {
   ArrowLeftRight,
   BriefcaseBusiness,
-  Car,
-  Landmark,
+  HandCoins,
   ReceiptText,
   RotateCcw,
-  ShoppingBag,
   Target,
   TrendingDown,
   TrendingUp,
-  Utensils,
   type LucideIcon,
 } from "lucide-react";
+
+import {
+  getCategoryIconComponent,
+  getSemanticCategoryIconKey,
+  type CategoryKind,
+} from "@/lib/category-visuals";
 import { FEATURE_COLOR_CSS } from "@/lib/theme-colors";
 
 export type TransactionIconMeta = {
   label: string;
   icon: LucideIcon;
   accent: string;
+  semanticType:
+    | "income"
+    | "expense"
+    | "transfer"
+    | "investment"
+    | "payable"
+    | "goal"
+    | "refund"
+    | "transaction";
 };
 
 type TransactionIconInput = {
-  type?: "income" | "expense" | "transfer" | string | null;
+  type?:
+    | "income"
+    | "expense"
+    | "transfer"
+    | "investment"
+    | "goal"
+    | "refund"
+    | string
+    | null;
   note?: string | null;
   categoryName?: string | null;
+  categoryIconKey?: string | null;
   parentCategoryName?: string | null;
+  sourceName?: string | null;
+  itemName?: string | null;
 };
 
-const MATCHERS: {
-  label: string;
-  icon: LucideIcon;
-  accent: string;
-  keywords: string[];
-}[] = [
-  {
-    label: "Transfer",
-    icon: ArrowLeftRight,
-    accent: FEATURE_COLOR_CSS.transfer,
-    keywords: ["transfer", "moved", "wallet to", "bank to", "account to"],
-  },
-  {
-    label: "Ride",
-    icon: Car,
-    accent: FEATURE_COLOR_CSS.primary,
-    keywords: ["ride", "rides", "indrive", "careem", "uber", "bike"],
-  },
-  {
-    label: "Food",
-    icon: Utensils,
-    accent: FEATURE_COLOR_CSS.expense,
-    keywords: ["food", "dining", "drink", "drinks", "lunch", "dinner", "cafe"],
-  },
-  {
-    label: "Shopping",
-    icon: ShoppingBag,
-    accent: FEATURE_COLOR_CSS.expense,
-    keywords: ["shopping", "market", "store", "clothes", "item"],
-  },
-  {
-    label: "Bills",
-    icon: ReceiptText,
-    accent: FEATURE_COLOR_CSS.payables,
-    keywords: ["bill", "bills", "electric", "gas", "water", "internet", "utility"],
-  },
-  {
-    label: "Bank",
-    icon: Landmark,
-    accent: FEATURE_COLOR_CSS.transfer,
-    keywords: ["bank", "jazzcash", "easypaisa", "wallet", "card"],
-  },
-  {
-    label: "Goals",
-    icon: Target,
-    accent: FEATURE_COLOR_CSS.goals,
-    keywords: ["goal", "goals", "target", "milestone"],
-  },
-];
+function normalizedText(values: Array<string | null | undefined>) {
+  return values.filter(Boolean).join(" ").trim().toLowerCase();
+}
 
+function isPayableContext(value: string) {
+  return [
+    "payable",
+    "liability",
+    "debt repayment",
+    "debt payment",
+    "loan repayment",
+    "payment returned to",
+  ].some((keyword) => value.includes(keyword));
+}
+
+function isGoalContext(value: string) {
+  return ["goal contribution", "goal allocation", "savings goal"].some(
+    (keyword) => value.includes(keyword),
+  );
+}
+
+function getCategoryIcon(
+  type: CategoryKind,
+  categoryName?: string | null,
+  parentCategoryName?: string | null,
+  note?: string | null,
+  categoryIconKey?: string | null,
+) {
+  if (categoryIconKey) return getCategoryIconComponent(categoryIconKey);
+
+  const semanticName =
+    categoryName?.trim() || parentCategoryName?.trim() || note?.trim() || "";
+  return getCategoryIconComponent(
+    getSemanticCategoryIconKey(semanticName, type),
+  );
+}
+
+/**
+ * One shared visual resolver for the Transactions page and dashboard Recent
+ * Transactions card. Category icon identity stays stable, while transaction
+ * direction controls the display colour: income green, expense red, and the
+ * dedicated finance tones for transfers, investments, payables and goals.
+ */
 export function getTransactionIconMeta({
   type,
   note,
   categoryName,
+  categoryIconKey,
   parentCategoryName,
+  sourceName,
+  itemName,
 }: TransactionIconInput): TransactionIconMeta {
-  const haystack = [type, note, categoryName, parentCategoryName]
-    .filter(Boolean)
-    .join(" ")
-    .toLowerCase();
+  const normalizedType = type?.trim().toLowerCase() ?? "";
+  const context = normalizedText([
+    normalizedType,
+    note,
+    categoryName,
+    parentCategoryName,
+    sourceName,
+    itemName,
+  ]);
 
-  const matched = MATCHERS.find((matcher) =>
-    matcher.keywords.some((keyword) => haystack.includes(keyword)),
-  );
-
-  if (matched) return matched;
-
-  if (type === "income") {
-    return {
-      label: "Income",
-      icon: TrendingUp,
-      accent: FEATURE_COLOR_CSS.income,
-    };
-  }
-
-  if (type === "expense") {
-    return {
-      label: "Expense",
-      icon: TrendingDown,
-      accent: FEATURE_COLOR_CSS.expense,
-    };
-  }
-
-  if (type === "investment") {
-    return {
-      label: "Investment contribution",
-      icon: BriefcaseBusiness,
-      accent: FEATURE_COLOR_CSS.investment,
-    };
-  }
-
-  if (type === "refund") {
-    return {
-      label: "Expense refund",
-      icon: RotateCcw,
-      accent: FEATURE_COLOR_CSS.transfer,
-    };
-  }
-
-  if (type === "transfer") {
+  if (normalizedType === "transfer") {
     return {
       label: "Transfer",
       icon: ArrowLeftRight,
       accent: FEATURE_COLOR_CSS.transfer,
+      semanticType: "transfer",
+    };
+  }
+
+  if (normalizedType === "goal" || isGoalContext(context)) {
+    return {
+      label: "Goal contribution",
+      icon: Target,
+      accent: FEATURE_COLOR_CSS.goals,
+      semanticType: "goal",
+    };
+  }
+
+  if (normalizedType === "investment") {
+    return {
+      label: "Investment contribution",
+      icon: BriefcaseBusiness,
+      accent: FEATURE_COLOR_CSS.investment,
+      semanticType: "investment",
+    };
+  }
+
+  if (normalizedType === "refund") {
+    return {
+      label: "Expense refund",
+      icon: RotateCcw,
+      accent: FEATURE_COLOR_CSS.transfer,
+      semanticType: "refund",
+    };
+  }
+
+  if (normalizedType === "income") {
+    return {
+      label: "Income",
+      icon: getCategoryIcon(
+        "income",
+        categoryName,
+        parentCategoryName,
+        note,
+        categoryIconKey,
+      ),
+      accent: FEATURE_COLOR_CSS.income,
+      semanticType: "income",
+    };
+  }
+
+  if (normalizedType === "expense") {
+    const payable = isPayableContext(context);
+    return {
+      label: payable ? "Payable payment" : "Expense",
+      icon:
+        payable && !categoryIconKey && !categoryName
+          ? HandCoins
+          : getCategoryIcon(
+              "expense",
+              categoryName,
+              parentCategoryName,
+              note,
+              categoryIconKey,
+            ),
+      accent: payable ? FEATURE_COLOR_CSS.payables : FEATURE_COLOR_CSS.expense,
+      semanticType: payable ? "payable" : "expense",
     };
   }
 
@@ -138,32 +186,21 @@ export function getTransactionIconMeta({
     label: "Transaction",
     icon: ReceiptText,
     accent: FEATURE_COLOR_CSS.muted,
+    semanticType: "transaction",
   };
 }
 
 export function getTransactionToneClass(type?: string | null) {
-  if (type === "income") {
-    return "text-income";
-  }
-
-  if (type === "expense") {
-    return "text-expense";
-  }
-
-  if (type === "investment") {
-    return "text-investment";
-  }
-
-  if (type === "refund") {
-    return "text-info";
-  }
-
+  if (type === "income") return "text-income";
+  if (type === "expense") return "text-expense";
+  if (type === "investment") return "text-investment";
+  if (type === "goal") return "text-goals";
+  if (type === "refund") return "text-info";
   return "text-transfer";
 }
 
 export function getTransactionPrefix(type?: string | null) {
-  if (type === "income") return "+ ";
-  if (type === "refund") return "+ ";
+  if (type === "income" || type === "refund") return "+ ";
   if (type === "expense" || type === "investment") return "- ";
   return "";
 }
