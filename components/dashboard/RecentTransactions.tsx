@@ -138,7 +138,7 @@ export default function RecentTransactions({
         {status !== "unavailable" && transactions.length > 0 ? (
           <Link
             href="/dashboard/transactions"
-            className="finance-focus group inline-flex min-h-9 shrink-0 items-center gap-1.5 rounded-[10px] px-2.5 text-[11px] font-bold text-text-secondary transition-colors hover:bg-surface-secondary hover:text-text-primary"
+            className="dashboard-card-action finance-focus group inline-flex min-h-10 shrink-0 items-center gap-1.5 rounded-xl px-3 text-xs sm:px-4 sm:text-sm"
           >
             View all
             <ArrowRight
@@ -199,18 +199,21 @@ export default function RecentTransactions({
                   const Icon = iconMeta.icon;
                   const rowStyle = {
                     "--motion-reveal-delay": `${index * 35}ms`,
+                    backgroundColor: "transparent",
+                    boxShadow: "none",
+                    borderLeft: "0",
                   } as CSSProperties;
 
                   return (
                     <tr
                       key={tx.id}
                       style={rowStyle}
-                      className="motion-table-row group border-b border-border/45 transition-colors duration-200 last:border-b-0 hover:bg-surface-secondary/30"
+                      className="motion-table-row border-b border-border/45 last:border-b-0"
                     >
                       <td className="py-2.5 pr-4">
                         <div className="flex min-w-0 items-center gap-2.5">
                           <span
-                            className="grid size-8 shrink-0 place-items-center rounded-[11px] border transition-[transform,border-color,background-color] duration-200 group-hover:-translate-y-px"
+                            className="grid size-8 shrink-0 place-items-center rounded-[11px] border"
                             style={getTransactionSoftStyle(iconMeta.accent)}
                           >
                             <Icon size={14} strokeWidth={2.2} aria-hidden="true" />
