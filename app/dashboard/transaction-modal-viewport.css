@@ -1,8 +1,11 @@
-/* Keep the income and expense form centered in the actually visible viewport.
-   Mobile browser chrome can make percentage-based fixed positioning use a
-   taller layout viewport, which leaves too much empty space above the form. */
-@supports (height: 100dvh) {
-  [data-slot="dialog-content"].finance-modal-content:has(#transaction-amount) {
-    top: 50dvh !important;
-  }
+/* Keep the income and expense form centered in the browser area that is
+   actually visible. Mobile browser chrome can make the layout viewport taller
+   than the space available to the page, so the live VisualViewport metrics are
+   used when supported and dynamic viewport units remain the fallback. */
+[data-slot="dialog-content"].finance-modal-content:has(#transaction-amount) {
+  top: var(--jf-visual-viewport-center-y, 50dvh) !important;
+  max-height: min(
+    calc(var(--jf-visual-viewport-height, 100dvh) - 0.75rem),
+    calc(100dvh - 0.5rem)
+  ) !important;
 }
