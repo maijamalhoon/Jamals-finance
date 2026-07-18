@@ -66,8 +66,8 @@ function compactPercentageLabel(label: string) {
 }
 
 function getAmountSize(value: string) {
-  if (value.length > 22) return "xlong";
-  if (value.length > 15) return "long";
+  if (value.length > 17) return "xlong";
+  if (value.length > 11) return "long";
   return "normal";
 }
 
