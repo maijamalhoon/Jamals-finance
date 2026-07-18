@@ -37,3 +37,128 @@
     pointer-events: none;
   }
 }
+
+@layer components {
+  /*
+   * Navigation-only type and icon system:
+   * - mobile/tablet sidebar and floating controls
+   * - desktop/large-screen dashboard header
+   *
+   * Font sizes, control dimensions, spacing, data, and motion remain authored
+   * by their existing components.
+   */
+  :where(
+      .jf-desktop-header,
+      [data-mobile-navigation-drawer],
+      [data-mobile-control-cluster]
+    ) {
+    font-family: var(--font-sans);
+    font-weight: 400;
+    font-kerning: normal;
+    font-synthesis: none;
+    font-variant-numeric: tabular-nums lining-nums;
+    font-feature-settings: "tnum" 1, "lnum" 1;
+    text-rendering: geometricPrecision;
+  }
+
+  :where(
+      .jf-desktop-header,
+      [data-mobile-navigation-drawer],
+      [data-mobile-control-cluster]
+    ) :where(.font-black, .font-extrabold, .font-bold) {
+    font-weight: 700;
+  }
+
+  :where(
+      .jf-desktop-header,
+      [data-mobile-navigation-drawer],
+      [data-mobile-control-cluster]
+    ) :where(.font-semibold) {
+    font-weight: 600;
+  }
+
+  :where(
+      .jf-desktop-header,
+      [data-mobile-navigation-drawer],
+      [data-mobile-control-cluster]
+    ) :where(.font-medium) {
+    font-weight: 500;
+  }
+
+  :where(
+      .jf-desktop-header,
+      [data-mobile-navigation-drawer],
+      [data-mobile-control-cluster]
+    ) :where(p, input, textarea, select, [data-slot="sheet-description"]) {
+    font-family: var(--font-sans);
+    font-weight: 500;
+  }
+
+  :where(
+      .jf-desktop-header,
+      [data-mobile-navigation-drawer],
+      [data-mobile-control-cluster]
+    ) :where(
+      button,
+      a,
+      label,
+      summary,
+      [role="button"],
+      [role="link"],
+      [role="tab"],
+      [role="menuitem"],
+      [role="option"]
+    ) {
+    font-family: var(--font-sans);
+    font-weight: 600;
+  }
+
+  :where(
+      .jf-desktop-header,
+      [data-mobile-navigation-drawer],
+      [data-mobile-control-cluster]
+    ) :where(h1, h2, h3, h4, h5, h6, [role="heading"], [data-slot="sheet-title"]) {
+    font-family: var(--font-sans);
+    font-weight: 700;
+  }
+
+  :where(
+      .jf-desktop-header,
+      [data-mobile-navigation-drawer],
+      [data-mobile-control-cluster]
+    ) :where(svg.lucide) {
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    shape-rendering: geometricPrecision;
+  }
+
+  /* Match the existing mobile menu glyph to Lucide's rounded Menu outline. */
+  [data-mobile-control-cluster]
+    [aria-label="Open navigation menu"]
+    > span[aria-hidden="true"] {
+    gap: 0.25rem;
+  }
+
+  [data-mobile-control-cluster]
+    [aria-label="Open navigation menu"]
+    > span[aria-hidden="true"]::before,
+  [data-mobile-control-cluster]
+    [aria-label="Open navigation menu"]
+    > span[aria-hidden="true"]
+    > span {
+    display: block;
+    width: 1.25rem;
+    height: 0.125rem;
+    border-radius: 9999px;
+    background: currentColor;
+  }
+
+  [data-mobile-control-cluster]
+    [aria-label="Open navigation menu"]
+    > span[aria-hidden="true"]::before {
+    content: "";
+  }
+}
