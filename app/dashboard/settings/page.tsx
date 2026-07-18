@@ -6,6 +6,7 @@ import type { PersistentSettingsCategory } from "@/components/settings/CategoryM
 import "./settings-polish.css";
 import "./settings-polish-fixes.css";
 import "./settings-desktop-layout.css";
+import "./settings-restructure.css";
 
 export const dynamic = "force-dynamic";
 
