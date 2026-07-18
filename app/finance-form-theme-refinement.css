@@ -1,7 +1,9 @@
 /*
- * Final finance-form refinement.
- * Keep layout and behavior unchanged while improving touch target height and
- * theme contrast inside finance modals only.
+ * Shared finance-form geometry and theme refinement.
+ * Income/Expense is the sizing reference. Every finance form uses the same
+ * modal width, content padding, labels, controls, close button and primary
+ * action geometry. Longer forms grow naturally and then scroll inside the
+ * body without exposing a visual scrollbar.
  */
 
 html:not(.dark) .finance-modal-content {
@@ -58,19 +60,152 @@ html:not(.dark) .finance-modal-content {
   background: color-mix(in srgb, var(--surface-primary), white 2.5%);
 }
 
+.finance-modal-content {
+  --finance-form-width: 32rem;
+  --finance-control-height: 3.25rem;
+  --finance-action-height: 3.25rem;
+  --finance-field-gap: 0.75rem;
+  --finance-content-padding-x: 1.25rem;
+
+  width: min(calc(100vw - 0.75rem), var(--finance-form-width)) !important;
+  max-width: var(--finance-form-width) !important;
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: calc(
+    100dvh - 0.75rem - env(safe-area-inset-top) - env(safe-area-inset-bottom)
+  ) !important;
+  overflow: hidden !important;
+}
+
+.finance-modal-content .finance-modal-header {
+  min-height: 3.65rem !important;
+  padding: 0.75rem 3.75rem 0.75rem var(--finance-content-padding-x) !important;
+}
+
+.finance-modal-content .finance-modal-header [data-slot="dialog-title"] {
+  font-size: 1.05rem !important;
+  font-weight: 700 !important;
+  line-height: 1.3rem !important;
+  letter-spacing: -0.018em !important;
+}
+
+.finance-modal-content .finance-modal-body {
+  min-height: 0 !important;
+  flex: 1 1 auto !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  overscroll-behavior: contain !important;
+  padding: 0.8rem var(--finance-content-padding-x) !important;
+  scrollbar-width: none !important;
+}
+
+.finance-modal-content .finance-modal-body::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+
+/* Shared vertical rhythm for normal stacked forms. */
+.finance-modal-content
+  .finance-modal-body:not(:has(#transaction-amount))
+  > :not([hidden])
+  ~ :not([hidden]) {
+  margin-block-start: var(--finance-field-gap) !important;
+}
+
+/* Income/Expense uses a grid body, so gap replaces sibling margins. */
+.finance-modal-content .finance-modal-body:has(#transaction-amount) {
+  gap: var(--finance-field-gap) !important;
+}
+
+.finance-modal-content .finance-modal-body:has(#transaction-amount) > * {
+  margin-block: 0 !important;
+}
+
+.finance-modal-content .finance-modal-body .grid {
+  gap: var(--finance-field-gap) !important;
+}
+
+.finance-modal-content .field-label {
+  display: block;
+  margin-bottom: 0.35rem !important;
+  color: var(--text-secondary) !important;
+  font-size: 0.75rem !important;
+  font-weight: 650 !important;
+  line-height: 1rem !important;
+  letter-spacing: 0.01em !important;
+}
+
+/* Inputs, account/category selectors, native selects, dates and text areas. */
 .finance-modal-content .field-input,
 .finance-modal-content [data-slot="select-trigger"],
 .finance-modal-content select.finance-control,
-.finance-modal-content textarea.field-input {
+.finance-modal-content textarea.field-input,
+.finance-modal-content [role="listbox"].field-input {
+  box-sizing: border-box !important;
+  width: 100% !important;
+  height: var(--finance-control-height) !important;
+  min-height: var(--finance-control-height) !important;
+  max-height: var(--finance-control-height) !important;
   border-color: var(--border) !important;
+  border-radius: 0.9rem !important;
   background: var(--surface-inset) !important;
   color: var(--text-primary) !important;
+}
+
+.finance-modal-content .field-input,
+.finance-modal-content [data-slot="select-trigger"],
+.finance-modal-content select.finance-control {
+  padding-block: 0.55rem !important;
+}
+
+.finance-modal-content textarea.field-input {
+  resize: none !important;
+  padding-top: 0.72rem !important;
+  padding-bottom: 0.72rem !important;
+  line-height: 1.15rem !important;
 }
 
 .finance-modal-content .field-input::placeholder,
 .finance-modal-content textarea.field-input::placeholder {
   color: var(--text-muted) !important;
   opacity: 1;
+}
+
+/* A single close-control footprint in every finance form. */
+.finance-modal-content .finance-dialog-close {
+  top: 0.75rem !important;
+  right: 0.75rem !important;
+  width: 2.15rem !important;
+  height: 2.15rem !important;
+  min-width: 2.15rem !important;
+  min-height: 2.15rem !important;
+}
+
+.finance-modal-content .finance-dialog-close svg {
+  width: 1.2rem !important;
+  height: 1.2rem !important;
+  stroke-width: 1.8 !important;
+}
+
+.finance-modal-content .finance-modal-footer {
+  grid-template-columns: minmax(0, 1fr) !important;
+  gap: 0 !important;
+  padding: 0.75rem var(--finance-content-padding-x)
+    calc(0.75rem + env(safe-area-inset-bottom)) !important;
+}
+
+.finance-modal-content .finance-modal-footer > button,
+.finance-modal-content .finance-primary-action,
+.finance-modal-content .success-action,
+.finance-modal-content .danger-action {
+  width: 100% !important;
+  height: var(--finance-action-height) !important;
+  min-height: var(--finance-action-height) !important;
+  max-height: var(--finance-action-height) !important;
+  border-radius: 0.9rem !important;
+  font-size: 0.95rem !important;
+  font-weight: 700 !important;
 }
 
 .dark .finance-modal-content .finance-primary-action,
@@ -80,33 +215,39 @@ html:not(.dark) .finance-modal-content {
 }
 
 /*
- * Account and category use the same single-slot touch wheel on phones and
- * tablets. Keep every occurrence identical and only a few pixels taller than
- * the previous size. Add a restrained amount of breathing room to the forms
- * shown in the mobile references without changing their structure.
+ * Phones and tablets use the same comfortable Income/Expense footprint.
+ * Every Account, Category, Date and input control remains exactly equal.
  */
-@media (max-width: 1024px) and (pointer: coarse) {
-  .finance-modal-content [role="listbox"].field-input {
-    height: 3.5rem !important;
-    min-height: 3.5rem !important;
-    max-height: 3.5rem !important;
+@media (max-width: 1024px) {
+  .finance-modal-content {
+    --finance-control-height: 3.5rem;
+    --finance-action-height: 3.5rem;
+    --finance-field-gap: 0.78rem;
+    --finance-content-padding-x: 1rem;
+  }
+}
+
+/* Short viewports keep the geometry intact; only the body becomes scrollable. */
+@media (max-height: 620px) {
+  .finance-modal-content {
+    max-height: calc(
+      100dvh - 0.4rem - env(safe-area-inset-top) - env(safe-area-inset-bottom)
+    ) !important;
   }
 
-  .finance-modal-content .finance-modal-body:has(#transaction-amount) {
-    gap: 0.75rem !important;
+  .finance-modal-content .finance-modal-header {
+    min-height: 3.25rem !important;
+    padding-top: 0.55rem !important;
+    padding-bottom: 0.55rem !important;
   }
 
-  .finance-modal-content .finance-modal-body:has(#goal-name) > :not(:first-child),
-  .finance-modal-content
-    .finance-modal-body:has(#transfer-from-account)
-    > :not(:first-child) {
-    margin-block-start: 0.875rem !important;
+  .finance-modal-content .finance-modal-body {
+    padding-top: 0.65rem !important;
+    padding-bottom: 0.65rem !important;
   }
 
-  .finance-modal-content .finance-modal-body:has(#goal-name) > .grid,
-  .finance-modal-content
-    .finance-modal-body:has(#transfer-from-account)
-    > .grid {
-    gap: 0.875rem !important;
+  .finance-modal-content .finance-modal-footer {
+    padding-top: 0.6rem !important;
+    padding-bottom: calc(0.6rem + env(safe-area-inset-bottom)) !important;
   }
 }
