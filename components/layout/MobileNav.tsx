@@ -36,9 +36,64 @@ type TapGesture = {
   moved: boolean;
 };
 
+type ScrollDirection = "up" | "down" | null;
+
 const AUTO_HIDE_DELAY = 2_000;
+const SCROLL_IDLE_DELAY = 140;
+const SCROLL_DIRECTION_THRESHOLD = 1;
 const TAP_MOVE_TOLERANCE = 10;
 const CONTROL_EASE = [0.22, 1, 0.36, 1] as const;
+
+const INTERACTIVE_TAP_SELECTOR = [
+  "a[href]",
+  "button",
+  "input",
+  "textarea",
+  "select",
+  "option",
+  "label",
+  "summary",
+  "form",
+  '[role="button"]',
+  '[role="link"]',
+  '[role="menu"]',
+  '[role="menuitem"]',
+  '[role="tab"]',
+  '[role="checkbox"]',
+  '[role="radio"]',
+  '[role="switch"]',
+  '[role="combobox"]',
+  '[role="listbox"]',
+  '[role="option"]',
+  '[role="dialog"]',
+  "[aria-haspopup]",
+  '[contenteditable="true"]',
+  '[data-slot$="-trigger"]',
+  '[data-slot="dialog-content"]',
+  '[data-slot="sheet-content"]',
+  '[data-slot="dropdown-menu-content"]',
+  '[data-slot="popover-content"]',
+  '[tabindex]:not([tabindex="-1"])',
+].join(",");
+
+const BLOCKING_SURFACE_SELECTOR = [
+  '[data-slot="dialog-content"]',
+  '[data-slot="sheet-content"]',
+  '[data-slot="dropdown-menu-content"]',
+  '[data-slot="popover-content"]',
+  '[role="dialog"]',
+  '[aria-modal="true"]',
+].join(",");
+
+function isInteractiveTapTarget(target: EventTarget | null) {
+  return target instanceof Element
+    ? Boolean(target.closest(INTERACTIVE_TAP_SELECTOR))
+    : false;
+}
+
+function hasBlockingSurface() {
+  return Boolean(document.querySelector(BLOCKING_SURFACE_SELECTOR));
+}
 
 export default function MobileNav({ notificationSlot }: MobileNavProps) {
   const pathname = usePathname();
@@ -47,13 +102,29 @@ export default function MobileNav({ notificationSlot }: MobileNavProps) {
   const [portalOpen, setPortalOpen] = useState(false);
   const [controlsVisible, setControlsVisible] = useState(false);
   const hideTimerRef = useRef<number | null>(null);
+  const tapRevealTimerRef = useRef<number | null>(null);
+  const scrollIdleTimerRef = useRef<number | null>(null);
   const tapGestureRef = useRef<TapGesture | null>(null);
+  const lastScrollTopRef = useRef(0);
+  const lastScrollDirectionRef = useRef<ScrollDirection>(null);
   const interactionWasOpenRef = useRef(false);
 
   const clearHideTimer = useCallback(() => {
     if (hideTimerRef.current === null) return;
     window.clearTimeout(hideTimerRef.current);
     hideTimerRef.current = null;
+  }, []);
+
+  const clearTapRevealTimer = useCallback(() => {
+    if (tapRevealTimerRef.current === null) return;
+    window.clearTimeout(tapRevealTimerRef.current);
+    tapRevealTimerRef.current = null;
+  }, []);
+
+  const clearScrollIdleTimer = useCallback(() => {
+    if (scrollIdleTimerRef.current === null) return;
+    window.clearTimeout(scrollIdleTimerRef.current);
+    scrollIdleTimerRef.current = null;
   }, []);
 
   const showControlsForMoment = useCallback(() => {
@@ -69,10 +140,14 @@ export default function MobileNav({ notificationSlot }: MobileNavProps) {
 
   useEffect(() => {
     const updatePortalState = () => {
+      const mobileControlCluster = document.querySelector<HTMLElement>(
+        "[data-mobile-control-cluster]",
+      );
+
       setPortalOpen(
         Boolean(
-          document.querySelector(
-            '[data-slot="sheet-content"], [data-slot="dropdown-menu-content"]',
+          mobileControlCluster?.querySelector(
+            '[aria-expanded="true"], [data-popup-open], [data-slot="dropdown-menu-content"]',
           ),
         ),
       );
@@ -81,7 +156,12 @@ export default function MobileNav({ notificationSlot }: MobileNavProps) {
     updatePortalState();
 
     const observer = new MutationObserver(updatePortalState);
-    observer.observe(document.body, { childList: true, subtree: true });
+    observer.observe(document.body, {
+      attributes: true,
+      attributeFilter: ["aria-expanded", "data-popup-open"],
+      childList: true,
+      subtree: true,
+    });
 
     return () => observer.disconnect();
   }, []);
@@ -106,7 +186,17 @@ export default function MobileNav({ notificationSlot }: MobileNavProps) {
     const getScrollTop = () => scrollContainer?.scrollTop ?? window.scrollY;
 
     const handlePointerDown = (event: PointerEvent) => {
-      if (!event.isPrimary || event.button !== 0 || interactionOpen) return;
+      clearTapRevealTimer();
+
+      if (
+        !event.isPrimary ||
+        event.button !== 0 ||
+        interactionOpen ||
+        isInteractiveTapTarget(event.target)
+      ) {
+        tapGestureRef.current = null;
+        return;
+      }
 
       tapGestureRef.current = {
         pointerId: event.pointerId,
@@ -133,10 +223,16 @@ export default function MobileNav({ notificationSlot }: MobileNavProps) {
       if (!gesture || gesture.pointerId !== event.pointerId) return;
 
       tapGestureRef.current = null;
-      if (interactionOpen) return;
+      if (interactionOpen || isInteractiveTapTarget(event.target)) return;
 
       const scrollDistance = Math.abs(getScrollTop() - gesture.startScrollTop);
-      if (!gesture.moved && scrollDistance <= 2) showControlsForMoment();
+      if (gesture.moved || scrollDistance > 2) return;
+
+      tapRevealTimerRef.current = window.setTimeout(() => {
+        tapRevealTimerRef.current = null;
+        if (hasBlockingSurface()) return;
+        showControlsForMoment();
+      }, 0);
     };
 
     const handlePointerCancel = (event: PointerEvent) => {
@@ -168,7 +264,7 @@ export default function MobileNav({ notificationSlot }: MobileNavProps) {
       document.removeEventListener("pointerup", handlePointerUp, true);
       document.removeEventListener("pointercancel", handlePointerCancel, true);
     };
-  }, [interactionOpen, showControlsForMoment]);
+  }, [clearTapRevealTimer, interactionOpen, showControlsForMoment]);
 
   useEffect(() => {
     const scrollContainer = document.querySelector<HTMLElement>(
@@ -176,25 +272,58 @@ export default function MobileNav({ notificationSlot }: MobileNavProps) {
     );
     if (!scrollContainer) return;
 
+    lastScrollTopRef.current = Math.max(0, scrollContainer.scrollTop);
+
     const handleScroll = () => {
       clearHideTimer();
+      clearTapRevealTimer();
+      clearScrollIdleTimer();
+
       if (tapGestureRef.current) tapGestureRef.current.moved = true;
+
+      const nextScrollTop = Math.max(0, scrollContainer.scrollTop);
+      const scrollDelta = nextScrollTop - lastScrollTopRef.current;
+
+      if (Math.abs(scrollDelta) >= SCROLL_DIRECTION_THRESHOLD) {
+        lastScrollDirectionRef.current = scrollDelta < 0 ? "up" : "down";
+        lastScrollTopRef.current = nextScrollTop;
+      }
+
       if (!interactionOpen) setControlsVisible(false);
+
+      scrollIdleTimerRef.current = window.setTimeout(() => {
+        scrollIdleTimerRef.current = null;
+
+        if (interactionOpen || lastScrollDirectionRef.current !== "up") {
+          return;
+        }
+
+        showControlsForMoment();
+      }, SCROLL_IDLE_DELAY);
     };
 
     scrollContainer.addEventListener("scroll", handleScroll, { passive: true });
 
     return () => {
       scrollContainer.removeEventListener("scroll", handleScroll);
+      clearScrollIdleTimer();
     };
-  }, [clearHideTimer, interactionOpen]);
+  }, [
+    clearHideTimer,
+    clearScrollIdleTimer,
+    clearTapRevealTimer,
+    interactionOpen,
+    showControlsForMoment,
+  ]);
 
   useEffect(() => {
     return () => {
       clearHideTimer();
+      clearTapRevealTimer();
+      clearScrollIdleTimer();
       tapGestureRef.current = null;
     };
-  }, [clearHideTimer]);
+  }, [clearHideTimer, clearScrollIdleTimer, clearTapRevealTimer]);
 
   const controlTransition = reduceMotion
     ? { duration: 0.01 }
@@ -203,6 +332,7 @@ export default function MobileNav({ notificationSlot }: MobileNavProps) {
   return (
     <>
       <motion.div
+        data-mobile-control-cluster
         initial={false}
         animate={
           controlsVisible
