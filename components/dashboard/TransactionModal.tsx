@@ -29,16 +29,18 @@ import {
 import { toast } from "sonner";
 import { BASE_CURRENCY } from "@/lib/currency";
 import {
-  CATEGORY_FALLBACK_COLORS,
-  FEATURE_COLOR_CSS,
-} from "@/lib/theme-colors";
+  CategoryVisualIcon,
+  getCategoryVisual,
+  type CategoryVisualSource,
+} from "@/lib/category-visuals";
 import { getUserMutationError } from "@/lib/user-errors";
 
-interface Category {
+interface Category extends CategoryVisualSource {
   id: string;
   name: string;
   type: "income" | "expense";
   color: string | null;
+  icon_key: string | null;
   parent_id?: string | null;
 }
 
@@ -73,30 +75,9 @@ interface Props {
 
 interface CategoryOption {
   category: Category;
-  color: string;
   label: string;
   parentLabel?: string;
   depth: number;
-}
-
-function getCategoryColor(category: Category) {
-  return category.color || CATEGORY_FALLBACK_COLORS[category.type];
-}
-
-function CategorySwatch({
-  color,
-  className = "",
-}: {
-  color: string;
-  className?: string;
-}) {
-  return (
-    <span
-      aria-hidden="true"
-      className={`shrink-0 rounded-full border border-surface ${className}`}
-      style={{ backgroundColor: color }}
-    />
-  );
 }
 
 function CategorySummary({
@@ -109,7 +90,9 @@ function CategorySummary({
   if (!option) {
     return (
       <span className="flex min-w-0 flex-1 items-center gap-3 text-text-secondary">
-        <CategorySwatch color={FEATURE_COLOR_CSS.muted} className="h-3 w-3" />
+        <span className="grid size-9 shrink-0 place-items-center rounded-xl border border-border bg-surface-secondary text-text-tertiary">
+          <span className="size-2.5 rounded-full bg-text-tertiary" />
+        </span>
         <span className="truncate">{placeholder}</span>
       </span>
     );
@@ -117,7 +100,7 @@ function CategorySummary({
 
   return (
     <span className="flex min-w-0 flex-1 items-center gap-3 text-left">
-      <CategorySwatch color={option.color} className="h-3 w-3" />
+      <CategoryVisualIcon category={option.category} size="sm" />
       <span className="min-w-0 flex-1">
         <span className="block truncate text-sm font-semibold text-text-primary">
           {option.label}
@@ -193,10 +176,13 @@ export default function TransactionModal({
       setError("");
       setCategories([]);
       setCategoryId("");
-      const [{ data: cats, error: catsError }, { data: accs, error: accsError }] = await Promise.all([
+      const [
+        { data: cats, error: catsError },
+        { data: accs, error: accsError },
+      ] = await Promise.all([
         supabase
           .from("categories")
-          .select("id, name, type, color, parent_id")
+          .select("id, name, type, color, icon_key, parent_id")
           .eq("type", type)
           .order("parent_id", { ascending: true, nullsFirst: true })
           .order("name"),
@@ -214,7 +200,9 @@ export default function TransactionModal({
         setAccounts([]);
         setCategoryId("");
         setAccountId("");
-        setError("Categories or accounts could not be loaded. Check your connection and try again.");
+        setError(
+          "Categories or accounts could not be loaded. Check your connection and try again.",
+        );
         return;
       }
 
@@ -238,7 +226,7 @@ export default function TransactionModal({
       });
     }
 
-    load();
+    void load();
     return () => {
       cancelled = true;
     };
@@ -298,14 +286,20 @@ export default function TransactionModal({
     };
 
     const { error: saveError } = isEditing
-      ? await supabase.from("transactions").update(payload).eq("id", transaction!.id)
+      ? await supabase
+          .from("transactions")
+          .update(payload)
+          .eq("id", transaction!.id)
       : await supabase.from("transactions").insert(payload);
 
     setLoading(false);
 
     if (saveError) {
       setError(
-        getUserMutationError(saveError, "Transaction could not be saved. Try again."),
+        getUserMutationError(
+          saveError,
+          "Transaction could not be saved. Try again.",
+        ),
       );
       toast.error("Failed to save transaction");
       return;
@@ -319,10 +313,11 @@ export default function TransactionModal({
   }
 
   const isIncome = type === "income";
-  const btnLabel =
-    loading ? "Saving..."
-    : isEditing ? `Update ${isIncome ? "Income" : "Expense"}`
-    : `Save ${isIncome ? "Income" : "Expense"}`;
+  const btnLabel = loading
+    ? "Saving..."
+    : isEditing
+      ? `Update ${isIncome ? "Income" : "Expense"}`
+      : `Save ${isIncome ? "Income" : "Expense"}`;
   const categoryById = useMemo(
     () => new Map(categories.map((category) => [category.id, category])),
     [categories],
@@ -354,17 +349,17 @@ export default function TransactionModal({
     return roots.flatMap((category) => {
       const rootOption: CategoryOption = {
         category,
-        color: getCategoryColor(category),
         label: category.name,
         depth: 0,
       };
-      const childOptions = (childrenByParent[category.id] ?? []).map((child) => ({
-        category: child,
-        color: getCategoryColor(child),
-        label: `${category.name} / ${child.name}`,
-        parentLabel: category.name,
-        depth: 1,
-      }));
+      const childOptions = (childrenByParent[category.id] ?? []).map(
+        (child) => ({
+          category: child,
+          label: `${category.name} / ${child.name}`,
+          parentLabel: category.name,
+          depth: 1,
+        }),
+      );
 
       return [rootOption, ...childOptions];
     });
@@ -378,7 +373,11 @@ export default function TransactionModal({
     <Dialog open={open} onOpenChange={(nextOpen) => !nextOpen && onClose()}>
       <DialogContent className={financeModalContentClass}>
         <FinanceModalHeader
-          title={isEditing ? "Edit Transaction" : `Add ${isIncome ? "Income" : "Expense"}`}
+          title={
+            isEditing
+              ? "Edit Transaction"
+              : `Add ${isIncome ? "Income" : "Expense"}`
+          }
           description="Enter amount, account, category, date, and an optional note."
           icon={isIncome ? TrendingUp : TrendingDown}
           tone={isIncome ? "success" : "danger"}
@@ -447,7 +446,7 @@ export default function TransactionModal({
                 id="transaction-category"
                 aria-label={`${isIncome ? "Income" : "Expense"} category`}
                 aria-describedby="transaction-category-help"
-                className="field-input h-auto min-h-12 w-full gap-3 px-3 py-2 pr-3 text-left data-placeholder:text-text-secondary [&>svg]:ml-1"
+                className="field-input h-auto min-h-14 w-full gap-3 px-3 py-2 pr-3 text-left data-placeholder:text-text-secondary [&>svg]:ml-1"
               >
                 <CategorySummary
                   option={selectedCategoryOption}
@@ -463,38 +462,42 @@ export default function TransactionModal({
                 sideOffset={8}
                 className="z-[90] max-h-[min(20rem,var(--available-height))] max-w-[calc(100vw-1.5rem)] rounded-[18px] p-1.5"
               >
-                {categoryOptions.map((option) => (
-                  <SelectItem
-                    key={option.category.id}
-                    value={option.category.id}
-                    className="min-h-14 py-2 pr-8 pl-2.5"
-                  >
-                    <span className="flex min-w-0 flex-1 items-center gap-3">
-                      <CategorySwatch color={option.color} className="h-3 w-3" />
-                      <span
-                        className="min-w-0 flex-1"
-                        style={{ paddingLeft: option.depth ? "0.75rem" : 0 }}
-                      >
-                        <span className="block truncate text-sm font-semibold">
-                          {option.label}
-                        </span>
-                        <span className="block truncate text-[11px] text-text-secondary">
-                          {option.parentLabel
-                            ? `Under ${option.parentLabel}`
-                            : "Parent category"}
+                {categoryOptions.map((option) => {
+                  const visual = getCategoryVisual(option.category);
+                  return (
+                    <SelectItem
+                      key={option.category.id}
+                      value={option.category.id}
+                      className="min-h-16 py-2 pr-8 pl-2.5"
+                    >
+                      <span className="flex min-w-0 flex-1 items-center gap-3">
+                        <CategoryVisualIcon category={option.category} size="sm" />
+                        <span
+                          className="min-w-0 flex-1"
+                          style={{ paddingLeft: option.depth ? "0.5rem" : 0 }}
+                        >
+                          <span className="block truncate text-sm font-semibold">
+                            {option.label}
+                          </span>
+                          <span className="block truncate text-[11px] text-text-secondary">
+                            {option.parentLabel
+                              ? `Under ${option.parentLabel}`
+                              : "Parent category"}
+                          </span>
+                          <span className="sr-only">
+                            Category color {visual.color}
+                          </span>
                         </span>
                       </span>
-                    </span>
-                  </SelectItem>
-                ))}
+                    </SelectItem>
+                  );
+                })}
               </SelectContent>
             </Select>
             <div id="transaction-category-help" className="mt-2">
               {!loadingOptions && categoryOptions.length === 0 ? (
                 <div className="rounded-[var(--oneui-control-radius)] border border-border bg-surface-secondary px-3 py-2.5 text-sm leading-5 text-text-secondary">
-                  <p>
-                    No {isIncome ? "income" : "expense"} categories yet.
-                  </p>
+                  <p>No {isIncome ? "income" : "expense"} categories yet.</p>
                   <Link
                     href="/dashboard/settings"
                     className="finance-focus mt-1 inline-flex rounded-md text-sm font-semibold text-active hover:underline"
@@ -505,8 +508,8 @@ export default function TransactionModal({
                 </div>
               ) : (
                 <p className="sr-only">
-                  Category options include color markers and parent or child
-                  labels. Selected items are also marked with a check.
+                  Category options use their permanently assigned icon and color.
+                  Selected items are also marked with a check.
                 </p>
               )}
             </div>
@@ -533,7 +536,10 @@ export default function TransactionModal({
             />
           </FinanceFormField>
 
-          <FinanceFormField label="Reference (Optional)" htmlFor="transaction-reference">
+          <FinanceFormField
+            label="Reference (Optional)"
+            htmlFor="transaction-reference"
+          >
             <Input
               id="transaction-reference"
               value={reference}
@@ -542,11 +548,7 @@ export default function TransactionModal({
             />
           </FinanceFormField>
 
-          {error && (
-            <p className={financeErrorClass}>
-              {error}
-            </p>
-          )}
+          {error && <p className={financeErrorClass}>{error}</p>}
         </FinanceModalBody>
 
         <FinanceModalFooter>
