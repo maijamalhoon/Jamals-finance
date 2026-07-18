@@ -2,6 +2,7 @@ import {
   BadgeDollarSign,
   Baby,
   Banknote,
+  Bike,
   BookOpen,
   Briefcase,
   Building2,
@@ -9,6 +10,7 @@ import {
   Car,
   Coins,
   CreditCard,
+  Droplets,
   Dumbbell,
   Fuel,
   Gamepad2,
@@ -28,6 +30,7 @@ import {
   Repeat2,
   Shirt,
   ShoppingBag,
+  ShoppingBasket,
   Smartphone,
   Sparkles,
   Stethoscope,
@@ -39,6 +42,7 @@ import {
   Utensils,
   Wallet,
   WalletCards,
+  Wifi,
   Wrench,
   Zap,
   type LucideIcon,
@@ -103,6 +107,7 @@ export const CATEGORY_ICON_MAP = {
   building: Building2,
   bus: Bus,
   car: Car,
+  bike: Bike,
   cash: Wallet,
   coins: Coins,
   credit: CreditCard,
@@ -113,14 +118,19 @@ export const CATEGORY_ICON_MAP = {
   health: HeartPulse,
   home: Home,
   bank: Landmark,
+  tax: Landmark,
   laptop: Laptop,
   utilities: Lightbulb,
+  power: Zap,
+  internet: Wifi,
+  water: Droplets,
   package: Package,
   savings: PiggyBank,
   travel: Plane,
   receipt: ReceiptText,
   transfer: Repeat2,
   shopping: ShoppingBag,
+  groceries: ShoppingBasket,
   phone: Smartphone,
   bonus: Sparkles,
   store: Store,
@@ -130,7 +140,6 @@ export const CATEGORY_ICON_MAP = {
   dining: Utensils,
   wallet: WalletCards,
   repair: Wrench,
-  power: Zap,
   books: BookOpen,
   pets: PawPrint,
   games: Gamepad2,
@@ -192,29 +201,40 @@ function hashString(value: string) {
   return hash >>> 0;
 }
 
+/**
+ * Category glyphs are semantic, not unique. Two ride categories should both use
+ * a car icon; uniqueness belongs to the persisted colour, not the icon shape.
+ */
 export function getSemanticCategoryIconKey(
   name: string,
   type: CategoryKind,
 ): NamedCategoryIconKey {
   const value = name.trim().toLowerCase();
   const rules: Array<[RegExp, NamedCategoryIconKey]> = [
-    [/salary|payroll|wage/, "salary"],
-    [/freelance|business|work|commission/, "briefcase"],
+    [/salary|salery|sallery|payroll|wage/, "salary"],
+    [/laptop|computer|desktop|notebook|\bpc\b/, "laptop"],
+    [/mobile|phone|cell|smartphone|load/, "phone"],
+    [/electricity|electric|power|light/, "power"],
+    [/internet|wifi|broadband/, "internet"],
+    [/water/, "water"],
+    [/bike|bicycle|cycle|motorbike|motorcycle/, "bike"],
+    [/bus|coach/, "bus"],
+    [/train|rail|metro/, "train"],
+    [/fuel|petrol|diesel|gasoline/, "fuel"],
+    [/ride|taxi|transport|car|vehicle|uber|indrive|toyota/, "car"],
+    [/grocer/, "groceries"],
+    [/food|dining|restaurant|meal|snack/, "dining"],
+    [/shopping|shop|purchase/, "shopping"],
+    [/rent|home|house|mortgage|household/, "home"],
+    [/bill|utility|gas bill/, "utilities"],
+    [/medical|doctor|medicine|health|hospital|clinic/, "medical"],
+    [/school|education|course|tuition|book/, "education"],
     [/saving|deposit|reserve/, "savings"],
     [/investment|return|dividend|profit|interest/, "growth"],
-    [/bonus|reward|tip/, "bonus"],
-    [/rent|home|house|mortgage/, "home"],
-    [/food|dining|restaurant|meal|grocery/, "dining"],
-    [/fuel|petrol|gas/, "fuel"],
-    [/transport|ride|taxi|car|vehicle/, "car"],
-    [/bus/, "bus"],
-    [/train|rail/, "train"],
-    [/shopping|shop|purchase/, "shopping"],
-    [/bill|utility|electric|water|internet/, "utilities"],
-    [/phone|mobile/, "phone"],
-    [/medical|doctor|medicine|health/, "medical"],
-    [/school|education|course|tuition|book/, "education"],
-    [/travel|flight|vacation/, "travel"],
+    [/bonus|bounus|reward|tip/, "bonus"],
+    [/freelance|business|work|commission|comission/, "briefcase"],
+    [/tax|fee|charge/, "tax"],
+    [/travel|flight|vacation|tour/, "travel"],
     [/gift|donation|charity/, "gift"],
     [/repair|maintenance|service/, "repair"],
     [/pet|animal/, "pets"],
@@ -226,10 +246,15 @@ export function getSemanticCategoryIconKey(
     [/transfer/, "transfer"],
     [/loan|credit|debt/, "credit"],
     [/cash|wallet/, "wallet"],
+    [/store|market/, "store"],
+    [/ticket/, "ticket"],
+    [/package|parcel|delivery/, "package"],
   ];
 
-  return rules.find(([pattern]) => pattern.test(value))?.[1] ??
-    (type === "income" ? "cash" : "receipt");
+  return (
+    rules.find(([pattern]) => pattern.test(value))?.[1] ??
+    (type === "income" ? "cash" : "receipt")
+  );
 }
 
 export function getCategoryVisual(
@@ -256,9 +281,6 @@ export function getNextCategoryVisual(
       .map((category) => getCategoryVisual(category).color)
       .map(normalizeCategoryColor),
   );
-  const usedIcons = new Set(
-    categories.map((category) => getCategoryVisual(category).iconKey),
-  );
 
   const color =
     CATEGORY_VISUAL_COLORS.find(
@@ -269,13 +291,10 @@ export function getNextCategoryVisual(
         CATEGORY_VISUAL_COLORS.length
     ];
 
-  const semantic = getSemanticCategoryIconKey(name, type);
-  const iconKey = !usedIcons.has(semantic)
-    ? semantic
-    : CATEGORY_ICON_KEYS.find((candidate) => !usedIcons.has(candidate)) ??
-      (`badge:${categories.length + 1}` as const);
-
-  return { color, iconKey };
+  return {
+    color,
+    iconKey: getSemanticCategoryIconKey(name, type),
+  };
 }
 
 export function getCategoryIconComponent(iconKey: string | null | undefined) {
@@ -301,7 +320,9 @@ export function CategoryVisualIcon({
   const visual = category
     ? getCategoryVisual(category)
     : {
-        color: isValidCategoryColor(color) ? normalizeCategoryColor(color) : "#475569",
+        color: isValidCategoryColor(color)
+          ? normalizeCategoryColor(color)
+          : "#475569",
         iconKey: isValidCategoryIconKey(iconKey) ? iconKey : "tags",
       };
   const sizes = {
