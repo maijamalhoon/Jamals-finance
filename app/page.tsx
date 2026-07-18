@@ -3,32 +3,32 @@ import LandingScrollReveal from "@/components/landing/LandingScrollReveal";
 import MathSymbolField from "@/components/landing/MathSymbolField";
 import PremiumLandingPage from "@/components/landing/PremiumLandingPage";
 
-import "./landing-enhancements.css";
 import "./landing-polish.css";
-import "./landing-mobile-header.css";
-import "./landing-footer-polish.css";
+import "./landing-preview.css";
+import "./landing-sections.css";
+import "./landing-responsive.css";
 import "./landing-math-symbols.css";
 
 export const metadata: Metadata = {
-  title: "Jamal's Finance - Calm Personal Finance Workspace",
+  title: "Jamal's Finance - Clear Personal Finance Tracking",
   description:
-    "Track accounts, income, expenses, goals, liabilities, investments, reports, and AI insights in a private mobile-first finance workspace.",
+    "Track income, expenses, accounts, goals, payables, investments, reports, and insights in one focused personal finance workspace.",
   alternates: {
     canonical: "/",
   },
   openGraph: {
-    title: "Jamal's Finance - Calm Personal Finance Workspace",
+    title: "Jamal's Finance - Clear Personal Finance Tracking",
     description:
-      "A private personal finance workspace for daily money tracking, dashboard insights, goals, reports, and AI-powered clarity.",
+      "A focused personal finance workspace for daily tracking, clearer reports, goals, investments, and more confident decisions.",
     url: "/",
     siteName: "Jamal's Finance",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Jamal's Finance - Calm Personal Finance Workspace",
+    title: "Jamal's Finance - Clear Personal Finance Tracking",
     description:
-      "Track your whole money life in one private, mobile-first finance dashboard.",
+      "See your money clearly across phone, tablet, laptop, and desktop.",
   },
 };
 
