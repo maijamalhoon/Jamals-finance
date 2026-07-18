@@ -1,12 +1,12 @@
 import type { ReactNode } from "react";
 
 const dashboardOverviewStyles = `
-  @media (min-width: 1536px) {
+  @media (min-width: 1280px) {
     .dashboard-overview-layout {
       display: grid;
       grid-template-columns: repeat(20, minmax(0, 1fr));
       align-items: stretch;
-      gap: 1.5rem;
+      gap: 1rem;
     }
 
     .dashboard-overview-layout > * {
@@ -32,139 +32,116 @@ const dashboardOverviewStyles = `
       min-height: 0;
     }
 
-    /* Large-screen primary chart row: 40% / 35% / 25%. */
+    /* Primary row: Income vs Expenses 45%, Portfolio Overview 55%. */
     .dashboard-overview-layout > div.grid:nth-last-child(2) > :nth-child(3) {
       order: 10;
-      grid-column: 1 / span 8;
+      grid-column: 1 / span 9;
     }
 
     .dashboard-overview-layout > div.grid:nth-last-child(2) > :nth-child(2) {
       order: 11;
-      grid-column: 9 / span 7;
+      grid-column: 10 / -1;
+    }
+
+    /* Supporting row: Spending 50%, Month-to-Date 25%, Goals 25%. */
+    .dashboard-overview-layout > div.grid:last-child > :nth-child(1) {
+      order: 20;
+      grid-column: 1 / span 10;
     }
 
     .dashboard-overview-layout > div.grid:nth-last-child(2) > :nth-child(1) {
-      order: 12;
-      grid-column: 16 / -1;
-    }
-
-    /* Keep the requested 70% / 30% supporting row. */
-    .dashboard-overview-layout > div.grid:last-child > :nth-child(1) {
-      order: 20;
-      grid-column: 1 / span 14;
-      height: auto !important;
-      min-height: 0 !important;
+      order: 21;
+      grid-column: 11 / span 5;
     }
 
     .dashboard-overview-layout > div.grid:last-child > :nth-child(2) {
-      order: 21;
-      grid-column: 15 / -1;
-      height: auto !important;
-      min-height: 0 !important;
+      order: 22;
+      grid-column: 16 / -1;
     }
 
+    /* Keep recent transactions full width while matching the feature-card height. */
     .dashboard-overview-layout > div.grid:last-child > :nth-child(3) {
       order: 30;
       grid-column: 1 / -1;
-      height: auto !important;
-      min-height: 0 !important;
     }
 
-    /* Portfolio stays side-by-side, but each holding uses a compact two-line
-       grid so its sparkline and percentage cannot escape the 35% card. */
+    /* Keep both donuts identical in diameter and prevent portfolio overlap. */
     .dashboard-overview-layout
       > div.grid:nth-last-child(2)
       > :nth-child(2)
       > section
-      > .mt-5.grid {
-      grid-template-columns: minmax(145px, 0.72fr) minmax(0, 1.28fr) !important;
+      > header
+      + div.grid {
+      grid-template-columns: minmax(220px, 0.82fr) minmax(0, 1.18fr) !important;
       align-items: center !important;
-      gap: 0.75rem !important;
+      gap: 1rem !important;
     }
 
     .dashboard-overview-layout
       > div.grid:nth-last-child(2)
       > :nth-child(2)
       > section
-      > .mt-5.grid
+      > header
+      + div.grid
+      > div:first-child
+      > div,
+    .dashboard-overview-layout
+      > div.grid:last-child
+      > :nth-child(1)
+      > section
+      > div.mt-4.grid
       > div:first-child
       > div {
-      max-width: 170px !important;
+      width: min(100%, 240px) !important;
+      max-width: 240px !important;
+    }
+
+    .dashboard-overview-layout
+      > div.grid:last-child
+      > :nth-child(1)
+      > section
+      > div.mt-4.grid {
+      grid-template-columns: minmax(240px, 0.9fr) minmax(0, 1.1fr) !important;
+      align-items: center !important;
+      gap: 1.25rem !important;
     }
 
     .dashboard-overview-layout
       > div.grid:nth-last-child(2)
       > :nth-child(2)
       > section
-      > .mt-5.grid
+      > header
+      + div.grid
+      > div:last-child
+      > div {
+      grid-template-columns: auto minmax(0, 1fr) minmax(72px, 0.85fr) auto !important;
+      gap: 0.5rem !important;
+      padding: 0.625rem 0.75rem !important;
+    }
+  }
+
+  @media (min-width: 1280px) and (max-width: 1535px) {
+    .dashboard-overview-layout
+      > div.grid:nth-last-child(2)
+      > :nth-child(1)
+      > section
+      > div:nth-child(2)
+      > div
+      > div:first-child {
+      grid-template-columns: minmax(0, 1fr) !important;
+      align-items: stretch !important;
+    }
+
+    .dashboard-overview-layout
+      > div.grid:nth-last-child(2)
+      > :nth-child(1)
+      > section
+      > div:nth-child(2)
+      > div
+      > div:first-child
       > div:last-child {
-      min-width: 0 !important;
-      gap: 0.45rem !important;
-    }
-
-    .dashboard-overview-layout
-      > div.grid:nth-last-child(2)
-      > :nth-child(2)
-      > section
-      > .mt-5.grid
-      > div:last-child
-      > div {
-      min-width: 0 !important;
-      grid-template-columns: auto minmax(0, 1fr) auto !important;
-      grid-template-rows: auto 22px !important;
-      column-gap: 0.5rem !important;
-      row-gap: 0.1rem !important;
-      padding: 0.45rem 0.6rem !important;
-    }
-
-    .dashboard-overview-layout
-      > div.grid:nth-last-child(2)
-      > :nth-child(2)
-      > section
-      > .mt-5.grid
-      > div:last-child
-      > div
-      > :nth-child(3) {
-      grid-column: 2 / 4 !important;
-      grid-row: 2 !important;
-      width: 100% !important;
-      min-width: 0 !important;
-      height: 22px !important;
-      overflow: hidden !important;
-    }
-
-    .dashboard-overview-layout
-      > div.grid:nth-last-child(2)
-      > :nth-child(2)
-      > section
-      > .mt-5.grid
-      > div:last-child
-      > div
-      > :nth-child(4) {
-      grid-column: 3 !important;
-      grid-row: 1 !important;
-      white-space: nowrap;
-    }
-
-    /* Keep the 70% spending card compact and aligned with the goals card. */
-    .dashboard-overview-layout
-      > div.grid:last-child
-      > :nth-child(1)
-      > section
-      > .mt-4.grid {
-      grid-template-columns: minmax(220px, 0.82fr) minmax(0, 1.18fr);
-      align-items: center;
-      gap: 1.5rem;
-    }
-
-    .dashboard-overview-layout
-      > div.grid:last-child
-      > :nth-child(1)
-      > section
-      > .mt-4.grid
-      > div:first-child
-      > div {
-      max-width: 260px;
+      justify-self: start;
+      text-align: left;
     }
   }
 `;
