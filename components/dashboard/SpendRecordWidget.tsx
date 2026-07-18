@@ -62,7 +62,7 @@ export default function SpendRecordWidget({
       eyebrow="Spend Record"
       eyebrowIcon={<Activity />}
       title="Month-to-Date"
-      className="relative bg-[linear-gradient(180deg,color-mix(in_srgb,var(--card)_96%,var(--danger)_4%),var(--card))]"
+      className="relative"
     >
       <div className="flex min-h-0 flex-1 flex-col">
         <div className="grid gap-3 pt-1 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end">
@@ -70,7 +70,7 @@ export default function SpendRecordWidget({
             <p className="text-[clamp(1.65rem,5vw,2.15rem)] font-black leading-none tracking-[-0.035em] text-text-primary tabular-nums [overflow-wrap:anywhere]">
               {monthlySpend === null ? displaySpend : <CountedAmount amount={displaySpend} duration={0.85} />}
             </p>
-            <div className="mt-2 inline-flex max-w-full items-center gap-2 rounded-full border border-danger/20 bg-danger/8 px-2.5 py-1 text-[10px] font-semibold text-text-secondary sm:text-[11px]">
+            <div className="mt-2 inline-flex max-w-full items-center gap-2 border border-transparent bg-transparent px-2.5 py-1 text-[10px] font-semibold text-text-secondary sm:text-[11px]">
               <TrendingUp size={13} className="shrink-0 text-danger" aria-hidden="true" />
               <span className="truncate">
                 {status === "available" ? `${displayDailyAverage} daily average` : "Spend data is temporarily unavailable"}
@@ -79,7 +79,7 @@ export default function SpendRecordWidget({
           </div>
 
           {status === "available" && peakPoint ? (
-            <div className="hidden min-w-[96px] rounded-[14px] border border-border bg-surface-secondary px-3 py-2 text-right shadow-[inset_0_1px_0_rgb(255_255_255_/_0.14)] sm:block">
+            <div className="hidden min-w-[96px] border border-transparent bg-transparent px-3 py-2 text-right shadow-none sm:block">
               <div className="flex items-center justify-end gap-1.5 text-[9px] font-bold uppercase tracking-[0.1em] text-text-tertiary">
                 <CalendarDays size={12} aria-hidden="true" />
                 Peak day
@@ -102,7 +102,7 @@ export default function SpendRecordWidget({
             </div>
           </div>
         ) : hasSpendData ? (
-          <div className="mt-4 rounded-[18px] border border-border bg-surface-secondary/72 p-2.5 shadow-[inset_0_1px_0_rgb(255_255_255_/_0.14)] sm:p-3">
+          <div className="mt-4 border border-transparent bg-transparent p-2.5 shadow-none sm:p-3">
             <div className="mb-2 flex items-center justify-between gap-3 px-1">
               <p className="text-[10px] font-bold uppercase tracking-[0.1em] text-text-tertiary">
                 Daily spending
@@ -124,31 +124,6 @@ export default function SpendRecordWidget({
                   margin={{ top: 14, right: 4, left: 4, bottom: 2 }}
                   width={width}
                 >
-                  <defs>
-                    <linearGradient
-                      id="spendRecordFill"
-                      x1="0"
-                      y1="0"
-                      x2="0"
-                      y2="1"
-                    >
-                      <stop
-                        offset="0%"
-                        stopColor="var(--danger)"
-                        stopOpacity={0.2}
-                      />
-                      <stop
-                        offset="58%"
-                        stopColor="var(--danger)"
-                        stopOpacity={0.07}
-                      />
-                      <stop
-                        offset="100%"
-                        stopColor="var(--danger)"
-                        stopOpacity={0}
-                      />
-                    </linearGradient>
-                  </defs>
                   <XAxis dataKey="day" hide />
                   <YAxis hide domain={[0, "dataMax"]} />
                   <Tooltip
@@ -193,7 +168,7 @@ export default function SpendRecordWidget({
                     stroke="var(--danger)"
                     strokeLinecap="round"
                     strokeWidth={2.6}
-                    fill="url(#spendRecordFill)"
+                    fill="transparent"
                     baseValue={0}
                     isAnimationActive
                     {...chartMotion}
