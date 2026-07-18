@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { type CSSProperties, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowDownUp, ArrowLeftRight } from "lucide-react";
+import { ArrowDownUp } from "lucide-react";
 import { toast } from "sonner";
+
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import DatePicker from "@/components/ui/date-picker";
@@ -16,9 +17,9 @@ import {
   FinanceModalFooter,
   FinanceFormField,
   FinanceModalHeader,
-  financeCancelButtonClass,
   financeErrorClass,
   financeModalContentClass,
+  financePrimaryButtonClass,
 } from "@/components/ui/finance-modal";
 import { BASE_CURRENCY, formatMoney } from "@/lib/currency";
 import { getUserMutationError } from "@/lib/user-errors";
@@ -41,6 +42,8 @@ interface Props {
   onSuccess?: () => void;
 }
 
+const TRANSFER_ACTION_COLOR = "#A35D2D";
+
 export default function TransferModal({ open, onClose, onSuccess }: Props) {
   const supabase = useMemo(() => createClient(), []);
   const router = useRouter();
@@ -49,13 +52,12 @@ export default function TransferModal({ open, onClose, onSuccess }: Props) {
   const [toAccountId, setToAccountId] = useState("");
   const [amount, setAmount] = useState("");
   const [transferDate, setTransferDate] = useState(getAppDateKey());
-  const [note, setNote] = useState("");
-  const [reference, setReference] = useState("");
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [amountTouched, setAmountTouched] = useState(false);
   const [swapAnnouncement, setSwapAnnouncement] = useState("");
+
   const toAccounts = useMemo(
     () => accounts.filter((account) => account.id !== fromAccountId),
     [accounts, fromAccountId],
@@ -67,19 +69,24 @@ export default function TransferModal({ open, onClose, onSuccess }: Props) {
   const availableBalance = getAvailableTransferBalance(fromAccount?.balance);
   const amountIssue = getTransferAmountIssue(amount, availableBalance);
   const amountError =
-    amountTouched && amountIssue === "missing" ?
-      "Enter a transfer amount."
-    : amountTouched && amountIssue === "invalid" ?
-      "Enter a transfer amount greater than 0."
-    : amountTouched && amountIssue === "exceeds-balance" ?
-      `Amount exceeds the available balance of ${formatMoney(availableBalance, {
-        currency: BASE_CURRENCY,
-        maximumFractionDigits: 2,
-      })}.`
-    : null;
+    amountTouched && amountIssue === "missing"
+      ? "Enter a transfer amount."
+      : amountTouched && amountIssue === "invalid"
+        ? "Enter a transfer amount greater than 0."
+        : amountTouched && amountIssue === "exceeds-balance"
+          ? `Amount exceeds the available balance of ${formatMoney(
+              availableBalance,
+              {
+                currency: BASE_CURRENCY,
+                maximumFractionDigits: 2,
+              },
+            )}.`
+          : null;
 
   useEffect(() => {
     if (!open) return;
+
+    let active = true;
 
     async function loadAccounts() {
       setLoading(true);
@@ -88,6 +95,8 @@ export default function TransferModal({ open, onClose, onSuccess }: Props) {
         .select("id, name, type, balance")
         .eq("status", "active")
         .order("name");
+
+      if (!active) return;
 
       const rows = (data ?? []) as Account[];
       setAccounts(rows);
@@ -99,13 +108,15 @@ export default function TransferModal({ open, onClose, onSuccess }: Props) {
     }
 
     setAmount("");
-    setNote("");
-    setReference("");
     setTransferDate(getAppDateKey());
     setError("");
     setAmountTouched(false);
     setSwapAnnouncement("");
-    loadAccounts();
+    void loadAccounts();
+
+    return () => {
+      active = false;
+    };
   }, [open, supabase]);
 
   function handleSwapAccounts() {
@@ -113,14 +124,20 @@ export default function TransferModal({ open, onClose, onSuccess }: Props) {
 
     const previousFromId = fromAccountId;
     const previousToId = toAccountId;
-    const previousFrom = accounts.find((account) => account.id === previousFromId);
-    const previousTo = accounts.find((account) => account.id === previousToId);
+    const previousFrom = accounts.find(
+      (account) => account.id === previousFromId,
+    );
+    const previousTo = accounts.find(
+      (account) => account.id === previousToId,
+    );
 
     setFromAccountId(previousToId);
     setToAccountId(previousFromId);
     setError("");
     setSwapAnnouncement(
-      `${previousTo?.name ?? "Destination account"} is now the source and ${previousFrom?.name ?? "source account"} is now the destination.`,
+      `${previousTo?.name ?? "Destination account"} is now the source and ${
+        previousFrom?.name ?? "source account"
+      } is now the destination.`,
     );
   }
 
@@ -139,20 +156,19 @@ export default function TransferModal({ open, onClose, onSuccess }: Props) {
       setError("Select both accounts.");
       return;
     }
+
     if (fromAccountId === toAccountId) {
       setError("From and to account must be different.");
       return;
     }
 
     setAmountTouched(true);
-
     if (amountIssue) {
       setError("");
       return;
     }
 
     const parsedAmount = Number(amount);
-
     setSaving(true);
     setError("");
 
@@ -175,15 +191,18 @@ export default function TransferModal({ open, onClose, onSuccess }: Props) {
         to_account_id: toAccountId,
         amount: parsedAmount,
         transfer_date: transferDate,
-        note: note.trim() || null,
-        reference: reference.trim() || null,
+        note: null,
+        reference: null,
       });
 
     setSaving(false);
 
     if (saveError) {
       setError(
-        getUserMutationError(saveError, "Transfer could not be recorded. Try again."),
+        getUserMutationError(
+          saveError,
+          "Transfer could not be recorded. Try again.",
+        ),
       );
       toast.error("Failed to record transfer");
       return;
@@ -197,25 +216,30 @@ export default function TransferModal({ open, onClose, onSuccess }: Props) {
 
   return (
     <Dialog open={open} onOpenChange={(nextOpen) => !nextOpen && onClose()}>
-      <DialogContent className={financeModalContentClass}>
-        <FinanceModalHeader
-          title="Transfer Money"
-          description="Select different accounts, amount, date, note, and reference."
-          icon={ArrowLeftRight}
-          tone="info"
-        />
+      <DialogContent
+        className={financeModalContentClass}
+        style={
+          {
+            "--finance-action": TRANSFER_ACTION_COLOR,
+          } as CSSProperties
+        }
+      >
+        <FinanceModalHeader title="Transfer" />
 
         <FinanceModalBody>
           {loading ? (
             <div className="finance-skeleton h-40" />
           ) : accounts.length < 2 ? (
-            <div className="rounded-[18px] border border-payables/25 bg-payables-soft p-4 text-sm text-payables">
+            <div className="rounded-[16px] border border-payables/25 bg-payables-soft p-4 text-sm text-payables">
               Add at least two accounts before recording a transfer.
             </div>
           ) : (
             <>
-              <div className="rounded-[var(--oneui-card-radius)] border border-border bg-surface-secondary/70 p-3 sm:p-4">
-                <FinanceFormField label="From Account" htmlFor="transfer-from-account">
+              <div className="rounded-[var(--oneui-card-radius)] border border-border bg-surface-secondary/65 p-3">
+                <FinanceFormField
+                  label="From Account"
+                  htmlFor="transfer-from-account"
+                >
                   <AccountSelect
                     id="transfer-from-account"
                     value={fromAccountId}
@@ -226,8 +250,9 @@ export default function TransferModal({ open, onClose, onSuccess }: Props) {
                       setSwapAnnouncement("");
                       if (toAccountId === nextFromId) {
                         setToAccountId(
-                          accounts.find((account) => account.id !== nextFromId)
-                            ?.id || "",
+                          accounts.find(
+                            (account) => account.id !== nextFromId,
+                          )?.id || "",
                         );
                       }
                     }}
@@ -237,17 +262,24 @@ export default function TransferModal({ open, onClose, onSuccess }: Props) {
                   />
                 </FinanceFormField>
 
-                <div className="flex items-center gap-3 py-2">
+                <div className="flex items-center gap-3 py-1.5">
                   <span aria-hidden="true" className="h-px flex-1 bg-border" />
                   <Button
                     type="button"
                     variant="outline"
                     size="icon"
                     onClick={handleSwapAccounts}
-                    disabled={!fromAccountId || !toAccountId || loading || saving}
+                    disabled={
+                      !fromAccountId || !toAccountId || loading || saving
+                    }
                     aria-label="Swap source and destination accounts"
                     title="Swap accounts"
-                    className="group size-11 shrink-0 rounded-full border-info/30 bg-info/10 text-info shadow-sm hover:border-info/50 hover:bg-info/15 hover:text-info"
+                    className="group size-10 shrink-0 rounded-[13px] border shadow-none"
+                    style={{
+                      color: TRANSFER_ACTION_COLOR,
+                      borderColor: `color-mix(in srgb, ${TRANSFER_ACTION_COLOR}, transparent 58%)`,
+                      background: `color-mix(in srgb, ${TRANSFER_ACTION_COLOR}, transparent 90%)`,
+                    }}
                   >
                     <ArrowDownUp
                       size={17}
@@ -257,7 +289,10 @@ export default function TransferModal({ open, onClose, onSuccess }: Props) {
                   <span aria-hidden="true" className="h-px flex-1 bg-border" />
                 </div>
 
-                <FinanceFormField label="To Account" htmlFor="transfer-to-account">
+                <FinanceFormField
+                  label="To Account"
+                  htmlFor="transfer-to-account"
+                >
                   <AccountSelect
                     id="transfer-to-account"
                     value={toAccountId}
@@ -280,18 +315,18 @@ export default function TransferModal({ open, onClose, onSuccess }: Props) {
                   label={`Amount (${BASE_CURRENCY})`}
                   htmlFor="transfer-amount"
                   error={
-                    amountError ?
+                    amountError ? (
                       <span id="transfer-amount-error">{amountError}</span>
-                    : undefined
+                    ) : undefined
                   }
                   hint={
                     <span id="transfer-amount-balance">
-                      {fromAccount ?
-                        `Available: ${formatMoney(availableBalance, {
-                          currency: BASE_CURRENCY,
-                          maximumFractionDigits: 2,
-                        })}`
-                      : "Select a source account to see its available balance."}
+                      {fromAccount
+                        ? `Available: ${formatMoney(availableBalance, {
+                            currency: BASE_CURRENCY,
+                            maximumFractionDigits: 2,
+                          })}`
+                        : "Select a source account."}
                     </span>
                   }
                 >
@@ -313,9 +348,9 @@ export default function TransferModal({ open, onClose, onSuccess }: Props) {
                       placeholder="0"
                       aria-invalid={Boolean(amountError) || undefined}
                       aria-describedby={
-                        amountError ?
-                          "transfer-amount-error"
-                        : "transfer-amount-balance"
+                        amountError
+                          ? "transfer-amount-error"
+                          : "transfer-amount-balance"
                       }
                       className="pr-[4.75rem] font-semibold tabular-nums"
                     />
@@ -328,7 +363,12 @@ export default function TransferModal({ open, onClose, onSuccess }: Props) {
                         loading ||
                         saving
                       }
-                      className="finance-focus absolute inset-y-1.5 right-1.5 inline-flex min-w-14 items-center justify-center rounded-[calc(var(--radius-control)-0.3rem)] border border-info/25 bg-info/10 px-2.5 text-xs font-black uppercase tracking-[0.04em] text-info transition-[background-color,border-color,transform] hover:border-info/45 hover:bg-info/15 active:scale-[0.97] disabled:cursor-not-allowed disabled:border-border disabled:bg-surface-inset disabled:text-text-tertiary"
+                      className="finance-focus absolute inset-y-1.5 right-1.5 inline-flex min-w-14 items-center justify-center rounded-[10px] border px-2.5 text-xs font-black uppercase tracking-[0.04em] transition-[background-color,border-color,transform] active:scale-[0.97] disabled:cursor-not-allowed disabled:border-border disabled:bg-surface-inset disabled:text-text-tertiary"
+                      style={{
+                        color: TRANSFER_ACTION_COLOR,
+                        borderColor: `color-mix(in srgb, ${TRANSFER_ACTION_COLOR}, transparent 60%)`,
+                        background: `color-mix(in srgb, ${TRANSFER_ACTION_COLOR}, transparent 90%)`,
+                      }}
                       aria-label="Use the full available account balance"
                       title="Use full available balance"
                     >
@@ -336,7 +376,8 @@ export default function TransferModal({ open, onClose, onSuccess }: Props) {
                     </button>
                   </div>
                 </FinanceFormField>
-                <FinanceFormField label="Transfer Date" htmlFor="transfer-date">
+
+                <FinanceFormField label="Date" htmlFor="transfer-date">
                   <DatePicker
                     id="transfer-date"
                     value={transferDate}
@@ -346,43 +387,13 @@ export default function TransferModal({ open, onClose, onSuccess }: Props) {
                   />
                 </FinanceFormField>
               </div>
-
-              <FinanceFormField label="Note (Optional)" htmlFor="transfer-note">
-                <Input
-                  id="transfer-note"
-                  value={note}
-                  onChange={(event) => setNote(event.target.value)}
-                  placeholder="ATM cash withdrawal, bank deposit, wallet move..."
-                />
-              </FinanceFormField>
-
-              <FinanceFormField label="Reference (Optional)" htmlFor="transfer-reference">
-                <Input
-                  id="transfer-reference"
-                  value={reference}
-                  onChange={(event) => setReference(event.target.value)}
-                  placeholder="Bank confirmation or transfer reference"
-                />
-              </FinanceFormField>
             </>
           )}
 
-          {error && (
-            <p className={financeErrorClass}>
-              {error}
-            </p>
-          )}
+          {error ? <p className={financeErrorClass}>{error}</p> : null}
         </FinanceModalBody>
 
         <FinanceModalFooter>
-          <Button
-            type="button"
-            onClick={onClose}
-            disabled={saving}
-            className={financeCancelButtonClass}
-          >
-            Cancel
-          </Button>
           <Button
             type="button"
             onClick={handleSave}
@@ -391,9 +402,10 @@ export default function TransferModal({ open, onClose, onSuccess }: Props) {
             }
             loading={saving}
             loadingLabel="Saving transfer…"
-            className="primary-action py-3"
+            className={financePrimaryButtonClass}
+            style={{ background: TRANSFER_ACTION_COLOR }}
           >
-            Save Transfer
+            Transfer
           </Button>
         </FinanceModalFooter>
       </DialogContent>
