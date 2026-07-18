@@ -25,8 +25,8 @@ export default function SettingsExperienceV2(
   props: SettingsExperienceV2Props,
 ) {
   return (
-    <>
-      <div className="[&_section:nth-of-type(2)_.finance-panel>button:last-of-type]:hidden [&_section:nth-of-type(2)_.finance-panel>div:last-of-type]:hidden">
+    <div className="settings-experience-v2">
+      <div className="settings-core">
         <SettingsOneUI {...props} />
       </div>
 
@@ -36,6 +36,6 @@ export default function SettingsExperienceV2(
         userId={props.userId}
         available={props.categoriesAvailable}
       />
-    </>
+    </div>
   );
 }
