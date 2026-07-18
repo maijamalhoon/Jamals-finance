@@ -46,7 +46,7 @@ export default function MobileNav({ notificationSlot }: MobileNavProps) {
   const [open, setOpen] = useState(false);
   const [portalOpen, setPortalOpen] = useState(false);
   const [controlsVisible, setControlsVisible] = useState(false);
-  const hideTimerRef = useRef<ReturnType<typeof window.setTimeout> | null>(null);
+  const hideTimerRef = useRef<number | null>(null);
   const tapGestureRef = useRef<TapGesture | null>(null);
   const interactionWasOpenRef = useRef(false);
 
@@ -262,7 +262,11 @@ export default function MobileNav({ notificationSlot }: MobileNavProps) {
             <div className="flex min-w-0 items-center justify-between gap-3">
               <div className="flex min-w-0 items-center gap-3">
                 <span className="grid h-10 w-10 shrink-0 place-items-center rounded-[14px] bg-brand text-primary-foreground shadow-[0_8px_18px_color-mix(in_srgb,var(--brand)_22%,transparent)]">
-                  <CircleDollarSign size={18} strokeWidth={2.2} aria-hidden="true" />
+                  <CircleDollarSign
+                    size={18}
+                    strokeWidth={2.2}
+                    aria-hidden="true"
+                  />
                 </span>
                 <div className="min-w-0">
                   <SheetTitle className="truncate text-[16px] font-black tracking-[-0.02em] text-text-primary">
@@ -303,10 +307,19 @@ export default function MobileNav({ notificationSlot }: MobileNavProps) {
                       >
                         {group.label}
                       </h2>
-                      <span className="h-px min-w-0 flex-1 bg-divider/60" aria-hidden="true" />
+                      <span
+                        className="h-px min-w-0 flex-1 bg-divider/60"
+                        aria-hidden="true"
+                      />
                     </div>
 
-                    <div className={singleItem ? "grid grid-cols-1 gap-2" : "grid grid-cols-2 gap-2"}>
+                    <div
+                      className={
+                        singleItem
+                          ? "grid grid-cols-1 gap-2"
+                          : "grid grid-cols-2 gap-2"
+                      }
+                    >
                       {group.items.map(({ label, href, icon: Icon }) => {
                         const active = isNavItemActive(pathname, href);
 
@@ -329,9 +342,15 @@ export default function MobileNav({ notificationSlot }: MobileNavProps) {
                                   : "bg-surface-primary/85 text-text-secondary group-hover:text-brand"
                               }`}
                             >
-                              <Icon size={16} strokeWidth={2.15} aria-hidden="true" />
+                              <Icon
+                                size={16}
+                                strokeWidth={2.15}
+                                aria-hidden="true"
+                              />
                             </span>
-                            <span className="min-w-0 flex-1 truncate">{label}</span>
+                            <span className="min-w-0 flex-1 truncate">
+                              {label}
+                            </span>
                           </Link>
                         );
                       })}
