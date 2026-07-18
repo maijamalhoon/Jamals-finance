@@ -1,0 +1,73 @@
+.trigger {
+  overscroll-behavior: contain;
+}
+
+.content {
+  max-height: min(12rem, var(--available-height)) !important;
+  overscroll-behavior-y: contain;
+  scroll-snap-type: y proximity;
+  -webkit-overflow-scrolling: touch;
+}
+
+.item {
+  scroll-snap-align: center;
+  scroll-snap-stop: always;
+}
+
+.content[data-scroll-touch="true"] {
+  max-height: min(11rem, var(--available-height)) !important;
+  padding-block: 3.35rem !important;
+  scroll-snap-type: y mandatory;
+  scrollbar-width: none;
+  touch-action: pan-y;
+}
+
+.content[data-scroll-touch="true"]::-webkit-scrollbar {
+  display: none;
+}
+
+.content[data-scroll-touch="true"] :global([data-slot="select-scroll-up-button"]),
+.content[data-scroll-touch="true"] :global([data-slot="select-scroll-down-button"]) {
+  display: none;
+}
+
+.content[data-scroll-touch="true"] .item {
+  pointer-events: none;
+}
+
+.trigger[data-scroll-edge="start"],
+.content[data-scroll-edge="start"] {
+  animation: scroll-select-edge-start 240ms var(--motion-ease);
+}
+
+.trigger[data-scroll-edge="end"],
+.content[data-scroll-edge="end"] {
+  animation: scroll-select-edge-end 240ms var(--motion-ease);
+}
+
+@keyframes scroll-select-edge-start {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  42% {
+    transform: translateY(5px);
+  }
+}
+
+@keyframes scroll-select-edge-end {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  42% {
+    transform: translateY(-5px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .trigger[data-scroll-edge],
+  .content[data-scroll-edge] {
+    animation: none;
+  }
+}

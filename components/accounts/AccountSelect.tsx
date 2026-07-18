@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { WalletCards } from "lucide-react";
 import {
   Select,
@@ -7,6 +8,8 @@ import {
   SelectItem,
   SelectTrigger,
 } from "@/components/ui/select";
+import { useScrollSelectBehavior } from "@/components/ui/use-scroll-select-behavior";
+import scrollSelectStyles from "@/components/ui/ScrollSelect.module.css";
 import { cn } from "@/lib/utils";
 import { useCurrency } from "@/components/currency/CurrencyProvider";
 
@@ -28,6 +31,7 @@ interface AccountSelectProps {
   loading?: boolean;
   emptyText?: string;
   className?: string;
+  scrollPicker?: boolean;
 }
 
 function formatType(value: string) {
@@ -94,10 +98,19 @@ export default function AccountSelect({
   loading,
   emptyText = "No accounts found",
   className,
+  scrollPicker = false,
 }: AccountSelectProps) {
   const { formatCurrency } = useCurrency();
+  const [open, setOpen] = useState(false);
   const selectedAccount = accounts.find((account) => account.id === value);
   const unavailable = disabled || loading || accounts.length === 0;
+  const scrollBehavior = useScrollSelectBehavior({
+    enabled: scrollPicker,
+    open,
+    value,
+    values: accounts.map((account) => account.id),
+    onValueChange,
+  });
 
   return (
     <Select
@@ -108,12 +121,16 @@ export default function AccountSelect({
         }
       }}
       disabled={unavailable}
+      open={scrollPicker ? open : undefined}
+      onOpenChange={scrollPicker ? setOpen : undefined}
     >
       <SelectTrigger
         id={id}
+        onWheel={scrollPicker ? scrollBehavior.onTriggerWheel : undefined}
         className={cn(
           "field-input h-auto min-h-12 w-full gap-3 px-3 py-2 pr-3 text-left",
           "data-placeholder:text-text-secondary [&>svg]:ml-1",
+          scrollPicker && scrollSelectStyles.trigger,
           className,
         )}
         aria-label={ariaLabel ?? placeholder}
@@ -124,10 +141,25 @@ export default function AccountSelect({
         />
       </SelectTrigger>
       <SelectContent
+        ref={scrollPicker ? scrollBehavior.contentRef : undefined}
         align="start"
         sideOffset={8}
         alignItemWithTrigger={false}
-        className="z-[90] max-h-[min(18rem,var(--available-height))] max-w-[calc(100vw_-_1.5rem)] rounded-[18px] p-1.5"
+        data-scroll-touch={
+          scrollPicker && scrollBehavior.isTouchScrollOnly ? "true" : undefined
+        }
+        onScroll={scrollPicker ? scrollBehavior.onContentScroll : undefined}
+        onWheel={scrollPicker ? scrollBehavior.onContentWheel : undefined}
+        onTouchStart={
+          scrollPicker ? scrollBehavior.onContentTouchStart : undefined
+        }
+        onTouchMove={
+          scrollPicker ? scrollBehavior.onContentTouchMove : undefined
+        }
+        className={cn(
+          "z-[90] max-h-[min(18rem,var(--available-height))] max-w-[calc(100vw_-_1.5rem)] rounded-[18px] p-1.5",
+          scrollPicker && scrollSelectStyles.content,
+        )}
       >
         {accounts.length === 0 ? (
           <div className="px-3 py-2 text-sm text-text-secondary">
@@ -144,7 +176,11 @@ export default function AccountSelect({
               <SelectItem
                 key={account.id}
                 value={account.id}
-                className="min-h-14 py-2 pr-8 pl-2.5"
+                data-scroll-select-value={account.id}
+                className={cn(
+                  "min-h-14 py-2 pr-8 pl-2.5",
+                  scrollPicker && scrollSelectStyles.item,
+                )}
               >
                 <span className="flex min-w-0 flex-1 items-center gap-3">
                   <span className="finance-icon-container" data-size="sm">

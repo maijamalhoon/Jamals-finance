@@ -22,6 +22,8 @@ import {
   SelectItem,
   SelectTrigger,
 } from "@/components/ui/select";
+import { useScrollSelectBehavior } from "@/components/ui/use-scroll-select-behavior";
+import scrollSelectStyles from "@/components/ui/ScrollSelect.module.css";
 import {
   FinanceModalBody,
   FinanceModalFooter,
@@ -140,12 +142,14 @@ export default function TransactionModal({
   const [reference, setReference] = useState("");
   const [categories, setCategories] = useState<Category[]>([]);
   const [accounts, setAccounts] = useState<Account[]>([]);
+  const [categoryOpen, setCategoryOpen] = useState(false);
   const [loadingOptions, setLoadingOptions] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
   useEffect(() => {
     if (!open) return;
+    setCategoryOpen(false);
     if (transaction) {
       setType(transaction.type);
       setAmount(String(transaction.amount));
@@ -372,6 +376,12 @@ export default function TransactionModal({
   const selectedCategoryOption = categoryOptions.find(
     (option) => option.category.id === categoryId,
   );
+  const categoryScrollBehavior = useScrollSelectBehavior({
+    open: categoryOpen,
+    value: categoryId,
+    values: categoryOptions.map((option) => option.category.id),
+    onValueChange: setCategoryId,
+  });
   const typeLocked = !isEditing;
   const formTitle = isEditing
     ? `Edit ${isIncome ? "Income" : "Expense"}`
@@ -444,6 +454,7 @@ export default function TransactionModal({
               loading={loadingOptions}
               placeholder="Select account"
               className={styles.compactSelect}
+              scrollPicker
             />
           </FinanceFormField>
 
@@ -458,12 +469,15 @@ export default function TransactionModal({
                 if (nextValue) setCategoryId(nextValue);
               }}
               disabled={loadingOptions || categoryOptions.length === 0}
+              open={categoryOpen}
+              onOpenChange={setCategoryOpen}
             >
               <SelectTrigger
                 id="transaction-category"
                 aria-label={`${isIncome ? "Income" : "Expense"} category`}
                 aria-describedby="transaction-category-help"
-                className={`field-input h-auto w-full gap-3 px-3 pr-3 text-left data-placeholder:text-text-secondary [&>svg]:ml-1 ${styles.categoryTrigger}`}
+                onWheel={categoryScrollBehavior.onTriggerWheel}
+                className={`field-input h-auto w-full gap-3 px-3 pr-3 text-left data-placeholder:text-text-secondary [&>svg]:ml-1 ${styles.categoryTrigger} ${scrollSelectStyles.trigger}`}
               >
                 <CategorySummary
                   option={selectedCategoryOption}
@@ -475,9 +489,18 @@ export default function TransactionModal({
                 />
               </SelectTrigger>
               <SelectContent
+                ref={categoryScrollBehavior.contentRef}
                 align="start"
                 sideOffset={8}
-                className="z-[90] max-h-[min(20rem,var(--available-height))] max-w-[calc(100vw-1.5rem)] rounded-[18px] p-1.5"
+                alignItemWithTrigger={false}
+                data-scroll-touch={
+                  categoryScrollBehavior.isTouchScrollOnly ? "true" : undefined
+                }
+                onScroll={categoryScrollBehavior.onContentScroll}
+                onWheel={categoryScrollBehavior.onContentWheel}
+                onTouchStart={categoryScrollBehavior.onContentTouchStart}
+                onTouchMove={categoryScrollBehavior.onContentTouchMove}
+                className={`z-[90] max-h-[min(20rem,var(--available-height))] max-w-[calc(100vw-1.5rem)] rounded-[18px] p-1.5 ${scrollSelectStyles.content}`}
               >
                 {categoryOptions.map((option) => {
                   const visual = getCategoryVisual(option.category);
@@ -485,7 +508,8 @@ export default function TransactionModal({
                     <SelectItem
                       key={option.category.id}
                       value={option.category.id}
-                      className="min-h-16 py-2 pr-8 pl-2.5"
+                      data-scroll-select-value={option.category.id}
+                      className={`min-h-16 py-2 pr-8 pl-2.5 ${scrollSelectStyles.item}`}
                     >
                       <span className="flex min-w-0 flex-1 items-center gap-3">
                         <CategoryVisualIcon category={option.category} size="sm" />
