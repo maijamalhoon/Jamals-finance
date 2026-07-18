@@ -1,17 +1,18 @@
 .dialog {
   --finance-modal-max-width: 32rem;
-  width: min(calc(100vw - 1rem), var(--finance-modal-max-width)) !important;
+  width: min(calc(100vw - 0.75rem), var(--finance-modal-max-width)) !important;
   max-width: var(--finance-modal-max-width) !important;
-  max-height: calc(100dvh - 1rem) !important;
+  max-height: calc(100dvh - 0.5rem) !important;
   overflow: hidden !important;
 }
 
 .header {
   position: relative;
-  min-height: 3.75rem;
+  min-height: clamp(3rem, 7dvh, 3.75rem);
   justify-content: center;
   border-bottom: 1px solid var(--border);
-  padding: 0.9rem 3.75rem 0.82rem 1rem;
+  padding: clamp(0.58rem, 1.5dvh, 0.9rem) 3.75rem
+    clamp(0.54rem, 1.35dvh, 0.82rem) 1rem;
 }
 
 .header::before {
@@ -24,7 +25,7 @@
 
 .title {
   color: var(--text-primary);
-  font-size: 1.02rem;
+  font-size: clamp(0.95rem, 1.8vw, 1.05rem);
   font-weight: 750;
   line-height: 1.25rem;
   letter-spacing: -0.018em;
@@ -34,21 +35,22 @@
   display: grid !important;
   min-height: 0 !important;
   flex: 0 1 auto !important;
-  grid-template-columns: minmax(0, 1fr);
-  gap: 0.72rem !important;
-  overflow: visible !important;
-  overscroll-behavior: auto !important;
-  padding: 0.82rem 1rem !important;
+  grid-template-columns: minmax(0, 1fr) !important;
+  gap: clamp(0.4rem, 1.15dvh, 0.72rem) !important;
+  overflow: hidden !important;
+  overscroll-behavior: none !important;
+  padding: clamp(0.52rem, 1.35dvh, 0.82rem) 1rem !important;
 }
 
 .body :global(.finance-form-field) {
   min-width: 0;
+  grid-column: 1 / -1 !important;
 }
 
 .body :global(.field-label) {
-  margin-bottom: 0.3rem;
+  margin-bottom: clamp(0.15rem, 0.45dvh, 0.3rem);
   color: var(--text-secondary);
-  font-size: 0.68rem;
+  font-size: clamp(0.6rem, 1.25dvh, 0.68rem);
   font-weight: 700;
   line-height: 0.9rem;
   letter-spacing: 0.045em;
@@ -56,8 +58,12 @@
 
 .typeSwitch,
 .amountField,
+.accountField,
+.categoryField,
+.dateField,
+.noteField,
 .error {
-  grid-column: 1 / -1;
+  grid-column: 1 / -1 !important;
 }
 
 .typeSwitch {
@@ -71,70 +77,67 @@
 }
 
 .typeButton {
-  min-height: 2.25rem !important;
+  min-height: clamp(2rem, 4.8dvh, 2.25rem) !important;
   border-radius: 0.62rem !important;
-  padding-block: 0.4rem !important;
+  padding-block: 0.35rem !important;
   font-size: 0.76rem !important;
 }
 
 .amountInput {
-  min-height: 2.75rem !important;
+  min-height: clamp(2.3rem, 5.6dvh, 2.85rem) !important;
   padding-inline: 0.85rem !important;
-  font-size: 1.22rem !important;
+  font-size: clamp(1.05rem, 2.6dvh, 1.22rem) !important;
   font-weight: 750 !important;
   font-variant-numeric: tabular-nums;
 }
 
-.compactSelect {
-  min-height: 2.85rem !important;
-  padding-block: 0.38rem !important;
-}
-
+.compactSelect,
 .categoryTrigger {
-  min-height: 2.85rem !important;
-  padding-block: 0.38rem !important;
+  min-height: clamp(2.38rem, 5.8dvh, 2.9rem) !important;
+  padding-block: clamp(0.25rem, 0.75dvh, 0.38rem) !important;
 }
 
 .dateControl :global(.field-input) {
-  min-height: 2.75rem !important;
+  min-height: clamp(2.3rem, 5.6dvh, 2.85rem) !important;
 }
 
 .noteInput {
-  min-height: 3.4rem !important;
-  max-height: 3.4rem !important;
+  min-height: clamp(2.55rem, 7dvh, 3.4rem) !important;
+  max-height: clamp(2.55rem, 7dvh, 3.4rem) !important;
   resize: none !important;
-  padding-top: 0.68rem !important;
-  padding-bottom: 0.68rem !important;
-  line-height: 1.15rem !important;
+  padding-top: clamp(0.45rem, 1.1dvh, 0.68rem) !important;
+  padding-bottom: clamp(0.45rem, 1.1dvh, 0.68rem) !important;
+  line-height: 1.05rem !important;
 }
 
 .emptyCategory {
-  margin-top: 0.35rem;
+  margin-top: 0.3rem;
   border: 1px solid var(--border);
   border-radius: 0.7rem;
   background: var(--surface-secondary);
-  padding: 0.55rem 0.65rem;
+  padding: 0.5rem 0.65rem;
   color: var(--text-secondary);
-  font-size: 0.7rem;
-  line-height: 1rem;
+  font-size: 0.68rem;
+  line-height: 0.95rem;
 }
 
 .error {
-  padding: 0.58rem 0.68rem !important;
-  font-size: 0.72rem !important;
-  line-height: 1rem !important;
+  padding: 0.48rem 0.62rem !important;
+  font-size: 0.7rem !important;
+  line-height: 0.95rem !important;
 }
 
 .footer {
   grid-template-columns: minmax(0, 1fr) !important;
   gap: 0 !important;
   border-top: 1px solid var(--border);
-  padding: 0.72rem 1rem calc(0.72rem + env(safe-area-inset-bottom)) !important;
+  padding: clamp(0.48rem, 1.2dvh, 0.72rem) 1rem
+    calc(clamp(0.48rem, 1.2dvh, 0.72rem) + env(safe-area-inset-bottom)) !important;
 }
 
 .submit {
   width: 100%;
-  min-height: 2.9rem !important;
+  min-height: clamp(2.35rem, 5.8dvh, 2.9rem) !important;
   border-radius: 0.78rem !important;
   font-size: 0.84rem !important;
   font-weight: 750 !important;
@@ -162,7 +165,7 @@
 
 @media (min-width: 640px) {
   .dialog {
-    --finance-modal-max-width: 36rem;
+    --finance-modal-max-width: clamp(34rem, 62vw, 38rem);
   }
 
   .header {
@@ -170,27 +173,8 @@
   }
 
   .body {
-    grid-template-columns: minmax(0, 1fr);
-    gap: 0.78rem !important;
-    padding: 0.95rem 1.2rem !important;
-  }
-
-  .amountInput {
-    min-height: 3rem !important;
-  }
-
-  .compactSelect,
-  .categoryTrigger {
-    min-height: 3.05rem !important;
-  }
-
-  .dateControl :global(.field-input) {
-    min-height: 3rem !important;
-  }
-
-  .noteInput {
-    min-height: 4rem !important;
-    max-height: 4rem !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    padding-inline: 1.2rem !important;
   }
 
   .footer {
@@ -198,113 +182,117 @@
   }
 }
 
-@media (min-width: 1024px) and (min-height: 621px) {
-  .dialog {
-    --finance-modal-max-width: 38rem;
-  }
-}
-
 @media (max-width: 639px) {
   .dialog {
-    width: min(calc(100vw - 0.75rem), 30rem) !important;
-    max-height: calc(100dvh - 0.75rem) !important;
-  }
-
-  .header {
-    min-height: 3.4rem;
-    padding-top: 0.76rem;
-    padding-bottom: 0.7rem;
+    --finance-modal-max-width: 30rem;
+    width: min(calc(100vw - 0.75rem), var(--finance-modal-max-width)) !important;
   }
 
   .body {
-    gap: 0.62rem !important;
-    padding: 0.72rem 0.82rem !important;
-  }
-
-  .body :global(.field-label) {
-    margin-bottom: 0.24rem;
-    font-size: 0.64rem;
-  }
-
-  .compactSelect,
-  .categoryTrigger {
-    min-height: 2.72rem !important;
-  }
-
-  .amountInput,
-  .dateControl :global(.field-input) {
-    min-height: 2.62rem !important;
-  }
-
-  .noteInput {
-    min-height: 3.15rem !important;
-    max-height: 3.15rem !important;
+    padding-inline: 0.82rem !important;
   }
 
   .footer {
-    padding: 0.64rem 0.82rem calc(0.64rem + env(safe-area-inset-bottom)) !important;
-  }
-
-  .submit {
-    min-height: 2.78rem !important;
+    padding-inline: 0.82rem !important;
   }
 }
 
 @media (max-height: 620px) {
+  .dialog {
+    max-height: calc(100dvh - 0.25rem) !important;
+  }
+
   .header {
-    min-height: 3.15rem;
-    padding-top: 0.62rem;
-    padding-bottom: 0.58rem;
+    min-height: 2.9rem;
+    padding-top: 0.48rem;
+    padding-bottom: 0.44rem;
   }
 
   .body {
-    gap: 0.5rem !important;
-    padding-top: 0.58rem !important;
-    padding-bottom: 0.58rem !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 0.34rem !important;
+    padding-top: 0.4rem !important;
+    padding-bottom: 0.4rem !important;
   }
 
   .body :global(.field-label) {
-    margin-bottom: 0.18rem;
-    font-size: 0.61rem;
-    line-height: 0.78rem;
+    margin-bottom: 0.1rem;
+    font-size: 0.58rem;
+    line-height: 0.72rem;
   }
 
   .amountInput,
-  .compactSelect,
-  .categoryTrigger,
   .dateControl :global(.field-input) {
-    min-height: 2.42rem !important;
+    min-height: 2.18rem !important;
+  }
+
+  .compactSelect,
+  .categoryTrigger {
+    min-height: 2.24rem !important;
+    padding-block: 0.2rem !important;
   }
 
   .noteInput {
-    min-height: 2.7rem !important;
-    max-height: 2.7rem !important;
-    padding-top: 0.5rem !important;
-    padding-bottom: 0.5rem !important;
+    min-height: 2.35rem !important;
+    max-height: 2.35rem !important;
+    padding-top: 0.38rem !important;
+    padding-bottom: 0.38rem !important;
   }
 
   .footer {
-    padding-top: 0.52rem !important;
-    padding-bottom: calc(0.52rem + env(safe-area-inset-bottom)) !important;
+    padding-top: 0.38rem !important;
+    padding-bottom: calc(0.38rem + env(safe-area-inset-bottom)) !important;
   }
 
   .submit {
-    min-height: 2.55rem !important;
+    min-height: 2.25rem !important;
   }
 }
 
-@media (max-height: 520px) and (min-width: 560px) {
-  .dialog {
-    --finance-modal-max-width: 40rem;
+@media (max-height: 500px) {
+  .header {
+    min-height: 2.55rem;
+    padding-top: 0.34rem;
+    padding-bottom: 0.3rem;
   }
 
   .body {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 0.24rem !important;
+    padding-top: 0.28rem !important;
+    padding-bottom: 0.28rem !important;
   }
 
-  .amountField,
-  .typeSwitch,
-  .error {
-    grid-column: 1 / -1;
+  .body :global(.field-label) {
+    margin-bottom: 0.05rem;
+    font-size: 0.55rem;
+    line-height: 0.66rem;
+  }
+
+  .amountInput,
+  .dateControl :global(.field-input) {
+    min-height: 2rem !important;
+  }
+
+  .compactSelect,
+  .categoryTrigger {
+    min-height: 2.05rem !important;
+    padding-block: 0.12rem !important;
+  }
+
+  .noteInput {
+    min-height: 2.05rem !important;
+    max-height: 2.05rem !important;
+    padding-top: 0.28rem !important;
+    padding-bottom: 0.28rem !important;
+  }
+
+  .footer {
+    padding-top: 0.28rem !important;
+    padding-bottom: calc(0.28rem + env(safe-area-inset-bottom)) !important;
+  }
+
+  .submit {
+    min-height: 2.05rem !important;
   }
 }
