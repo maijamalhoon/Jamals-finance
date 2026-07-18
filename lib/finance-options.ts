@@ -1,12 +1,12 @@
 import {
   Banknote,
   Briefcase,
+  BriefcaseBusiness,
   Car,
-  CircleDollarSign,
   CreditCard,
-  Home,
   Landmark,
   LucideIcon,
+  Package,
   ReceiptText,
   Smartphone,
   Wallet,
@@ -38,8 +38,8 @@ export const ACCOUNT_TYPES: {
   { value: "nayapay", label: "NayaPay", icon: CreditCard, tone: "text-info bg-info-soft" },
   { value: "wallet", label: "Other Wallet", icon: Banknote, tone: "text-investment bg-investment-soft" },
   { value: "freelance", label: "Freelance", icon: Briefcase, tone: "text-primary bg-primary-soft" },
-  { value: "investment", label: "Investment", icon: CircleDollarSign, tone: "text-investment bg-investment-soft" },
-  { value: "other", label: "Other", icon: Home, tone: "text-text-muted bg-surface-tinted" },
+  { value: "investment", label: "Investment", icon: BriefcaseBusiness, tone: "text-investment bg-investment-soft" },
+  { value: "other", label: "Other", icon: Package, tone: "text-text-muted bg-surface-tinted" },
 ];
 
 export const EXPENSE_CATEGORY_HINTS = [
@@ -106,5 +106,5 @@ export const PAYABLE_QUICK_REASONS = [
   { label: "Borrowed cash", icon: Banknote },
   { label: "Borrowed item", icon: ReceiptText },
   { label: "Car / fuel help", icon: Car },
-  { label: "Family payment", icon: Home },
+  { label: "Family payment", icon: Package },
 ];
