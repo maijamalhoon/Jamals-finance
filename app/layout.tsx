@@ -4,6 +4,7 @@ import "./globals.css";
 import { Toaster } from "sonner";
 import MotionProvider from "@/components/motion/MotionProvider";
 import { CurrencyProvider } from "@/components/currency/CurrencyProvider";
+import ChartTooltipAutoDismiss from "@/components/charts/ChartTooltipAutoDismiss";
 import PWARegister from "./pwa-register";
 import {
   THEME_BOOTSTRAP_SCRIPT,
@@ -114,6 +115,7 @@ export default function RootLayout({
         <MotionProvider>
           <CurrencyProvider>
             {children}
+            <ChartTooltipAutoDismiss />
             <PWARegister />
             <Toaster
               position="top-right"
