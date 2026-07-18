@@ -127,7 +127,7 @@ export default function RecentTransactions({
     <section className="finance-reference-card motion-card-entry flex min-h-[280px] min-w-0 flex-col overflow-hidden p-4 sm:p-5">
       <div className="flex min-w-0 items-center justify-between gap-3 border-b border-border/55 pb-3">
         <div className="flex min-w-0 items-center gap-2.5">
-          <span className="grid size-8 shrink-0 place-items-center rounded-[10px] border border-brand/20 bg-brand/8 text-brand">
+          <span className="grid size-8 shrink-0 place-items-center rounded-[10px] border border-brand/20 bg-brand/10 text-brand">
             <ArrowLeftRight size={15} strokeWidth={2.2} aria-hidden="true" />
           </span>
           <h3 className="truncate text-[11px] font-bold uppercase tracking-[0.13em] text-text-secondary sm:text-[12px]">
@@ -223,7 +223,7 @@ export default function RecentTransactions({
                               {getFlowTitle(tx)}
                             </p>
                             <p
-                              className="mt-0.5 truncate text-[9px] font-medium leading-3.5 text-text-secondary lg:text-[10px] lg:leading-4"
+                              className="mt-0.5 truncate text-[9px] font-medium leading-[14px] text-text-secondary lg:text-[10px] lg:leading-4"
                               title={getFlowSubtitle(tx, false)}
                             >
                               {getFlowSubtitle(tx, false)}
@@ -284,7 +284,7 @@ export default function RecentTransactions({
                   className="motion-table-row grid grid-cols-[34px_minmax(0,1fr)] items-center gap-2.5 border-b border-border/45 py-3 first:pt-2 last:border-b-0 last:pb-0"
                 >
                   <span
-                    className="grid size-8.5 shrink-0 place-items-center rounded-[12px] border"
+                    className="grid size-[34px] shrink-0 place-items-center rounded-[12px] border"
                     style={getTransactionSoftStyle(iconMeta.accent)}
                   >
                     <Icon size={15} strokeWidth={2.2} aria-hidden="true" />
