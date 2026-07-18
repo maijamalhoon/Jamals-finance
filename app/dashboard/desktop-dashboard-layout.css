@@ -216,40 +216,45 @@
     .finance-reference-card
     > div:first-child
     span:has(> svg.lucide-arrow-left-right) {
+    color: var(--transfer);
     --dashboard-label-icon-size: 15px;
-    --dashboard-label-icon-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.9' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 3h12v18l-3-2-3 2-3-2-3 2V3Z'/%3E%3Cpath d='M9 8h6M9 12h6M9 16h3'/%3E%3C/svg%3E");
+    --dashboard-label-icon-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.85' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 2v20l2-2 2 2 2-2 2 2 2-2 2 2 2-2 2 2V2Z'/%3E%3Cpath d='M8 8h8M8 12h8M8 16h5'/%3E%3C/svg%3E");
   }
 
   .dashboard-overview-layout
     .finance-reference-card
     > div:first-child
     .dashboard-list-card-kicker-icon:has(> svg.lucide-pie-chart) {
+    color: var(--expense);
     --dashboard-label-icon-size: 15px;
-    --dashboard-label-icon-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.9' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3 20h18'/%3E%3Cpath d='M5 17V9M11 17V5M17 17v-6'/%3E%3Cpath d='m5 9 6-4 6 6 3-3'/%3E%3C/svg%3E");
+    --dashboard-label-icon-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.85' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 20V10M10 20V4M16 20v-7M22 20H2'/%3E%3C/svg%3E");
   }
 
   .dashboard-overview-layout
     .finance-reference-card
     > header:first-child
     .dashboard-list-card-kicker-icon:has(> svg.lucide-zap) {
+    color: var(--investment);
     --dashboard-label-icon-size: 15px;
-    --dashboard-label-icon-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 3v18M12 3v18M18 3v18'/%3E%3Crect x='3' y='7' width='6' height='6' rx='1'/%3E%3Crect x='9' y='10' width='6' height='7' rx='1'/%3E%3Crect x='15' y='5' width='6' height='8' rx='1'/%3E%3C/svg%3E");
+    --dashboard-label-icon-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2'/%3E%3Crect x='3' y='7' width='18' height='13' rx='2'/%3E%3Cpath d='M3 12a18 18 0 0 0 18 0M12 12h.01'/%3E%3C/svg%3E");
   }
 
   .dashboard-overview-layout
     .finance-reference-card
     > div:first-child
     .dashboard-list-card-kicker-icon:has(> svg.lucide-target) {
+    color: var(--goals);
     --dashboard-label-icon-size: 15px;
-    --dashboard-label-icon-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.9' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 21V4'/%3E%3Cpath d='M5 5h11l-2 3 2 3H5'/%3E%3Cpath d='M9 16h8'/%3E%3C/svg%3E");
+    --dashboard-label-icon-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.85' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 21V4'/%3E%3Cpath d='M5 5h11l-1.5 3L16 11H5'/%3E%3C/svg%3E");
   }
 
   .dashboard-overview-layout
     .dashboard-graph-card
     > div:first-child
     span:has(> svg.lucide-activity) {
+    color: var(--danger);
     --dashboard-label-icon-size: 12px;
-    --dashboard-label-icon-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.9' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3 3v18h18'/%3E%3Cpath d='m6 16 4-5 4 3 5-8'/%3E%3Ccircle cx='6' cy='16' r='1' fill='black' stroke='none'/%3E%3Ccircle cx='10' cy='11' r='1' fill='black' stroke='none'/%3E%3Ccircle cx='14' cy='14' r='1' fill='black' stroke='none'/%3E%3Ccircle cx='19' cy='6' r='1' fill='black' stroke='none'/%3E%3C/svg%3E");
+    --dashboard-label-icon-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.85' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 4v16h16'/%3E%3Cpath d='m7 15 4-4 3 3 5-6'/%3E%3C/svg%3E");
   }
 
   .dashboard-overview-layout
