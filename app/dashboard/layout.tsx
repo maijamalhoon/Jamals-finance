@@ -18,6 +18,7 @@ import "./mobile-dashboard-safety.css";
 import "./card-actions-polish.css";
 import "./top-cards-polish.css";
 import "./card-hover-policy.css";
+import "./top-cards-responsive-tuning.css";
 import "./header-search-polish.css";
 
 export const dynamic = "force-dynamic";
