@@ -16,8 +16,7 @@ import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
 import GoalModal, { ExistingGoal, type GoalAccount } from "./GoalModal";
 import GoalContributionModal from "./GoalContributionModal";
-import { GOAL_ICONS } from "./goal-icons";
-import { getGoalCategoryStyle } from "./goal-styles";
+import { getGoalPresentation } from "./goal-icons";
 import { useProgressReveal, useReducedMotion } from "./use-animated-goal-value";
 import { useCurrency } from "@/components/currency/CurrencyProvider";
 import { Button } from "@/components/ui/button";
@@ -66,13 +65,9 @@ export default function GoalCard({
     reduceMotion,
     `${goal.id}:${safeCurrent}:${safeTarget}`,
   );
-  const categoryStyle = getGoalCategoryStyle(goal);
-  const accent = done ? "var(--success)" : categoryStyle.accent;
-
-  const iconEntry =
-    GOAL_ICONS.find((i) => i.value === goal.icon) ||
-    GOAL_ICONS[GOAL_ICONS.length - 1];
-  const GoalIcon = done ? CheckCircle2 : iconEntry.icon;
+  const presentation = getGoalPresentation(goal);
+  const accent = presentation.accent;
+  const GoalIcon = done ? CheckCircle2 : presentation.entry.icon;
 
   let daysLeft: number | null = null;
   if (goal.deadline) {
@@ -122,13 +117,11 @@ export default function GoalCard({
     "--progress-duration": reduceMotion ? "0ms" : "820ms",
     "--progress-scale": progressReady && pct > 0 ? pct / 100 : 0,
   } as CSSProperties;
+  const progressTrackStyle = {
+    backgroundColor: `color-mix(in srgb, ${accent}, transparent 82%)`,
+  } as CSSProperties;
 
-  const statusText =
-    done
-      ? "Completed"
-      : categoryStyle.category === "other"
-        ? iconEntry.label
-        : categoryStyle.label;
+  const statusText = done ? "Completed" : presentation.label;
 
   return (
     <>
@@ -206,7 +199,7 @@ export default function GoalCard({
           </span>
         </div>
 
-        <div className="dashboard-progress-track">
+        <div className="dashboard-progress-track" style={progressTrackStyle}>
           <div className="dashboard-progress-fill" />
         </div>
 
