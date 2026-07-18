@@ -124,7 +124,7 @@ export default function JamalMenu({
                   exit={{ opacity: 0 }}
                   transition={glassTransition}
                   onPointerDown={() => setMenuOpen(false)}
-                  className="fixed inset-0 z-30 bg-brand/12 backdrop-blur-md backdrop-saturate-125 dark:bg-brand/18 lg:hidden"
+                  className="fixed inset-0 z-30 bg-[rgb(41_86_200_/_0.07)] backdrop-saturate-105 dark:bg-[rgb(41_86_200_/_0.1)] lg:hidden"
                 />
               ) : null}
             </AnimatePresence>,
