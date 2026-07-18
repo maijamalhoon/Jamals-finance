@@ -45,6 +45,7 @@
   height: 0.31rem;
   flex: 0 0 auto;
   border-radius: 999px;
+  transform-origin: center;
 }
 
 .value {
@@ -73,6 +74,21 @@
   -webkit-line-clamp: 2;
 }
 
+@keyframes mobile-pulse-dot-loop {
+  0%,
+  100% {
+    transform: scale(0.82);
+    opacity: 0.72;
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--pulse-accent), transparent 78%);
+  }
+
+  46% {
+    transform: scale(1.14);
+    opacity: 1;
+    box-shadow: 0 0 0 0.34rem color-mix(in srgb, var(--pulse-accent), transparent 90%);
+  }
+}
+
 @media (hover: hover) and (pointer: fine) {
   .tile:hover {
     transform: translateY(-1px);
@@ -94,17 +110,40 @@
 }
 
 @media (max-width: 639px) {
+  .grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 0.65rem !important;
+  }
+
   .label {
-    font-size: 0.57rem;
-    letter-spacing: 0.085em;
+    font-size: 0.55rem;
+    letter-spacing: 0.075em;
   }
 
   .value {
-    font-size: clamp(0.98rem, 4.8vw, 1.15rem);
+    font-size: clamp(0.96rem, 4.65vw, 1.12rem);
   }
 
   .detail {
-    font-size: 0.57rem;
+    font-size: 0.55rem;
+    line-height: 0.88rem;
+  }
+
+  .dot {
+    animation: mobile-pulse-dot-loop 1.85s ease-in-out infinite;
+    will-change: transform, opacity, box-shadow;
+  }
+
+  .tile:nth-child(2) .dot {
+    animation-delay: -0.35s;
+  }
+
+  .tile:nth-child(3) .dot {
+    animation-delay: -0.7s;
+  }
+
+  .tile:nth-child(4) .dot {
+    animation-delay: -1.05s;
   }
 }
 
@@ -115,5 +154,11 @@
 
   .tile:hover {
     transform: none;
+  }
+
+  .dot {
+    animation: none;
+    transform: none;
+    opacity: 1;
   }
 }
