@@ -49,7 +49,7 @@ function CustomTooltip({
   const net = income - expenses;
 
   return (
-    <div className="min-w-[178px] rounded-[14px] border border-border bg-card p-3 text-xs shadow-[var(--shadow-soft)]">
+    <div className="min-w-[164px] rounded-[14px] border border-border bg-card p-3 text-xs shadow-[var(--shadow-soft)]">
       <p className="mb-2 font-semibold text-text-primary">{label}</p>
       <div className="space-y-1.5">
         <p className="flex items-center justify-between gap-5 font-medium text-income">
@@ -116,20 +116,20 @@ export default function IncomeExpenseChart({
     net > 0 ? "text-income" : net < 0 ? "text-expense" : "text-text-secondary";
 
   return (
-    <section className="finance-reference-card motion-card-entry flex h-full min-h-[300px] min-w-0 flex-col overflow-hidden p-4 sm:p-5">
-      <div className="flex min-w-0 items-start justify-between gap-3">
+    <section className="finance-reference-card motion-card-entry flex h-full min-h-[286px] min-w-0 flex-col overflow-hidden p-3.5 sm:min-h-[300px] sm:p-5">
+      <div className="flex min-w-0 items-center justify-between gap-2.5 sm:items-start sm:gap-3">
         <div className="flex min-w-0 items-center gap-2">
           <span className="dashboard-list-card-kicker-icon">
             <DollarSign />
           </span>
-          <h3 className="truncate text-[11px] font-bold uppercase tracking-[0.12em] text-text-secondary">
+          <h3 className="truncate text-[10px] font-bold uppercase leading-tight tracking-[0.1em] text-text-secondary sm:text-[11px] sm:tracking-[0.12em]">
             Income vs Expenses
           </h3>
         </div>
 
         <div
           aria-label="Cash-flow range"
-          className="flex shrink-0 items-center rounded-[10px] bg-surface-secondary p-1"
+          className="flex shrink-0 items-center rounded-[9px] bg-surface-secondary p-0.5 sm:rounded-[10px] sm:p-1"
           role="group"
         >
           {([
@@ -141,7 +141,7 @@ export default function IncomeExpenseChart({
               type="button"
               aria-pressed={range === value}
               onClick={() => setRange(value)}
-              className={`finance-focus min-h-8 rounded-[8px] px-2.5 text-[10px] font-bold transition-colors ${
+              className={`finance-focus min-h-7 rounded-[7px] px-2 text-[9px] font-bold transition-colors sm:min-h-8 sm:rounded-[8px] sm:px-2.5 sm:text-[10px] ${
                 range === value
                   ? "bg-surface-primary text-text-primary shadow-sm"
                   : "text-text-secondary hover:text-text-primary"
@@ -153,25 +153,33 @@ export default function IncomeExpenseChart({
         </div>
       </div>
 
-      <div className="mt-3 flex min-w-0 flex-wrap items-center gap-x-5 gap-y-2 text-[11px] sm:text-xs">
-        <span className="inline-flex min-w-0 items-center gap-2 text-text-secondary">
-          <span className="size-2 shrink-0 rounded-full bg-income" />
-          <span className="font-medium">Income:</span>
-          <span className="font-bold tabular-nums text-text-primary">
+      <div className="mt-3 grid min-w-0 grid-cols-3 gap-1.5 rounded-[12px] border border-border/70 bg-surface-secondary/55 p-1.5 sm:flex sm:flex-wrap sm:items-center sm:gap-x-5 sm:gap-y-2 sm:rounded-none sm:border-0 sm:bg-transparent sm:p-0 sm:text-xs">
+        <span className="flex min-w-0 flex-col rounded-[9px] bg-surface-primary/70 px-2 py-2 sm:inline-flex sm:flex-row sm:items-center sm:gap-2 sm:rounded-none sm:bg-transparent sm:px-0 sm:py-0">
+          <span className="inline-flex items-center gap-1.5 text-[9px] font-semibold uppercase tracking-[0.07em] text-text-secondary sm:gap-2 sm:text-xs sm:font-medium sm:normal-case sm:tracking-normal">
+            <span className="size-2 shrink-0 rounded-full bg-income" />
+            <span>Income</span>
+          </span>
+          <span className="mt-1 whitespace-nowrap text-[clamp(9px,3vw,12px)] font-bold leading-tight tabular-nums text-text-primary sm:mt-0 sm:text-xs">
             {formatCurrency(totalIncome)}
           </span>
         </span>
-        <span className="inline-flex min-w-0 items-center gap-2 text-text-secondary">
-          <span className="size-2 shrink-0 rounded-full bg-expense" />
-          <span className="font-medium">Expenses:</span>
-          <span className="font-bold tabular-nums text-text-primary">
+        <span className="flex min-w-0 flex-col rounded-[9px] bg-surface-primary/70 px-2 py-2 sm:inline-flex sm:flex-row sm:items-center sm:gap-2 sm:rounded-none sm:bg-transparent sm:px-0 sm:py-0">
+          <span className="inline-flex items-center gap-1.5 text-[9px] font-semibold uppercase tracking-[0.07em] text-text-secondary sm:gap-2 sm:text-xs sm:font-medium sm:normal-case sm:tracking-normal">
+            <span className="size-2 shrink-0 rounded-full bg-expense" />
+            <span>Expenses</span>
+          </span>
+          <span className="mt-1 whitespace-nowrap text-[clamp(9px,3vw,12px)] font-bold leading-tight tabular-nums text-text-primary sm:mt-0 sm:text-xs">
             {formatCurrency(totalExpenses)}
           </span>
         </span>
-        <span className="inline-flex min-w-0 items-center gap-2 text-text-secondary">
-          <span className="size-2 shrink-0 rounded-full bg-transfer" />
-          <span className="font-medium">Net:</span>
-          <span className={`font-bold tabular-nums ${netTone}`}>
+        <span className="flex min-w-0 flex-col rounded-[9px] bg-surface-primary/70 px-2 py-2 sm:inline-flex sm:flex-row sm:items-center sm:gap-2 sm:rounded-none sm:bg-transparent sm:px-0 sm:py-0">
+          <span className="inline-flex items-center gap-1.5 text-[9px] font-semibold uppercase tracking-[0.07em] text-text-secondary sm:gap-2 sm:text-xs sm:font-medium sm:normal-case sm:tracking-normal">
+            <span className="size-2 shrink-0 rounded-full bg-transfer" />
+            <span>Net</span>
+          </span>
+          <span
+            className={`mt-1 whitespace-nowrap text-[clamp(9px,3vw,12px)] font-bold leading-tight tabular-nums sm:mt-0 sm:text-xs ${netTone}`}
+          >
             {formatCurrency(net)}
           </span>
         </span>
@@ -183,9 +191,9 @@ export default function IncomeExpenseChart({
           : "Cash-flow data is temporarily unavailable."}
       </p>
 
-      <div className="mt-2 min-h-0 flex-1">
+      <div className="mt-3 min-h-0 flex-1 sm:mt-2">
         {status === "unavailable" ? (
-          <div className="dashboard-chart-empty h-[205px] min-h-[205px]">
+          <div className="dashboard-chart-empty h-[190px] min-h-[190px] sm:h-[220px] sm:min-h-[220px]">
             <div>
               <span className="dashboard-chart-empty-icon">
                 <DollarSign size={16} />
@@ -200,112 +208,140 @@ export default function IncomeExpenseChart({
           </div>
         ) : hasCashFlow ? (
           <ChartFrame
-            className="h-[205px] min-h-[205px] min-w-0 overflow-hidden sm:h-[220px] sm:min-h-[220px]"
+            className="h-[190px] min-h-[190px] min-w-0 overflow-hidden sm:h-[220px] sm:min-h-[220px]"
             tone="green"
           >
-            {({ width, height }) => (
-              <ComposedChart
-                key={`cash-flow-${range}`}
-                accessibilityLayer
-                data={visibleRows}
-                height={height}
-                margin={{ top: 10, right: 8, left: 0, bottom: 0 }}
-                width={width}
-              >
-                <defs>
-                  <linearGradient
-                    id="incomeExpenseIncomeFill"
-                    x1="0"
-                    y1="0"
-                    x2="0"
-                    y2="1"
-                  >
-                    <stop
-                      offset="0%"
-                      stopColor="var(--income)"
-                      stopOpacity={0.3}
-                    />
-                    <stop
-                      offset="100%"
-                      stopColor="var(--income)"
-                      stopOpacity={0.025}
-                    />
-                  </linearGradient>
-                  <linearGradient
-                    id="incomeExpenseExpenseFill"
-                    x1="0"
-                    y1="0"
-                    x2="0"
-                    y2="1"
-                  >
-                    <stop
-                      offset="0%"
-                      stopColor="var(--expense)"
-                      stopOpacity={0.24}
-                    />
-                    <stop
-                      offset="100%"
-                      stopColor="var(--expense)"
-                      stopOpacity={0.02}
-                    />
-                  </linearGradient>
-                </defs>
-                <CartesianGrid
-                  strokeDasharray="2 8"
-                  stroke="var(--chart-grid)"
-                  vertical={false}
-                />
-                <XAxis
-                  dataKey="day"
-                  tick={{ fill: "var(--text-secondary)", fontSize: 10 }}
-                  axisLine={false}
-                  tickLine={false}
-                  interval="preserveStartEnd"
-                  minTickGap={24}
-                  tickFormatter={(value) => `${value}`}
-                />
-                <YAxis
-                  domain={[0, Math.ceil(maxValue / 250) * 250]}
-                  tick={{ fill: "var(--text-secondary)", fontSize: 10 }}
-                  axisLine={false}
-                  tickLine={false}
-                  width={50}
-                  tickMargin={5}
-                  tickFormatter={(value) =>
-                    formatCurrency(Number(value), { compact: true })
-                  }
-                />
-                <Tooltip content={<CustomTooltip />} />
-                <Area
-                  type="monotone"
-                  dataKey="income"
-                  dot={false}
-                  activeDot={{ r: 4, strokeWidth: 2, stroke: "var(--card)" }}
-                  isAnimationActive
-                  stroke="var(--income)"
-                  strokeLinecap="round"
-                  strokeWidth={2.5}
-                  fill="url(#incomeExpenseIncomeFill)"
-                  {...chartMotion}
-                />
-                <Area
-                  type="monotone"
-                  dataKey="expenses"
-                  dot={false}
-                  activeDot={{ r: 4, strokeWidth: 2, stroke: "var(--card)" }}
-                  isAnimationActive
-                  stroke="var(--expense)"
-                  strokeDasharray="4 4"
-                  strokeLinecap="round"
-                  strokeWidth={2.4}
-                  fill="url(#incomeExpenseExpenseFill)"
-                  {...chartMotion}
-                />
-              </ComposedChart>
-            )}
+            {({ width, height }) => {
+              const compactChart = width < 390;
+              const narrowChart = width < 320;
+
+              return (
+                <ComposedChart
+                  key={`cash-flow-${range}`}
+                  accessibilityLayer
+                  data={visibleRows}
+                  height={height}
+                  margin={{
+                    top: compactChart ? 6 : 10,
+                    right: compactChart ? 0 : 8,
+                    left: 0,
+                    bottom: 0,
+                  }}
+                  width={width}
+                >
+                  <defs>
+                    <linearGradient
+                      id="incomeExpenseIncomeFill"
+                      x1="0"
+                      y1="0"
+                      x2="0"
+                      y2="1"
+                    >
+                      <stop
+                        offset="0%"
+                        stopColor="var(--income)"
+                        stopOpacity={0.3}
+                      />
+                      <stop
+                        offset="100%"
+                        stopColor="var(--income)"
+                        stopOpacity={0.025}
+                      />
+                    </linearGradient>
+                    <linearGradient
+                      id="incomeExpenseExpenseFill"
+                      x1="0"
+                      y1="0"
+                      x2="0"
+                      y2="1"
+                    >
+                      <stop
+                        offset="0%"
+                        stopColor="var(--expense)"
+                        stopOpacity={0.24}
+                      />
+                      <stop
+                        offset="100%"
+                        stopColor="var(--expense)"
+                        stopOpacity={0.02}
+                      />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid
+                    strokeDasharray={compactChart ? "2 7" : "2 8"}
+                    stroke="var(--chart-grid)"
+                    vertical={false}
+                  />
+                  <XAxis
+                    dataKey="day"
+                    tick={{
+                      fill: "var(--text-secondary)",
+                      fontSize: compactChart ? 9 : 10,
+                    }}
+                    axisLine={false}
+                    tickLine={false}
+                    interval="preserveStartEnd"
+                    minTickGap={compactChart ? 18 : 24}
+                    tickMargin={compactChart ? 5 : 6}
+                    tickFormatter={(value) => `${value}`}
+                  />
+                  <YAxis
+                    domain={[0, Math.ceil(maxValue / 250) * 250]}
+                    tick={{
+                      fill: "var(--text-secondary)",
+                      fontSize: compactChart ? 9 : 10,
+                    }}
+                    axisLine={false}
+                    tickLine={false}
+                    tickCount={compactChart ? 5 : undefined}
+                    width={narrowChart ? 38 : compactChart ? 42 : 50}
+                    tickMargin={compactChart ? 3 : 5}
+                    tickFormatter={(value) =>
+                      formatCurrency(Number(value), { compact: true })
+                    }
+                  />
+                  <Tooltip content={<CustomTooltip />} />
+                  <Area
+                    type="monotone"
+                    dataKey="income"
+                    dot={false}
+                    activeDot={{
+                      r: compactChart ? 3.5 : 4,
+                      strokeWidth: 2,
+                      stroke: "var(--card)",
+                    }}
+                    isAnimationActive
+                    stroke="var(--income)"
+                    strokeLinecap="round"
+                    strokeWidth={compactChart ? 2.2 : 2.5}
+                    fill="url(#incomeExpenseIncomeFill)"
+                    fillOpacity={compactChart ? 0.58 : 1}
+                    {...chartMotion}
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey="expenses"
+                    dot={false}
+                    activeDot={{
+                      r: compactChart ? 3.5 : 4,
+                      strokeWidth: 2,
+                      stroke: "var(--card)",
+                    }}
+                    isAnimationActive
+                    stroke="var(--expense)"
+                    strokeDasharray={compactChart ? "3 4" : "4 4"}
+                    strokeLinecap="round"
+                    strokeWidth={compactChart ? 2.1 : 2.4}
+                    fill="url(#incomeExpenseExpenseFill)"
+                    fillOpacity={compactChart ? 0 : 1}
+                    {...chartMotion}
+                  />
+                </ComposedChart>
+              );
+            }}
           </ChartFrame>
         ) : (
-          <div className="dashboard-chart-empty h-[205px] min-h-[205px] sm:h-[220px] sm:min-h-[220px]">
+          <div className="dashboard-chart-empty h-[190px] min-h-[190px] sm:h-[220px] sm:min-h-[220px]">
             <div>
               <span className="dashboard-chart-empty-icon">
                 <DollarSign size={16} />
