@@ -83,13 +83,12 @@
 }
 
 .footer {
-  display: flex;
+  display: block;
+  width: 100%;
   min-width: 0;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 0.6rem;
   margin-top: auto;
   padding-top: 0.75rem;
+  overflow: hidden;
 }
 
 .badge {
@@ -140,7 +139,32 @@
   animation: sparkline-draw 720ms var(--motion-ease) forwards;
 }
 
+.graph {
+  display: block !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  height: clamp(1.55rem, 8cqi, 2.2rem) !important;
+  overflow: visible !important;
+}
+
+.graphPath {
+  fill: none !important;
+  stroke-dasharray: 1 1 !important;
+  stroke-dashoffset: 1 !important;
+  stroke-linecap: round !important;
+  stroke-linejoin: round !important;
+  stroke-width: 2.1 !important;
+  opacity: 0.86;
+  animation: metric-graph-draw 1.1s var(--motion-ease) 100ms forwards !important;
+}
+
 @keyframes sparkline-draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes metric-graph-draw {
   to {
     stroke-dashoffset: 0;
   }
@@ -151,8 +175,9 @@
     transform: translateY(-1px) scale(1.03);
   }
 
-  .card:hover .sparklinePath {
-    opacity: 0.95;
+  .card:hover .sparklinePath,
+  .card:hover .graphPath {
+    opacity: 0.96;
   }
 }
 
@@ -212,8 +237,7 @@
   }
 
   .footer {
-    align-items: center;
-    gap: 0.32rem;
+    width: 100%;
     padding-top: 0.48rem;
   }
 
@@ -242,6 +266,14 @@
   .sparklinePath {
     stroke-width: 1.55;
   }
+
+  .graph {
+    height: clamp(1.35rem, 8.5cqi, 1.8rem) !important;
+  }
+
+  .graphPath {
+    stroke-width: 2 !important;
+  }
 }
 
 @media (max-width: 479px) {
@@ -252,6 +284,10 @@
 
   .amount {
     font-size: clamp(1.04rem, 5.55vw, 1.36rem) !important;
+  }
+
+  .graph {
+    height: clamp(1.25rem, 8cqi, 1.6rem) !important;
   }
 }
 
@@ -290,6 +326,10 @@
   .sparkline {
     width: 2.35rem;
   }
+
+  .graph {
+    height: 1.25rem !important;
+  }
 }
 
 @media (min-width: 480px) and (max-width: 639px) {
@@ -308,8 +348,9 @@
     transition: none;
   }
 
-  .sparklinePath {
-    stroke-dashoffset: 0;
-    animation: none;
+  .sparklinePath,
+  .graphPath {
+    stroke-dashoffset: 0 !important;
+    animation: none !important;
   }
 }
