@@ -4,26 +4,33 @@ import { type CSSProperties, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
+import AccountSelect from "@/components/accounts/AccountSelect";
 import DatePicker from "@/components/ui/date-picker";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import {
   FinanceModalBody,
   FinanceModalFooter,
   FinanceFormField,
   FinanceModalHeader,
-  financeCancelButtonClass,
   financeErrorClass,
   financeModalContentClass,
   financePrimaryButtonClass,
 } from "@/components/ui/finance-modal";
-import { PAYABLE_QUICK_REASONS } from "@/lib/finance-options";
 import { BASE_CURRENCY } from "@/lib/currency";
+import { getAppDateKey } from "@/lib/dates";
 import { getUserMutationError } from "@/lib/user-errors";
 
 const PAYABLE_ACTION_COLOR = "#9B6A13";
+
+interface PayableAccount {
+  id: string;
+  name: string;
+  type: string;
+  balance: number | string | null;
+  icon_key?: string | null;
+}
 
 export interface ExistingPayable {
   id: string;
@@ -33,6 +40,7 @@ export interface ExistingPayable {
   original_value: number;
   due_date: string | null;
   notes: string | null;
+  account_id?: string | null;
 }
 
 interface Props {
@@ -50,8 +58,11 @@ export default function PayableModal({ open, onClose, payable }: Props) {
   const [itemName, setItemName] = useState("");
   const [reason, setReason] = useState("");
   const [originalValue, setOriginalValue] = useState("");
-  const [dueDate, setDueDate] = useState("");
+  const [accountId, setAccountId] = useState("");
+  const [dueDate, setDueDate] = useState(getAppDateKey());
   const [notes, setNotes] = useState("");
+  const [accounts, setAccounts] = useState<PayableAccount[]>([]);
+  const [loadingOptions, setLoadingOptions] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -61,17 +72,68 @@ export default function PayableModal({ open, onClose, payable }: Props) {
     setItemName(payable?.item_name ?? "");
     setReason(payable?.reason ?? "");
     setOriginalValue(payable ? String(payable.original_value) : "");
-    setDueDate(payable?.due_date ?? "");
+    setAccountId(payable?.account_id ?? "");
+    setDueDate(payable?.due_date ?? getAppDateKey());
     setNotes(payable?.notes ?? "");
     setError("");
   }, [open, payable]);
 
+  useEffect(() => {
+    if (!open) return;
+
+    let cancelled = false;
+
+    async function loadAccounts() {
+      setLoadingOptions(true);
+      const { data, error: accountsError } = await supabase
+        .from("accounts")
+        .select("id, name, type, balance, icon_key")
+        .eq("status", "active")
+        .order("name");
+
+      if (cancelled) return;
+      setLoadingOptions(false);
+
+      if (accountsError) {
+        setAccounts([]);
+        setAccountId("");
+        setError("Accounts could not be loaded. Check your connection and try again.");
+        return;
+      }
+
+      const nextAccounts = (data ?? []) as PayableAccount[];
+      setAccounts(nextAccounts);
+      setAccountId((current) => {
+        const preferred = payable?.account_id || current;
+        return nextAccounts.some((account) => account.id === preferred)
+          ? preferred
+          : nextAccounts[0]?.id ?? "";
+      });
+    }
+
+    void loadAccounts();
+    return () => {
+      cancelled = true;
+    };
+  }, [open, payable?.account_id, supabase]);
+
   async function handleSave() {
     if (loading) return;
 
+    if (loadingOptions) {
+      setError("Please wait while accounts load.");
+      return;
+    }
+
     const value = Number(originalValue);
-    if (!personName.trim() || !reason.trim() || !Number.isFinite(value) || value <= 0) {
-      setError("Person, reason, and value greater than 0 are required.");
+    if (
+      !personName.trim() ||
+      !reason.trim() ||
+      !accountId ||
+      !Number.isFinite(value) ||
+      value <= 0
+    ) {
+      setError("Amount, name, purpose, and account are required.");
       return;
     }
 
@@ -95,13 +157,13 @@ export default function PayableModal({ open, onClose, payable }: Props) {
       item_name: itemName.trim() || null,
       reason: reason.trim(),
       original_value: value,
+      account_id: accountId,
       due_date: dueDate || null,
       notes: notes.trim() || null,
     };
 
-    const { error: saveError } =
-      isEditing ?
-        await supabase.from("liabilities").update(payload).eq("id", payable.id)
+    const { error: saveError } = isEditing
+      ? await supabase.from("liabilities").update(payload).eq("id", payable.id)
       : await supabase.from("liabilities").insert(payload);
 
     setLoading(false);
@@ -122,7 +184,7 @@ export default function PayableModal({ open, onClose, payable }: Props) {
   return (
     <Dialog open={open} onOpenChange={(nextOpen) => !nextOpen && onClose()}>
       <DialogContent
-        className={`${financeModalContentClass} sm:[--finance-modal-max-width:32rem]`}
+        className={financeModalContentClass}
         style={
           {
             "--finance-action": PAYABLE_ACTION_COLOR,
@@ -132,102 +194,74 @@ export default function PayableModal({ open, onClose, payable }: Props) {
         <FinanceModalHeader title={isEditing ? "Edit Payable" : "Add Payable"} />
 
         <FinanceModalBody>
-          <div className="grid gap-3 sm:grid-cols-2">
-            <FinanceFormField label="Person Name" htmlFor="payable-person-name">
-              <Input
-                id="payable-person-name"
-                value={personName}
-                onChange={(e) => setPersonName(e.target.value)}
-                placeholder="Who do you need to pay?"
-              />
-            </FinanceFormField>
-            <FinanceFormField label="Item / Amount Name" htmlFor="payable-item-name">
-              <Input
-                id="payable-item-name"
-                value={itemName}
-                onChange={(e) => setItemName(e.target.value)}
-                placeholder="Phone, cash, loan, etc."
-              />
-            </FinanceFormField>
-          </div>
+          <FinanceFormField
+            label={`Amount (${BASE_CURRENCY})`}
+            htmlFor="payable-original-value"
+          >
+            <Input
+              id="payable-original-value"
+              type="number"
+              inputMode="decimal"
+              min="0"
+              step="any"
+              value={originalValue}
+              onChange={(event) => setOriginalValue(event.target.value)}
+              placeholder="0"
+              className="font-semibold tabular-nums"
+            />
+          </FinanceFormField>
 
-          <FinanceFormField label="Reason" htmlFor="payable-reason">
+          <FinanceFormField label="Name" htmlFor="payable-person-name">
+            <Input
+              id="payable-person-name"
+              value={personName}
+              onChange={(event) => setPersonName(event.target.value)}
+              placeholder="Who do you need to pay?"
+              autoComplete="off"
+            />
+          </FinanceFormField>
+
+          <FinanceFormField label="Purpose" htmlFor="payable-reason">
             <Input
               id="payable-reason"
               value={reason}
-              onChange={(e) => setReason(e.target.value)}
-              placeholder="Why was this taken?"
-            />
-            <div className="mt-2 flex flex-wrap gap-2">
-              {PAYABLE_QUICK_REASONS.map(({ label, icon: Icon }) => (
-                <button
-                  key={label}
-                  type="button"
-                  onClick={() => setReason(label)}
-                  className="finance-focus inline-flex min-h-11 items-center gap-1.5 rounded-xl border border-border bg-surface-secondary px-2.5 py-1.5 text-xs text-text-secondary hover:bg-hover hover:text-text-primary"
-                >
-                  <Icon size={12} />
-                  {label}
-                </button>
-              ))}
-            </div>
-          </FinanceFormField>
-
-          <div className="grid gap-3 sm:grid-cols-2">
-            <FinanceFormField
-              label={`Actual Value (${BASE_CURRENCY})`}
-              htmlFor="payable-original-value"
-            >
-              <Input
-                id="payable-original-value"
-                type="number"
-                value={originalValue}
-                onChange={(e) => setOriginalValue(e.target.value)}
-                placeholder="0"
-                className="font-semibold"
-              />
-            </FinanceFormField>
-            <FinanceFormField label="Due Date" htmlFor="payable-due-date">
-              <DatePicker
-                id="payable-due-date"
-                value={dueDate}
-                onChange={setDueDate}
-                placeholder="DD/MM/YYYY"
-                ariaLabel="Payable due date"
-              />
-            </FinanceFormField>
-          </div>
-
-          <FinanceFormField label="Notes" htmlFor="payable-notes">
-            <Textarea
-              id="payable-notes"
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              placeholder="Agreement details, reminders, or partial payment notes"
-              className="min-h-24 resize-none"
+              onChange={(event) => setReason(event.target.value)}
+              placeholder="What is this payable for?"
             />
           </FinanceFormField>
 
-          {error && (
-            <p className={financeErrorClass}>
-              {error}
-            </p>
-          )}
+          <FinanceFormField label="Account" htmlFor="payable-account">
+            <AccountSelect
+              id="payable-account"
+              value={accountId}
+              onValueChange={setAccountId}
+              accounts={accounts}
+              loading={loadingOptions}
+              placeholder="Select account"
+              emptyText="No accounts found"
+              ariaLabel="Payable account"
+              scrollPicker
+            />
+          </FinanceFormField>
+
+          <FinanceFormField label="Due Date" htmlFor="payable-due-date">
+            <DatePicker
+              id="payable-due-date"
+              value={dueDate}
+              onChange={setDueDate}
+              placeholder="DD/MM/YYYY"
+              ariaLabel="Payable due date"
+            />
+          </FinanceFormField>
+
+          {error ? <p className={financeErrorClass}>{error}</p> : null}
         </FinanceModalBody>
 
-        <FinanceModalFooter className="grid-cols-[0.78fr_1.22fr]">
-          <Button
-            type="button"
-            onClick={onClose}
-            disabled={loading}
-            className={financeCancelButtonClass}
-          >
-            Cancel
-          </Button>
+        <FinanceModalFooter>
           <Button
             type="button"
             onClick={handleSave}
-            disabled={loading}
+            disabled={loading || loadingOptions}
             loading={loading}
             loadingLabel="Saving payable…"
             className={financePrimaryButtonClass}
