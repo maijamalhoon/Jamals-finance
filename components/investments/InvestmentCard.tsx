@@ -17,7 +17,6 @@ import {
 import { createClient } from "@/lib/supabase/client";
 import { useCurrency } from "@/components/currency/CurrencyProvider";
 import { BASE_CURRENCY, formatMoney } from "@/lib/currency";
-import { getAssetInitials } from "@/lib/investments/aggregation";
 import InvestmentModal, { ExistingInvestment } from "./InvestmentModal";
 import { toast } from "sonner";
 import { getUserMutationError } from "@/lib/user-errors";
@@ -222,26 +221,16 @@ export default function InvestmentCard({
         ) : null}
 
         <div className="flex min-w-0 items-start gap-3 pr-16">
-          {inv.image_url ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={inv.image_url}
-              alt=""
-              className="h-11 w-11 flex-shrink-0 rounded-full"
+          <div
+            className={`flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-[16px] ${cfg.bg}`}
+          >
+            <Icon
+              size={18}
+              strokeWidth={2.2}
+              className={cfg.color}
+              aria-hidden="true"
             />
-          ) : inv.symbol ? (
-            <span
-              className={`flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-[16px] text-xs font-bold ${cfg.bg} ${cfg.color}`}
-            >
-              {getAssetInitials(inv.name, inv.symbol)}
-            </span>
-          ) : (
-            <div
-              className={`flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-[16px] ${cfg.bg}`}
-            >
-              <Icon size={18} className={cfg.color} />
-            </div>
-          )}
+          </div>
 
           <div className="min-w-0 flex-1">
             <p className="truncate text-sm font-semibold text-text-primary">
