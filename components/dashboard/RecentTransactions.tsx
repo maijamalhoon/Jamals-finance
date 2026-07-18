@@ -75,7 +75,7 @@ function getFlowTitle(tx: Transaction) {
 
 function getFlowSubtitle(tx: Transaction, includeDate = true) {
   const account = tx.accounts?.name || "No account";
-  const suffix = includeDate ? ` - ${formatCompactDate(tx.date)}` : "";
+  const suffix = includeDate ? ` · ${formatCompactDate(tx.date)}` : "";
 
   if (tx.type === "income") return `Came to ${account}${suffix}`;
   if (tx.type === "expense") return `Paid from ${account}${suffix}`;
@@ -102,12 +102,12 @@ function Amount({
 
   return (
     <span
-      className={`font-black tabular-nums ${getTransactionToneClass(
+      className={`inline-flex items-baseline justify-end gap-0.5 font-black tracking-[-0.015em] tabular-nums ${getTransactionToneClass(
         transaction.type,
       )}`}
     >
       {safeAmount === null ? (
-        <span className="font-semibold text-text-secondary">Unavailable</span>
+        <span className="font-semibold tracking-normal text-text-secondary">Unavailable</span>
       ) : (
         <>
           {getTransactionPrefix(transaction.type)}
@@ -171,7 +171,14 @@ export default function RecentTransactions({
       ) : (
         <>
           <div className="mt-3 hidden min-w-0 overflow-x-auto md:block">
-            <table className="w-full min-w-[760px] border-collapse text-left">
+            <table className="w-full min-w-[760px] table-fixed border-collapse text-left">
+              <colgroup>
+                <col className="w-[38%]" />
+                <col className="w-[17%]" />
+                <col className="w-[15%]" />
+                <col className="w-[13%]" />
+                <col className="w-[17%]" />
+              </colgroup>
               <thead>
                 <tr className="border-b border-border text-[10px] font-bold uppercase tracking-[0.08em] text-text-tertiary">
                   <th className="pb-2 pr-4">Description</th>
@@ -198,38 +205,53 @@ export default function RecentTransactions({
                     <tr
                       key={tx.id}
                       style={rowStyle}
-                      className="motion-table-row group border-b border-border/65 last:border-b-0 hover:bg-hover/55"
+                      className="motion-table-row group border-b border-border/55 transition-colors duration-200 last:border-b-0 hover:bg-surface-secondary/40"
                     >
                       <td className="py-2.5 pr-4">
                         <div className="flex min-w-0 items-center gap-2.5">
                           <span
-                            className="grid size-8 shrink-0 place-items-center rounded-full border shadow-[var(--surface-highlight)] transition-transform duration-200 group-hover:scale-105"
+                            className="grid size-8 shrink-0 place-items-center rounded-full border transition-transform duration-200 group-hover:scale-105"
                             style={getTransactionSoftStyle(iconMeta.accent)}
                           >
                             <Icon size={14} strokeWidth={2.3} />
                           </span>
                           <div className="min-w-0">
-                            <p className="truncate text-[12px] font-bold text-text-primary">
+                            <p
+                              className="truncate text-[12px] font-bold leading-4 text-text-primary"
+                              title={getFlowTitle(tx)}
+                            >
                               {getFlowTitle(tx)}
                             </p>
-                            <p className="truncate text-[10px] font-medium text-text-secondary">
+                            <p
+                              className="truncate text-[10px] font-medium leading-4 text-text-secondary"
+                              title={getFlowSubtitle(tx, false)}
+                            >
                               {getFlowSubtitle(tx, false)}
                             </p>
                           </div>
                         </div>
                       </td>
-                      <td className="max-w-[180px] truncate px-4 py-2.5 text-[11px] font-medium text-text-secondary">
+                      <td
+                        className="max-w-[180px] truncate px-4 py-2.5 text-[11px] font-medium text-text-secondary"
+                        title={tx.accounts?.name || "No account"}
+                      >
                         {tx.accounts?.name || "No account"}
                       </td>
                       <td className="px-4 py-2.5">
                         <span
-                          className="inline-flex max-w-[150px] truncate rounded-full border px-2 py-1 text-[10px] font-bold"
-                          style={getTransactionSoftStyle(iconMeta.accent)}
+                          className="inline-flex max-w-[150px] items-center gap-1.5 text-[10px] font-bold"
+                          style={{ color: iconMeta.accent }}
+                          title={getCategoryLabel(tx)}
                         >
-                          {getCategoryLabel(tx)}
+                          <span
+                            className="size-1.5 shrink-0 rounded-full"
+                            style={{ backgroundColor: iconMeta.accent }}
+                            aria-hidden="true"
+                          />
+                          <span className="truncate">{getCategoryLabel(tx)}</span>
                         </span>
                       </td>
-                      <td className="whitespace-nowrap px-4 py-2.5 text-[11px] font-medium text-text-secondary">
+                      <td className="whitespace-nowrap px-4 py-2.5 text-[11px] font-medium text-text-secondary tabular-nums">
                         {formatFullDate(tx.date)}
                       </td>
                       <td className="whitespace-nowrap py-2.5 pl-4 text-right text-[12px]">
@@ -259,23 +281,29 @@ export default function RecentTransactions({
                 <article
                   key={tx.id}
                   style={rowStyle}
-                  className="motion-table-row grid grid-cols-[36px_minmax(0,1fr)_auto] items-center gap-2.5 border-b border-border/65 py-3 first:pt-0 last:border-b-0 last:pb-0"
+                  className="motion-table-row grid grid-cols-[36px_minmax(0,1fr)_auto] items-center gap-2.5 border-b border-border/55 py-3 first:pt-0 last:border-b-0 last:pb-0"
                 >
                   <span
-                    className="grid size-9 shrink-0 place-items-center rounded-full border shadow-[var(--surface-highlight)]"
+                    className="grid size-9 shrink-0 place-items-center rounded-full border"
                     style={getTransactionSoftStyle(iconMeta.accent)}
                   >
                     <Icon size={15} strokeWidth={2.3} />
                   </span>
                   <div className="min-w-0">
-                    <p className="truncate text-[12px] font-bold text-text-primary">
+                    <p
+                      className="truncate text-[12px] font-bold leading-4 text-text-primary"
+                      title={getFlowTitle(tx)}
+                    >
                       {getFlowTitle(tx)}
                     </p>
-                    <p className="truncate text-[10px] font-medium text-text-secondary">
+                    <p
+                      className="truncate text-[10px] font-medium leading-4 text-text-secondary"
+                      title={getFlowSubtitle(tx)}
+                    >
                       {getFlowSubtitle(tx)}
                     </p>
                   </div>
-                  <p className="max-w-[7rem] break-words text-right text-[11px] [overflow-wrap:anywhere]">
+                  <p className="max-w-[8rem] break-words text-right text-[11px] leading-4 [overflow-wrap:anywhere]">
                     <Amount transaction={tx} />
                   </p>
                 </article>
