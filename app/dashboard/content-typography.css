@@ -5,9 +5,22 @@
  */
 .finance-content-typography {
   font-family: var(--font-sans);
-  font-weight: 450;
   font-synthesis: none;
   text-rendering: geometricPrecision;
+}
+
+.finance-content-typography
+  :where(p, li, dt, dd, td, th, small, figcaption):not(
+    form *,
+    [role="dialog"] *,
+    [data-finance-form] *,
+    [class*="font-"],
+    [data-slot="money"],
+    .finance-amount,
+    [data-amount]
+  ) {
+  font-family: var(--font-sans);
+  font-weight: 450;
 }
 
 .finance-content-typography
