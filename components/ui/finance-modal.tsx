@@ -24,7 +24,7 @@ export const financeCancelButtonClass =
   "finance-focus inline-flex min-h-[var(--oneui-control-height-lg)] items-center justify-center rounded-[var(--oneui-button-radius)] border border-border bg-surface-secondary px-4 py-2 text-sm font-semibold text-text-primary transition-[background-color,border-color,color,transform] duration-[var(--motion-duration-fast)] [transition-timing-function:var(--motion-ease-standard)] hover:bg-hover active:scale-[0.985] disabled:opacity-50";
 
 export const financePrimaryButtonClass =
-  "finance-focus inline-flex min-h-[var(--oneui-control-height-lg)] w-full items-center justify-center rounded-[var(--oneui-button-radius)] px-4 py-2.5 text-sm font-black text-text-inverse shadow-sm transition-[filter,transform,box-shadow] duration-[var(--motion-duration-fast)] hover:brightness-[1.04] active:scale-[0.985] disabled:cursor-not-allowed disabled:opacity-55";
+  "finance-primary-action finance-focus inline-flex min-h-[var(--oneui-control-height-lg)] w-full items-center justify-center rounded-[var(--oneui-button-radius)] px-4 py-2.5 text-sm font-black text-text-inverse shadow-sm transition-[filter,transform,box-shadow] duration-[var(--motion-duration-fast)] hover:brightness-[1.04] active:scale-[0.985] disabled:cursor-not-allowed disabled:opacity-55";
 
 export const financeErrorClass =
   "rounded-[var(--oneui-control-radius)] border border-danger/20 bg-danger/10 px-3 py-2.5 text-sm font-medium leading-5 text-danger";
@@ -43,6 +43,81 @@ const toneAccentClass: Record<FinanceTone, string> = {
   investment: "bg-investment",
   warning: "bg-warning",
 };
+
+const financeActionModalPolish = `
+@media (max-width: 639px) {
+  [data-slot="dialog-content"].finance-modal-content[style*="--finance-action"],
+  [role="dialog"].finance-modal-content[style*="--finance-action"] {
+    top: max(0.375rem, env(safe-area-inset-top)) !important;
+    right: max(0.375rem, env(safe-area-inset-right)) !important;
+    bottom: max(0.375rem, env(safe-area-inset-bottom)) !important;
+    left: max(0.375rem, env(safe-area-inset-left)) !important;
+    height: max-content !important;
+    max-height: calc(100dvh - 0.75rem - env(safe-area-inset-top) - env(safe-area-inset-bottom)) !important;
+    margin: auto !important;
+    --tw-translate-x: 0px;
+    --tw-translate-y: 0px;
+    transform: none !important;
+  }
+}
+
+.finance-modal-content[style*="--finance-action"] .finance-primary-action {
+  background: var(--finance-action) !important;
+  color: var(--text-inverse) !important;
+}
+
+.finance-modal-content[style*="--finance-action"]
+  .finance-modal-body
+  > div:has(#investment-asset-search) {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.finance-modal-content[style*="--finance-action"]
+  .finance-modal-body
+  > div:has(#investment-asset-search)
+  > label[for="investment-asset-search"] {
+  order: 1;
+}
+
+.finance-modal-content[style*="--finance-action"]
+  .finance-modal-body
+  > div:has(#investment-asset-search)
+  > div:has(> #investment-asset-search) {
+  position: relative;
+  z-index: 2;
+  order: 2;
+}
+
+.finance-modal-content[style*="--finance-action"]
+  .finance-modal-body
+  > div:has(#investment-asset-search)
+  > div.absolute {
+  position: relative !important;
+  inset: auto !important;
+  order: 3;
+  width: 100%;
+  margin-top: -1px;
+  border-top-left-radius: 0 !important;
+  border-top-right-radius: 0 !important;
+  box-shadow: var(--shadow-md) !important;
+}
+
+.finance-modal-content[style*="--finance-action"]
+  .finance-modal-body
+  > div:has(#investment-asset-search)
+  > button {
+  order: 4;
+}
+
+.finance-modal-content[style*="--finance-action"]
+  .finance-modal-body
+  > div:has(#investment-asset-search):has(> div.absolute)
+  #investment-asset-search {
+  border-bottom-left-radius: 0 !important;
+  border-bottom-right-radius: 0 !important;
+}
+`;
 
 interface FinanceModalHeaderProps {
   title: string;
@@ -108,13 +183,16 @@ export function FinanceModalBody({
   ...props
 }: React.ComponentProps<"div">) {
   return (
-    <div
-      className={cn(
-        "finance-modal-body min-h-0 flex-1 space-y-3 overflow-y-auto overscroll-contain px-3.5 py-3.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:space-y-3.5 sm:px-5 sm:py-4",
-        className,
-      )}
-      {...props}
-    />
+    <>
+      <style>{financeActionModalPolish}</style>
+      <div
+        className={cn(
+          "finance-modal-body min-h-0 flex-1 space-y-3 overflow-y-auto overscroll-contain px-3.5 py-3.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:space-y-3.5 sm:px-5 sm:py-4",
+          className,
+        )}
+        {...props}
+      />
+    </>
   );
 }
 
