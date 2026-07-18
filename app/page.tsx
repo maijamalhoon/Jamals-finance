@@ -9,6 +9,7 @@ import "./landing-sections.css";
 import "./landing-responsive.css";
 import "./landing-math-symbols.css";
 
+// Public landing entry: all layout, preview, section, responsive, and motion layers load here.
 export const metadata: Metadata = {
   title: "Jamal's Finance - Clear Personal Finance Tracking",
   description:
