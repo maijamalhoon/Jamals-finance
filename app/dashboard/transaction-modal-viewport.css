@@ -1,16 +1,21 @@
-/* The transaction form must keep its complete natural height whenever the
-   viewport can contain it. Using 100svh as a hard max-height caused Android
-   Chrome (especially desktop-mode scaling) to shrink the modal body behind the
-   fixed footer. Pin both vertical edges, let auto margins center the natural
-   box, and remove the vertical translate so browser chrome cannot push half of
-   the form below the visible area. */
+/* Keep the income and expense form fully inside the usable viewport.
+   Do not rely on left: 50% plus translateX(-50%): Android Chrome and
+   desktop-mode scaling can resolve that combination against a different
+   containing block and push half of the modal off-screen. Explicit horizontal
+   edges plus auto margins keep the form centered at every viewport width. */
 [data-slot="dialog-content"].finance-modal-content:has(#transaction-amount) {
   top: max(0.375rem, env(safe-area-inset-top)) !important;
+  right: max(0.375rem, env(safe-area-inset-right)) !important;
   bottom: max(0.375rem, env(safe-area-inset-bottom)) !important;
+  left: max(0.375rem, env(safe-area-inset-left)) !important;
+  width: min(
+    calc(100vw - 0.75rem - env(safe-area-inset-left) - env(safe-area-inset-right)),
+    var(--finance-modal-max-width, 32rem)
+  ) !important;
   height: max-content !important;
   max-height: none !important;
-  margin-block: auto !important;
-  transform: translateX(-50%) !important;
+  margin: auto !important;
+  transform: none !important;
 }
 
 /* Only genuinely short landscape-style viewports need a hard cap. The form's
