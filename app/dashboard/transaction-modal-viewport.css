@@ -1,0 +1,8 @@
+/* Keep the income and expense form centered in the actually visible viewport.
+   Mobile browser chrome can make percentage-based fixed positioning use a
+   taller layout viewport, which leaves too much empty space above the form. */
+@supports (height: 100dvh) {
+  [data-slot="dialog-content"].finance-modal-content:has(#transaction-amount) {
+    top: 50dvh !important;
+  }
+}
