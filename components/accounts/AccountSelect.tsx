@@ -15,7 +15,7 @@ import { useScrollSelectBehavior } from "@/components/ui/use-scroll-select-behav
 import scrollSelectStyles from "@/components/ui/ScrollSelect.module.css";
 import { cn } from "@/lib/utils";
 import { useCurrency } from "@/components/currency/CurrencyProvider";
-import { AccountBrandMark, detectAccountBrand } from "@/lib/account-brand";
+import AccountIdentityIcon from "@/components/accounts/AccountIdentityIcon";
 
 export interface AccountOption {
   id: string;
@@ -57,15 +57,14 @@ function AccountSummary({
   if (!account) {
     return (
       <span className="flex min-w-0 flex-1 items-center gap-3 text-text-secondary">
-        <span className="finance-icon-container" data-size="sm">
-          <WalletCards size={15} />
+        <span className="inline-grid size-7 shrink-0 place-items-center">
+          <WalletCards size={16} strokeWidth={1.8} aria-hidden="true" />
         </span>
         <span className="truncate">{placeholder}</span>
       </span>
     );
   }
 
-  const brand = detectAccountBrand(account.name, account.icon_key);
   const balance =
     account.balance === null || account.balance === undefined
       ? null
@@ -73,13 +72,12 @@ function AccountSummary({
 
   return (
     <span className="flex min-w-0 flex-1 items-center gap-3 text-left">
-      {brand ? (
-        <AccountBrandMark brand={brand} size="sm" />
-      ) : (
-        <span className="finance-icon-container" data-size="sm">
-          <WalletCards size={15} />
-        </span>
-      )}
+      <AccountIdentityIcon
+        name={account.name}
+        iconKey={account.icon_key}
+        type={account.type}
+        size="sm"
+      />
       <span className="min-w-0 flex-1">
         <span className="block truncate text-sm font-semibold text-text-primary">
           {account.name}
@@ -206,7 +204,6 @@ export default function AccountSelect({
           </div>
         ) : (
           accounts.map((account) => {
-            const brand = detectAccountBrand(account.name, account.icon_key);
             const balance =
               account.balance === null || account.balance === undefined
                 ? null
@@ -223,13 +220,12 @@ export default function AccountSelect({
                 )}
               >
                 <span className="flex min-w-0 flex-1 items-center gap-3">
-                  {brand ? (
-                    <AccountBrandMark brand={brand} size="sm" />
-                  ) : (
-                    <span className="finance-icon-container" data-size="sm">
-                      <WalletCards size={15} />
-                    </span>
-                  )}
+                  <AccountIdentityIcon
+                    name={account.name}
+                    iconKey={account.icon_key}
+                    type={account.type}
+                    size="sm"
+                  />
                   <span className="min-w-0 flex-1">
                     <span className="block truncate text-sm font-semibold">
                       {account.name}
