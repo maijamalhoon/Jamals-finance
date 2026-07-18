@@ -1,4 +1,3 @@
-import type { CSSProperties } from "react";
 import {
   BadgeDollarSign,
   Baby,
@@ -306,27 +305,28 @@ export function CategoryVisualIcon({
         iconKey: isValidCategoryIconKey(iconKey) ? iconKey : "tags",
       };
   const sizes = {
-    xs: { frame: "size-7 rounded-[10px]", icon: 13 },
-    sm: { frame: "size-9 rounded-xl", icon: 16 },
-    md: { frame: "size-11 rounded-[15px]", icon: 19 },
-    lg: { frame: "size-12 rounded-2xl", icon: 21 },
+    xs: { frame: "size-7", icon: 24 },
+    sm: { frame: "size-9", icon: 32 },
+    md: { frame: "size-11", icon: 40 },
+    lg: { frame: "size-12", icon: 44 },
   } as const;
   const selected = sizes[size];
   const accessibleLabel = label ?? category?.name ?? "Category";
-  const style = {
-    backgroundColor: visual.color,
-    boxShadow:
-      "inset 0 1px 0 color-mix(in srgb, white 24%, transparent), 0 7px 18px color-mix(in srgb, var(--text-primary) 8%, transparent)",
-  } satisfies CSSProperties;
   const Icon = getCategoryIconComponent(visual.iconKey);
 
   return (
     <span
-      className={`grid shrink-0 place-items-center text-white ${selected.frame} ${className}`}
-      style={style}
+      className={`grid shrink-0 place-items-center ${selected.frame} ${className}`}
+      style={{ color: visual.color }}
       aria-label={`${accessibleLabel} category icon`}
     >
-      <Icon size={selected.icon} strokeWidth={2.2} aria-hidden="true" />
+      <Icon
+        size={selected.icon}
+        strokeWidth={1.8}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden="true"
+      />
     </span>
   );
 }
