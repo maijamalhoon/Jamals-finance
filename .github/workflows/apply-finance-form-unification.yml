@@ -1,0 +1,78 @@
+name: Apply finance form unification
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/apply-finance-form-unification.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    name: Apply and verify forms
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      NEXT_TELEMETRY_DISABLED: "1"
+      NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: ci-build-placeholder
+      NEXT_PUBLIC_ENABLE_GOOGLE_AUTH: "false"
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Correct staged patch assertion
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          path = Path("scripts/apply_finance_forms_patch.py")
+          content = path.read_text(encoding="utf-8")
+          old = '''replace_once(
+              "components/dashboard/TransactionModal.module.css",
+              '  font-weight: 750;\\n',
+              '  font-weight: 700;\\n',
+          )
+          '''
+          new = '''replace_once(
+              "components/dashboard/TransactionModal.module.css",
+              '.title {\\n  color: var(--text-primary);\\n  font-size: clamp(0.95rem, 1.8vw, 1.05rem);\\n  font-weight: 750;\\n  line-height: 1.25rem;\\n  letter-spacing: -0.018em;\\n}\\n',
+              '.title {\\n  color: var(--text-primary);\\n  font-size: clamp(0.95rem, 1.8vw, 1.05rem);\\n  font-weight: 700;\\n  line-height: 1.25rem;\\n  letter-spacing: -0.018em;\\n}\\n',
+          )
+          '''
+          if content.count(old) != 1:
+              raise SystemExit("Could not safely correct staged TransactionModal title assertion")
+          path.write_text(content.replace(old, new, 1), encoding="utf-8")
+          PY
+
+      - name: Apply finance form patch
+        run: python scripts/apply_finance_forms_patch.py
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run static analysis and tests
+        run: npm run check
+
+      - name: Build production application
+        run: npm run build
+
+      - name: Commit verified changes
+        run: |
+          rm -f scripts/apply_finance_forms_patch.py
+          rm -f .github/workflows/apply-finance-form-unification.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git diff --cached --quiet && exit 0
+          git commit -m "feat(forms): unify finance modals and account selectors"
+          git push origin HEAD:main
