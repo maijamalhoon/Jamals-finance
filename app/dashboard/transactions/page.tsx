@@ -106,9 +106,10 @@ export default async function TransactionsPage({
         type === "expense" ||
         type === "refund" ||
         type === "investment" ||
-        type === "transfer" ?
-          type
-        : undefined,
+        type === "goal" ||
+        type === "transfer"
+          ? type
+          : undefined,
       from,
       to,
       category,
@@ -156,9 +157,8 @@ export default async function TransactionsPage({
   const transactions = ((rawTransactions ?? []) as TransactionListRow[])
     .filter(Boolean)
     .filter((transaction) => {
-      const categoryName =
-        transaction?.categories?.parent?.name ?
-          `${transaction.categories.parent.name} ${transaction.categories?.name ?? ""}`
+      const categoryName = transaction?.categories?.parent?.name
+        ? `${transaction.categories.parent.name} ${transaction.categories?.name ?? ""}`
         : (transaction?.categories?.name ?? "");
 
       const accountName = transaction?.accounts?.name ?? "";
@@ -182,6 +182,7 @@ export default async function TransactionsPage({
           type === "expense" ||
           type === "refund" ||
           type === "investment" ||
+          type === "goal" ||
           type === "transfer") &&
         String(transaction?.type) !== type
       ) {
@@ -295,30 +296,21 @@ export default async function TransactionsPage({
       </Suspense>
 
       <div className="finance-panel min-w-0 overflow-hidden p-3 sm:p-5">
-        <div className="desktop-list-header mb-2">
-          <div className="w-10 flex-shrink-0" />
-          <p className="flex-1">Description</p>
-          <p className="w-32">Category</p>
-          <p className="w-24 text-center">Type</p>
-          <p className="w-32 text-right">Amount</p>
-          <p className="w-24 text-right">Date</p>
-          <div className="w-24 flex-shrink-0" />
-        </div>
-
-        {transactions.length === 0 ?
+        {transactions.length === 0 ? (
           <EmptyState
             icon={ArrowLeftRight}
             title="No transactions found"
             description="Try changing filters or search."
           />
-        : <>
+        ) : (
+          <>
             <div className="space-y-1">
               {visibleTransactions.map((tx) => (
                 <TransactionRow key={tx.id} tx={tx} />
               ))}
             </div>
 
-            {hasMore ?
+            {hasMore ? (
               <div className="mt-5 flex flex-col items-center justify-center gap-2 border-t border-border pt-5">
                 <Link
                   href={`/dashboard/transactions?${nextParams.toString()}`}
@@ -338,13 +330,13 @@ export default async function TransactionsPage({
                   {transactions.length - visibleTransactions.length} remaining
                 </p>
               </div>
-            : transactions.length > MAX_LIMIT ?
+            ) : transactions.length > MAX_LIMIT ? (
               <p className="mt-5 border-t border-border pt-5 text-center text-xs text-text-secondary">
                 Showing first {MAX_LIMIT}. Use filters to narrow results.
               </p>
-            : null}
+            ) : null}
           </>
-        }
+        )}
       </div>
     </div>
   );
