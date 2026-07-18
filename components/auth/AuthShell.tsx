@@ -4,6 +4,7 @@ import "@/app/auth-responsive-final.css";
 import "@/app/auth-premium-redesign.css";
 import "@/app/landing-math-symbols.css";
 import "@/app/auth-form-composition.css";
+import "@/app/auth-spacing-guard.css";
 
 import Link from "next/link";
 import {
