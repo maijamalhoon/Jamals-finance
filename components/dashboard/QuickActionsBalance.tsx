@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 
 import { useCurrency } from "@/components/currency/CurrencyProvider";
+import CountedAmount from "@/components/motion/CountedAmount";
 import type { DashboardBalanceSummary } from "@/lib/dashboard-financial-semantics";
 
 const TransferModal = dynamic(() => import("@/components/accounts/TransferModal"), {
@@ -127,7 +128,15 @@ export default function QuickActionsBalance({
               data-balance-size={balanceSize}
               title={displayTotalBalance}
             >
-              {displayTotalBalance}
+              {summary.value === null ? (
+                displayTotalBalance
+              ) : (
+                <CountedAmount
+                  amount={displayTotalBalance}
+                  duration={1.65}
+                  animateOnCompact
+                />
+              )}
             </h2>
             <p className="dashboard-balance-description">{summary.description}</p>
           </div>
@@ -155,7 +164,7 @@ export default function QuickActionsBalance({
                   >
                     <Icon
                       aria-hidden="true"
-                      className="h-4 w-4"
+                      className="dashboard-quick-action-glyph"
                       strokeWidth={2.25}
                     />
                   </span>
