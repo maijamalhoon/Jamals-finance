@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { type CSSProperties, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
@@ -17,11 +17,13 @@ import {
   financeCancelButtonClass,
   financeErrorClass,
   financeModalContentClass,
+  financePrimaryButtonClass,
 } from "@/components/ui/finance-modal";
 import { PAYABLE_QUICK_REASONS } from "@/lib/finance-options";
-import { HandCoins } from "lucide-react";
 import { BASE_CURRENCY } from "@/lib/currency";
 import { getUserMutationError } from "@/lib/user-errors";
+
+const PAYABLE_ACTION_COLOR = "#9B6A13";
 
 export interface ExistingPayable {
   id: string;
@@ -119,13 +121,15 @@ export default function PayableModal({ open, onClose, payable }: Props) {
 
   return (
     <Dialog open={open} onOpenChange={(nextOpen) => !nextOpen && onClose()}>
-      <DialogContent className={`${financeModalContentClass} sm:[--finance-modal-max-width:32rem]`}>
-        <FinanceModalHeader
-          title={isEditing ? "Edit Payable" : "Add Payable"}
-          description="Save payable person, amount, reason, due date, and notes."
-          icon={HandCoins}
-          tone="warning"
-        />
+      <DialogContent
+        className={`${financeModalContentClass} sm:[--finance-modal-max-width:32rem]`}
+        style={
+          {
+            "--finance-action": PAYABLE_ACTION_COLOR,
+          } as CSSProperties
+        }
+      >
+        <FinanceModalHeader title={isEditing ? "Edit Payable" : "Add Payable"} />
 
         <FinanceModalBody>
           <div className="grid gap-3 sm:grid-cols-2">
@@ -211,7 +215,7 @@ export default function PayableModal({ open, onClose, payable }: Props) {
           )}
         </FinanceModalBody>
 
-        <FinanceModalFooter>
+        <FinanceModalFooter className="grid-cols-[0.78fr_1.22fr]">
           <Button
             type="button"
             onClick={onClose}
@@ -226,7 +230,8 @@ export default function PayableModal({ open, onClose, payable }: Props) {
             disabled={loading}
             loading={loading}
             loadingLabel="Saving payable…"
-            className="primary-action w-full py-3"
+            className={financePrimaryButtonClass}
+            style={{ background: PAYABLE_ACTION_COLOR }}
           >
             {isEditing ? "Update Payable" : "Save Payable"}
           </Button>
