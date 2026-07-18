@@ -4,7 +4,7 @@ const dashboardOverviewStyles = `
   @media (min-width: 1536px) {
     .dashboard-overview-layout {
       display: grid;
-      grid-template-columns: minmax(0, 7fr) minmax(300px, 3fr);
+      grid-template-columns: repeat(20, minmax(0, 1fr));
       align-items: stretch;
       gap: 1.5rem;
     }
@@ -30,25 +30,31 @@ const dashboardOverviewStyles = `
       height: 100%;
     }
 
-    /* Large-screen dashboard order requested in the design reference. */
-    .dashboard-overview-layout > div.grid:last-child > :nth-child(1) {
-      order: 10;
-      grid-column: 1;
-    }
-
-    .dashboard-overview-layout > div.grid:last-child > :nth-child(2) {
-      order: 11;
-      grid-column: 2;
-    }
-
+    /* Large-screen primary chart row: 40% / 35% / 25%. */
     .dashboard-overview-layout > div.grid:nth-last-child(2) > :nth-child(3) {
-      order: 20;
-      grid-column: 1;
+      order: 10;
+      grid-column: 1 / span 8;
+    }
+
+    .dashboard-overview-layout > div.grid:nth-last-child(2) > :nth-child(2) {
+      order: 11;
+      grid-column: 9 / span 7;
     }
 
     .dashboard-overview-layout > div.grid:nth-last-child(2) > :nth-child(1) {
+      order: 12;
+      grid-column: 16 / -1;
+    }
+
+    /* Keep the requested 70% / 30% supporting row. */
+    .dashboard-overview-layout > div.grid:last-child > :nth-child(1) {
+      order: 20;
+      grid-column: 1 / span 14;
+    }
+
+    .dashboard-overview-layout > div.grid:last-child > :nth-child(2) {
       order: 21;
-      grid-column: 2;
+      grid-column: 15 / -1;
     }
 
     .dashboard-overview-layout > div.grid:last-child > :nth-child(3) {
@@ -56,10 +62,34 @@ const dashboardOverviewStyles = `
       grid-column: 1 / -1;
     }
 
-    /* The portfolio card is retained on tablet and mobile, while the exact
-       five-card structure is used on large viewports. */
-    .dashboard-overview-layout > div.grid:nth-last-child(2) > :nth-child(2) {
-      display: none;
+    /* Let the existing portfolio design adapt to its 35% card width without
+       changing its data, chart, holdings, animation, or interaction logic. */
+    .dashboard-overview-layout
+      > div.grid:nth-last-child(2)
+      > :nth-child(2)
+      > section {
+      container-type: inline-size;
+      container-name: dashboard-portfolio-card;
+    }
+
+    .dashboard-overview-layout
+      > div.grid:nth-last-child(2)
+      > :nth-child(2)
+      > section
+      > .mt-5.grid {
+      grid-template-columns: minmax(0, 1fr);
+      align-items: start;
+      gap: 1rem;
+    }
+
+    .dashboard-overview-layout
+      > div.grid:nth-last-child(2)
+      > :nth-child(2)
+      > section
+      > .mt-5.grid
+      > div:first-child
+      > div {
+      max-width: 190px;
     }
 
     /* Keep the 70% spending card compact and aligned with the goals card. */
@@ -81,6 +111,18 @@ const dashboardOverviewStyles = `
       > div:first-child
       > div {
       max-width: 260px;
+    }
+  }
+
+  @container dashboard-portfolio-card (min-width: 560px) {
+    .dashboard-overview-layout
+      > div.grid:nth-last-child(2)
+      > :nth-child(2)
+      > section
+      > .mt-5.grid {
+      grid-template-columns: minmax(180px, 0.82fr) minmax(0, 1.18fr);
+      align-items: center;
+      gap: 1rem;
     }
   }
 `;
