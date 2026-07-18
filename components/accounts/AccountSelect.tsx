@@ -15,12 +15,14 @@ import { useScrollSelectBehavior } from "@/components/ui/use-scroll-select-behav
 import scrollSelectStyles from "@/components/ui/ScrollSelect.module.css";
 import { cn } from "@/lib/utils";
 import { useCurrency } from "@/components/currency/CurrencyProvider";
+import { AccountBrandMark, detectAccountBrand } from "@/lib/account-brand";
 
 export interface AccountOption {
   id: string;
   name: string;
   type: string;
   balance?: number | string | null;
+  icon_key?: string | null;
 }
 
 interface AccountSelectProps {
@@ -63,16 +65,21 @@ function AccountSummary({
     );
   }
 
+  const brand = detectAccountBrand(account.name, account.icon_key);
   const balance =
-    account.balance === null || account.balance === undefined ?
-      null
-    : formatCurrency(Number(account.balance || 0));
+    account.balance === null || account.balance === undefined
+      ? null
+      : formatCurrency(Number(account.balance || 0));
 
   return (
     <span className="flex min-w-0 flex-1 items-center gap-3 text-left">
-      <span className="finance-icon-container" data-size="sm">
-        <WalletCards size={15} />
-      </span>
+      {brand ? (
+        <AccountBrandMark brand={brand} size="sm" />
+      ) : (
+        <span className="finance-icon-container" data-size="sm">
+          <WalletCards size={15} />
+        </span>
+      )}
       <span className="min-w-0 flex-1">
         <span className="block truncate text-sm font-semibold text-text-primary">
           {account.name}
@@ -81,11 +88,11 @@ function AccountSummary({
           {formatType(account.type)}
         </span>
       </span>
-      {balance && (
+      {balance ? (
         <span className="ml-2 hidden max-w-28 shrink-0 truncate text-right text-xs font-semibold text-text-primary min-[360px]:block">
           {balance}
         </span>
-      )}
+      ) : null}
     </span>
   );
 }
@@ -152,9 +159,7 @@ export default function AccountSelect({
     <Select
       value={value}
       onValueChange={(nextValue) => {
-        if (typeof nextValue === "string") {
-          onValueChange(nextValue);
-        }
+        if (typeof nextValue === "string") onValueChange(nextValue);
       }}
       disabled={unavailable}
       open={scrollPicker ? open : undefined}
@@ -189,9 +194,7 @@ export default function AccountSelect({
         onTouchStart={
           scrollPicker ? scrollBehavior.onContentTouchStart : undefined
         }
-        onTouchMove={
-          scrollPicker ? scrollBehavior.onContentTouchMove : undefined
-        }
+        onTouchMove={scrollPicker ? scrollBehavior.onContentTouchMove : undefined}
         className={cn(
           "z-[90] max-h-[min(18rem,var(--available-height))] max-w-[calc(100vw_-_1.5rem)] rounded-[18px] p-1.5",
           scrollPicker && scrollSelectStyles.content,
@@ -203,10 +206,11 @@ export default function AccountSelect({
           </div>
         ) : (
           accounts.map((account) => {
+            const brand = detectAccountBrand(account.name, account.icon_key);
             const balance =
-              account.balance === null || account.balance === undefined ?
-                null
-              : formatCurrency(Number(account.balance || 0));
+              account.balance === null || account.balance === undefined
+                ? null
+                : formatCurrency(Number(account.balance || 0));
 
             return (
               <SelectItem
@@ -219,9 +223,13 @@ export default function AccountSelect({
                 )}
               >
                 <span className="flex min-w-0 flex-1 items-center gap-3">
-                  <span className="finance-icon-container" data-size="sm">
-                    <WalletCards size={15} />
-                  </span>
+                  {brand ? (
+                    <AccountBrandMark brand={brand} size="sm" />
+                  ) : (
+                    <span className="finance-icon-container" data-size="sm">
+                      <WalletCards size={15} />
+                    </span>
+                  )}
                   <span className="min-w-0 flex-1">
                     <span className="block truncate text-sm font-semibold">
                       {account.name}
@@ -230,11 +238,11 @@ export default function AccountSelect({
                       {formatType(account.type)}
                     </span>
                   </span>
-                  {balance && (
+                  {balance ? (
                     <span className="ml-auto hidden max-w-28 shrink-0 truncate text-right text-xs font-semibold text-text-primary min-[360px]:block">
                       {balance}
                     </span>
-                  )}
+                  ) : null}
                 </span>
               </SelectItem>
             );
