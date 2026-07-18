@@ -10,12 +10,12 @@
     -apple-system,
     BlinkMacSystemFont,
     "Segoe UI",
-    sans-serif;
-  font-weight: 450;
+    sans-serif !important;
+  font-weight: 450 !important;
 }
 
 .jf-auth-root :where(input, textarea, select, button) {
-  font-family: inherit;
+  font-family: inherit !important;
 }
 
 /* Headings: Geist Sans, 650–700. */
@@ -26,7 +26,7 @@
     .auth-context-title,
     .auth-showcase-title strong
   ) {
-  font-weight: 675;
+  font-weight: 675 !important;
 }
 
 /* Body copy: Geist Sans, 400–500. */
@@ -41,11 +41,11 @@
     .auth-feedback,
     .auth-trust-item > span > span
   ) {
-  font-weight: 450;
+  font-weight: 450 !important;
 }
 
 .jf-auth-root :where(.auth-field-error, .auth-feedback) {
-  font-weight: 500;
+  font-weight: 500 !important;
 }
 
 /* Buttons and labels: Geist Sans, 550–650. */
@@ -63,7 +63,7 @@
     .jf-auth-brand,
     .jf-auth-home-link
   ) {
-  font-weight: 600;
+  font-weight: 600 !important;
 }
 
 /* Numeric and monetary values use Geist Sans tabular figures. */
@@ -84,15 +84,15 @@
     var(--font-geist-sans),
     "Geist Sans",
     system-ui,
-    sans-serif;
-  font-variant-numeric: tabular-nums;
-  font-feature-settings: "tnum" 1;
+    sans-serif !important;
+  font-variant-numeric: tabular-nums !important;
+  font-feature-settings: "tnum" 1 !important;
 }
 
 /* Lucide-only rounded monoline outline treatment; dimensions remain untouched. */
 .jf-auth-root svg.lucide {
-  fill: none;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  stroke-width: 1.8;
+  fill: none !important;
+  stroke-linecap: round !important;
+  stroke-linejoin: round !important;
+  stroke-width: 1.8 !important;
 }
