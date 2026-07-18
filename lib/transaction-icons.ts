@@ -1,8 +1,7 @@
 import {
   ArrowLeftRight,
+  BriefcaseBusiness,
   Car,
-  ChartNoAxesCombined,
-  Coffee,
   Landmark,
   ReceiptText,
   RotateCcw,
@@ -10,7 +9,7 @@ import {
   Target,
   TrendingDown,
   TrendingUp,
-  WalletCards,
+  Utensils,
   type LucideIcon,
 } from "lucide-react";
 import { FEATURE_COLOR_CSS } from "@/lib/theme-colors";
@@ -48,7 +47,7 @@ const MATCHERS: {
   },
   {
     label: "Food",
-    icon: Coffee,
+    icon: Utensils,
     accent: FEATURE_COLOR_CSS.expense,
     keywords: ["food", "dining", "drink", "drinks", "lunch", "dinner", "cafe"],
   },
@@ -114,7 +113,7 @@ export function getTransactionIconMeta({
   if (type === "investment") {
     return {
       label: "Investment contribution",
-      icon: ChartNoAxesCombined,
+      icon: BriefcaseBusiness,
       accent: FEATURE_COLOR_CSS.investment,
     };
   }
@@ -137,7 +136,7 @@ export function getTransactionIconMeta({
 
   return {
     label: "Transaction",
-    icon: WalletCards,
+    icon: ReceiptText,
     accent: FEATURE_COLOR_CSS.muted,
   };
 }
