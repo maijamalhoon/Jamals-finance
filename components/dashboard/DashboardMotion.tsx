@@ -21,8 +21,6 @@ const dashboardOverviewStyles = `
 
     .dashboard-overview-layout > div.grid:nth-last-child(-n+2) > * {
       min-width: 0;
-      height: 470px !important;
-      min-height: 470px !important;
       margin-top: 0 !important;
       align-self: stretch;
     }
@@ -30,6 +28,22 @@ const dashboardOverviewStyles = `
     .dashboard-overview-layout > div.grid:nth-last-child(-n+2) > * > * {
       height: 100% !important;
       min-height: 0;
+    }
+
+    /* Keep the content-heavy primary cards tall enough for charts and holdings. */
+    .dashboard-overview-layout > div.grid:nth-last-child(2) > :nth-child(2),
+    .dashboard-overview-layout > div.grid:nth-last-child(2) > :nth-child(3) {
+      height: 470px !important;
+      min-height: 470px !important;
+    }
+
+    /* Let the supporting row size itself from real content instead of forcing 470px. */
+    .dashboard-overview-layout > div.grid:nth-last-child(2) > :nth-child(1),
+    .dashboard-overview-layout > div.grid:last-child > :nth-child(1),
+    .dashboard-overview-layout > div.grid:last-child > :nth-child(2),
+    .dashboard-overview-layout > div.grid:last-child > :nth-child(3) {
+      height: auto !important;
+      min-height: 0 !important;
     }
 
     /* Primary row: Income vs Expenses 45%, Portfolio Overview 55%. */
@@ -59,7 +73,7 @@ const dashboardOverviewStyles = `
       grid-column: 16 / -1;
     }
 
-    /* Keep recent transactions full width while matching the feature-card height. */
+    /* Keep recent transactions full width and content-sized. */
     .dashboard-overview-layout > div.grid:last-child > :nth-child(3) {
       order: 30;
       grid-column: 1 / -1;
