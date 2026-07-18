@@ -140,6 +140,26 @@
   font-weight: 750 !important;
 }
 
+.submit:global(.success-action) {
+  border-color: color-mix(in srgb, var(--income), transparent 22%) !important;
+  background-color: var(--income) !important;
+  color: var(--status-foreground) !important;
+}
+
+.submit:global(.danger-action) {
+  border-color: color-mix(in srgb, var(--expense), transparent 22%) !important;
+  background-color: var(--expense) !important;
+  color: var(--status-foreground) !important;
+}
+
+.submit:global(.success-action):hover {
+  background-color: color-mix(in srgb, var(--income), white 8%) !important;
+}
+
+.submit:global(.danger-action):hover {
+  background-color: color-mix(in srgb, var(--expense), white 8%) !important;
+}
+
 @media (min-width: 640px) {
   .dialog {
     --finance-modal-max-width: 34rem;
