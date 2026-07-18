@@ -110,6 +110,7 @@ export default function AccountCard({ account }: AccountCardProps) {
             iconKey={account.icon_key}
             type={account.type}
             size="lg"
+            forceLucide
           />
 
           <div className="flex gap-1 opacity-100 transition-opacity sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100">
