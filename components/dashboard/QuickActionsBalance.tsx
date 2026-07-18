@@ -111,25 +111,10 @@ export default function QuickActionsBalance({
         aria-label="Total net balance and quick actions"
         className="dashboard-balance-hero"
       >
-        <div
-          aria-hidden="true"
-          className="dashboard-balance-accent"
-        />
-        <div
-          aria-hidden="true"
-          className="dashboard-balance-shape dashboard-balance-shape-one"
-        />
-        <div
-          aria-hidden="true"
-          className="dashboard-balance-shape dashboard-balance-shape-two"
-        />
-
-        <div className="relative flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
-          <div className="min-w-0 text-left lg:max-w-[58%]">
-            <div className="mb-2 flex flex-wrap items-center gap-2">
-              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-text-secondary">
-                {summary.label}
-              </p>
+        <div className="dashboard-balance-layout">
+          <div className="dashboard-balance-copy">
+            <div className="dashboard-balance-heading-row">
+              <p className="dashboard-balance-label">{summary.label}</p>
               {summary.status !== "available" ? (
                 <span className="dashboard-balance-status" data-status={summary.status}>
                   {summary.status === "partial" ? "Partial" : "Unavailable"}
@@ -144,15 +129,13 @@ export default function QuickActionsBalance({
             >
               {displayTotalBalance}
             </h2>
-            <p className="mt-3 max-w-2xl text-xs leading-5 text-text-secondary sm:text-sm sm:leading-6">
-              {summary.description}
-            </p>
+            <p className="dashboard-balance-description">{summary.description}</p>
           </div>
 
           <div
             role="group"
             aria-label="Quick actions"
-            className="grid w-full grid-cols-2 gap-2 sm:grid-cols-4 lg:w-auto lg:min-w-[380px]"
+            className="dashboard-balance-actions"
           >
             {actions.map((action) => {
               const Icon = action.icon;
@@ -168,18 +151,16 @@ export default function QuickActionsBalance({
                 >
                   <span
                     data-tone={action.tone}
-                    className="finance-feature-accent grid h-10 w-10 shrink-0 place-items-center rounded-[14px] border shadow-[var(--shadow-xs)] transition-[background-color,border-color,transform] duration-200 group-hover:-translate-y-0.5 group-active:translate-y-0"
+                    className="finance-feature-accent dashboard-quick-action-icon"
                   >
                     <Icon
                       aria-hidden="true"
-                      className="h-5 w-5"
-                      strokeWidth={2.2}
+                      className="h-4 w-4"
+                      strokeWidth={2.25}
                     />
                   </span>
 
-                  <span className="max-w-full truncate text-xs font-bold text-text-primary">
-                    {action.label}
-                  </span>
+                  <span className="dashboard-quick-action-label">{action.label}</span>
                 </button>
               );
             })}
