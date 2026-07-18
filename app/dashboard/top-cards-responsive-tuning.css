@@ -125,21 +125,21 @@
   }
 
   .dashboard-metric-card {
-    min-height: 9.35rem !important;
-    padding: 0.8rem !important;
+    min-height: 8.35rem !important;
+    padding: 0.72rem !important;
   }
 
   .dashboard-metric-amount {
-    margin-top: 0.42rem !important;
-    font-size: clamp(1rem, 11.8cqi, 1.42rem) !important;
+    margin-top: 0.5rem !important;
+    font-size: clamp(1.04rem, 10.6cqi, 1.36rem) !important;
   }
 
   .dashboard-metric-amount[data-amount-size="long"] {
-    font-size: clamp(0.76rem, 8.8cqi, 1.08rem) !important;
+    font-size: clamp(0.78rem, 8.15cqi, 1.02rem) !important;
   }
 
   .dashboard-metric-amount[data-amount-size="xlong"] {
-    font-size: clamp(0.66rem, 7.3cqi, 0.9rem) !important;
+    font-size: clamp(0.67rem, 6.9cqi, 0.86rem) !important;
   }
 
   .dashboard-pulse-tile {
@@ -148,22 +148,41 @@
   }
 }
 
-@media (max-width: 389px) {
+@media (min-width: 480px) and (max-width: 639px) {
   .dashboard-metric-card {
-    min-height: 9rem !important;
-    padding: 0.72rem !important;
+    min-height: 9.4rem !important;
+    padding: 0.82rem !important;
   }
 
   .dashboard-metric-amount {
-    font-size: clamp(0.96rem, 11.5cqi, 1.28rem) !important;
+    font-size: clamp(1.08rem, 8.8cqi, 1.42rem) !important;
   }
 
   .dashboard-metric-amount[data-amount-size="long"] {
-    font-size: clamp(0.72rem, 8.35cqi, 0.98rem) !important;
+    font-size: clamp(0.84rem, 7.15cqi, 1.1rem) !important;
   }
 
   .dashboard-metric-amount[data-amount-size="xlong"] {
-    font-size: clamp(0.62rem, 6.95cqi, 0.82rem) !important;
+    font-size: clamp(0.72rem, 6cqi, 0.94rem) !important;
+  }
+}
+
+@media (max-width: 389px) {
+  .dashboard-metric-card {
+    min-height: 8.05rem !important;
+    padding: 0.66rem !important;
+  }
+
+  .dashboard-metric-amount {
+    font-size: clamp(0.98rem, 10.1cqi, 1.26rem) !important;
+  }
+
+  .dashboard-metric-amount[data-amount-size="long"] {
+    font-size: clamp(0.74rem, 7.85cqi, 0.95rem) !important;
+  }
+
+  .dashboard-metric-amount[data-amount-size="xlong"] {
+    font-size: clamp(0.64rem, 6.65cqi, 0.8rem) !important;
   }
 
   .dashboard-pulse-tile {
