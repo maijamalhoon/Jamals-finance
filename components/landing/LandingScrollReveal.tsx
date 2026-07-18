@@ -2,20 +2,6 @@
 
 import { useEffect } from "react";
 
-const REVEAL_SELECTORS = [
-  'section[aria-label="Product values"] > div > div',
-  "#capabilities > div:first-child",
-  "#capabilities article",
-  "#workflow > div > div:first-child",
-  "#workflow li",
-  "#preview > div:first-child",
-  "#preview > figure",
-  "#privacy > div > div:first-child",
-  "#privacy .finance-surface",
-  ".jf-node4-cta",
-  "footer > div > *",
-] as const;
-
 export default function LandingScrollReveal() {
   useEffect(() => {
     const root = document.querySelector<HTMLElement>(".jf-node4-landing");
@@ -24,20 +10,16 @@ export default function LandingScrollReveal() {
     const prefersReducedMotion = window.matchMedia(
       "(prefers-reduced-motion: reduce)",
     ).matches;
-    const revealItems: HTMLElement[] = [];
-    const seen = new Set<HTMLElement>();
+    const revealItems = Array.from(
+      root.querySelectorAll<HTMLElement>(".jf-reveal"),
+    );
 
-    REVEAL_SELECTORS.forEach((selector) => {
-      root.querySelectorAll<HTMLElement>(selector).forEach((element, index) => {
-        if (seen.has(element)) return;
-        seen.add(element);
-        element.dataset.landingReveal = "";
-        element.style.setProperty(
-          "--landing-reveal-order",
-          String(Math.min(index, 6)),
-        );
-        revealItems.push(element);
-      });
+    revealItems.forEach((element, index) => {
+      element.dataset.landingReveal = "";
+      element.style.setProperty(
+        "--landing-reveal-order",
+        String(Math.min(index % 6, 5)),
+      );
     });
 
     root.classList.add("landing-reveal-ready");
@@ -61,14 +43,14 @@ export default function LandingScrollReveal() {
           });
         },
         {
-          threshold: 0.1,
-          rootMargin: "0px 0px -8% 0px",
+          threshold: 0.08,
+          rootMargin: "0px 0px -7% 0px",
         },
       );
 
       revealItems.forEach((element) => {
         const bounds = element.getBoundingClientRect();
-        if (bounds.top < window.innerHeight * 0.92) {
+        if (bounds.top < window.innerHeight * 0.94) {
           reveal(element);
         } else {
           observer?.observe(element);
