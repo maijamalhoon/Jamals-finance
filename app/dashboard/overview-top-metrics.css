@@ -33,6 +33,27 @@
   -webkit-tap-highlight-color: transparent;
 }
 
+/* Keep the accent inside the card content instead of drawing it on the card edge. */
+[data-dashboard-scroll] .dashboard-overview .dashboard-metric-card,
+[data-dashboard-scroll] .dashboard-overview .dashboard-metric-card:hover,
+[data-dashboard-scroll] .dashboard-overview .dashboard-metric-card:active {
+  box-shadow:
+    var(--surface-highlight),
+    0 8px 24px rgb(23 35 58 / 0.065) !important;
+}
+
+.dark [data-dashboard-scroll] .dashboard-overview .dashboard-metric-card,
+.dark [data-dashboard-scroll] .dashboard-overview .dashboard-metric-card:hover,
+.dark [data-dashboard-scroll] .dashboard-overview .dashboard-metric-card:active {
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.04),
+    0 14px 32px rgb(0 0 0 / 0.16) !important;
+}
+
+[data-dashboard-scroll] .dashboard-overview .dashboard-metric-card::before {
+  display: none !important;
+}
+
 .dashboard-metric-card-content {
   justify-content: flex-start;
 }
@@ -80,21 +101,23 @@
 
 .dashboard-metric-card-footer {
   width: 100%;
-  margin-top: auto !important;
-  padding-top: clamp(0.9rem, 7cqi, 1.3rem) !important;
+  margin-top: clamp(0.72rem, 5.5cqi, 1rem) !important;
+  padding-top: 0 !important;
 }
 
 .dashboard-metric-progress {
+  display: block;
   width: 100% !important;
-  height: clamp(1.3rem, 9cqi, 1.85rem) !important;
-  flex: 1 1 auto !important;
+  height: clamp(1.05rem, 7cqi, 1.4rem) !important;
+  flex: 0 0 auto !important;
+  overflow: visible !important;
 }
 
 .dashboard-metric-progress-path {
-  stroke-dasharray: 1 !important;
-  stroke-dashoffset: 1 !important;
-  stroke-width: 2 !important;
-  opacity: 0.82 !important;
+  stroke-dasharray: 140 !important;
+  stroke-dashoffset: 140 !important;
+  stroke-width: 2.15 !important;
+  opacity: 0.84 !important;
   animation: dashboard-metric-progress-draw 900ms var(--motion-ease) 120ms forwards !important;
 }
 
@@ -161,12 +184,12 @@
   }
 
   .dashboard-balance-actions {
-    width: max-content !important;
-    max-width: 100%;
+    width: 100% !important;
+    max-width: none !important;
     margin-inline: auto !important;
-    grid-template-columns: repeat(4, minmax(3.8rem, 4.35rem)) !important;
+    grid-template-columns: repeat(4, minmax(0, 4.35rem)) !important;
     justify-content: center !important;
-    justify-self: center;
+    gap: clamp(0.4rem, 2.4vw, 0.75rem) !important;
   }
 
   .dashboard-metric-card {
@@ -192,11 +215,12 @@
   }
 
   .dashboard-metric-card-footer {
-    padding-top: clamp(0.68rem, 6cqi, 0.92rem) !important;
+    margin-top: clamp(0.62rem, 5cqi, 0.82rem) !important;
+    padding-top: 0 !important;
   }
 
   .dashboard-metric-progress {
-    height: clamp(1.05rem, 9cqi, 1.3rem) !important;
+    height: clamp(0.95rem, 7cqi, 1.15rem) !important;
   }
 }
 
