@@ -1,11 +1,16 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { TrendingDown, TrendingUp } from "lucide-react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import DatePicker from "@/components/ui/date-picker";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -21,8 +26,6 @@ import {
   FinanceModalBody,
   FinanceModalFooter,
   FinanceFormField,
-  FinanceModalHeader,
-  financeCancelButtonClass,
   financeErrorClass,
   financeModalContentClass,
 } from "@/components/ui/finance-modal";
@@ -34,6 +37,8 @@ import {
   type CategoryVisualSource,
 } from "@/lib/category-visuals";
 import { getUserMutationError } from "@/lib/user-errors";
+
+import styles from "./TransactionModal.module.css";
 
 interface Category extends CategoryVisualSource {
   id: string;
@@ -317,7 +322,7 @@ export default function TransactionModal({
     ? "Saving..."
     : isEditing
       ? `Update ${isIncome ? "Income" : "Expense"}`
-      : `Save ${isIncome ? "Income" : "Expense"}`;
+      : `Add ${isIncome ? "Income" : "Expense"}`;
   const categoryById = useMemo(
     () => new Map(categories.map((category) => [category.id, category])),
     [categories],
@@ -368,24 +373,30 @@ export default function TransactionModal({
     (option) => option.category.id === categoryId,
   );
   const typeLocked = !isEditing;
+  const formTitle = isEditing
+    ? `Edit ${isIncome ? "Income" : "Expense"}`
+    : isIncome
+      ? "Income"
+      : "Expense";
 
   return (
     <Dialog open={open} onOpenChange={(nextOpen) => !nextOpen && onClose()}>
-      <DialogContent className={financeModalContentClass}>
-        <FinanceModalHeader
-          title={
-            isEditing
-              ? "Edit Transaction"
-              : `Add ${isIncome ? "Income" : "Expense"}`
-          }
-          description="Enter amount, account, category, date, and an optional note."
-          icon={isIncome ? TrendingUp : TrendingDown}
-          tone={isIncome ? "success" : "danger"}
-        />
+      <DialogContent
+        className={`${financeModalContentClass} ${styles.dialog}`}
+        style={{
+          "--transaction-accent": isIncome ? "var(--income)" : "var(--expense)",
+        } as React.CSSProperties}
+      >
+        <DialogHeader className={styles.header}>
+          <DialogTitle className={styles.title}>{formTitle}</DialogTitle>
+          <DialogDescription className="sr-only">
+            Enter amount, account, category, date, and an optional note.
+          </DialogDescription>
+        </DialogHeader>
 
-        <FinanceModalBody>
+        <FinanceModalBody className={styles.body}>
           {!typeLocked && (
-            <div className="flex gap-1.5 rounded-[16px] border border-border bg-surface-secondary p-1">
+            <div className={styles.typeSwitch}>
               {(["income", "expense"] as const).map((nextType) => (
                 <Button
                   key={nextType}
@@ -393,7 +404,7 @@ export default function TransactionModal({
                   variant="ghost"
                   onClick={() => setType(nextType)}
                   aria-pressed={type === nextType}
-                  className={`h-auto flex-1 rounded-[12px] py-2 text-sm font-semibold transition-colors ${
+                  className={`${styles.typeButton} ${
                     type === nextType
                       ? nextType === "income"
                         ? "bg-income-soft text-income"
@@ -410,6 +421,7 @@ export default function TransactionModal({
           <FinanceFormField
             label={`Amount (${BASE_CURRENCY})`}
             htmlFor="transaction-amount"
+            className={styles.amountField}
           >
             <Input
               id="transaction-amount"
@@ -420,21 +432,26 @@ export default function TransactionModal({
               value={amount}
               onChange={(event) => setAmount(event.target.value)}
               placeholder="0"
-              className="text-lg font-semibold"
+              className={styles.amountInput}
             />
           </FinanceFormField>
 
-          <FinanceFormField label="Account">
+          <FinanceFormField label="Account" className={styles.accountField}>
             <AccountSelect
               value={accountId}
               onValueChange={setAccountId}
               accounts={accounts}
               loading={loadingOptions}
               placeholder="Select account"
+              className={styles.compactSelect}
             />
           </FinanceFormField>
 
-          <FinanceFormField label="Category" htmlFor="transaction-category">
+          <FinanceFormField
+            label="Category"
+            htmlFor="transaction-category"
+            className={styles.categoryField}
+          >
             <Select
               value={categoryId}
               onValueChange={(nextValue) => {
@@ -446,7 +463,7 @@ export default function TransactionModal({
                 id="transaction-category"
                 aria-label={`${isIncome ? "Income" : "Expense"} category`}
                 aria-describedby="transaction-category-help"
-                className="field-input h-auto min-h-14 w-full gap-3 px-3 py-2 pr-3 text-left data-placeholder:text-text-secondary [&>svg]:ml-1"
+                className={`field-input h-auto w-full gap-3 px-3 pr-3 text-left data-placeholder:text-text-secondary [&>svg]:ml-1 ${styles.categoryTrigger}`}
               >
                 <CategorySummary
                   option={selectedCategoryOption}
@@ -494,13 +511,13 @@ export default function TransactionModal({
                 })}
               </SelectContent>
             </Select>
-            <div id="transaction-category-help" className="mt-2">
+            <div id="transaction-category-help">
               {!loadingOptions && categoryOptions.length === 0 ? (
-                <div className="rounded-[var(--oneui-control-radius)] border border-border bg-surface-secondary px-3 py-2.5 text-sm leading-5 text-text-secondary">
+                <div className={styles.emptyCategory}>
                   <p>No {isIncome ? "income" : "expense"} categories yet.</p>
                   <Link
                     href="/dashboard/settings"
-                    className="finance-focus mt-1 inline-flex rounded-md text-sm font-semibold text-active hover:underline"
+                    className="finance-focus mt-1 inline-flex rounded-md font-semibold text-active hover:underline"
                     onClick={onClose}
                   >
                     Open Settings categories
@@ -515,58 +532,51 @@ export default function TransactionModal({
             </div>
           </FinanceFormField>
 
-          <FinanceFormField label="Date" htmlFor="transaction-date">
+          <FinanceFormField
+            label="Date"
+            htmlFor="transaction-date"
+            className={styles.dateField}
+          >
             <DatePicker
               id="transaction-date"
               value={date}
               onChange={setDate}
               placeholder="DD/MM/YYYY"
               ariaLabel="Transaction date"
+              className={styles.dateControl}
             />
           </FinanceFormField>
 
-          <FinanceFormField label="Note (Optional)" htmlFor="transaction-note">
+          <FinanceFormField
+            label="Note (Optional)"
+            htmlFor="transaction-note"
+            className={styles.noteField}
+          >
             <Textarea
               id="transaction-note"
               value={note}
               onChange={(event) => setNote(event.target.value)}
               placeholder="What was this for?"
-              rows={3}
-              className="min-h-[5.5rem] resize-none"
+              rows={2}
+              className={styles.noteInput}
             />
           </FinanceFormField>
 
-          <FinanceFormField
-            label="Reference (Optional)"
-            htmlFor="transaction-reference"
-          >
-            <Input
-              id="transaction-reference"
-              value={reference}
-              onChange={(event) => setReference(event.target.value)}
-              placeholder="Invoice, order, or confirmation number"
-            />
-          </FinanceFormField>
-
-          {error && <p className={financeErrorClass}>{error}</p>}
+          {error && (
+            <p className={`${financeErrorClass} ${styles.error}`}>{error}</p>
+          )}
         </FinanceModalBody>
 
-        <FinanceModalFooter>
-          <Button
-            type="button"
-            onClick={onClose}
-            disabled={loading}
-            className={financeCancelButtonClass}
-          >
-            Cancel
-          </Button>
+        <FinanceModalFooter className={styles.footer}>
           <Button
             type="button"
             onClick={handleSave}
             disabled={loading || loadingOptions}
             loading={loading}
             loadingLabel="Saving transaction…"
-            className={`py-3 ${isIncome ? "success-action" : "danger-action"}`}
+            className={`${styles.submit} ${
+              isIncome ? "success-action" : "danger-action"
+            }`}
           >
             {btnLabel}
           </Button>
