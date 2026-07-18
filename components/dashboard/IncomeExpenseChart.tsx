@@ -31,6 +31,11 @@ type ChartTooltipPayload = Array<{
 
 type RangeKey = "7d" | "30d";
 
+const INCOME_CHART_COLOR =
+  "color-mix(in srgb, var(--income) 84%, var(--primary) 16%)";
+const EXPENSE_CHART_COLOR =
+  "color-mix(in srgb, var(--expense) 86%, var(--primary) 14%)";
+
 function CustomTooltip({
   active,
   payload,
@@ -52,11 +57,17 @@ function CustomTooltip({
     <div className="min-w-[164px] rounded-[14px] border border-border bg-card p-3 text-xs shadow-[var(--shadow-soft)]">
       <p className="mb-2 font-semibold text-text-primary">{label}</p>
       <div className="space-y-1.5">
-        <p className="flex items-center justify-between gap-5 font-medium text-income">
+        <p
+          className="flex items-center justify-between gap-5 font-medium"
+          style={{ color: INCOME_CHART_COLOR }}
+        >
           <span>Income</span>
           <span className="font-bold tabular-nums">{formatCurrency(income)}</span>
         </p>
-        <p className="flex items-center justify-between gap-5 font-medium text-expense">
+        <p
+          className="flex items-center justify-between gap-5 font-medium"
+          style={{ color: EXPENSE_CHART_COLOR }}
+        >
           <span>Expenses</span>
           <span className="font-bold tabular-nums">{formatCurrency(expenses)}</span>
         </p>
@@ -156,7 +167,10 @@ export default function IncomeExpenseChart({
       <div className="mt-3 grid min-w-0 grid-cols-3 gap-1.5 rounded-[12px] border border-border/70 bg-surface-secondary/55 p-1.5 sm:flex sm:flex-wrap sm:items-center sm:gap-x-5 sm:gap-y-2 sm:rounded-none sm:border-0 sm:bg-transparent sm:p-0 sm:text-xs">
         <span className="flex min-w-0 flex-col rounded-[9px] bg-surface-primary/70 px-2 py-2 sm:inline-flex sm:flex-row sm:items-center sm:gap-2 sm:rounded-none sm:bg-transparent sm:px-0 sm:py-0">
           <span className="inline-flex items-center gap-1.5 text-[9px] font-semibold uppercase tracking-[0.07em] text-text-secondary sm:gap-2 sm:text-xs sm:font-medium sm:normal-case sm:tracking-normal">
-            <span className="size-2 shrink-0 rounded-full bg-income" />
+            <span
+              className="size-2 shrink-0 rounded-full"
+              style={{ backgroundColor: INCOME_CHART_COLOR }}
+            />
             <span>Income</span>
           </span>
           <span className="mt-1 whitespace-nowrap text-[clamp(9px,3vw,12px)] font-bold leading-tight tabular-nums text-text-primary sm:mt-0 sm:text-xs">
@@ -165,7 +179,10 @@ export default function IncomeExpenseChart({
         </span>
         <span className="flex min-w-0 flex-col rounded-[9px] bg-surface-primary/70 px-2 py-2 sm:inline-flex sm:flex-row sm:items-center sm:gap-2 sm:rounded-none sm:bg-transparent sm:px-0 sm:py-0">
           <span className="inline-flex items-center gap-1.5 text-[9px] font-semibold uppercase tracking-[0.07em] text-text-secondary sm:gap-2 sm:text-xs sm:font-medium sm:normal-case sm:tracking-normal">
-            <span className="size-2 shrink-0 rounded-full bg-expense" />
+            <span
+              className="size-2 shrink-0 rounded-full"
+              style={{ backgroundColor: EXPENSE_CHART_COLOR }}
+            />
             <span>Expenses</span>
           </span>
           <span className="mt-1 whitespace-nowrap text-[clamp(9px,3vw,12px)] font-bold leading-tight tabular-nums text-text-primary sm:mt-0 sm:text-xs">
@@ -239,13 +256,13 @@ export default function IncomeExpenseChart({
                     >
                       <stop
                         offset="0%"
-                        stopColor="var(--income)"
-                        stopOpacity={0.3}
+                        stopColor={INCOME_CHART_COLOR}
+                        stopOpacity={0.22}
                       />
                       <stop
                         offset="100%"
-                        stopColor="var(--income)"
-                        stopOpacity={0.025}
+                        stopColor={INCOME_CHART_COLOR}
+                        stopOpacity={0.015}
                       />
                     </linearGradient>
                     <linearGradient
@@ -257,13 +274,13 @@ export default function IncomeExpenseChart({
                     >
                       <stop
                         offset="0%"
-                        stopColor="var(--expense)"
-                        stopOpacity={0.24}
+                        stopColor={EXPENSE_CHART_COLOR}
+                        stopOpacity={0.14}
                       />
                       <stop
                         offset="100%"
-                        stopColor="var(--expense)"
-                        stopOpacity={0.02}
+                        stopColor={EXPENSE_CHART_COLOR}
+                        stopOpacity={0.01}
                       />
                     </linearGradient>
                   </defs>
@@ -311,11 +328,11 @@ export default function IncomeExpenseChart({
                       stroke: "var(--card)",
                     }}
                     isAnimationActive
-                    stroke="var(--income)"
+                    stroke={INCOME_CHART_COLOR}
                     strokeLinecap="round"
                     strokeWidth={compactChart ? 2.2 : 2.5}
                     fill="url(#incomeExpenseIncomeFill)"
-                    fillOpacity={compactChart ? 0.58 : 1}
+                    fillOpacity={compactChart ? 0.48 : 1}
                     {...chartMotion}
                   />
                   <Area
@@ -328,7 +345,7 @@ export default function IncomeExpenseChart({
                       stroke: "var(--card)",
                     }}
                     isAnimationActive
-                    stroke="var(--expense)"
+                    stroke={EXPENSE_CHART_COLOR}
                     strokeDasharray={compactChart ? "3 4" : "4 4"}
                     strokeLinecap="round"
                     strokeWidth={compactChart ? 2.1 : 2.4}
