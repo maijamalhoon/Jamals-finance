@@ -63,20 +63,13 @@ function DialogContent({
           <DialogPrimitive.Close
             data-slot="dialog-close"
             render={
-              <Button
-                variant="ghost"
-                className="finance-dialog-close absolute top-2.5 right-2.5 z-10 h-10 w-10 rounded-[13px] border p-0 text-[var(--finance-action,var(--text-secondary))] shadow-none transition-[background-color,border-color,color,transform] hover:scale-[1.02] hover:text-[var(--finance-action,var(--text-primary))] active:scale-[0.96]"
-                style={{
-                  borderColor:
-                    "color-mix(in srgb, var(--finance-action, var(--border-strong)), transparent 55%)",
-                  background:
-                    "color-mix(in srgb, var(--finance-action, var(--surface-secondary)), transparent 91%)",
-                }}
-                size="icon"
+              <button
+                type="button"
+                className="finance-dialog-close finance-focus absolute top-3 right-3 z-10 grid size-8 place-items-center border-0 bg-transparent p-0 text-[var(--finance-action,var(--text-secondary))] shadow-none transition-[opacity,transform] hover:opacity-65 active:scale-90"
               />
             }
           >
-            <XIcon size={18} strokeWidth={2.2} />
+            <XIcon size={19} strokeWidth={1.8} />
             <span className="sr-only">Close</span>
           </DialogPrimitive.Close>
         ) : null}
