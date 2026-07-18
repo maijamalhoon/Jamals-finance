@@ -23,9 +23,8 @@
   padding-top: 0 !important;
 }
 
-/* A complete low-opacity graph remains visible at all times, while a second copy
-   draws over it on load. This prevents the line from disappearing or breaking on
-   mobile, tablet, desktop, large screens, or during a browser animation pause. */
+/* Keep one clean, solid-color sparkline on every viewport.
+   The inactive duplicate is hidden so no pale/dark segmented line can appear. */
 .dashboard-metric-graph {
   display: block;
   width: 100%;
@@ -45,18 +44,14 @@
 }
 
 .dashboard-metric-graph-track {
-  stroke-dasharray: none !important;
-  stroke-dashoffset: 0 !important;
-  stroke-width: 1.85 !important;
-  opacity: 0.34;
-  animation: none !important;
+  display: none !important;
 }
 
 .dashboard-metric-graph-active {
   stroke-dasharray: 1 !important;
   stroke-dashoffset: 1 !important;
-  stroke-width: 1.95 !important;
-  opacity: 0.92;
+  stroke-width: 2.05 !important;
+  opacity: 0.94 !important;
   animation: dashboard-metric-graph-draw 900ms var(--motion-ease) 100ms forwards !important;
 }
 
@@ -68,12 +63,12 @@
 
 @media (hover: hover) and (pointer: fine) {
   [data-dashboard-scroll] .dashboard-overview .dashboard-metric-card:hover .dashboard-metric-graph-active {
-    opacity: 1;
+    opacity: 1 !important;
   }
 }
 
 @media (max-width: 639px) {
-  /* Add a little more breathing room between the net balance and quick actions. */
+  /* Keep breathing room between the net balance and quick actions. */
   .dashboard-balance-layout {
     gap: clamp(1.7rem, 5vw, 1.95rem) !important;
   }
@@ -84,7 +79,7 @@
     gap: 0.85rem !important;
   }
 
-  /* The four primary financial metrics must remain visually stronger than the pulse tiles below. */
+  /* The four primary financial metrics remain visually stronger than the pulse tiles below. */
   [data-dashboard-scroll] .dashboard-overview .dashboard-metric-card {
     height: auto !important;
     min-height: 8.85rem !important;
@@ -119,10 +114,6 @@
     height: 1.35rem;
   }
 
-  .dashboard-metric-graph-track {
-    stroke-width: 1.8 !important;
-  }
-
   .dashboard-metric-graph-active {
     stroke-width: 1.95 !important;
   }
@@ -140,14 +131,10 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .dashboard-metric-graph-track,
   .dashboard-metric-graph-active {
     stroke-dasharray: none !important;
     stroke-dashoffset: 0 !important;
+    opacity: 0.94 !important;
     animation: none !important;
-  }
-
-  .dashboard-metric-graph-active {
-    opacity: 0.92;
   }
 }
