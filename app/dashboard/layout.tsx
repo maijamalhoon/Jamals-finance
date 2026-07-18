@@ -4,6 +4,7 @@ import { Suspense } from "react";
 import ConnectionStatus from "@/components/layout/ConnectionStatus";
 import DashboardContentScope from "@/components/layout/DashboardContentScope";
 import FloatingActions from "@/components/layout/FloatingActions";
+import MobileScrollContactGuard from "@/components/layout/MobileScrollContactGuard";
 import NotificationCenter, {
   NotificationCenterLoading,
 } from "@/components/layout/NotificationCenter";
@@ -16,6 +17,7 @@ import "./dashboard-performance.css";
 import "./desktop-dashboard-layout.css";
 import "./portfolio-amount.css";
 import "./mobile-dashboard-safety.css";
+import "./mobile-scroll-contact-guard.css";
 import "./card-actions-polish.css";
 import "./top-cards-polish.css";
 import "./card-hover-policy.css";
@@ -82,6 +84,7 @@ export default function DashboardLayout({
         <ResponsiveDashboardHeader notificationSlot={notificationSlot} />
         <ConnectionStatus />
         <DashboardScrollRestoration />
+        <MobileScrollContactGuard />
 
         <main
           data-dashboard-scroll
