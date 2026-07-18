@@ -3,71 +3,50 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=5" />
-    <meta name="theme-color" content="#F3F6FA" />
+    <meta name="theme-color" content="#f3f6fa" />
     <title>Offline | Jamal's Finance</title>
     <style>
       :root {
         color-scheme: light;
         --bg: #f3f6fa;
-        --surface: rgba(255, 255, 255, 0.92);
-        --surface-soft: #edf2f8;
-        --line: #d7e0eb;
+        --surface: #ffffff;
+        --surface-soft: #eef2f7;
+        --border: #d7e0ea;
         --text: #17233a;
-        --muted: #63748a;
+        --muted: #66768a;
         --accent: #3563e9;
-        --accent-2: #7457df;
-        --accent-soft: #e8edff;
-        --success: #0f8f6f;
-        --button-text: #ffffff;
-        --shadow: 0 30px 80px rgba(23, 35, 58, 0.14);
+        --accent-text: #ffffff;
       }
 
       @media (prefers-color-scheme: dark) {
         :root {
           color-scheme: dark;
           --bg: #0c1422;
-          --surface: rgba(21, 33, 54, 0.94);
+          --surface: #142036;
           --surface-soft: #19263b;
-          --line: #2d3d56;
+          --border: #2d3d56;
           --text: #edf3fb;
           --muted: #9aa9bd;
           --accent: #9fb1ff;
-          --accent-2: #b59cf6;
-          --accent-soft: #202e4e;
-          --success: #63d5b4;
-          --button-text: #0c1422;
-          --shadow: 0 34px 90px rgba(0, 0, 0, 0.42);
+          --accent-text: #0c1422;
         }
       }
 
       * { box-sizing: border-box; }
 
-      html { min-height: 100%; }
+      html,
+      body { min-height: 100%; }
 
       body {
         min-height: 100vh;
         min-height: 100dvh;
         margin: 0;
-        overflow-x: hidden;
-        background:
-          radial-gradient(circle at 14% 12%, color-mix(in srgb, var(--accent) 15%, transparent), transparent 30rem),
-          radial-gradient(circle at 86% 82%, color-mix(in srgb, var(--accent-2) 13%, transparent), transparent 32rem),
-          var(--bg);
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        background: var(--bg);
         color: var(--text);
         font-family: "Geist Sans", Geist, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      }
-
-      body::before {
-        position: fixed;
-        inset: 0;
-        pointer-events: none;
-        background-image:
-          linear-gradient(color-mix(in srgb, var(--line) 38%, transparent) 1px, transparent 1px),
-          linear-gradient(90deg, color-mix(in srgb, var(--line) 38%, transparent) 1px, transparent 1px);
-        background-size: 52px 52px;
-        mask-image: linear-gradient(to bottom, rgba(0,0,0,.5), transparent 94%);
-        content: "";
-        opacity: .22;
       }
 
       svg {
@@ -79,410 +58,171 @@
         stroke-linejoin: round;
       }
 
-      .page {
-        position: relative;
-        z-index: 1;
-        display: flex;
-        width: min(100%, 1240px);
-        min-height: 100vh;
-        min-height: 100dvh;
-        margin: 0 auto;
-        flex-direction: column;
-        padding: 18px clamp(16px, 3vw, 34px) max(20px, env(safe-area-inset-bottom));
-      }
-
       header {
+        width: min(100%, 960px);
+        min-height: 64px;
+        margin: 0 auto;
+        padding: 0 24px;
         display: flex;
-        min-height: 54px;
         align-items: center;
-        justify-content: space-between;
-        gap: 16px;
-      }
-
-      .brand,
-      .connection-pill,
-      .eyebrow,
-      button {
-        display: inline-flex;
-        align-items: center;
+        border-bottom: 1px solid var(--border);
       }
 
       .brand {
+        display: inline-flex;
+        align-items: center;
         gap: 10px;
-        color: var(--text);
-        font-size: 14px;
-        font-weight: 800;
+        font-size: 15px;
+        font-weight: 700;
+      }
+
+      .brand-mark,
+      .icon {
+        display: grid;
+        place-items: center;
+        border: 1px solid var(--border);
+        background: var(--surface);
+        color: var(--accent);
       }
 
       .brand-mark {
-        display: grid;
-        width: 38px;
-        height: 38px;
-        place-items: center;
-        border-radius: 13px;
-        background: linear-gradient(145deg, color-mix(in srgb, var(--accent) 18%, var(--surface)), color-mix(in srgb, var(--accent-2) 12%, var(--surface-soft)));
-        color: var(--accent);
-        box-shadow: 0 10px 24px color-mix(in srgb, var(--accent) 14%, transparent);
+        width: 36px;
+        height: 36px;
+        border-radius: 11px;
       }
 
       .brand-mark svg { width: 20px; height: 20px; }
 
-      .connection-pill {
-        gap: 7px;
-        padding: 8px 11px;
-        border-radius: 999px;
-        background: color-mix(in srgb, var(--surface) 80%, transparent);
-        color: var(--muted);
-        font-size: 12px;
-        font-weight: 750;
-        box-shadow: 0 8px 24px color-mix(in srgb, var(--text) 5%, transparent);
-      }
-
-      .connection-pill::before {
-        width: 7px;
-        height: 7px;
-        border-radius: 50%;
-        background: #e15a5a;
-        box-shadow: 0 0 0 4px color-mix(in srgb, #e15a5a 13%, transparent);
-        content: "";
-      }
-
-      .connection-pill[data-online="true"] {
-        color: var(--success);
-      }
-
-      .connection-pill[data-online="true"]::before {
-        background: var(--success);
-        box-shadow: 0 0 0 4px color-mix(in srgb, var(--success) 13%, transparent);
-      }
-
-      .layout {
-        display: grid;
-        grid-template-columns: minmax(0, .95fr) minmax(390px, .72fr);
-        align-items: center;
-        gap: clamp(48px, 7vw, 110px);
+      main {
+        width: 100%;
+        min-height: calc(100dvh - 64px);
         flex: 1;
-        padding-block: clamp(34px, 7vh, 80px);
+        display: grid;
+        place-items: center;
+        padding: 20px;
       }
 
-      .copy {
-        max-width: 620px;
+      .card {
+        width: min(100%, 440px);
+        padding: 28px;
+        border: 1px solid var(--border);
+        border-radius: 20px;
+        background: var(--surface);
+        box-shadow: 0 18px 48px rgba(15, 23, 42, 0.08);
       }
 
-      .eyebrow {
-        gap: 8px;
-        width: fit-content;
-        padding: 9px 12px;
-        border-radius: 999px;
-        background: var(--accent-soft);
-        color: var(--accent);
-        font-size: 12px;
-        font-weight: 820;
-        letter-spacing: .08em;
-        text-transform: uppercase;
+      .icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 14px;
+        background: var(--surface-soft);
       }
 
-      .eyebrow svg { width: 16px; height: 16px; }
+      .icon svg { width: 24px; height: 24px; }
 
       h1 {
-        max-width: 10ch;
-        margin: 22px 0 16px;
-        font-size: clamp(48px, 6.2vw, 84px);
+        margin: 18px 0 8px;
+        font-size: clamp(28px, 7vw, 36px);
         font-weight: 680;
-        letter-spacing: -.065em;
-        line-height: .96;
-        text-wrap: balance;
+        letter-spacing: -0.04em;
+        line-height: 1.08;
       }
 
-      .lead {
-        max-width: 54ch;
-        margin: 0;
-        color: var(--muted);
-        font-size: clamp(16px, 1.4vw, 18px);
-        line-height: 1.75;
-      }
-
-      .safe-note {
-        display: flex;
-        max-width: 520px;
-        align-items: flex-start;
-        gap: 10px;
-        margin-top: 24px;
-        color: var(--muted);
-        font-size: 13px;
-        line-height: 1.6;
-      }
-
-      .safe-note svg {
-        width: 18px;
-        height: 18px;
-        flex: 0 0 auto;
-        margin-top: 1px;
-        color: var(--accent);
-      }
-
-      .panel {
-        position: relative;
-        overflow: hidden;
-        padding: clamp(24px, 4vw, 38px);
-        border: 1px solid color-mix(in srgb, var(--accent) 20%, var(--line));
-        border-radius: 28px;
-        background:
-          radial-gradient(circle at 100% 0%, color-mix(in srgb, var(--accent-2) 10%, transparent), transparent 17rem),
-          var(--surface);
-        box-shadow: var(--shadow);
-        backdrop-filter: blur(18px) saturate(130%);
-        -webkit-backdrop-filter: blur(18px) saturate(130%);
-      }
-
-      .panel::before {
-        position: absolute;
-        inset: 0 auto 0 0;
-        width: 3px;
-        background: linear-gradient(to bottom, var(--accent), var(--accent-2), transparent 88%);
-        content: "";
-      }
-
-      .offline-icon {
-        display: grid;
-        width: 68px;
-        height: 68px;
-        place-items: center;
-        border-radius: 22px;
-        background: linear-gradient(145deg, color-mix(in srgb, var(--accent) 17%, var(--surface)), color-mix(in srgb, var(--accent-2) 12%, var(--surface-soft)));
-        color: var(--accent);
-        box-shadow: 0 16px 34px color-mix(in srgb, var(--accent) 17%, transparent);
-      }
-
-      .offline-icon svg { width: 32px; height: 32px; }
-
-      .panel h2 {
-        margin: 24px 0 10px;
-        font-size: clamp(26px, 4vw, 38px);
-        letter-spacing: -.045em;
-        line-height: 1.05;
-      }
-
-      .panel-copy {
+      p {
         margin: 0;
         color: var(--muted);
         font-size: 15px;
-        line-height: 1.7;
+        line-height: 1.6;
       }
-
-      .status-box {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        margin-top: 22px;
-        padding: 14px;
-        border-radius: 16px;
-        background: color-mix(in srgb, var(--surface-soft) 82%, transparent);
-      }
-
-      .status-box svg {
-        width: 20px;
-        height: 20px;
-        flex: 0 0 auto;
-        color: var(--accent);
-      }
-
-      .status-box span {
-        display: grid;
-        gap: 2px;
-      }
-
-      .status-box strong { font-size: 13px; }
-      .status-box small { color: var(--muted); font-size: 12px; line-height: 1.45; }
 
       button {
-        position: relative;
         width: 100%;
-        min-height: 52px;
+        min-height: 48px;
+        margin-top: 20px;
+        display: inline-flex;
+        align-items: center;
         justify-content: center;
         gap: 9px;
-        margin-top: 18px;
-        overflow: hidden;
         border: 0;
-        border-radius: 15px;
-        padding: 14px 18px;
-        color: var(--button-text);
-        background: linear-gradient(120deg, var(--accent), color-mix(in srgb, var(--accent) 72%, var(--accent-2)));
-        box-shadow: 0 15px 32px color-mix(in srgb, var(--accent) 24%, transparent);
+        border-radius: 12px;
+        background: var(--accent);
+        color: var(--accent-text);
         font: inherit;
         font-size: 14px;
-        font-weight: 800;
+        font-weight: 650;
         cursor: pointer;
-        transition: transform 180ms ease, box-shadow 180ms ease;
       }
 
+      button:hover { filter: brightness(1.04); }
+      button:focus-visible { outline: 3px solid color-mix(in srgb, var(--accent) 28%, transparent); outline-offset: 3px; }
       button svg { width: 18px; height: 18px; }
-      button:hover { transform: translateY(-2px); box-shadow: 0 19px 40px color-mix(in srgb, var(--accent) 28%, transparent); }
-      button:active { transform: translateY(0); }
-      button:focus-visible { outline: 3px solid color-mix(in srgb, var(--accent) 32%, transparent); outline-offset: 3px; }
 
-      .symbols {
-        position: fixed;
-        inset: 0;
-        z-index: 0;
-        overflow: hidden;
-        pointer-events: none;
+      @media (max-width: 600px) {
+        header {
+          min-height: 56px;
+          padding: 0 14px;
+        }
+
+        main {
+          min-height: calc(100dvh - 56px);
+          padding: 12px;
+        }
+
+        .card {
+          padding: 20px;
+          border-radius: 16px;
+          box-shadow: 0 10px 30px rgba(15, 23, 42, 0.07);
+        }
       }
 
-      .symbols span {
-        position: absolute;
-        top: -12vh;
-        color: var(--accent);
-        font-size: clamp(18px, 2.2vw, 34px);
-        font-weight: 700;
-        opacity: .12;
-        animation: fall 18s linear infinite;
-      }
-
-      .symbols span:nth-child(1) { left: 8%; animation-delay: -3s; }
-      .symbols span:nth-child(2) { left: 31%; animation-delay: -11s; animation-duration: 23s; }
-      .symbols span:nth-child(3) { left: 68%; animation-delay: -7s; animation-duration: 20s; }
-      .symbols span:nth-child(4) { left: 91%; animation-delay: -15s; animation-duration: 25s; }
-
-      @keyframes fall {
-        from { transform: translate3d(0, -12vh, 0) rotate(-8deg); }
-        to { transform: translate3d(24px, 124vh, 0) rotate(14deg); }
-      }
-
-      @media (max-width: 900px) {
-        .page { width: min(100%, 680px); }
-        .layout { grid-template-columns: 1fr; gap: 28px; align-content: center; }
-        .copy { text-align: center; margin: 0 auto; }
-        .eyebrow { margin-inline: auto; }
-        h1 { max-width: 12ch; margin-inline: auto; font-size: clamp(42px, 10vw, 66px); }
-        .lead, .safe-note { margin-inline: auto; }
-        .safe-note { justify-content: center; text-align: left; }
-        .panel { width: min(100%, 520px); margin: 0 auto; }
-      }
-
-      @media (max-width: 560px) {
-        .page { padding-inline: 12px; }
-        header { min-height: 48px; }
-        .brand { font-size: 13px; }
-        .brand-mark { width: 35px; height: 35px; border-radius: 12px; }
-        .connection-pill { padding: 8px 9px; font-size: 11px; }
-        .layout { padding-block: 24px 18px; }
-        h1 { margin-top: 18px; font-size: clamp(38px, 13vw, 54px); }
-        .lead { font-size: 15px; line-height: 1.65; }
-        .safe-note { margin-top: 18px; font-size: 12px; }
-        .panel { padding: 20px; border-radius: 22px; }
-        .panel::before { inset: 0 0 auto; width: auto; height: 3px; background: linear-gradient(90deg, var(--accent), var(--accent-2), transparent 92%); }
-        .offline-icon { width: 58px; height: 58px; border-radius: 18px; }
-        .offline-icon svg { width: 28px; height: 28px; }
-        .panel h2 { margin-top: 20px; }
-      }
-
-      @media (max-width: 390px) {
-        .brand span:last-child { max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-        .connection-pill span { display: none; }
-        .connection-pill { width: 34px; height: 34px; justify-content: center; padding: 0; }
-        .connection-pill::before { margin: 0; }
-      }
-
-      @media (min-width: 901px) and (max-height: 720px) {
-        .layout { align-items: start; padding-block: 28px; }
-        h1 { font-size: clamp(44px, 5vw, 66px); }
-        .safe-note { margin-top: 16px; }
-        .panel { padding: 24px; }
-      }
-
-      @media (prefers-reduced-motion: reduce) {
-        *, *::before, *::after { scroll-behavior: auto !important; }
-        .symbols span { animation: none; }
-        button { transition: none; }
+      @media (max-height: 560px) {
+        header { min-height: 52px; }
+        main { min-height: calc(100dvh - 52px); padding: 8px 12px; }
+        .card { padding: 16px 18px; }
+        .icon { width: 42px; height: 42px; }
+        h1 { margin-top: 12px; font-size: 26px; }
+        p { font-size: 13px; line-height: 1.45; }
+        button { min-height: 44px; margin-top: 14px; }
       }
     </style>
   </head>
   <body>
-    <div class="symbols" aria-hidden="true"><span>+</span><span>$</span><span>−</span><span>=</span></div>
+    <header>
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="9" />
+            <path d="M16 8.5c-.7-.9-1.9-1.5-3.4-1.5-2 0-3.6 1-3.6 2.6 0 1.5 1.2 2.2 3.3 2.6 2.1.4 3.7 1 3.7 2.7 0 1.6-1.6 2.8-3.8 2.8-1.7 0-3.1-.6-4.2-1.8" />
+            <path d="M12 5.5v13" />
+          </svg>
+        </span>
+        <span>Jamal's Finance</span>
+      </div>
+    </header>
 
-    <div class="page">
-      <header>
-        <div class="brand">
-          <span class="brand-mark" aria-hidden="true">
-            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"></path><path d="M12 18V6"></path></svg>
-          </span>
-          <span>Jamal's Finance</span>
-        </div>
-        <div class="connection-pill" id="connection-pill" data-online="false"><span id="connection-label">No connection</span></div>
-      </header>
+    <main>
+      <section class="card">
+        <span class="icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24">
+            <path d="M12 20h.01" />
+            <path d="M8.5 16.5a5 5 0 0 1 7 0" />
+            <path d="M5.5 13.5a9 9 0 0 1 13 0" />
+            <path d="M2.5 10.5a13 13 0 0 1 19 0" />
+            <path d="m3 3 18 18" />
+          </svg>
+        </span>
 
-      <main class="layout">
-        <section class="copy">
-          <p class="eyebrow">
-            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"></path><path d="m9 12 2 2 4-4"></path></svg>
-            Safe offline state
-          </p>
-          <h1>Your finance workspace is still safe.</h1>
-          <p class="lead">Jamal's Finance needs an internet connection for secure account access and fresh finance data. Nothing on this screen changes your records.</p>
-          <p class="safe-note">
-            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="16" r="1"></circle><rect x="3" y="10" width="18" height="12" rx="2"></rect><path d="M7 10V7a5 5 0 0 1 10 0v3"></path></svg>
-            <span>Reconnect when convenient. The page will notice when your connection returns and safely try loading the workspace again.</span>
-          </p>
-        </section>
+        <h1>You are offline</h1>
+        <p>Reconnect to continue securely and load your latest finance data.</p>
 
-        <section class="panel" aria-labelledby="offline-title">
-          <span class="offline-icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24"><path d="M12 20h.01"></path><path d="M8.5 16.5a5 5 0 0 1 7 0"></path><path d="M5 12.9a10 10 0 0 1 5.17-2.69"></path><path d="M19 12.9a10 10 0 0 0-2.01-1.52"></path><path d="M2 8.82a15 15 0 0 1 4.18-2.64"></path><path d="M22 8.82a15 15 0 0 0-11.29-3.76"></path><path d="m2 2 20 20"></path></svg>
-          </span>
-          <h2 id="offline-title">You are offline</h2>
-          <p class="panel-copy" id="status-copy">Check Wi-Fi or mobile data, then try again.</p>
-
-          <div class="status-box">
-            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"></path><path d="m9 12 2 2 4-4"></path></svg>
-            <span><strong>Your saved records are not changed</strong><small>This page only reports the current connection state.</small></span>
-          </div>
-
-          <button type="button" id="retry-button">
-            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6v5h-5"></path><path d="M20 11a8.1 8.1 0 0 0-14.8-3M4 18v-5h5"></path><path d="M4 13a8.1 8.1 0 0 0 14.8 3"></path></svg>
-            <span id="retry-label">Try again</span>
-          </button>
-        </section>
-      </main>
-    </div>
-
-    <script>
-      (function () {
-        var pill = document.getElementById("connection-pill");
-        var connectionLabel = document.getElementById("connection-label");
-        var statusCopy = document.getElementById("status-copy");
-        var retryButton = document.getElementById("retry-button");
-        var retryLabel = document.getElementById("retry-label");
-        var reloading = false;
-
-        function updateConnectionState() {
-          var online = navigator.onLine;
-          pill.setAttribute("data-online", online ? "true" : "false");
-          connectionLabel.textContent = online ? "Connection restored" : "No connection";
-
-          if (online) {
-            statusCopy.textContent = "Connection restored. Loading Jamal's Finance again…";
-            retryLabel.textContent = "Reloading…";
-            retryButton.disabled = true;
-            if (!reloading) {
-              reloading = true;
-              window.setTimeout(function () { window.location.reload(); }, 700);
-            }
-          } else {
-            statusCopy.textContent = "Check Wi-Fi or mobile data, then try again.";
-            retryLabel.textContent = "Try again";
-            retryButton.disabled = false;
-          }
-        }
-
-        retryButton.addEventListener("click", function () {
-          retryLabel.textContent = "Checking connection…";
-          window.location.reload();
-        });
-        window.addEventListener("online", updateConnectionState);
-        window.addEventListener("offline", updateConnectionState);
-        updateConnectionState();
-      })();
-    </script>
+        <button type="button" onclick="window.location.reload()">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M20 11a8.1 8.1 0 1 0 .4 4" />
+            <path d="M20 4v7h-7" />
+          </svg>
+          Try again
+        </button>
+      </section>
+    </main>
   </body>
 </html>
