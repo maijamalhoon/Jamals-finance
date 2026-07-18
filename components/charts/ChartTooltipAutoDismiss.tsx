@@ -3,11 +3,12 @@
 import { useEffect } from "react";
 
 const TOOLTIP_VISIBLE_MS = 2_000;
+const CHART_SELECTOR = ".recharts-wrapper";
 const DISMISSED_ATTRIBUTE = "data-chart-tooltip-dismissed";
 
 function getChartElement(target: EventTarget | null) {
   if (!(target instanceof Element)) return null;
-  return target.closest<HTMLElement>(".recharts-wrapper");
+  return target.closest<HTMLElement>(CHART_SELECTOR);
 }
 
 function revealTooltip(chart: HTMLElement) {
@@ -41,11 +42,9 @@ export default function ChartTooltipAutoDismiss() {
     }
 
     function dismissOtherCharts(currentChart: HTMLElement) {
-      document
-        .querySelectorAll<HTMLElement>(".recharts-wrapper")
-        .forEach((chart) => {
-          if (chart !== currentChart) dismissChart(chart);
-        });
+      document.querySelectorAll<HTMLElement>(CHART_SELECTOR).forEach((chart) => {
+        if (chart !== currentChart) dismissChart(chart);
+      });
     }
 
     function handlePointerDown(event: PointerEvent) {
@@ -127,7 +126,7 @@ export default function ChartTooltipAutoDismiss() {
 
   return (
     <style>{`
-      .recharts-wrapper[${DISMISSED_ATTRIBUTE}="true"] .recharts-tooltip-wrapper {
+      ${CHART_SELECTOR}[${DISMISSED_ATTRIBUTE}="true"] .recharts-tooltip-wrapper {
         opacity: 0 !important;
         visibility: hidden !important;
         pointer-events: none !important;
@@ -135,7 +134,7 @@ export default function ChartTooltipAutoDismiss() {
       }
 
       @media (prefers-reduced-motion: reduce) {
-        .recharts-wrapper[${DISMISSED_ATTRIBUTE}="true"] .recharts-tooltip-wrapper {
+        ${CHART_SELECTOR}[${DISMISSED_ATTRIBUTE}="true"] .recharts-tooltip-wrapper {
           transition: none !important;
         }
       }
