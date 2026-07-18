@@ -1,0 +1,223 @@
+/* Focused dashboard overview refinements.
+   Data, calculations, actions, modals, routes, and color tokens remain unchanged. */
+
+.dashboard-balance-amount {
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
+  overflow-wrap: normal !important;
+  font-size: clamp(2.7rem, 5.25vw, 4.75rem) !important;
+  line-height: 0.96 !important;
+  text-overflow: clip;
+  text-wrap: nowrap !important;
+  white-space: nowrap !important;
+}
+
+.dashboard-balance-amount[data-balance-size="long"] {
+  font-size: clamp(2.15rem, 4.25vw, 3.9rem) !important;
+}
+
+.dashboard-balance-amount[data-balance-size="xlong"] {
+  font-size: clamp(1.75rem, 3.45vw, 3.2rem) !important;
+}
+
+.dashboard-metric-card {
+  container-type: inline-size;
+  min-height: 10rem !important;
+  background: var(--surface-primary) !important;
+  transition:
+    transform var(--motion-duration-fast) var(--motion-ease),
+    border-color var(--motion-duration-fast) ease,
+    background var(--motion-duration-fast) ease,
+    box-shadow var(--motion-duration-fast) ease !important;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.dashboard-metric-card-content {
+  justify-content: flex-start;
+}
+
+.dashboard-metric-card-header {
+  display: block !important;
+}
+
+.dashboard-metric-card-title {
+  overflow: visible !important;
+  color: var(--text-secondary) !important;
+  font-size: clamp(0.72rem, 3.8cqi, 0.9rem) !important;
+  font-weight: 750 !important;
+  line-height: 1.15 !important;
+  letter-spacing: 0.1em !important;
+  text-overflow: clip !important;
+  text-transform: uppercase;
+  white-space: nowrap !important;
+}
+
+.dashboard-metric-card-amount {
+  width: 100%;
+  max-width: 100%;
+  margin-top: clamp(0.72rem, 5cqi, 1.05rem) !important;
+  overflow: hidden;
+  overflow-wrap: normal !important;
+  font-size: clamp(1.35rem, 13cqi, 2.25rem) !important;
+  font-weight: 780 !important;
+  line-height: 1 !important;
+  letter-spacing: -0.045em !important;
+  text-overflow: clip;
+  text-wrap: nowrap !important;
+  white-space: nowrap !important;
+}
+
+.dashboard-metric-card-amount[data-amount-size="long"] {
+  font-size: clamp(1.08rem, 10.6cqi, 1.82rem) !important;
+  letter-spacing: -0.04em !important;
+}
+
+.dashboard-metric-card-amount[data-amount-size="xlong"] {
+  font-size: clamp(0.92rem, 8.9cqi, 1.52rem) !important;
+  letter-spacing: -0.034em !important;
+}
+
+.dashboard-metric-card-footer {
+  width: 100%;
+  margin-top: auto !important;
+  padding-top: clamp(0.9rem, 7cqi, 1.3rem) !important;
+}
+
+.dashboard-metric-progress {
+  width: 100% !important;
+  height: clamp(1.3rem, 9cqi, 1.85rem) !important;
+  flex: 1 1 auto !important;
+}
+
+.dashboard-metric-progress-path {
+  stroke-dasharray: 1 !important;
+  stroke-dashoffset: 1 !important;
+  stroke-width: 2 !important;
+  opacity: 0.82 !important;
+  animation: dashboard-metric-progress-draw 900ms var(--motion-ease) 120ms forwards !important;
+}
+
+@keyframes dashboard-metric-progress-draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@media (hover: hover) and (pointer: fine) {
+  [data-dashboard-scroll] .dashboard-overview .dashboard-metric-card:hover {
+    transform: translateY(-3px) !important;
+    border-color: color-mix(in srgb, var(--metric-accent), transparent 68%) !important;
+    background:
+      radial-gradient(
+        circle at 50% 0,
+        color-mix(in srgb, var(--metric-accent), transparent 91%) 0,
+        transparent 72%
+      ),
+      var(--surface-primary) !important;
+    box-shadow:
+      var(--surface-highlight),
+      0 15px 34px color-mix(in srgb, var(--metric-accent), transparent 88%) !important;
+  }
+}
+
+[data-dashboard-scroll] .dashboard-overview .dashboard-metric-card:active {
+  transform: translateY(-2px) scale(0.995) !important;
+  border-color: color-mix(in srgb, var(--metric-accent), transparent 66%) !important;
+  background:
+    radial-gradient(
+      circle at 50% 0,
+      color-mix(in srgb, var(--metric-accent), transparent 90%) 0,
+      transparent 72%
+    ),
+    var(--surface-primary) !important;
+  box-shadow:
+    var(--surface-highlight),
+    0 11px 26px color-mix(in srgb, var(--metric-accent), transparent 89%) !important;
+}
+
+.dark [data-dashboard-scroll] .dashboard-overview .dashboard-metric-card:hover,
+.dark [data-dashboard-scroll] .dashboard-overview .dashboard-metric-card:active {
+  background:
+    radial-gradient(
+      circle at 50% 0,
+      color-mix(in srgb, var(--metric-accent), transparent 84%) 0,
+      transparent 72%
+    ),
+    var(--surface-primary) !important;
+}
+
+@media (max-width: 639px) {
+  .dashboard-balance-amount {
+    font-size: clamp(2.25rem, 11.2vw, 3.3rem) !important;
+  }
+
+  .dashboard-balance-amount[data-balance-size="long"] {
+    font-size: clamp(1.8rem, 9vw, 2.65rem) !important;
+  }
+
+  .dashboard-balance-amount[data-balance-size="xlong"] {
+    font-size: clamp(1.45rem, 7.25vw, 2.2rem) !important;
+  }
+
+  .dashboard-balance-actions {
+    width: max-content !important;
+    max-width: 100%;
+    margin-inline: auto !important;
+    grid-template-columns: repeat(4, minmax(3.8rem, 4.35rem)) !important;
+    justify-content: center !important;
+    justify-self: center;
+  }
+
+  .dashboard-metric-card {
+    min-height: 8.35rem !important;
+  }
+
+  .dashboard-metric-card-title {
+    font-size: clamp(0.62rem, 4.8cqi, 0.74rem) !important;
+    letter-spacing: 0.085em !important;
+  }
+
+  .dashboard-metric-card-amount {
+    margin-top: clamp(0.58rem, 5cqi, 0.78rem) !important;
+    font-size: clamp(1.2rem, 13cqi, 1.58rem) !important;
+  }
+
+  .dashboard-metric-card-amount[data-amount-size="long"] {
+    font-size: clamp(0.96rem, 10.5cqi, 1.28rem) !important;
+  }
+
+  .dashboard-metric-card-amount[data-amount-size="xlong"] {
+    font-size: clamp(0.82rem, 8.9cqi, 1.08rem) !important;
+  }
+
+  .dashboard-metric-card-footer {
+    padding-top: clamp(0.68rem, 6cqi, 0.92rem) !important;
+  }
+
+  .dashboard-metric-progress {
+    height: clamp(1.05rem, 9cqi, 1.3rem) !important;
+  }
+}
+
+@media (max-width: 389px) {
+  .dashboard-metric-card {
+    min-height: 8.05rem !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dashboard-metric-card {
+    transition: none !important;
+  }
+
+  [data-dashboard-scroll] .dashboard-overview .dashboard-metric-card:hover,
+  [data-dashboard-scroll] .dashboard-overview .dashboard-metric-card:active {
+    transform: none !important;
+  }
+
+  .dashboard-metric-progress-path {
+    stroke-dashoffset: 0 !important;
+    animation: none !important;
+  }
+}
