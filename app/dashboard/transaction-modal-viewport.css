@@ -1,11 +1,19 @@
-/* Keep the income and expense form centered in the browser area that is
-   actually visible. Mobile browser chrome can make the layout viewport taller
-   than the space available to the page, so the live VisualViewport metrics are
-   used when supported and dynamic viewport units remain the fallback. */
+/* Keep the income and expense form centered inside the browser area that is
+   actually usable. Small viewport units remain stable while mobile browser
+   bars are visible, unlike layout/dynamic viewport measurements on some
+   Android browsers. The modal keeps its natural content height and is only
+   capped by the available screen, so the body is not compressed behind the
+   fixed footer. */
 [data-slot="dialog-content"].finance-modal-content:has(#transaction-amount) {
-  top: var(--jf-visual-viewport-center-y, 50dvh) !important;
-  max-height: min(
-    calc(var(--jf-visual-viewport-height, 100dvh) - 0.75rem),
-    calc(100dvh - 0.5rem)
-  ) !important;
+  top: 50vh !important;
+  max-height: calc(100vh - 0.75rem) !important;
+}
+
+@supports (height: 100svh) {
+  [data-slot="dialog-content"].finance-modal-content:has(#transaction-amount) {
+    top: 50svh !important;
+    max-height: calc(
+      100svh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 0.75rem
+    ) !important;
+  }
 }
