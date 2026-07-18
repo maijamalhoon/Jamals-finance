@@ -71,6 +71,58 @@ function getAmountSize(value: string) {
   return "normal";
 }
 
+function getMetricAccent(
+  iconName: MetricIconName,
+  amount: MetricCardProps["amount"],
+  accentColor: string,
+) {
+  if (iconName !== "wallet" || typeof amount !== "number" || !Number.isFinite(amount)) {
+    return accentColor;
+  }
+  if (amount < 0) return "var(--danger)";
+  if (amount > 0) return "var(--success)";
+  return "var(--info)";
+}
+
+function getCompactBasis(basis: string) {
+  const normalized = basis.toLowerCase();
+  if (normalized.includes("last month")) return "MoM";
+  if (normalized.includes("gain")) return "gain";
+  if (normalized.includes("cost")) return "vs cost";
+  if (normalized.includes("withheld") || normalized.includes("try again")) return "";
+  return basis.length <= 11 ? basis : "";
+}
+
+function MetricSparkline({
+  direction,
+  accent,
+}: {
+  direction: DashboardComparison["direction"] | "none";
+  accent: string;
+}) {
+  const path =
+    direction === "up"
+      ? "M2 18 C10 17 13 13 21 14 C29 15 31 11 39 12 C48 13 52 8 60 9 C66 9 69 6 72 5"
+      : direction === "down"
+        ? "M2 7 C10 8 14 6 21 9 C28 12 31 16 39 15 C48 14 52 19 60 18 C66 17 69 20 72 21"
+        : "M2 13 C10 12 14 14 22 13 C30 12 34 14 42 13 C51 12 56 14 64 13 C68 12 70 13 72 13";
+
+  return (
+    <svg
+      aria-hidden="true"
+      className={styles.sparkline}
+      viewBox="0 0 74 26"
+      preserveAspectRatio="none"
+    >
+      <path
+        className={styles.sparklinePath}
+        d={path}
+        style={{ stroke: accent }}
+      />
+    </svg>
+  );
+}
+
 export default function MetricCard({
   title,
   subtitle,
@@ -83,94 +135,94 @@ export default function MetricCard({
   const { formatCurrency } = useCurrency();
   const Icon = ICONS[iconName];
   const displayAmount =
-    amount === null ? "Unavailable"
-    : typeof amount === "number" ? formatCurrency(amount)
-    : amount;
+    amount === null
+      ? "Unavailable"
+      : typeof amount === "number"
+        ? formatCurrency(amount)
+        : amount;
   const amountSize = getAmountSize(displayAmount);
   const displayComparison =
-    availability === "partial" ?
-      {
-        label: "Partial data",
-        basis: "Comparison withheld",
-        direction: "none" as const,
-        sentiment: "warning" as const,
-        accessibleLabel: `${title} is based on partial data. A period comparison is not shown.`,
-      }
-    : availability === "unavailable" || !comparison ?
-      {
-        label: "Unavailable",
-        basis: "Try again later",
-        direction: "none" as const,
-        sentiment: "warning" as const,
-        accessibleLabel: `${title} is unavailable.`,
-      }
-    : comparison;
-  const compactBasis =
-    displayComparison.basis === "vs same period last month" ?
-      "vs last month"
-    : displayComparison.basis;
+    availability === "partial"
+      ? {
+          label: "Partial data",
+          basis: "Comparison withheld",
+          direction: "none" as const,
+          sentiment: "warning" as const,
+          accessibleLabel: `${title} is based on partial data. A period comparison is not shown.`,
+        }
+      : availability === "unavailable" || !comparison
+        ? {
+            label: "Unavailable",
+            basis: "Try again later",
+            direction: "none" as const,
+            sentiment: "warning" as const,
+            accessibleLabel: `${title} is unavailable.`,
+          }
+        : comparison;
   const compactComparison = compactPercentageLabel(displayComparison.label);
+  const compactBasis = getCompactBasis(displayComparison.basis);
   const toneColor = SENTIMENT_COLORS[displayComparison.sentiment];
+  const metricAccent = getMetricAccent(iconName, amount, accentColor);
   const DirectionIcon =
-    displayComparison.direction === "up" ? ArrowUpRight
-    : displayComparison.direction === "down" ? ArrowDownRight
-    : displayComparison.direction === "flat" ? Minus
-    : CircleDot;
+    displayComparison.direction === "up"
+      ? ArrowUpRight
+      : displayComparison.direction === "down"
+        ? ArrowDownRight
+        : displayComparison.direction === "flat"
+          ? Minus
+          : CircleDot;
 
   return (
     <article
       aria-label={`${title}. ${displayAmount}. ${displayComparison.accessibleLabel}`}
       className={`dashboard-metric-card flex h-full min-h-[14.25rem] min-w-0 flex-col ${styles.card}`}
-      style={{ "--metric-accent": accentColor } as CSSProperties}
+      style={{ "--metric-accent": metricAccent } as CSSProperties}
     >
-      <span
-        aria-hidden="true"
-        className={`dashboard-metric-shape ${styles.shape}`}
-      />
+      <div className={styles.content}>
+        <div className={styles.header}>
+          <div className={styles.headingCopy}>
+            <p className={styles.title}>{title}</p>
+            <p className={styles.subtitle}>{subtitle ?? "Current period"}</p>
+          </div>
 
-      <div
-        className={`relative z-10 flex min-w-0 items-start justify-between gap-1.5 ${styles.top}`}
-      >
-        <span
-          className={`dashboard-metric-icon ${styles.icon}`}
-          aria-hidden="true"
-        >
-          <Icon size={17} strokeWidth={2.2} />
-        </span>
-        <span
-          className={`dashboard-comparison-badge ${styles.badge}`}
-          title={displayComparison.label}
-          style={{
-            "--comparison-color": toneColor,
-            flexShrink: 0,
-            whiteSpace: "nowrap",
-          } as CSSProperties}
-        >
-          <DirectionIcon aria-hidden="true" size={12} />
-          <span>{compactComparison}</span>
-        </span>
-      </div>
+          <span
+            aria-hidden="true"
+            className={styles.icon}
+            style={{
+              color: metricAccent,
+              borderColor: `color-mix(in srgb, ${metricAccent}, transparent 80%)`,
+              backgroundColor: `color-mix(in srgb, ${metricAccent}, transparent 91%)`,
+            }}
+          >
+            <Icon size={15} strokeWidth={2.15} />
+          </span>
+        </div>
 
-      <div
-        className={`relative z-10 mt-4 flex min-w-0 flex-1 flex-col ${styles.body}`}
-      >
         <p
-          className={`dashboard-metric-title min-h-8 text-[10.5px] font-semibold uppercase leading-4 tracking-[0.08em] text-text-secondary ${styles.title}`}
-        >
-          {title}
-        </p>
-        <p
-          className={`dashboard-metric-amount mt-1 min-w-0 break-words font-extrabold text-text-primary tabular-nums [overflow-wrap:anywhere] ${styles.amount}`}
+          className={`dashboard-metric-amount ${styles.amount}`}
           data-amount-size={amountSize}
           title={displayAmount}
         >
           {amount === null ? displayAmount : <CountedAmount amount={displayAmount} />}
         </p>
-        <div
-          className={`dashboard-metric-footer mt-auto grid min-w-0 grid-cols-[auto_minmax(0,1fr)] items-end gap-x-2 pt-3 text-[10px] font-medium leading-4 text-text-secondary ${styles.footer}`}
-        >
-          <span>{subtitle ?? "Current period"}</span>
-          <span className={`text-right ${styles.basis}`}>{compactBasis}</span>
+
+        <div className={styles.footer}>
+          <span
+            className={styles.badge}
+            title={`${displayComparison.label} ${displayComparison.basis}`.trim()}
+            style={{
+              "--comparison-color": toneColor,
+            } as CSSProperties}
+          >
+            <DirectionIcon aria-hidden="true" size={12} strokeWidth={2.2} />
+            <span className={styles.badgeValue}>{compactComparison}</span>
+            {compactBasis ? <span className={styles.badgeBasis}>{compactBasis}</span> : null}
+          </span>
+
+          <MetricSparkline
+            accent={metricAccent}
+            direction={displayComparison.direction}
+          />
         </div>
       </div>
     </article>
