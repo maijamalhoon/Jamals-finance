@@ -1,13 +1,25 @@
 /* Large-screen Settings composition.
    Presentation only: all existing settings logic, dialogs, writes, exports,
-   theme behavior, notification controls, and mobile/tablet layouts are unchanged. */
+   theme behavior, notification controls, and mobile/tablet layouts are unchanged.
+
+   DOM note: SettingsExperienceV2 adds a click-capture wrapper around
+   SettingsOneUI, so the actual card layout is three div levels below
+   .settings-page-polish. Keep these selectors aligned with that structure. */
 
 @media (min-width: 1200px) {
-  .settings-page-polish {
-    width: 100%;
+  .settings-page-polish,
+  .settings-page-polish > div,
+  .settings-page-polish > div > div {
+    width: 100% !important;
+    max-width: none !important;
+    min-width: 0;
   }
 
   .settings-page-polish > div > div {
+    margin-inline: 0 !important;
+  }
+
+  .settings-page-polish > div > div > div {
     display: grid !important;
     width: min(100%, 90rem) !important;
     max-width: 90rem !important;
@@ -27,51 +39,51 @@
     align-items: start;
   }
 
-  .settings-page-polish > div > div > * + * {
+  .settings-page-polish > div > div > div > * + * {
     margin-block-start: 0 !important;
   }
 
-  .settings-page-polish > div > div > .page-heading {
+  .settings-page-polish > div > div > div > .page-heading {
     grid-area: hero;
   }
 
-  .settings-page-polish > div > div > section:nth-of-type(1) {
+  .settings-page-polish > div > div > div > section:nth-of-type(1) {
     grid-area: profile;
   }
 
-  .settings-page-polish > div > div > section:nth-of-type(2) {
+  .settings-page-polish > div > div > div > section:nth-of-type(2) {
     grid-area: appearance;
   }
 
-  .settings-page-polish > div > div > section:nth-of-type(3) {
+  .settings-page-polish > div > div > div > section:nth-of-type(3) {
     grid-area: preferences;
   }
 
-  .settings-page-polish > div > div > section:nth-of-type(4) {
+  .settings-page-polish > div > div > div > section:nth-of-type(4) {
     grid-area: notifications;
   }
 
-  .settings-page-polish > div > div > section:nth-of-type(5) {
+  .settings-page-polish > div > div > div > section:nth-of-type(5) {
     grid-area: tools;
   }
 
-  .settings-page-polish > div > div > section:nth-of-type(6) {
+  .settings-page-polish > div > div > div > section:nth-of-type(6) {
     grid-area: data;
   }
 
-  .settings-page-polish > div > div > section:nth-of-type(7) {
+  .settings-page-polish > div > div > div > section:nth-of-type(7) {
     grid-area: stats;
   }
 
-  .settings-page-polish > div > div > button:last-of-type {
+  .settings-page-polish > div > div > div > button:last-of-type {
     grid-area: signout;
   }
 
-  .settings-page-polish > div > div > footer {
+  .settings-page-polish > div > div > div > footer {
     grid-area: footer;
   }
 
-  .settings-page-polish section:nth-of-type(7) > div {
+  .settings-page-polish > div > div > div > section:nth-of-type(7) > div {
     grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
   }
 
