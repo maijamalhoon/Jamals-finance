@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { Target } from "lucide-react";
+import { type CSSProperties, useEffect, useState } from "react";
 import { toast } from "sonner";
+
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
@@ -13,9 +13,9 @@ import {
   FinanceModalFooter,
   FinanceFormField,
   FinanceModalHeader,
-  financeCancelButtonClass,
   financeErrorClass,
   financeModalContentClass,
+  financePrimaryButtonClass,
 } from "@/components/ui/finance-modal";
 import { getGoalPresentation } from "./goal-icons";
 import { BASE_CURRENCY } from "@/lib/currency";
@@ -46,10 +46,17 @@ interface Props {
 }
 
 const NO_GOAL_ACCOUNTS: GoalAccount[] = [];
+const GOAL_ACTION_COLOR = "#157462";
 
-export default function GoalModal({ open, onClose, onSuccess, goal, accounts }: Props) {
+export default function GoalModal({
+  open,
+  onClose,
+  onSuccess,
+  goal,
+  accounts,
+}: Props) {
   const supabase = createClient();
-  const isEditing = !!goal;
+  const isEditing = Boolean(goal);
   const suppliedAccounts = accounts ?? NO_GOAL_ACCOUNTS;
 
   const [name, setName] = useState("");
@@ -57,15 +64,16 @@ export default function GoalModal({ open, onClose, onSuccess, goal, accounts }: 
   const [currentAmount, setCurrentAmount] = useState("0");
   const [deadline, setDeadline] = useState("");
   const [accountId, setAccountId] = useState("");
-  const [availableAccounts, setAvailableAccounts] = useState<GoalAccount[]>(suppliedAccounts);
+  const [availableAccounts, setAvailableAccounts] =
+    useState<GoalAccount[]>(suppliedAccounts);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
   const autoPresentation = getGoalPresentation({ name });
-  const AutoGoalIcon = autoPresentation.entry.icon;
 
   useEffect(() => {
     if (!open) return;
+
     if (goal) {
       setName(goal.name);
       setTargetAmount(String(goal.target_amount));
@@ -79,8 +87,9 @@ export default function GoalModal({ open, onClose, onSuccess, goal, accounts }: 
       setDeadline("");
       setAccountId("");
     }
+
     setError("");
-  }, [open, goal]);
+  }, [goal, open]);
 
   useEffect(() => {
     setAvailableAccounts(suppliedAccounts);
@@ -106,19 +115,22 @@ export default function GoalModal({ open, onClose, onSuccess, goal, accounts }: 
 
     const parsedTarget = Number(targetAmount);
     const parsedCurrent = Number(currentAmount);
+
     if (!name.trim() || !Number.isFinite(parsedTarget) || parsedTarget <= 0) {
       setError("Goal name and target amount are required.");
       return;
     }
+
     if (
       !isEditing &&
       (!Number.isFinite(parsedCurrent) ||
         parsedCurrent < 0 ||
         parsedCurrent > parsedTarget)
     ) {
-      setError("Starting progress must be between 0 and the target amount.");
+      setError("Saved amount must be between 0 and the target amount.");
       return;
     }
+
     setLoading(true);
     setError("");
 
@@ -141,7 +153,7 @@ export default function GoalModal({ open, onClose, onSuccess, goal, accounts }: 
       account_id: accountId || null,
     };
 
-    const { error: e } = isEditing
+    const { error: saveError } = isEditing
       ? await supabase.from("goals").update(payload).eq("id", goal!.id)
       : await supabase.from("goals").insert({
           ...payload,
@@ -150,11 +162,14 @@ export default function GoalModal({ open, onClose, onSuccess, goal, accounts }: 
 
     setLoading(false);
 
-    if (e) {
-      setError(getUserMutationError(e, "Goal could not be saved. Try again."));
+    if (saveError) {
+      setError(
+        getUserMutationError(saveError, "Goal could not be saved. Try again."),
+      );
       toast.error("Failed to save goal");
       return;
     }
+
     toast.success(isEditing ? "Goal updated!" : "Goal created!");
     onSuccess();
     onClose();
@@ -162,43 +177,24 @@ export default function GoalModal({ open, onClose, onSuccess, goal, accounts }: 
 
   return (
     <Dialog open={open} onOpenChange={(nextOpen) => !nextOpen && onClose()}>
-      <DialogContent className={financeModalContentClass}>
-        <FinanceModalHeader
-          title={isEditing ? "Edit Goal" : "Add Goal"}
-          description="The icon, unique color, and progress accent are selected automatically from the goal name."
-          icon={Target}
-          tone="info"
-        />
+      <DialogContent
+        className={financeModalContentClass}
+        style={
+          {
+            "--finance-action": GOAL_ACTION_COLOR,
+          } as CSSProperties
+        }
+      >
+        <FinanceModalHeader title={isEditing ? "Edit Goal" : "Goal"} />
 
         <FinanceModalBody>
           <FinanceFormField label="Goal Name" htmlFor="goal-name">
             <Input
               id="goal-name"
               value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="e.g. Toyota Mark X, New House, Samsung S24 Ultra"
+              onChange={(event) => setName(event.target.value)}
+              placeholder="e.g. New house, car, emergency fund"
             />
-            <div className="mt-2 flex min-w-0 items-center gap-2.5 text-xs text-text-secondary">
-              <span
-                className="grid size-8 shrink-0 place-items-center rounded-full border"
-                style={{
-                  color: autoPresentation.accent,
-                  borderColor: `color-mix(in srgb, ${autoPresentation.accent}, transparent 76%)`,
-                  backgroundColor: `color-mix(in srgb, ${autoPresentation.accent}, transparent 92%)`,
-                }}
-                aria-hidden="true"
-              >
-                <AutoGoalIcon size={14} strokeWidth={2.15} />
-              </span>
-              <div className="min-w-0">
-                <p className="truncate font-semibold text-text-primary">
-                  {autoPresentation.label} icon selected automatically
-                </p>
-                <p className="truncate text-[11px]">
-                  The progress line will use the same unique color.
-                </p>
-              </div>
-            </div>
           </FinanceFormField>
 
           <div className="grid gap-3 sm:grid-cols-2">
@@ -209,84 +205,76 @@ export default function GoalModal({ open, onClose, onSuccess, goal, accounts }: 
               <Input
                 id="goal-target-amount"
                 type="number"
+                inputMode="decimal"
                 min="0.01"
                 step="any"
                 value={targetAmount}
-                onChange={(e) => setTargetAmount(e.target.value)}
+                onChange={(event) => setTargetAmount(event.target.value)}
                 placeholder="5000000"
-                className="font-semibold"
+                className="font-semibold tabular-nums"
               />
             </FinanceFormField>
 
             <FinanceFormField
-              label={`Saved So Far (${BASE_CURRENCY})`}
+              label={`Saved Amount (${BASE_CURRENCY})`}
               htmlFor="goal-current-amount"
             >
               <Input
                 id="goal-current-amount"
                 type="number"
+                inputMode="decimal"
                 min="0"
                 max={targetAmount || undefined}
                 step="any"
                 value={currentAmount}
-                onChange={(e) => setCurrentAmount(e.target.value)}
+                onChange={(event) => setCurrentAmount(event.target.value)}
                 placeholder="0"
-                className="font-semibold"
+                className="font-semibold tabular-nums"
                 disabled={isEditing}
               />
-              {isEditing ? (
-                <p className="mt-1.5 text-xs text-text-secondary">
-                  Use contributions to change saved progress.
-                </p>
-              ) : null}
             </FinanceFormField>
           </div>
 
-          <FinanceFormField label="Linked Account (Optional)" htmlFor="goal-account">
-            <select
-              id="goal-account"
-              value={accountId}
-              onChange={(event) => setAccountId(event.target.value)}
-              className="finance-control finance-focus h-11 w-full px-3 text-sm text-text-primary outline-none"
-            >
-              <option value="">No linked account</option>
-              {availableAccounts.map((account) => (
-                <option key={account.id} value={account.id}>
-                  {account.name}
-                </option>
-              ))}
-            </select>
-          </FinanceFormField>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <FinanceFormField label="Account" htmlFor="goal-account">
+              <select
+                id="goal-account"
+                value={accountId}
+                onChange={(event) => setAccountId(event.target.value)}
+                className="finance-control finance-focus h-11 w-full px-3 text-sm text-text-primary outline-none"
+              >
+                <option value="">No linked account</option>
+                {availableAccounts.map((availableAccount) => (
+                  <option key={availableAccount.id} value={availableAccount.id}>
+                    {availableAccount.name}
+                  </option>
+                ))}
+              </select>
+            </FinanceFormField>
 
-          <FinanceFormField label="Deadline (Optional)" htmlFor="goal-deadline">
-            <DatePicker
-              id="goal-deadline"
-              value={deadline}
-              onChange={setDeadline}
-              placeholder="DD/MM/YYYY"
-              ariaLabel="Goal deadline"
-            />
-          </FinanceFormField>
+            <FinanceFormField label="Deadline" htmlFor="goal-deadline">
+              <DatePicker
+                id="goal-deadline"
+                value={deadline}
+                onChange={setDeadline}
+                placeholder="DD/MM/YYYY"
+                ariaLabel="Goal deadline"
+              />
+            </FinanceFormField>
+          </div>
 
-          {error && <p className={financeErrorClass}>{error}</p>}
+          {error ? <p className={financeErrorClass}>{error}</p> : null}
         </FinanceModalBody>
 
         <FinanceModalFooter>
-          <Button
-            type="button"
-            onClick={onClose}
-            disabled={loading}
-            className={financeCancelButtonClass}
-          >
-            Cancel
-          </Button>
           <Button
             type="button"
             onClick={handleSave}
             disabled={loading}
             loading={loading}
             loadingLabel="Saving goal…"
-            className="primary-action py-3"
+            className={financePrimaryButtonClass}
+            style={{ background: GOAL_ACTION_COLOR }}
           >
             {isEditing ? "Update Goal" : "Create Goal"}
           </Button>
