@@ -1,0 +1,12 @@
+/* Final selector correction for compact onboarding screens. */
+@media (max-width: 759px) {
+  .jf-auth-root:not([data-auth-minimal="true"]) .jf-auth-card-body > div:last-child {
+    display: block;
+  }
+
+  .jf-auth-root:not([data-auth-minimal="true"])
+    .jf-auth-card-body
+    > .mt-5.flex.items-start.justify-center {
+    display: none;
+  }
+}
