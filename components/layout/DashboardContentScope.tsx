@@ -13,6 +13,8 @@ const CONTENT_TYPOGRAPHY_ROUTES = [
   "/dashboard/ai-insights",
 ] as const;
 
+const TRANSACTIONS_TYPOGRAPHY_ROUTE = "/dashboard/transactions";
+
 function usesContentTypography(pathname: string | null) {
   if (!pathname) return false;
 
@@ -28,13 +30,20 @@ export default function DashboardContentScope({
 }) {
   const pathname = usePathname();
   const isTypographyPage = usesContentTypography(pathname);
+  const isTransactionsPage = pathname === TRANSACTIONS_TYPOGRAPHY_ROUTE;
+  const scopeClasses = [
+    "jf-dashboard-content-frame mx-auto w-full max-w-[1480px] min-w-0",
+    isTypographyPage ? "finance-content-typography" : "",
+    isTransactionsPage ? "transactions-page-type-icons" : "",
+  ]
+    .filter(Boolean)
+    .join(" ");
 
   return (
     <div
-      className={`jf-dashboard-content-frame mx-auto w-full max-w-[1480px] min-w-0${
-        isTypographyPage ? " finance-content-typography" : ""
-      }`}
+      className={scopeClasses}
       data-finance-content-typography={isTypographyPage ? "true" : undefined}
+      data-transactions-type-icons={isTransactionsPage ? "true" : undefined}
     >
       {children}
     </div>
