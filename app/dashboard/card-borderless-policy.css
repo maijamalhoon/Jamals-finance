@@ -1,0 +1,28 @@
+/* Dashboard overview card shells are intentionally borderless in every state.
+   Internal controls, charts, tooltips, and list items keep their own interaction styles. */
+
+[data-dashboard-scroll] .dashboard-overview :is(
+  .finance-reference-card,
+  .dashboard-graph-card,
+  .dashboard-pulse-tile,
+  .dashboard-metric-card,
+  .finance-panel.card-hover
+) {
+  border: 0 !important;
+  border-color: transparent !important;
+  outline: 0 !important;
+}
+
+[data-dashboard-scroll] .dashboard-overview :is(
+  .finance-reference-card,
+  .dashboard-graph-card,
+  .dashboard-pulse-tile,
+  .dashboard-metric-card,
+  .finance-panel.card-hover
+):is(:hover, :active, :focus, :focus-visible, :focus-within) {
+  border: 0 !important;
+  border-color: transparent !important;
+  outline: 0 !important;
+  --tw-ring-offset-shadow: 0 0 #0000 !important;
+  --tw-ring-shadow: 0 0 #0000 !important;
+}
