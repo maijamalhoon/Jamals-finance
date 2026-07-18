@@ -2,11 +2,12 @@
    Presentation only: all existing settings logic, dialogs, writes, exports,
    theme behavior, notification controls, and mobile/tablet layouts are unchanged.
 
-   DOM note: SettingsExperienceV2 adds a click-capture wrapper around
-   SettingsOneUI, so the actual card layout is three div levels below
-   .settings-page-polish. Keep these selectors aligned with that structure. */
+   The page already uses .settings-page-polish as an inline-size container. The
+   wide layout therefore follows the available dashboard content width instead
+   of the browser viewport. :has(> .page-heading) targets the actual animated
+   SettingsOneUI content wrapper without depending on fragile wrapper depth. */
 
-@media (min-width: 1200px) {
+@container (min-width: 68rem) {
   .settings-page-polish,
   .settings-page-polish > div,
   .settings-page-polish > div > div {
@@ -15,75 +16,97 @@
     min-width: 0;
   }
 
+  /* Cancel the older grid rule that lands on the SettingsOneUI shell. */
   .settings-page-polish > div > div {
+    display: block !important;
     margin-inline: 0 !important;
   }
 
-  .settings-page-polish > div > div > div {
+  /* Actual Settings content grid. */
+  .settings-page-polish div:has(> .page-heading) {
     display: grid !important;
-    width: min(100%, 90rem) !important;
-    max-width: 90rem !important;
+    width: min(100%, 88rem) !important;
+    max-width: 88rem !important;
     margin-inline: auto !important;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     grid-template-areas:
       "hero hero"
       "profile appearance"
-      "preferences appearance"
-      "notifications data"
+      "preferences notifications"
       "tools data"
       "stats stats"
       "signout signout"
       "footer footer";
-    column-gap: 1.5rem;
+    column-gap: 1.4rem;
     row-gap: 1.25rem;
     align-items: start;
   }
 
-  .settings-page-polish > div > div > div > * + * {
+  .settings-page-polish div:has(> .page-heading) > * + * {
     margin-block-start: 0 !important;
   }
 
-  .settings-page-polish > div > div > div > .page-heading {
+  .settings-page-polish div:has(> .page-heading) > .page-heading {
     grid-area: hero;
   }
 
-  .settings-page-polish > div > div > div > section:nth-of-type(1) {
+  .settings-page-polish div:has(> .page-heading) > section:nth-of-type(1) {
     grid-area: profile;
   }
 
-  .settings-page-polish > div > div > div > section:nth-of-type(2) {
+  .settings-page-polish div:has(> .page-heading) > section:nth-of-type(2) {
     grid-area: appearance;
   }
 
-  .settings-page-polish > div > div > div > section:nth-of-type(3) {
+  .settings-page-polish div:has(> .page-heading) > section:nth-of-type(3) {
     grid-area: preferences;
   }
 
-  .settings-page-polish > div > div > div > section:nth-of-type(4) {
+  .settings-page-polish div:has(> .page-heading) > section:nth-of-type(4) {
     grid-area: notifications;
   }
 
-  .settings-page-polish > div > div > div > section:nth-of-type(5) {
+  .settings-page-polish div:has(> .page-heading) > section:nth-of-type(5) {
     grid-area: tools;
   }
 
-  .settings-page-polish > div > div > div > section:nth-of-type(6) {
+  .settings-page-polish div:has(> .page-heading) > section:nth-of-type(6) {
     grid-area: data;
   }
 
-  .settings-page-polish > div > div > div > section:nth-of-type(7) {
+  .settings-page-polish div:has(> .page-heading) > section:nth-of-type(7) {
     grid-area: stats;
   }
 
-  .settings-page-polish > div > div > div > button:last-of-type {
+  .settings-page-polish div:has(> .page-heading) > button:last-of-type {
     grid-area: signout;
+    width: min(100%, 42rem);
+    justify-self: center;
   }
 
-  .settings-page-polish > div > div > div > footer {
+  .settings-page-polish div:has(> .page-heading) > footer {
     grid-area: footer;
   }
 
-  .settings-page-polish > div > div > div > section:nth-of-type(7) > div {
+  /* Keep the two lower card pairs visually balanced without changing content. */
+  .settings-page-polish div:has(> .page-heading) > section:nth-of-type(3),
+  .settings-page-polish div:has(> .page-heading) > section:nth-of-type(4),
+  .settings-page-polish div:has(> .page-heading) > section:nth-of-type(5),
+  .settings-page-polish div:has(> .page-heading) > section:nth-of-type(6) {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    align-self: stretch;
+  }
+
+  .settings-page-polish div:has(> .page-heading) > section:nth-of-type(3) > .finance-panel,
+  .settings-page-polish div:has(> .page-heading) > section:nth-of-type(4) > .finance-panel,
+  .settings-page-polish div:has(> .page-heading) > section:nth-of-type(5) > .finance-panel,
+  .settings-page-polish div:has(> .page-heading) > section:nth-of-type(6) > .finance-panel {
+    flex: 1;
+  }
+
+  .settings-page-polish div:has(> .page-heading) > section:nth-of-type(7) > div {
     grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
   }
 
