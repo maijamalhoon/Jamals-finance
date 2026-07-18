@@ -1,6 +1,6 @@
 .finance-modal-content[style*="--finance-action"] {
-  width: min(calc(100vw - 0.75rem), 30rem) !important;
-  max-width: 30rem !important;
+  width: min(calc(100vw - 0.75rem), 32rem) !important;
+  max-width: 32rem !important;
   height: auto !important;
   min-height: 0 !important;
   max-height: calc(100dvh - 0.5rem) !important;
@@ -230,8 +230,8 @@
 
 @media (min-width: 640px) {
   .finance-modal-content[style*="--finance-action"] {
-    width: min(calc(100vw - 2rem), 38rem) !important;
-    max-width: clamp(34rem, 62vw, 38rem) !important;
+    width: min(calc(100vw - 2rem), 32rem) !important;
+    max-width: 32rem !important;
   }
 
   .finance-modal-content[style*="--finance-action"] .finance-modal-header,
@@ -249,7 +249,7 @@
 
 @media (max-width: 430px) {
   .finance-modal-content[style*="--finance-action"] {
-    width: min(calc(100vw - 0.75rem), 30rem) !important;
+    width: min(calc(100vw - 0.75rem), 32rem) !important;
   }
 
   .finance-modal-content[style*="--finance-action"] .finance-modal-body,
