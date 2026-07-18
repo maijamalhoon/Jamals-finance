@@ -5,8 +5,7 @@ import { useMemo, type CSSProperties, type ReactNode } from "react";
 import { CheckCircle2, Target } from "lucide-react";
 
 import { useCurrency } from "@/components/currency/CurrencyProvider";
-import { GOAL_ICONS } from "@/components/goals/goal-icons";
-import { getGoalCategoryStyle } from "@/components/goals/goal-styles";
+import { getGoalPresentation } from "@/components/goals/goal-icons";
 import {
   useAnimatedGoalValue,
   useProgressReveal,
@@ -36,10 +35,6 @@ function AnimatedCurrency({
   const { formatCurrency } = useCurrency();
 
   return <>{formatCurrency(animatedValue)}</>;
-}
-
-function formatPercent(value: number) {
-  return `${Math.round(value)}%`;
 }
 
 function getGoalProgress(goal: Goal) {
@@ -74,19 +69,9 @@ function GoalRow({
     reduceMotion,
     `${goal.id}:${percentage}`,
   );
-  const entry =
-    GOAL_ICONS.find((item) => item.value === goal.icon) ??
-    GOAL_ICONS[GOAL_ICONS.length - 1];
-  const GoalIcon = done ? CheckCircle2 : entry.icon;
-  const accent = done ? "var(--success)" : getGoalCategoryStyle(goal).accent;
-  const statusLabel =
-    !targetValid
-      ? "Unavailable"
-      : done
-        ? "Complete"
-        : percentage === 0
-          ? "Not started"
-          : formatPercent(percentage);
+  const presentation = getGoalPresentation(goal);
+  const GoalIcon = done ? CheckCircle2 : presentation.entry.icon;
+  const accent = presentation.accent;
   const progressScale =
     progressReady && percentage > 0 ? Math.min(percentage, 100) / 100 : 0;
   const rowStyle = {
@@ -97,11 +82,7 @@ function GoalRow({
   const progressStyle = {
     "--progress-duration": reduceMotion ? "0ms" : "820ms",
     "--progress-scale": progressScale,
-  } as CSSProperties;
-  const statusStyle = {
-    color: accent,
-    borderColor: `color-mix(in srgb, ${accent}, transparent 78%)`,
-    backgroundColor: `color-mix(in srgb, ${accent}, transparent 92%)`,
+    backgroundColor: `color-mix(in srgb, ${accent}, transparent 82%)`,
   } as CSSProperties;
 
   return (
@@ -109,9 +90,9 @@ function GoalRow({
       className="motion-card-entry border-b border-border/65 py-2.5 first:pt-0 last:border-b-0 last:pb-0"
       style={rowStyle}
     >
-      <div className="grid min-w-0 grid-cols-[36px_minmax(0,1fr)_auto] items-center gap-2.5">
+      <div className="grid min-w-0 grid-cols-[36px_minmax(0,1fr)] items-center gap-2.5">
         <span
-          className="grid size-9 shrink-0 place-items-center rounded-full border shadow-[var(--surface-highlight)]"
+          className="grid size-9 shrink-0 place-items-center rounded-full border"
           style={{
             color: accent,
             borderColor: `color-mix(in srgb, ${accent}, transparent 76%)`,
@@ -134,13 +115,6 @@ function GoalRow({
             )}
           </p>
         </div>
-
-        <span
-          className="shrink-0 whitespace-nowrap rounded-full border px-2 py-1 text-[9px] font-bold leading-none sm:text-[10px]"
-          style={statusStyle}
-        >
-          {statusLabel}
-        </span>
       </div>
 
       <div
