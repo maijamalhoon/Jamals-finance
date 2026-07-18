@@ -2,7 +2,7 @@
 
 import { type CSSProperties, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowDownUp } from "lucide-react";
+import { ArrowUpDown } from "lucide-react";
 import { toast } from "sonner";
 
 import { createClient } from "@/lib/supabase/client";
@@ -260,11 +260,12 @@ export default function TransferModal({ open, onClose, onSuccess }: Props) {
                     accounts={accounts}
                     placeholder="Select source account"
                     ariaLabel="From account"
+                    scrollPicker
                   />
                 </FinanceFormField>
 
-                <div className="flex items-center gap-3 py-1.5">
-                  <span aria-hidden="true" className="h-px flex-1 bg-border" />
+                <div className="grid w-full grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-3 py-1.5">
+                  <span aria-hidden="true" className="h-px w-full bg-border" />
                   <button
                     type="button"
                     onClick={handleSwapAccounts}
@@ -273,16 +274,16 @@ export default function TransferModal({ open, onClose, onSuccess }: Props) {
                     }
                     aria-label="Swap source and destination accounts"
                     title="Swap accounts"
-                    className="finance-focus group grid size-9 shrink-0 place-items-center border-0 bg-transparent p-0 transition-[opacity,transform] hover:opacity-65 active:scale-90 disabled:cursor-not-allowed disabled:opacity-30"
+                    className="finance-focus group grid size-9 shrink-0 justify-self-center place-items-center border-0 bg-transparent p-0 transition-[opacity,transform] hover:opacity-65 active:scale-90 disabled:cursor-not-allowed disabled:opacity-30"
                     style={{ color: TRANSFER_ACTION_COLOR }}
                   >
-                    <ArrowDownUp
+                    <ArrowUpDown
                       size={20}
                       strokeWidth={1.8}
                       className="transition-transform duration-300 group-hover:rotate-180 motion-reduce:transition-none"
                     />
                   </button>
-                  <span aria-hidden="true" className="h-px flex-1 bg-border" />
+                  <span aria-hidden="true" className="h-px w-full bg-border" />
                 </div>
 
                 <FinanceFormField
@@ -299,6 +300,7 @@ export default function TransferModal({ open, onClose, onSuccess }: Props) {
                     accounts={toAccounts}
                     placeholder="Select destination account"
                     ariaLabel="To account"
+                    scrollPicker
                   />
                 </FinanceFormField>
                 <p className="sr-only" aria-live="polite">
