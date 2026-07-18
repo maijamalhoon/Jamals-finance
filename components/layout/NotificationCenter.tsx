@@ -30,8 +30,9 @@ const toneStyles: Record<NotificationTone, string> = {
 };
 
 const notificationTriggerClassName =
-  "finance-control finance-focus relative grid h-11 w-11 shrink-0 place-items-center rounded-[14px] text-text-secondary outline-none transition-[transform,background-color,border-color,box-shadow,color] hover:-translate-y-0.5 hover:text-text-primary active:scale-[0.97]";
+  "finance-control finance-focus relative grid h-11 w-11 shrink-0 place-items-center rounded-[14px] font-sans text-text-secondary outline-none transition-[transform,background-color,border-color,box-shadow,color] hover:-translate-y-0.5 hover:text-text-primary active:scale-[0.97]";
 const GLASS_EASE = [0.22, 1, 0.36, 1] as const;
+const MENU_ICON_STROKE_WIDTH = 2;
 
 function formatAlertDate(dateKey: string) {
   const [year, month, day] = dateKey.split("-").map(Number);
@@ -65,7 +66,11 @@ function NotificationSummaryRow({
       <span
         className={`grid size-7 shrink-0 place-items-center rounded-[9px] ${toneStyles[alert.tone]}`}
       >
-        <SourceIcon size={13} strokeWidth={2.2} aria-hidden="true" />
+        <SourceIcon
+          size={13}
+          strokeWidth={MENU_ICON_STROKE_WIDTH}
+          aria-hidden="true"
+        />
       </span>
 
       <span className="min-w-0 flex-1">
@@ -103,14 +108,22 @@ function NotificationPanelContent({
       {state.status === "error" ? (
         <div className="flex items-center gap-2 rounded-[10px] px-2 py-2.5 text-[12px] text-text-secondary">
           <span className="grid size-7 shrink-0 place-items-center rounded-[9px] bg-danger/10 text-danger">
-            <AlertTriangle size={13} aria-hidden="true" />
+            <AlertTriangle
+              size={13}
+              strokeWidth={MENU_ICON_STROKE_WIDTH}
+              aria-hidden="true"
+            />
           </span>
           <span>Unavailable</span>
         </div>
       ) : state.visibleAlerts.length === 0 ? (
         <div className="flex items-center gap-2 rounded-[10px] px-2 py-2.5 text-[12px] text-text-secondary">
           <span className="grid size-7 shrink-0 place-items-center rounded-[9px] bg-surface-soft text-text-tertiary">
-            <Bell size={13} aria-hidden="true" />
+            <Bell
+              size={13}
+              strokeWidth={MENU_ICON_STROKE_WIDTH}
+              aria-hidden="true"
+            />
           </span>
           <span>No notifications</span>
         </div>
@@ -137,7 +150,11 @@ export function NotificationCenterLoading() {
       aria-label="Loading current alerts"
       className={`${notificationTriggerClassName} cursor-wait opacity-70`}
     >
-      <Bell size={18} aria-hidden="true" />
+      <Bell
+        size={18}
+        strokeWidth={MENU_ICON_STROKE_WIDTH}
+        aria-hidden="true"
+      />
     </button>
   );
 }
@@ -242,7 +259,7 @@ export default function NotificationCenter({ state }: NotificationCenterProps) {
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: -4, scale: 0.985 }}
                     transition={panelTransition}
-                    className="fixed right-4 z-[70] w-[15.5rem] max-w-[calc(100vw-2rem)] overflow-hidden rounded-[16px] border border-border/80 bg-surface-elevated/98 p-1.5 shadow-[0_18px_44px_rgb(15_23_42_/_0.18)] backdrop-blur-xl dark:shadow-[0_18px_48px_rgb(0_0_0_/_0.36)] sm:w-[16.5rem] lg:hidden"
+                    className="fixed right-4 z-[70] w-[15.5rem] max-w-[calc(100vw-2rem)] overflow-hidden rounded-[16px] border border-border/80 bg-surface-elevated/98 p-1.5 font-sans shadow-[0_18px_44px_rgb(15_23_42_/_0.18)] backdrop-blur-xl dark:shadow-[0_18px_48px_rgb(0_0_0_/_0.36)] sm:w-[16.5rem] lg:hidden"
                     style={{
                       top: "calc(max(1rem, env(safe-area-inset-top)) + 3.25rem)",
                     }}
@@ -268,7 +285,11 @@ export default function NotificationCenter({ state }: NotificationCenterProps) {
           onClick={() => setOpen((value) => !value)}
           className={notificationTriggerClassName}
         >
-          <Bell size={18} aria-hidden="true" />
+          <Bell
+            size={18}
+            strokeWidth={MENU_ICON_STROKE_WIDTH}
+            aria-hidden="true"
+          />
           {showCount ? (
             <span
               aria-hidden="true"
@@ -284,7 +305,7 @@ export default function NotificationCenter({ state }: NotificationCenterProps) {
             data-slot="dropdown-menu-content"
             role="menu"
             aria-label="Notifications"
-            className="absolute right-0 top-[calc(100%+0.5rem)] z-[70] hidden w-[15rem] max-w-[calc(100vw-4rem)] overflow-hidden rounded-[14px] border border-border/70 bg-surface-elevated/98 p-1.5 shadow-[0_14px_36px_rgb(15_23_42_/_0.16)] backdrop-blur-xl dark:shadow-[0_16px_40px_rgb(0_0_0_/_0.34)] lg:block"
+            className="absolute right-0 top-[calc(100%+0.5rem)] z-[70] hidden w-[15rem] max-w-[calc(100vw-4rem)] overflow-hidden rounded-[14px] border border-border/70 bg-surface-elevated/98 p-1.5 font-sans shadow-[0_14px_36px_rgb(15_23_42_/_0.16)] backdrop-blur-xl dark:shadow-[0_16px_40px_rgb(0_0_0_/_0.34)] lg:block"
           >
             <NotificationPanelContent
               state={state}
