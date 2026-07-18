@@ -23,48 +23,59 @@
   padding-top: 0 !important;
 }
 
-/* Reveal the complete SVG from left to right instead of using a dash pattern.
-   This keeps the sparkline continuous on every viewport and browser width. */
+/* A complete low-opacity graph remains visible at all times, while a second copy
+   draws over it on load. This prevents the line from disappearing or breaking on
+   mobile, tablet, desktop, large screens, or during a browser animation pause. */
 .dashboard-metric-graph {
   display: block;
   width: 100%;
   max-width: 100%;
   height: 1.45rem;
-  overflow: hidden !important;
-  -webkit-clip-path: inset(0 100% 0 0);
-  clip-path: inset(0 100% 0 0);
-  animation: dashboard-metric-graph-reveal 900ms var(--motion-ease) 100ms forwards;
-}
-
-.dashboard-metric-graph-path {
-  fill: none;
-  stroke-dasharray: none !important;
-  stroke-dashoffset: 0 !important;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  stroke-width: 1.9;
-  opacity: 0.88;
-  vector-effect: non-scaling-stroke;
+  overflow: visible !important;
+  -webkit-clip-path: none !important;
+  clip-path: none !important;
   animation: none !important;
 }
 
-@keyframes dashboard-metric-graph-reveal {
+.dashboard-metric-graph-path {
+  fill: none !important;
+  stroke-linecap: round !important;
+  stroke-linejoin: round !important;
+  vector-effect: non-scaling-stroke;
+}
+
+.dashboard-metric-graph-track {
+  stroke-dasharray: none !important;
+  stroke-dashoffset: 0 !important;
+  stroke-width: 1.85 !important;
+  opacity: 0.34;
+  animation: none !important;
+}
+
+.dashboard-metric-graph-active {
+  stroke-dasharray: 1 !important;
+  stroke-dashoffset: 1 !important;
+  stroke-width: 1.95 !important;
+  opacity: 0.92;
+  animation: dashboard-metric-graph-draw 900ms var(--motion-ease) 100ms forwards !important;
+}
+
+@keyframes dashboard-metric-graph-draw {
   to {
-    -webkit-clip-path: inset(0 0 0 0);
-    clip-path: inset(0 0 0 0);
+    stroke-dashoffset: 0;
   }
 }
 
 @media (hover: hover) and (pointer: fine) {
-  [data-dashboard-scroll] .dashboard-overview .dashboard-metric-card:hover .dashboard-metric-graph-path {
+  [data-dashboard-scroll] .dashboard-overview .dashboard-metric-card:hover .dashboard-metric-graph-active {
     opacity: 1;
   }
 }
 
 @media (max-width: 639px) {
-  /* Add a little breathing room between the net balance and quick actions. */
+  /* Add a little more breathing room between the net balance and quick actions. */
   .dashboard-balance-layout {
-    gap: clamp(1.3rem, 4.5vw, 1.55rem) !important;
+    gap: clamp(1.7rem, 5vw, 1.95rem) !important;
   }
 
   /* The four primary metrics are intentionally one full-width card per row on mobile. */
@@ -108,8 +119,12 @@
     height: 1.35rem;
   }
 
-  .dashboard-metric-graph-path {
-    stroke-width: 1.9;
+  .dashboard-metric-graph-track {
+    stroke-width: 1.8 !important;
+  }
+
+  .dashboard-metric-graph-active {
+    stroke-width: 1.95 !important;
   }
 }
 
@@ -125,15 +140,14 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .dashboard-metric-graph {
-    -webkit-clip-path: inset(0 0 0 0);
-    clip-path: inset(0 0 0 0);
-    animation: none;
-  }
-
-  .dashboard-metric-graph-path {
+  .dashboard-metric-graph-track,
+  .dashboard-metric-graph-active {
     stroke-dasharray: none !important;
     stroke-dashoffset: 0 !important;
     animation: none !important;
+  }
+
+  .dashboard-metric-graph-active {
+    opacity: 0.92;
   }
 }
