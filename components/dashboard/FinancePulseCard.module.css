@@ -41,24 +41,46 @@
 }
 
 .dot {
+  position: relative;
+  z-index: 0;
   width: 0.31rem;
   height: 0.31rem;
   flex: 0 0 auto;
   border-radius: 999px;
   transform-origin: center;
-  animation: pulse-dot-loop 1.85s ease-in-out infinite;
-  will-change: transform, opacity, box-shadow;
+  isolation: isolate;
+  animation: pulse-dot-core 1.85s ease-in-out infinite;
+  will-change: transform, opacity;
 }
 
-.tile:nth-child(2) .dot {
+/* Use a composited transform/opacity ring instead of animating box-shadow.
+   The visual pulse stays intact without forcing a paint on every frame. */
+.dot::after {
+  position: absolute;
+  z-index: -1;
+  inset: -0.3rem;
+  border-radius: inherit;
+  background: color-mix(in srgb, var(--pulse-accent), transparent 82%);
+  content: "";
+  opacity: 0;
+  transform: scale(0.36);
+  transform-origin: center;
+  animation: pulse-dot-ring 1.85s ease-out infinite;
+  will-change: transform, opacity;
+}
+
+.tile:nth-child(2) .dot,
+.tile:nth-child(2) .dot::after {
   animation-delay: -0.35s;
 }
 
-.tile:nth-child(3) .dot {
+.tile:nth-child(3) .dot,
+.tile:nth-child(3) .dot::after {
   animation-delay: -0.7s;
 }
 
-.tile:nth-child(4) .dot {
+.tile:nth-child(4) .dot,
+.tile:nth-child(4) .dot::after {
   animation-delay: -1.05s;
 }
 
@@ -88,18 +110,35 @@
   -webkit-line-clamp: 2;
 }
 
-@keyframes pulse-dot-loop {
+@keyframes pulse-dot-core {
   0%,
   100% {
-    transform: scale(0.82);
-    opacity: 0.72;
-    box-shadow: 0 0 0 0 color-mix(in srgb, var(--pulse-accent), transparent 78%);
+    transform: scale(0.84);
+    opacity: 0.74;
   }
 
   46% {
     transform: scale(1.14);
     opacity: 1;
-    box-shadow: 0 0 0 0.34rem color-mix(in srgb, var(--pulse-accent), transparent 90%);
+  }
+}
+
+@keyframes pulse-dot-ring {
+  0%,
+  18% {
+    opacity: 0;
+    transform: scale(0.36);
+  }
+
+  46% {
+    opacity: 0.46;
+    transform: scale(0.78);
+  }
+
+  78%,
+  100% {
+    opacity: 0;
+    transform: scale(1.18);
   }
 }
 
@@ -153,9 +192,18 @@
     transform: none;
   }
 
-  .dot {
+  .dot,
+  .dot::after {
     animation: none;
+  }
+
+  .dot {
     transform: none;
     opacity: 1;
+  }
+
+  .dot::after {
+    opacity: 0;
+    transform: none;
   }
 }
