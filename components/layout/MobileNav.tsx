@@ -1,9 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { motion, useReducedMotion } from "framer-motion";
-import { CircleDollarSign, X } from "lucide-react";
-import { usePathname } from "next/navigation";
+import {
+  AnimatePresence,
+  motion,
+  useReducedMotion,
+} from "framer-motion";
+import { CircleDollarSign, Search, X } from "lucide-react";
+import { usePathname, useRouter } from "next/navigation";
 import {
   useCallback,
   useEffect,
@@ -11,6 +15,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
+import { createPortal } from "react-dom";
 
 import JamalMenu from "@/components/layout/JamalMenu";
 import {
@@ -43,6 +48,7 @@ const SCROLL_IDLE_DELAY = 140;
 const SCROLL_DIRECTION_THRESHOLD = 1;
 const TAP_MOVE_TOLERANCE = 10;
 const CONTROL_EASE = [0.22, 1, 0.36, 1] as const;
+const SEARCH_EASE = [0.16, 1, 0.3, 1] as const;
 
 const INTERACTIVE_TAP_SELECTOR = [
   "a[href]",
@@ -97,9 +103,13 @@ function hasBlockingSurface() {
 
 export default function MobileNav({ notificationSlot }: MobileNavProps) {
   const pathname = usePathname();
+  const router = useRouter();
   const reduceMotion = useReducedMotion();
+  const searchInputRef = useRef<HTMLInputElement>(null);
   const [open, setOpen] = useState(false);
   const [portalOpen, setPortalOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
   const [controlsVisible, setControlsVisible] = useState(false);
   const hideTimerRef = useRef<number | null>(null);
   const tapRevealTimerRef = useRef<number | null>(null);
@@ -136,18 +146,34 @@ export default function MobileNav({ notificationSlot }: MobileNavProps) {
     }, AUTO_HIDE_DELAY);
   }, [clearHideTimer]);
 
-  const interactionOpen = open || portalOpen;
+  const closeSearch = useCallback(() => {
+    setSearchOpen(false);
+    setSearchQuery("");
+  }, []);
+
+  const openSearch = useCallback(() => {
+    document.dispatchEvent(
+      new KeyboardEvent("keydown", { key: "Escape", bubbles: true }),
+    );
+    clearHideTimer();
+    setControlsVisible(true);
+    setSearchOpen(true);
+  }, [clearHideTimer]);
+
+  const interactionOpen = open || portalOpen || searchOpen;
 
   useEffect(() => {
     const updatePortalState = () => {
-      const mobileControlCluster = document.querySelector<HTMLElement>(
-        "[data-mobile-control-cluster]",
+      const mobileControlClusters = Array.from(
+        document.querySelectorAll<HTMLElement>("[data-mobile-control-cluster]"),
       );
 
       setPortalOpen(
-        Boolean(
-          mobileControlCluster?.querySelector(
-            '[aria-expanded="true"], [data-popup-open], [data-slot="dropdown-menu-content"]',
+        mobileControlClusters.some((cluster) =>
+          Boolean(
+            cluster.querySelector(
+              '[aria-expanded="true"], [data-popup-open], [data-slot="dropdown-menu-content"]',
+            ),
           ),
         ),
       );
@@ -178,6 +204,27 @@ export default function MobileNav({ notificationSlot }: MobileNavProps) {
 
     if (wasOpen) showControlsForMoment();
   }, [clearHideTimer, interactionOpen, showControlsForMoment]);
+
+  useEffect(() => {
+    if (!searchOpen) return;
+
+    const frame = window.requestAnimationFrame(() => {
+      searchInputRef.current?.focus();
+    });
+
+    return () => window.cancelAnimationFrame(frame);
+  }, [searchOpen]);
+
+  useEffect(() => {
+    if (!searchOpen) return;
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") closeSearch();
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [closeSearch, searchOpen]);
 
   useEffect(() => {
     const scrollContainer = document.querySelector<HTMLElement>(
@@ -325,46 +372,94 @@ export default function MobileNav({ notificationSlot }: MobileNavProps) {
     };
   }, [clearHideTimer, clearScrollIdleTimer, clearTapRevealTimer]);
 
+  function handleSearch(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const trimmedQuery = searchQuery.trim();
+
+    if (!trimmedQuery) {
+      searchInputRef.current?.focus();
+      return;
+    }
+
+    router.push(
+      `/dashboard/transactions?search=${encodeURIComponent(trimmedQuery)}`,
+    );
+    closeSearch();
+  }
+
   const controlTransition = reduceMotion
     ? { duration: 0.01 }
     : { duration: 0.36, ease: CONTROL_EASE };
+  const searchTransition = reduceMotion
+    ? { duration: 0.01 }
+    : { duration: 0.42, ease: SEARCH_EASE };
+  const glassTransition = reduceMotion
+    ? { duration: 0.01 }
+    : { duration: 0.22, ease: SEARCH_EASE };
+
+  const searchMotion = searchOpen
+    ? {
+        left: "50%",
+        x: "-50%",
+        width: "min(34rem, calc(100vw - 2rem))",
+        opacity: 1,
+        scale: 1,
+      }
+    : controlsVisible
+      ? {
+          left: "4.25rem",
+          x: 0,
+          width: "2.75rem",
+          opacity: 1,
+          scale: 1,
+        }
+      : {
+          left: "-4rem",
+          x: 0,
+          width: "2.75rem",
+          opacity: 0,
+          scale: 0.96,
+        };
 
   return (
     <>
-      <motion.div
-        data-mobile-control-cluster
-        initial={false}
-        animate={
-          controlsVisible
-            ? { x: 0, opacity: 1, scale: 1 }
-            : { x: 152, opacity: 0, scale: 0.96 }
-        }
-        transition={controlTransition}
-        aria-hidden={!controlsVisible}
-        inert={!controlsVisible ? true : undefined}
-        className={`fixed right-4 top-[max(1rem,env(safe-area-inset-top))] z-40 flex items-center gap-2 will-change-transform print:hidden lg:hidden ${
-          controlsVisible ? "" : "pointer-events-none"
-        }`}
-      >
-        <div className="[&_button]:!size-11 [&_button]:!rounded-[14px] [&_button]:!border-border [&_button]:!bg-card/92 [&_button]:!text-text-primary [&_button]:!shadow-[0_8px_20px_rgb(15_23_42_/_0.1)] [&_button]:!backdrop-blur-md [&_button]:hover:!-translate-y-0.5 [&_button]:hover:!border-brand/30 [&_button]:hover:!bg-surface-elevated [&_button]:active:!scale-[0.97] dark:[&_button]:!border-border-strong/70 dark:[&_button]:!bg-surface-elevated/92 dark:[&_button]:!shadow-[0_10px_24px_rgb(0_0_0_/_0.28)]">
-          {notificationSlot}
-        </div>
-        <JamalMenu align="right" placement="bottom" variant="floating" />
-      </motion.div>
+      {typeof document !== "undefined"
+        ? createPortal(
+            <AnimatePresence>
+              {searchOpen ? (
+                <motion.button
+                  key="mobile-search-glass"
+                  type="button"
+                  aria-label="Close transaction search"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={glassTransition}
+                  onClick={closeSearch}
+                  className="fixed inset-0 z-30 bg-[rgb(41_86_200_/_0.07)] backdrop-blur-[4px] backdrop-saturate-105 dark:bg-[rgb(41_86_200_/_0.1)] lg:hidden"
+                />
+              ) : null}
+            </AnimatePresence>,
+            document.body,
+          )
+        : null}
 
       <Sheet open={open} onOpenChange={setOpen}>
         <motion.div
+          data-mobile-control-cluster
           initial={false}
           animate={
-            controlsVisible
-              ? { x: 0, opacity: 1, scale: 1 }
-              : { x: -88, opacity: 0, scale: 0.96 }
+            searchOpen
+              ? { x: -88, opacity: 0, scale: 0.96 }
+              : controlsVisible
+                ? { x: 0, opacity: 1, scale: 1 }
+                : { x: -88, opacity: 0, scale: 0.96 }
           }
           transition={controlTransition}
-          aria-hidden={!controlsVisible}
-          inert={!controlsVisible ? true : undefined}
+          aria-hidden={!controlsVisible || searchOpen}
+          inert={!controlsVisible || searchOpen ? true : undefined}
           className={`fixed left-4 top-[max(1rem,env(safe-area-inset-top))] z-40 will-change-transform print:hidden lg:hidden ${
-            controlsVisible ? "" : "pointer-events-none"
+            controlsVisible && !searchOpen ? "" : "pointer-events-none"
           }`}
         >
           <SheetTrigger
@@ -492,6 +587,90 @@ export default function MobileNav({ notificationSlot }: MobileNavProps) {
           </nav>
         </SheetContent>
       </Sheet>
+
+      <motion.form
+        data-mobile-control-cluster
+        role="search"
+        aria-label="Search transactions"
+        onSubmit={handleSearch}
+        initial={false}
+        animate={searchMotion}
+        transition={searchTransition}
+        className={`fixed top-[max(1rem,env(safe-area-inset-top))] z-[80] flex h-11 items-center overflow-hidden rounded-[14px] border bg-card/96 shadow-[0_8px_20px_rgb(15_23_42_/_0.1)] backdrop-blur-xl will-change-[left,width,transform,opacity] print:hidden lg:hidden dark:bg-surface-elevated/96 dark:shadow-[0_10px_24px_rgb(0_0_0_/_0.28)] ${
+          searchOpen
+            ? "border-brand/25"
+            : "border-border dark:border-border-strong/70"
+        } ${controlsVisible || searchOpen ? "" : "pointer-events-none"}`}
+      >
+        <button
+          type={searchOpen ? "submit" : "button"}
+          aria-label={searchOpen ? "Search transactions" : "Open transaction search"}
+          aria-expanded={searchOpen}
+          onClick={() => {
+            if (!searchOpen) openSearch();
+          }}
+          className="finance-focus grid h-11 w-11 shrink-0 place-items-center rounded-[14px] text-text-secondary outline-none transition-[background-color,color,transform] hover:bg-hover hover:text-text-primary active:scale-[0.97]"
+        >
+          <Search size={18} strokeWidth={2.15} aria-hidden="true" />
+        </button>
+
+        <label htmlFor="mobile-inline-transaction-search" className="sr-only">
+          Search transactions
+        </label>
+        <input
+          ref={searchInputRef}
+          id="mobile-inline-transaction-search"
+          type="search"
+          inputMode="search"
+          enterKeyHint="search"
+          autoComplete="off"
+          tabIndex={searchOpen ? 0 : -1}
+          aria-hidden={!searchOpen}
+          value={searchQuery}
+          onChange={(event) => setSearchQuery(event.target.value)}
+          placeholder="Search transactions..."
+          className={`min-w-0 flex-1 bg-transparent text-[14px] font-medium text-text-primary outline-none placeholder:text-text-tertiary transition-[opacity] duration-200 ${
+            searchOpen ? "opacity-100" : "pointer-events-none opacity-0"
+          }`}
+        />
+
+        <button
+          type="button"
+          aria-label="Close transaction search"
+          tabIndex={searchOpen ? 0 : -1}
+          onClick={closeSearch}
+          className={`finance-focus mr-1 grid h-9 w-9 shrink-0 place-items-center rounded-[12px] text-text-secondary outline-none transition-[opacity,transform,background-color,color] duration-200 hover:bg-hover hover:text-text-primary ${
+            searchOpen
+              ? "scale-100 opacity-100"
+              : "pointer-events-none scale-90 opacity-0"
+          }`}
+        >
+          <X size={16} strokeWidth={2.1} aria-hidden="true" />
+        </button>
+      </motion.form>
+
+      <motion.div
+        data-mobile-control-cluster
+        initial={false}
+        animate={
+          searchOpen
+            ? { x: 152, opacity: 0, scale: 0.96 }
+            : controlsVisible
+              ? { x: 0, opacity: 1, scale: 1 }
+              : { x: 152, opacity: 0, scale: 0.96 }
+        }
+        transition={controlTransition}
+        aria-hidden={!controlsVisible || searchOpen}
+        inert={!controlsVisible || searchOpen ? true : undefined}
+        className={`fixed right-4 top-[max(1rem,env(safe-area-inset-top))] z-40 flex items-center gap-2 will-change-transform print:hidden lg:hidden ${
+          controlsVisible && !searchOpen ? "" : "pointer-events-none"
+        }`}
+      >
+        <div className="[&_button]:!size-11 [&_button]:!rounded-[14px] [&_button]:!border-border [&_button]:!bg-card/92 [&_button]:!text-text-primary [&_button]:!shadow-[0_8px_20px_rgb(15_23_42_/_0.1)] [&_button]:!backdrop-blur-md [&_button]:hover:!-translate-y-0.5 [&_button]:hover:!border-brand/30 [&_button]:hover:!bg-surface-elevated [&_button]:active:!scale-[0.97] dark:[&_button]:!border-border-strong/70 dark:[&_button]:!bg-surface-elevated/92 dark:[&_button]:!shadow-[0_10px_24px_rgb(0_0_0_/_0.28)]">
+          {notificationSlot}
+        </div>
+        <JamalMenu align="right" placement="bottom" variant="floating" />
+      </motion.div>
     </>
   );
 }
