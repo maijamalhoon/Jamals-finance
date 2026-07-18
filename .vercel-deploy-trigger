@@ -1,2 +1,2 @@
-Production deployment trigger for responsive dashboard card updates.
-Commit source: 94f38afd5162f8636d63a585ca146be20d583043
+Production deployment trigger for all latest Jamals Finance UI updates.
+Includes balance count animation, larger balance and quick actions, static dashboard card hover surfaces, responsive top cards, goals, recent transactions, and polished income/expense forms.
