@@ -4,6 +4,7 @@ import { type CSSProperties, useEffect, useState } from "react";
 import { toast } from "sonner";
 
 import { createClient } from "@/lib/supabase/client";
+import AccountSelect from "@/components/accounts/AccountSelect";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import DatePicker from "@/components/ui/date-picker";
@@ -25,6 +26,8 @@ export interface GoalAccount {
   id: string;
   name: string;
   type: string;
+  balance?: number | string | null;
+  icon_key?: string | null;
 }
 
 export interface ExistingGoal {
@@ -46,6 +49,7 @@ interface Props {
 }
 
 const NO_GOAL_ACCOUNTS: GoalAccount[] = [];
+const NO_LINKED_ACCOUNT_ID = "__no_linked_goal_account__";
 const GOAL_ACTION_COLOR = "#157462";
 
 export default function GoalModal({
@@ -98,7 +102,7 @@ export default function GoalModal({
     let active = true;
     void createClient()
       .from("accounts")
-      .select("id, name, type")
+      .select("id, name, type, balance, icon_key")
       .eq("status", "active")
       .order("name")
       .then(({ data }) => {
@@ -237,19 +241,27 @@ export default function GoalModal({
 
           <div className="grid gap-3 sm:grid-cols-2">
             <FinanceFormField label="Account" htmlFor="goal-account">
-              <select
+              <AccountSelect
                 id="goal-account"
-                value={accountId}
-                onChange={(event) => setAccountId(event.target.value)}
-                className="finance-control finance-focus h-11 w-full px-3 text-sm text-text-primary outline-none"
-              >
-                <option value="">No linked account</option>
-                {availableAccounts.map((availableAccount) => (
-                  <option key={availableAccount.id} value={availableAccount.id}>
-                    {availableAccount.name}
-                  </option>
-                ))}
-              </select>
+                value={accountId || NO_LINKED_ACCOUNT_ID}
+                onValueChange={(nextAccountId) =>
+                  setAccountId(
+                    nextAccountId === NO_LINKED_ACCOUNT_ID ? "" : nextAccountId,
+                  )
+                }
+                accounts={[
+                  {
+                    id: NO_LINKED_ACCOUNT_ID,
+                    name: "No linked account",
+                    type: "optional",
+                    balance: null,
+                  },
+                  ...availableAccounts,
+                ]}
+                placeholder="No linked account"
+                ariaLabel="Goal account"
+                scrollPicker
+              />
             </FinanceFormField>
 
             <FinanceFormField label="Deadline" htmlFor="goal-deadline">
