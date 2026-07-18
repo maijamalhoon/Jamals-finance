@@ -1,0 +1,97 @@
+/* Landing-only icon and typography system.
+   Intentionally changes no layout, sizing, data, color, or motion values. */
+
+.jf-node4-landing {
+  font-family: var(--font-sans);
+  font-weight: 400;
+  font-optical-sizing: auto;
+  font-synthesis: none;
+  font-kerning: normal;
+  text-rendering: geometricPrecision;
+}
+
+/* Lucide rounded monoline outline treatment, scoped to the landing page. */
+.jf-node4-landing svg.lucide {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  shape-rendering: geometricPrecision;
+}
+
+.jf-node4-landing svg.lucide[aria-hidden="true"] {
+  pointer-events: none;
+}
+
+/* Headings: Geist Sans, 650–700. */
+.jf-node4-landing :where(h1) {
+  font-family: var(--font-sans);
+  font-weight: 700;
+}
+
+.jf-node4-landing :where(h2) {
+  font-family: var(--font-sans);
+  font-weight: 680;
+}
+
+.jf-node4-landing :where(h3) {
+  font-family: var(--font-sans);
+  font-weight: 650;
+}
+
+/* Body copy: Geist Sans, 400–500. */
+.jf-node4-landing :where(p, small, figcaption) {
+  font-family: var(--font-sans);
+  font-weight: 450;
+}
+
+/* Emphasized text remains strong without exceeding the requested range. */
+.jf-node4-landing :where(strong, b) {
+  font-family: var(--font-sans);
+  font-weight: 650;
+}
+
+/* Buttons, navigation, compact labels, badges, and UI captions: 550–650. */
+.jf-node4-landing :where(
+  a,
+  button,
+  label,
+  summary,
+  [role="button"],
+  [role="link"],
+  [role="tab"],
+  [role="menuitem"],
+  [role="option"],
+  .jf-eyebrow,
+  .jf-hero-badge,
+  .jf-live-pill,
+  .jf-hero-proof > span,
+  .jf-step-number,
+  .jf-chart-labels,
+  .jf-insight-header > span
+) {
+  font-family: var(--font-sans);
+  font-weight: 600;
+}
+
+.jf-node4-landing .jf-brand {
+  font-family: var(--font-sans);
+  font-weight: 700;
+}
+
+/* Monetary values and percentages use Geist Sans tabular numerals. */
+.jf-node4-landing :where(
+  .jf-preview-balance strong,
+  .jf-preview-balance > div > span,
+  .jf-preview-metrics strong,
+  .jf-activity-list b,
+  .jf-donut strong,
+  .jf-insight-bars small,
+  .jf-step-number,
+  .jf-chart-labels
+) {
+  font-family: var(--font-sans);
+  font-variant-numeric: tabular-nums lining-nums;
+  font-feature-settings: "tnum" 1, "lnum" 1;
+}
