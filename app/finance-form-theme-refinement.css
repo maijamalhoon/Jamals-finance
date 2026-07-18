@@ -122,7 +122,7 @@ html:not(.dark) .finance-modal-content {
   margin-block: 0 !important;
 }
 
-.finance-modal-content .finance-modal-body .grid {
+.finance-modal-content .finance-modal-body > .grid {
   gap: var(--finance-field-gap) !important;
 }
 
