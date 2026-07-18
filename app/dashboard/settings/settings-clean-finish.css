@@ -42,68 +42,56 @@
   line-height: 1.45 !important;
 }
 
-/* Neutral, thick outline icons instead of blue icon tiles. */
+/* Neutral icon treatment. */
 .settings-page-polish .finance-icon-bubble {
   width: 2.7rem !important;
   height: 2.7rem !important;
-  border: 2px solid var(--settings-icon-border) !important;
-  border-radius: 0.78rem !important;
-  background: var(--settings-icon-surface) !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
   color: var(--settings-icon-ink) !important;
   box-shadow: none !important;
+}
+
+/* Use only Lucide React rounded monoline outline icons. */
+.settings-page-polish .finance-icon-bubble::before,
+.settings-page-polish .finance-icon-bubble::after {
+  content: none !important;
+  display: none !important;
+  background: none !important;
+  -webkit-mask: none !important;
+  mask: none !important;
 }
 
 .settings-page-polish .finance-icon-bubble svg,
 .settings-page-polish .finance-panel > button > svg,
 .settings-page-polish [role="radio"] svg,
 .settings-page-polish .settings-core > div > div > button:last-of-type svg {
+  display: block !important;
   color: currentColor !important;
-  stroke-width: 2.35 !important;
-  stroke-linecap: round;
-  stroke-linejoin: round;
+  fill: none !important;
+  stroke: currentColor !important;
+  stroke-width: 2.3 !important;
+  stroke-linecap: round !important;
+  stroke-linejoin: round !important;
+  vector-effect: non-scaling-stroke;
 }
 
 .settings-page-polish .finance-icon-bubble svg {
-  width: 1.18rem !important;
-  height: 1.18rem !important;
+  width: 1.28rem !important;
+  height: 1.28rem !important;
 }
 
-/* Currency gets a clear thick-outline money icon while retaining the same
-   Preferences dialog and all of its existing functionality. */
-.settings-page-polish .settings-core > div > div > section:nth-of-type(3) .finance-icon-bubble svg {
-  display: none !important;
-}
-
-.settings-page-polish .settings-core > div > div > section:nth-of-type(3) .finance-icon-bubble::after {
-  content: "" !important;
-  display: block !important;
-  width: 1.24rem;
-  height: 1.24rem;
-  background: currentColor;
-  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='2.5' y='6.5' width='19' height='11' rx='2'/%3E%3Ccircle cx='12' cy='12' r='2.2'/%3E%3Cpath d='M6 12h.01M18 12h.01'/%3E%3C/svg%3E") center / contain no-repeat;
-  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='2.5' y='6.5' width='19' height='11' rx='2'/%3E%3Ccircle cx='12' cy='12' r='2.2'/%3E%3Cpath d='M6 12h.01M18 12h.01'/%3E%3C/svg%3E") center / contain no-repeat;
-}
-
-/* Replace the text-like View Categories glyph with a proper outline grid. */
-.settings-page-polish .settings-experience-v2 > section .finance-panel > button:nth-of-type(2) .finance-icon-bubble::after {
-  content: "" !important;
-  display: block !important;
-  width: 1.18rem;
-  height: 1.18rem;
-  background: currentColor;
-  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='3' width='7' height='7' rx='1.2'/%3E%3Crect x='14' y='3' width='7' height='7' rx='1.2'/%3E%3Crect x='3' y='14' width='7' height='7' rx='1.2'/%3E%3Crect x='14' y='14' width='7' height='7' rx='1.2'/%3E%3C/svg%3E") center / contain no-repeat;
-  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='3' width='7' height='7' rx='1.2'/%3E%3Crect x='14' y='3' width='7' height='7' rx='1.2'/%3E%3Crect x='3' y='14' width='7' height='7' rx='1.2'/%3E%3Crect x='14' y='14' width='7' height='7' rx='1.2'/%3E%3C/svg%3E") center / contain no-repeat;
-}
-
-/* Theme choices remain clearly selectable without blue icons. */
+/* Theme choices stay clear without colored icon tiles. */
 .settings-page-polish .settings-core > div > div > section:nth-of-type(2) [role="radio"] {
   color: var(--text-secondary) !important;
 }
 
 .settings-page-polish .settings-core > div > div > section:nth-of-type(2) [role="radio"] > span:first-child {
-  border: 1.5px solid var(--settings-icon-border) !important;
-  background: var(--surface-primary) !important;
+  border: 0 !important;
+  background: transparent !important;
   color: var(--text-primary) !important;
+  box-shadow: none !important;
 }
 
 .settings-page-polish .settings-core > div > div > section:nth-of-type(2) [role="radio"][aria-checked="true"] {
@@ -114,7 +102,7 @@
 }
 
 .settings-page-polish .settings-core > div > div > section:nth-of-type(2) [role="radio"][aria-checked="true"] > span:first-child {
-  border-color: color-mix(in srgb, var(--text-primary), transparent 58%) !important;
+  border: 0 !important;
 }
 
 /* Keep export action icons neutral too. */
@@ -184,6 +172,5 @@
   .settings-page-polish .finance-icon-bubble {
     width: 2.45rem !important;
     height: 2.45rem !important;
-    border-radius: 0.72rem !important;
   }
 }
