@@ -9,6 +9,7 @@ import "./settings-desktop-layout.css";
 import "./settings-restructure.css";
 import "./settings-windows-switch.css";
 import "./settings-clean-finish.css";
+import "./settings-appearance-global.css";
 
 export const dynamic = "force-dynamic";
 
