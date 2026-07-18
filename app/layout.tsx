@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import "./finance-form-unification.css";
 import { Toaster } from "sonner";
 import MotionProvider from "@/components/motion/MotionProvider";
 import { CurrencyProvider } from "@/components/currency/CurrencyProvider";
@@ -15,7 +16,6 @@ const geistSans = Geist({
   subsets: ["latin"],
   variable: "--font-geist-sans",
 });
-
 const geistMono = Geist_Mono({
   subsets: ["latin"],
   variable: "--font-geist-mono",
