@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, Layers3, Package, Zap } from "lucide-react";
+import { ArrowRight, BriefcaseBusiness, Layers3, Package } from "lucide-react";
 import { Cell, Pie, PieChart, Tooltip } from "recharts";
 
 import ChartFrame from "@/components/ui/chart-frame";
@@ -232,8 +232,8 @@ export default function InvestmentOverviewWidget({
       <header className="flex min-w-0 items-start justify-between gap-3">
         <div className="min-w-0">
           <div className="flex min-w-0 items-center gap-2 text-[10px] font-bold uppercase tracking-[0.16em] text-text-secondary">
-            <span className="dashboard-list-card-kicker-icon">
-              <Zap />
+            <span className="dashboard-list-card-kicker-icon !border-transparent !bg-transparent !text-text-secondary !shadow-none">
+              <BriefcaseBusiness size={15} strokeWidth={2.3} aria-hidden="true" />
             </span>
             <span className="truncate">Investments</span>
           </div>
