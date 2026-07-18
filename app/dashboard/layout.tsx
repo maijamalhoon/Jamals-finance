@@ -25,6 +25,7 @@ import "./header-search-polish.css";
 import "./overview-top-metrics.css";
 import "./metric-sparkline-fix.css";
 import "./transaction-modal-viewport.css";
+import "./card-borderless-policy.css";
 
 export const dynamic = "force-dynamic";
 
