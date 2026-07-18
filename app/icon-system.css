@@ -1,0 +1,39 @@
+@layer base {
+  /*
+   * Keep every Lucide icon on the same rounded monoline system without
+   * changing its authored width, height, or stroke width.
+   */
+  :where(svg.lucide) {
+    fill: none;
+    flex-shrink: 0;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    shape-rendering: geometricPrecision;
+  }
+
+  /*
+   * Icon-led controls use the same Geist text voice as the rest of the
+   * product. Existing font sizes, weights, spacing, and component geometry
+   * remain untouched.
+   */
+  :where(
+      button,
+      a,
+      label,
+      summary,
+      [role="button"],
+      [role="link"],
+      [role="tab"],
+      [role="menuitem"],
+      [role="option"]
+    ):has(svg.lucide) {
+    font-family: var(--font-sans);
+    font-kerning: normal;
+    font-synthesis: none;
+    text-rendering: geometricPrecision;
+  }
+
+  :where(svg.lucide[aria-hidden="true"]) {
+    pointer-events: none;
+  }
+}
