@@ -34,6 +34,7 @@ interface Account {
   name: string;
   type: string;
   balance: number;
+  icon_key?: string | null;
 }
 
 interface Props {
@@ -92,7 +93,7 @@ export default function TransferModal({ open, onClose, onSuccess }: Props) {
       setLoading(true);
       const { data } = await supabase
         .from("accounts")
-        .select("id, name, type, balance")
+        .select("id, name, type, balance, icon_key")
         .eq("status", "active")
         .order("name");
 
@@ -264,28 +265,23 @@ export default function TransferModal({ open, onClose, onSuccess }: Props) {
 
                 <div className="flex items-center gap-3 py-1.5">
                   <span aria-hidden="true" className="h-px flex-1 bg-border" />
-                  <Button
+                  <button
                     type="button"
-                    variant="outline"
-                    size="icon"
                     onClick={handleSwapAccounts}
                     disabled={
                       !fromAccountId || !toAccountId || loading || saving
                     }
                     aria-label="Swap source and destination accounts"
                     title="Swap accounts"
-                    className="group size-10 shrink-0 rounded-[13px] border shadow-none"
-                    style={{
-                      color: TRANSFER_ACTION_COLOR,
-                      borderColor: `color-mix(in srgb, ${TRANSFER_ACTION_COLOR}, transparent 58%)`,
-                      background: `color-mix(in srgb, ${TRANSFER_ACTION_COLOR}, transparent 90%)`,
-                    }}
+                    className="finance-focus group grid size-9 shrink-0 place-items-center border-0 bg-transparent p-0 transition-[opacity,transform] hover:opacity-65 active:scale-90 disabled:cursor-not-allowed disabled:opacity-30"
+                    style={{ color: TRANSFER_ACTION_COLOR }}
                   >
                     <ArrowDownUp
-                      size={17}
-                      className="transition-transform duration-300 group-hover:rotate-180 group-active:scale-90 motion-reduce:transition-none"
+                      size={20}
+                      strokeWidth={1.8}
+                      className="transition-transform duration-300 group-hover:rotate-180 motion-reduce:transition-none"
                     />
-                  </Button>
+                  </button>
                   <span aria-hidden="true" className="h-px flex-1 bg-border" />
                 </div>
 
@@ -352,7 +348,7 @@ export default function TransferModal({ open, onClose, onSuccess }: Props) {
                           ? "transfer-amount-error"
                           : "transfer-amount-balance"
                       }
-                      className="pr-[4.75rem] font-semibold tabular-nums"
+                      className="pr-14 font-semibold tabular-nums"
                     />
                     <button
                       type="button"
@@ -363,12 +359,8 @@ export default function TransferModal({ open, onClose, onSuccess }: Props) {
                         loading ||
                         saving
                       }
-                      className="finance-focus absolute inset-y-1.5 right-1.5 inline-flex min-w-14 items-center justify-center rounded-[10px] border px-2.5 text-xs font-black uppercase tracking-[0.04em] transition-[background-color,border-color,transform] active:scale-[0.97] disabled:cursor-not-allowed disabled:border-border disabled:bg-surface-inset disabled:text-text-tertiary"
-                      style={{
-                        color: TRANSFER_ACTION_COLOR,
-                        borderColor: `color-mix(in srgb, ${TRANSFER_ACTION_COLOR}, transparent 60%)`,
-                        background: `color-mix(in srgb, ${TRANSFER_ACTION_COLOR}, transparent 90%)`,
-                      }}
+                      className="finance-focus absolute right-2 top-1/2 -translate-y-1/2 border-0 bg-transparent px-1.5 py-1 text-[11px] font-extrabold tracking-[0.02em] transition-[opacity,transform] hover:opacity-65 active:scale-95 disabled:cursor-not-allowed disabled:text-text-tertiary disabled:opacity-45"
+                      style={{ color: TRANSFER_ACTION_COLOR }}
                       aria-label="Use the full available account balance"
                       title="Use full available balance"
                     >
