@@ -15,9 +15,9 @@ import type {
 } from "react";
 import { CalendarDays } from "lucide-react";
 
-import { cn } from "@/lib/utils";
 import { financeFieldErrorClass } from "@/components/ui/finance-modal";
 import { useTouchWheelPickerMode } from "@/components/ui/touch-wheel-picker";
+import { cn } from "@/lib/utils";
 
 const DATE_WHEEL_RANGE = 8;
 const MOMENTUM_WINDOW_MS = 220;
@@ -47,7 +47,6 @@ function isIsoDate(value: string) {
 
 function isoToDisplay(value: string) {
   if (!isIsoDate(value)) return "";
-
   const [year, month, day] = value.split("-");
   return `${day}/${month}/${year}`;
 }
@@ -57,15 +56,11 @@ function isoToDate(value: string) {
   const [year, month, day] = value.split("-").map(Number);
   const parsed = new Date(year, month - 1, day, 12);
 
-  if (
-    parsed.getFullYear() !== year ||
-    parsed.getMonth() !== month - 1 ||
-    parsed.getDate() !== day
-  ) {
-    return null;
-  }
-
-  return parsed;
+  return parsed.getFullYear() === year &&
+    parsed.getMonth() === month - 1 &&
+    parsed.getDate() === day
+    ? parsed
+    : null;
 }
 
 function dateToIso(value: Date) {
@@ -90,25 +85,15 @@ function daysBetween(start: string, end: string) {
   const second = isoToDate(end);
   if (!first || !second) return 0;
 
-  const firstUtc = Date.UTC(
-    first.getFullYear(),
-    first.getMonth(),
-    first.getDate(),
-  );
-  const secondUtc = Date.UTC(
-    second.getFullYear(),
-    second.getMonth(),
-    second.getDate(),
-  );
+  const firstUtc = Date.UTC(first.getFullYear(), first.getMonth(), first.getDate());
+  const secondUtc = Date.UTC(second.getFullYear(), second.getMonth(), second.getDate());
   return Math.round((secondUtc - firstUtc) / 86_400_000);
 }
 
 function formatTypedDate(value: string) {
   const digits = value.replace(/\D/g, "").slice(0, 8);
-
   if (digits.length <= 2) return digits;
   if (digits.length <= 4) return `${digits.slice(0, 2)}/${digits.slice(2)}`;
-
   return `${digits.slice(0, 2)}/${digits.slice(2, 4)}/${digits.slice(4)}`;
 }
 
@@ -151,7 +136,9 @@ function getDateError(value: string, minDate?: string, maxDate?: string) {
 
   const isoValue = displayToIso(value);
   if (!isoValue) return "Enter a valid date as DD/MM/YYYY.";
-  if (!isWithinRange(isoValue, minDate, maxDate)) return "Enter a date in the allowed range.";
+  if (!isWithinRange(isoValue, minDate, maxDate)) {
+    return "Enter a date in the allowed range.";
+  }
 
   return "";
 }
@@ -211,11 +198,13 @@ function DateWheelField({
   useEffect(() => () => clearSettleTimer(), [clearSettleTimer]);
 
   const commitOffset = useCallback(
-    (requestedOffset: number) => {
+    (offset: number) => {
       const baseValue = baseValueRef.current;
-      const requestedValue = addIsoDays(baseValue, requestedOffset);
-      const nextValue = clampIsoDate(requestedValue, minDate, maxDate);
-      const actualOffset = daysBetween(baseValue, nextValue);
+      const nextValue = clampIsoDate(
+        addIsoDays(baseValue, offset),
+        minDate,
+        maxDate,
+      );
 
       baseValueRef.current = nextValue;
       positionRef.current = 0;
@@ -223,8 +212,6 @@ function DateWheelField({
       setTransitionMs(0);
       setPosition(0);
       if (nextValue !== value) onChange(nextValue);
-
-      return actualOffset;
     },
     [maxDate, minDate, onChange, value],
   );
@@ -233,14 +220,19 @@ function DateWheelField({
     (requestedOffset: number, duration = 260) => {
       clearSettleTimer();
       const baseValue = baseValueRef.current;
-      const requestedValue = addIsoDays(baseValue, requestedOffset);
-      const boundedValue = clampIsoDate(requestedValue, minDate, maxDate);
+      const boundedValue = clampIsoDate(
+        addIsoDays(baseValue, requestedOffset),
+        minDate,
+        maxDate,
+      );
       const targetOffset = clamp(
         daysBetween(baseValue, boundedValue),
         -DATE_WHEEL_RANGE,
         DATE_WHEEL_RANGE,
       );
-      const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      const reducedMotion = window.matchMedia(
+        "(prefers-reduced-motion: reduce)",
+      ).matches;
       const nextDuration = reducedMotion ? 0 : duration;
 
       isSettlingRef.current = true;
@@ -298,7 +290,8 @@ function DateWheelField({
         DATE_WHEEL_RANGE,
       );
       const elapsed = Math.max(1, now - lastTimeRef.current);
-      const instantVelocity = (lastYRef.current - event.clientY) / height / elapsed;
+      const instantVelocity =
+        (lastYRef.current - event.clientY) / height / elapsed;
 
       velocityRef.current = velocityRef.current * 0.58 + instantVelocity * 0.42;
       lastYRef.current = event.clientY;
@@ -329,14 +322,17 @@ function DateWheelField({
 
       const idleFor = performance.now() - lastTimeRef.current;
       const velocity = cancelled || idleFor > 90 ? 0 : velocityRef.current;
-      const projectedMomentum = clamp(
+      const momentum = clamp(
         velocity * MOMENTUM_WINDOW_MS,
         -MAX_MOMENTUM_DAYS,
         MAX_MOMENTUM_DAYS,
       );
-      const projectedPosition = positionRef.current + projectedMomentum;
       const targetOffset = Math.round(
-        clamp(projectedPosition, -DATE_WHEEL_RANGE, DATE_WHEEL_RANGE),
+        clamp(
+          positionRef.current + momentum,
+          -DATE_WHEEL_RANGE,
+          DATE_WHEEL_RANGE,
+        ),
       );
       const distance = Math.abs(targetOffset - positionRef.current);
       const duration = Math.round(clamp(210 + distance * 72, 210, 520));
@@ -370,7 +366,6 @@ function DateWheelField({
     [disabled, openCalendar, settleAt, value],
   );
 
-  const baseValue = baseValueRef.current;
   const offsets = Array.from(
     { length: DATE_WHEEL_RANGE * 2 + 1 },
     (_, index) => index - DATE_WHEEL_RANGE,
@@ -413,7 +408,7 @@ function DateWheelField({
             key={offset}
             className="flex h-full w-full items-center px-3 pr-11 text-text-primary"
           >
-            {isoToDisplay(addIsoDays(baseValue, offset))}
+            {isoToDisplay(addIsoDays(baseValueRef.current, offset))}
           </div>
         ))}
       </div>
@@ -437,7 +432,7 @@ export default function DatePicker({
   className,
   minDate,
   maxDate,
-  scrollPicker = false,
+  scrollPicker = true,
 }: DatePickerProps) {
   const formattedValue = useMemo(() => isoToDisplay(value), [value]);
   const [displayValue, setDisplayValue] = useState(formattedValue);
@@ -452,15 +447,15 @@ export default function DatePicker({
       setTouched(false);
       return;
     }
-
     if (!touched) setDisplayValue("");
   }, [formattedValue, touched, value]);
 
   const error = getDateError(displayValue, minDate, maxDate);
   const internalErrorId = id ? `${id}-error` : undefined;
-  const describedBy = [ariaDescribedBy, touched && error ? internalErrorId : null]
-    .filter(Boolean)
-    .join(" ") || undefined;
+  const describedBy =
+    [ariaDescribedBy, touched && error ? internalErrorId : null]
+      .filter(Boolean)
+      .join(" ") || undefined;
 
   const openCalendar = useCallback(() => {
     if (disabled) return;
@@ -470,11 +465,8 @@ export default function DatePicker({
     if (!input) return;
 
     try {
-      if (typeof input.showPicker === "function") {
-        input.showPicker();
-      } else {
-        input.click();
-      }
+      if (typeof input.showPicker === "function") input.showPicker();
+      else input.click();
     } catch {
       input.click();
     }
@@ -491,7 +483,6 @@ export default function DatePicker({
       onChange(nextIsoValue);
       return;
     }
-
     onChange("");
   }
 
@@ -582,7 +573,9 @@ export default function DatePicker({
       </div>
 
       {touched && error ? (
-        <p id={internalErrorId} className={financeFieldErrorClass}>{error}</p>
+        <p id={internalErrorId} className={financeFieldErrorClass}>
+          {error}
+        </p>
       ) : null}
     </div>
   );
