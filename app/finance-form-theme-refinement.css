@@ -80,12 +80,33 @@ html:not(.dark) .finance-modal-content {
 }
 
 /*
- * Account and category are touch-wheel listboxes on phones and tablets.
- * Increase only these two controls by a few pixels; desktop geometry and every
- * other field remain untouched.
+ * Account and category use the same single-slot touch wheel on phones and
+ * tablets. Keep every occurrence identical and only a few pixels taller than
+ * the previous size. Add a restrained amount of breathing room to the forms
+ * shown in the mobile references without changing their structure.
  */
 @media (max-width: 1024px) and (pointer: coarse) {
   .finance-modal-content [role="listbox"].field-input {
-    min-height: 3.125rem !important;
+    height: 3.5rem !important;
+    min-height: 3.5rem !important;
+    max-height: 3.5rem !important;
+  }
+
+  .finance-modal-content .finance-modal-body:has(#transaction-amount) {
+    gap: 0.75rem !important;
+  }
+
+  .finance-modal-content .finance-modal-body:has(#goal-name) > :not(:first-child),
+  .finance-modal-content
+    .finance-modal-body:has(#transfer-from-account)
+    > :not(:first-child) {
+    margin-block-start: 0.875rem !important;
+  }
+
+  .finance-modal-content .finance-modal-body:has(#goal-name) > .grid,
+  .finance-modal-content
+    .finance-modal-body:has(#transfer-from-account)
+    > .grid {
+    gap: 0.875rem !important;
   }
 }
