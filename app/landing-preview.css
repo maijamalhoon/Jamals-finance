@@ -1,0 +1,395 @@
+/* Dashboard preview */
+.jf-dashboard-preview {
+  position: relative;
+  min-width: 0;
+  overflow: hidden;
+  border-radius: clamp(1.25rem, 2vw, 1.8rem);
+  padding: clamp(0.85rem, 1.5vw, 1.2rem);
+  color: var(--jf-ink);
+  background: var(--jf-surface);
+  box-shadow: var(--jf-shadow), inset 0 1px 0 rgb(255 255 255 / 0.55);
+  backdrop-filter: blur(20px) saturate(1.1);
+}
+
+.dark .jf-dashboard-preview {
+  box-shadow: var(--jf-shadow), inset 0 1px 0 rgb(255 255 255 / 0.06);
+}
+
+.jf-dashboard-preview::before {
+  position: absolute;
+  inset: -25% auto auto -18%;
+  width: 16rem;
+  height: 16rem;
+  border-radius: 999px;
+  background: rgb(49 91 216 / 0.13);
+  filter: blur(50px);
+  pointer-events: none;
+  content: "";
+}
+
+.jf-preview-topbar,
+.jf-panel-heading,
+.jf-insight-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.jf-preview-topbar {
+  position: relative;
+  padding: 0.45rem 0.35rem 0.8rem;
+}
+
+.jf-preview-topbar p,
+.jf-panel-heading p,
+.jf-insight-header p {
+  color: var(--jf-muted);
+  font-size: 0.7rem;
+  font-weight: 650;
+}
+
+.jf-preview-topbar strong,
+.jf-panel-heading strong,
+.jf-insight-header strong {
+  display: block;
+  margin-top: 0.12rem;
+  color: var(--jf-ink);
+  font-size: 0.88rem;
+  font-weight: 720;
+}
+
+.jf-live-pill {
+  min-height: 1.75rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  border-radius: 999px;
+  padding-inline: 0.65rem;
+  color: var(--jf-green);
+  background: var(--jf-green-soft);
+  font-size: 0.66rem;
+  font-weight: 720;
+}
+
+.jf-live-pill > span {
+  width: 0.4rem;
+  height: 0.4rem;
+  border-radius: 999px;
+  background: currentColor;
+  box-shadow: 0 0 0 4px color-mix(in srgb, currentColor 12%, transparent);
+}
+
+.jf-preview-balance {
+  position: relative;
+  min-height: 10.5rem;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  border-radius: 1.15rem;
+  padding: clamp(1.15rem, 2.5vw, 1.75rem);
+  color: #ffffff;
+  background:
+    radial-gradient(circle at 85% 20%, rgb(255 255 255 / 0.22), transparent 30%),
+    linear-gradient(135deg, #315bd8, #4f61d8 48%, #7452c7);
+  box-shadow: 0 18px 38px rgb(49 91 216 / 0.2);
+}
+
+.jf-preview-balance p {
+  font-size: 0.75rem;
+  font-weight: 620;
+  opacity: 0.78;
+}
+
+.jf-preview-balance strong {
+  display: block;
+  margin-top: 0.35rem;
+  font-variant-numeric: tabular-nums;
+  font-size: clamp(1.8rem, 4vw, 3.1rem);
+  font-weight: 760;
+  letter-spacing: -0.055em;
+}
+
+.jf-preview-balance > div:first-child > span {
+  width: fit-content;
+  min-height: 1.7rem;
+  margin-top: 0.75rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  border-radius: 999px;
+  padding-inline: 0.55rem;
+  background: rgb(255 255 255 / 0.14);
+  font-size: 0.67rem;
+  font-weight: 670;
+}
+
+.jf-preview-balance > div:first-child > span svg {
+  width: 0.85rem;
+  height: 0.85rem;
+}
+
+.jf-balance-orbit {
+  position: relative;
+  width: clamp(5.5rem, 10vw, 7.5rem);
+  aspect-ratio: 1;
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: rgb(255 255 255 / 0.12);
+  box-shadow:
+    0 0 0 1px rgb(255 255 255 / 0.18),
+    0 0 0 15px rgb(255 255 255 / 0.05),
+    0 0 0 30px rgb(255 255 255 / 0.035);
+}
+
+.jf-balance-orbit svg {
+  width: 2.2rem;
+  height: 2.2rem;
+}
+
+.jf-preview-metrics {
+  margin-top: 0.75rem;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.65rem;
+}
+
+.jf-preview-metrics > div {
+  min-width: 0;
+  border-radius: 0.95rem;
+  padding: 0.85rem;
+  background: color-mix(in srgb, var(--jf-surface-solid) 76%, transparent);
+  box-shadow: inset 0 0 0 1px var(--jf-line);
+}
+
+.jf-preview-metrics > div > span {
+  width: 1.8rem;
+  height: 1.8rem;
+  display: grid;
+  place-items: center;
+  border-radius: 0.62rem;
+}
+
+.jf-preview-metrics > div > span svg {
+  width: 0.95rem;
+  height: 0.95rem;
+}
+
+.jf-preview-metrics > div[data-tone="green"] > span { color: var(--jf-green); background: var(--jf-green-soft); }
+.jf-preview-metrics > div[data-tone="red"] > span { color: var(--jf-red); background: var(--jf-red-soft); }
+.jf-preview-metrics > div[data-tone="cyan"] > span { color: var(--jf-cyan); background: var(--jf-cyan-soft); }
+
+.jf-preview-metrics p {
+  margin-top: 0.65rem;
+  overflow: hidden;
+  color: var(--jf-muted);
+  font-size: 0.66rem;
+  font-weight: 620;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.jf-preview-metrics strong {
+  display: block;
+  margin-top: 0.18rem;
+  overflow: hidden;
+  color: var(--jf-ink);
+  font-variant-numeric: tabular-nums;
+  font-size: clamp(0.78rem, 1.4vw, 0.95rem);
+  font-weight: 730;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.jf-preview-grid {
+  margin-top: 0.75rem;
+  display: grid;
+  grid-template-columns: minmax(0, 1.12fr) minmax(12.5rem, 0.88fr);
+  gap: 0.65rem;
+}
+
+.jf-chart-panel,
+.jf-activity-panel {
+  min-width: 0;
+  border-radius: 0.95rem;
+  padding: 0.9rem;
+  background: color-mix(in srgb, var(--jf-surface-solid) 78%, transparent);
+  box-shadow: inset 0 0 0 1px var(--jf-line);
+}
+
+.jf-panel-heading > svg {
+  width: 1.05rem;
+  height: 1.05rem;
+  color: var(--jf-blue);
+}
+
+.jf-chart {
+  position: relative;
+  height: 9.25rem;
+  margin-top: 0.75rem;
+  overflow: hidden;
+}
+
+.jf-chart-gridline {
+  position: absolute;
+  right: 0;
+  left: 0;
+  height: 1px;
+  background: var(--jf-line);
+}
+
+.jf-chart-gridline[data-line="1"] { top: 20%; }
+.jf-chart-gridline[data-line="2"] { top: 48%; }
+.jf-chart-gridline[data-line="3"] { top: 76%; }
+
+.jf-chart svg {
+  position: absolute;
+  inset: 0 0 1.1rem;
+  width: 100%;
+  height: calc(100% - 1.1rem);
+  overflow: visible;
+  color: var(--jf-blue);
+}
+
+.jf-chart-area {
+  fill: url(#jf-chart-area);
+  opacity: 0.75;
+}
+
+.jf-chart-line {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+}
+
+.jf-chart-labels {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  display: flex;
+  justify-content: space-between;
+  color: var(--jf-muted);
+  font-size: 0.55rem;
+  font-weight: 620;
+}
+
+.jf-activity-list {
+  margin-top: 0.75rem;
+  display: grid;
+  gap: 0.5rem;
+}
+
+.jf-activity-list > div {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.55rem;
+  border-radius: 0.75rem;
+  padding: 0.55rem;
+  background: color-mix(in srgb, var(--jf-soft) 66%, transparent);
+}
+
+.jf-activity-dot {
+  width: 0.45rem;
+  height: 0.45rem;
+  border-radius: 999px;
+}
+
+.jf-activity-dot-positive { background: var(--jf-green); }
+.jf-activity-dot-negative { background: var(--jf-red); }
+
+.jf-activity-list span:nth-child(2) {
+  min-width: 0;
+}
+
+.jf-activity-list strong,
+.jf-activity-list small {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.jf-activity-list strong {
+  color: var(--jf-ink);
+  font-size: 0.67rem;
+  font-weight: 680;
+}
+
+.jf-activity-list small {
+  margin-top: 0.1rem;
+  color: var(--jf-muted);
+  font-size: 0.57rem;
+}
+
+.jf-activity-list b {
+  font-variant-numeric: tabular-nums;
+  font-size: 0.64rem;
+  font-weight: 740;
+  white-space: nowrap;
+}
+
+.jf-positive { color: var(--jf-green); }
+.jf-negative { color: var(--jf-red); }
+
+.jf-value-rail {
+  position: relative;
+  z-index: 10;
+  background: color-mix(in srgb, var(--jf-surface-solid) 68%, transparent);
+  box-shadow: inset 0 1px 0 var(--jf-line), inset 0 -1px 0 var(--jf-line);
+  backdrop-filter: blur(14px);
+}
+
+.jf-value-rail > div {
+  width: var(--jf-shell);
+  margin-inline: auto;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.jf-value-item {
+  min-width: 0;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 1.35rem clamp(1rem, 2vw, 1.8rem);
+}
+
+.jf-value-item + .jf-value-item {
+  box-shadow: inset 1px 0 0 var(--jf-line);
+}
+
+.jf-value-item > svg {
+  width: 1.15rem;
+  height: 1.15rem;
+  flex: 0 0 auto;
+  margin-top: 0.12rem;
+  color: var(--jf-blue);
+}
+
+.jf-value-item strong,
+.jf-value-item small {
+  display: block;
+}
+
+.jf-value-item strong {
+  color: var(--jf-ink);
+  font-size: 0.82rem;
+  font-weight: 720;
+}
+
+.jf-value-item small {
+  margin-top: 0.28rem;
+  color: var(--jf-muted);
+  font-size: 0.74rem;
+  line-height: 1.55;
+}
