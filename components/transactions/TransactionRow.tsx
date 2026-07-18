@@ -61,19 +61,6 @@ function normalizeType(type?: string | null): TransactionType {
   return "transfer";
 }
 
-function formatDate(date?: string | null) {
-  if (!date) return "No date";
-
-  const parsed = new Date(date);
-  if (Number.isNaN(parsed.getTime())) return date;
-
-  return parsed.toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  });
-}
-
 function getCategoryLabel(tx: Transaction, type: TransactionType) {
   if (type === "transfer") return "Transfer";
   if (type === "goal") return tx.item_name || "Goal contribution";
@@ -111,7 +98,6 @@ export default function TransactionRow({ tx }: { tx: Transaction }) {
   });
   const TransactionIcon = iconMeta.icon;
   const categoryLabel = getCategoryLabel(tx, type);
-  const accountName = tx.accounts?.name || "No account";
   const amount = Number(tx.amount ?? 0);
   const displayAmount = `${getTransactionPrefix(type)}${formatCurrency(
     Number.isFinite(amount) ? Math.abs(amount) : 0,
@@ -124,15 +110,6 @@ export default function TransactionRow({ tx }: { tx: Transaction }) {
     (type === "income" || type === "expense") &&
     iconMeta.semanticType !== "payable";
   const canDelete = type !== "investment";
-
-  const secondaryText = useMemo(() => {
-    const details = [
-      accountName,
-      formatDate(tx.date),
-      tx.note && tx.note !== categoryLabel ? tx.note : null,
-    ].filter(Boolean);
-    return details.join(" · ");
-  }, [accountName, categoryLabel, tx.date, tx.note]);
 
   async function deleteGoalContribution() {
     if (!tx.goal_contribution_id) {
@@ -195,12 +172,6 @@ export default function TransactionRow({ tx }: { tx: Transaction }) {
 
   return (
     <>
-      <style jsx global>{`
-        .finance-panel:has([data-transaction-row]) > .desktop-list-header {
-          display: none !important;
-        }
-      `}</style>
-
       <article
         data-transaction-row
         className="group grid min-w-0 grid-cols-[40px_minmax(0,1fr)_auto] items-center gap-x-3 gap-y-2 border-b border-border/55 px-2 py-3.5 last:border-b-0 sm:px-3 md:grid-cols-[40px_minmax(0,1fr)_minmax(110px,auto)_auto] md:gap-x-4"
@@ -219,17 +190,9 @@ export default function TransactionRow({ tx }: { tx: Transaction }) {
           />
         </span>
 
-        <div className="min-w-0">
-          <p className="truncate text-sm font-bold text-text-primary">
-            {categoryLabel}
-          </p>
-          <p
-            className="mt-0.5 truncate text-[11px] font-medium leading-4 text-text-secondary sm:text-xs"
-            title={secondaryText}
-          >
-            {secondaryText}
-          </p>
-        </div>
+        <p className="min-w-0 truncate text-sm font-bold text-text-primary">
+          {categoryLabel}
+        </p>
 
         <p
           className={`max-w-[44vw] shrink-0 truncate text-right text-sm font-black tracking-[-0.015em] tabular-nums sm:max-w-none ${getTransactionToneClass(
