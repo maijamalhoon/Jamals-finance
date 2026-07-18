@@ -116,8 +116,6 @@ function MetricGraphLine({
   accent: string;
   animationKey: string;
 }) {
-  const graphPath = getGraphPath(value, direction);
-
   return (
     <svg
       key={animationKey}
@@ -127,14 +125,8 @@ function MetricGraphLine({
       preserveAspectRatio="none"
     >
       <path
-        className="dashboard-metric-graph-path dashboard-metric-graph-track"
-        d={graphPath}
-        style={{ stroke: accent }}
-        vectorEffect="non-scaling-stroke"
-      />
-      <path
         className="dashboard-metric-graph-path dashboard-metric-graph-active"
-        d={graphPath}
+        d={getGraphPath(value, direction)}
         pathLength={1}
         style={{ stroke: accent }}
         vectorEffect="non-scaling-stroke"
