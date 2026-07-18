@@ -1,7 +1,9 @@
 "use client";
 
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { AlertTriangle, Bell, Clock3, Target } from "lucide-react";
 
 import { createClient } from "@/lib/supabase/client";
@@ -24,6 +26,7 @@ const toneStyles: Record<NotificationTone, string> = {
 
 const notificationTriggerClassName =
   "finance-control finance-focus relative grid h-11 w-11 shrink-0 place-items-center rounded-[var(--radius-control)] text-text-secondary hover:text-text-primary";
+const GLASS_EASE = [0.22, 1, 0.36, 1] as const;
 
 function formatAlertDate(dateKey: string) {
   const [year, month, day] = dateKey.split("-").map(Number);
@@ -95,6 +98,7 @@ export function NotificationCenterLoading() {
 
 export default function NotificationCenter({ state }: NotificationCenterProps) {
   const supabase = createClient();
+  const reduceMotion = useReducedMotion();
   const rootRef = useRef<HTMLDivElement>(null);
   const [open, setOpen] = useState(false);
 
@@ -103,6 +107,9 @@ export default function NotificationCenter({ state }: NotificationCenterProps) {
   const showCount = displayedCount !== null && displayedCount > 0;
   const badgeCount = displayedCount ?? 0;
   const triggerLabel = getNotificationTriggerLabel(state);
+  const glassTransition = reduceMotion
+    ? { duration: 0.01 }
+    : { duration: 0.24, ease: GLASS_EASE };
 
   useEffect(() => {
     if (!open) return;
@@ -150,71 +157,93 @@ export default function NotificationCenter({ state }: NotificationCenterProps) {
   }
 
   return (
-    <div ref={rootRef} className="relative">
-      <button
-        type="button"
-        aria-label={triggerLabel}
-        aria-haspopup="menu"
-        aria-expanded={open}
-        onClick={() => setOpen((value) => !value)}
-        className={notificationTriggerClassName}
-      >
-        <Bell size={18} aria-hidden="true" />
-        {showCount ? (
-          <span
-            aria-hidden="true"
-            className="absolute -right-1 -top-1 grid min-h-5 min-w-5 place-items-center rounded-full border-2 border-surface-primary bg-brand px-1 text-[10px] font-bold leading-none text-primary-foreground"
-          >
-            {badgeCount > 9 ? "9+" : badgeCount}
-          </span>
-        ) : null}
-      </button>
-
-      {open ? (
-        <div
-          data-slot="dropdown-menu-content"
-          role="menu"
-          aria-label="Notifications"
-          className="absolute right-0 top-[calc(100%+0.5rem)] z-[70] w-[15rem] max-w-[calc(100vw-4rem)] rounded-[14px] border border-border/70 bg-surface-elevated/98 p-1.5 shadow-[0_14px_36px_rgb(15_23_42_/_0.16)] backdrop-blur-xl dark:shadow-[0_16px_40px_rgb(0_0_0_/_0.34)] sm:w-[16.5rem]"
-        >
-          <span
-            aria-hidden="true"
-            className="absolute -top-1.5 right-4 size-3 rotate-45 border-l border-t border-border/70 bg-surface-elevated"
-          />
-
-          <div className="px-2 pb-1 pt-0.5">
-            <p className="text-[11px] font-bold leading-5 text-text-primary">
-              Notifications
-            </p>
-          </div>
-
-          {state.status === "error" ? (
-            <div className="flex items-center gap-2 rounded-[10px] px-2 py-2.5 text-[12px] text-text-secondary">
-              <span className="grid size-7 shrink-0 place-items-center rounded-[9px] bg-danger/10 text-danger">
-                <AlertTriangle size={13} aria-hidden="true" />
-              </span>
-              <span>Unavailable</span>
-            </div>
-          ) : state.visibleAlerts.length === 0 ? (
-            <div className="flex items-center gap-2 rounded-[10px] px-2 py-2.5 text-[12px] text-text-secondary">
-              <span className="grid size-7 shrink-0 place-items-center rounded-[9px] bg-surface-soft text-text-tertiary">
-                <Bell size={13} aria-hidden="true" />
-              </span>
-              <span>No notifications</span>
-            </div>
-          ) : (
-            <div className="max-h-[min(15rem,calc(100dvh-7rem))] overflow-y-auto overscroll-contain">
-              {state.visibleAlerts.map((alert) => (
-                <NotificationSummaryRow
-                  key={alert.id}
-                  alert={alert}
-                  onNavigate={handleNavigate}
+    <>
+      {typeof document !== "undefined"
+        ? createPortal(
+            <AnimatePresence>
+              {open ? (
+                <motion.div
+                  key="mobile-notification-glass"
+                  aria-hidden="true"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={glassTransition}
+                  onPointerDown={() => setOpen(false)}
+                  className="fixed inset-0 z-30 bg-brand/12 backdrop-blur-md backdrop-saturate-125 dark:bg-brand/18 lg:hidden"
                 />
-              ))}
+              ) : null}
+            </AnimatePresence>,
+            document.body,
+          )
+        : null}
+
+      <div ref={rootRef} className="relative">
+        <button
+          type="button"
+          aria-label={triggerLabel}
+          aria-haspopup="menu"
+          aria-expanded={open}
+          onClick={() => setOpen((value) => !value)}
+          className={notificationTriggerClassName}
+        >
+          <Bell size={18} aria-hidden="true" />
+          {showCount ? (
+            <span
+              aria-hidden="true"
+              className="absolute -right-1 -top-1 grid min-h-5 min-w-5 place-items-center rounded-full border-2 border-surface-primary bg-brand px-1 text-[10px] font-bold leading-none text-primary-foreground"
+            >
+              {badgeCount > 9 ? "9+" : badgeCount}
+            </span>
+          ) : null}
+        </button>
+
+        {open ? (
+          <div
+            data-slot="dropdown-menu-content"
+            role="menu"
+            aria-label="Notifications"
+            className="absolute right-0 top-[calc(100%+0.5rem)] z-[70] w-[15rem] max-w-[calc(100vw-4rem)] rounded-[14px] border border-border/70 bg-surface-elevated/98 p-1.5 shadow-[0_14px_36px_rgb(15_23_42_/_0.16)] backdrop-blur-xl dark:shadow-[0_16px_40px_rgb(0_0_0_/_0.34)] sm:w-[16.5rem]"
+          >
+            <span
+              aria-hidden="true"
+              className="absolute -top-1.5 right-4 size-3 rotate-45 border-l border-t border-border/70 bg-surface-elevated"
+            />
+
+            <div className="px-2 pb-1 pt-0.5">
+              <p className="text-[11px] font-bold leading-5 text-text-primary">
+                Notifications
+              </p>
             </div>
-          )}
-        </div>
-      ) : null}
-    </div>
+
+            {state.status === "error" ? (
+              <div className="flex items-center gap-2 rounded-[10px] px-2 py-2.5 text-[12px] text-text-secondary">
+                <span className="grid size-7 shrink-0 place-items-center rounded-[9px] bg-danger/10 text-danger">
+                  <AlertTriangle size={13} aria-hidden="true" />
+                </span>
+                <span>Unavailable</span>
+              </div>
+            ) : state.visibleAlerts.length === 0 ? (
+              <div className="flex items-center gap-2 rounded-[10px] px-2 py-2.5 text-[12px] text-text-secondary">
+                <span className="grid size-7 shrink-0 place-items-center rounded-[9px] bg-surface-soft text-text-tertiary">
+                  <Bell size={13} aria-hidden="true" />
+                </span>
+                <span>No notifications</span>
+              </div>
+            ) : (
+              <div className="max-h-[min(15rem,calc(100dvh-7rem))] overflow-y-auto overscroll-contain">
+                {state.visibleAlerts.map((alert) => (
+                  <NotificationSummaryRow
+                    key={alert.id}
+                    alert={alert}
+                    onNavigate={handleNavigate}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+        ) : null}
+      </div>
+    </>
   );
 }
