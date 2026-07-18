@@ -23,18 +23,22 @@
   padding-top: 0 !important;
 }
 
-/* Keep one clean, solid-color sparkline on every viewport.
-   Reveal the complete line with a clipping animation instead of a dashed stroke,
-   which prevents the broken half-line rendering seen in mobile Chromium. */
+/* Keep one clean, solid-color sparkline on every viewport. Reveal the complete
+   SVG through a composited scale instead of animating clip-path or stroke dashes,
+   which avoids per-frame paint work and the broken half-line mobile rendering. */
 .dashboard-metric-graph {
   display: block;
   width: 100%;
   max-width: 100%;
   height: 1.45rem;
   overflow: visible !important;
-  -webkit-clip-path: inset(-25% 100% -25% 0);
-  clip-path: inset(-25% 100% -25% 0);
-  animation: dashboard-metric-graph-reveal 900ms var(--motion-ease) 100ms forwards !important;
+  opacity: 0.72;
+  transform: translateZ(0) scaleX(0.001);
+  transform-box: fill-box;
+  transform-origin: left center;
+  backface-visibility: hidden;
+  animation: dashboard-metric-graph-reveal 720ms cubic-bezier(0.16, 1, 0.3, 1)
+    100ms both !important;
 }
 
 .dashboard-metric-graph-path {
@@ -58,8 +62,8 @@
 
 @keyframes dashboard-metric-graph-reveal {
   to {
-    -webkit-clip-path: inset(-25% 0 -25% 0);
-    clip-path: inset(-25% 0 -25% 0);
+    opacity: 1;
+    transform: translateZ(0) scaleX(1);
   }
 }
 
@@ -114,6 +118,7 @@
 
   .dashboard-metric-graph {
     height: 1.35rem;
+    animation-duration: 620ms !important;
   }
 
   .dashboard-metric-graph-active {
@@ -134,8 +139,8 @@
 
 @media (prefers-reduced-motion: reduce) {
   .dashboard-metric-graph {
-    -webkit-clip-path: none !important;
-    clip-path: none !important;
+    opacity: 1 !important;
+    transform: none !important;
     animation: none !important;
   }
 
