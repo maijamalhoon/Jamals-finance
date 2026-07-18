@@ -10,17 +10,18 @@ function getChartElement(target: EventTarget | null) {
   return target.closest<HTMLElement>(".recharts-wrapper");
 }
 
-function getTooltipElement(chart: HTMLElement) {
-  return chart.querySelector<HTMLElement>(".recharts-tooltip-wrapper");
+function revealTooltip(chart: HTMLElement) {
+  chart.removeAttribute(DISMISSED_ATTRIBUTE);
 }
 
-function revealTooltip(chart: HTMLElement) {
-  getTooltipElement(chart)?.removeAttribute(DISMISSED_ATTRIBUTE);
+function dismissTooltip(chart: HTMLElement) {
+  chart.setAttribute(DISMISSED_ATTRIBUTE, "true");
 }
 
 export default function ChartTooltipAutoDismiss() {
   useEffect(() => {
     const timers = new Map<HTMLElement, number>();
+    let activeChart: HTMLElement | null = null;
 
     function clearTimer(chart: HTMLElement) {
       const timer = timers.get(chart);
@@ -30,27 +31,57 @@ export default function ChartTooltipAutoDismiss() {
       timers.delete(chart);
     }
 
+    function dismissChart(chart: HTMLElement) {
+      clearTimer(chart);
+      dismissTooltip(chart);
+
+      if (activeChart === chart) {
+        activeChart = null;
+      }
+    }
+
+    function dismissOtherCharts(currentChart: HTMLElement) {
+      document
+        .querySelectorAll<HTMLElement>(".recharts-wrapper")
+        .forEach((chart) => {
+          if (chart !== currentChart) dismissChart(chart);
+        });
+    }
+
     function handlePointerDown(event: PointerEvent) {
       const chart = getChartElement(event.target);
-      if (!chart) return;
 
+      if (!chart) {
+        if (activeChart) dismissChart(activeChart);
+        return;
+      }
+
+      dismissOtherCharts(chart);
       clearTimer(chart);
+      revealTooltip(chart);
+      activeChart = chart;
     }
 
     function handleChartClick(event: MouseEvent) {
       const chart = getChartElement(event.target);
       if (!chart) return;
 
+      dismissOtherCharts(chart);
       clearTimer(chart);
       revealTooltip(chart);
+      activeChart = chart;
 
       // Recharts may finish its click update after the native event bubbles.
-      // Revealing again on the next frame keeps repeated clicks flicker-free.
+      // Revealing again on the next frame keeps repeated taps flicker-free.
       window.requestAnimationFrame(() => revealTooltip(chart));
 
       const timer = window.setTimeout(() => {
-        getTooltipElement(chart)?.setAttribute(DISMISSED_ATTRIBUTE, "true");
+        dismissTooltip(chart);
         timers.delete(chart);
+
+        if (activeChart === chart) {
+          activeChart = null;
+        }
       }, TOOLTIP_VISIBLE_MS);
 
       timers.set(chart, timer);
@@ -74,7 +105,10 @@ export default function ChartTooltipAutoDismiss() {
       revealTooltip(chart);
     }
 
-    document.addEventListener("pointerdown", handlePointerDown, { passive: true });
+    document.addEventListener("pointerdown", handlePointerDown, {
+      capture: true,
+      passive: true,
+    });
     document.addEventListener("click", handleChartClick);
     document.addEventListener("pointermove", handleMousePointerMove, {
       passive: true,
@@ -82,7 +116,7 @@ export default function ChartTooltipAutoDismiss() {
     document.addEventListener("focusin", handleFocusIn);
 
     return () => {
-      document.removeEventListener("pointerdown", handlePointerDown);
+      document.removeEventListener("pointerdown", handlePointerDown, true);
       document.removeEventListener("click", handleChartClick);
       document.removeEventListener("pointermove", handleMousePointerMove);
       document.removeEventListener("focusin", handleFocusIn);
@@ -93,7 +127,7 @@ export default function ChartTooltipAutoDismiss() {
 
   return (
     <style>{`
-      .recharts-tooltip-wrapper[${DISMISSED_ATTRIBUTE}="true"] {
+      .recharts-wrapper[${DISMISSED_ATTRIBUTE}="true"] .recharts-tooltip-wrapper {
         opacity: 0 !important;
         visibility: hidden !important;
         pointer-events: none !important;
@@ -101,7 +135,7 @@ export default function ChartTooltipAutoDismiss() {
       }
 
       @media (prefers-reduced-motion: reduce) {
-        .recharts-tooltip-wrapper[${DISMISSED_ATTRIBUTE}="true"] {
+        .recharts-wrapper[${DISMISSED_ATTRIBUTE}="true"] .recharts-tooltip-wrapper {
           transition: none !important;
         }
       }
