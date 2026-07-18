@@ -1,0 +1,180 @@
+/*
+ * Final spacing guard for login, signup and recovery screens.
+ * Layout only: authentication actions, validation and redirects are untouched.
+ */
+
+.jf-auth-root[data-auth-minimal="true"] {
+  --auth-gap-tight: clamp(0.75rem, 1.35vh, 0.95rem);
+  --auth-gap-control: clamp(1rem, 1.8vh, 1.25rem);
+  --auth-gap-section: clamp(1.2rem, 2.2vh, 1.55rem);
+}
+
+/* Remove inherited space-y margins so every form follows one predictable rhythm. */
+.jf-auth-root[data-auth-minimal="true"] .auth-step form > * {
+  margin-block-start: 0 !important;
+}
+
+/* Google action and divider are one group, with deliberate internal separation. */
+.jf-auth-root[data-auth-minimal="true"]
+  .auth-step
+  > div:has(.auth-provider-action) {
+  display: grid;
+  gap: var(--auth-gap-section);
+}
+
+.jf-auth-root[data-auth-minimal="true"]
+  .auth-step
+  > div:has(.auth-provider-action)
+  .auth-divider {
+  margin-block: 0 !important;
+}
+
+/* Keep the email form clearly separate from the provider sign-in group. */
+.jf-auth-root[data-auth-minimal="true"]
+  .auth-step
+  > div:has(.auth-provider-action)
+  + form {
+  margin-top: var(--auth-gap-section) !important;
+}
+
+/* Fields never visually merge into one another. */
+.jf-auth-root[data-auth-minimal="true"]
+  .auth-step
+  form
+  > .auth-field
+  + .auth-field,
+.jf-auth-root[data-auth-minimal="true"]
+  .auth-step
+  form
+  > .auth-field
+  + label.auth-field,
+.jf-auth-root[data-auth-minimal="true"]
+  .auth-step
+  form
+  > label.auth-field
+  + .auth-field,
+.jf-auth-root[data-auth-minimal="true"]
+  .auth-step
+  form
+  > label.auth-field
+  + label.auth-field {
+  margin-top: var(--auth-gap-control) !important;
+}
+
+/* The main action must read as a separate decision, never as part of the input. */
+.jf-auth-root[data-auth-minimal="true"] .auth-primary-action {
+  margin-top: var(--auth-gap-section) !important;
+}
+
+/* An empty feedback slot must not consume space; a real message gets breathing room. */
+.jf-auth-root[data-auth-minimal="true"] .auth-feedback-slot:empty {
+  display: none !important;
+}
+
+.jf-auth-root[data-auth-minimal="true"]
+  .auth-feedback-slot:not(:empty) {
+  margin-top: var(--auth-gap-tight) !important;
+}
+
+.jf-auth-root[data-auth-minimal="true"]
+  .auth-feedback-slot:not(:empty)
+  + .auth-primary-action {
+  margin-top: var(--auth-gap-control) !important;
+}
+
+/* Back controls sit above the form instead of touching the first field. */
+.jf-auth-root[data-auth-minimal="true"] .auth-step-back {
+  margin: 0 0 var(--auth-gap-section) !important;
+}
+
+/* Password helpers and tertiary actions keep their own visual lane. */
+.jf-auth-root[data-auth-minimal="true"] form > .flex.justify-end {
+  margin-top: 0.45rem !important;
+  margin-bottom: 0.15rem !important;
+}
+
+.jf-auth-root[data-auth-minimal="true"]
+  form
+  > button.w-full.text-text-secondary {
+  margin-top: var(--auth-gap-control) !important;
+}
+
+/* Separate the account-mode switch from the primary form action. */
+.jf-auth-root[data-auth-minimal="true"] .auth-mode-switch {
+  margin-top: var(--auth-gap-section) !important;
+}
+
+/* Recovery contains a back action, one field and one submit action. */
+.jf-auth-root[data-auth-minimal="true"]
+  form:has(.auth-step-back):not(:has(.auth-password-toggle))
+  .auth-primary-action {
+  margin-top: var(--auth-gap-section) !important;
+}
+
+/* Password and signup steps retain generous spacing without growing excessively. */
+.jf-auth-root[data-auth-minimal="true"]
+  form:has(.auth-password-toggle)
+  .auth-primary-action {
+  margin-top: var(--auth-gap-section) !important;
+}
+
+.jf-auth-root[data-auth-minimal="true"] .auth-password-requirements {
+  margin-top: var(--auth-gap-tight) !important;
+}
+
+/* Phones: preserve visible breathing room while keeping normal forms in one viewport. */
+@media (max-width: 639px) {
+  .jf-auth-root[data-auth-minimal="true"] {
+    --auth-gap-tight: clamp(0.65rem, 1.2vh, 0.8rem);
+    --auth-gap-control: clamp(0.9rem, 1.55vh, 1.05rem);
+    --auth-gap-section: clamp(1.05rem, 1.9vh, 1.25rem);
+  }
+
+  .jf-auth-root[data-auth-minimal="true"] .jf-auth-card {
+    padding-inline: clamp(1rem, 4.8vw, 1.25rem) !important;
+  }
+
+  .jf-auth-root[data-auth-minimal="true"] .auth-field-label {
+    margin-bottom: 0.5rem !important;
+  }
+
+  .jf-auth-root[data-auth-minimal="true"] .auth-input,
+  .jf-auth-root[data-auth-minimal="true"] .auth-provider-action,
+  .jf-auth-root[data-auth-minimal="true"] .auth-primary-action {
+    min-height: 3.2rem !important;
+  }
+
+  .jf-auth-root[data-auth-minimal="true"] .auth-mode-switch {
+    line-height: 1.55;
+  }
+}
+
+/* Short phones reduce decoration before they reduce meaningful control spacing. */
+@media (max-width: 639px) and (max-height: 700px) {
+  .jf-auth-root[data-auth-minimal="true"] {
+    --auth-gap-tight: 0.55rem;
+    --auth-gap-control: 0.78rem;
+    --auth-gap-section: 0.92rem;
+  }
+
+  .jf-auth-root[data-auth-minimal="true"] .jf-auth-card-head {
+    margin-bottom: 0.72rem !important;
+  }
+
+  .jf-auth-root[data-auth-minimal="true"] .jf-auth-card-head::after {
+    margin-top: 0.55rem !important;
+  }
+
+  .jf-auth-root[data-auth-minimal="true"] .auth-input,
+  .jf-auth-root[data-auth-minimal="true"] .auth-provider-action,
+  .jf-auth-root[data-auth-minimal="true"] .auth-primary-action {
+    min-height: 2.95rem !important;
+  }
+}
+
+/* Keyboard-open and unusually short viewports remain accessible. */
+@media (max-width: 639px) and (max-height: 560px) {
+  .jf-auth-root[data-auth-minimal="true"] {
+    overflow-y: auto !important;
+  }
+}
