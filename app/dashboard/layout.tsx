@@ -24,6 +24,7 @@ import "./header-search-polish.css";
 // Keep the focused overview overrides last so they win only inside their scoped selectors.
 import "./overview-top-metrics.css";
 import "./metric-sparkline-fix.css";
+import "./transaction-modal-viewport.css";
 
 export const dynamic = "force-dynamic";
 
