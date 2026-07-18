@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Suspense } from "react";
 
 import ConnectionStatus from "@/components/layout/ConnectionStatus";
+import DashboardContentScope from "@/components/layout/DashboardContentScope";
 import FloatingActions from "@/components/layout/FloatingActions";
 import NotificationCenter, {
   NotificationCenterLoading,
@@ -28,6 +29,8 @@ import "./transaction-modal-viewport.css";
 import "./card-borderless-policy.css";
 // Dashboard overview typography/icons stay isolated from every nested route.
 import "./dashboard-overview-type-icons.css";
+// Keep route-specific content typography last so it cannot leak into other pages.
+import "./content-typography.css";
 
 export const dynamic = "force-dynamic";
 
@@ -82,9 +85,7 @@ export default function DashboardLayout({
           data-dashboard-scroll
           className="jf-dashboard-scroll relative flex-1 overflow-y-auto overscroll-contain px-3 pb-[var(--jf-mobile-content-bottom)] pt-[5rem] sm:px-5 sm:pb-[calc(var(--jf-mobile-content-bottom)+0.5rem)] sm:pt-[5.25rem] lg:px-6 lg:pb-10 lg:pt-6 xl:px-7"
         >
-          <div className="jf-dashboard-content-frame mx-auto w-full max-w-[1480px] min-w-0">
-            {children}
-          </div>
+          <DashboardContentScope>{children}</DashboardContentScope>
         </main>
 
         <FloatingActions />
