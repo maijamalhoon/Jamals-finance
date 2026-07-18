@@ -149,7 +149,7 @@ export default function TransactionFilters({
             className="min-w-0 flex-1 bg-transparent text-sm font-medium text-text-primary placeholder:text-text-secondary outline-none"
           />
 
-          {search ?
+          {search ? (
             <button
               onClick={() => setSearch("")}
               className="finance-focus grid h-11 w-11 place-items-center rounded-full text-text-secondary transition-colors hover:bg-hover hover:text-text-primary"
@@ -158,11 +158,11 @@ export default function TransactionFilters({
             >
               <X size={13} />
             </button>
-          : null}
+          ) : null}
         </div>
 
         <div className="flex flex-wrap items-center justify-end gap-2">
-          {activeFilterCount > 0 ?
+          {activeFilterCount > 0 ? (
             <button
               onClick={clearFilters}
               className="finance-focus min-h-11 rounded-full border border-border bg-surface px-3 py-2 text-xs font-semibold text-text-secondary transition-colors hover:bg-hover hover:text-text-primary"
@@ -170,7 +170,7 @@ export default function TransactionFilters({
             >
               Clear all
             </button>
-          : null}
+          ) : null}
 
           <button
             onClick={() => setOpen((value) => !value)}
@@ -180,11 +180,11 @@ export default function TransactionFilters({
           >
             <Filter size={15} />
             Filters
-            {activeFilterCount > 0 ?
+            {activeFilterCount > 0 ? (
               <span className="grid h-5 min-w-5 place-items-center rounded-full bg-active px-1 text-[11px] text-background">
                 {activeFilterCount}
               </span>
-            : null}
+            ) : null}
             <ChevronDown
               size={15}
               className={`transition-transform ${open ? "rotate-180" : ""}`}
@@ -200,7 +200,7 @@ export default function TransactionFilters({
         />
       </div>
 
-      {open ?
+      {open ? (
         <div className="finance-panel-soft grid min-w-0 gap-3 p-3 sm:grid-cols-2 lg:grid-cols-4">
           <FilterField label="Type">
             <select
@@ -213,6 +213,7 @@ export default function TransactionFilters({
               <option value="expense">Expense</option>
               <option value="refund">Expense refund</option>
               <option value="investment">Investment contribution</option>
+              <option value="goal">Goal contribution</option>
               <option value="transfer">Transfer</option>
             </select>
           </FilterField>
@@ -329,7 +330,7 @@ export default function TransactionFilters({
             />
           </FilterField>
         </div>
-      : null}
+      ) : null}
     </div>
   );
 }
