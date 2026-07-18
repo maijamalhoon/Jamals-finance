@@ -1,7 +1,7 @@
 @keyframes jf-dashboard-enter {
   from {
     opacity: 0;
-    transform: translate3d(0, 12px, 0);
+    transform: translate3d(0, 10px, 0);
   }
 
   to {
@@ -10,14 +10,56 @@
   }
 }
 
+.jf-dashboard-motion {
+  isolation: isolate;
+}
+
 .jf-dashboard-motion-item {
-  animation: jf-dashboard-enter 360ms cubic-bezier(0.16, 1, 0.3, 1) both;
-  content-visibility: auto;
-  contain-intrinsic-size: auto 280px;
+  --jf-dashboard-enter-delay: 0ms;
+  animation: jf-dashboard-enter 320ms cubic-bezier(0.16, 1, 0.3, 1)
+    var(--jf-dashboard-enter-delay) both;
+  backface-visibility: hidden;
+  contain: paint;
+  transform-origin: center top;
+}
+
+/* Stagger only the cards that can enter together. Keeping the delay short avoids
+   a long page cascade while reducing simultaneous paint/composite work. */
+.jf-dashboard-motion > .jf-dashboard-motion-item:nth-of-type(2),
+.jf-dashboard-motion section.grid > .jf-dashboard-motion-item:nth-of-type(2),
+.jf-dashboard-motion > div.grid > .jf-dashboard-motion-item:nth-of-type(2) {
+  --jf-dashboard-enter-delay: 35ms;
+}
+
+.jf-dashboard-motion > .jf-dashboard-motion-item:nth-of-type(3),
+.jf-dashboard-motion section.grid > .jf-dashboard-motion-item:nth-of-type(3),
+.jf-dashboard-motion > div.grid > .jf-dashboard-motion-item:nth-of-type(3) {
+  --jf-dashboard-enter-delay: 70ms;
+}
+
+.jf-dashboard-motion > .jf-dashboard-motion-item:nth-of-type(4),
+.jf-dashboard-motion section.grid > .jf-dashboard-motion-item:nth-of-type(4) {
+  --jf-dashboard-enter-delay: 105ms;
+}
+
+/* Defer the heavy chart/list row until it approaches the viewport. Top metrics
+   remain fully rendered so their first-frame animation never waits on layout. */
+@supports (content-visibility: auto) {
+  .jf-dashboard-motion > div.grid > .jf-dashboard-motion-item {
+    content-visibility: auto;
+    contain-intrinsic-size: auto 360px;
+  }
+}
+
+@media (max-width: 1023px) {
+  .jf-dashboard-motion-item {
+    animation-duration: 280ms;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .jf-dashboard-motion-item {
     animation: none;
+    transform: none;
   }
 }
