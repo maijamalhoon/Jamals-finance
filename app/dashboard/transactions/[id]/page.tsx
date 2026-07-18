@@ -5,25 +5,33 @@ import {
   ArrowLeftRight,
   CalendarDays,
   CheckCircle2,
-  ChartNoAxesCombined,
   Clock3,
   CreditCard,
   Hash,
   NotebookText,
   ReceiptText,
+  RotateCcw,
   Tag,
+  Target,
   TrendingDown,
   TrendingUp,
-  RotateCcw,
   UserRound,
   Wallet,
+  ChartNoAxesCombined,
+  type LucideIcon,
 } from "lucide-react";
 
-import { createClient } from "@/lib/supabase/server";
-import { formatMoney } from "@/lib/currency";
 import TransactionReceiptActions from "@/components/transactions/TransactionReceiptActions";
+import { formatMoney } from "@/lib/currency";
+import { createClient } from "@/lib/supabase/server";
 
-type ReceiptType = "income" | "expense" | "investment" | "refund" | "transfer";
+type ReceiptType =
+  | "income"
+  | "expense"
+  | "investment"
+  | "goal"
+  | "refund"
+  | "transfer";
 
 type ReceiptData = {
   id: string;
@@ -57,8 +65,6 @@ type ReceiptCategory = {
   parent?: { name?: string | null } | null;
 };
 
-type ReceiptTransactionBaseRow = Omit<ReceiptTransactionRow, "accounts" | "categories">;
-
 type ReceiptTransactionRow = {
   id: string;
   type: string;
@@ -77,6 +83,11 @@ type ReceiptTransactionRow = {
   categories: ReceiptCategory | null;
 };
 
+type ReceiptTransactionBaseRow = Omit<
+  ReceiptTransactionRow,
+  "accounts" | "categories"
+>;
+
 type ReceiptTransferRow = {
   id: string;
   amount: number | string | null;
@@ -92,34 +103,46 @@ const TYPE_META: Record<
   ReceiptType,
   {
     label: string;
-    icon: typeof TrendingUp;
+    icon: LucideIcon;
     amountPrefix: string;
+    accent: string;
   }
 > = {
   income: {
     label: "Income",
     icon: TrendingUp,
     amountPrefix: "+",
+    accent: "var(--income)",
   },
   expense: {
     label: "Expense",
     icon: TrendingDown,
     amountPrefix: "-",
+    accent: "var(--expense)",
   },
   investment: {
     label: "Investment contribution",
     icon: ChartNoAxesCombined,
     amountPrefix: "-",
+    accent: "var(--investment)",
+  },
+  goal: {
+    label: "Goal contribution",
+    icon: Target,
+    amountPrefix: "",
+    accent: "var(--goals)",
   },
   refund: {
     label: "Expense refund",
     icon: RotateCcw,
     amountPrefix: "+",
+    accent: "var(--transfer)",
   },
   transfer: {
     label: "Transfer",
     icon: ArrowLeftRight,
     amountPrefix: "",
+    accent: "var(--transfer)",
   },
 };
 
@@ -127,7 +150,6 @@ function formatDate(value?: string | null, includeTime = false) {
   if (!value) return "No date";
 
   const parsed = new Date(value);
-
   if (Number.isNaN(parsed.getTime())) return value;
 
   return parsed.toLocaleString("en-US", {
@@ -145,7 +167,6 @@ function getCategoryText(category: ReceiptCategory | null) {
   const categoryName = category?.name;
 
   if (parentName && categoryName) return `${parentName} / ${categoryName}`;
-
   return categoryName || "Uncategorized";
 }
 
@@ -164,7 +185,9 @@ function buildReceiptText(receipt: Omit<ReceiptData, "receiptText">) {
     receipt.sourceText ? `Source: ${receipt.sourceText}` : null,
     receipt.personText ? `Person: ${receipt.personText}` : null,
     receipt.itemText ? `Item: ${receipt.itemText}` : null,
-    receipt.refundOfText ? `Original Expense ID: ${receipt.refundOfText}` : null,
+    receipt.refundOfText
+      ? `Original Expense ID: ${receipt.refundOfText}`
+      : null,
     receipt.referenceText ? `Reference: ${receipt.referenceText}` : null,
     `Status: ${receipt.statusText}`,
     `Receipt ID: ${receipt.id}`,
@@ -174,31 +197,42 @@ function buildReceiptText(receipt: Omit<ReceiptData, "receiptText">) {
     .join("\n");
 }
 
+function normalizeReceiptType(type: string): Exclude<ReceiptType, "transfer"> {
+  if (type === "income") return "income";
+  if (type === "investment") return "investment";
+  if (type === "goal") return "goal";
+  if (type === "refund") return "refund";
+  return "expense";
+}
+
 function mapTransactionReceipt(transaction: ReceiptTransactionRow): ReceiptData {
-  const type: ReceiptType =
-    transaction.type === "income" ? "income"
-    : transaction.type === "investment" ? "investment"
-    : transaction.type === "refund" ? "refund"
-    : "expense";
+  const type = normalizeReceiptType(transaction.type);
   const meta = TYPE_META[type];
+  const amount = Number(transaction.amount ?? 0);
+  const title =
+    type === "goal"
+      ? transaction.item_name || transaction.note || meta.label
+      : transaction.note ||
+        transaction.source_name ||
+        transaction.person_name ||
+        transaction.item_name ||
+        transaction.categories?.name ||
+        meta.label;
 
   const baseReceipt: Omit<ReceiptData, "receiptText"> = {
     id: transaction.id,
     type,
     typeLabel: meta.label,
-    title:
-      transaction.note ||
-      transaction.source_name ||
-      transaction.person_name ||
-      transaction.item_name ||
-      transaction.categories?.name ||
-      meta.label,
-    amount: Number(transaction.amount ?? 0),
-    amountText: `${meta.amountPrefix}${formatMoney(Number(transaction.amount ?? 0))}`,
+    title,
+    amount,
+    amountText: `${meta.amountPrefix}${formatMoney(amount)}`,
     dateText: formatDate(transaction.date),
     createdText: formatDate(transaction.created_at, true),
-    accountText: transaction.accounts?.name || "No account",
-    categoryText: getCategoryText(transaction.categories),
+    accountText: transaction.accounts?.name || "No linked account",
+    categoryText:
+      type === "goal" && !transaction.categories
+        ? "Savings goal"
+        : getCategoryText(transaction.categories),
     noteText: transaction.note || "",
     sourceText: transaction.source_name || "",
     personText: transaction.person_name || "",
@@ -221,14 +255,14 @@ function mapTransactionReceipt(transaction: ReceiptTransactionRow): ReceiptData 
 
 function mapTransferReceipt(transfer: ReceiptTransferRow): ReceiptData {
   const meta = TYPE_META.transfer;
-
+  const amount = Number(transfer.amount ?? 0);
   const baseReceipt: Omit<ReceiptData, "receiptText"> = {
     id: transfer.id,
-    type: "transfer" as const,
+    type: "transfer",
     typeLabel: meta.label,
     title: transfer.note || "Internal transfer",
-    amount: Number(transfer.amount ?? 0),
-    amountText: formatMoney(Number(transfer.amount ?? 0)),
+    amount,
+    amountText: formatMoney(amount),
     dateText: formatDate(transfer.transfer_date),
     createdText: formatDate(transfer.created_at, true),
     accountText: "Internal transfer",
@@ -258,7 +292,7 @@ function DetailLine({
   label,
   value,
 }: {
-  icon: typeof ReceiptText;
+  icon: LucideIcon;
   label: string;
   value: string;
 }) {
@@ -267,10 +301,9 @@ function DetailLine({
   return (
     <div className="finance-panel-soft min-w-0 p-4">
       <div className="mb-2 flex items-center gap-2 text-xs font-bold uppercase tracking-[0.14em] text-text-secondary">
-        <Icon size={15} />
+        <Icon size={15} strokeWidth={2.3} />
         {label}
       </div>
-
       <p className="break-words text-sm font-bold text-text-primary sm:text-base">
         {value}
       </p>
@@ -284,45 +317,26 @@ export default async function TransactionReceiptPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-
   const supabase = await createClient();
-
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (!user) {
-    redirect("/login");
-  }
+  if (!user) redirect("/login");
 
-  // Load the transaction first, then resolve its display labels separately.
-  // The owner-safe category foreign key is composite, so relying on an implicit
-  // PostgREST relationship here can turn a valid receipt into a false 404.
   const { data: transaction, error: transactionError } = await supabase
     .from("transactions")
     .select(
-      `
-      id,
-      type,
-      amount,
-      account_id,
-      category_id,
-      refund_of_transaction_id,
-      reference,
-      note,
-      date,
-      created_at,
-      source_name,
-      person_name,
-      item_name
-    `,
+      "id, type, amount, account_id, category_id, refund_of_transaction_id, reference, note, date, created_at, source_name, person_name, item_name",
     )
     .eq("id", id)
     .eq("user_id", user.id)
     .maybeSingle();
 
   if (transactionError) {
-    console.error("Failed to load transaction receipt", { code: transactionError.code });
+    console.error("Failed to load transaction receipt", {
+      code: transactionError.code,
+    });
     throw new Error("Transaction receipt could not be loaded.");
   }
 
@@ -338,7 +352,9 @@ export default async function TransactionReceiptPage({
       .maybeSingle();
 
     if (accountError) {
-      console.error("Failed to load receipt account label", { code: accountError.code });
+      console.error("Failed to load receipt account label", {
+        code: accountError.code,
+      });
     } else {
       account = accountRow;
     }
@@ -353,7 +369,9 @@ export default async function TransactionReceiptPage({
       .maybeSingle();
 
     if (categoryError) {
-      console.error("Failed to load receipt category label", { code: categoryError.code });
+      console.error("Failed to load receipt category label", {
+        code: categoryError.code,
+      });
     } else if (categoryRow) {
       category = {
         name: categoryRow.name,
@@ -380,14 +398,13 @@ export default async function TransactionReceiptPage({
     }
   }
 
-  let receipt: ReceiptData | null =
-    transaction
-      ? mapTransactionReceipt({
-          ...(transaction as ReceiptTransactionBaseRow),
-          accounts: account,
-          categories: category,
-        })
-      : null;
+  let receipt: ReceiptData | null = transaction
+    ? mapTransactionReceipt({
+        ...(transaction as ReceiptTransactionBaseRow),
+        accounts: account,
+        categories: category,
+      })
+    : null;
 
   if (receipt?.type === "expense") {
     const { data: refunds, error: refundsError } = await supabase
@@ -398,7 +415,9 @@ export default async function TransactionReceiptPage({
       .eq("type", "refund");
 
     if (refundsError) {
-      console.error("Failed to load expense refunds", { code: refundsError.code });
+      console.error("Failed to load expense refunds", {
+        code: refundsError.code,
+      });
     } else {
       receipt.refundedAmount = (refunds ?? []).reduce(
         (sum, refund) => sum + Number(refund.amount ?? 0),
@@ -411,48 +430,37 @@ export default async function TransactionReceiptPage({
     const { data: transfer, error: transferError } = await supabase
       .from("account_transfers")
       .select(
-        `
-        id,
-        user_id,
-        amount,
-        transfer_date,
-        note,
-        reference,
-        created_at,
-        from_account:from_account_id (
-          name
-        ),
-        to_account:to_account_id (
-          name
-        )
-      `,
+        "id, amount, transfer_date, note, reference, created_at, from_account:from_account_id(name), to_account:to_account_id(name)",
       )
       .eq("id", id)
       .eq("user_id", user.id)
       .maybeSingle();
 
     if (transferError) {
-      console.error("Failed to load transfer receipt", { code: transferError.code });
+      console.error("Failed to load transfer receipt", {
+        code: transferError.code,
+      });
       throw new Error("Transaction receipt could not be loaded.");
     }
 
-    receipt = transfer ? mapTransferReceipt(transfer as unknown as ReceiptTransferRow) : null;
+    receipt = transfer
+      ? mapTransferReceipt(transfer as unknown as ReceiptTransferRow)
+      : null;
   }
 
-  if (!receipt) {
-    notFound();
-  }
+  if (!receipt) notFound();
 
-  const TypeIcon = TYPE_META[receipt.type].icon;
+  const meta = TYPE_META[receipt.type];
+  const TypeIcon = meta.icon;
 
   return (
     <main className="mx-auto flex w-full max-w-6xl min-w-0 flex-col gap-5 pb-24 print:max-w-none">
-      <div className="print:hidden flex min-w-0 flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex min-w-0 flex-col gap-3 print:hidden sm:flex-row sm:items-center sm:justify-between">
         <Link
           href="/dashboard/transactions"
           className="finance-focus inline-flex min-h-11 w-fit items-center gap-2 rounded-[var(--oneui-control-radius)] border border-border bg-surface px-4 py-2.5 text-sm font-bold text-text-primary shadow-sm transition-all hover:-translate-y-0.5 hover:bg-hover hover:shadow-md"
         >
-          <ArrowLeft size={17} />
+          <ArrowLeft size={17} strokeWidth={2.3} />
           Back to transactions
         </Link>
 
@@ -460,7 +468,9 @@ export default async function TransactionReceiptPage({
           receiptText={receipt.receiptText}
           receiptId={receipt.id}
           refundExpense={
-            receipt.type === "expense" && receipt.accountId && receipt.categoryId
+            receipt.type === "expense" &&
+            receipt.accountId &&
+            receipt.categoryId
               ? {
                   id: receipt.id,
                   title: receipt.title,
@@ -478,50 +488,47 @@ export default async function TransactionReceiptPage({
         className="finance-reference-card relative min-w-0 overflow-hidden print:border-none print:shadow-none"
         data-transaction-receipt
         data-receipt-tone={receipt.type}
+        style={{ "--receipt-accent": meta.accent } as React.CSSProperties}
       >
         <div className="relative border-b border-border p-5 sm:p-7">
           <div className="flex min-w-0 flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
             <div className="flex min-w-0 items-start gap-4">
-              <div
-                className="grid h-14 w-14 shrink-0 place-items-center rounded-3xl border"
-                style={{
-                  color: "var(--receipt-accent)",
-                  borderColor:
-                    "color-mix(in srgb, var(--receipt-accent), transparent 70%)",
-                  backgroundColor:
-                    "color-mix(in srgb, var(--receipt-accent), transparent 88%)",
-                }}
+              <span
+                className="grid size-14 shrink-0 place-items-center"
+                style={{ color: meta.accent }}
               >
-                <TypeIcon size={24} strokeWidth={2.4} />
-              </div>
+                <TypeIcon
+                  size={28}
+                  strokeWidth={2.4}
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                />
+              </span>
 
               <div className="min-w-0">
                 <p className="text-xs font-black uppercase tracking-[0.18em] text-text-secondary">
                   Transaction Receipt
                 </p>
-
                 <h2 className="mt-2 break-words text-2xl font-black tracking-tight text-text-primary sm:text-3xl">
                   {receipt.title}
                 </h2>
-
                 <p className="mt-2 text-sm font-semibold text-text-secondary">
                   Jamal&apos;s Finance • {receipt.typeLabel}
                 </p>
               </div>
             </div>
 
-            <div
+            <span
               className="w-fit shrink-0 rounded-full border px-4 py-2 text-sm font-black"
               style={{
-                color: "var(--receipt-accent)",
-                borderColor:
-                  "color-mix(in srgb, var(--receipt-accent), transparent 68%)",
-                backgroundColor:
-                  "color-mix(in srgb, var(--receipt-accent), transparent 90%)",
+                color: meta.accent,
+                borderColor: `color-mix(in srgb, ${meta.accent}, transparent 68%)`,
+                backgroundColor: `color-mix(in srgb, ${meta.accent}, transparent 90%)`,
               }}
             >
               {receipt.typeLabel}
-            </div>
+            </span>
           </div>
         </div>
 
@@ -530,23 +537,19 @@ export default async function TransactionReceiptPage({
             <div
               className="min-w-0 rounded-[var(--oneui-card-radius)] border p-5 sm:p-6"
               style={{
-                borderColor:
-                  "color-mix(in srgb, var(--receipt-accent), transparent 70%)",
-                background:
-                  "linear-gradient(135deg, color-mix(in srgb, var(--receipt-accent), transparent 91%), var(--card))",
+                borderColor: `color-mix(in srgb, ${meta.accent}, transparent 70%)`,
+                background: `linear-gradient(135deg, color-mix(in srgb, ${meta.accent}, transparent 91%), var(--card))`,
               }}
             >
               <p className="text-xs font-black uppercase tracking-[0.18em] text-text-secondary">
                 Amount
               </p>
-
               <p
-                className="mt-3 break-words text-3xl font-black tracking-tight [overflow-wrap:anywhere] sm:text-5xl"
-                style={{ color: "var(--receipt-accent)" }}
+                className="mt-3 break-words text-3xl font-black tracking-tight tabular-nums [overflow-wrap:anywhere] sm:text-5xl"
+                style={{ color: meta.accent }}
               >
                 {receipt.amountText}
               </p>
-
               <p className="mt-2 text-sm font-semibold text-text-secondary">
                 {receipt.dateText}
               </p>
@@ -558,56 +561,51 @@ export default async function TransactionReceiptPage({
                 label="Transaction Date"
                 value={receipt.dateText}
               />
-
               <DetailLine
                 icon={Clock3}
                 label="Created"
                 value={receipt.createdText}
               />
 
-              {receipt.type === "transfer" ?
+              {receipt.type === "transfer" ? (
                 <>
                   <DetailLine
                     icon={Wallet}
                     label="From Account"
                     value={receipt.transferFromText}
                   />
-
                   <DetailLine
                     icon={CreditCard}
                     label="To Account"
                     value={receipt.transferToText}
                   />
                 </>
-              : <>
+              ) : (
+                <>
                   <DetailLine
                     icon={Wallet}
                     label="Account"
                     value={receipt.accountText}
                   />
-
                   <DetailLine
                     icon={Tag}
                     label="Category"
                     value={receipt.categoryText}
                   />
                 </>
-              }
+              )}
 
               <DetailLine
                 icon={NotebookText}
                 label="Note"
                 value={receipt.noteText || "No note"}
               />
-
               <DetailLine icon={Hash} label="Receipt ID" value={receipt.id} />
-
               <DetailLine
                 icon={Hash}
                 label="Reference"
                 value={receipt.referenceText}
               />
-
               <DetailLine
                 icon={CheckCircle2}
                 label="Status"
@@ -634,26 +632,22 @@ export default async function TransactionReceiptPage({
             <p className="text-xs font-black uppercase tracking-[0.18em] text-text-secondary">
               Extra Details
             </p>
-
             <div className="mt-4 space-y-3">
               <DetailLine
                 icon={ReceiptText}
                 label="Type"
                 value={receipt.typeLabel}
               />
-
               <DetailLine
                 icon={UserRound}
                 label="Source"
                 value={receipt.sourceText}
               />
-
               <DetailLine
                 icon={UserRound}
                 label="Person"
                 value={receipt.personText}
               />
-
               <DetailLine
                 icon={ReceiptText}
                 label="Item"
