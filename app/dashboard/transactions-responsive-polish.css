@@ -1,0 +1,219 @@
+/* Transaction list and receipt presentation.
+   UI-only: data loading, filters, edit/delete/view behavior, calculations, and routes stay unchanged. */
+
+/* Keep every transaction readable as a stable surface instead of a moving hover card. */
+[data-transaction-row] {
+  border-color: color-mix(in srgb, var(--border), transparent 12%) !important;
+  background: var(--surface-primary) !important;
+  box-shadow: none !important;
+  transform: none !important;
+  transition:
+    border-color var(--motion-duration-fast) ease,
+    background-color var(--motion-duration-fast) ease !important;
+}
+
+[data-transaction-row]:hover,
+[data-transaction-row]:focus-within {
+  border-color: color-mix(in srgb, var(--border), var(--text-secondary) 8%) !important;
+  background: var(--surface-primary) !important;
+  box-shadow: none !important;
+  transform: none !important;
+}
+
+[data-transaction-row] > :first-child {
+  transition: none !important;
+  transform: none !important;
+}
+
+[data-transaction-row]:hover > :first-child {
+  transform: none !important;
+}
+
+/* View, edit, and delete remain visible on tablet and desktop, not hover-only. */
+[data-transaction-row] > :last-child {
+  opacity: 1 !important;
+}
+
+[data-transaction-row] > :last-child button {
+  border-color: color-mix(in srgb, var(--border), transparent 8%) !important;
+  background: var(--surface-primary) !important;
+  box-shadow: none !important;
+  transform: none !important;
+}
+
+[data-transaction-row] > :last-child button:hover {
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+/* Receipt page: one clear hierarchy, without card-inside-card clutter. */
+[data-transaction-receipt] {
+  border-color: color-mix(in srgb, var(--border), transparent 4%) !important;
+  border-radius: 1.25rem !important;
+  background: var(--surface-primary) !important;
+  box-shadow: var(--surface-highlight), 0 10px 28px rgb(23 35 58 / 0.06) !important;
+}
+
+[data-transaction-receipt] > div:first-child {
+  padding: 1.15rem 1.25rem !important;
+  border-color: color-mix(in srgb, var(--divider), transparent 12%) !important;
+}
+
+[data-transaction-receipt] > div:nth-child(2) {
+  gap: 0 !important;
+  padding: 0 !important;
+}
+
+[data-transaction-receipt] > div:nth-child(2) > div:first-child {
+  padding: 1.1rem 1.25rem 1.25rem !important;
+}
+
+/* Main amount becomes the visual anchor, but stays on the same clean surface. */
+[data-transaction-receipt] > div:nth-child(2) > div:first-child > div:first-child {
+  margin: 0 0 0.3rem !important;
+  padding: 0.25rem 0 1.15rem !important;
+  border: 0 !important;
+  border-bottom: 1px solid color-mix(in srgb, var(--divider), transparent 12%) !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+[data-transaction-receipt] > div:nth-child(2) > div:first-child > div:first-child > p:nth-of-type(2) {
+  max-width: 100%;
+  margin-top: 0.55rem !important;
+  overflow: hidden;
+  font-size: clamp(2rem, 6vw, 3.6rem) !important;
+  line-height: 1 !important;
+  letter-spacing: -0.045em !important;
+  overflow-wrap: normal !important;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Every detail is a compact information row rather than another nested card. */
+[data-transaction-receipt] div.finance-panel-soft {
+  min-height: 4.35rem;
+  padding: 0.8rem 0.25rem !important;
+  border: 0 !important;
+  border-bottom: 1px solid color-mix(in srgb, var(--divider), transparent 18%) !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+[data-transaction-receipt] div.finance-panel-soft > div:first-child {
+  margin-bottom: 0.38rem !important;
+  color: var(--text-tertiary) !important;
+  font-size: 0.66rem !important;
+  letter-spacing: 0.1em !important;
+}
+
+[data-transaction-receipt] div.finance-panel-soft > p {
+  font-size: 0.88rem !important;
+  line-height: 1.35rem !important;
+}
+
+[data-transaction-receipt] aside.finance-panel-soft {
+  margin: 0 !important;
+  padding: 1.1rem 1.25rem 1.25rem !important;
+  border: 0 !important;
+  border-left: 1px solid color-mix(in srgb, var(--divider), transparent 12%) !important;
+  border-radius: 0 !important;
+  background: color-mix(in srgb, var(--surface-secondary), transparent 45%) !important;
+  box-shadow: none !important;
+}
+
+[data-transaction-receipt] aside.finance-panel-soft > div {
+  margin-top: 0.6rem !important;
+}
+
+@media (max-width: 767px) {
+  [data-transaction-row] {
+    gap: 0.72rem !important;
+    padding: 0.82rem !important;
+    border-radius: 1rem !important;
+  }
+
+  [data-transaction-row] > :first-child {
+    width: 2.55rem !important;
+    height: 2.55rem !important;
+    border-radius: 0.85rem !important;
+  }
+
+  [data-transaction-row] > :last-child {
+    margin-top: 0.08rem;
+    padding-top: 0.65rem;
+    border-top: 1px solid color-mix(in srgb, var(--divider), transparent 18%);
+    gap: 0.42rem !important;
+  }
+
+  [data-transaction-row] > :last-child button {
+    width: 2.25rem !important;
+    height: 2.25rem !important;
+  }
+
+  [data-transaction-row] > :last-child button svg {
+    width: 0.88rem;
+    height: 0.88rem;
+  }
+
+  [data-transaction-receipt] {
+    border-radius: 1.05rem !important;
+  }
+
+  [data-transaction-receipt] > div:first-child {
+    padding: 1rem !important;
+  }
+
+  [data-transaction-receipt] > div:first-child > div {
+    gap: 0.85rem !important;
+  }
+
+  [data-transaction-receipt] > div:first-child > div > div:first-child {
+    gap: 0.75rem !important;
+  }
+
+  [data-transaction-receipt] > div:first-child h2 {
+    margin-top: 0.35rem !important;
+    font-size: 1.3rem !important;
+    line-height: 1.65rem !important;
+  }
+
+  [data-transaction-receipt] > div:nth-child(2) > div:first-child {
+    padding: 0.95rem 1rem 1.1rem !important;
+  }
+
+  [data-transaction-receipt] > div:nth-child(2) > div:first-child > div:first-child > p:nth-of-type(2) {
+    font-size: clamp(1.8rem, 10vw, 2.65rem) !important;
+  }
+
+  [data-transaction-receipt] div.finance-panel-soft {
+    min-height: 3.9rem;
+    padding-block: 0.68rem !important;
+  }
+
+  [data-transaction-receipt] aside.finance-panel-soft {
+    padding: 1rem !important;
+    border-left: 0 !important;
+    border-top: 1px solid color-mix(in srgb, var(--divider), transparent 12%) !important;
+    background: color-mix(in srgb, var(--surface-secondary), transparent 55%) !important;
+  }
+}
+
+@media (min-width: 768px) {
+  [data-transaction-row] > :last-child {
+    width: 6rem !important;
+    gap: 0.28rem !important;
+  }
+
+  [data-transaction-row] > :last-child button {
+    width: 1.75rem !important;
+    height: 1.75rem !important;
+  }
+
+  [data-transaction-row] > :last-child button svg {
+    width: 0.78rem;
+    height: 0.78rem;
+  }
+}
