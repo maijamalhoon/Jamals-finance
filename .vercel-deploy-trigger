@@ -1,2 +1,3 @@
 Production deployment trigger for all latest Jamals Finance UI updates.
-Includes balance count animation, larger balance and quick actions, static dashboard card hover surfaces, responsive top cards, goals, recent transactions, and polished income/expense forms.
+Includes the restructured responsive Settings experience, updated notification switches, removal of the Payables launcher from Settings, and all latest main-branch UI improvements.
+Triggered on 2026-07-18 for production synchronization.
