@@ -81,28 +81,56 @@ function getProgressValue(
   return 0;
 }
 
-function MetricProgressLine({
+function getGraphPath(
+  value: number,
+  direction: DashboardComparison["direction"] | "none",
+) {
+  const templates: Record<DashboardComparison["direction"] | "none", number[]> = {
+    up: [16, 15, 12, 13, 9, 10, 6, 4],
+    down: [4, 6, 5, 9, 10, 14, 13, 17],
+    flat: [10, 9, 11, 10, 9, 11, 10, 10],
+    none: [10, 10, 10, 10, 10, 10, 10, 10],
+  };
+  const strength = 0.5 + Math.min(1, Math.max(0, value / 100)) * 0.75;
+  const source = templates[direction];
+  const points = source.map((rawY, index) => ({
+    x: 2 + (index * 96) / Math.max(source.length - 1, 1),
+    y: 10 + (rawY - 10) * strength,
+  }));
+
+  return points.slice(1).reduce((path, point, index) => {
+    const previous = points[index];
+    const midpoint = (previous.x + point.x) / 2;
+    return `${path} C ${midpoint.toFixed(2)} ${previous.y.toFixed(2)}, ${midpoint.toFixed(2)} ${point.y.toFixed(2)}, ${point.x.toFixed(2)} ${point.y.toFixed(2)}`;
+  }, `M ${points[0].x.toFixed(2)} ${points[0].y.toFixed(2)}`);
+}
+
+function MetricGraphLine({
   value,
+  direction,
   accent,
   animationKey,
 }: {
   value: number;
+  direction: DashboardComparison["direction"] | "none";
   accent: string;
   animationKey: string;
 }) {
   return (
-    <div aria-hidden="true" className="dashboard-metric-progress">
-      <span
-        key={animationKey}
-        className="dashboard-metric-progress-fill"
-        style={
-          {
-            "--metric-progress": `${value}%`,
-            backgroundColor: accent,
-          } as CSSProperties
-        }
+    <svg
+      key={animationKey}
+      aria-hidden="true"
+      className="dashboard-metric-graph"
+      viewBox="0 0 100 20"
+      preserveAspectRatio="none"
+    >
+      <path
+        className="dashboard-metric-graph-path"
+        d={getGraphPath(value, direction)}
+        pathLength={1}
+        style={{ stroke: accent }}
       />
-    </div>
+    </svg>
   );
 }
 
@@ -124,8 +152,9 @@ export default function MetricCard({
         : amount;
   const amountSize = getAmountSize(displayAmount);
   const metricAccent = getMetricAccent(iconName, amount, accentColor);
-  const progressValue = getProgressValue(comparison, availability);
-  const animationKey = `${displayAmount}-${comparison?.label ?? "none"}-${progressValue}`;
+  const graphValue = getProgressValue(comparison, availability);
+  const graphDirection = comparison?.direction ?? "none";
+  const animationKey = `${displayAmount}-${comparison?.label ?? "none"}-${graphValue}`;
 
   return (
     <article
@@ -147,10 +176,11 @@ export default function MetricCard({
         </p>
 
         <div className={`${styles.footer} dashboard-metric-card-footer`}>
-          <MetricProgressLine
+          <MetricGraphLine
             accent={metricAccent}
             animationKey={animationKey}
-            value={progressValue}
+            direction={graphDirection}
+            value={graphValue}
           />
         </div>
       </div>
