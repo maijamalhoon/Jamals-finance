@@ -97,6 +97,14 @@
     font-size: clamp(1.46rem, 7.2vw, 2.18rem) !important;
   }
 
+  .dashboard-balance-actions {
+    width: 100%;
+    margin-inline: auto;
+    grid-template-columns: repeat(4, minmax(3.8rem, 4.35rem));
+    justify-content: center;
+    gap: clamp(0.35rem, 2vw, 0.7rem);
+  }
+
   .dashboard-quick-action {
     min-height: 4.55rem !important;
     gap: 0.36rem !important;
