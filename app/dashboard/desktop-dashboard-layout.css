@@ -210,7 +210,7 @@
   }
 }
 
-/* Match dashboard label icons to the desktop header search icon: no badge, no fill, clean outline. */
+/* Use the same native Lucide React rounded monoline treatment as the Goals card. */
 .dashboard-overview-layout
   :is(
     .finance-reference-card > div:first-child span:has(> svg.lucide-arrow-left-right),
@@ -230,17 +230,42 @@
     .finance-reference-card > div:first-child span:has(> svg.lucide-arrow-left-right),
     .finance-reference-card > div:first-child .dashboard-list-card-kicker-icon:has(> svg.lucide-pie-chart),
     .finance-reference-card > header:first-child .dashboard-list-card-kicker-icon:has(> svg.lucide-zap),
+    .finance-reference-card > div:first-child .dashboard-list-card-kicker-icon:has(> svg.lucide-target),
+    .dashboard-graph-card > div:first-child span:has(> svg.lucide-activity)
+  )::before,
+.dashboard-overview-layout
+  :is(
+    .finance-reference-card > div:first-child span:has(> svg.lucide-arrow-left-right),
+    .finance-reference-card > div:first-child .dashboard-list-card-kicker-icon:has(> svg.lucide-pie-chart),
+    .finance-reference-card > header:first-child .dashboard-list-card-kicker-icon:has(> svg.lucide-zap),
+    .finance-reference-card > div:first-child .dashboard-list-card-kicker-icon:has(> svg.lucide-target),
+    .dashboard-graph-card > div:first-child span:has(> svg.lucide-activity)
+  )::after {
+  content: none !important;
+  display: none !important;
+  background: none !important;
+  -webkit-mask: none !important;
+  mask: none !important;
+}
+
+.dashboard-overview-layout
+  :is(
+    .finance-reference-card > div:first-child span:has(> svg.lucide-arrow-left-right),
+    .finance-reference-card > div:first-child .dashboard-list-card-kicker-icon:has(> svg.lucide-pie-chart),
+    .finance-reference-card > header:first-child .dashboard-list-card-kicker-icon:has(> svg.lucide-zap),
     .finance-reference-card > div:first-child .dashboard-list-card-kicker-icon:has(> svg.lucide-target)
   )
   > svg {
+  display: block !important;
   width: 15px !important;
   height: 15px !important;
   opacity: 1 !important;
   fill: none !important;
   stroke: currentColor !important;
-  stroke-width: 2.1 !important;
-  stroke-linecap: round;
-  stroke-linejoin: round;
+  stroke-width: 2.3 !important;
+  stroke-linecap: round !important;
+  stroke-linejoin: round !important;
+  vector-effect: non-scaling-stroke;
 }
 
 .dashboard-overview-layout
@@ -248,12 +273,14 @@
   > div:first-child
   span:has(> svg.lucide-activity)
   > svg {
+  display: block !important;
   width: 12px !important;
   height: 12px !important;
   opacity: 1 !important;
   fill: none !important;
   stroke: currentColor !important;
   stroke-width: 2.3 !important;
-  stroke-linecap: round;
-  stroke-linejoin: round;
+  stroke-linecap: round !important;
+  stroke-linejoin: round !important;
+  vector-effect: non-scaling-stroke;
 }
