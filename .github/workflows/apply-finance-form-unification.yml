@@ -75,4 +75,5 @@ jobs:
           git add -A
           git diff --cached --quiet && exit 0
           git commit -m "feat(forms): unify finance modals and account selectors"
+          git pull --rebase origin main
           git push origin HEAD:main
