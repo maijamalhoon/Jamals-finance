@@ -4,6 +4,7 @@ import {
   BriefcaseBusiness,
   Car,
   CreditCard,
+  Home,
   Landmark,
   LucideIcon,
   Package,
@@ -106,5 +107,5 @@ export const PAYABLE_QUICK_REASONS = [
   { label: "Borrowed cash", icon: Banknote },
   { label: "Borrowed item", icon: ReceiptText },
   { label: "Car / fuel help", icon: Car },
-  { label: "Family payment", icon: Package },
+  { label: "Family payment", icon: Home },
 ];
