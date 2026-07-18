@@ -26,6 +26,7 @@ import "./overview-top-metrics.css";
 import "./metric-sparkline-fix.css";
 import "./transaction-modal-viewport.css";
 import "./card-borderless-policy.css";
+// Dashboard overview typography/icons stay isolated from every nested route.
 import "./dashboard-overview-type-icons.css";
 
 export const dynamic = "force-dynamic";
