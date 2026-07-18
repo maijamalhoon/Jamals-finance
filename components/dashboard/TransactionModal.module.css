@@ -42,6 +42,10 @@
   padding: clamp(0.52rem, 1.35dvh, 0.82rem) 1rem !important;
 }
 
+.body > * {
+  margin-block: 0 !important;
+}
+
 .body :global(.finance-form-field) {
   min-width: 0;
   grid-column: 1 / -1 !important;
