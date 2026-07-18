@@ -8,7 +8,6 @@ import {
   Building2,
   Bus,
   Car,
-  CircleDollarSign,
   Coins,
   CreditCard,
   Dumbbell,
@@ -39,6 +38,7 @@ import {
   TrainFront,
   TrendingUp,
   Utensils,
+  Wallet,
   WalletCards,
   Wrench,
   Zap,
@@ -104,7 +104,7 @@ export const CATEGORY_ICON_MAP = {
   building: Building2,
   bus: Bus,
   car: Car,
-  cash: CircleDollarSign,
+  cash: Wallet,
   coins: Coins,
   credit: CreditCard,
   fuel: Fuel,
@@ -318,20 +318,8 @@ export function CategoryVisualIcon({
     boxShadow:
       "inset 0 1px 0 color-mix(in srgb, white 24%, transparent), 0 7px 18px color-mix(in srgb, var(--text-primary) 8%, transparent)",
   } satisfies CSSProperties;
-
-  if (visual.iconKey.startsWith("badge:")) {
-    return (
-      <span
-        className={`grid shrink-0 place-items-center font-extrabold text-white ${selected.frame} ${className}`}
-        style={style}
-        aria-label={`${accessibleLabel} category icon`}
-      >
-        {visual.iconKey.slice(6)}
-      </span>
-    );
-  }
-
   const Icon = getCategoryIconComponent(visual.iconKey);
+
   return (
     <span
       className={`grid shrink-0 place-items-center text-white ${selected.frame} ${className}`}
