@@ -28,8 +28,16 @@ type MobileNavProps = {
   notificationSlot: ReactNode;
 };
 
+type TapGesture = {
+  pointerId: number;
+  startX: number;
+  startY: number;
+  startScrollTop: number;
+  moved: boolean;
+};
+
 const AUTO_HIDE_DELAY = 2_000;
-const SCROLL_IDLE_DELAY = 140;
+const TAP_MOVE_TOLERANCE = 10;
 const CONTROL_EASE = [0.22, 1, 0.36, 1] as const;
 
 export default function MobileNav({ notificationSlot }: MobileNavProps) {
@@ -37,9 +45,10 @@ export default function MobileNav({ notificationSlot }: MobileNavProps) {
   const reduceMotion = useReducedMotion();
   const [open, setOpen] = useState(false);
   const [portalOpen, setPortalOpen] = useState(false);
-  const [controlsVisible, setControlsVisible] = useState(true);
-  const hideTimerRef = useRef<number | null>(null);
-  const scrollIdleTimerRef = useRef<number | null>(null);
+  const [controlsVisible, setControlsVisible] = useState(false);
+  const hideTimerRef = useRef<ReturnType<typeof window.setTimeout> | null>(null);
+  const tapGestureRef = useRef<TapGesture | null>(null);
+  const interactionWasOpenRef = useRef(false);
 
   const clearHideTimer = useCallback(() => {
     if (hideTimerRef.current === null) return;
@@ -78,40 +87,88 @@ export default function MobileNav({ notificationSlot }: MobileNavProps) {
   }, []);
 
   useEffect(() => {
+    const wasOpen = interactionWasOpenRef.current;
+    interactionWasOpenRef.current = interactionOpen;
+
     if (interactionOpen) {
       clearHideTimer();
       setControlsVisible(true);
       return;
     }
 
-    showControlsForMoment();
+    if (wasOpen) showControlsForMoment();
   }, [clearHideTimer, interactionOpen, showControlsForMoment]);
 
   useEffect(() => {
-    if (interactionOpen) return;
-    showControlsForMoment();
-  }, [interactionOpen, pathname, showControlsForMoment]);
+    const scrollContainer = document.querySelector<HTMLElement>(
+      "[data-dashboard-scroll]",
+    );
+    const getScrollTop = () => scrollContainer?.scrollTop ?? window.scrollY;
 
-  useEffect(() => {
-    const handlePointerDown = () => {
-      if (interactionOpen) {
-        clearHideTimer();
-        setControlsVisible(true);
-        return;
+    const handlePointerDown = (event: PointerEvent) => {
+      if (!event.isPrimary || event.button !== 0 || interactionOpen) return;
+
+      tapGestureRef.current = {
+        pointerId: event.pointerId,
+        startX: event.clientX,
+        startY: event.clientY,
+        startScrollTop: getScrollTop(),
+        moved: false,
+      };
+    };
+
+    const handlePointerMove = (event: PointerEvent) => {
+      const gesture = tapGestureRef.current;
+      if (!gesture || gesture.pointerId !== event.pointerId) return;
+
+      const movedX = Math.abs(event.clientX - gesture.startX);
+      const movedY = Math.abs(event.clientY - gesture.startY);
+      if (movedX > TAP_MOVE_TOLERANCE || movedY > TAP_MOVE_TOLERANCE) {
+        gesture.moved = true;
       }
+    };
 
-      showControlsForMoment();
+    const handlePointerUp = (event: PointerEvent) => {
+      const gesture = tapGestureRef.current;
+      if (!gesture || gesture.pointerId !== event.pointerId) return;
+
+      tapGestureRef.current = null;
+      if (interactionOpen) return;
+
+      const scrollDistance = Math.abs(getScrollTop() - gesture.startScrollTop);
+      if (!gesture.moved && scrollDistance <= 2) showControlsForMoment();
+    };
+
+    const handlePointerCancel = (event: PointerEvent) => {
+      if (tapGestureRef.current?.pointerId === event.pointerId) {
+        tapGestureRef.current = null;
+      }
     };
 
     document.addEventListener("pointerdown", handlePointerDown, {
       capture: true,
       passive: true,
     });
+    document.addEventListener("pointermove", handlePointerMove, {
+      capture: true,
+      passive: true,
+    });
+    document.addEventListener("pointerup", handlePointerUp, {
+      capture: true,
+      passive: true,
+    });
+    document.addEventListener("pointercancel", handlePointerCancel, {
+      capture: true,
+      passive: true,
+    });
 
     return () => {
       document.removeEventListener("pointerdown", handlePointerDown, true);
+      document.removeEventListener("pointermove", handlePointerMove, true);
+      document.removeEventListener("pointerup", handlePointerUp, true);
+      document.removeEventListener("pointercancel", handlePointerCancel, true);
     };
-  }, [clearHideTimer, interactionOpen, showControlsForMoment]);
+  }, [interactionOpen, showControlsForMoment]);
 
   useEffect(() => {
     const scrollContainer = document.querySelector<HTMLElement>(
@@ -121,44 +178,21 @@ export default function MobileNav({ notificationSlot }: MobileNavProps) {
 
     const handleScroll = () => {
       clearHideTimer();
-
-      if (!interactionOpen) {
-        setControlsVisible(false);
-      }
-
-      if (scrollIdleTimerRef.current !== null) {
-        window.clearTimeout(scrollIdleTimerRef.current);
-      }
-
-      scrollIdleTimerRef.current = window.setTimeout(() => {
-        scrollIdleTimerRef.current = null;
-
-        if (interactionOpen) {
-          setControlsVisible(true);
-          return;
-        }
-
-        showControlsForMoment();
-      }, SCROLL_IDLE_DELAY);
+      if (tapGestureRef.current) tapGestureRef.current.moved = true;
+      if (!interactionOpen) setControlsVisible(false);
     };
 
     scrollContainer.addEventListener("scroll", handleScroll, { passive: true });
 
     return () => {
       scrollContainer.removeEventListener("scroll", handleScroll);
-      if (scrollIdleTimerRef.current !== null) {
-        window.clearTimeout(scrollIdleTimerRef.current);
-        scrollIdleTimerRef.current = null;
-      }
     };
-  }, [clearHideTimer, interactionOpen, showControlsForMoment]);
+  }, [clearHideTimer, interactionOpen]);
 
   useEffect(() => {
     return () => {
       clearHideTimer();
-      if (scrollIdleTimerRef.current !== null) {
-        window.clearTimeout(scrollIdleTimerRef.current);
-      }
+      tapGestureRef.current = null;
     };
   }, [clearHideTimer]);
 
