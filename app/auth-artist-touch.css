@@ -1,0 +1,923 @@
+/* Final artist-touch layer for login, sign-up, recovery, onboarding, and offline-adjacent auth states.
+   Presentation only: existing data, Supabase calls, validation, redirects, and saved progress remain untouched. */
+
+.jf-auth-root {
+  --auth-accent-a: #3563e9;
+  --auth-accent-b: #7457df;
+  --auth-accent-soft: color-mix(in srgb, var(--auth-accent-a) 11%, transparent);
+  --auth-accent-line: color-mix(in srgb, var(--auth-accent-a) 26%, var(--border));
+  --auth-shell-width: 1380px;
+  --auth-card-width: 520px;
+  position: relative;
+  isolation: isolate;
+  background:
+    radial-gradient(circle at 14% 12%, color-mix(in srgb, var(--auth-accent-a) 13%, transparent), transparent 30rem),
+    radial-gradient(circle at 88% 78%, color-mix(in srgb, var(--auth-accent-b) 11%, transparent), transparent 32rem),
+    var(--background);
+}
+
+.jf-auth-root[data-auth-theme="signup"] {
+  --auth-accent-a: #0f8f6f;
+  --auth-accent-b: #3563e9;
+}
+
+.jf-auth-root[data-auth-theme="recovery"] {
+  --auth-accent-a: #8b5cf6;
+  --auth-accent-b: #3563e9;
+}
+
+.jf-auth-root[data-auth-theme="onboarding"] {
+  --auth-accent-a: #3563e9;
+  --auth-accent-b: #0f8f6f;
+  --auth-card-width: 680px;
+}
+
+.jf-auth-root::before,
+.jf-auth-root::after {
+  position: absolute;
+  z-index: 0;
+  pointer-events: none;
+  content: "";
+}
+
+.jf-auth-root::before {
+  inset: 4.5rem 0 auto;
+  height: min(72rem, calc(100dvh - 4.5rem));
+  background-image:
+    linear-gradient(color-mix(in srgb, var(--border) 34%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in srgb, var(--border) 34%, transparent) 1px, transparent 1px);
+  background-size: 58px 58px;
+  mask-image: linear-gradient(to bottom, rgb(0 0 0 / 0.48), transparent 92%);
+  opacity: 0.2;
+}
+
+.jf-auth-root::after {
+  top: 18%;
+  left: 50%;
+  width: min(72vw, 980px);
+  height: min(52vw, 680px);
+  translate: -50% 0;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 30% 42%, color-mix(in srgb, var(--auth-accent-a) 13%, transparent), transparent 42%),
+    radial-gradient(circle at 72% 52%, color-mix(in srgb, var(--auth-accent-b) 11%, transparent), transparent 42%);
+  filter: blur(42px);
+  opacity: 0.75;
+}
+
+.jf-auth-root svg {
+  stroke-width: 1.8;
+}
+
+.jf-auth-root .landing-math-field {
+  z-index: 1;
+  opacity: 0.72;
+}
+
+.jf-auth-root .jf-auth-ambient {
+  z-index: 0;
+  background:
+    radial-gradient(circle at 18% 18%, color-mix(in srgb, var(--auth-accent-a) 12%, transparent), transparent 22rem),
+    radial-gradient(circle at 84% 74%, color-mix(in srgb, var(--auth-accent-b) 10%, transparent), transparent 26rem);
+}
+
+/* Header */
+.jf-auth-root .jf-auth-header {
+  width: min(100%, var(--auth-shell-width));
+  min-height: 4.5rem;
+  flex-basis: 4.5rem;
+  border: 0;
+  background: color-mix(in srgb, var(--background) 78%, transparent);
+  box-shadow: 0 1px 0 color-mix(in srgb, var(--border) 68%, transparent);
+  backdrop-filter: blur(18px) saturate(145%);
+  -webkit-backdrop-filter: blur(18px) saturate(145%);
+}
+
+.jf-auth-root .jf-auth-brand,
+.jf-auth-root .jf-auth-home-link {
+  border-radius: 0.9rem;
+  transition:
+    transform 180ms var(--motion-ease),
+    color 180ms var(--motion-ease),
+    background-color 180ms var(--motion-ease),
+    box-shadow 180ms var(--motion-ease);
+}
+
+.jf-auth-root .jf-auth-brand:hover,
+.jf-auth-root .jf-auth-home-link:hover {
+  transform: translateY(-1px);
+}
+
+.jf-auth-root .jf-auth-brand-mark {
+  border-radius: 0.82rem;
+  background:
+    linear-gradient(145deg, color-mix(in srgb, var(--auth-accent-a) 16%, var(--surface-primary)), color-mix(in srgb, var(--auth-accent-b) 10%, var(--surface-secondary)));
+  box-shadow:
+    0 9px 20px color-mix(in srgb, var(--auth-accent-a) 14%, transparent),
+    inset 0 1px 0 rgb(255 255 255 / 0.38);
+}
+
+.jf-auth-root .jf-auth-home-link {
+  background: color-mix(in srgb, var(--surface-primary) 78%, transparent);
+  box-shadow: 0 8px 24px color-mix(in srgb, var(--text-primary) 5%, transparent);
+}
+
+/* Main composition */
+.jf-auth-root .jf-auth-layout {
+  width: min(100%, var(--auth-shell-width));
+  grid-template-columns: minmax(0, 1.02fr) minmax(420px, 0.72fr) !important;
+  gap: clamp(3rem, 6vw, 7.5rem) !important;
+  padding-block: clamp(2.25rem, 5.5vh, 5.5rem);
+}
+
+.jf-auth-root:not([data-auth-minimal="true"]) .jf-auth-layout {
+  grid-template-columns: minmax(360px, 0.78fr) minmax(560px, 1.22fr) !important;
+  gap: clamp(2.5rem, 5vw, 6rem) !important;
+}
+
+.jf-auth-root .jf-auth-context {
+  position: relative;
+  max-width: 680px;
+  padding: clamp(0.25rem, 1vw, 1rem) 0;
+}
+
+.jf-auth-root .auth-context-eyebrow,
+.jf-auth-root .auth-eyebrow,
+.jf-auth-root .auth-progress {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  width: fit-content;
+  border: 0;
+  border-radius: 999px;
+  background: var(--auth-accent-soft);
+  color: var(--auth-accent-a);
+  font-size: 0.7rem;
+  font-weight: 820;
+  letter-spacing: 0.085em;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.jf-auth-root .auth-context-eyebrow {
+  padding: 0.58rem 0.78rem;
+}
+
+.jf-auth-root .auth-context-title {
+  max-width: 11.5ch;
+  margin-top: 1.3rem;
+  font-size: clamp(2.7rem, 4.8vw, 5.15rem);
+  font-weight: 680;
+  letter-spacing: -0.065em;
+  line-height: 0.98;
+  text-wrap: balance;
+}
+
+.jf-auth-root .auth-context-title::first-line {
+  color: var(--text-primary);
+}
+
+.jf-auth-root .auth-context-copy {
+  max-width: 57ch;
+  margin-top: 1.15rem;
+  color: var(--text-secondary);
+  font-size: clamp(0.95rem, 1.2vw, 1.08rem);
+  line-height: 1.75;
+  text-wrap: pretty;
+}
+
+/* Finance visual */
+.jf-auth-root .auth-showcase-panel {
+  position: relative;
+  overflow: hidden;
+  margin-top: clamp(1.75rem, 3.4vh, 2.8rem);
+  padding: clamp(1rem, 1.8vw, 1.35rem);
+  border: 1px solid color-mix(in srgb, var(--auth-accent-line) 72%, var(--border));
+  border-radius: 1.55rem;
+  background:
+    radial-gradient(circle at 92% 8%, color-mix(in srgb, var(--auth-accent-b) 12%, transparent), transparent 13rem),
+    color-mix(in srgb, var(--surface-primary) 90%, transparent);
+  box-shadow:
+    0 26px 64px rgb(15 23 42 / 0.1),
+    0 8px 22px color-mix(in srgb, var(--auth-accent-a) 8%, transparent),
+    inset 0 1px 0 rgb(255 255 255 / 0.32);
+  backdrop-filter: blur(14px) saturate(130%);
+  -webkit-backdrop-filter: blur(14px) saturate(130%);
+}
+
+.jf-auth-root .auth-showcase-panel::after {
+  position: absolute;
+  right: -4rem;
+  bottom: -5rem;
+  width: 12rem;
+  height: 12rem;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--auth-accent-a) 9%, transparent);
+  filter: blur(4px);
+  content: "";
+}
+
+.jf-auth-root .auth-showcase-head,
+.jf-auth-root .auth-showcase-balance,
+.jf-auth-root .auth-showcase-grid,
+.jf-auth-root .auth-showcase-chart {
+  position: relative;
+  z-index: 1;
+}
+
+.jf-auth-root .auth-showcase-head,
+.jf-auth-root .auth-showcase-balance {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.jf-auth-root .auth-showcase-title {
+  display: inline-flex;
+  min-width: 0;
+  align-items: center;
+  gap: 0.6rem;
+  color: var(--text-primary);
+  font-size: 0.78rem;
+}
+
+.jf-auth-root .auth-showcase-title svg {
+  color: var(--auth-accent-a);
+}
+
+.jf-auth-root .auth-showcase-badge {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 0.45rem;
+  color: var(--text-secondary);
+  font-size: 0.67rem;
+  font-weight: 760;
+}
+
+.jf-auth-root .auth-showcase-badge > span {
+  width: 0.45rem;
+  height: 0.45rem;
+  border-radius: 50%;
+  background: var(--auth-accent-a);
+  box-shadow: 0 0 0 0.25rem color-mix(in srgb, var(--auth-accent-a) 12%, transparent);
+  animation: auth-live-pulse 2.4s ease-in-out infinite;
+}
+
+.jf-auth-root .auth-showcase-balance {
+  margin-top: 1.1rem;
+  padding: 1rem;
+  border-radius: 1.15rem;
+  background: color-mix(in srgb, var(--surface-secondary) 76%, transparent);
+}
+
+.jf-auth-root .auth-showcase-balance > span:first-child {
+  display: grid;
+  min-width: 0;
+  gap: 0.25rem;
+}
+
+.jf-auth-root .auth-showcase-balance small,
+.jf-auth-root .auth-showcase-tile small {
+  color: var(--text-muted);
+  font-size: 0.64rem;
+  font-weight: 720;
+  letter-spacing: 0.055em;
+  text-transform: uppercase;
+}
+
+.jf-auth-root .auth-showcase-balance strong {
+  overflow: hidden;
+  color: var(--text-primary);
+  font-size: clamp(0.86rem, 1.2vw, 1rem);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.jf-auth-root .auth-showcase-orbit {
+  display: grid;
+  width: 3.25rem;
+  height: 3.25rem;
+  flex-shrink: 0;
+  place-items: center;
+  border-radius: 50%;
+  background: linear-gradient(145deg, color-mix(in srgb, var(--auth-accent-a) 17%, var(--surface-primary)), color-mix(in srgb, var(--auth-accent-b) 12%, var(--surface-secondary)));
+  color: var(--auth-accent-a);
+  box-shadow: 0 10px 24px color-mix(in srgb, var(--auth-accent-a) 16%, transparent);
+  animation: auth-orbit-float 5s ease-in-out infinite;
+}
+
+.jf-auth-root .auth-showcase-chart {
+  display: flex;
+  height: 5.5rem;
+  align-items: end;
+  gap: 0.45rem;
+  margin-top: 1rem;
+  padding: 0.85rem 0.85rem 0;
+  border-radius: 1rem;
+  background:
+    linear-gradient(to bottom, color-mix(in srgb, var(--border) 44%, transparent) 1px, transparent 1px),
+    color-mix(in srgb, var(--surface-inset) 62%, transparent);
+  background-size: 100% 25%;
+}
+
+.jf-auth-root .auth-showcase-chart span {
+  width: 100%;
+  min-width: 0.35rem;
+  border-radius: 999px 999px 0.35rem 0.35rem;
+  background: linear-gradient(to top, color-mix(in srgb, var(--auth-accent-a) 78%, var(--auth-accent-b)), var(--auth-accent-a));
+  transform-origin: bottom;
+  animation: auth-bar-rise 820ms var(--motion-ease) both;
+}
+
+.jf-auth-root .auth-showcase-chart span:nth-child(2) { animation-delay: 70ms; }
+.jf-auth-root .auth-showcase-chart span:nth-child(3) { animation-delay: 130ms; }
+.jf-auth-root .auth-showcase-chart span:nth-child(4) { animation-delay: 190ms; }
+.jf-auth-root .auth-showcase-chart span:nth-child(5) { animation-delay: 250ms; }
+.jf-auth-root .auth-showcase-chart span:nth-child(6) { animation-delay: 310ms; }
+.jf-auth-root .auth-showcase-chart span:nth-child(7) { animation-delay: 370ms; }
+
+.jf-auth-root .auth-showcase-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.65rem;
+  margin-top: 0.8rem;
+}
+
+.jf-auth-root .auth-showcase-tile {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.72rem;
+  border: 0;
+  border-radius: 0.95rem;
+  background: color-mix(in srgb, var(--surface-secondary) 70%, transparent);
+  color: var(--auth-accent-a);
+}
+
+.jf-auth-root .auth-showcase-tile > span {
+  display: grid;
+  min-width: 0;
+  gap: 0.12rem;
+}
+
+.jf-auth-root .auth-showcase-tile strong {
+  overflow: hidden;
+  color: var(--text-primary);
+  font-size: 0.71rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Trust statements */
+.jf-auth-root .auth-trust-list {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.85rem;
+  margin-top: 1.25rem;
+}
+
+.jf-auth-root .auth-trust-item {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 0.65rem;
+  min-width: 0;
+  padding: 0.72rem 0.2rem;
+}
+
+.jf-auth-root .auth-trust-icon {
+  display: grid;
+  width: 2rem;
+  height: 2rem;
+  place-items: center;
+  border-radius: 0.7rem;
+  background: var(--auth-accent-soft);
+  color: var(--auth-accent-a);
+}
+
+.jf-auth-root .auth-trust-item strong,
+.jf-auth-root .auth-trust-item > span:last-child > span {
+  display: block;
+}
+
+.jf-auth-root .auth-trust-item strong {
+  color: var(--text-primary);
+  font-size: 0.76rem;
+  line-height: 1.3;
+}
+
+.jf-auth-root .auth-trust-item > span:last-child > span {
+  margin-top: 0.22rem;
+  color: var(--text-muted);
+  font-size: 0.68rem;
+  line-height: 1.45;
+}
+
+/* Auth card */
+.jf-auth-root .jf-auth-card {
+  position: relative;
+  width: min(100%, var(--auth-card-width));
+  max-width: var(--auth-card-width) !important;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--auth-accent-line) 58%, var(--border));
+  border-radius: 1.65rem !important;
+  background:
+    radial-gradient(circle at 100% 0%, color-mix(in srgb, var(--auth-accent-b) 8%, transparent), transparent 17rem),
+    color-mix(in srgb, var(--surface-primary) 94%, transparent);
+  box-shadow:
+    0 30px 80px rgb(15 23 42 / 0.13),
+    0 10px 28px color-mix(in srgb, var(--auth-accent-a) 8%, transparent),
+    inset 0 1px 0 rgb(255 255 255 / 0.34);
+  backdrop-filter: blur(18px) saturate(130%);
+  -webkit-backdrop-filter: blur(18px) saturate(130%);
+}
+
+.jf-auth-root .jf-auth-card::before {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 3px;
+  background: linear-gradient(to bottom, var(--auth-accent-a), var(--auth-accent-b), transparent 86%);
+  content: "";
+}
+
+.jf-auth-root .jf-auth-card-head {
+  margin-bottom: 1.35rem !important;
+  padding-bottom: 1.15rem !important;
+  border-bottom: 1px solid color-mix(in srgb, var(--divider) 68%, transparent) !important;
+}
+
+.jf-auth-root .jf-auth-card-meta {
+  margin-bottom: 0.85rem !important;
+}
+
+.jf-auth-root .auth-eyebrow,
+.jf-auth-root .auth-progress {
+  min-height: 1.65rem;
+  padding: 0.3rem 0.58rem;
+}
+
+.jf-auth-root .auth-progress {
+  background: color-mix(in srgb, var(--surface-secondary) 82%, transparent);
+  color: var(--text-secondary);
+}
+
+.jf-auth-root .jf-auth-card-icon {
+  display: grid;
+  width: 2.35rem;
+  height: 2.35rem;
+  place-items: center;
+  border-radius: 0.82rem;
+  background: var(--auth-accent-soft);
+  color: var(--auth-accent-a);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--auth-accent-a) 16%, transparent);
+}
+
+.jf-auth-root .jf-auth-card-head h1 {
+  max-width: 21ch !important;
+  font-size: clamp(1.75rem, 2.6vw, 2.25rem) !important;
+  font-weight: 680 !important;
+  letter-spacing: -0.045em !important;
+  line-height: 1.04 !important;
+}
+
+.jf-auth-root .jf-auth-card-head p {
+  max-width: 48ch;
+  margin-top: 0.62rem !important;
+  color: var(--text-secondary);
+  font-size: 0.9rem !important;
+  line-height: 1.62 !important;
+}
+
+.jf-auth-root .auth-field-label {
+  margin-bottom: 0.42rem !important;
+  color: var(--text-secondary) !important;
+  font-size: 0.69rem !important;
+  font-weight: 820 !important;
+  letter-spacing: 0.07em !important;
+}
+
+.jf-auth-root .auth-input {
+  min-height: 3.2rem !important;
+  border: 1px solid color-mix(in srgb, var(--border) 82%, var(--auth-accent-a) 18%) !important;
+  border-radius: 0.95rem !important;
+  background: color-mix(in srgb, var(--surface-inset) 66%, var(--surface-primary) 34%) !important;
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, white 30%, transparent),
+    0 6px 18px color-mix(in srgb, var(--text-primary) 4%, transparent) !important;
+  transition:
+    border-color 180ms var(--motion-ease),
+    background-color 180ms var(--motion-ease),
+    box-shadow 180ms var(--motion-ease);
+}
+
+.jf-auth-root .auth-input:hover:not(:disabled) {
+  border-color: color-mix(in srgb, var(--auth-accent-a) 38%, var(--border)) !important;
+}
+
+.jf-auth-root .auth-input:focus,
+.jf-auth-root .auth-input:focus-visible {
+  border-color: var(--auth-accent-a) !important;
+  background: var(--surface-primary) !important;
+  box-shadow:
+    0 0 0 4px color-mix(in srgb, var(--auth-accent-a) 13%, transparent),
+    0 12px 28px color-mix(in srgb, var(--auth-accent-a) 9%, transparent) !important;
+}
+
+.jf-auth-root .auth-field-icon {
+  color: var(--auth-accent-a) !important;
+}
+
+.jf-auth-root .auth-primary-action {
+  position: relative;
+  overflow: hidden;
+  min-height: 3.2rem !important;
+  border: 0 !important;
+  border-radius: 0.95rem !important;
+  background: linear-gradient(120deg, var(--auth-accent-a), color-mix(in srgb, var(--auth-accent-a) 72%, var(--auth-accent-b))) !important;
+  box-shadow: 0 15px 32px color-mix(in srgb, var(--auth-accent-a) 24%, transparent) !important;
+}
+
+.jf-auth-root .auth-primary-action::after {
+  position: absolute;
+  inset: -70% auto -70% -55%;
+  width: 34%;
+  rotate: 14deg;
+  background: linear-gradient(90deg, transparent, rgb(255 255 255 / 0.34), transparent);
+  content: "";
+  transition: translate 420ms var(--motion-ease);
+}
+
+.jf-auth-root .auth-primary-action:hover::after {
+  translate: 460% 0;
+}
+
+.jf-auth-root .auth-provider-action,
+.jf-auth-root .auth-step-back,
+.jf-auth-root .auth-mode-switch,
+.jf-auth-root .auth-password-requirements,
+.jf-auth-root .auth-feedback,
+.jf-auth-root .auth-identity-row,
+.jf-auth-root .auth-identity-summary > div {
+  border-color: color-mix(in srgb, var(--border) 82%, var(--auth-accent-a) 18%) !important;
+  background: color-mix(in srgb, var(--surface-secondary) 70%, transparent) !important;
+}
+
+.jf-auth-root .auth-inline-field-action,
+.jf-auth-root .auth-text-action,
+.jf-auth-root .auth-mode-switch button {
+  color: var(--auth-accent-a) !important;
+}
+
+.jf-auth-root .auth-feedback,
+.jf-auth-root .auth-password-requirements,
+.jf-auth-root .auth-identity-row,
+.jf-auth-root .auth-identity-summary > div {
+  border-radius: 0.95rem !important;
+}
+
+/* Onboarding details */
+.jf-auth-root[data-auth-theme="onboarding"] [aria-label^="Onboarding progress"] {
+  position: relative;
+  margin-bottom: 1.35rem !important;
+  gap: 0.48rem !important;
+}
+
+.jf-auth-root[data-auth-theme="onboarding"] [aria-label^="Onboarding progress"] > span {
+  height: 0.42rem !important;
+  overflow: hidden;
+  background: color-mix(in srgb, var(--surface-secondary) 84%, transparent) !important;
+}
+
+.jf-auth-root[data-auth-theme="onboarding"] [aria-label^="Onboarding progress"] > span.bg-primary {
+  background: linear-gradient(90deg, var(--auth-accent-a), var(--auth-accent-b)) !important;
+  animation: auth-progress-grow 520ms var(--motion-ease) both;
+}
+
+.jf-auth-root[data-auth-theme="onboarding"] .jf-auth-card article {
+  position: relative;
+  overflow: hidden;
+  border: 0 !important;
+  border-radius: 1rem !important;
+  background: color-mix(in srgb, var(--surface-secondary) 74%, transparent) !important;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--border) 72%, transparent);
+  transition:
+    transform 190ms var(--motion-ease),
+    background-color 190ms var(--motion-ease),
+    box-shadow 190ms var(--motion-ease);
+}
+
+.jf-auth-root[data-auth-theme="onboarding"] .jf-auth-card article:hover {
+  transform: translateY(-3px);
+  background: color-mix(in srgb, var(--auth-accent-soft) 72%, var(--surface-secondary)) !important;
+  box-shadow:
+    inset 0 0 0 1px color-mix(in srgb, var(--auth-accent-a) 22%, transparent),
+    0 12px 24px color-mix(in srgb, var(--auth-accent-a) 8%, transparent);
+}
+
+.jf-auth-root[data-auth-theme="onboarding"] .jf-auth-card article > span {
+  border: 0 !important;
+  background: color-mix(in srgb, currentColor 10%, transparent) !important;
+}
+
+.jf-auth-root[data-auth-theme="onboarding"] select.auth-input {
+  appearance: none;
+  background-image:
+    linear-gradient(45deg, transparent 50%, var(--text-muted) 50%),
+    linear-gradient(135deg, var(--text-muted) 50%, transparent 50%);
+  background-position:
+    calc(100% - 1.05rem) calc(50% - 2px),
+    calc(100% - 0.75rem) calc(50% - 2px);
+  background-repeat: no-repeat;
+  background-size: 0.32rem 0.32rem, 0.32rem 0.32rem;
+  padding-right: 2.4rem !important;
+}
+
+.jf-auth-root[data-auth-theme="onboarding"] .rounded-\[var\(--radius-card\)\].border-success\/25 {
+  border: 0 !important;
+  border-radius: 1.1rem !important;
+  background:
+    radial-gradient(circle at 92% 8%, color-mix(in srgb, var(--success) 12%, transparent), transparent 10rem),
+    color-mix(in srgb, var(--success-soft) 78%, var(--surface-primary)) !important;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--success) 18%, transparent);
+}
+
+/* Footer */
+.jf-auth-root .jf-auth-footer {
+  width: min(100%, var(--auth-shell-width));
+  min-height: 3.25rem;
+}
+
+/* Responsive composition */
+@media (min-width: 1440px) {
+  .jf-auth-root {
+    --auth-shell-width: 1480px;
+  }
+
+  .jf-auth-root .jf-auth-layout {
+    grid-template-columns: minmax(600px, 1.1fr) minmax(460px, 0.7fr) !important;
+  }
+
+  .jf-auth-root:not([data-auth-minimal="true"]) .jf-auth-layout {
+    grid-template-columns: minmax(520px, 0.8fr) minmax(680px, 1.2fr) !important;
+  }
+}
+
+@media (max-width: 1100px) {
+  .jf-auth-root .jf-auth-layout,
+  .jf-auth-root:not([data-auth-minimal="true"]) .jf-auth-layout {
+    width: min(100%, 780px);
+    grid-template-columns: minmax(0, 1fr) !important;
+    align-content: center;
+    gap: 1.4rem !important;
+    padding-block: 1.6rem 2rem !important;
+  }
+
+  .jf-auth-root .jf-auth-context {
+    display: grid;
+    grid-template-columns: minmax(0, 0.88fr) minmax(320px, 1.12fr);
+    align-items: center;
+    gap: 1.4rem;
+    width: 100%;
+    max-width: none;
+    padding: 0;
+  }
+
+  .jf-auth-root .auth-context-eyebrow,
+  .jf-auth-root .auth-context-copy,
+  .jf-auth-root .auth-trust-list {
+    grid-column: 1;
+  }
+
+  .jf-auth-root .auth-context-title {
+    grid-column: 1;
+    max-width: 12ch;
+    margin-top: 0.8rem;
+    font-size: clamp(2rem, 5vw, 3.15rem);
+  }
+
+  .jf-auth-root .auth-context-copy {
+    margin-top: 0.7rem;
+    font-size: 0.9rem;
+    line-height: 1.6;
+  }
+
+  .jf-auth-root .auth-showcase-panel {
+    grid-column: 2;
+    grid-row: 1 / span 4;
+    margin-top: 0;
+  }
+
+  .jf-auth-root .auth-trust-list {
+    display: none;
+  }
+
+  .jf-auth-root .jf-auth-card {
+    width: min(100%, var(--auth-card-width));
+  }
+}
+
+@media (max-width: 767px) {
+  .jf-auth-root {
+    min-height: 100dvh;
+    overflow-y: auto;
+  }
+
+  .jf-auth-root::before {
+    background-size: 44px 44px;
+    opacity: 0.14;
+  }
+
+  .jf-auth-root .landing-math-field {
+    opacity: 0.44;
+  }
+
+  .jf-auth-root .jf-auth-header {
+    min-height: 3.75rem;
+    flex-basis: 3.75rem;
+    padding-inline: 0.85rem !important;
+  }
+
+  .jf-auth-root .jf-auth-context {
+    display: none;
+  }
+
+  .jf-auth-root .jf-auth-layout,
+  .jf-auth-root:not([data-auth-minimal="true"]) .jf-auth-layout {
+    display: block;
+    width: min(100%, 600px);
+    min-height: calc(100dvh - 3.75rem);
+    padding: clamp(0.9rem, 3.5vw, 1.25rem) clamp(0.72rem, 3vw, 1rem) max(1.25rem, env(safe-area-inset-bottom)) !important;
+  }
+
+  .jf-auth-root .jf-auth-card {
+    width: 100%;
+    max-width: 100% !important;
+    margin: 0 auto;
+    padding: clamp(1rem, 4vw, 1.3rem) !important;
+    border-radius: 1.25rem !important;
+    box-shadow:
+      0 20px 48px rgb(15 23 42 / 0.11),
+      0 6px 18px color-mix(in srgb, var(--auth-accent-a) 7%, transparent),
+      inset 0 1px 0 rgb(255 255 255 / 0.3);
+  }
+
+  .jf-auth-root .jf-auth-card::before {
+    inset: 0 0 auto;
+    width: auto;
+    height: 3px;
+    background: linear-gradient(90deg, var(--auth-accent-a), var(--auth-accent-b), transparent 92%);
+  }
+
+  .jf-auth-root .jf-auth-card-head {
+    margin-bottom: 1rem !important;
+    padding-bottom: 0.95rem !important;
+  }
+
+  .jf-auth-root .jf-auth-card-icon {
+    display: grid !important;
+    width: 2.1rem;
+    height: 2.1rem;
+  }
+
+  .jf-auth-root .jf-auth-card-head h1 {
+    max-width: 100% !important;
+    font-size: clamp(1.55rem, 7.3vw, 1.95rem) !important;
+  }
+
+  .jf-auth-root .jf-auth-card-head p {
+    display: block !important;
+    font-size: 0.82rem !important;
+    line-height: 1.55 !important;
+  }
+
+  .jf-auth-root .auth-input,
+  .jf-auth-root .auth-primary-action,
+  .jf-auth-root .auth-provider-action {
+    min-height: 3.05rem !important;
+  }
+
+  .jf-auth-root .auth-input {
+    font-size: 16px !important;
+  }
+
+  .jf-auth-root .auth-mode-switch {
+    padding: 0.65rem 0.75rem !important;
+  }
+
+  .jf-auth-root[data-auth-theme="onboarding"] .auth-identity-summary {
+    display: none !important;
+  }
+
+  .jf-auth-root[data-auth-theme="onboarding"] .jf-auth-card div:has(> article) {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 0.55rem !important;
+  }
+
+  .jf-auth-root[data-auth-theme="onboarding"] .jf-auth-card article {
+    padding: 0.72rem !important;
+  }
+
+  .jf-auth-root[data-auth-theme="onboarding"] .jf-auth-card article p {
+    display: none;
+  }
+
+  .jf-auth-root[data-auth-theme="onboarding"] .jf-auth-card article h2 {
+    margin-top: 0.55rem !important;
+    font-size: 0.76rem !important;
+  }
+
+  .jf-auth-root .jf-auth-footer {
+    display: none;
+  }
+}
+
+@media (max-width: 430px) {
+  .jf-auth-root .jf-auth-brand > span:last-child {
+    max-width: 9.6rem;
+    font-size: 0.82rem;
+  }
+
+  .jf-auth-root .jf-auth-home-link {
+    width: 2.7rem;
+    justify-content: center;
+    padding-inline: 0;
+  }
+
+  .jf-auth-root .jf-auth-card {
+    padding-inline: 0.9rem !important;
+  }
+
+  .jf-auth-root .auth-eyebrow {
+    max-width: 12rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .jf-auth-root[data-auth-theme="onboarding"] .jf-auth-card div:has(> article) {
+    gap: 0.45rem !important;
+  }
+}
+
+@media (min-width: 1024px) and (max-height: 820px) {
+  .jf-auth-root {
+    overflow-y: auto;
+  }
+
+  .jf-auth-root .jf-auth-layout,
+  .jf-auth-root:not([data-auth-minimal="true"]) .jf-auth-layout {
+    align-items: start !important;
+    padding-block: 1.5rem 2rem !important;
+  }
+
+  .jf-auth-root .auth-context-title {
+    font-size: clamp(2.5rem, 4.4vw, 4.25rem);
+  }
+
+  .jf-auth-root .auth-showcase-panel {
+    margin-top: 1.25rem;
+  }
+
+  .jf-auth-root .auth-trust-list {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .jf-auth-root *,
+  .jf-auth-root *::before,
+  .jf-auth-root *::after {
+    scroll-behavior: auto !important;
+  }
+
+  .jf-auth-root .auth-showcase-badge > span,
+  .jf-auth-root .auth-showcase-orbit,
+  .jf-auth-root .auth-showcase-chart span,
+  .jf-auth-root [aria-label^="Onboarding progress"] > span,
+  .jf-auth-root .auth-primary-action::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+@keyframes auth-live-pulse {
+  0%, 100% { opacity: 0.55; transform: scale(0.86); }
+  50% { opacity: 1; transform: scale(1); }
+}
+
+@keyframes auth-orbit-float {
+  0%, 100% { transform: translateY(0) rotate(-3deg); }
+  50% { transform: translateY(-5px) rotate(3deg); }
+}
+
+@keyframes auth-bar-rise {
+  from { transform: scaleY(0.08); opacity: 0.22; }
+  to { transform: scaleY(1); opacity: 1; }
+}
+
+@keyframes auth-progress-grow {
+  from { transform: scaleX(0.2); transform-origin: left; opacity: 0.45; }
+  to { transform: scaleX(1); transform-origin: left; opacity: 1; }
+}
