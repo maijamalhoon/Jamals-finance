@@ -11,6 +11,7 @@ import { Loader2, Search, X } from "lucide-react";
 import { toast } from "sonner";
 
 import { createClient } from "@/lib/supabase/client";
+import AccountSelect from "@/components/accounts/AccountSelect";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import DatePicker from "@/components/ui/date-picker";
@@ -67,6 +68,7 @@ type Account = {
   name: string;
   type: string;
   balance: number | string | null;
+  icon_key?: string | null;
 };
 
 function parseNumber(value: string) {
@@ -235,7 +237,7 @@ export default function InvestmentModal({
   const [priceChange24h, setPriceChange24h] = useState<number | null>(null);
   const [isLivePriced, setIsLivePriced] = useState(false);
   const [accountId, setAccountId] = useState("");
-  const [, setAccounts] = useState<Account[]>([]);
+  const [accounts, setAccounts] = useState<Account[]>([]);
   const [loadingOptions, setLoadingOptions] = useState(false);
   const [manualMode, setManualMode] = useState(false);
   const [query, setQuery] = useState("");
@@ -366,7 +368,7 @@ export default function InvestmentModal({
 
       const accountsRequest = supabase
         .from("accounts")
-        .select("id, name, type, balance")
+        .select("id, name, type, balance, icon_key")
         .eq("status", "active")
         .order("name");
 
@@ -958,6 +960,20 @@ export default function InvestmentModal({
               />
             </div>
           </div>
+
+          <FinanceFormField label="Account" htmlFor="investment-account">
+            <AccountSelect
+              id="investment-account"
+              value={accountId}
+              onValueChange={setAccountId}
+              accounts={accounts}
+              loading={loadingOptions}
+              placeholder="Select account"
+              emptyText="No accounts found"
+              ariaLabel="Investment account"
+              scrollPicker
+            />
+          </FinanceFormField>
 
           <FinanceFormField label="Date" htmlFor="investment-purchased-at">
             <DatePicker
