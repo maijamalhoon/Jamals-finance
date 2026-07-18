@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import "./icon-system.css";
 import "./finance-form-unification.css";
 import { Toaster } from "sonner";
 import MotionProvider from "@/components/motion/MotionProvider";
