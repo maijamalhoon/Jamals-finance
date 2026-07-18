@@ -1,9 +1,16 @@
 "use client";
 
 import Link from "next/link";
+import { motion, useReducedMotion } from "framer-motion";
 import { CircleDollarSign, X } from "lucide-react";
 import { usePathname } from "next/navigation";
-import { useState, type ReactNode } from "react";
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
 
 import JamalMenu from "@/components/layout/JamalMenu";
 import {
@@ -21,33 +28,197 @@ type MobileNavProps = {
   notificationSlot: ReactNode;
 };
 
+const AUTO_HIDE_DELAY = 2_000;
+const SCROLL_IDLE_DELAY = 140;
+const CONTROL_EASE = [0.22, 1, 0.36, 1] as const;
+
 export default function MobileNav({ notificationSlot }: MobileNavProps) {
   const pathname = usePathname();
+  const reduceMotion = useReducedMotion();
   const [open, setOpen] = useState(false);
+  const [portalOpen, setPortalOpen] = useState(false);
+  const [controlsVisible, setControlsVisible] = useState(true);
+  const hideTimerRef = useRef<ReturnType<typeof window.setTimeout> | null>(null);
+  const scrollIdleTimerRef = useRef<ReturnType<typeof window.setTimeout> | null>(
+    null,
+  );
+
+  const clearHideTimer = useCallback(() => {
+    if (hideTimerRef.current === null) return;
+    window.clearTimeout(hideTimerRef.current);
+    hideTimerRef.current = null;
+  }, []);
+
+  const showControlsForMoment = useCallback(() => {
+    clearHideTimer();
+    setControlsVisible(true);
+    hideTimerRef.current = window.setTimeout(() => {
+      setControlsVisible(false);
+      hideTimerRef.current = null;
+    }, AUTO_HIDE_DELAY);
+  }, [clearHideTimer]);
+
+  const interactionOpen = open || portalOpen;
+
+  useEffect(() => {
+    const updatePortalState = () => {
+      setPortalOpen(
+        Boolean(
+          document.querySelector(
+            '[data-slot="sheet-content"], [data-slot="dropdown-menu-content"]',
+          ),
+        ),
+      );
+    };
+
+    updatePortalState();
+
+    const observer = new MutationObserver(updatePortalState);
+    observer.observe(document.body, { childList: true, subtree: true });
+
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    if (interactionOpen) {
+      clearHideTimer();
+      setControlsVisible(true);
+      return;
+    }
+
+    showControlsForMoment();
+  }, [clearHideTimer, interactionOpen, showControlsForMoment]);
+
+  useEffect(() => {
+    if (interactionOpen) return;
+    showControlsForMoment();
+  }, [interactionOpen, pathname, showControlsForMoment]);
+
+  useEffect(() => {
+    const handlePointerDown = () => {
+      if (interactionOpen) {
+        clearHideTimer();
+        setControlsVisible(true);
+        return;
+      }
+
+      showControlsForMoment();
+    };
+
+    document.addEventListener("pointerdown", handlePointerDown, {
+      capture: true,
+      passive: true,
+    });
+
+    return () => {
+      document.removeEventListener("pointerdown", handlePointerDown, true);
+    };
+  }, [clearHideTimer, interactionOpen, showControlsForMoment]);
+
+  useEffect(() => {
+    const scrollContainer = document.querySelector<HTMLElement>(
+      "[data-dashboard-scroll]",
+    );
+    if (!scrollContainer) return;
+
+    const handleScroll = () => {
+      clearHideTimer();
+
+      if (!interactionOpen) {
+        setControlsVisible(false);
+      }
+
+      if (scrollIdleTimerRef.current !== null) {
+        window.clearTimeout(scrollIdleTimerRef.current);
+      }
+
+      scrollIdleTimerRef.current = window.setTimeout(() => {
+        scrollIdleTimerRef.current = null;
+
+        if (interactionOpen) {
+          setControlsVisible(true);
+          return;
+        }
+
+        showControlsForMoment();
+      }, SCROLL_IDLE_DELAY);
+    };
+
+    scrollContainer.addEventListener("scroll", handleScroll, { passive: true });
+
+    return () => {
+      scrollContainer.removeEventListener("scroll", handleScroll);
+      if (scrollIdleTimerRef.current !== null) {
+        window.clearTimeout(scrollIdleTimerRef.current);
+        scrollIdleTimerRef.current = null;
+      }
+    };
+  }, [clearHideTimer, interactionOpen, showControlsForMoment]);
+
+  useEffect(() => {
+    return () => {
+      clearHideTimer();
+      if (scrollIdleTimerRef.current !== null) {
+        window.clearTimeout(scrollIdleTimerRef.current);
+      }
+    };
+  }, [clearHideTimer]);
+
+  const controlTransition = reduceMotion
+    ? { duration: 0.01 }
+    : { duration: 0.36, ease: CONTROL_EASE };
 
   return (
     <>
-      <div className="fixed right-4 top-[max(1rem,env(safe-area-inset-top))] z-40 flex items-center gap-2 print:hidden lg:hidden">
+      <motion.div
+        initial={false}
+        animate={
+          controlsVisible
+            ? { x: 0, opacity: 1, scale: 1 }
+            : { x: 152, opacity: 0, scale: 0.96 }
+        }
+        transition={controlTransition}
+        aria-hidden={!controlsVisible}
+        inert={!controlsVisible ? true : undefined}
+        className={`fixed right-4 top-[max(1rem,env(safe-area-inset-top))] z-40 flex items-center gap-2 will-change-transform print:hidden lg:hidden ${
+          controlsVisible ? "" : "pointer-events-none"
+        }`}
+      >
         <div className="[&_button]:!size-11 [&_button]:!rounded-[14px] [&_button]:!border-border [&_button]:!bg-card/92 [&_button]:!text-text-primary [&_button]:!shadow-[0_8px_20px_rgb(15_23_42_/_0.1)] [&_button]:!backdrop-blur-md [&_button]:hover:!-translate-y-0.5 [&_button]:hover:!border-brand/30 [&_button]:hover:!bg-surface-elevated [&_button]:active:!scale-[0.97] dark:[&_button]:!border-border-strong/70 dark:[&_button]:!bg-surface-elevated/92 dark:[&_button]:!shadow-[0_10px_24px_rgb(0_0_0_/_0.28)]">
           {notificationSlot}
         </div>
         <JamalMenu align="right" placement="bottom" variant="floating" />
-      </div>
+      </motion.div>
 
       <Sheet open={open} onOpenChange={setOpen}>
-        <SheetTrigger
-          type="button"
-          aria-label="Open navigation menu"
-          className="finance-focus fixed left-4 top-[max(1rem,env(safe-area-inset-top))] z-40 grid size-11 shrink-0 place-items-center rounded-[14px] border border-border bg-card/92 p-0 text-text-primary shadow-[0_8px_20px_rgb(15_23_42_/_0.1)] backdrop-blur-md transition-[transform,background-color,border-color,box-shadow] hover:-translate-y-0.5 hover:border-brand/30 hover:bg-surface-elevated active:scale-[0.97] dark:border-border-strong/70 dark:bg-surface-elevated/92 dark:shadow-[0_10px_24px_rgb(0_0_0_/_0.28)] print:hidden lg:hidden"
+        <motion.div
+          initial={false}
+          animate={
+            controlsVisible
+              ? { x: 0, opacity: 1, scale: 1 }
+              : { x: -88, opacity: 0, scale: 0.96 }
+          }
+          transition={controlTransition}
+          aria-hidden={!controlsVisible}
+          inert={!controlsVisible ? true : undefined}
+          className={`fixed left-4 top-[max(1rem,env(safe-area-inset-top))] z-40 will-change-transform print:hidden lg:hidden ${
+            controlsVisible ? "" : "pointer-events-none"
+          }`}
         >
-          <span
-            aria-hidden="true"
-            className="flex flex-col items-center justify-center gap-1.5"
+          <SheetTrigger
+            type="button"
+            aria-label="Open navigation menu"
+            className="finance-focus grid size-11 shrink-0 place-items-center rounded-[14px] border border-border bg-card/92 p-0 text-text-primary shadow-[0_8px_20px_rgb(15_23_42_/_0.1)] backdrop-blur-md transition-[transform,background-color,border-color,box-shadow] hover:-translate-y-0.5 hover:border-brand/30 hover:bg-surface-elevated active:scale-[0.97] dark:border-border-strong/70 dark:bg-surface-elevated/92 dark:shadow-[0_10px_24px_rgb(0_0_0_/_0.28)]"
           >
-            <span className="h-0.5 w-5 rounded-full bg-current" />
-            <span className="h-0.5 w-3 rounded-full bg-current" />
-          </span>
-        </SheetTrigger>
+            <span
+              aria-hidden="true"
+              className="flex flex-col items-center justify-center gap-1.5"
+            >
+              <span className="h-0.5 w-5 rounded-full bg-current" />
+              <span className="h-0.5 w-3 rounded-full bg-current" />
+            </span>
+          </SheetTrigger>
+        </motion.div>
 
         <SheetContent
           data-mobile-navigation-drawer
