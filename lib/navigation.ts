@@ -1,17 +1,17 @@
 import {
-  ArrowRightLeft,
   BarChart3,
-  Bot,
   BriefcaseBusiness,
   FileBarChart,
   HandCoins,
   LayoutDashboard,
-  type LucideIcon,
+  ReceiptText,
   Settings,
+  Sparkles,
   Target,
   TrendingDown,
   TrendingUp,
   WalletCards,
+  type LucideIcon,
 } from "lucide-react";
 
 export interface NavItem {
@@ -42,7 +42,7 @@ export const NAV_GROUPS: NavGroup[] = [
       {
         label: "Transactions",
         href: "/dashboard/transactions",
-        icon: ArrowRightLeft,
+        icon: ReceiptText,
       },
       {
         label: "Accounts",
@@ -97,7 +97,7 @@ export const NAV_GROUPS: NavGroup[] = [
       {
         label: "AI Insights",
         href: "/dashboard/ai-insights",
-        icon: Bot,
+        icon: Sparkles,
       },
       {
         label: "Reports",
