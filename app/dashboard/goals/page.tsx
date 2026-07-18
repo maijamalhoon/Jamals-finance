@@ -2,6 +2,9 @@ import { createClient } from "@/lib/supabase/server";
 import GoalCard from "@/components/goals/GoalCard";
 import AddGoalButton from "@/components/goals/AddGoalButton";
 import GoalSummaryStats from "@/components/goals/GoalSummaryStats";
+import {
+  getDistinctGoalPresentationAssignments,
+} from "@/components/goals/goal-icons";
 import EmptyState from "@/components/ui/empty-state";
 import { AlertTriangle, Target } from "lucide-react";
 import type { ExistingGoal, GoalAccount } from "@/components/goals/GoalModal";
@@ -86,6 +89,7 @@ export default async function GoalsPage() {
     } satisfies GoalRow;
   });
   const accountList = (accounts ?? []) as GoalAccount[];
+  const presentations = getDistinctGoalPresentationAssignments(list);
   const completed = list.filter(
     (g) => Number(g.current_amount) >= Number(g.target_amount),
   );
@@ -148,8 +152,13 @@ export default async function GoalsPage() {
         </div>
       ) : (
         <div className="grid auto-rows-fr grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
-          {list.map((g) => (
-            <GoalCard key={g.id} goal={g} accounts={accountList} />
+          {list.map((goal, index) => (
+            <GoalCard
+              key={goal.id}
+              goal={goal}
+              accounts={accountList}
+              presentation={presentations[index]}
+            />
           ))}
         </div>
       )}
