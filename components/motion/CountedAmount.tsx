@@ -22,9 +22,11 @@ function splitAmount(amount: string) {
 export default function CountedAmount({
   amount,
   duration = 1.4,
+  animateOnCompact = false,
 }: {
   amount: string;
   duration?: number;
+  animateOnCompact?: boolean;
 }) {
   const elementRef = useRef<HTMLSpanElement>(null);
   const parsedAmount = useMemo(() => splitAmount(amount), [amount]);
@@ -38,7 +40,7 @@ export default function CountedAmount({
     ).matches;
     const compactViewport = window.matchMedia("(max-width: 1023px)").matches;
 
-    if (reduceMotion || compactViewport || duration <= 0) {
+    if (reduceMotion || (!animateOnCompact && compactViewport) || duration <= 0) {
       element.textContent = amount;
       return;
     }
@@ -68,7 +70,7 @@ export default function CountedAmount({
     frameId = requestAnimationFrame(renderFrame);
 
     return () => cancelAnimationFrame(frameId);
-  }, [amount, duration, parsedAmount]);
+  }, [amount, animateOnCompact, duration, parsedAmount]);
 
   return (
     <span ref={elementRef} className="tabular-nums">
