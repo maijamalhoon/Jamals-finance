@@ -58,36 +58,51 @@ function getAvailabilityLabel(availability: DashboardAvailability) {
   return "Available";
 }
 
+function getProgressValue(
+  comparison: DashboardComparison | null,
+  availability: DashboardAvailability,
+) {
+  if (availability === "unavailable" || !comparison) return 0;
+
+  const label = comparison.label.trim().replaceAll(",", "").toLowerCase();
+  if (label.includes("no activity")) return 0;
+  if (label.includes("new activity")) return 100;
+
+  const percentage = label.match(/([+-]?\d+(?:\.\d+)?)%/);
+  if (percentage) {
+    const magnitude = Math.abs(Number(percentage[1]));
+    if (Number.isFinite(magnitude)) {
+      return Math.min(100, Math.max(0, (magnitude / (magnitude + 100)) * 100));
+    }
+  }
+
+  if (comparison.direction === "flat") return 50;
+  if (comparison.direction === "up" || comparison.direction === "down") return 40;
+  return 0;
+}
+
 function MetricProgressLine({
-  direction,
+  value,
   accent,
   animationKey,
 }: {
-  direction: DashboardComparison["direction"] | "none";
+  value: number;
   accent: string;
   animationKey: string;
 }) {
-  const path =
-    direction === "up"
-      ? "M2 15 C14 15 19 11 31 12 C43 14 49 9 61 10 C74 11 83 7 98 4"
-      : direction === "down"
-        ? "M2 4 C14 5 19 4 31 7 C43 10 49 14 61 13 C74 12 83 15 98 17"
-        : "M2 10 C15 9 20 11 33 10 C46 9 53 11 66 10 C79 9 87 11 98 10";
-
   return (
-    <svg
-      key={animationKey}
-      aria-hidden="true"
-      className={`${styles.sparkline} dashboard-metric-progress`}
-      viewBox="0 0 100 20"
-      preserveAspectRatio="none"
-    >
-      <path
-        className={`${styles.sparklinePath} dashboard-metric-progress-path`}
-        d={path}
-        style={{ stroke: accent }}
+    <div aria-hidden="true" className="dashboard-metric-progress">
+      <span
+        key={animationKey}
+        className="dashboard-metric-progress-fill"
+        style={
+          {
+            "--metric-progress": `${value}%`,
+            backgroundColor: accent,
+          } as CSSProperties
+        }
       />
-    </svg>
+    </div>
   );
 }
 
@@ -109,9 +124,8 @@ export default function MetricCard({
         : amount;
   const amountSize = getAmountSize(displayAmount);
   const metricAccent = getMetricAccent(iconName, amount, accentColor);
-  const progressDirection =
-    availability === "available" && comparison ? comparison.direction : "none";
-  const animationKey = `${displayAmount}-${progressDirection}`;
+  const progressValue = getProgressValue(comparison, availability);
+  const animationKey = `${displayAmount}-${comparison?.label ?? "none"}-${progressValue}`;
 
   return (
     <article
@@ -136,7 +150,7 @@ export default function MetricCard({
           <MetricProgressLine
             accent={metricAccent}
             animationKey={animationKey}
-            direction={progressDirection}
+            value={progressValue}
           />
         </div>
       </div>
