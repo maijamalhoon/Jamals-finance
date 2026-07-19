@@ -1,7 +1,7 @@
 "use client";
 
 import type { CSSProperties, ReactNode } from "react";
-import { useEffect, useRef, useState } from "react";
+import { useLayoutEffect, useRef, useState } from "react";
 
 type ChartSize = {
   width: number;
@@ -47,15 +47,14 @@ export default function ChartFrame({
   tone = "default",
 }: ChartFrameProps) {
   const frameRef = useRef<HTMLDivElement | null>(null);
-  const firstAnimationFrameRef = useRef<number | null>(null);
-  const secondAnimationFrameRef = useRef<number | null>(null);
+  const resizeFrameRef = useRef<number | null>(null);
 
   const [size, setSize] = useState<ChartSize>({
     width: 0,
     height: 0,
   });
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const element = frameRef.current;
 
     if (!element) return;
@@ -76,52 +75,40 @@ export default function ChartFrame({
     };
 
     const scheduleUpdate = () => {
-      if (firstAnimationFrameRef.current) {
-        cancelAnimationFrame(firstAnimationFrameRef.current);
-      }
+      if (resizeFrameRef.current !== null) return;
 
-      if (secondAnimationFrameRef.current) {
-        cancelAnimationFrame(secondAnimationFrameRef.current);
-      }
-
-      firstAnimationFrameRef.current = requestAnimationFrame(() => {
-        secondAnimationFrameRef.current = requestAnimationFrame(updateSize);
+      resizeFrameRef.current = requestAnimationFrame(() => {
+        resizeFrameRef.current = null;
+        updateSize();
       });
     };
 
-    scheduleUpdate();
+    // Measure synchronously before the first paint so charts mount at their
+    // final dimensions instead of waiting through multiple animation frames.
+    updateSize();
 
-    window.addEventListener("resize", scheduleUpdate);
+    let resizeObserver: ResizeObserver | null = null;
+    let usesWindowFallback = false;
 
-    if (typeof ResizeObserver === "undefined") {
-      return () => {
-        if (firstAnimationFrameRef.current) {
-          cancelAnimationFrame(firstAnimationFrameRef.current);
-        }
-
-        if (secondAnimationFrameRef.current) {
-          cancelAnimationFrame(secondAnimationFrameRef.current);
-        }
-
-        window.removeEventListener("resize", scheduleUpdate);
-      };
+    if (typeof ResizeObserver !== "undefined") {
+      resizeObserver = new ResizeObserver(scheduleUpdate);
+      resizeObserver.observe(element);
+    } else {
+      usesWindowFallback = true;
+      window.addEventListener("resize", scheduleUpdate, { passive: true });
     }
 
-    const resizeObserver = new ResizeObserver(scheduleUpdate);
-
-    resizeObserver.observe(element);
-
     return () => {
-      if (firstAnimationFrameRef.current) {
-        cancelAnimationFrame(firstAnimationFrameRef.current);
+      if (resizeFrameRef.current !== null) {
+        cancelAnimationFrame(resizeFrameRef.current);
+        resizeFrameRef.current = null;
       }
 
-      if (secondAnimationFrameRef.current) {
-        cancelAnimationFrame(secondAnimationFrameRef.current);
-      }
+      resizeObserver?.disconnect();
 
-      resizeObserver.disconnect();
-      window.removeEventListener("resize", scheduleUpdate);
+      if (usesWindowFallback) {
+        window.removeEventListener("resize", scheduleUpdate);
+      }
     };
   }, []);
 
@@ -140,15 +127,16 @@ export default function ChartFrame({
       data-chart-tone={tone}
       style={style}
     >
-      {isReady ?
+      {isReady ? (
         <div className="h-full min-h-0 w-full min-w-0 overflow-hidden">
           {content}
         </div>
-      : <div
+      ) : (
+        <div
           aria-hidden="true"
           className="finance-skeleton h-full min-h-[160px] w-full rounded-[var(--oneui-card-radius)]"
         />
-      }
+      )}
     </div>
   );
 }
