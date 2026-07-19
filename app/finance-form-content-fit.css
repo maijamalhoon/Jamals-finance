@@ -19,7 +19,7 @@
   flex: 0 1 auto !important;
 }
 
-/* Match the closed account picker to the exact control height used by the form. */
+/* Use the exact Income/Expense AccountSelect footprint, including short screens. */
 :is(
     .finance-modal-content:has(#transfer-amount),
     .finance-modal-content:has(#goal-name),
@@ -32,10 +32,10 @@
   )
   .finance-account-select {
   box-sizing: border-box !important;
-  height: var(--finance-control-height) !important;
-  min-height: var(--finance-control-height) !important;
-  max-height: var(--finance-control-height) !important;
-  padding-block: 0.55rem !important;
+  height: clamp(3rem, 6.7dvh, 3.35rem) !important;
+  min-height: clamp(3rem, 6.7dvh, 3.35rem) !important;
+  max-height: clamp(3rem, 6.7dvh, 3.35rem) !important;
+  padding-block: clamp(0.25rem, 0.75dvh, 0.38rem) !important;
 }
 
 /*
