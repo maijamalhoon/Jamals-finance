@@ -69,6 +69,8 @@ import "./mobile-sidebar-reference.css";
 import "./header-dropdown-responsive.css";
 // Desktop navigation icons share one hover, tap and route-activation motion language.
 import "./desktop-header-nav-motion.css";
+// Mobile/tablet bell uses the same motion language and final theme-safe states.
+import "./mobile-notification-bell-motion.css";
 
 export const dynamic = "force-dynamic";
 
