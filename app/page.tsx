@@ -14,6 +14,7 @@ import "./landing-header-rounded.css";
 import "./landing-hero-motion.css";
 import "./landing-donut-polish.css";
 import "./landing-chart-travel.css";
+import "./landing-static-card-hover.css";
 
 // Public landing entry: all layout, preview, section, responsive, motion, and type layers load here.
 export const metadata: Metadata = {
