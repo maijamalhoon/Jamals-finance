@@ -76,9 +76,9 @@ const features: Feature[] = [
 ];
 
 const activity = [
-  { label: "Salary received", detail: "Main account", value: "+ PKR 42,000", tone: "positive" },
-  { label: "Household expense", detail: "Essentials", value: "- PKR 8,600", tone: "negative" },
-  { label: "Goal contribution", detail: "Emergency fund", value: "+ PKR 12,000", tone: "positive" },
+  { label: "Salary received", detail: "Main account", value: "+ USD 42,000", tone: "positive" },
+  { label: "Household expense", detail: "Essentials", value: "- USD 8,600", tone: "negative" },
+  { label: "Goal contribution", detail: "Emergency fund", value: "+ USD 12,000", tone: "positive" },
 ] as const;
 
 const chartBars = [44, 58, 52, 69, 61, 78, 72] as const;
@@ -145,7 +145,7 @@ function DashboardPreview() {
       <div className="jf-preview-balance">
         <div>
           <p>Total balance</p>
-          <strong>PKR 248,500</strong>
+          <strong>USD 248,500</strong>
           <span><TrendingUp aria-hidden="true" /> 8.4% this month</span>
         </div>
         <div className="jf-balance-orbit" aria-hidden="true">
@@ -157,12 +157,12 @@ function DashboardPreview() {
         <div data-tone="green">
           <span><TrendingUp aria-hidden="true" /></span>
           <p>Income</p>
-          <strong>PKR 64,000</strong>
+          <strong>USD 64,000</strong>
         </div>
         <div data-tone="red">
           <span><TrendingDown aria-hidden="true" /></span>
           <p>Expenses</p>
-          <strong>PKR 21,300</strong>
+          <strong>USD 21,300</strong>
         </div>
         <div data-tone="cyan">
           <span><Goal aria-hidden="true" /></span>
