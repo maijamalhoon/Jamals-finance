@@ -24,23 +24,29 @@ function DropdownMenuContent({
   side = "bottom",
   sideOffset = 4,
   className,
+  backdropClassName,
+  backdropStyle,
   ...props
 }: MenuPrimitive.Popup.Props &
   Pick<
     MenuPrimitive.Positioner.Props,
     "align" | "alignOffset" | "side" | "sideOffset"
-  >) {
+  > & {
+    backdropClassName?: string
+    backdropStyle?: React.CSSProperties
+  }) {
   return (
     <MenuPrimitive.Portal>
       <div
         aria-hidden="true"
         data-slot="dropdown-menu-backdrop"
-        className="fixed inset-0 z-40"
+        className={cn("fixed inset-0 z-40", backdropClassName)}
         style={{
           backgroundColor:
             "color-mix(in srgb, var(--overlay), transparent 84%)",
           backdropFilter: "blur(3px)",
           WebkitBackdropFilter: "blur(3px)",
+          ...backdropStyle,
         }}
       />
       <MenuPrimitive.Positioner
@@ -118,6 +124,7 @@ function DropdownMenuSubTrigger({
   ...props
 }: MenuPrimitive.SubmenuTrigger.Props & {
   inset?: boolean
+  children: React.ReactNode
 }) {
   return (
     <MenuPrimitive.SubmenuTrigger
