@@ -78,6 +78,7 @@ export default function QuickActionsBalance({
   const displayTotalBalance =
     summary.value === null ? "Unavailable" : formatCurrency(summary.value);
   const balanceSize = getBalanceSize(displayTotalBalance);
+  const quickActionsRef = useRef<HTMLDivElement>(null);
   const launchCleanupRef = useRef<(() => void) | null>(null);
 
   const [transactionType, setTransactionType] =
@@ -86,6 +87,74 @@ export default function QuickActionsBalance({
   const [transactionOpen, setTransactionOpen] = useState(false);
   const [transferOpen, setTransferOpen] = useState(false);
   const [investmentOpen, setInvestmentOpen] = useState(false);
+
+  useEffect(() => {
+    const actionsElement = quickActionsRef.current;
+    if (!actionsElement) return;
+
+    const compactViewport = window.matchMedia("(max-width: 639px)");
+    let animationFrame = 0;
+
+    const alignToVisualViewport = () => {
+      window.cancelAnimationFrame(animationFrame);
+      animationFrame = window.requestAnimationFrame(() => {
+        if (!compactViewport.matches) {
+          actionsElement.style.removeProperty("--quick-actions-center-offset");
+          delete actionsElement.dataset.centerOffset;
+          return;
+        }
+
+        const rect = actionsElement.getBoundingClientRect();
+        const visualViewport = window.visualViewport;
+        const viewportLeft = visualViewport?.offsetLeft ?? 0;
+        const viewportWidth = visualViewport?.width ?? window.innerWidth;
+        const targetCenter = viewportLeft + viewportWidth / 2;
+        const currentCenter = rect.left + rect.width / 2;
+        const correction = targetCenter - currentCenter;
+
+        if (Math.abs(correction) < 0.25) return;
+
+        const currentOffset = Number(actionsElement.dataset.centerOffset ?? "0");
+        const nextOffset = currentOffset + correction;
+        actionsElement.dataset.centerOffset = String(nextOffset);
+        actionsElement.style.setProperty(
+          "--quick-actions-center-offset",
+          `${nextOffset}px`,
+        );
+      });
+    };
+
+    const resizeObserver =
+      typeof ResizeObserver === "undefined"
+        ? null
+        : new ResizeObserver(alignToVisualViewport);
+
+    resizeObserver?.observe(actionsElement);
+    compactViewport.addEventListener("change", alignToVisualViewport);
+    window.addEventListener("resize", alignToVisualViewport, { passive: true });
+    window.visualViewport?.addEventListener("resize", alignToVisualViewport, {
+      passive: true,
+    });
+    window.visualViewport?.addEventListener("scroll", alignToVisualViewport, {
+      passive: true,
+    });
+    alignToVisualViewport();
+
+    return () => {
+      window.cancelAnimationFrame(animationFrame);
+      resizeObserver?.disconnect();
+      compactViewport.removeEventListener("change", alignToVisualViewport);
+      window.removeEventListener("resize", alignToVisualViewport);
+      window.visualViewport?.removeEventListener(
+        "resize",
+        alignToVisualViewport,
+      );
+      window.visualViewport?.removeEventListener(
+        "scroll",
+        alignToVisualViewport,
+      );
+    };
+  }, []);
 
   useEffect(() => {
     return () => launchCleanupRef.current?.();
@@ -231,6 +300,7 @@ export default function QuickActionsBalance({
           </div>
 
           <div
+            ref={quickActionsRef}
             role="group"
             aria-label="Quick actions"
             className="dashboard-balance-actions"
