@@ -10,6 +10,7 @@ import "./auth-clean.css";
 import "./auth-clean-fixes.css";
 import "./light-background-tuning.css";
 import "./interaction-lock.css";
+import "./auth-control-alignment.css";
 import { Toaster } from "sonner";
 import MotionProvider from "@/components/motion/MotionProvider";
 import { CURRENCY_STORAGE_KEY } from "@/lib/currency";
