@@ -1,0 +1,90 @@
+/* Keep non-interactive landing cards visually stable on mouse, pen and touch.
+   Inner chart/donut animations remain available; only card lift, press movement and hover outlines are removed. */
+
+.jf-node4-landing :where(
+  .jf-insight-visual,
+  .jf-feature,
+  .jf-value-item,
+  .jf-preview-metrics > div,
+  .jf-chart-panel,
+  .jf-activity-panel,
+  .jf-activity-list > div,
+  .jf-workflow-step,
+  .jf-privacy-item
+) {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Monthly pattern / insight card: retain its normal depth without lifting or gaining an inset top border. */
+.jf-node4-landing .jf-insight-visual:hover,
+.jf-node4-landing .jf-insight-visual:active {
+  transform: none !important;
+  box-shadow: var(--jf-shadow) !important;
+}
+
+/* Dashboard preview sub-cards: keep the original neutral outline on hover/tap. */
+.jf-node4-landing .jf-preview-metrics > div:hover,
+.jf-node4-landing .jf-preview-metrics > div:active,
+.jf-node4-landing .jf-chart-panel:hover,
+.jf-node4-landing .jf-chart-panel:active,
+.jf-node4-landing .jf-activity-panel:hover,
+.jf-node4-landing .jf-activity-panel:active {
+  transform: none !important;
+  box-shadow: inset 0 0 0 1px var(--jf-line) !important;
+}
+
+.jf-node4-landing .jf-activity-list > div:hover,
+.jf-node4-landing .jf-activity-list > div:active {
+  transform: none !important;
+  background: color-mix(in srgb, var(--jf-soft) 66%, transparent) !important;
+}
+
+/* Feature/value/privacy cards should remain stationary and must not grow a hover border or shadow. */
+.jf-node4-landing .jf-feature:hover,
+.jf-node4-landing .jf-feature:active {
+  transform: none !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.jf-node4-landing .jf-value-item:hover,
+.jf-node4-landing .jf-value-item:active,
+.jf-node4-landing .jf-workflow-step:hover,
+.jf-node4-landing .jf-workflow-step:active,
+.jf-node4-landing .jf-privacy-item:hover,
+.jf-node4-landing .jf-privacy-item:active {
+  transform: none !important;
+}
+
+.jf-node4-landing .jf-value-item:hover,
+.jf-node4-landing .jf-value-item:active,
+.jf-node4-landing .jf-privacy-item:hover,
+.jf-node4-landing .jf-privacy-item:active {
+  background: transparent !important;
+}
+
+/* The large dashboard preview may keep its ambient motion, but hovering must not add another border/shadow state. */
+.jf-node4-landing .jf-dashboard-preview:hover,
+.jf-node4-landing .jf-dashboard-preview:active {
+  box-shadow: var(--jf-shadow), inset 0 1px 0 rgb(255 255 255 / 0.55) !important;
+}
+
+.dark .jf-node4-landing .jf-dashboard-preview:hover,
+.dark .jf-node4-landing .jf-dashboard-preview:active {
+  box-shadow: var(--jf-shadow), inset 0 1px 0 rgb(255 255 255 / 0.06) !important;
+}
+
+/* Static cards are not controls; prevent accidental browser focus rings without changing links/buttons. */
+.jf-node4-landing :where(
+  .jf-insight-visual,
+  .jf-feature,
+  .jf-value-item,
+  .jf-preview-metrics > div,
+  .jf-chart-panel,
+  .jf-activity-panel,
+  .jf-activity-list > div,
+  .jf-workflow-step,
+  .jf-privacy-item
+):focus {
+  outline: none !important;
+}
