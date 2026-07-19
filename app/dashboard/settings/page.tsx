@@ -11,6 +11,7 @@ import "./settings-windows-switch.css";
 import "./settings-clean-finish.css";
 import "./settings-appearance-global.css";
 import "./settings-type-icon-system.css";
+import "./settings-icon-detail-fix.css";
 
 export const dynamic = "force-dynamic";
 
