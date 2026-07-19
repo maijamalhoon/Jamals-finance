@@ -44,6 +44,8 @@ import "./transaction-receipt-viewport.css";
 import "./mobile-header-detail-polish.css";
 // Final mobile control corrections must win over every earlier compact-header rule.
 import "./mobile-header-control-fixes.css";
+// Goals Progress is the single visual reference for all dashboard card labels.
+import "./dashboard-card-label-unify.css";
 
 export const dynamic = "force-dynamic";
 
