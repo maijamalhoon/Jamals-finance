@@ -1,0 +1,180 @@
+/* Settings heading and profile customization layer.
+   This file is loaded last so the new structure can replace the old hero card
+   without changing any existing settings data or interactions. */
+
+.settings-page-polish .settings-experience-v2 {
+  grid-template-areas:
+    "hero"
+    "profile-customize"
+    "profile-details"
+    "currency"
+    "appearance"
+    "categories"
+    "data"
+    "signout";
+}
+
+.settings-page-polish .settings-simple-heading {
+  grid-area: hero;
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.1rem 0.2rem 0.25rem;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.settings-page-polish .settings-simple-heading-icon {
+  display: grid;
+  width: 2.35rem;
+  height: 2.35rem;
+  flex: 0 0 auto;
+  place-items: center;
+  color: var(--text-primary);
+}
+
+.settings-page-polish .settings-simple-heading-icon svg {
+  width: 1.45rem;
+  height: 1.45rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.25;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.settings-page-polish .settings-simple-heading h1 {
+  margin: 0;
+  color: var(--text-primary);
+  font-family: var(--font-geist-sans), Geist, sans-serif;
+  font-size: clamp(1.55rem, 4vw, 2rem);
+  font-weight: 760;
+  line-height: 1.05;
+  letter-spacing: -0.04em;
+}
+
+.settings-page-polish .settings-core .page-heading {
+  display: none !important;
+}
+
+.settings-page-polish .settings-profile-customization {
+  grid-area: profile-customize;
+  width: 100%;
+  min-width: 0;
+}
+
+.settings-page-polish .settings-profile-customization > section {
+  width: 100%;
+}
+
+.settings-page-polish .settings-section-label {
+  margin: 0;
+  padding: 0.1rem 0.5rem 0.55rem;
+  color: var(--text-secondary);
+  font-size: 0.82rem;
+  font-weight: 720;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+}
+
+.settings-page-polish .settings-profile-customization .finance-panel {
+  height: auto;
+}
+
+.settings-page-polish .settings-profile-customization .finance-panel > button {
+  min-height: 5rem !important;
+}
+
+.settings-page-polish .settings-profile-customization .finance-panel > button svg {
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.settings-page-polish .settings-core > div > div > section:nth-of-type(1) {
+  grid-area: profile-details;
+}
+
+@media (min-width: 46rem) and (max-width: 63.999rem) {
+  .settings-page-polish .settings-experience-v2 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-areas:
+      "hero hero"
+      "profile-customize currency"
+      "profile-details profile-details"
+      "appearance appearance"
+      "categories categories"
+      "data data"
+      "signout signout";
+  }
+}
+
+@media (min-width: 64rem) {
+  .settings-page-polish .settings-experience-v2 {
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    grid-template-areas: none;
+    gap: 1.15rem;
+  }
+
+  .settings-page-polish .settings-simple-heading {
+    grid-column: 1 / -1;
+    grid-row: 1;
+  }
+
+  .settings-page-polish .settings-profile-customization {
+    grid-column: 1 / 7;
+    grid-row: 2;
+  }
+
+  .settings-page-polish .settings-preferences-slot {
+    grid-column: 7 / -1;
+    grid-row: 2;
+  }
+
+  .settings-page-polish .settings-core > div > div > section:nth-of-type(1) {
+    grid-column: 1 / 7;
+    grid-row: 3;
+  }
+
+  .settings-page-polish .settings-core > div > div > section:nth-of-type(2) {
+    grid-column: 7 / -1;
+    grid-row: 3;
+    height: 100%;
+  }
+
+  .settings-page-polish .settings-experience-v2 > section {
+    grid-column: 1 / 7;
+    grid-row: 4;
+    height: 100%;
+  }
+
+  .settings-page-polish .settings-core > div > div > section:nth-of-type(6) {
+    grid-column: 7 / -1;
+    grid-row: 4;
+    height: 100%;
+  }
+
+  .settings-page-polish .settings-core > div > div > button:last-of-type {
+    grid-column: 1 / -1;
+    grid-row: 5;
+  }
+}
+
+@media (max-width: 23rem) {
+  .settings-page-polish .settings-simple-heading {
+    gap: 0.45rem;
+    padding-inline: 0.05rem;
+  }
+
+  .settings-page-polish .settings-simple-heading-icon {
+    width: 2.1rem;
+    height: 2.1rem;
+  }
+
+  .settings-page-polish .settings-profile-customization .finance-panel > button {
+    padding: 0.82rem !important;
+  }
+}
