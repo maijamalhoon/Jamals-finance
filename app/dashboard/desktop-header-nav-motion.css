@@ -1,12 +1,15 @@
 /*
- * One motion language for the ten desktop navigation icons.
- * Search, notifications and profile remain intentionally outside this scope.
+ * One motion language for the ten desktop navigation icons and notification bell.
+ * Search and profile remain intentionally outside this scope.
  */
 
 @media (min-width: 1024px) {
   .jf-desktop-header
     nav[aria-label="Desktop dashboard navigation"]
-    > a {
+    > a,
+  .jf-desktop-header
+    .jf-desktop-header-tools
+    [data-notification-trigger] {
     transform: translateY(0) scale(1);
     transform-origin: center;
     transition:
@@ -16,8 +19,19 @@
   }
 
   .jf-desktop-header
+    .jf-desktop-header-tools
+    [data-notification-trigger] {
+    border-radius: 14px !important;
+    color: var(--warning) !important;
+  }
+
+  .jf-desktop-header
     nav[aria-label="Desktop dashboard navigation"]
     > a
+    > svg.lucide,
+  .jf-desktop-header
+    .jf-desktop-header-tools
+    [data-notification-trigger]
     > svg.lucide {
     transform: translateY(0) scale(1) rotate(0deg);
     transform-origin: center;
@@ -28,16 +42,37 @@
       color 180ms var(--motion-ease) !important;
   }
 
+  .jf-desktop-header
+    .jf-desktop-header-tools
+    [data-notification-trigger]
+    > svg.lucide {
+    color: var(--warning) !important;
+  }
+
   @media (hover: hover) and (pointer: fine) {
     .jf-desktop-header
       nav[aria-label="Desktop dashboard navigation"]
-      > a:hover {
+      > a:hover,
+    .jf-desktop-header
+      .jf-desktop-header-tools
+      [data-notification-trigger]:hover {
       transform: translateY(-1px) scale(1.025) !important;
+    }
+
+    .jf-desktop-header
+      .jf-desktop-header-tools
+      [data-notification-trigger]:hover {
+      background-color: var(--hover) !important;
+      color: var(--warning) !important;
     }
 
     .jf-desktop-header
       nav[aria-label="Desktop dashboard navigation"]
       > a:hover
+      > svg.lucide,
+    .jf-desktop-header
+      .jf-desktop-header-tools
+      [data-notification-trigger]:hover
       > svg.lucide {
       transform: translateY(-1.5px) scale(1.085) rotate(0deg) !important;
       filter: drop-shadow(
@@ -48,14 +83,28 @@
 
   .jf-desktop-header
     nav[aria-label="Desktop dashboard navigation"]
-    > a:active {
+    > a:active,
+  .jf-desktop-header
+    .jf-desktop-header-tools
+    [data-notification-trigger]:active {
     transform: translateY(0) scale(0.955) !important;
     transition-duration: 90ms !important;
   }
 
   .jf-desktop-header
+    .jf-desktop-header-tools
+    [data-notification-trigger]:active {
+    background-color: var(--surface-inset) !important;
+    color: var(--warning) !important;
+  }
+
+  .jf-desktop-header
     nav[aria-label="Desktop dashboard navigation"]
     > a:active
+    > svg.lucide,
+  .jf-desktop-header
+    .jf-desktop-header-tools
+    [data-notification-trigger]:active
     > svg.lucide {
     transform: translateY(0) scale(0.9) rotate(-2deg) !important;
     filter: none !important;
@@ -65,6 +114,10 @@
   .jf-desktop-header
     nav[aria-label="Desktop dashboard navigation"]
     > a:focus-visible
+    > svg.lucide,
+  .jf-desktop-header
+    .jf-desktop-header-tools
+    [data-notification-trigger]:focus-visible
     > svg.lucide {
     transform: translateY(-1px) scale(1.06) !important;
   }
@@ -124,7 +177,14 @@
   .jf-desktop-header
     nav[aria-label="Desktop dashboard navigation"]
     > a[aria-current="page"]
-    > span[aria-hidden="true"] {
+    > span[aria-hidden="true"],
+  .jf-desktop-header
+    .jf-desktop-header-tools
+    [data-notification-trigger],
+  .jf-desktop-header
+    .jf-desktop-header-tools
+    [data-notification-trigger]
+    > svg.lucide {
     animation: none !important;
     transition: none !important;
     transform: none !important;
