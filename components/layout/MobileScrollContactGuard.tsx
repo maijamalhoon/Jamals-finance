@@ -2,6 +2,8 @@
 
 import { useEffect } from "react";
 
+import FinancePickerKeyboardGuard from "@/components/forms/FinancePickerKeyboardGuard";
+
 const BODY_CONTACT_ATTRIBUTE = "data-mobile-scroll-contact";
 
 export default function MobileScrollContactGuard() {
@@ -81,5 +83,5 @@ export default function MobileScrollContactGuard() {
     };
   }, []);
 
-  return null;
+  return <FinancePickerKeyboardGuard />;
 }
