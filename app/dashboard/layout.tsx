@@ -67,6 +67,8 @@ import "./icon-surface-cleanup.css";
 import "./mobile-sidebar-reference.css";
 // Profile and notification dropdowns share one responsive, anchored surface.
 import "./header-dropdown-responsive.css";
+// Desktop navigation icons share one hover, tap and route-activation motion language.
+import "./desktop-header-nav-motion.css";
 
 export const dynamic = "force-dynamic";
 
