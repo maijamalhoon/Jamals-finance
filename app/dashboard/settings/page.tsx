@@ -14,6 +14,7 @@ import "./settings-type-icon-system.css";
 import "./settings-icon-detail-fix.css";
 import "./settings-profile-customization.css";
 import "./settings-borderless-clean.css";
+import "./settings-reference-rebuild.css";
 
 export const dynamic = "force-dynamic";
 
