@@ -17,6 +17,7 @@ import {
   BASE_CURRENCY,
   CURRENCY_STORAGE_KEY,
   isSupportedCurrency,
+  type SupportedCurrency,
 } from "@/lib/currency";
 import type { NotificationState } from "@/lib/notifications";
 import { loadDashboardNotifications } from "@/lib/notifications-server";
@@ -97,7 +98,7 @@ export default async function DashboardLayout({
     data: { user },
   } = await supabase.auth.getUser();
 
-  let accountPreference = null;
+  let accountPreference: SupportedCurrency | null = null;
 
   if (user) {
     const { data: profile, error } = await supabase
