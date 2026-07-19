@@ -23,6 +23,14 @@ html:not(.dark) .finance-modal-content [role="listbox"].field-input {
   outline: none !important;
 }
 
+/* Finance forms do not show header/footer divider lines. */
+.finance-modal-content .finance-modal-header,
+.finance-modal-content .finance-modal-footer {
+  border: 0 !important;
+  border-top: 0 !important;
+  border-bottom: 0 !important;
+}
+
 /*
  * Income/Expense account control is the visual reference. The shared marker is
  * applied inside AccountSelect itself, so Goal, Transfer, Payable and
@@ -33,4 +41,83 @@ html:not(.dark) .finance-modal-content [role="listbox"].field-input {
   min-height: clamp(3rem, 6.7dvh, 3.35rem) !important;
   max-height: clamp(3rem, 6.7dvh, 3.35rem) !important;
   padding-block: clamp(0.25rem, 0.75dvh, 0.38rem) !important;
+}
+
+/*
+ * Investment keeps the full PKR/USD behavior, but the toggle now sits inside
+ * Buying Price and Current Price. This removes the extra toggle-row height
+ * without shrinking either price input.
+ */
+.finance-modal-content
+  .finance-modal-body
+  div:has(> #investment-purchase-price),
+.finance-modal-content
+  .finance-modal-body
+  div:has(> #investment-current-price) {
+  position: relative;
+}
+
+.finance-modal-content
+  .finance-modal-body
+  div:has(> #investment-purchase-price)
+  > div:first-child,
+.finance-modal-content
+  .finance-modal-body
+  div:has(> #investment-current-price)
+  > div:first-child {
+  display: block !important;
+  min-height: 1rem;
+  margin-bottom: 0.35rem !important;
+}
+
+.finance-modal-content
+  .finance-modal-body
+  div:has(> #investment-purchase-price)
+  > div:first-child
+  > div,
+.finance-modal-content
+  .finance-modal-body
+  div:has(> #investment-current-price)
+  > div:first-child
+  > div {
+  position: absolute !important;
+  right: 0.45rem;
+  bottom: calc((var(--finance-control-height) - 2.25rem) / 2);
+  z-index: 3;
+  display: grid !important;
+  width: 5.75rem;
+  height: 2.25rem;
+  min-height: 2.25rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  padding: 0.18rem !important;
+  border: 0 !important;
+  border-radius: 0.72rem !important;
+  background: color-mix(in srgb, var(--surface-secondary), transparent 8%) !important;
+}
+
+.finance-modal-content
+  .finance-modal-body
+  div:has(> #investment-purchase-price)
+  > div:first-child
+  > div
+  > button,
+.finance-modal-content
+  .finance-modal-body
+  div:has(> #investment-current-price)
+  > div:first-child
+  > div
+  > button {
+  width: 100% !important;
+  height: 100% !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  padding: 0 0.35rem !important;
+  border-radius: 0.56rem !important;
+  font-size: 0.64rem !important;
+  line-height: 1 !important;
+}
+
+.finance-modal-content #investment-purchase-price,
+.finance-modal-content #investment-current-price {
+  padding-right: 6.55rem !important;
 }
