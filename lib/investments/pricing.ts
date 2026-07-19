@@ -8,6 +8,16 @@ function normalizeText(value: string | null | undefined) {
   return (value ?? "").trim();
 }
 
+function getStockLogoUrl(symbol: string) {
+  const normalizedSymbol = symbol.trim().toUpperCase();
+
+  if (!/^[A-Z0-9.:-]{1,24}$/.test(normalizedSymbol)) return null;
+
+  return `https://financialmodelingprep.com/image-stock/${encodeURIComponent(
+    normalizedSymbol,
+  )}.png`;
+}
+
 export async function refreshInvestmentMarketPrices<T extends InvestmentLike>(
   investments: T[],
 ) {
@@ -16,9 +26,7 @@ export async function refreshInvestmentMarketPrices<T extends InvestmentLike>(
       investments
         .filter(
           (investment) =>
-            investment.is_live_priced &&
-            investment.price_source === "coingecko" &&
-            investment.asset_id,
+            investment.price_source === "coingecko" && investment.asset_id,
         )
         .map((investment) => normalizeText(investment.asset_id).toLowerCase())
         .filter(Boolean),
@@ -69,6 +77,14 @@ export async function refreshInvestmentMarketPrices<T extends InvestmentLike>(
       investment.asset_id ?? investment.symbol,
     ).toUpperCase();
     const stockPrice = stockSymbol ? stockPrices[stockSymbol] : null;
+    const existingImageUrl = normalizeText(investment.image_url) || null;
+    const resolvedImageUrl =
+      existingImageUrl ??
+      (investment.price_source === "coingecko"
+        ? cryptoPrice?.imageUrl ?? null
+        : investment.price_source === "alpha_vantage"
+          ? getStockLogoUrl(stockSymbol)
+          : null);
 
     if (
       investment.is_live_priced &&
@@ -77,6 +93,7 @@ export async function refreshInvestmentMarketPrices<T extends InvestmentLike>(
     ) {
       return {
         ...investment,
+        image_url: resolvedImageUrl,
         current_price: cryptoPrice.pkr,
         current_price_original: cryptoPrice.usd,
         current_price_currency: "USD",
@@ -92,6 +109,7 @@ export async function refreshInvestmentMarketPrices<T extends InvestmentLike>(
     ) {
       return {
         ...investment,
+        image_url: resolvedImageUrl,
         current_price: stockPrice.pkr,
         current_price_original: stockPrice.usd,
         current_price_currency: "USD",
@@ -99,6 +117,13 @@ export async function refreshInvestmentMarketPrices<T extends InvestmentLike>(
         price_updated_at: stockPrice.lastUpdatedAt ?? new Date().toISOString(),
         price_currency: "PKR",
         is_live_priced: true,
+      };
+    }
+
+    if (!existingImageUrl && resolvedImageUrl) {
+      return {
+        ...investment,
+        image_url: resolvedImageUrl,
       };
     }
 
