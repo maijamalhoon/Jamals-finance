@@ -1,0 +1,85 @@
+/*
+ * Content-fit correction for Transfer, Goal, Investment, Payable and Account.
+ * Income and Expense remain untouched and continue to be the visual reference.
+ */
+
+:is(
+    .finance-modal-content:has(#transfer-amount),
+    .finance-modal-content:has(#goal-name),
+    .finance-modal-content:has(#investment-quantity),
+    .finance-modal-content:has(#payable-original-value),
+    .finance-modal-content:has(#account-name),
+    .finance-modal-content[style*="#A35D2D" i],
+    .finance-modal-content[style*="#157462" i],
+    .finance-modal-content[style*="#6849B8" i],
+    .finance-modal-content[style*="#9B6A13" i],
+    .finance-modal-content[style*="#2B5FB8" i]
+  )
+  .finance-modal-body {
+  flex: 0 1 auto !important;
+}
+
+/* Match the closed account picker to the exact control height used by the form. */
+:is(
+    .finance-modal-content:has(#transfer-amount),
+    .finance-modal-content:has(#goal-name),
+    .finance-modal-content:has(#investment-quantity),
+    .finance-modal-content:has(#payable-original-value),
+    .finance-modal-content[style*="#A35D2D" i],
+    .finance-modal-content[style*="#157462" i],
+    .finance-modal-content[style*="#6849B8" i],
+    .finance-modal-content[style*="#9B6A13" i]
+  )
+  .finance-account-select {
+  box-sizing: border-box !important;
+  height: var(--finance-control-height) !important;
+  min-height: var(--finance-control-height) !important;
+  max-height: var(--finance-control-height) !important;
+  padding-block: 0.55rem !important;
+}
+
+/*
+ * The shared mobile modal helper previously pinned both the top and bottom
+ * edges. That made the flex body absorb the unused viewport height. Restore a
+ * true content-sized modal and center it on both axes.
+ */
+@media (max-width: 639px) {
+  html body
+    :is(
+      [data-slot="dialog-content"].finance-modal-content:has(#transfer-amount),
+      [data-slot="dialog-content"].finance-modal-content:has(#goal-name),
+      [data-slot="dialog-content"].finance-modal-content:has(#investment-quantity),
+      [data-slot="dialog-content"].finance-modal-content:has(#payable-original-value),
+      [data-slot="dialog-content"].finance-modal-content:has(#account-name),
+      [data-slot="dialog-content"].finance-modal-content[style*="#A35D2D" i],
+      [data-slot="dialog-content"].finance-modal-content[style*="#157462" i],
+      [data-slot="dialog-content"].finance-modal-content[style*="#6849B8" i],
+      [data-slot="dialog-content"].finance-modal-content[style*="#9B6A13" i],
+      [data-slot="dialog-content"].finance-modal-content[style*="#2B5FB8" i],
+      [role="dialog"].finance-modal-content:has(#transfer-amount),
+      [role="dialog"].finance-modal-content:has(#goal-name),
+      [role="dialog"].finance-modal-content:has(#investment-quantity),
+      [role="dialog"].finance-modal-content:has(#payable-original-value),
+      [role="dialog"].finance-modal-content:has(#account-name),
+      [role="dialog"].finance-modal-content[style*="#A35D2D" i],
+      [role="dialog"].finance-modal-content[style*="#157462" i],
+      [role="dialog"].finance-modal-content[style*="#6849B8" i],
+      [role="dialog"].finance-modal-content[style*="#9B6A13" i],
+      [role="dialog"].finance-modal-content[style*="#2B5FB8" i]
+    ) {
+    top: 50% !important;
+    right: auto !important;
+    bottom: auto !important;
+    left: 50% !important;
+    width: min(calc(100vw - 0.75rem), 32rem) !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: calc(
+      100dvh - 0.75rem - env(safe-area-inset-top) - env(safe-area-inset-bottom)
+    ) !important;
+    margin: 0 !important;
+    --tw-translate-x: -50%;
+    --tw-translate-y: -50%;
+    transform: translate(-50%, -50%) !important;
+  }
+}
