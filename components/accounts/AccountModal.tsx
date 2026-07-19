@@ -24,7 +24,10 @@ import {
   financePrimaryButtonClass,
 } from "@/components/ui/finance-modal";
 import { BASE_CURRENCY } from "@/lib/currency";
-import { getAutomaticAccountVisual } from "@/lib/account-identity";
+import {
+  getAutomaticAccountVisual,
+  shouldAttemptAccountLogo,
+} from "@/lib/account-identity";
 import { getUserMutationError } from "@/lib/user-errors";
 
 export interface ExistingAccount {
@@ -53,6 +56,20 @@ const ACCOUNT_KINDS = [
 ];
 
 const ACCOUNT_ACTION_COLOR = "#2B5FB8";
+const GENERIC_ACCOUNT_NAME =
+  /^(?:my\s+)?(?:bank|cash|wallet|card|phone|mobile|business|savings?|current|salary|personal|corporate|account)(?:\s+account)?$/i;
+
+function getPersistedAccountIconKey(
+  name: string,
+  visual: ReturnType<typeof getAutomaticAccountVisual>,
+) {
+  if (visual.brand || GENERIC_ACCOUNT_NAME.test(name)) return visual.iconKey;
+  if (!shouldAttemptAccountLogo(name, visual.iconKey, visual.legacyType)) {
+    return visual.iconKey;
+  }
+
+  return `lookup:${encodeURIComponent(name)}`;
+}
 
 export default function AccountModal({
   open,
@@ -125,6 +142,7 @@ export default function AccountModal({
       accentColor: account?.accent_color,
       type: account?.type,
     });
+    const persistedIconKey = getPersistedAccountIconKey(cleanName, visual);
 
     const accountDetails = {
       user_id: user.id,
@@ -132,7 +150,7 @@ export default function AccountModal({
       type: visual.legacyType,
       account_number: accountNumber.trim() || null,
       account_kind: accountKind,
-      icon_key: visual.iconKey,
+      icon_key: persistedIconKey,
       accent_color: visual.accentColor,
     };
 
