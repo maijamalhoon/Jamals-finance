@@ -80,6 +80,37 @@ export default function Header({ notificationSlot }: HeaderProps) {
 
   return (
     <header className="jf-desktop-header relative z-30 min-w-0 flex-shrink-0 bg-background px-1.5 py-1.5">
+      <style jsx global>{`
+        @media (min-width: 1024px) {
+          .jf-desktop-header-tools [data-header-search-trigger],
+          .jf-desktop-header-tools [data-notification-trigger],
+          .jf-desktop-header-tools [data-profile-trigger] {
+            transform: translateY(0) scale(1);
+            transition:
+              background-color 150ms cubic-bezier(0.4, 0, 0.2, 1),
+              color 150ms cubic-bezier(0.4, 0, 0.2, 1),
+              transform 150ms cubic-bezier(0.4, 0, 0.2, 1) !important;
+          }
+
+          @media (hover: hover) and (pointer: fine) {
+            .jf-desktop-header-tools [data-header-search-trigger]:hover,
+            .jf-desktop-header-tools [data-notification-trigger]:hover,
+            .jf-desktop-header-tools [data-profile-trigger]:hover {
+              background-color: var(--hover) !important;
+              color: var(--text-primary) !important;
+              transform: translateY(0) scale(1) !important;
+            }
+          }
+
+          .jf-desktop-header-tools [data-header-search-trigger]:active,
+          .jf-desktop-header-tools [data-notification-trigger]:active,
+          .jf-desktop-header-tools [data-profile-trigger]:active {
+            background-color: var(--surface-inset) !important;
+            transform: translateY(0) scale(0.985) !important;
+          }
+        }
+      `}</style>
+
       <div className="mx-auto flex min-h-[4.75rem] w-full max-w-[1600px] min-w-0 items-center gap-2.5 rounded-[20px] border border-border bg-surface-primary px-3 shadow-theme xl:gap-3 xl:px-4">
         <nav
           aria-label="Desktop dashboard navigation"
@@ -123,7 +154,7 @@ export default function Header({ notificationSlot }: HeaderProps) {
           className="mx-1 hidden h-8 w-px shrink-0 bg-border min-[1180px]:block"
         />
 
-        <div className="flex min-w-0 shrink-0 items-center gap-1.5 [&>button]:!border-transparent [&>button]:!bg-transparent [&>button]:!shadow-none">
+        <div className="jf-desktop-header-tools flex min-w-0 shrink-0 items-center gap-1.5 [&>button]:!border-transparent [&>button]:!bg-transparent [&>button]:!shadow-none">
           <form
             role="search"
             aria-label="Search transactions"
@@ -135,6 +166,7 @@ export default function Header({ notificationSlot }: HeaderProps) {
             }`}
           >
             <button
+              data-header-search-trigger
               type={searchOpen ? "submit" : "button"}
               aria-label={
                 searchOpen ? "Search transactions" : "Open transaction search"
@@ -142,7 +174,7 @@ export default function Header({ notificationSlot }: HeaderProps) {
               onClick={() => {
                 if (!searchOpen) setSearchOpen(true);
               }}
-              className="finance-focus grid h-11 w-11 shrink-0 place-items-center rounded-full text-text-secondary transition-colors hover:text-text-primary"
+              className="finance-focus grid h-11 w-11 shrink-0 place-items-center rounded-full text-text-secondary transition-[background-color,color,transform] duration-150 hover:text-text-primary"
             >
               <Search size={20} strokeWidth={2.1} aria-hidden="true" />
             </button>
