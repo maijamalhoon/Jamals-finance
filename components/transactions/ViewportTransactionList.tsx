@@ -127,6 +127,10 @@ export default function ViewportTransactionList({
     maxLimit,
     transactions.length,
   );
+  const nextBatchSize = Math.max(
+    0,
+    nextLimit - visibleTransactions.length,
+  );
   const nextHref = useMemo(() => {
     const query = new URLSearchParams(baseQuery);
     query.set("limit", String(nextLimit));
@@ -157,12 +161,7 @@ export default function ViewportTransactionList({
             scroll={false}
             className="finance-focus inline-flex items-center justify-center rounded-full border border-border bg-surface px-5 py-2.5 text-sm font-bold text-text-primary shadow-sm transition-all hover:-translate-y-0.5 hover:bg-hover hover:shadow-md"
           >
-            Show{" "}
-            {Math.min(
-              stepLimit,
-              transactions.length - visibleTransactions.length,
-            )}{" "}
-            more
+            Show {nextBatchSize} more
           </Link>
 
           <p className="text-xs text-text-secondary">
