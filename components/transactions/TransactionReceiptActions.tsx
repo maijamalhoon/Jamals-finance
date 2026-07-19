@@ -6,6 +6,7 @@ import { Check, Copy, Download, Printer, RotateCcw } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
+import { createReceiptPdfBlob, downloadBlob } from "@/lib/client-download";
 import RefundModal, { type RefundExpense } from "./RefundModal";
 
 const receiptIconProps = {
@@ -47,15 +48,13 @@ export default function TransactionReceiptActions({
   }
 
   function handleDownload() {
-    const blob = new Blob([receiptText], { type: "text/plain;charset=utf-8" });
-    const url = URL.createObjectURL(blob);
-    const anchor = document.createElement("a");
-    anchor.href = url;
-    anchor.download = `jamals-finance-receipt-${receiptId}.txt`;
-    anchor.click();
-    anchor.remove();
-    URL.revokeObjectURL(url);
-    toast.success("Receipt downloaded");
+    try {
+      const blob = createReceiptPdfBlob(receiptText);
+      downloadBlob(blob, `jamals-finance-receipt-${receiptId}.pdf`);
+      toast.success("Receipt PDF downloaded");
+    } catch {
+      toast.error("Could not download the receipt. Please try again.");
+    }
   }
 
   return (
@@ -97,7 +96,7 @@ export default function TransactionReceiptActions({
           className="receipt-action"
         >
           <Download {...receiptIconProps} />
-          <span>Download</span>
+          <span>Download PDF</span>
         </Button>
         <Button
           type="button"
