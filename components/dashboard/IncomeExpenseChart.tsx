@@ -123,8 +123,6 @@ export default function IncomeExpenseChart({
     0,
   );
   const net = totalIncome - totalExpenses;
-  const netTone =
-    net > 0 ? "text-income" : net < 0 ? "text-expense" : "text-text-secondary";
 
   return (
     <section className="finance-reference-card motion-card-entry flex h-full min-h-[286px] min-w-0 flex-col overflow-hidden p-3.5 sm:min-h-[300px] sm:p-5">
@@ -140,7 +138,7 @@ export default function IncomeExpenseChart({
 
         <div
           aria-label="Cash-flow range"
-          className="flex shrink-0 items-center rounded-[9px] bg-surface-secondary p-0.5 sm:rounded-[10px] sm:p-1"
+          className="flex shrink-0 items-center gap-0.5 rounded-[11px] bg-surface-secondary/85 p-1 ring-1 ring-inset ring-border/60 sm:rounded-[12px]"
           role="group"
         >
           {([
@@ -150,12 +148,13 @@ export default function IncomeExpenseChart({
             <button
               key={value}
               type="button"
+              aria-label={`Show ${label} cash flow`}
               aria-pressed={range === value}
               onClick={() => setRange(value)}
-              className={`finance-focus min-h-7 rounded-[7px] px-2 text-[9px] font-bold transition-colors sm:min-h-8 sm:rounded-[8px] sm:px-2.5 sm:text-[10px] ${
+              className={`finance-focus min-h-8 min-w-10 rounded-[8px] px-2.5 text-[10px] font-semibold tracking-[0.02em] transition-[background-color,color,box-shadow,transform] duration-200 ease-out active:scale-[0.97] sm:min-h-9 sm:min-w-11 sm:rounded-[9px] sm:px-3 sm:text-[11px] ${
                 range === value
-                  ? "bg-surface-primary text-text-primary shadow-sm"
-                  : "text-text-secondary hover:text-text-primary"
+                  ? "bg-surface-primary text-text-primary shadow-[0_1px_3px_rgba(15,23,42,0.12)]"
+                  : "text-text-secondary hover:bg-surface-primary/55 hover:text-text-primary"
               }`}
             >
               {label}
@@ -164,51 +163,13 @@ export default function IncomeExpenseChart({
         </div>
       </div>
 
-      <div className="mt-3 grid min-w-0 grid-cols-3 gap-1.5 rounded-[12px] border border-border/70 bg-surface-secondary/55 p-1.5 sm:flex sm:flex-wrap sm:items-center sm:gap-x-5 sm:gap-y-2 sm:rounded-none sm:border-0 sm:bg-transparent sm:p-0 sm:text-xs">
-        <span className="flex min-w-0 flex-col rounded-[9px] bg-surface-primary/70 px-2 py-2 sm:inline-flex sm:flex-row sm:items-center sm:gap-2 sm:rounded-none sm:bg-transparent sm:px-0 sm:py-0">
-          <span className="inline-flex items-center gap-1.5 text-[9px] font-semibold uppercase tracking-[0.07em] text-text-secondary sm:gap-2 sm:text-xs sm:font-medium sm:normal-case sm:tracking-normal">
-            <span
-              className="size-2 shrink-0 rounded-full"
-              style={{ backgroundColor: INCOME_CHART_COLOR }}
-            />
-            <span>Income</span>
-          </span>
-          <span className="mt-1 whitespace-nowrap text-[clamp(9px,3vw,12px)] font-bold leading-tight tabular-nums text-text-primary sm:mt-0 sm:text-xs">
-            {formatCurrency(totalIncome)}
-          </span>
-        </span>
-        <span className="flex min-w-0 flex-col rounded-[9px] bg-surface-primary/70 px-2 py-2 sm:inline-flex sm:flex-row sm:items-center sm:gap-2 sm:rounded-none sm:bg-transparent sm:px-0 sm:py-0">
-          <span className="inline-flex items-center gap-1.5 text-[9px] font-semibold uppercase tracking-[0.07em] text-text-secondary sm:gap-2 sm:text-xs sm:font-medium sm:normal-case sm:tracking-normal">
-            <span
-              className="size-2 shrink-0 rounded-full"
-              style={{ backgroundColor: EXPENSE_CHART_COLOR }}
-            />
-            <span>Expenses</span>
-          </span>
-          <span className="mt-1 whitespace-nowrap text-[clamp(9px,3vw,12px)] font-bold leading-tight tabular-nums text-text-primary sm:mt-0 sm:text-xs">
-            {formatCurrency(totalExpenses)}
-          </span>
-        </span>
-        <span className="flex min-w-0 flex-col rounded-[9px] bg-surface-primary/70 px-2 py-2 sm:inline-flex sm:flex-row sm:items-center sm:gap-2 sm:rounded-none sm:bg-transparent sm:px-0 sm:py-0">
-          <span className="inline-flex items-center gap-1.5 text-[9px] font-semibold uppercase tracking-[0.07em] text-text-secondary sm:gap-2 sm:text-xs sm:font-medium sm:normal-case sm:tracking-normal">
-            <span className="size-2 shrink-0 rounded-full bg-transfer" />
-            <span>Net</span>
-          </span>
-          <span
-            className={`mt-1 whitespace-nowrap text-[clamp(9px,3vw,12px)] font-bold leading-tight tabular-nums sm:mt-0 sm:text-xs ${netTone}`}
-          >
-            {formatCurrency(net)}
-          </span>
-        </span>
-      </div>
-
       <p className="sr-only">
         {status === "available"
           ? `${visibleRows.length} displayed days. Total income ${totalIncome}; total expenses ${totalExpenses}; net ${net}.`
           : "Cash-flow data is temporarily unavailable."}
       </p>
 
-      <div className="mt-3 min-h-0 flex-1 sm:mt-2">
+      <div className="mt-4 min-h-0 flex-1 sm:mt-3">
         {status === "unavailable" ? (
           <div className="dashboard-chart-empty h-[190px] min-h-[190px] sm:h-[220px] sm:min-h-[220px]">
             <div>
