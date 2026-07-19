@@ -1,0 +1,35 @@
+/* Landing header-only refinement: floating rounded shell without an outline/border. */
+.jf-node4-landing .jf-landing-header {
+  top: clamp(0.5rem, 1vw, 0.75rem);
+  width: var(--jf-wide-shell);
+  margin-inline: auto;
+  overflow: hidden;
+  border: 0;
+  border-radius: 1.05rem;
+  background: color-mix(in srgb, var(--jf-surface-solid) 80%, transparent);
+  box-shadow: 0 14px 38px rgb(28 49 82 / 0.1);
+}
+
+.dark .jf-node4-landing .jf-landing-header {
+  box-shadow: 0 16px 42px rgb(0 0 0 / 0.26);
+}
+
+.jf-node4-landing .jf-landing-header::after {
+  display: none;
+}
+
+.jf-node4-landing .jf-header-inner {
+  width: 100%;
+  padding-inline: clamp(0.7rem, 1.4vw, 1rem);
+}
+
+@media (max-width: 639px) {
+  .jf-node4-landing .jf-landing-header {
+    top: 0.5rem;
+    border-radius: 0.9rem;
+  }
+
+  .jf-node4-landing .jf-header-inner {
+    padding-inline: 0.65rem;
+  }
+}
