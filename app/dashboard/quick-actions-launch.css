@@ -1,6 +1,61 @@
-/* Quick actions only: exact mobile centering and a polished button-origin form launch. */
+/* Mobile dashboard balance hero and quick-action launch polish. */
 
 @media (max-width: 639px) {
+  [data-dashboard-scroll]
+    .dashboard-overview
+    .dashboard-balance-layout {
+    gap: clamp(1.35rem, 5vw, 1.8rem) !important;
+  }
+
+  [data-dashboard-scroll]
+    .dashboard-overview
+    .dashboard-balance-copy {
+    display: flex;
+    width: 100%;
+    min-width: 0;
+    flex-direction: column;
+    align-items: center;
+    text-align: center !important;
+  }
+
+  [data-dashboard-scroll]
+    .dashboard-overview
+    .dashboard-balance-heading-row {
+    width: 100%;
+    justify-content: center;
+  }
+
+  [data-dashboard-scroll]
+    .dashboard-overview
+    .dashboard-balance-label {
+    margin: 0;
+    line-height: 1;
+  }
+
+  [data-dashboard-scroll]
+    .dashboard-overview
+    .dashboard-balance-amount {
+    width: 100%;
+    margin-top: clamp(0.55rem, 2.4vw, 0.75rem) !important;
+    font-size: clamp(2.9rem, 15.5vw, 4.15rem) !important;
+    line-height: 0.92 !important;
+    letter-spacing: -0.065em;
+    text-align: center;
+    text-wrap: nowrap;
+  }
+
+  [data-dashboard-scroll]
+    .dashboard-overview
+    .dashboard-balance-amount[data-balance-size="long"] {
+    font-size: clamp(2.35rem, 12.2vw, 3.45rem) !important;
+  }
+
+  [data-dashboard-scroll]
+    .dashboard-overview
+    .dashboard-balance-amount[data-balance-size="xlong"] {
+    font-size: clamp(1.95rem, 10.2vw, 2.9rem) !important;
+  }
+
   [data-dashboard-scroll]
     .dashboard-overview
     .dashboard-balance-actions {
