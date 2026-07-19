@@ -16,21 +16,21 @@
   text-rendering: geometricPrecision;
 }
 
-/* Headings: Geist Sans 650–700. */
+/* Headings: Geist Sans 700. */
 :where(.settings-page-polish) :where(h1, h2, h3, h4, h5, h6, [role="heading"], .page-title),
 :where(body:has(.settings-page-polish) [data-slot="dialog-content"]) :where(h1, h2, h3, h4, h5, h6, [role="heading"], [data-slot="dialog-title"]),
 :where(body:has(.settings-page-polish) [role="dialog"]) :where(h1, h2, h3, h4, h5, h6, [role="heading"]) {
   font-family: var(--font-geist-sans), var(--font-sans);
   font-weight: 700;
-  letter-spacing: -0.018em;
+  letter-spacing: -0.024em;
 }
 
-/* Body copy: Geist Sans 400–500. */
+/* Body copy: Geist Sans 500 for a clearly cleaner UI voice. */
 :where(.settings-page-polish) :where(p, input, textarea, select, [data-slot="dialog-description"]),
 :where(body:has(.settings-page-polish) [data-slot="dialog-content"]) :where(p, input, textarea, select, [data-slot="dialog-description"]),
 :where(body:has(.settings-page-polish) [role="dialog"]) :where(p, input, textarea, select) {
   font-family: var(--font-geist-sans), var(--font-sans);
-  font-weight: 450;
+  font-weight: 500;
 }
 
 :where(
@@ -41,7 +41,7 @@
   font-weight: 500;
 }
 
-/* Buttons and labels: Geist Sans 550–650. */
+/* Buttons and labels: Geist Sans 650. */
 :where(
     .settings-page-polish,
     body:has(.settings-page-polish) [data-slot="dialog-content"],
@@ -60,8 +60,8 @@
     .font-bold
   ) {
   font-family: var(--font-geist-sans), var(--font-sans);
-  font-weight: 625;
-  letter-spacing: -0.006em;
+  font-weight: 650;
+  letter-spacing: -0.01em;
 }
 
 /* Preserve stronger hierarchy only for actual headings and key totals. */
@@ -111,7 +111,7 @@
   ) :where(svg.lucide) {
   fill: none !important;
   stroke: currentColor;
-  stroke-width: 2.2 !important;
+  stroke-width: 2.4 !important;
   stroke-linecap: round;
   stroke-linejoin: round;
   shape-rendering: geometricPrecision;
@@ -127,8 +127,8 @@
 }
 
 /*
- * Settings row icons use the same clean outline-only presentation as the
- * dashboard labels. Frames retain their original dimensions for alignment.
+ * Settings row icons now use the same clean, background-free presentation as
+ * Goals Progress and transaction category icons.
  */
 :where(.settings-page-polish, body:has(.settings-page-polish) [role="dialog"])
   .finance-icon-bubble {
@@ -137,7 +137,7 @@
   box-shadow: none !important;
 }
 
-/* Appearance choices remain the same size, but their glyphs no longer sit in a nested bubble. */
+/* Appearance choices keep their geometry but lose the nested icon bubble. */
 :where(.settings-page-polish, body:has(.settings-page-polish) [role="dialog"])
   [role="radiogroup"]
   [role="radio"]
@@ -153,5 +153,41 @@
     body:has(.settings-page-polish) [data-slot="dialog-content"],
     body:has(.settings-page-polish) [role="dialog"]
   ) :where(button, a, [role="button"], [role="tab"]) > svg.lucide {
-  stroke-width: 2.2 !important;
+  stroke-width: 2.4 !important;
+}
+
+/* Visible semantic colour rhythm without changing layout or controls. */
+.settings-page-polish section:nth-of-type(1) .finance-icon-bubble {
+  color: #2563eb !important;
+}
+
+.settings-page-polish section:nth-of-type(2) .finance-icon-bubble {
+  color: #7c3aed !important;
+}
+
+.settings-page-polish section:nth-of-type(3) .finance-icon-bubble {
+  color: #0f766e !important;
+}
+
+.settings-page-polish section:nth-of-type(4) .finance-icon-bubble {
+  color: #9333ea !important;
+}
+
+.settings-page-polish section:nth-of-type(5) .finance-icon-bubble {
+  color: #d97706 !important;
+}
+
+.settings-page-polish section:nth-of-type(6) .finance-icon-bubble {
+  color: #0369a1 !important;
+}
+
+/* The settings list labels should read visibly stronger than descriptions. */
+.settings-page-polish .finance-panel :where(button, a) > .min-w-0.flex-1 > span:first-child {
+  font-weight: 650 !important;
+  letter-spacing: -0.012em;
+}
+
+.settings-page-polish .finance-panel :where(button, a) > .min-w-0.flex-1 > span + span {
+  font-weight: 500 !important;
+  letter-spacing: 0;
 }
