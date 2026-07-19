@@ -2,7 +2,7 @@
    Do not rely on left: 50% plus translateX(-50%): Android Chrome and
    desktop-mode scaling can resolve that combination against a different
    containing block and push half of the modal off-screen. Explicit horizontal
-   edges plus auto margins keep the form centered at every viewport width. */
+   edges plus auto margins keep the form centered at mobile and tablet widths. */
 [data-slot="dialog-content"].finance-modal-content:has(#transaction-amount) {
   top: max(0.375rem, env(safe-area-inset-top)) !important;
   right: max(0.375rem, env(safe-area-inset-right)) !important;
@@ -16,6 +16,34 @@
   max-height: none !important;
   margin: auto !important;
   transform: none !important;
+}
+
+/* Desktop only: use one explicit two-axis translation. The previous four-edge
+   auto-margin technique could resolve the intrinsic modal height against the
+   top edge in desktop Chrome, making Income and Expense appear too high. */
+@media (min-width: 1024px) {
+  html body
+    [data-slot="dialog-content"].finance-modal-content:has(#transaction-amount) {
+    top: 50% !important;
+    right: auto !important;
+    bottom: auto !important;
+    left: 50% !important;
+    width: min(calc(100vw - 2rem), var(--finance-modal-max-width, 32rem)) !important;
+    height: auto !important;
+    max-height: calc(100dvh - 2rem) !important;
+    margin: 0 !important;
+    translate: none !important;
+    transform: translate3d(-50%, -50%, 0) !important;
+  }
+
+  html body
+    [data-slot="dialog-content"].finance-modal-content:has(#transaction-amount)
+    .finance-modal-body {
+    min-height: 0 !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    overscroll-behavior: contain !important;
+  }
 }
 
 /* Only genuinely short landscape-style viewports need a hard cap. The form's
