@@ -1,0 +1,89 @@
+name: Shorten dashboard chart sheen
+
+on:
+  push:
+    paths:
+      - ".github/workflows/shorten-chart-sheen.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Apply focused animation changes
+        shell: python
+        run: |
+          from pathlib import Path
+
+          def replace_exact(path: str, old: str, new: str, expected: int = 1) -> None:
+              file_path = Path(path)
+              text = file_path.read_text(encoding="utf-8")
+              count = text.count(old)
+              if count != expected:
+                  raise RuntimeError(
+                      f"Expected {expected} match(es) in {path}, found {count}."
+                  )
+              file_path.write_text(text.replace(old, new), encoding="utf-8")
+
+          income_path = "components/dashboard/IncomeExpenseChart.tsx"
+          spend_path = "components/dashboard/SpendRecordWidget.tsx"
+
+          replace_exact(
+              income_path,
+              """              const sheenStart = -Math.max(width * 0.42, 120);
+              const sheenEnd = width * 1.08;
+              const sheenWidth = Math.max(width * 0.26, 86);""",
+              """              const sheenWidth = Math.round(
+                Math.min(Math.max(width * 0.07, 22), 36),
+              );
+              const sheenStart = -sheenWidth;
+              const sheenEnd = width;""",
+          )
+          replace_exact(
+              income_path,
+              'keyTimes="0;0.68;1"',
+              'keyTimes="0;0.76;1"',
+              expected=4,
+          )
+          replace_exact(
+              income_path,
+              'begin="0.3s"',
+              'begin="0.45s"',
+              expected=2,
+          )
+
+          replace_exact(
+              spend_path,
+              """                const sheenStart = -Math.max(width * 0.42, 100);
+                const sheenEnd = width * 1.08;
+                const sheenWidth = Math.max(width * 0.27, 76);""",
+              """                const sheenWidth = Math.round(
+                  Math.min(Math.max(width * 0.07, 22), 36),
+                );
+                const sheenStart = -sheenWidth;
+                const sheenEnd = width;""",
+          )
+          replace_exact(
+              spend_path,
+              'keyTimes="0;0.68;1"',
+              'keyTimes="0;0.76;1"',
+              expected=2,
+          )
+
+          Path(".github/workflows/shorten-chart-sheen.yml").unlink()
+
+      - name: Commit changes to main
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add components/dashboard/IncomeExpenseChart.tsx components/dashboard/SpendRecordWidget.tsx .github/workflows/shorten-chart-sheen.yml
+          git diff --cached --check
+          git commit -m "Shorten dashboard chart sheen animation"
+          git push origin HEAD:main
