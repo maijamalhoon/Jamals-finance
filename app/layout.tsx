@@ -11,6 +11,7 @@ import "./auth-clean-fixes.css";
 import "./light-background-tuning.css";
 import "./interaction-lock.css";
 import "./auth-control-alignment.css";
+// Authentication-only responsive layer; kept after legacy auth corrections.
 import "./auth-responsive-architecture.css";
 import "./scrollbar-visibility.css";
 import "./public-icon-surface-cleanup.css";
