@@ -1,0 +1,28 @@
+/* Authentication field adornment alignment.
+   Keeps start icons, inline actions, and password visibility controls
+   vertically centered without changing control sizing or auth behavior. */
+
+.jf-auth-root .auth-field-control > .auth-field-icon {
+  top: 0 !important;
+  bottom: 0 !important;
+  height: 18px;
+  margin-block: auto;
+  transform: none !important;
+  translate: none !important;
+}
+
+.jf-auth-root .auth-field-control > .auth-inline-field-action,
+.jf-auth-root .auth-field-control > .auth-password-toggle {
+  top: 0 !important;
+  bottom: 0 !important;
+  margin-block: auto !important;
+  transform: none !important;
+  translate: none !important;
+}
+
+.jf-auth-root .auth-field-control > .auth-inline-field-action {
+  height: 34px !important;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
