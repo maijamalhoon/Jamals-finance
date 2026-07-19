@@ -1,94 +1,140 @@
-/* Quick actions only: true viewport centering and button-origin form launch. */
+/* Quick actions only: exact mobile centering and a polished button-origin form launch. */
 
 @media (max-width: 639px) {
   [data-dashboard-scroll]
     .dashboard-overview
     .dashboard-balance-actions {
-    position: relative;
-    left: 50%;
+    position: relative !important;
+    left: auto !important;
+    display: grid !important;
     width: 100vw !important;
-    max-width: 100vw !important;
-    margin-inline: 0 !important;
+    max-width: none !important;
+    margin-inline: calc(50% - 50vw) !important;
     box-sizing: border-box;
-    padding-inline:
-      max(0.75rem, env(safe-area-inset-left))
-      max(0.75rem, env(safe-area-inset-right));
-    transform: translateX(-50%);
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+    align-items: center !important;
+    justify-items: center !important;
+    gap: 0 !important;
+    padding-inline-start: max(0.9rem, env(safe-area-inset-left));
+    padding-inline-end: max(0.9rem, env(safe-area-inset-right));
+    transform: none !important;
+  }
+
+  @supports (width: 100dvw) {
+    [data-dashboard-scroll]
+      .dashboard-overview
+      .dashboard-balance-actions {
+      width: 100dvw !important;
+      margin-inline: calc(50% - 50dvw) !important;
+    }
+  }
+
+  [data-dashboard-scroll]
+    .dashboard-overview
+    .dashboard-balance-actions
+    .dashboard-quick-action {
+    width: clamp(3.65rem, 18vw, 4.35rem) !important;
+    min-width: 0 !important;
+    flex: 0 0 auto !important;
+    justify-self: center !important;
   }
 }
 
-/* The form emergence is the click response; remove the older button squash. */
-.dashboard-quick-action:active {
+/* The form emergence is the click response; never add a button card or outline. */
+.dashboard-quick-action:active,
+.dashboard-quick-action[data-launching="true"] {
   transform: none !important;
+  border: 0 !important;
   background: transparent !important;
   box-shadow: none !important;
 }
 
 .dashboard-quick-action:active .dashboard-quick-action-icon {
-  transform: none !important;
   box-shadow: none !important;
+}
+
+.dashboard-quick-action[data-launching="true"] .dashboard-quick-action-icon {
+  animation: quick-action-source-release 410ms cubic-bezier(0.16, 1, 0.3, 1)
+    both !important;
+  box-shadow: none !important;
+}
+
+@keyframes quick-action-source-release {
+  0% {
+    transform: scale(1);
+    filter: brightness(1) saturate(1);
+  }
+
+  32% {
+    transform: scale(0.91);
+    filter: brightness(0.96) saturate(0.98);
+  }
+
+  72% {
+    transform: scale(1.075);
+    filter: brightness(1.1) saturate(1.04);
+  }
+
+  100% {
+    transform: scale(1);
+    filter: brightness(1) saturate(1);
+  }
 }
 
 html[data-quick-action-launch-pending="true"]
   [data-slot="dialog-content"].finance-modal-content {
   opacity: 0 !important;
+  animation: none !important;
 }
 
 [data-slot="dialog-content"].finance-modal-content.quick-action-form-launch {
-  transform-origin:
-    var(--quick-action-launch-x, 50%)
-    var(--quick-action-launch-y, 50%);
-  animation: quick-action-form-emerge 560ms cubic-bezier(0.16, 1, 0.3, 1)
+  transform-origin: center center !important;
+  animation: quick-action-form-emerge 640ms cubic-bezier(0.16, 1, 0.3, 1)
     both !important;
-  will-change: opacity, scale, clip-path, filter;
+  backface-visibility: hidden;
+  will-change: opacity, translate, scale, filter, border-radius;
 }
 
 @keyframes quick-action-form-emerge {
   0% {
-    opacity: 0;
-    scale: 0.08;
-    clip-path: circle(
-      1.55rem at
-        var(--quick-action-launch-x, 50%)
-        var(--quick-action-launch-y, 50%)
-    );
-    filter: blur(2px) brightness(1.04);
+    opacity: 0.16;
+    translate:
+      var(--quick-action-launch-x, 0px)
+      var(--quick-action-launch-y, 0px);
+    scale: 0.13;
+    border-radius: 999px;
+    filter: blur(1.5px) brightness(1.08) saturate(0.92);
   }
 
-  48% {
+  46% {
     opacity: 1;
-    scale: 0.9;
-    clip-path: circle(
-      72vmax at
-        var(--quick-action-launch-x, 50%)
-        var(--quick-action-launch-y, 50%)
-    );
-    filter: blur(0) brightness(1.02);
+    translate:
+      var(--quick-action-launch-mid-x, 0px)
+      var(--quick-action-launch-mid-y, 0px);
+    scale: 0.88;
+    border-radius: calc(var(--radius-card) * 1.18);
+    filter: blur(0) brightness(1.025) saturate(1.01);
   }
 
   76% {
+    opacity: 1;
+    translate: 0 -2px;
     scale: 1.012;
-    clip-path: circle(
-      120vmax at
-        var(--quick-action-launch-x, 50%)
-        var(--quick-action-launch-y, 50%)
-    );
+    border-radius: var(--radius-card);
     filter: none;
   }
 
   100% {
     opacity: 1;
+    translate: 0 0;
     scale: 1;
-    clip-path: circle(
-      160vmax at
-        var(--quick-action-launch-x, 50%)
-        var(--quick-action-launch-y, 50%)
-    );
+    border-radius: var(--radius-card);
     filter: none;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .dashboard-quick-action[data-launching="true"] .dashboard-quick-action-icon,
   [data-slot="dialog-content"].finance-modal-content.quick-action-form-launch {
     animation: none !important;
   }
