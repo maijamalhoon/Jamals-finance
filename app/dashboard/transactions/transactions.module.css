@@ -91,6 +91,14 @@
   content: none;
 }
 
+.page > :global(.finance-panel) {
+  border-color: transparent;
+  background: transparent;
+  box-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
 .page :global(.page-subtitle) {
   display: none;
 }
