@@ -149,6 +149,7 @@ export default function QuickActionsBalance({
                   type="button"
                   aria-label={action.ariaLabel}
                   title={action.ariaLabel}
+                  data-action={action.key}
                   onClick={() => openAction(action.key)}
                   className="dashboard-quick-action finance-focus group"
                 >
