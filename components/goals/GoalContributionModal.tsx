@@ -1,27 +1,31 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { CircleDollarSign } from "lucide-react";
+import { type CSSProperties, useEffect, useState } from "react";
 import { toast } from "sonner";
 
+import AccountSelect from "@/components/accounts/AccountSelect";
 import { Button } from "@/components/ui/button";
 import DatePicker from "@/components/ui/date-picker";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import {
   FinanceModalBody,
   FinanceModalFooter,
   FinanceFormField,
   FinanceModalHeader,
-  financeCancelButtonClass,
   financeErrorClass,
   financeModalContentClass,
+  financePrimaryButtonClass,
 } from "@/components/ui/finance-modal";
 import { BASE_CURRENCY } from "@/lib/currency";
 import { getAppDateKey } from "@/lib/dates";
 import { createClient } from "@/lib/supabase/client";
 import { getUserMutationError } from "@/lib/user-errors";
 import type { GoalAccount } from "./GoalModal";
+
+const NO_LINKED_ACCOUNT_ID = "__no_linked_goal_contribution_account__";
+const GOAL_ACTION_COLOR = "#157462";
 
 export default function GoalContributionModal({
   open,
@@ -95,7 +99,10 @@ export default function GoalContributionModal({
 
     if (saveError) {
       setError(
-        getUserMutationError(saveError, "Contribution could not be recorded. Try again."),
+        getUserMutationError(
+          saveError,
+          "Contribution could not be recorded. Try again.",
+        ),
       );
       toast.error("Failed to record contribution");
       return;
@@ -108,19 +115,17 @@ export default function GoalContributionModal({
 
   return (
     <Dialog open={open} onOpenChange={(nextOpen) => !nextOpen && onClose()}>
-      <DialogContent className={financeModalContentClass}>
-        <FinanceModalHeader
-          title="Add Goal Contribution"
-          description={`Allocate progress to ${goal.name}.`}
-          icon={CircleDollarSign}
-          tone="success"
-        />
+      <DialogContent
+        className={financeModalContentClass}
+        style={
+          {
+            "--finance-action": GOAL_ACTION_COLOR,
+          } as CSSProperties
+        }
+      >
+        <FinanceModalHeader title="Goal Contribution" />
 
         <FinanceModalBody>
-          <div className="finance-panel-soft p-3 text-xs leading-5 text-text-secondary">
-            This records a savings allocation only. It does not count as an expense or change the linked account balance.
-          </div>
-
           <FinanceFormField
             label={`Contribution (${BASE_CURRENCY})`}
             htmlFor="goal-contribution-amount"
@@ -128,35 +133,51 @@ export default function GoalContributionModal({
             <Input
               id="goal-contribution-amount"
               type="number"
+              inputMode="decimal"
               min="0"
               step="any"
               value={amount}
               onChange={(event) => setAmount(event.target.value)}
               placeholder="0"
-              className="font-semibold"
+              className="font-semibold tabular-nums"
             />
-            <p className="mt-1.5 text-xs text-text-secondary">
-              Remaining goal amount: {remaining.toLocaleString("en-PK")}
-            </p>
+            <div className="mt-1.5 space-y-0.5 text-xs leading-4 text-text-secondary">
+              <p>Remaining goal amount: {remaining.toLocaleString("en-PK")}</p>
+              <p>Savings allocation only; linked account balance stays unchanged.</p>
+            </div>
           </FinanceFormField>
 
-          <FinanceFormField label="Linked Account (Optional)" htmlFor="goal-contribution-account">
-            <select
+          <FinanceFormField
+            label="Linked Account (Optional)"
+            htmlFor="goal-contribution-account"
+          >
+            <AccountSelect
               id="goal-contribution-account"
-              value={accountId}
-              onChange={(event) => setAccountId(event.target.value)}
-              className="finance-control finance-focus h-11 w-full px-3 text-sm text-text-primary outline-none"
-            >
-              <option value="">No linked account</option>
-              {accounts.map((account) => (
-                <option key={account.id} value={account.id}>
-                  {account.name}
-                </option>
-              ))}
-            </select>
+              value={accountId || NO_LINKED_ACCOUNT_ID}
+              onValueChange={(nextAccountId) =>
+                setAccountId(
+                  nextAccountId === NO_LINKED_ACCOUNT_ID ? "" : nextAccountId,
+                )
+              }
+              accounts={[
+                {
+                  id: NO_LINKED_ACCOUNT_ID,
+                  name: "No linked account",
+                  type: "optional",
+                  balance: null,
+                },
+                ...accounts,
+              ]}
+              placeholder="No linked account"
+              ariaLabel="Goal contribution account"
+              scrollPicker
+            />
           </FinanceFormField>
 
-          <FinanceFormField label="Contribution Date" htmlFor="goal-contribution-date">
+          <FinanceFormField
+            label="Contribution Date"
+            htmlFor="goal-contribution-date"
+          >
             <DatePicker
               id="goal-contribution-date"
               value={date}
@@ -166,12 +187,17 @@ export default function GoalContributionModal({
             />
           </FinanceFormField>
 
-          <FinanceFormField label="Note (Optional)" htmlFor="goal-contribution-note">
-            <Input
+          <FinanceFormField
+            label="Note (Optional)"
+            htmlFor="goal-contribution-note"
+          >
+            <Textarea
               id="goal-contribution-note"
               value={note}
               onChange={(event) => setNote(event.target.value)}
               placeholder="Savings allocation note"
+              rows={2}
+              className="resize-none"
             />
           </FinanceFormField>
 
@@ -181,18 +207,12 @@ export default function GoalContributionModal({
         <FinanceModalFooter>
           <Button
             type="button"
-            onClick={onClose}
-            disabled={loading}
-            className={financeCancelButtonClass}
-          >
-            Cancel
-          </Button>
-          <Button
-            type="button"
             onClick={handleSave}
             loading={loading}
             loadingLabel="Saving contribution..."
             disabled={loading || remaining <= 0}
+            className={financePrimaryButtonClass}
+            style={{ background: GOAL_ACTION_COLOR }}
           >
             Save Contribution
           </Button>
