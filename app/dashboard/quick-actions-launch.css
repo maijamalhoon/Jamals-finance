@@ -1,4 +1,4 @@
-/* Mobile dashboard balance hero and quick-action launch polish. */
+/* Mobile dashboard balance hero and quick-action interaction polish. */
 
 @media (max-width: 639px) {
   [data-dashboard-scroll]
@@ -95,102 +95,35 @@
   }
 }
 
-/* The form emergence is the click response; never add a button card or outline. */
-.dashboard-quick-action:active,
-.dashboard-quick-action[data-launching="true"] {
-  transform: none !important;
+/* Keep the click response short and tactile; forms use their own native dialog motion. */
+.dashboard-quick-action {
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  transition: transform 130ms cubic-bezier(0.22, 1, 0.36, 1) !important;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.dashboard-quick-action:active {
+  transform: scale(0.93) !important;
   border: 0 !important;
   background: transparent !important;
   box-shadow: none !important;
 }
 
 .dashboard-quick-action:active .dashboard-quick-action-icon {
-  box-shadow: none !important;
-}
-
-.dashboard-quick-action[data-launching="true"] .dashboard-quick-action-icon {
-  animation: quick-action-source-release 410ms cubic-bezier(0.16, 1, 0.3, 1)
-    both !important;
-  box-shadow: none !important;
-}
-
-@keyframes quick-action-source-release {
-  0% {
-    transform: scale(1);
-    filter: brightness(1) saturate(1);
-  }
-
-  32% {
-    transform: scale(0.91);
-    filter: brightness(0.96) saturate(0.98);
-  }
-
-  72% {
-    transform: scale(1.075);
-    filter: brightness(1.1) saturate(1.04);
-  }
-
-  100% {
-    transform: scale(1);
-    filter: brightness(1) saturate(1);
-  }
-}
-
-html[data-quick-action-launch-pending="true"]
-  [data-slot="dialog-content"].finance-modal-content {
-  opacity: 0 !important;
   animation: none !important;
-}
-
-[data-slot="dialog-content"].finance-modal-content.quick-action-form-launch {
-  transform-origin: center center !important;
-  animation: quick-action-form-emerge 640ms cubic-bezier(0.16, 1, 0.3, 1)
-    both !important;
-  backface-visibility: hidden;
-  will-change: opacity, translate, scale, filter, border-radius;
-}
-
-@keyframes quick-action-form-emerge {
-  0% {
-    opacity: 0.16;
-    translate:
-      var(--quick-action-launch-x, 0px)
-      var(--quick-action-launch-y, 0px);
-    scale: 0.13;
-    border-radius: 999px;
-    filter: blur(1.5px) brightness(1.08) saturate(0.92);
-  }
-
-  46% {
-    opacity: 1;
-    translate:
-      var(--quick-action-launch-mid-x, 0px)
-      var(--quick-action-launch-mid-y, 0px);
-    scale: 0.88;
-    border-radius: calc(var(--radius-card) + 0.2rem);
-    filter: blur(0) brightness(1.025) saturate(1.01);
-  }
-
-  76% {
-    opacity: 1;
-    translate: 0 -2px;
-    scale: 1.012;
-    border-radius: var(--radius-card);
-    filter: none;
-  }
-
-  100% {
-    opacity: 1;
-    translate: 0 0;
-    scale: 1;
-    border-radius: var(--radius-card);
-    filter: none;
-  }
+  transform: scale(0.95) !important;
+  filter: brightness(0.97) saturate(0.99);
+  box-shadow: none !important;
+  transition:
+    transform 130ms cubic-bezier(0.22, 1, 0.36, 1),
+    filter 130ms ease !important;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .dashboard-quick-action[data-launching="true"] .dashboard-quick-action-icon,
-  [data-slot="dialog-content"].finance-modal-content.quick-action-form-launch {
-    animation: none !important;
+  .dashboard-quick-action,
+  .dashboard-quick-action .dashboard-quick-action-icon {
+    transition: none !important;
   }
 }
