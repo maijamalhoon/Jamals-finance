@@ -1,0 +1,83 @@
+/*
+ * Dashboard overview card label alignment.
+ * Goals Progress is the visual reference: 20px Lucide icon, 11px Geist label,
+ * 700 weight, 0.12em tracking. Icon colours and all card behaviour stay intact.
+ */
+
+.dashboard-overview-layout {
+  --dashboard-card-label-icon-box: 2rem;
+  --dashboard-card-label-icon-size: 1.25rem;
+  --dashboard-card-label-font-size: 0.6875rem;
+}
+
+/* Match every card-label icon box to the Goals Progress header. */
+.dashboard-overview-layout .dashboard-list-card-kicker-icon,
+.dashboard-overview-layout
+  .finance-reference-card
+  > div:first-child
+  span:has(> svg.lucide-receipt-text),
+.dashboard-overview-layout
+  .dashboard-graph-card
+  > div:first-child
+  span:has(> svg.lucide-activity) {
+  display: grid !important;
+  width: var(--dashboard-card-label-icon-box) !important;
+  height: var(--dashboard-card-label-icon-box) !important;
+  flex: 0 0 var(--dashboard-card-label-icon-box) !important;
+  place-items: center !important;
+  border-color: transparent !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+/* Preserve each card's semantic colour; only normalize glyph geometry. */
+.dashboard-overview-layout .dashboard-list-card-kicker-icon > svg,
+.dashboard-overview-layout
+  .finance-reference-card
+  > div:first-child
+  span:has(> svg.lucide-receipt-text)
+  > svg,
+.dashboard-overview-layout
+  .dashboard-graph-card
+  > div:first-child
+  span:has(> svg.lucide-activity)
+  > svg {
+  display: block !important;
+  width: var(--dashboard-card-label-icon-size) !important;
+  height: var(--dashboard-card-label-icon-size) !important;
+  fill: none !important;
+  stroke: currentColor !important;
+  stroke-width: 2.4 !important;
+  stroke-linecap: round !important;
+  stroke-linejoin: round !important;
+  vector-effect: non-scaling-stroke;
+  shape-rendering: geometricPrecision;
+}
+
+/* Standard card labels: Goals, Spending, Cash Flow, and Recent Transactions. */
+.dashboard-overview-layout
+  .finance-reference-card
+  > div:first-child
+  h3,
+/* Portfolio card kicker beside its icon. */
+.dashboard-overview-layout
+  .finance-reference-card
+  > header:first-child
+  > div:first-child
+  > div:first-child
+  > span:last-child,
+/* Spend Record eyebrow beside its icon. */
+.dashboard-overview-layout
+  .dashboard-graph-card
+  > div:first-child
+  > div:first-child
+  > div:first-child
+  > p {
+  color: var(--text-primary) !important;
+  font-family: var(--font-sans) !important;
+  font-size: var(--dashboard-card-label-font-size) !important;
+  font-weight: 700 !important;
+  line-height: 1rem !important;
+  letter-spacing: 0.12em !important;
+  text-transform: uppercase !important;
+}
