@@ -25,6 +25,18 @@
   margin: 0;
 }
 
+.page > .filtersShell {
+  margin-top: 0.5rem !important;
+}
+
+.filtersShell > div {
+  margin-bottom: 0;
+}
+
+.filtersShell > div > div:nth-child(2):empty {
+  display: none;
+}
+
 @media (max-width: 639px) {
   .heading :global(.page-title) {
     font-size: 1.25rem;
@@ -85,6 +97,7 @@
 }
 
 .page > :global(.finance-panel) {
+  margin-top: 0.75rem !important;
   border-color: transparent;
   background: transparent;
   box-shadow: none;
