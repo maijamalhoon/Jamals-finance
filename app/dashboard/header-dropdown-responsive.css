@@ -1,0 +1,216 @@
+/*
+ * Shared responsive treatment for the notification and profile menus.
+ * Scope: header dropdown positioning and presentation only. Existing menu
+ * actions, notification persistence, navigation and animations stay intact.
+ */
+
+[data-profile-menu],
+[data-notification-panel] {
+  position: relative;
+  isolation: isolate;
+  max-width: calc(100vw - 1.5rem);
+  border-color: color-mix(in srgb, var(--border), transparent 2%) !important;
+  border-radius: clamp(1rem, 1.2vw, 1.25rem) !important;
+  background: color-mix(
+    in srgb,
+    var(--surface-elevated),
+    transparent 1%
+  ) !important;
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, white, transparent 76%),
+    0 18px 48px color-mix(in srgb, var(--text-primary) 17%, transparent) !important;
+  backdrop-filter: blur(18px) saturate(118%);
+  -webkit-backdrop-filter: blur(18px) saturate(118%);
+  transform-origin: top right;
+}
+
+.dark [data-profile-menu],
+.dark [data-notification-panel] {
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.055),
+    0 22px 56px rgb(0 0 0 / 0.38) !important;
+}
+
+[data-profile-menu]::before,
+[data-notification-panel]::before {
+  position: absolute;
+  inset: 0.35rem 1rem auto;
+  z-index: 1;
+  height: 1px;
+  border-radius: 999px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in srgb, var(--brand), transparent 68%),
+    transparent
+  );
+  content: "";
+  pointer-events: none;
+}
+
+[data-profile-menu] {
+  width: clamp(16.5rem, 21vw, 18rem) !important;
+  padding: 0.45rem !important;
+}
+
+[data-notification-panel] {
+  width: clamp(18.5rem, 25vw, 20.5rem) !important;
+  padding: 0.45rem !important;
+}
+
+[data-profile-menu] [data-slot="dropdown-menu-label"] {
+  padding-inline: 0.75rem !important;
+  padding-block: 0.7rem !important;
+}
+
+[data-profile-menu] [data-slot="dropdown-menu-item"] {
+  min-height: 3.15rem;
+  border-radius: 0.8rem !important;
+}
+
+[data-profile-menu] [data-slot="dropdown-menu-separator"] {
+  margin-block: 0.25rem !important;
+  background: color-mix(in srgb, var(--divider), transparent 18%) !important;
+}
+
+[data-notification-panel] [role="menuitem"] {
+  min-height: 3.45rem;
+}
+
+/*
+ * Compact header controls are fixed near the top edges. Keep both menus in
+ * that same coordinate system so they never look detached or drift off-screen.
+ */
+@media (max-width: 1023px) {
+  div.isolate:has(> [data-profile-menu]) {
+    position: fixed !important;
+    inset:
+      calc(max(0.75rem, env(safe-area-inset-top)) + 3.55rem)
+      max(0.75rem, env(safe-area-inset-right))
+      auto
+      auto !important;
+    width: min(
+      20rem,
+      calc(
+        100vw - 1.5rem - env(safe-area-inset-left) -
+          env(safe-area-inset-right)
+      )
+    ) !important;
+    max-width: none !important;
+    transform: none !important;
+  }
+
+  div.isolate:has(> [data-profile-menu]) > [data-profile-menu],
+  [data-notification-panel] {
+    width: min(
+      20rem,
+      calc(
+        100vw - 1.5rem - env(safe-area-inset-left) -
+          env(safe-area-inset-right)
+      )
+    ) !important;
+    max-width: none !important;
+    max-height: calc(
+      100dvh - max(0.75rem, env(safe-area-inset-top)) - 4.65rem -
+        env(safe-area-inset-bottom)
+    ) !important;
+    overflow-x: hidden;
+    overflow-y: auto;
+  }
+
+  [data-notification-panel] {
+    top: calc(max(0.75rem, env(safe-area-inset-top)) + 3.55rem) !important;
+    right: max(0.75rem, env(safe-area-inset-right)) !important;
+    left: auto !important;
+  }
+
+  [data-profile-menu],
+  [data-notification-panel] {
+    border-radius: 1.1rem !important;
+    box-shadow:
+      inset 0 1px 0 color-mix(in srgb, white, transparent 78%),
+      0 18px 46px color-mix(in srgb, var(--text-primary) 19%, transparent) !important;
+  }
+}
+
+@media (min-width: 640px) and (max-width: 1023px) {
+  div.isolate:has(> [data-profile-menu]) {
+    right: max(1rem, env(safe-area-inset-right)) !important;
+  }
+
+  [data-notification-panel] {
+    right: max(1rem, env(safe-area-inset-right)) !important;
+  }
+
+  div.isolate:has(> [data-profile-menu]) > [data-profile-menu],
+  [data-notification-panel] {
+    width: 20rem !important;
+  }
+}
+
+@media (max-width: 359px) {
+  div.isolate:has(> [data-profile-menu]) {
+    inset:
+      calc(max(0.625rem, env(safe-area-inset-top)) + 3.45rem)
+      max(0.625rem, env(safe-area-inset-right))
+      auto
+      max(0.625rem, env(safe-area-inset-left)) !important;
+    width: auto !important;
+  }
+
+  div.isolate:has(> [data-profile-menu]) > [data-profile-menu],
+  [data-notification-panel] {
+    width: calc(
+      100vw - 1.25rem - env(safe-area-inset-left) -
+        env(safe-area-inset-right)
+    ) !important;
+    padding: 0.35rem !important;
+  }
+
+  [data-notification-panel] {
+    top: calc(max(0.625rem, env(safe-area-inset-top)) + 3.45rem) !important;
+    right: max(0.625rem, env(safe-area-inset-right)) !important;
+  }
+}
+
+@media (min-width: 1024px) and (max-width: 1279px) {
+  [data-profile-menu] {
+    width: 16.75rem !important;
+  }
+
+  [data-notification-panel] {
+    width: 19rem !important;
+  }
+}
+
+@media (min-width: 1536px) {
+  [data-profile-menu] {
+    width: 18rem !important;
+  }
+
+  [data-notification-panel] {
+    width: 20.5rem !important;
+  }
+}
+
+@media (max-height: 520px) and (max-width: 1023px) {
+  div.isolate:has(> [data-profile-menu]) {
+    top: calc(max(0.4rem, env(safe-area-inset-top)) + 3.2rem) !important;
+  }
+
+  [data-notification-panel] {
+    top: calc(max(0.4rem, env(safe-area-inset-top)) + 3.2rem) !important;
+  }
+
+  div.isolate:has(> [data-profile-menu]) > [data-profile-menu],
+  [data-notification-panel] {
+    max-height: calc(100dvh - 4rem - env(safe-area-inset-bottom)) !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-profile-menu],
+  [data-notification-panel] {
+    scroll-behavior: auto;
+  }
+}
