@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 
 const REVEAL_SELECTORS = [
-  ".jf-reveal",
+  ".jf-reveal:not(.jf-insights-copy):not(.jf-footer-nav)",
   ".jf-hero-copy > .jf-hero-badge",
   ".jf-hero-copy > h1",
   ".jf-hero-copy > .jf-hero-description",
@@ -14,11 +14,8 @@ const REVEAL_SELECTORS = [
   ".jf-preview-metrics > div",
   ".jf-chart-panel",
   ".jf-activity-panel",
+  ".jf-insights-copy > .jf-section-heading",
   ".jf-insight-points > span",
-  ".jf-insight-header",
-  ".jf-insight-content",
-  ".jf-insight-bars > div",
-  ".jf-mini-bars",
   ".jf-footer-nav > div",
 ].join(",");
 
@@ -28,7 +25,6 @@ const STAGGER_GROUPS = [
   ".jf-value-item",
   ".jf-feature",
   ".jf-insight-points > span",
-  ".jf-insight-bars > div",
   ".jf-workflow-step",
   ".jf-privacy-item",
   ".jf-footer-nav > div",
@@ -129,7 +125,7 @@ export default function LandingScrollReveal() {
         if (isFarOutsideViewport) conceal(element);
       });
 
-      // Reveals happen inside the visible viewport so the user sees the full motion.
+      // Reveal inside the visible viewport so the complete motion stays noticeable.
       revealObserver = new IntersectionObserver(
         (entries) => {
           entries.forEach((entry) => {
@@ -143,7 +139,7 @@ export default function LandingScrollReveal() {
         },
       );
 
-      // Reset farther outside the viewport to prevent flicker at screen edges.
+      // Reset farther outside the viewport to avoid flicker near screen edges.
       resetObserver = new IntersectionObserver(
         (entries) => {
           entries.forEach((entry) => {
