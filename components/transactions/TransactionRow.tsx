@@ -174,7 +174,7 @@ export default function TransactionRow({ tx }: { tx: Transaction }) {
 
   function openReceiptFromRow(target: EventTarget | null) {
     if (!isTransactionsPage) return;
-    if (target instanceof HTMLElement && target.closest("button")) return;
+    if (target instanceof Element && target.closest("button")) return;
     router.push(receiptHref);
   }
 
