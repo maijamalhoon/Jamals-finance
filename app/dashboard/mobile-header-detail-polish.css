@@ -1,0 +1,246 @@
+/*
+ * Mobile/tablet header detail pass.
+ * Scope: compact dashboard controls and their menus only. Navigation, search,
+ * notification persistence, profile auth, scroll reveal, and animations stay intact.
+ */
+
+@media (max-width: 1023px) {
+  [data-mobile-control-cluster],
+  [data-mobile-navigation-drawer],
+  [data-notification-panel],
+  [data-profile-menu] {
+    font-family: var(--font-geist-sans), var(--font-sans) !important;
+    font-kerning: normal;
+    font-optical-sizing: auto;
+    font-synthesis: none;
+    text-rendering: geometricPrecision;
+  }
+
+  [data-mobile-control-cluster] :where(button, input),
+  [data-notification-panel] :where(a, button, span, p, time),
+  [data-profile-menu] :where(button, span) {
+    font-family: var(--font-geist-sans), var(--font-sans) !important;
+  }
+
+  /* One consistent premium surface for the three floating controls. */
+  [data-mobile-control-cluster] [data-slot="sheet-trigger"],
+  [data-mobile-control-cluster] > button,
+  [data-mobile-control-cluster] [data-notification-trigger],
+  [data-mobile-control-cluster] [data-profile-trigger] {
+    border-color: color-mix(in srgb, var(--border), transparent 4%) !important;
+    border-radius: 0.95rem !important;
+    background:
+      linear-gradient(
+        145deg,
+        color-mix(in srgb, var(--surface-primary), white 4%),
+        var(--surface-primary)
+      ) !important;
+    color: var(--text-primary) !important;
+    box-shadow:
+      inset 0 1px 0 color-mix(in srgb, white, transparent 60%),
+      0 10px 24px color-mix(in srgb, var(--text-primary) 11%, transparent) !important;
+    transform: none !important;
+  }
+
+  .dark [data-mobile-control-cluster] [data-slot="sheet-trigger"],
+  .dark [data-mobile-control-cluster] > button,
+  .dark [data-mobile-control-cluster] [data-notification-trigger],
+  .dark [data-mobile-control-cluster] [data-profile-trigger] {
+    background:
+      linear-gradient(
+        145deg,
+        color-mix(in srgb, var(--surface-elevated), white 3%),
+        var(--surface-elevated)
+      ) !important;
+    box-shadow:
+      inset 0 1px 0 rgb(255 255 255 / 0.05),
+      0 12px 28px rgb(0 0 0 / 0.28) !important;
+  }
+
+  [data-mobile-control-cluster] [data-slot="sheet-trigger"]:hover,
+  [data-mobile-control-cluster] [data-slot="sheet-trigger"]:focus-visible,
+  [data-mobile-control-cluster] [data-notification-trigger]:hover,
+  [data-mobile-control-cluster] [data-notification-trigger]:focus-visible,
+  [data-mobile-control-cluster] [data-profile-trigger]:hover,
+  [data-mobile-control-cluster] [data-profile-trigger]:focus-visible {
+    border-color: color-mix(in srgb, var(--brand), transparent 62%) !important;
+    background: color-mix(in srgb, var(--brand), var(--surface-primary) 94%) !important;
+    color: var(--brand) !important;
+    transform: none !important;
+  }
+
+  /* Replace the handmade two bars with a proper rounded Lucide panel icon. */
+  [data-mobile-control-cluster] [data-slot="sheet-trigger"] > span {
+    display: block !important;
+    width: 1.25rem !important;
+    height: 1.25rem !important;
+    background: currentColor;
+    -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.3' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect width='18' height='18' x='3' y='3' rx='2'/%3E%3Cpath d='M9 3v18'/%3E%3Cpath d='m14 9 3 3-3 3'/%3E%3C/svg%3E") center / contain no-repeat;
+    mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.3' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect width='18' height='18' x='3' y='3' rx='2'/%3E%3Cpath d='M9 3v18'/%3E%3Cpath d='m14 9 3 3-3 3'/%3E%3C/svg%3E") center / contain no-repeat;
+  }
+
+  [data-mobile-control-cluster] [data-slot="sheet-trigger"] > span > span {
+    display: none !important;
+  }
+
+  /* Search button and expanded search use the same visual language. */
+  form[data-mobile-control-cluster][role="search"] {
+    border-color: color-mix(in srgb, var(--border), transparent 4%) !important;
+    border-radius: 0.95rem !important;
+    background: var(--surface-primary) !important;
+    box-shadow:
+      inset 0 1px 0 color-mix(in srgb, white, transparent 62%),
+      0 10px 24px color-mix(in srgb, var(--text-primary) 10%, transparent) !important;
+  }
+
+  .dark form[data-mobile-control-cluster][role="search"] {
+    background: var(--surface-elevated) !important;
+    box-shadow:
+      inset 0 1px 0 rgb(255 255 255 / 0.05),
+      0 12px 28px rgb(0 0 0 / 0.28) !important;
+  }
+
+  form[data-mobile-control-cluster][role="search"] > button:first-child {
+    color: var(--info) !important;
+  }
+
+  form[data-mobile-control-cluster][role="search"] > button:first-child svg {
+    width: 1.18rem !important;
+    height: 1.18rem !important;
+    fill: none !important;
+    stroke: currentColor;
+    stroke-width: 2.35 !important;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    shape-rendering: geometricPrecision;
+  }
+
+  form[data-mobile-control-cluster][role="search"] input {
+    color: var(--text-primary) !important;
+    font-size: 0.875rem !important;
+    font-weight: 500 !important;
+    letter-spacing: -0.01em;
+    caret-color: var(--brand);
+  }
+
+  form[data-mobile-control-cluster][role="search"] input::placeholder {
+    color: var(--text-tertiary) !important;
+    font-weight: 500;
+  }
+
+  form[data-mobile-control-cluster][role="search"] > button:last-child svg {
+    fill: none !important;
+    stroke: currentColor;
+    stroke-width: 2.3 !important;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  [data-mobile-control-cluster] [data-notification-trigger] {
+    color: var(--info) !important;
+  }
+
+  [data-mobile-control-cluster] [data-notification-trigger] svg {
+    width: 1.18rem !important;
+    height: 1.18rem !important;
+    fill: none !important;
+    stroke: currentColor;
+    stroke-width: 2.35 !important;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  [data-mobile-control-cluster] [data-notification-trigger] > span {
+    font-family: var(--font-geist-sans), var(--font-sans) !important;
+    font-weight: 700 !important;
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum" 1;
+  }
+
+  [data-mobile-control-cluster] [data-profile-trigger] {
+    color: var(--goals) !important;
+  }
+
+  [data-mobile-control-cluster] [data-profile-trigger] [data-slot="avatar"] {
+    width: 2rem !important;
+    height: 2rem !important;
+    border: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+
+  [data-mobile-control-cluster] [data-profile-trigger] svg {
+    fill: none !important;
+    stroke: currentColor;
+    stroke-width: 2.35 !important;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  /* Notification panel: stronger hierarchy, compact writing, semantic icons. */
+  [data-notification-panel] {
+    border-color: color-mix(in srgb, var(--border), transparent 4%) !important;
+    background: color-mix(in srgb, var(--surface-elevated), transparent 2%) !important;
+    box-shadow: 0 20px 54px color-mix(in srgb, var(--text-primary) 18%, transparent) !important;
+  }
+
+  [data-notification-panel] svg {
+    fill: none !important;
+    stroke: currentColor;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    shape-rendering: geometricPrecision;
+  }
+
+  [data-notification-panel] [role="menuitem"] > span:nth-child(2) > span:first-child {
+    font-weight: 600 !important;
+    letter-spacing: -0.012em;
+  }
+
+  [data-notification-panel] [role="menuitem"] > span:nth-child(2) > span:last-child {
+    font-weight: 500 !important;
+    letter-spacing: 0;
+  }
+
+  /* Profile menu settings/logout receive clean semantic icons and readable copy. */
+  [data-profile-menu] {
+    border-color: color-mix(in srgb, var(--border), transparent 4%) !important;
+    background: color-mix(in srgb, var(--surface-elevated), transparent 2%) !important;
+    box-shadow: 0 20px 54px color-mix(in srgb, var(--text-primary) 18%, transparent) !important;
+  }
+
+  [data-profile-menu] svg {
+    fill: none !important;
+    stroke: currentColor;
+    stroke-width: 2.35 !important;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    shape-rendering: geometricPrecision;
+  }
+
+  [data-profile-menu] .profile-menu-icon {
+    border: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+
+  [data-profile-menu] [role="menuitem"] span span:first-child {
+    font-weight: 650 !important;
+    letter-spacing: -0.012em;
+  }
+
+  [data-profile-menu] [role="menuitem"] span span:last-child {
+    font-weight: 500 !important;
+    letter-spacing: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-mobile-control-cluster] *,
+  [data-notification-panel] *,
+  [data-profile-menu] * {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}
