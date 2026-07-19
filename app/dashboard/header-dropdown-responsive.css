@@ -44,17 +44,20 @@
   position: absolute;
 }
 
+/* A short top highlight visually ties each panel to the icon directly above it. */
 [data-profile-menu]::before,
 [data-notification-panel]::before {
   position: absolute;
-  inset: 0.35rem 1rem auto;
+  top: 0.32rem;
+  right: 1rem;
   z-index: 1;
+  width: 2.25rem;
   height: 1px;
   border-radius: 999px;
   background: linear-gradient(
     90deg,
     transparent,
-    color-mix(in srgb, var(--brand), transparent 68%),
+    color-mix(in srgb, var(--brand), transparent 56%),
     transparent
   );
   content: "";
@@ -62,7 +65,7 @@
 }
 
 [data-profile-menu] {
-  width: clamp(16.5rem, 21vw, 18rem) !important;
+  width: clamp(18.5rem, 24vw, 20rem) !important;
   padding: 0.45rem !important;
 }
 
@@ -72,22 +75,38 @@
 }
 
 [data-profile-menu] [data-slot="dropdown-menu-label"] {
+  min-height: 3.65rem;
   padding-inline: 0.75rem !important;
   padding-block: 0.7rem !important;
 }
 
 [data-profile-menu] [data-slot="dropdown-menu-item"] {
-  min-height: 3.15rem;
+  min-height: 3.45rem;
   border-radius: 0.8rem !important;
 }
 
 [data-profile-menu] [data-slot="dropdown-menu-separator"] {
-  margin-block: 0.25rem !important;
+  margin-block: 0 !important;
   background: color-mix(in srgb, var(--divider), transparent 18%) !important;
 }
 
 [data-notification-panel] [role="menuitem"] {
   min-height: 3.45rem;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  [data-profile-menu] [data-slot="dropdown-menu-item"],
+  [data-notification-panel] [role="menuitem"] {
+    transition:
+      background-color 160ms var(--motion-ease),
+      color 160ms var(--motion-ease),
+      transform 160ms var(--motion-ease);
+  }
+
+  [data-profile-menu] [data-slot="dropdown-menu-item"]:hover,
+  [data-notification-panel] [role="menuitem"]:hover {
+    transform: translateY(-1px);
+  }
 }
 
 /*
@@ -188,7 +207,7 @@
 
 @media (min-width: 1024px) and (max-width: 1279px) {
   [data-profile-menu] {
-    width: 16.75rem !important;
+    width: 18.5rem !important;
   }
 
   [data-notification-panel] {
@@ -198,7 +217,7 @@
 
 @media (min-width: 1536px) {
   [data-profile-menu] {
-    width: 18rem !important;
+    width: 20rem !important;
   }
 
   [data-notification-panel] {
@@ -223,7 +242,10 @@
 
 @media (prefers-reduced-motion: reduce) {
   [data-profile-menu],
-  [data-notification-panel] {
+  [data-notification-panel],
+  [data-profile-menu] [data-slot="dropdown-menu-item"],
+  [data-notification-panel] [role="menuitem"] {
     scroll-behavior: auto;
+    transition: none !important;
   }
 }
