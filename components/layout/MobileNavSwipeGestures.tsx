@@ -1,19 +1,6 @@
 "use client";
 
-import Link from "next/link";
-import { CircleDollarSign, X } from "lucide-react";
-import { usePathname } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
-
-import {
-  Sheet,
-  SheetClose,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet";
-import { isNavItemActive, NAV_GROUPS } from "@/lib/navigation";
+import { useEffect, useRef } from "react";
 
 type SwipeIntent = "pending" | "horizontal" | "vertical";
 
@@ -67,9 +54,32 @@ function isVisible(element: Element) {
   );
 }
 
+function getOriginalDrawer() {
+  return document.querySelector<HTMLElement>(
+    "[data-mobile-navigation-drawer]",
+  );
+}
+
+function getOriginalTrigger() {
+  return document.querySelector<HTMLElement>(
+    '[data-mobile-control-cluster] [data-slot="sheet-trigger"]',
+  );
+}
+
+function isOriginalDrawerOpen() {
+  const trigger = getOriginalTrigger();
+  const drawer = getOriginalDrawer();
+
+  return (
+    trigger?.getAttribute("aria-expanded") === "true" ||
+    Boolean(drawer && isVisible(drawer))
+  );
+}
+
 function hasVisibleBlockingSurface() {
   return Array.from(document.querySelectorAll(BLOCKING_SURFACE_SELECTOR)).some(
-    (surface) => isVisible(surface),
+    (surface) =>
+      !surface.matches("[data-mobile-navigation-drawer]") && isVisible(surface),
   );
 }
 
@@ -79,16 +89,50 @@ function shouldIgnoreSwipe(target: EventTarget | null) {
     : false;
 }
 
+function openOriginalDrawer() {
+  const trigger = getOriginalTrigger();
+  if (!trigger || trigger.getAttribute("aria-expanded") === "true") return;
+
+  const inertHost = trigger.closest<HTMLElement>("[inert]");
+  const hadInert = Boolean(inertHost?.hasAttribute("inert"));
+  const previousAriaHidden = inertHost?.getAttribute("aria-hidden") ?? null;
+
+  if (hadInert) inertHost?.removeAttribute("inert");
+  if (inertHost) inertHost.setAttribute("aria-hidden", "false");
+
+  trigger.click();
+
+  window.requestAnimationFrame(() => {
+    if (!inertHost) return;
+
+    if (hadInert && trigger.getAttribute("aria-expanded") !== "true") {
+      inertHost.setAttribute("inert", "");
+    }
+
+    if (previousAriaHidden === null) inertHost.removeAttribute("aria-hidden");
+    else inertHost.setAttribute("aria-hidden", previousAriaHidden);
+  });
+}
+
+function closeOriginalDrawer() {
+  const drawer = getOriginalDrawer();
+  const closeButton = drawer?.querySelector<HTMLElement>(
+    '[data-slot="sheet-close"]',
+  );
+
+  if (closeButton) {
+    closeButton.click();
+    return;
+  }
+
+  document.dispatchEvent(
+    new KeyboardEvent("keydown", { key: "Escape", bubbles: true }),
+  );
+}
+
 export default function MobileNavSwipeGestures() {
-  const pathname = usePathname();
-  const [open, setOpen] = useState(false);
-  const openRef = useRef(false);
   const gestureRef = useRef<SwipeGesture | null>(null);
   const suppressClickUntilRef = useRef(0);
-
-  useEffect(() => {
-    openRef.current = open;
-  }, [open]);
 
   useEffect(() => {
     const mobileViewport = window.matchMedia(MOBILE_VIEWPORT_QUERY);
@@ -106,7 +150,7 @@ export default function MobileNavSwipeGestures() {
 
       if (!mobileViewport.matches || shouldIgnoreSwipe(target)) return;
 
-      const drawerWasOpen = openRef.current;
+      const drawerWasOpen = isOriginalDrawerOpen();
       if (!drawerWasOpen && hasVisibleBlockingSurface()) return;
 
       gestureRef.current = {
@@ -175,8 +219,11 @@ export default function MobileNavSwipeGestures() {
 
       preventDefault();
       stopPropagation();
+
+      if (gesture.drawerWasOpen) closeOriginalDrawer();
+      else openOriginalDrawer();
+
       suppressClickUntilRef.current = performance.now() + CLICK_SUPPRESSION_MS;
-      setOpen(!gesture.drawerWasOpen);
     };
 
     const handleTouchStart = (event: TouchEvent) => {
@@ -253,115 +300,5 @@ export default function MobileNavSwipeGestures() {
     };
   }, []);
 
-  return (
-    <Sheet open={open} onOpenChange={setOpen}>
-      <SheetContent
-        data-swipe-mobile-navigation-drawer
-        side="left"
-        showCloseButton={false}
-        className="h-dvh max-h-dvh !w-[min(86vw,20rem)] max-w-[20rem] gap-0 overflow-hidden rounded-r-[26px] border-border/80 bg-surface-elevated/98 p-0 shadow-[24px_0_70px_rgb(15_23_42_/_0.2)] backdrop-blur-xl sm:!w-[22rem] sm:max-w-[22rem] dark:shadow-[24px_0_70px_rgb(0_0_0_/_0.48)] lg:hidden"
-      >
-        <SheetHeader className="border-b border-border/70 px-4 pb-3.5 pt-[max(0.95rem,env(safe-area-inset-top))] sm:px-4.5">
-          <div className="flex min-w-0 items-center justify-between gap-3">
-            <div className="flex min-w-0 items-center gap-3">
-              <span className="grid h-10 w-10 shrink-0 place-items-center rounded-[14px] bg-brand text-primary-foreground shadow-[0_8px_18px_color-mix(in_srgb,var(--brand)_22%,transparent)]">
-                <CircleDollarSign
-                  size={18}
-                  strokeWidth={2.2}
-                  aria-hidden="true"
-                />
-              </span>
-              <div className="min-w-0">
-                <SheetTitle className="truncate text-[16px] font-black tracking-[-0.02em] text-text-primary">
-                  Jamal&apos;s Finance
-                </SheetTitle>
-                <SheetDescription className="mt-0.5 truncate text-[9.5px] font-bold uppercase tracking-[0.15em] text-text-tertiary">
-                  Personal workspace
-                </SheetDescription>
-              </div>
-            </div>
-
-            <SheetClose
-              className="finance-focus grid h-10 w-10 shrink-0 place-items-center rounded-[13px] border border-transparent text-text-secondary transition-[background-color,border-color,color] hover:border-border hover:bg-surface-soft hover:text-text-primary"
-              aria-label="Close navigation menu"
-            >
-              <X size={18} strokeWidth={2.2} aria-hidden="true" />
-            </SheetClose>
-          </div>
-        </SheetHeader>
-
-        <nav
-          aria-label="Swipe mobile dashboard navigation"
-          className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-3.5 py-4 pb-[max(1rem,env(safe-area-inset-bottom))] sm:px-4 sm:py-4.5"
-        >
-          <div className="space-y-3.5">
-            {NAV_GROUPS.map((group) => {
-              const singleItem = group.items.length === 1;
-              const sectionId = `swipe-mobile-navigation-${group.label.toLowerCase()}`;
-
-              return (
-                <section key={group.label} aria-labelledby={sectionId}>
-                  <div className="mb-1.5 flex items-center gap-2 px-1.5">
-                    <h2
-                      id={sectionId}
-                      className="text-[9px] font-black uppercase tracking-[0.17em] text-text-tertiary"
-                    >
-                      {group.label}
-                    </h2>
-                    <span
-                      className="h-px min-w-0 flex-1 bg-divider/60"
-                      aria-hidden="true"
-                    />
-                  </div>
-
-                  <div
-                    className={
-                      singleItem
-                        ? "grid grid-cols-1 gap-2"
-                        : "grid grid-cols-2 gap-2"
-                    }
-                  >
-                    {group.items.map(({ label, href, icon: Icon }) => {
-                      const active = isNavItemActive(pathname, href);
-
-                      return (
-                        <Link
-                          key={href}
-                          href={href}
-                          onClick={() => setOpen(false)}
-                          aria-current={active ? "page" : undefined}
-                          className={`finance-focus group relative flex min-h-[3.25rem] min-w-0 items-center gap-2 rounded-[14px] border px-2.5 py-2 text-[12px] font-extrabold transition-[background-color,border-color,color,box-shadow,transform] active:scale-[0.985] sm:min-h-[3.45rem] sm:px-3 sm:text-[13px] ${
-                            active
-                              ? "border-brand bg-brand text-primary-foreground shadow-[0_8px_20px_color-mix(in_srgb,var(--brand)_20%,transparent)]"
-                              : "border-transparent bg-surface-secondary/55 text-text-secondary hover:border-border/80 hover:bg-surface-soft hover:text-text-primary"
-                          }`}
-                        >
-                          <span
-                            className={`grid h-8 w-8 shrink-0 place-items-center rounded-[10px] transition-[background-color,color] ${
-                              active
-                                ? "bg-white/15 text-primary-foreground"
-                                : "bg-surface-primary/85 text-text-secondary group-hover:text-brand"
-                            }`}
-                          >
-                            <Icon
-                              size={16}
-                              strokeWidth={2.15}
-                              aria-hidden="true"
-                            />
-                          </span>
-                          <span className="min-w-0 flex-1 truncate">
-                            {label}
-                          </span>
-                        </Link>
-                      );
-                    })}
-                  </div>
-                </section>
-              );
-            })}
-          </div>
-        </nav>
-      </SheetContent>
-    </Sheet>
-  );
+  return null;
 }
