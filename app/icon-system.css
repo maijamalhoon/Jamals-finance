@@ -74,7 +74,7 @@
     [data-mobile-navigation-drawer],
     [data-mobile-control-cluster]
   ) :where(.font-semibold) {
-  font-weight: 625;
+  font-weight: 650;
 }
 
 :where(
@@ -110,8 +110,8 @@
     [role="option"]
   ) {
   font-family: var(--font-sans);
-  font-weight: 625;
-  letter-spacing: -0.006em;
+  font-weight: 650;
+  letter-spacing: -0.01em;
 }
 
 :where(
@@ -121,7 +121,7 @@
   ) :where(h1, h2, h3, h4, h5, h6, [role="heading"], [data-slot="sheet-title"]) {
   font-family: var(--font-sans);
   font-weight: 700;
-  letter-spacing: -0.018em;
+  letter-spacing: -0.022em;
 }
 
 :where(
@@ -131,10 +131,11 @@
   ) :where(svg.lucide) {
   fill: none;
   stroke: currentColor;
-  stroke-width: 2.2;
+  stroke-width: 2.4;
   stroke-linecap: round;
   stroke-linejoin: round;
   shape-rendering: geometricPrecision;
+  vector-effect: non-scaling-stroke;
 }
 
 /* Outline-only icon presentation inside mobile/tablet navigation tiles. */
@@ -146,6 +147,78 @@
 
 [data-mobile-navigation-drawer] nav a[aria-current="page"] > span:first-child {
   background: transparent !important;
+}
+
+/* Semantic icon colours make the new icon system clearly visible. */
+:where(.jf-desktop-header, [data-mobile-navigation-drawer])
+  :where(a[href="/dashboard"], button[aria-label="Open Dashboard navigation"])
+  svg.lucide {
+  color: var(--brand);
+}
+
+:where(.jf-desktop-header, [data-mobile-navigation-drawer])
+  :where(a[href="/dashboard/transactions"], button[aria-label="Open Transactions navigation"])
+  svg.lucide {
+  color: var(--info);
+}
+
+:where(.jf-desktop-header, [data-mobile-navigation-drawer])
+  :where(a[href="/dashboard/accounts"], button[aria-label="Open Accounts navigation"])
+  svg.lucide {
+  color: #0f766e;
+}
+
+:where(.jf-desktop-header, [data-mobile-navigation-drawer])
+  :where(a[href="/dashboard/income"], button[aria-label="Open Income navigation"])
+  svg.lucide {
+  color: var(--success);
+}
+
+:where(.jf-desktop-header, [data-mobile-navigation-drawer])
+  :where(a[href="/dashboard/expenses"], button[aria-label="Open Expenses navigation"])
+  svg.lucide {
+  color: var(--danger);
+}
+
+:where(.jf-desktop-header, [data-mobile-navigation-drawer])
+  :where(a[href="/dashboard/goals"]) svg.lucide {
+  color: #0d9488;
+}
+
+:where(.jf-desktop-header, [data-mobile-navigation-drawer])
+  :where(a[href="/dashboard/payables"]) svg.lucide {
+  color: var(--warning);
+}
+
+:where(.jf-desktop-header, [data-mobile-navigation-drawer])
+  :where(a[href="/dashboard/investments"]) svg.lucide {
+  color: #7c3aed;
+}
+
+:where(.jf-desktop-header, [data-mobile-navigation-drawer])
+  :where(a[href="/dashboard/analytics"], button[aria-label="Open Analytics navigation"])
+  svg.lucide {
+  color: #2563eb;
+}
+
+:where(.jf-desktop-header, [data-mobile-navigation-drawer])
+  :where(a[href="/dashboard/ai-insights"]) svg.lucide {
+  color: #9333ea;
+}
+
+:where(.jf-desktop-header, [data-mobile-navigation-drawer])
+  :where(a[href="/dashboard/reports"]) svg.lucide {
+  color: #0369a1;
+}
+
+:where(.jf-desktop-header, [data-mobile-navigation-drawer])
+  :where(a[href="/dashboard/settings"]) svg.lucide {
+  color: var(--text-secondary);
+}
+
+/* Active mobile item keeps full contrast on its existing active background. */
+[data-mobile-navigation-drawer] nav a[aria-current="page"] svg.lucide {
+  color: inherit !important;
 }
 
 /* Keep section labels crisp without changing their authored size or spacing. */
