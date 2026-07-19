@@ -23,7 +23,6 @@ import "./top-cards-polish.css";
 import "./card-hover-policy.css";
 import "./top-cards-responsive-tuning.css";
 import "./transactions-responsive-polish.css";
-import "./transaction-receipt-premium.css";
 import "./header-search-polish.css";
 // Keep the focused overview overrides last so they win only inside their scoped selectors.
 import "./overview-top-metrics.css";
@@ -36,6 +35,8 @@ import "./dashboard-overview-type-icons.css";
 import "./content-typography.css";
 // Transactions typography/icons are scoped to the exact transactions route only.
 import "./transactions-type-icons.css";
+// Receipt polish stays last so its tightly scoped visual system cannot be muted by shared route styles.
+import "./transaction-receipt-premium.css";
 
 export const dynamic = "force-dynamic";
 
