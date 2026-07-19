@@ -5,7 +5,7 @@ import {
   ChevronDown,
   CircleDollarSign,
   LogOut,
-  Settings,
+  Settings2,
   UserRound,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -41,7 +41,7 @@ const FALLBACK_PROFILE: ProfileSummary = {
 };
 
 const GLASS_EASE = [0.22, 1, 0.36, 1] as const;
-const MENU_ICON_STROKE_WIDTH = 2;
+const MENU_ICON_STROKE_WIDTH = 2.35;
 
 let profileRequest: Promise<ProfileSummary> | null = null;
 
@@ -135,6 +135,7 @@ export default function JamalMenu({
 
       <DropdownMenu open={menuOpen} onOpenChange={setMenuOpen}>
         <DropdownMenuTrigger
+          data-profile-trigger
           type="button"
           aria-label={`Open profile menu for ${displayName}`}
           className={
@@ -160,16 +161,20 @@ export default function JamalMenu({
             >
               {floating ? (
                 <UserRound
-                  size={16}
+                  size={17}
                   strokeWidth={MENU_ICON_STROKE_WIDTH}
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
                   aria-hidden="true"
                 />
               ) : compact ? (
                 displayName.slice(0, 2).toUpperCase()
               ) : (
                 <CircleDollarSign
-                  size={15}
+                  size={16}
                   strokeWidth={MENU_ICON_STROKE_WIDTH}
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
                   aria-hidden="true"
                 />
               )}
@@ -199,7 +204,7 @@ export default function JamalMenu({
               </span>
               {drawer ? (
                 <span className="grid size-8 shrink-0 place-items-center rounded-[10px] border border-border bg-surface-primary text-text-secondary">
-                  <Settings
+                  <Settings2
                     size={15}
                     strokeWidth={MENU_ICON_STROKE_WIDTH}
                     aria-hidden="true"
@@ -211,18 +216,19 @@ export default function JamalMenu({
         </DropdownMenuTrigger>
 
         <DropdownMenuContent
+          data-profile-menu
           align={align === "right" ? "end" : "start"}
           side={placement}
           sideOffset={8}
-          className="font-sans w-56 rounded-[var(--radius-tile)] border border-border bg-surface-elevated p-1.5 shadow-[var(--shadow-soft)]"
+          className="font-sans w-60 rounded-[18px] border border-border bg-surface-elevated p-2 shadow-[var(--shadow-soft)]"
         >
           <DropdownMenuGroup>
-            <DropdownMenuLabel className="px-2.5 py-2">
-              <span className="block truncate text-xs font-bold text-text-primary">
+            <DropdownMenuLabel className="px-3 py-2.5">
+              <span className="block truncate text-[13px] font-bold text-text-primary">
                 {displayName}
               </span>
               <span className="mt-0.5 block text-[10px] font-medium text-text-tertiary">
-                Jamal&apos;s Finance
+                Jamal&apos;s Finance account
               </span>
             </DropdownMenuLabel>
           </DropdownMenuGroup>
@@ -230,28 +236,50 @@ export default function JamalMenu({
           <DropdownMenuGroup>
             <DropdownMenuItem
               onClick={() => router.push("/dashboard/settings")}
-              className="min-h-11 cursor-pointer gap-3 rounded-[var(--radius-control)] px-2.5 py-2 text-sm font-semibold text-text-secondary focus:bg-hover focus:text-text-primary"
+              className="min-h-12 cursor-pointer gap-3 rounded-[13px] px-2.5 py-2 text-text-secondary focus:bg-hover focus:text-text-primary"
             >
-              <Settings
-                size={16}
-                strokeWidth={MENU_ICON_STROKE_WIDTH}
-                aria-hidden="true"
-              />
-              Settings
+              <span className="profile-menu-icon grid size-8 shrink-0 place-items-center text-active">
+                <Settings2
+                  size={17}
+                  strokeWidth={MENU_ICON_STROKE_WIDTH}
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                />
+              </span>
+              <span className="min-w-0 flex-1">
+                <span className="block text-[13px] font-semibold leading-4 text-text-primary">
+                  Settings
+                </span>
+                <span className="mt-0.5 block text-[10px] font-medium leading-3.5 text-text-tertiary">
+                  Profile, theme and preferences
+                </span>
+              </span>
             </DropdownMenuItem>
           </DropdownMenuGroup>
           <DropdownMenuSeparator />
           <DropdownMenuItem
             variant="destructive"
             onClick={handleSignOut}
-            className="min-h-11 cursor-pointer gap-3 rounded-[var(--radius-control)] px-2.5 py-2 text-sm font-semibold"
+            className="min-h-12 cursor-pointer gap-3 rounded-[13px] px-2.5 py-2"
           >
-            <LogOut
-              size={16}
-              strokeWidth={MENU_ICON_STROKE_WIDTH}
-              aria-hidden="true"
-            />
-            Sign Out
+            <span className="profile-menu-icon grid size-8 shrink-0 place-items-center text-danger">
+              <LogOut
+                size={17}
+                strokeWidth={MENU_ICON_STROKE_WIDTH}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+              />
+            </span>
+            <span className="min-w-0 flex-1">
+              <span className="block text-[13px] font-semibold leading-4 text-danger">
+                Sign out
+              </span>
+              <span className="mt-0.5 block text-[10px] font-medium leading-3.5 text-text-tertiary">
+                End this device session
+              </span>
+            </span>
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
