@@ -73,6 +73,89 @@ const dashboardOverviewStyles = `
       grid-column: 16 / -1;
     }
 
+    /*
+     * Goals Progress sets the supporting-row height. Let Spending Breakdown and
+     * Spend Record use that same internal height instead of leaving spare space
+     * at the bottom. The three outer card heights remain unchanged.
+     */
+    .dashboard-overview-layout
+      > div.grid:last-child
+      > :nth-child(1)
+      > section
+      > div.mt-4.grid {
+      align-items: stretch !important;
+    }
+
+    .dashboard-overview-layout
+      > div.grid:last-child
+      > :nth-child(1)
+      > section
+      > div.mt-4.grid
+      > div:first-child {
+      display: flex;
+      min-height: 0;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .dashboard-overview-layout
+      > div.grid:last-child
+      > :nth-child(1)
+      > section
+      > div.mt-4.grid
+      > div:last-child {
+      display: flex;
+      min-height: 0;
+      flex-direction: column;
+      justify-content: space-evenly;
+      padding-block: 0.125rem;
+    }
+
+    .dashboard-overview-layout
+      > div.grid:nth-last-child(2)
+      > :nth-child(1)
+      > section
+      > div:last-child {
+      display: flex;
+      min-height: 0 !important;
+    }
+
+    .dashboard-overview-layout
+      > div.grid:nth-last-child(2)
+      > :nth-child(1)
+      > section
+      > div:last-child
+      > div {
+      min-height: 0;
+      flex: 1 1 auto;
+    }
+
+    .dashboard-overview-layout
+      > div.grid:nth-last-child(2)
+      > :nth-child(1)
+      > section
+      > div:last-child
+      > div
+      > div:last-child:has(> [data-chart-tone]) {
+      display: flex !important;
+      min-height: 0 !important;
+      flex: 1 1 auto !important;
+      margin-top: 0.75rem !important;
+    }
+
+    .dashboard-overview-layout
+      > div.grid:nth-last-child(2)
+      > :nth-child(1)
+      > section
+      > div:last-child
+      > div
+      > div:last-child
+      > [data-chart-tone] {
+      height: 100% !important;
+      min-height: 0 !important;
+      flex: 1 1 auto;
+    }
+
     /* Keep recent transactions full width and content-sized. */
     .dashboard-overview-layout > div.grid:last-child > :nth-child(3) {
       order: 30;
@@ -116,7 +199,7 @@ const dashboardOverviewStyles = `
       > section
       > div.mt-4.grid {
       grid-template-columns: minmax(240px, 0.9fr) minmax(0, 1.1fr) !important;
-      align-items: center !important;
+      align-items: stretch !important;
       gap: 1.25rem !important;
     }
 
