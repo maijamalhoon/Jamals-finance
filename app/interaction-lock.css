@@ -1,0 +1,31 @@
+/*
+ * Global interaction lock
+ *
+ * Keeps the finance workspace app-like across desktop, tablet, and mobile:
+ * no text/content selection, native long-press callouts, or browser dragging.
+ * Pointer/touch events remain available so buttons, controls, scrolling,
+ * charts, and form inputs keep their existing functionality.
+ */
+html,
+body,
+body * {
+  -webkit-user-select: none !important;
+  user-select: none !important;
+  -webkit-touch-callout: none !important;
+}
+
+img,
+svg,
+a {
+  -webkit-user-drag: none !important;
+}
+
+::selection {
+  background: transparent;
+  color: inherit;
+}
+
+::-moz-selection {
+  background: transparent;
+  color: inherit;
+}
