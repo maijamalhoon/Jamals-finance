@@ -22,11 +22,10 @@ import {
   financeModalContentClass,
   financePrimaryButtonClass,
 } from "@/components/ui/finance-modal";
-import { BASE_CURRENCY } from "@/lib/currency";
+import { BASE_CURRENCY, convertMoney } from "@/lib/currency";
 import { getUserMutationError } from "@/lib/user-errors";
 import {
   getAvailableTransferBalance,
-  getMaximumTransferInput,
   getTransferAmountIssue,
 } from "@/lib/transfer-amount";
 
@@ -46,10 +45,17 @@ interface Props {
 
 const TRANSFER_ACTION_COLOR = "#A35D2D";
 
+function toEditableAmount(value: number) {
+  if (!Number.isFinite(value)) return "";
+
+  const rounded = Math.round((value + Number.EPSILON) * 100_000_000) / 100_000_000;
+  return String(Object.is(rounded, -0) ? 0 : rounded);
+}
+
 export default function TransferModal({ open, onClose, onSuccess }: Props) {
   const supabase = useMemo(() => createClient(), []);
   const router = useRouter();
-  const { formatCurrency } = useCurrency();
+  const { currency, rate, formatCurrency } = useCurrency();
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [fromAccountId, setFromAccountId] = useState("");
   const [toAccountId, setToAccountId] = useState("");
@@ -70,11 +76,30 @@ export default function TransferModal({ open, onClose, onSuccess }: Props) {
     [accounts, fromAccountId],
   );
   const availableBalance = getAvailableTransferBalance(fromAccount?.balance);
+  const availableBalanceInSelectedCurrency = convertMoney(
+    availableBalance,
+    BASE_CURRENCY,
+    currency,
+    rate,
+  );
   const formattedAvailableBalance = formatCurrency(availableBalance, {
     fromCurrency: BASE_CURRENCY,
     maximumFractionDigits: 2,
   });
-  const amountIssue = getTransferAmountIssue(amount, availableBalance);
+  const amountInBaseCurrency = (() => {
+    if (!amount.trim()) return amount;
+
+    const parsedAmount = Number(amount);
+    if (!Number.isFinite(parsedAmount)) return amount;
+
+    return toEditableAmount(
+      convertMoney(parsedAmount, currency, BASE_CURRENCY, rate),
+    );
+  })();
+  const amountIssue = getTransferAmountIssue(
+    amountInBaseCurrency,
+    availableBalance,
+  );
   const amountError =
     amountTouched && amountIssue === "missing"
       ? "Enter a transfer amount."
@@ -145,7 +170,7 @@ export default function TransferModal({ open, onClose, onSuccess }: Props) {
   function handleUseMaximum() {
     if (!fromAccountId || availableBalance <= 0 || loading || saving) return;
 
-    setAmount(getMaximumTransferInput(availableBalance));
+    setAmount(toEditableAmount(availableBalanceInSelectedCurrency));
     setAmountTouched(true);
     setError("");
   }
@@ -169,7 +194,7 @@ export default function TransferModal({ open, onClose, onSuccess }: Props) {
       return;
     }
 
-    const parsedAmount = Number(amount);
+    const parsedAmount = Number(amountInBaseCurrency);
     setSaving(true);
     setError("");
 
@@ -310,7 +335,7 @@ export default function TransferModal({ open, onClose, onSuccess }: Props) {
 
               <div className="grid gap-3 sm:grid-cols-2">
                 <FinanceFormField
-                  label={`Amount (${BASE_CURRENCY})`}
+                  label={`Amount (${currency})`}
                   htmlFor="transfer-amount"
                   error={
                     amountError ? (
@@ -331,7 +356,7 @@ export default function TransferModal({ open, onClose, onSuccess }: Props) {
                       type="number"
                       inputMode="decimal"
                       min="0"
-                      max={availableBalance || undefined}
+                      max={availableBalanceInSelectedCurrency || undefined}
                       step="any"
                       value={amount}
                       onChange={(event) => {
