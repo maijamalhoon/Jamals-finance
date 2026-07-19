@@ -3,19 +3,30 @@ export type FinanceDateRange = {
   end: string;
   label: string;
   explicit: boolean;
+  allTime: boolean;
 };
 
 export type DeterministicFinanceIntent =
-  | { kind: "spending"; range: FinanceDateRange }
+  | {
+      kind: "spending";
+      range: FinanceDateRange;
+      categoryRequested: boolean;
+    }
   | { kind: "income"; range: FinanceDateRange }
+  | { kind: "assets" }
   | { kind: "accounts" }
   | { kind: "payables" }
   | { kind: "asset-profit"; range: FinanceDateRange | null };
+
+export type FinanceCategoryRecord = {
+  name?: string | null;
+};
 
 export type FinanceTransactionRecord = {
   amount?: number | string | null;
   date?: string | null;
   type?: string | null;
+  categories?: FinanceCategoryRecord | FinanceCategoryRecord[] | null;
 };
 
 export type FinanceInvestmentRecord = {
@@ -40,6 +51,7 @@ export type FinancePayableRecord = {
 
 export type DeterministicFinanceData = {
   transactions?: FinanceTransactionRecord[];
+  categoryNames?: string[];
   investments?: FinanceInvestmentRecord[];
   accounts?: FinanceAccountRecord[];
   payables?: FinancePayableRecord[];
@@ -89,6 +101,49 @@ const WEEKDAYS: Record<string, number> = {
   saturday: 6,
 };
 
+const DATE_WORDS = new Set([
+  "all",
+  "time",
+  "overall",
+  "ever",
+  "lifetime",
+  "today",
+  "yesterday",
+  "this",
+  "last",
+  "previous",
+  "current",
+  "week",
+  "weeks",
+  "month",
+  "months",
+  "year",
+  "years",
+  "day",
+  "days",
+  "date",
+  "from",
+  "start",
+  "beginning",
+  "since",
+  "till",
+  "now",
+  "in",
+  "during",
+  ...Object.keys(MONTHS),
+  ...Object.keys(WEEKDAYS),
+]);
+
+const CATEGORY_ALIAS_STOP_WORDS = new Set([
+  "and",
+  "the",
+  "other",
+  "general",
+  "expense",
+  "expenses",
+  "spending",
+]);
+
 function toFiniteNumber(value: number | string | null | undefined) {
   const parsed = Number(value);
   return Number.isFinite(parsed) ? parsed : null;
@@ -125,8 +180,7 @@ function addDays(parts: DateParts, amount: number) {
 }
 
 function addMonths(parts: DateParts, amount: number) {
-  const date = new Date(Date.UTC(parts.year, parts.month - 1 + amount, 1));
-  return fromDate(date);
+  return fromDate(new Date(Date.UTC(parts.year, parts.month - 1 + amount, 1)));
 }
 
 function daysInMonth(year: number, month: number) {
@@ -159,20 +213,41 @@ function formatMonth(parts: Pick<DateParts, "year" | "month">) {
   }).format(new Date(Date.UTC(parts.year, parts.month - 1, 1)));
 }
 
+function allTimeRange(): FinanceDateRange {
+  return {
+    start: "0001-01-01",
+    end: "9999-12-31",
+    label: "all time",
+    explicit: true,
+    allTime: true,
+  };
+}
+
 function singleDayRange(
   parts: DateParts,
   label = formatDate(parts),
 ): FinanceDateRange {
   const key = formatDateKey(parts);
-  return { start: key, end: key, label, explicit: true };
+  return {
+    start: key,
+    end: key,
+    label,
+    explicit: true,
+    allTime: false,
+  };
 }
 
-function monthRange(year: number, month: number, explicit = true): FinanceDateRange {
+function monthRange(
+  year: number,
+  month: number,
+  explicit = true,
+): FinanceDateRange {
   return {
     start: formatDateKey({ year, month, day: 1 }),
     end: formatDateKey({ year, month, day: daysInMonth(year, month) }),
     label: formatMonth({ year, month }),
     explicit,
+    allTime: false,
   };
 }
 
@@ -182,6 +257,7 @@ function yearRange(year: number): FinanceDateRange {
     end: `${year}-12-31`,
     label: String(year),
     explicit: true,
+    allTime: false,
   };
 }
 
@@ -195,6 +271,7 @@ function weekRange(reference: DateParts, offsetWeeks = 0): FinanceDateRange {
     end: formatDateKey(end),
     label: `${formatDate(start)} to ${formatDate(end)}`,
     explicit: true,
+    allTime: false,
   };
 }
 
@@ -250,6 +327,14 @@ export function parseFinanceDateRange(
 ): FinanceDateRange | null {
   const normalized = question.toLowerCase().replace(/[,]/g, " ");
 
+  if (
+    /\ball\s+time\b|\boverall\b|\blifetime\b|\bever\b|\bsince\s+(?:the\s+)?beginning\b|\bfrom\s+(?:the\s+)?start\b/.test(
+      normalized,
+    )
+  ) {
+    return allTimeRange();
+  }
+
   if (/\btoday\b/.test(normalized)) return singleDayRange(now, "today");
   if (/\byesterday\b/.test(normalized)) {
     return singleDayRange(addDays(now, -1), "yesterday");
@@ -284,6 +369,7 @@ export function parseFinanceDateRange(
       end: formatDateKey(now),
       label: `the last ${count} days (${formatDate(start)} to ${formatDate(now)})`,
       explicit: true,
+      allTime: false,
     };
   }
 
@@ -325,12 +411,36 @@ export function parseFinanceDateRange(
   return yearMatch ? yearRange(Number(yearMatch[1])) : null;
 }
 
+function hasSpendingCategoryCue(question: string) {
+  const normalized = normalizeText(question);
+  if (/\bcategory\b/.test(normalized)) return true;
+
+  const match = normalized.match(
+    /\b(?:spend|spent|spending|expense|expenses|kharch|kharach)\b.*?\b(?:on|for)\b\s+(.+)$/,
+  );
+  if (!match) return false;
+
+  return match[1]
+    .split(" ")
+    .some((token) => token.length > 1 && !/^\d+$/.test(token) && !DATE_WORDS.has(token));
+}
+
 export function parseDeterministicFinanceQuestion(
   question: string,
   now: DateParts,
 ): DeterministicFinanceIntent | null {
   const normalized = normalizeText(question);
   const range = parseFinanceDateRange(question, now);
+  const assetCue =
+    /\b(asset|assets|investment|investments|holding|holdings|portfolio|stock|stocks|share|shares|crypto|coin|coins)\b/.test(
+      normalized,
+    );
+  const assetListCue =
+    /\b(how many|count|number|name|names|list|which|what)\b/.test(normalized);
+  const profitCue =
+    /\b(profit|loss|pnl|gain|gains|return|returns|earn|earned|earning|earnings|income|made|make|worth|value)\b/.test(
+      normalized,
+    );
 
   if (
     /\b(account|accounts)\b/.test(normalized) &&
@@ -347,7 +457,15 @@ export function parseDeterministicFinanceQuestion(
     return { kind: "payables" };
   }
 
-  if (/\b(profit|loss|pnl|gain|return)\b/.test(normalized)) {
+  if (assetCue && assetListCue && !profitCue) {
+    return { kind: "assets" };
+  }
+
+  if (assetCue && profitCue) {
+    return { kind: "asset-profit", range };
+  }
+
+  if (/\b(profit|loss|pnl|gain|gains|return|returns)\b/.test(normalized)) {
     return { kind: "asset-profit", range };
   }
 
@@ -359,6 +477,7 @@ export function parseDeterministicFinanceQuestion(
     return {
       kind: "spending",
       range: range ?? monthRange(now.year, now.month, false),
+      categoryRequested: hasSpendingCategoryCue(question),
     };
   }
 
@@ -377,9 +496,60 @@ export function parseDeterministicFinanceQuestion(
 }
 
 function inRange(date: string | null | undefined, range: FinanceDateRange) {
-  if (!date) return false;
+  if (range.allTime) return true;
+  if (!date || !range.start || !range.end) return false;
   const key = date.slice(0, 10);
   return /^\d{4}-\d{2}-\d{2}$/.test(key) && key >= range.start && key <= range.end;
+}
+
+function getCategoryName(
+  category: FinanceCategoryRecord | FinanceCategoryRecord[] | null | undefined,
+) {
+  const selected = Array.isArray(category) ? category[0] : category;
+  return selected?.name?.trim() || null;
+}
+
+function buildCategoryAliases(name: string) {
+  const normalized = normalizeText(name);
+  const aliases = new Set<string>();
+  if (normalized) aliases.add(normalized);
+
+  normalized.split(" ").forEach((token) => {
+    if (token.length >= 3 && !CATEGORY_ALIAS_STOP_WORDS.has(token)) {
+      aliases.add(token);
+      if (token.endsWith("s") && token.length > 3) aliases.add(token.slice(0, -1));
+    }
+  });
+
+  return Array.from(aliases);
+}
+
+function getCategoryMatch(
+  question: string,
+  transactions: FinanceTransactionRecord[],
+  categoryNames: string[],
+) {
+  const normalizedQuestion = ` ${normalizeText(question)} `;
+  const names = Array.from(
+    new Set(
+      [
+        ...categoryNames,
+        ...transactions
+          .map((transaction) => getCategoryName(transaction.categories))
+          .filter((name): name is string => Boolean(name)),
+      ].map((name) => name.trim()),
+    ),
+  );
+
+  const aliases = names
+    .flatMap((name) =>
+      buildCategoryAliases(name).map((alias) => ({ name, alias })),
+    )
+    .sort((left, right) => right.alias.length - left.alias.length);
+
+  return aliases.find(({ alias }) =>
+    normalizedQuestion.includes(` ${alias} `),
+  )?.name ?? null;
 }
 
 function getAssetMatch(
@@ -391,7 +561,7 @@ function getAssetMatch(
     .flatMap((investment) =>
       [investment.name, investment.symbol, investment.asset_id]
         .map((value) => normalizeText(value))
-        .filter((value) => value.length >= 3)
+        .filter((value) => value.length >= 2)
         .map((value) => ({ value, investment })),
     )
     .sort((left, right) => right.value.length - left.value.length);
@@ -409,16 +579,81 @@ function getAssetMatch(
   );
 }
 
+function getUniqueAssets(investments: FinanceInvestmentRecord[]) {
+  const unique = new Map<
+    string,
+    { name: string; symbol: string | null; records: number }
+  >();
+
+  investments.forEach((investment) => {
+    const name = investment.name?.trim() || "";
+    const symbol = investment.symbol?.trim().toUpperCase() || null;
+    const assetId = investment.asset_id?.trim() || "";
+    const id = investment.id?.trim() || "";
+    const key =
+      normalizeText(name) ||
+      normalizeText(symbol) ||
+      normalizeText(assetId) ||
+      normalizeText(id);
+    if (!key) return;
+
+    const current = unique.get(key);
+    if (current) {
+      current.records += 1;
+      if (!current.symbol && symbol) current.symbol = symbol;
+      return;
+    }
+
+    unique.set(key, {
+      name: name || symbol || assetId || "Unnamed asset",
+      symbol,
+      records: 1,
+    });
+  });
+
+  return Array.from(unique.values()).sort((left, right) =>
+    left.name.localeCompare(right.name),
+  );
+}
+
+function hasUnmatchedSpecificAssetCue(question: string) {
+  const normalized = normalizeText(question);
+  const match = normalized.match(/\b(?:on|for|from)\b\s+(.+)$/);
+  if (!match) return false;
+
+  const genericAssetWords = new Set([
+    "asset",
+    "assets",
+    "investment",
+    "investments",
+    "holding",
+    "holdings",
+    "portfolio",
+    "stock",
+    "stocks",
+    "share",
+    "shares",
+    "crypto",
+    "coin",
+    "coins",
+  ]);
+
+  return match[1]
+    .split(" ")
+    .some(
+      (token) =>
+        token.length > 1 &&
+        !/^\d+$/.test(token) &&
+        !DATE_WORDS.has(token) &&
+        !genericAssetWords.has(token),
+    );
+}
+
 function uniqueAssetNames(investments: FinanceInvestmentRecord[]) {
-  return Array.from(
-    new Set(
-      investments
-        .map(
-          (investment) =>
-            investment.name?.trim() || investment.symbol?.trim(),
-        )
-        .filter((value): value is string => Boolean(value)),
-    ),
+  return getUniqueAssets(investments).map(({ name, symbol }) =>
+    symbol && normalizeText(symbol) !== normalizeText(name)
+      ? `${name} (${symbol})`
+      : name,
   );
 }
 
@@ -451,15 +686,43 @@ export function buildDeterministicFinanceAnswer({
         answer: `You earned ${money(total)} during ${intent.range.label}, across ${incomeRows.length} recorded income transaction${incomeRows.length === 1 ? "" : "s"}.`,
         followUps: [
           "How much did I spend in the same period?",
-          "How many accounts do I have?",
+          "How many assets do I have?",
         ],
       };
     }
 
-    const expenseRows = transactions.filter(
+    const categoryMatch = getCategoryMatch(
+      question,
+      transactions,
+      data.categoryNames ?? [],
+    );
+
+    if (intent.categoryRequested && !categoryMatch) {
+      const knownCategories = Array.from(
+        new Set((data.categoryNames ?? []).filter(Boolean)),
+      ).sort((left, right) => left.localeCompare(right));
+      return {
+        answer:
+          knownCategories.length > 0
+            ? `I could not match an exact recorded expense category in your question. Available categories include: ${knownCategories.join(", ")}.`
+            : "I could not match an exact recorded expense category, so I did not return the total spending as a substitute.",
+        followUps: knownCategories
+          .slice(0, 2)
+          .map((name) => `How much did I spend on ${name} all time?`),
+      };
+    }
+
+    const selectedTransactions = categoryMatch
+      ? transactions.filter(
+          (transaction) =>
+            normalizeText(getCategoryName(transaction.categories)) ===
+            normalizeText(categoryMatch),
+        )
+      : transactions;
+    const expenseRows = selectedTransactions.filter(
       (transaction) => transaction.type === "expense",
     );
-    const refundRows = transactions.filter(
+    const refundRows = selectedTransactions.filter(
       (transaction) => transaction.type === "refund",
     );
     const grossExpenses = expenseRows.reduce(
@@ -471,16 +734,40 @@ export function buildDeterministicFinanceAnswer({
       0,
     );
     const netSpending = grossExpenses - refunds;
+    const categoryText = categoryMatch ? ` on ${categoryMatch}` : "";
 
     return {
       answer:
         refunds > 0
-          ? `Your net spending during ${intent.range.label} was ${money(netSpending)}: ${money(grossExpenses)} in expenses minus ${money(refunds)} in refunds, across ${expenseRows.length} expense transaction${expenseRows.length === 1 ? "" : "s"}.`
-          : `You spent ${money(netSpending)} during ${intent.range.label}, across ${expenseRows.length} recorded expense transaction${expenseRows.length === 1 ? "" : "s"}.`,
+          ? `Your net spending${categoryText} during ${intent.range.label} was ${money(netSpending)}: ${money(grossExpenses)} in expenses minus ${money(refunds)} in refunds, across ${expenseRows.length} expense transaction${expenseRows.length === 1 ? "" : "s"}.`
+          : `You spent ${money(netSpending)}${categoryText} during ${intent.range.label}, across ${expenseRows.length} recorded expense transaction${expenseRows.length === 1 ? "" : "s"}.`,
       followUps: [
         "How much did I earn in the same period?",
         "How much is currently payable?",
       ],
+    };
+  }
+
+  if (intent.kind === "assets") {
+    const investments = data.investments ?? [];
+    const assets = getUniqueAssets(investments);
+    const names = uniqueAssetNames(investments);
+
+    if (assets.length === 0) {
+      return {
+        answer: "You do not have any recorded investment assets yet.",
+        followUps: [
+          "How much is currently payable?",
+          "How many accounts do I have?",
+        ],
+      };
+    }
+
+    return {
+      answer: `You have ${assets.length} distinct recorded asset${assets.length === 1 ? "" : "s"}: ${names.join(", ")}.${investments.length !== assets.length ? ` These are stored across ${investments.length} investment purchase records.` : ""}`,
+      followUps: names
+        .slice(0, 2)
+        .map((name) => `How much profit do I have on ${name}?`),
     };
   }
 
@@ -494,7 +781,7 @@ export function buildDeterministicFinanceAnswer({
           ? `You have ${accounts.length} accounts in total: ${active} active and ${inactive} inactive or archived.`
           : `You have ${active} active account${active === 1 ? "" : "s"}.`,
       followUps: [
-        "What is my current net balance?",
+        "How many assets do I have?",
         "How much is currently payable?",
       ],
     };
@@ -527,17 +814,13 @@ export function buildDeterministicFinanceAnswer({
 
   const investments = data.investments ?? [];
   const matched = getAssetMatch(question, investments);
-  const questionHasAssetCue =
-    /\b(on|for|asset|stock|crypto|coin|share|investment)\b/.test(
-      normalizeText(question),
-    );
 
-  if (!matched && questionHasAssetCue) {
-    const names = uniqueAssetNames(investments).slice(0, 6);
+  if (!matched && hasUnmatchedSpecificAssetCue(question)) {
+    const names = uniqueAssetNames(investments);
     return {
       answer:
         names.length > 0
-          ? `I could not match an exact recorded asset name in your question. Your recorded assets include: ${names.join(", ")}.`
+          ? `I could not match an exact recorded asset name in your question. Your recorded assets are: ${names.join(", ")}.`
           : "You do not have any recorded investment assets yet.",
       followUps: names
         .slice(0, 2)
@@ -551,16 +834,17 @@ export function buildDeterministicFinanceAnswer({
   const label =
     matched?.[0]?.name?.trim() ||
     matched?.[0]?.symbol?.trim() ||
-    "your portfolio";
+    "your recorded investment portfolio";
 
   if (selected.length === 0) {
     return {
-      answer: intent.range
-        ? `No recorded ${label} investment positions were purchased during ${intent.range.label}.`
-        : "You do not have any recorded investment positions yet.",
+      answer:
+        intent.range && !intent.range.allTime
+          ? `No recorded ${label} investment positions were purchased during ${intent.range.label}.`
+          : "You do not have any recorded investment positions yet.",
       followUps: [
+        "How many assets do I have?",
         "How much is currently payable?",
-        "How many accounts do I have?",
       ],
     };
   }
@@ -583,7 +867,7 @@ export function buildDeterministicFinanceAnswer({
     return {
       answer: `An exact profit calculation for ${label} is not available because one or more matched positions are missing a valid quantity, purchase price, or current price.`,
       followUps: [
-        "How many accounts do I have?",
+        "How many assets do I have?",
         "How much is currently payable?",
       ],
     };
@@ -606,15 +890,16 @@ export function buildDeterministicFinanceAnswer({
   const pnl = currentValue - invested;
   const percentage = invested > 0 ? (pnl / invested) * 100 : 0;
   const direction = pnl >= 0 ? "profit" : "loss";
-  const periodText = intent.range
-    ? ` for positions purchased during ${intent.range.label}`
-    : "";
+  const periodText =
+    intent.range && !intent.range.allTime
+      ? ` for positions purchased during ${intent.range.label}`
+      : " across all recorded positions";
 
   return {
-    answer: `Based on recorded current prices, ${label}${periodText} has an unrealized ${direction} of ${money(Math.abs(pnl))} (${Math.abs(percentage).toFixed(2)}%). Recorded cost is ${money(invested)} and current value is ${money(currentValue)}.${intent.range ? " This is a current unrealized result for positions bought in that period, not historical or realized profit for the period." : ""}`,
+    answer: `Based on recorded current prices, ${label}${periodText} has an unrealized ${direction} of ${money(Math.abs(pnl))} (${Math.abs(percentage).toFixed(2)}%). Recorded cost is ${money(invested)} and current value is ${money(currentValue)}.${intent.range && !intent.range.allTime ? " This is a current unrealized result for positions bought in that period, not historical or realized profit for the period." : ""}`,
     followUps: [
+      "How many assets do I have?",
       "How much is currently payable?",
-      "How many accounts do I have?",
     ],
   };
 }
