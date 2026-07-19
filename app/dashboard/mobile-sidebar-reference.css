@@ -1,0 +1,213 @@
+/*
+ * Mobile/tablet navigation drawer — compact reference layout.
+ * Navigation data, routes and sheet behaviour stay unchanged.
+ */
+
+@media (max-width: 1023px) {
+  [data-mobile-navigation-drawer] {
+    width: min(73vw, 18.5rem) !important;
+    max-width: 18.5rem !important;
+    height: 100dvh !important;
+    max-height: 100dvh !important;
+    gap: 0 !important;
+    overflow: hidden !important;
+    border: 0 !important;
+    border-radius: 0 1.75rem 1.75rem 0 !important;
+    background: #ffffff !important;
+    box-shadow: 18px 0 48px rgb(15 23 42 / 0.2) !important;
+    backdrop-filter: none !important;
+  }
+
+  .dark [data-mobile-navigation-drawer] {
+    background: #121d33 !important;
+    box-shadow: 18px 0 52px rgb(0 0 0 / 0.5) !important;
+  }
+
+  /* Keep the title available to assistive technology without showing a header. */
+  [data-mobile-navigation-drawer] > [data-slot="sheet-header"] {
+    position: absolute !important;
+    width: 1px !important;
+    height: 1px !important;
+    margin: -1px !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+    clip: rect(0 0 0 0) !important;
+    clip-path: inset(50%) !important;
+    white-space: nowrap !important;
+    border: 0 !important;
+  }
+
+  body:has([data-mobile-navigation-drawer]) [data-slot="sheet-overlay"] {
+    background: rgb(15 23 42 / 0.3) !important;
+    backdrop-filter: blur(5px) saturate(0.82) !important;
+  }
+
+  .dark body:has([data-mobile-navigation-drawer]) [data-slot="sheet-overlay"],
+  body.dark:has([data-mobile-navigation-drawer]) [data-slot="sheet-overlay"] {
+    background: rgb(2 8 23 / 0.54) !important;
+  }
+
+  [data-mobile-navigation-drawer] > nav {
+    min-height: 0 !important;
+    padding:
+      max(1.35rem, env(safe-area-inset-top))
+      0.65rem
+      max(1.35rem, env(safe-area-inset-bottom)) !important;
+    overscroll-behavior: contain;
+  }
+
+  [data-mobile-navigation-drawer] > nav > div {
+    display: grid !important;
+    gap: 0.95rem !important;
+  }
+
+  [data-mobile-navigation-drawer] nav section > div:first-child {
+    min-height: 0 !important;
+    margin: 0 0 0.28rem !important;
+    padding: 0 0.65rem !important;
+  }
+
+  [data-mobile-navigation-drawer] nav section h2 {
+    color: #8da0bf !important;
+    font-family: var(--font-sans) !important;
+    font-size: 0.5rem !important;
+    font-weight: 750 !important;
+    line-height: 1rem !important;
+    letter-spacing: 0.15em !important;
+  }
+
+  .dark [data-mobile-navigation-drawer] nav section h2 {
+    color: #7183a3 !important;
+  }
+
+  [data-mobile-navigation-drawer] nav section > div:first-child > span {
+    display: none !important;
+  }
+
+  [data-mobile-navigation-drawer] nav section > div:last-child {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 0.18rem !important;
+  }
+
+  [data-mobile-navigation-drawer] nav a {
+    min-height: 2.25rem !important;
+    padding: 0.35rem 0.62rem !important;
+    gap: 0.5rem !important;
+    border: 0 !important;
+    border-radius: 0.78rem !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    color: #263651 !important;
+    font-family: var(--font-sans) !important;
+    font-size: 0.72rem !important;
+    font-weight: 620 !important;
+    line-height: 1.15 !important;
+    letter-spacing: -0.01em !important;
+    transform: none !important;
+    transition:
+      background-color 170ms var(--motion-ease),
+      color 170ms var(--motion-ease),
+      transform 150ms var(--motion-ease) !important;
+  }
+
+  .dark [data-mobile-navigation-drawer] nav a {
+    color: #d7deeb !important;
+  }
+
+  [data-mobile-navigation-drawer] nav a:hover {
+    background: rgb(15 23 42 / 0.045) !important;
+    color: #111b31 !important;
+  }
+
+  .dark [data-mobile-navigation-drawer] nav a:hover {
+    background: rgb(255 255 255 / 0.055) !important;
+    color: #ffffff !important;
+  }
+
+  [data-mobile-navigation-drawer] nav a:active {
+    transform: scale(0.985) !important;
+  }
+
+  [data-mobile-navigation-drawer] nav a[aria-current="page"] {
+    background: #111a31 !important;
+    color: #ffffff !important;
+    box-shadow: none !important;
+  }
+
+  .dark [data-mobile-navigation-drawer] nav a[aria-current="page"] {
+    background: #ffffff !important;
+    color: #15213a !important;
+  }
+
+  [data-mobile-navigation-drawer] nav a[aria-current="page"]::after {
+    width: 0.38rem;
+    height: 0.38rem;
+    margin-left: auto;
+    flex: 0 0 auto;
+    border-top: 1.7px solid currentColor;
+    border-right: 1.7px solid currentColor;
+    border-radius: 1px;
+    content: "";
+    opacity: 0.72;
+    transform: rotate(45deg);
+  }
+
+  [data-mobile-navigation-drawer] nav a > span:first-child {
+    width: 1.45rem !important;
+    height: 1.45rem !important;
+    flex: 0 0 1.45rem !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+
+  [data-mobile-navigation-drawer] nav a > span:first-child > svg.lucide {
+    width: 1rem !important;
+    height: 1rem !important;
+    fill: none !important;
+    stroke-width: 2.25 !important;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    shape-rendering: geometricPrecision;
+    vector-effect: non-scaling-stroke;
+  }
+
+  [data-mobile-navigation-drawer] nav a > span:nth-child(2) {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  [data-mobile-navigation-drawer] nav a[aria-current="page"] svg.lucide {
+    color: currentColor !important;
+  }
+
+  [data-mobile-navigation-drawer] nav a:focus-visible {
+    outline: 2px solid color-mix(in srgb, var(--focus-color), transparent 22%) !important;
+    outline-offset: 2px !important;
+  }
+}
+
+@media (min-width: 640px) and (max-width: 1023px) {
+  [data-mobile-navigation-drawer] {
+    width: min(58vw, 18.5rem) !important;
+  }
+
+  [data-mobile-navigation-drawer] > nav {
+    padding-inline: 0.8rem !important;
+  }
+
+  [data-mobile-navigation-drawer] nav a {
+    min-height: 2.45rem !important;
+    padding-inline: 0.7rem !important;
+    font-size: 0.78rem !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-mobile-navigation-drawer] nav a {
+    transition: none !important;
+  }
+}
