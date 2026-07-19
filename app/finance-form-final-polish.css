@@ -43,6 +43,13 @@ html:not(.dark) .finance-modal-content [role="listbox"].field-input {
   padding-block: clamp(0.25rem, 0.75dvh, 0.38rem) !important;
 }
 
+/* Income and Expense category controls show only the assigned icon and name. */
+.finance-modal-content #transaction-category span[class*="text-[11px]"],
+[data-scroll-select-value]:has([aria-label$="category icon"])
+  span[class*="text-[11px]"] {
+  display: none !important;
+}
+
 /*
  * Investment keeps the full PKR/USD behavior, but the toggle now sits inside
  * Buying Price and Current Price. This removes the extra toggle-row height
