@@ -9,6 +9,7 @@ import "./landing-sections.css";
 import "./landing-responsive.css";
 import "./landing-math-symbols.css";
 import "./landing-icon-typography.css";
+import "./landing-header-rounded.css";
 
 // Public landing entry: all layout, preview, section, responsive, motion, and type layers load here.
 export const metadata: Metadata = {
