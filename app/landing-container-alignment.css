@@ -1,37 +1,82 @@
-/* Shared landing-page container alignment.
-   Keeps every public section inside the same responsive shell and inner gutter as the floating header. */
+/* Shared landing-page alignment system.
+   The floating header is the source of truth for every public landing shell.
+   This layer changes only width, gutters and shrink behavior; motion and
+   component styling remain owned by their existing files. */
 .jf-node4-landing {
-  --jf-shell: var(--jf-wide-shell);
-  --jf-content-gutter: clamp(0.7rem, 1.4vw, 1rem);
+  --jf-landing-shell: var(--jf-wide-shell);
+  --jf-landing-gutter: clamp(0.7rem, 1.4vw, 1rem);
 }
 
-.jf-node4-landing :where(
-  .jf-header-inner,
-  .jf-hero,
-  .jf-section,
-  .jf-value-rail > div,
+/* Keep the five main rounded surfaces on one responsive outer grid:
+   header, value rail, workflow, final CTA and footer. */
+.jf-node4-landing :is(
+  .jf-landing-header,
+  .jf-value-rail,
+  .jf-workflow-section,
+  .jf-cta-section,
   .jf-landing-footer > div
 ) {
-  width: var(--jf-wide-shell);
+  width: var(--jf-landing-shell);
   max-width: 100%;
   margin-inline: auto;
   box-sizing: border-box;
 }
 
-.jf-node4-landing :where(
-  .jf-hero,
-  .jf-section,
-  .jf-value-rail > div,
-  .jf-landing-footer > div
-) {
-  padding-inline: var(--jf-content-gutter);
+/* The CTA card fills the same shell instead of becoming narrower through
+   an additional section gutter. */
+.jf-node4-landing .jf-cta-section {
+  padding-inline: 0;
 }
 
-.jf-node4-landing :where(
+.jf-node4-landing .jf-final-cta {
+  width: 100%;
+  max-width: 100%;
+}
+
+/* Header content and all non-card landing content share identical inner
+   left/right edges at every breakpoint. */
+.jf-node4-landing .jf-header-inner {
+  width: 100%;
+  max-width: 100%;
+  padding-inline: var(--jf-landing-gutter);
+  box-sizing: border-box;
+}
+
+.jf-node4-landing :is(
+  .jf-hero,
+  .jf-capabilities,
+  .jf-insights-section,
+  .jf-privacy-section
+) {
+  width: var(--jf-landing-shell);
+  max-width: 100%;
+  margin-inline: auto;
+  padding-inline: var(--jf-landing-gutter);
+  box-sizing: border-box;
+}
+
+/* Inset card content uses the same gutter as the header while the card
+   background itself retains the full shared shell width. */
+.jf-node4-landing .jf-value-rail > div,
+.jf-node4-landing .jf-workflow-section > .jf-section {
+  width: 100%;
+  max-width: 100%;
+  margin-inline: 0;
+  padding-inline: var(--jf-landing-gutter);
+  box-sizing: border-box;
+}
+
+/* Allow every grid/flex child to shrink inside the shared shell instead of
+   forcing horizontal overflow or creating off-centre spacing. */
+.jf-node4-landing :is(
   .jf-header-inner,
   .jf-hero,
-  .jf-section,
+  .jf-capabilities,
+  .jf-insights-section,
+  .jf-privacy-section,
   .jf-value-rail > div,
+  .jf-workflow-section > .jf-section,
+  .jf-final-cta,
   .jf-landing-footer > div
 ) > * {
   min-width: 0;
@@ -40,6 +85,6 @@
 
 @media (max-width: 639px) {
   .jf-node4-landing {
-    --jf-content-gutter: 0.65rem;
+    --jf-landing-gutter: 0.65rem;
   }
 }
