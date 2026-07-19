@@ -121,8 +121,8 @@
   }
 }
 
-/* Landing-only responsive scale: gently larger at each viewport tier.
-   Auth sizing, symbol density, and animation behavior remain unchanged. */
+/* Landing-only responsive scale. Large and LED displays use a visibly stronger
+   symbol size while auth sizing, density, and animation behavior stay unchanged. */
 @media (max-width: 639px) {
   .landing-math-field:not(.auth-math-field) .landing-math-symbol {
     font-size: calc(clamp(1rem, 5.4vw, 1.4rem) * var(--math-size));
@@ -137,19 +137,25 @@
 
 @media (min-width: 1024px) and (max-width: 1439px) {
   .landing-math-field:not(.auth-math-field) .landing-math-symbol {
-    font-size: calc(clamp(1.55rem, 1.8vw, 2.05rem) * var(--math-size));
+    font-size: calc(clamp(1.75rem, 2vw, 2.3rem) * var(--math-size));
   }
 }
 
-@media (min-width: 1440px) and (max-width: 2199px) {
+@media (min-width: 1440px) and (max-width: 1919px) {
   .landing-math-field:not(.auth-math-field) .landing-math-symbol {
-    font-size: calc(clamp(1.75rem, 1.55vw, 2.4rem) * var(--math-size));
+    font-size: calc(clamp(2.3rem, 2.15vw, 3.2rem) * var(--math-size));
   }
 }
 
-@media (min-width: 2200px) {
+@media (min-width: 1920px) and (max-width: 2559px) {
   .landing-math-field:not(.auth-math-field) .landing-math-symbol {
-    font-size: calc(clamp(2rem, 1.25vw, 2.75rem) * var(--math-size));
+    font-size: calc(clamp(2.8rem, 2vw, 3.8rem) * var(--math-size));
+  }
+}
+
+@media (min-width: 2560px) {
+  .landing-math-field:not(.auth-math-field) .landing-math-symbol {
+    font-size: calc(clamp(3.3rem, 1.65vw, 4.6rem) * var(--math-size));
   }
 }
 
