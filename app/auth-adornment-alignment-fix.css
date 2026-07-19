@@ -1,23 +1,23 @@
 /*
  * Authentication field adornment positioning.
  *
- * This is the final auth-field alignment layer and is imported after every
- * other authentication stylesheet. It keeps leading icons and trailing
- * actions in dedicated, non-overlapping space on every viewport without
- * changing input sizes, validation, form state, or authentication behaviour.
+ * Final presentation-only layer for login, sign-up, forgot-password and
+ * reset-password fields. It gives every icon/action its own space and centres
+ * it against the actual input height without changing auth behaviour.
  */
 
 .jf-auth-root .auth-field-control {
   --auth-leading-icon-size: 18px;
-  --auth-leading-inset: 14px;
-  --auth-leading-space: 44px;
-  --auth-trailing-space: 52px;
-  --auth-inline-action-space: 96px;
+  --auth-leading-inset: 15px;
+  --auth-leading-space: 46px;
+  --auth-trailing-space: 54px;
+  --auth-inline-action-space: 98px;
 
   position: relative !important;
   isolation: isolate;
   width: 100%;
   min-width: 0;
+  overflow: visible;
 }
 
 .jf-auth-root .auth-field-control > .auth-input {
@@ -29,9 +29,7 @@
   text-indent: 0;
 }
 
-/* Reserve the exact horizontal space occupied by each adornment. These
- * selectors intentionally target the input element directly so older auth
- * rules cannot collapse the padding and place text beneath an icon/button. */
+/* Keep entered text and placeholders completely clear of the adornments. */
 .jf-auth-root
   .auth-field-control
   > input.auth-input.auth-input-with-start {
@@ -51,60 +49,61 @@
   padding-inline-end: var(--auth-inline-action-space) !important;
 }
 
-/* Use block-axis inset centring rather than competing translate transforms.
- * Fixed adornment heights make this stable across mobile, tablet, desktop,
- * browser zoom, autofill, and dynamic input-height overrides. */
+/* Use one centring method only. Older auth layers used a mixture of the
+ * individual `translate` property and `transform`, which could leave icons
+ * attached to the upper edge. This final rule resets both and centres against
+ * the input on every viewport and browser zoom level. */
 .jf-auth-root
   .auth-field-control
   > :is(.auth-field-icon, .auth-inline-field-action, .auth-password-toggle) {
   position: absolute !important;
-  inset-block: 0 !important;
-  top: 0 !important;
-  bottom: 0 !important;
-  margin-block: auto !important;
-  transform: none !important;
-  translate: none !important;
+  top: 50% !important;
+  bottom: auto !important;
+  margin: 0 !important;
+  translate: 0 0 !important;
+  transform: translateY(-50%) !important;
 }
 
 .jf-auth-root .auth-field-control > .auth-field-icon {
-  inset-inline-start: var(--auth-leading-inset) !important;
   left: var(--auth-leading-inset) !important;
   right: auto !important;
   width: var(--auth-leading-icon-size);
   height: var(--auth-leading-icon-size);
   display: grid !important;
-  place-items: center;
+  place-items: center !important;
   flex: 0 0 auto;
-  line-height: 0;
+  line-height: 0 !important;
   pointer-events: none;
   z-index: 2;
 }
 
 .jf-auth-root .auth-field-control > .auth-inline-field-action {
-  inset-inline-end: 7px !important;
-  right: 7px !important;
+  right: 8px !important;
   left: auto !important;
+  width: auto !important;
+  min-width: 70px;
   height: 34px !important;
   min-height: 34px !important;
+  padding-inline: 8px !important;
   display: inline-flex !important;
   align-items: center;
   justify-content: center;
+  overflow: visible !important;
   white-space: nowrap;
   line-height: 1 !important;
   z-index: 3;
 }
 
 .jf-auth-root .auth-field-control > .auth-password-toggle {
-  inset-inline-end: 4px !important;
-  right: 4px !important;
+  right: 7px !important;
   left: auto !important;
   width: 38px !important;
   height: 38px !important;
   min-width: 38px !important;
   min-height: 38px !important;
+  padding: 0 !important;
   display: grid !important;
   place-items: center !important;
-  padding: 0 !important;
   line-height: 0 !important;
   z-index: 3;
 }
@@ -113,26 +112,32 @@
   .auth-field-control
   > :is(.auth-field-icon, .auth-password-toggle)
   svg {
-  width: var(--auth-leading-icon-size);
-  height: var(--auth-leading-icon-size);
+  width: var(--auth-leading-icon-size) !important;
+  height: var(--auth-leading-icon-size) !important;
   display: block;
   flex: 0 0 auto;
 }
 
 @media (max-width: 759px) {
   .jf-auth-root .auth-field-control {
-    --auth-leading-inset: 13px;
-    --auth-leading-space: 43px;
+    --auth-leading-inset: 15px;
+    --auth-leading-space: 46px;
+    --auth-trailing-space: 54px;
   }
 }
 
 @media (max-width: 420px) {
   .jf-auth-root .auth-field-control {
-    --auth-inline-action-space: 92px;
+    --auth-inline-action-space: 94px;
   }
 
   .jf-auth-root .auth-field-control > .auth-inline-field-action {
-    inset-inline-end: 5px !important;
-    right: 5px !important;
+    right: 6px !important;
+    min-width: 68px;
+    padding-inline: 6px !important;
+  }
+
+  .jf-auth-root .auth-field-control > .auth-password-toggle {
+    right: 6px !important;
   }
 }
