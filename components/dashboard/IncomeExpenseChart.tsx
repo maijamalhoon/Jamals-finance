@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useId, useMemo, useState } from "react";
 import {
   Area,
   CartesianGrid,
@@ -32,9 +32,17 @@ type ChartTooltipPayload = Array<{
 type RangeKey = "7d" | "30d";
 
 const INCOME_CHART_COLOR =
-  "color-mix(in srgb, var(--income) 84%, var(--primary) 16%)";
+  "color-mix(in srgb, var(--income) 88%, var(--primary) 12%)";
+const INCOME_CHART_LIGHT =
+  "color-mix(in srgb, var(--income) 74%, white 26%)";
+const INCOME_CHART_DEEP =
+  "color-mix(in srgb, var(--income) 90%, black 10%)";
 const EXPENSE_CHART_COLOR =
-  "color-mix(in srgb, var(--expense) 86%, var(--primary) 14%)";
+  "color-mix(in srgb, var(--expense) 88%, var(--primary) 12%)";
+const EXPENSE_CHART_LIGHT =
+  "color-mix(in srgb, var(--expense) 76%, white 24%)";
+const EXPENSE_CHART_DEEP =
+  "color-mix(in srgb, var(--expense) 91%, black 9%)";
 
 function CustomTooltip({
   active,
@@ -89,6 +97,8 @@ export default function IncomeExpenseChart({
 }) {
   const { formatCurrency } = useCurrency();
   const [range, setRange] = useState<RangeKey>("30d");
+  const [isAmbientMotionReady, setIsAmbientMotionReady] = useState(false);
+  const gradientPrefix = useId().replace(/:/g, "");
 
   const chartRows = useMemo(
     () =>
@@ -124,6 +134,49 @@ export default function IncomeExpenseChart({
   );
   const net = totalIncome - totalExpenses;
 
+  useEffect(() => {
+    setIsAmbientMotionReady(false);
+
+    if (!hasCashFlow || window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      return;
+    }
+
+    let cancelled = false;
+    let firstFrame = 0;
+    let secondFrame = 0;
+    let delayTimer = 0;
+
+    const scheduleAmbientMotion = () => {
+      const fontsReady = document.fonts?.ready ?? Promise.resolve();
+
+      void fontsReady.then(() => {
+        if (cancelled) return;
+
+        firstFrame = window.requestAnimationFrame(() => {
+          secondFrame = window.requestAnimationFrame(() => {
+            delayTimer = window.setTimeout(() => {
+              if (!cancelled) setIsAmbientMotionReady(true);
+            }, chartMotion.animationDuration + 240);
+          });
+        });
+      });
+    };
+
+    if (document.readyState === "complete") {
+      scheduleAmbientMotion();
+    } else {
+      window.addEventListener("load", scheduleAmbientMotion, { once: true });
+    }
+
+    return () => {
+      cancelled = true;
+      window.removeEventListener("load", scheduleAmbientMotion);
+      window.cancelAnimationFrame(firstFrame);
+      window.cancelAnimationFrame(secondFrame);
+      window.clearTimeout(delayTimer);
+    };
+  }, [hasCashFlow, range, visibleRows]);
+
   return (
     <section className="finance-reference-card motion-card-entry flex h-full min-h-[286px] min-w-0 flex-col overflow-hidden p-3.5 sm:min-h-[300px] sm:p-5">
       <div className="flex min-w-0 items-center justify-between gap-2.5 sm:items-start sm:gap-3">
@@ -150,7 +203,10 @@ export default function IncomeExpenseChart({
               type="button"
               aria-label={`Show ${label} cash flow`}
               aria-pressed={range === value}
-              onClick={() => setRange(value)}
+              onClick={() => {
+                setIsAmbientMotionReady(false);
+                setRange(value);
+              }}
               className={`finance-focus min-h-8 min-w-10 rounded-[8px] px-2.5 text-[10px] font-semibold tracking-[0.02em] transition-[background-color,color,box-shadow,transform] duration-200 ease-out active:scale-[0.97] sm:min-h-9 sm:min-w-11 sm:rounded-[9px] sm:px-3 sm:text-[11px] ${
                 range === value
                   ? "bg-surface-primary text-text-primary shadow-[0_1px_3px_rgba(15,23,42,0.12)]"
@@ -192,6 +248,15 @@ export default function IncomeExpenseChart({
             {({ width, height }) => {
               const compactChart = width < 390;
               const narrowChart = width < 320;
+              const incomeFillId = `${gradientPrefix}-income-fill`;
+              const expenseFillId = `${gradientPrefix}-expense-fill`;
+              const incomeLineId = `${gradientPrefix}-income-line`;
+              const expenseLineId = `${gradientPrefix}-expense-line`;
+              const incomeSheenId = `${gradientPrefix}-income-sheen`;
+              const expenseSheenId = `${gradientPrefix}-expense-sheen`;
+              const sheenStart = -Math.max(width * 0.42, 120);
+              const sheenEnd = width * 1.08;
+              const sheenWidth = Math.max(width * 0.26, 86);
 
               return (
                 <ComposedChart
@@ -209,7 +274,7 @@ export default function IncomeExpenseChart({
                 >
                   <defs>
                     <linearGradient
-                      id="incomeExpenseIncomeFill"
+                      id={incomeFillId}
                       x1="0"
                       y1="0"
                       x2="0"
@@ -218,7 +283,7 @@ export default function IncomeExpenseChart({
                       <stop
                         offset="0%"
                         stopColor={INCOME_CHART_COLOR}
-                        stopOpacity={0.22}
+                        stopOpacity={0.24}
                       />
                       <stop
                         offset="100%"
@@ -227,7 +292,7 @@ export default function IncomeExpenseChart({
                       />
                     </linearGradient>
                     <linearGradient
-                      id="incomeExpenseExpenseFill"
+                      id={expenseFillId}
                       x1="0"
                       y1="0"
                       x2="0"
@@ -236,7 +301,7 @@ export default function IncomeExpenseChart({
                       <stop
                         offset="0%"
                         stopColor={EXPENSE_CHART_COLOR}
-                        stopOpacity={0.14}
+                        stopOpacity={0.15}
                       />
                       <stop
                         offset="100%"
@@ -244,6 +309,100 @@ export default function IncomeExpenseChart({
                         stopOpacity={0.01}
                       />
                     </linearGradient>
+                    <linearGradient
+                      id={incomeLineId}
+                      gradientUnits="userSpaceOnUse"
+                      x1="0"
+                      y1="0"
+                      x2={width}
+                      y2="0"
+                    >
+                      <stop offset="0%" stopColor={INCOME_CHART_DEEP} />
+                      <stop offset="48%" stopColor={INCOME_CHART_LIGHT} />
+                      <stop offset="100%" stopColor={INCOME_CHART_COLOR} />
+                    </linearGradient>
+                    <linearGradient
+                      id={expenseLineId}
+                      gradientUnits="userSpaceOnUse"
+                      x1="0"
+                      y1="0"
+                      x2={width}
+                      y2="0"
+                    >
+                      <stop offset="0%" stopColor={EXPENSE_CHART_DEEP} />
+                      <stop offset="50%" stopColor={EXPENSE_CHART_LIGHT} />
+                      <stop offset="100%" stopColor={EXPENSE_CHART_COLOR} />
+                    </linearGradient>
+                    {isAmbientMotionReady ? (
+                      <>
+                        <linearGradient
+                          id={incomeSheenId}
+                          gradientUnits="userSpaceOnUse"
+                          x1={sheenStart}
+                          y1="0"
+                          x2={sheenStart + sheenWidth}
+                          y2="0"
+                        >
+                          <stop offset="0%" stopColor="white" stopOpacity="0" />
+                          <stop offset="34%" stopColor="white" stopOpacity="0" />
+                          <stop offset="52%" stopColor="white" stopOpacity="0.92" />
+                          <stop
+                            offset="68%"
+                            stopColor={INCOME_CHART_LIGHT}
+                            stopOpacity="0.34"
+                          />
+                          <stop offset="100%" stopColor="white" stopOpacity="0" />
+                          <animate
+                            attributeName="x1"
+                            values={`${sheenStart};${sheenEnd};${sheenEnd}`}
+                            keyTimes="0;0.72;1"
+                            dur="4.6s"
+                            repeatCount="indefinite"
+                          />
+                          <animate
+                            attributeName="x2"
+                            values={`${sheenStart + sheenWidth};${sheenEnd + sheenWidth};${sheenEnd + sheenWidth}`}
+                            keyTimes="0;0.72;1"
+                            dur="4.6s"
+                            repeatCount="indefinite"
+                          />
+                        </linearGradient>
+                        <linearGradient
+                          id={expenseSheenId}
+                          gradientUnits="userSpaceOnUse"
+                          x1={sheenStart}
+                          y1="0"
+                          x2={sheenStart + sheenWidth}
+                          y2="0"
+                        >
+                          <stop offset="0%" stopColor="white" stopOpacity="0" />
+                          <stop offset="34%" stopColor="white" stopOpacity="0" />
+                          <stop offset="52%" stopColor="white" stopOpacity="0.84" />
+                          <stop
+                            offset="68%"
+                            stopColor={EXPENSE_CHART_LIGHT}
+                            stopOpacity="0.3"
+                          />
+                          <stop offset="100%" stopColor="white" stopOpacity="0" />
+                          <animate
+                            attributeName="x1"
+                            values={`${sheenStart};${sheenEnd};${sheenEnd}`}
+                            keyTimes="0;0.72;1"
+                            begin="0.18s"
+                            dur="4.6s"
+                            repeatCount="indefinite"
+                          />
+                          <animate
+                            attributeName="x2"
+                            values={`${sheenStart + sheenWidth};${sheenEnd + sheenWidth};${sheenEnd + sheenWidth}`}
+                            keyTimes="0;0.72;1"
+                            begin="0.18s"
+                            dur="4.6s"
+                            repeatCount="indefinite"
+                          />
+                        </linearGradient>
+                      </>
+                    ) : null}
                   </defs>
                   <CartesianGrid
                     strokeDasharray={compactChart ? "2 7" : "2 8"}
@@ -289,11 +448,12 @@ export default function IncomeExpenseChart({
                       stroke: "var(--card)",
                     }}
                     isAnimationActive
-                    stroke={INCOME_CHART_COLOR}
+                    stroke={`url(#${incomeLineId})`}
                     strokeLinecap="round"
-                    strokeWidth={compactChart ? 2.2 : 2.5}
-                    fill="url(#incomeExpenseIncomeFill)"
-                    fillOpacity={compactChart ? 0.48 : 1}
+                    strokeLinejoin="round"
+                    strokeWidth={compactChart ? 2.3 : 2.65}
+                    fill={`url(#${incomeFillId})`}
+                    fillOpacity={compactChart ? 0.5 : 1}
                     {...chartMotion}
                   />
                   <Area
@@ -306,14 +466,44 @@ export default function IncomeExpenseChart({
                       stroke: "var(--card)",
                     }}
                     isAnimationActive
-                    stroke={EXPENSE_CHART_COLOR}
-                    strokeDasharray={compactChart ? "3 4" : "4 4"}
+                    stroke={`url(#${expenseLineId})`}
+                    strokeDasharray={compactChart ? "3.5 4.5" : "4.5 4.5"}
                     strokeLinecap="round"
-                    strokeWidth={compactChart ? 2.1 : 2.4}
-                    fill="url(#incomeExpenseExpenseFill)"
+                    strokeLinejoin="round"
+                    strokeWidth={compactChart ? 2.2 : 2.55}
+                    fill={`url(#${expenseFillId})`}
                     fillOpacity={compactChart ? 0 : 1}
                     {...chartMotion}
                   />
+                  {isAmbientMotionReady ? (
+                    <>
+                      <Area
+                        type="monotone"
+                        dataKey="income"
+                        dot={false}
+                        activeDot={false}
+                        isAnimationActive={false}
+                        stroke={`url(#${incomeSheenId})`}
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={compactChart ? 3.4 : 4}
+                        fill="none"
+                      />
+                      <Area
+                        type="monotone"
+                        dataKey="expenses"
+                        dot={false}
+                        activeDot={false}
+                        isAnimationActive={false}
+                        stroke={`url(#${expenseSheenId})`}
+                        strokeDasharray={compactChart ? "3.5 4.5" : "4.5 4.5"}
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={compactChart ? 3.2 : 3.8}
+                        fill="none"
+                      />
+                    </>
+                  ) : null}
                 </ComposedChart>
               );
             }}
