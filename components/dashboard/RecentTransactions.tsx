@@ -1,9 +1,9 @@
 "use client";
 
-import Link from "next/link";
 import { type CSSProperties, useEffect, useMemo, useState } from "react";
-import { ArrowLeftRight, ArrowRight, ReceiptText } from "lucide-react";
+import { ArrowLeftRight, ReceiptText } from "lucide-react";
 
+import DashboardCardViewLink from "@/components/dashboard/DashboardCardViewLink";
 import { useCurrency } from "@/components/currency/CurrencyProvider";
 import CountedAmount from "@/components/motion/CountedAmount";
 import EmptyState from "@/components/ui/empty-state";
@@ -228,18 +228,10 @@ export default function RecentTransactions({
         </div>
 
         {status !== "unavailable" && visibleTransactions.length > 0 ? (
-          <Link
+          <DashboardCardViewLink
             href="/dashboard/transactions"
-            className="dashboard-card-action finance-focus group inline-flex min-h-10 shrink-0 items-center gap-1.5 rounded-xl px-3 text-xs sm:px-4 sm:text-sm"
-          >
-            View all
-            <ArrowRight
-              size={14}
-              strokeWidth={2.2}
-              className="transition-transform duration-200 group-hover:translate-x-0.5"
-              aria-hidden="true"
-            />
-          </Link>
+            label="View all transactions"
+          />
         ) : null}
       </div>
 
