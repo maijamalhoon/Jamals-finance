@@ -245,11 +245,10 @@ export default async function TransactionsPage({
         return sort === "highest" ? amountDifference : -amountDifference;
       }
 
-      const activityDifference =
-        transactionTime(right.updated_at ?? right.created_at) -
-        transactionTime(left.updated_at ?? left.created_at);
-      if (activityDifference !== 0) {
-        return sort === "newest" ? activityDifference : -activityDifference;
+      const dateDifference =
+        transactionTime(right.date) - transactionTime(left.date);
+      if (dateDifference !== 0) {
+        return sort === "newest" ? dateDifference : -dateDifference;
       }
 
       const createdDifference =
@@ -258,9 +257,17 @@ export default async function TransactionsPage({
         return sort === "newest" ? createdDifference : -createdDifference;
       }
 
-      const dateDifference =
-        transactionTime(right.date) - transactionTime(left.date);
-      return sort === "newest" ? dateDifference : -dateDifference;
+      const activityDifference =
+        transactionTime(right.updated_at ?? right.created_at) -
+        transactionTime(left.updated_at ?? left.created_at);
+      if (activityDifference !== 0) {
+        return sort === "newest" ? activityDifference : -activityDifference;
+      }
+
+      const idDifference = String(right.id ?? "").localeCompare(
+        String(left.id ?? ""),
+      );
+      return sort === "newest" ? idDifference : -idDifference;
     });
 
   const baseParams = new URLSearchParams();
