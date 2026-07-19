@@ -112,7 +112,7 @@ html[data-quick-action-launch-pending="true"]
       var(--quick-action-launch-mid-x, 0px)
       var(--quick-action-launch-mid-y, 0px);
     scale: 0.88;
-    border-radius: calc(var(--radius-card) * 1.18);
+    border-radius: calc(var(--radius-card) + 0.2rem);
     filter: blur(0) brightness(1.025) saturate(1.01);
   }
 
