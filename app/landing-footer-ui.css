@@ -1,0 +1,270 @@
+/* Landing footer-only refinement.
+   Keeps the existing links and behavior while improving hierarchy, spacing,
+   touch targets, and responsive composition across viewports. */
+
+.jf-node4-landing .jf-landing-footer {
+  position: relative;
+  z-index: 10;
+  margin-top: clamp(1.25rem, 4vw, 3.5rem);
+  padding: 0 0 max(clamp(1rem, 3vw, 2rem), env(safe-area-inset-bottom));
+  background: transparent;
+  box-shadow: none;
+}
+
+.jf-node4-landing .jf-landing-footer > div {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  width: var(--jf-shell);
+  margin-inline: auto;
+  padding: clamp(1.4rem, 2.8vw, 2.35rem) clamp(1.25rem, 3vw, 2.6rem);
+  display: grid;
+  grid-template-areas:
+    "brand nav"
+    "bottom bottom";
+  grid-template-columns: minmax(0, 1.15fr) minmax(19rem, 0.85fr);
+  align-items: start;
+  gap: clamp(1.5rem, 3vw, 2.4rem) clamp(2.5rem, 7vw, 6.5rem);
+  border-radius: clamp(1.2rem, 2vw, 1.75rem);
+  background:
+    radial-gradient(circle at 0% 0%, color-mix(in srgb, var(--jf-blue-soft) 62%, transparent), transparent 38%),
+    radial-gradient(circle at 100% 100%, color-mix(in srgb, var(--jf-violet-soft) 48%, transparent), transparent 40%),
+    color-mix(in srgb, var(--jf-surface-solid) 90%, transparent);
+  box-shadow: 0 18px 48px rgb(28 49 82 / 0.08);
+  backdrop-filter: blur(18px) saturate(1.08);
+  -webkit-backdrop-filter: blur(18px) saturate(1.08);
+}
+
+.dark .jf-node4-landing .jf-landing-footer > div {
+  box-shadow: 0 20px 54px rgb(0 0 0 / 0.24);
+}
+
+.jf-node4-landing .jf-footer-brand {
+  grid-area: brand;
+  width: min(100%, 30rem);
+  max-width: none;
+  align-self: start;
+}
+
+.jf-node4-landing .jf-footer-brand .jf-brand {
+  min-height: 2.5rem;
+}
+
+.jf-node4-landing .jf-footer-brand p {
+  max-width: 42ch;
+  margin-top: 0.7rem;
+  color: color-mix(in srgb, var(--jf-muted) 94%, transparent);
+  font-size: clamp(0.78rem, 1vw, 0.84rem);
+  line-height: 1.7;
+  text-wrap: pretty;
+}
+
+.jf-node4-landing .jf-footer-nav {
+  grid-area: nav;
+  min-width: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(8rem, 1fr));
+  gap: clamp(1.8rem, 5vw, 4.5rem);
+}
+
+.jf-node4-landing .jf-footer-nav > div {
+  min-width: 0;
+  display: grid;
+  align-content: start;
+  gap: 0.16rem;
+}
+
+.jf-node4-landing .jf-footer-nav strong {
+  margin: 0 0 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--jf-ink);
+  font-size: 0.72rem;
+  font-weight: 650;
+  letter-spacing: 0.01em;
+}
+
+.jf-node4-landing .jf-footer-nav strong::before {
+  width: 0.4rem;
+  height: 0.4rem;
+  flex: 0 0 auto;
+  border-radius: 999px;
+  background: var(--jf-blue);
+  box-shadow: 0 0 0 0.22rem color-mix(in srgb, var(--jf-blue-soft) 72%, transparent);
+  content: "";
+}
+
+.jf-node4-landing .jf-footer-nav > div:nth-child(2) strong::before {
+  background: var(--jf-violet);
+  box-shadow: 0 0 0 0.22rem color-mix(in srgb, var(--jf-violet-soft) 72%, transparent);
+}
+
+.jf-node4-landing .jf-footer-nav a {
+  width: fit-content;
+  min-height: 2.15rem;
+  margin-left: -0.5rem;
+  display: inline-flex;
+  align-items: center;
+  border-radius: 0.62rem;
+  padding: 0.34rem 0.5rem;
+  color: var(--jf-muted);
+  font-size: clamp(0.75rem, 0.9vw, 0.8rem);
+  font-weight: 580;
+  line-height: 1.25;
+  text-decoration: none;
+  transition:
+    color 170ms ease,
+    background-color 170ms ease,
+    transform 170ms ease;
+}
+
+.jf-node4-landing .jf-footer-nav a:hover {
+  color: var(--jf-ink);
+  background: color-mix(in srgb, var(--jf-blue-soft) 48%, transparent);
+  transform: translateX(3px);
+}
+
+.jf-node4-landing .jf-footer-nav a:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--jf-blue) 72%, transparent);
+  outline-offset: 2px;
+}
+
+.jf-node4-landing .jf-footer-bottom {
+  grid-area: bottom;
+  grid-column: auto;
+  margin: 0;
+  padding: 0.2rem 0 0;
+  color: color-mix(in srgb, var(--jf-muted) 90%, transparent);
+  box-shadow: none;
+  font-size: clamp(0.66rem, 0.8vw, 0.72rem);
+  line-height: 1.55;
+  letter-spacing: 0.005em;
+}
+
+@media (min-width: 1440px) {
+  .jf-node4-landing .jf-landing-footer > div {
+    padding-inline: 3rem;
+  }
+
+  .jf-node4-landing .jf-footer-nav {
+    gap: 5rem;
+  }
+}
+
+@media (max-width: 700px) {
+  .jf-node4-landing .jf-landing-footer > div {
+    grid-template-areas:
+      "brand"
+      "nav"
+      "bottom";
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1.45rem;
+  }
+
+  .jf-node4-landing .jf-footer-brand {
+    width: min(100%, 34rem);
+  }
+
+  .jf-node4-landing .jf-footer-nav {
+    width: min(100%, 28rem);
+  }
+}
+
+@media (max-width: 639px) {
+  .jf-node4-landing .jf-landing-footer {
+    margin-top: 1rem;
+    padding-bottom: max(0.75rem, env(safe-area-inset-bottom));
+  }
+
+  .jf-node4-landing .jf-landing-footer > div {
+    padding: 1.15rem;
+    gap: 1.25rem;
+    border-radius: 1.15rem;
+  }
+
+  .jf-node4-landing .jf-footer-brand .jf-brand {
+    min-height: 2.25rem;
+  }
+
+  .jf-node4-landing .jf-footer-brand p {
+    max-width: 38ch;
+    margin-top: 0.55rem;
+    font-size: 0.76rem;
+    line-height: 1.62;
+  }
+
+  .jf-node4-landing .jf-footer-nav {
+    width: 100%;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.65rem;
+  }
+
+  .jf-node4-landing .jf-footer-nav > div {
+    border-radius: 0.9rem;
+    padding: 0.85rem;
+    background: color-mix(in srgb, var(--jf-soft) 58%, transparent);
+  }
+
+  .jf-node4-landing .jf-footer-nav strong {
+    margin-bottom: 0.4rem;
+    font-size: 0.7rem;
+  }
+
+  .jf-node4-landing .jf-footer-nav a {
+    width: 100%;
+    min-height: 2rem;
+    margin-left: 0;
+    padding: 0.28rem 0;
+    border-radius: 0.45rem;
+    font-size: 0.74rem;
+  }
+
+  .jf-node4-landing .jf-footer-nav a:hover {
+    background: transparent;
+    transform: translateX(2px);
+  }
+
+  .jf-node4-landing .jf-footer-bottom {
+    max-width: 40ch;
+    padding-top: 0;
+    font-size: 0.65rem;
+    line-height: 1.5;
+  }
+}
+
+@media (max-width: 350px) {
+  .jf-node4-landing .jf-landing-footer > div {
+    padding: 1rem;
+  }
+
+  .jf-node4-landing .jf-footer-nav {
+    gap: 0.45rem;
+  }
+
+  .jf-node4-landing .jf-footer-nav > div {
+    padding: 0.7rem;
+  }
+
+  .jf-node4-landing .jf-footer-nav strong {
+    gap: 0.4rem;
+  }
+
+  .jf-node4-landing .jf-footer-nav a {
+    font-size: 0.7rem;
+  }
+}
+
+@media (hover: none), (pointer: coarse) {
+  .jf-node4-landing .jf-footer-nav a:hover {
+    color: var(--jf-muted);
+    background: transparent;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .jf-node4-landing .jf-footer-nav a {
+    transition: none;
+  }
+}
