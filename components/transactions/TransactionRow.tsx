@@ -182,7 +182,11 @@ export default function TransactionRow({ tx }: { tx: Transaction }) {
     <>
       <article
         data-transaction-row
-        className={`group grid min-w-0 grid-cols-[40px_minmax(0,1fr)_auto] items-center gap-x-3 gap-y-2 border-b border-border/55 px-2 py-3.5 last:border-b-0 sm:px-3 md:grid-cols-[40px_minmax(0,1fr)_minmax(110px,auto)_auto] md:gap-x-4 ${isTransactionsPage ? "cursor-pointer" : ""}`}
+        className={`group grid min-w-0 grid-cols-[40px_minmax(0,1fr)_auto] items-center gap-x-3 gap-y-2 border-b border-border/55 px-2 py-3.5 last:border-b-0 sm:px-3 md:grid-cols-[40px_minmax(0,1fr)_minmax(110px,auto)_auto] md:gap-x-4 ${
+          isTransactionsPage
+            ? "cursor-pointer transform-gpu transition-transform duration-200 ease-out hover:-translate-y-px active:translate-y-0 active:scale-[0.99] motion-reduce:transform-none motion-reduce:transition-none"
+            : ""
+        }`}
         onClick={(event) => openReceiptFromRow(event.target)}
         onKeyDown={(event) => {
           if (
