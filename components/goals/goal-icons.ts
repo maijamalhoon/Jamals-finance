@@ -99,7 +99,7 @@ export const GOAL_ICONS: GoalIconEntry[] = [
   { value: "car", label: "Car", icon: Car },
   { value: "key", label: "Vehicle", icon: KeyRound },
   { value: "gauge", label: "Vehicle", icon: Gauge },
-  { value: "route", label: "Vehicle", icon: Route },
+  { value: "route", label: "Transport", icon: Route },
   { value: "bike", label: "Motorcycle", icon: Bike },
   { value: "plane", label: "Travel", icon: Plane },
   { value: "graduation", label: "Education", icon: GraduationCap },
@@ -119,360 +119,313 @@ export const GOAL_ICONS: GoalIconEntry[] = [
   { value: "gift", label: "Gift", icon: Gift },
   { value: "hammer", label: "Renovation", icon: Hammer },
   { value: "piggybank", label: "Savings", icon: PiggyBank },
-  { value: "wallet", label: "Savings", icon: WalletCards },
+  { value: "wallet", label: "Money", icon: WalletCards },
   { value: "baby", label: "Family", icon: Baby },
   { value: "dumbbell", label: "Fitness", icon: Dumbbell },
   { value: "flag", label: "Other", icon: Flag },
-  { value: "sparkles", label: "Other", icon: Sparkles },
+  { value: "sparkles", label: "Dream", icon: Sparkles },
   { value: "target", label: "Other", icon: Target },
 ];
 
 const GOAL_ICON_VALUES = new Set<string>(GOAL_ICONS.map((entry) => entry.value));
 const GOAL_ICON_BY_VALUE = new Map(GOAL_ICONS.map((entry) => [entry.value, entry]));
+const GENERIC_ICON_CHOICES = ["target", "flag", "sparkles"] as const;
+const GENERIC_ICON_VALUES = new Set<GoalIconValue>(GENERIC_ICON_CHOICES);
 
-const AUTO_ICON_RULES: Array<{
+type AutoIconRule = {
   value: GoalIconValue;
+  priority: number;
   keywords: readonly string[];
-}> = [
+};
+
+const AUTO_ICON_RULES: readonly AutoIconRule[] = [
   {
     value: "bike",
+    priority: 55,
     keywords: [
-      "bike",
-      "bikes",
-      "motorbike",
-      "motorcycle",
-      "scooter",
-      "honda 125",
-      "honda 150",
-      "suzuki 150",
-      "yamaha",
-      "cd 70",
-      "cd70",
-      "cg 125",
-      "cg125",
+      "bike", "bikes", "motorbike", "motorcycle", "scooter", "vespa",
+      "superbike", "hayabusa", "ducati", "kawasaki", "harley", "yamaha",
+      "honda 125", "honda 150", "suzuki 150", "cd 70", "cd70", "cg 125",
+      "cg125", "r15",
     ],
   },
   {
     value: "car",
+    priority: 50,
     keywords: [
-      "car",
-      "cars",
-      "vehicle",
-      "auto",
-      "gari",
-      "gaari",
-      "toyota",
-      "suzuki",
-      "honda",
-      "hyundai",
-      "kia",
-      "nissan",
-      "tesla",
-      "bmw",
-      "mercedes",
-      "audi",
-      "lexus",
-      "ford",
-      "chevrolet",
-      "dodge",
-      "hellcat",
-      "porsche",
-      "ferrari",
-      "lamborghini",
-      "civic",
-      "corolla",
-      "mark x",
-      "markx",
-      "alto",
-      "swift",
-      "wagon r",
-      "fortuner",
-      "hilux",
-      "vitz",
-      "prius",
-      "cultus",
-      "mehran",
-    ],
-  },
-  {
-    value: "laptop",
-    keywords: [
-      "laptop",
-      "notebook",
-      "macbook",
-      "computer",
-      "desktop",
-      "workstation",
-      "gaming pc",
-      "personal computer",
-      "chromebook",
-    ],
-  },
-  {
-    value: "tablet",
-    keywords: ["tablet", "ipad", "galaxy tab", "surface pro", "kindle"],
-  },
-  {
-    value: "camera",
-    keywords: [
-      "camera",
-      "dslr",
-      "mirrorless",
-      "gopro",
-      "lens",
-      "canon",
-      "nikon",
-      "fujifilm",
-    ],
-  },
-  {
-    value: "tv",
-    keywords: [
-      "television",
-      "smart tv",
-      "led tv",
-      "oled",
-      "qled",
-      "monitor",
-      "projector",
-    ],
-  },
-  {
-    value: "gamepad",
-    keywords: [
-      "gaming",
-      "playstation",
-      "ps4",
-      "ps5",
-      "xbox",
-      "console",
-      "nintendo",
-      "steam deck",
-    ],
-  },
-  {
-    value: "smartphone",
-    keywords: [
-      "electronics",
-      "electronic",
-      "phone",
-      "mobile",
-      "smartphone",
-      "samsung",
-      "iphone",
-      "pixel",
-      "oneplus",
-      "xiaomi",
-      "oppo",
-      "vivo",
-      "realme",
-      "huawei",
-      "s22",
-      "s23",
-      "s24",
-      "s25",
-    ],
-  },
-  {
-    value: "hammer",
-    keywords: [
-      "renovation",
-      "construction",
-      "remodel",
-      "repair house",
-      "home repair",
-      "interior",
-      "kitchen upgrade",
-      "room upgrade",
-    ],
-  },
-  {
-    value: "home",
-    keywords: [
-      "home",
-      "house",
-      "ghar",
-      "makan",
-      "makaan",
-      "apartment",
-      "flat",
-      "property",
-      "plot",
-      "bungalow",
-      "banglow",
-      "bangla",
+      "car", "cars", "vehicle", "auto", "automobile", "sedan", "hatchback",
+      "suv", "pickup", "sports car", "supercar", "gari", "gaari", "toyota",
+      "suzuki", "honda", "hyundai", "kia", "nissan", "tesla", "bmw",
+      "mercedes", "mercedes benz", "audi", "lexus", "ford", "chevrolet",
+      "dodge", "hellcat", "porsche", "ferrari", "lamborghini", "bugatti",
+      "bentley", "mclaren", "maserati", "aston martin", "rolls royce",
+      "volkswagen", "mazda", "subaru", "jeep", "land rover", "range rover",
+      "changan", "proton", "byd", "mg car", "civic", "corolla", "mark x",
+      "markx", "alto", "swift", "wagon r", "fortuner", "hilux", "vitz",
+      "prius", "cultus", "mehran", "city car", "car down payment",
+      "vehicle down payment",
     ],
   },
   {
     value: "plane",
+    priority: 48,
     keywords: [
-      "travel",
-      "trip",
-      "tour",
-      "vacation",
-      "holiday",
-      "flight",
-      "safar",
-      "umrah",
-      "hajj",
-      "honeymoon",
+      "jet", "private jet", "airplane", "aeroplane", "aircraft", "aviation",
+      "airline", "flight", "air ticket", "plane ticket", "travel", "trip",
+      "tour", "vacation", "holiday", "international trip", "foreign trip",
+      "world tour", "safar", "umrah", "hajj", "honeymoon",
+    ],
+  },
+  {
+    value: "route",
+    priority: 32,
+    keywords: [
+      "transport", "transportation", "commute", "bus", "coach", "train",
+      "metro", "railway", "ship", "boat", "yacht", "cruise", "rickshaw",
+      "taxi", "delivery van", "truck",
+    ],
+  },
+  {
+    value: "laptop",
+    priority: 58,
+    keywords: [
+      "laptop", "notebook", "macbook", "macbook air", "macbook pro",
+      "chromebook", "ultrabook", "gaming laptop", "work laptop", "dell laptop",
+      "hp laptop", "lenovo laptop", "asus laptop", "acer laptop",
+    ],
+  },
+  {
+    value: "monitor",
+    priority: 47,
+    keywords: [
+      "monitor", "computer monitor", "gaming monitor", "display",
+      "desktop screen", "computer screen", "dual monitor",
+    ],
+  },
+  {
+    value: "cpu",
+    priority: 45,
+    keywords: [
+      "computer", "desktop", "workstation", "personal computer", "gaming pc",
+      "pc build", "desktop pc", "processor", "cpu", "gpu", "graphics card",
+      "motherboard",
+    ],
+  },
+  {
+    value: "tablet",
+    priority: 52,
+    keywords: [
+      "tablet", "ipad", "ipad pro", "galaxy tab", "surface pro", "kindle",
+      "drawing tablet",
+    ],
+  },
+  {
+    value: "camera",
+    priority: 50,
+    keywords: [
+      "camera", "dslr", "mirrorless", "gopro", "lens", "canon", "nikon",
+      "fujifilm", "sony camera", "photography", "video camera",
+    ],
+  },
+  {
+    value: "tv",
+    priority: 42,
+    keywords: [
+      "television", "smart tv", "led tv", "oled", "qled", "projector",
+      "home theater", "home theatre",
+    ],
+  },
+  {
+    value: "gamepad",
+    priority: 40,
+    keywords: [
+      "gaming console", "playstation", "ps4", "ps5", "xbox", "console",
+      "nintendo", "steam deck", "gaming setup", "game setup", "video games",
+    ],
+  },
+  {
+    value: "smartphone",
+    priority: 48,
+    keywords: [
+      "phone", "mobile", "smartphone", "cellphone", "iphone", "samsung phone",
+      "galaxy phone", "pixel phone", "oneplus", "xiaomi", "oppo", "vivo",
+      "realme", "huawei phone", "s22", "s23", "s24", "s25",
+    ],
+  },
+  {
+    value: "headphones",
+    priority: 38,
+    keywords: [
+      "headphones", "headset", "earbuds", "earphones", "airpods", "speaker",
+      "sound system", "music system", "audio system", "microphone", "mic",
+    ],
+  },
+  {
+    value: "hammer",
+    priority: 52,
+    keywords: [
+      "home renovation", "house renovation", "renovation", "construction",
+      "remodel", "repair house", "home repair", "house repair",
+      "kitchen upgrade", "room upgrade", "roof repair", "building work",
+    ],
+  },
+  {
+    value: "paintbrush",
+    priority: 46,
+    keywords: [
+      "interior", "interior design", "home decor", "house decor", "decoration",
+      "paint house", "painting", "wallpaper", "room makeover",
+    ],
+  },
+  {
+    value: "home",
+    priority: 44,
+    keywords: [
+      "home", "house", "ghar", "makan", "makaan", "bungalow", "banglow",
+      "bangla", "villa", "farmhouse", "dream house", "new house", "home loan",
+      "house down payment", "home down payment",
+    ],
+  },
+  {
+    value: "building",
+    priority: 42,
+    keywords: [
+      "apartment", "flat", "condo", "penthouse", "plaza", "commercial building",
+      "office building", "building", "shop building",
+    ],
+  },
+  {
+    value: "landmark",
+    priority: 40,
+    keywords: [
+      "property", "plot", "land", "real estate", "zameen", "commercial property",
+      "shop property", "office property",
     ],
   },
   {
     value: "graduation",
+    priority: 42,
     keywords: [
-      "education",
-      "school",
-      "college",
-      "university",
-      "degree",
-      "course",
-      "tuition",
-      "study",
-      "fees",
-      "taleem",
-      "parhai",
-      "padhai",
-      "certification",
-      "academy",
+      "education", "school", "college", "university", "degree", "course",
+      "tuition", "study", "school fees", "college fees", "university fees",
+      "taleem", "parhai", "padhai", "certification", "academy", "exam", "books",
     ],
   },
   {
     value: "dumbbell",
+    priority: 40,
     keywords: [
-      "fitness",
-      "gym",
-      "workout",
-      "exercise",
-      "sports",
-      "equipment",
-      "treadmill",
+      "fitness", "gym", "workout", "exercise", "sports equipment", "treadmill",
+      "home gym", "weight loss", "bodybuilding",
     ],
   },
   {
     value: "heart",
+    priority: 46,
     keywords: [
-      "health",
-      "medical",
-      "hospital",
-      "surgery",
-      "treatment",
-      "sehat",
-      "ilaj",
-      "ilaaj",
-      "dawa",
-      "medicine",
-      "dental",
+      "health", "medical", "hospital", "surgery", "treatment", "sehat", "ilaj",
+      "ilaaj", "dawa", "medicine", "dental", "doctor", "therapy", "healthcare",
     ],
   },
   {
     value: "gem",
+    priority: 42,
     keywords: [
-      "wedding",
-      "shadi",
-      "shaadi",
-      "engagement",
-      "ring",
-      "jewelry",
-      "jewellery",
-      "gold set",
+      "wedding", "wedding fund", "wedding expenses", "shadi", "shaadi",
+      "engagement", "engagement ring", "ring", "jewelry", "jewellery",
+      "gold set", "bridal", "dowry", "jahez",
     ],
   },
   {
     value: "briefcase",
+    priority: 42,
     keywords: [
-      "business",
-      "startup",
-      "office",
-      "company",
-      "karobar",
-      "kaarobar",
-      "dukan",
-      "shop setup",
-      "freelance",
-      "agency",
+      "business", "startup", "office", "company", "karobar", "kaarobar", "dukan",
+      "shop setup", "business setup", "home office setup", "freelance", "agency",
+      "inventory", "business loan",
     ],
   },
   {
     value: "gift",
+    priority: 38,
     keywords: [
-      "gift",
-      "present",
-      "birthday",
-      "anniversary",
-      "surprise",
-      "eid gift",
+      "gift", "present", "birthday gift", "anniversary gift", "surprise gift",
+      "eid gift", "mother gift", "father gift",
     ],
   },
   {
     value: "shopping",
+    priority: 30,
     keywords: [
-      "shopping",
-      "clothes",
-      "fashion",
-      "furniture",
-      "appliance",
-      "kapray",
-      "kapre",
-      "wardrobe",
-      "sofa",
+      "shopping", "clothes", "clothing", "fashion", "furniture", "appliance",
+      "appliances", "kapray", "kapre", "wardrobe", "sofa", "bed", "fridge",
+      "refrigerator", "washing machine", "air conditioner", "ac",
     ],
   },
   {
     value: "shield",
+    priority: 44,
     keywords: [
-      "emergency",
-      "rainy day",
-      "backup",
-      "safety fund",
-      "reserve",
-      "emergency fund",
-      "backup fund",
+      "emergency", "rainy day", "backup", "safety fund", "reserve",
+      "emergency fund", "backup fund", "insurance", "car insurance",
+      "health insurance", "life insurance", "security fund",
     ],
   },
   {
     value: "piggybank",
+    priority: 36,
     keywords: [
-      "savings",
-      "saving",
-      "bachat",
-      "saving fund",
-      "retirement",
-      "future fund",
-      "deposit",
-      "investment fund",
-      "cash reserve",
+      "savings", "saving", "bachat", "saving fund", "retirement",
+      "retirement fund", "future fund", "deposit", "investment fund",
+      "cash reserve", "wealth fund",
+    ],
+  },
+  {
+    value: "wallet",
+    priority: 34,
+    keywords: [
+      "debt", "debt payoff", "loan", "loan payoff", "credit card",
+      "credit card payoff", "cash", "budget", "monthly budget", "money",
     ],
   },
   {
     value: "baby",
+    priority: 40,
     keywords: [
-      "baby",
-      "child",
-      "children",
-      "family",
-      "newborn",
-      "kids",
-      "kid",
+      "baby", "child", "children", "family", "newborn", "kids", "kid",
+      "school child", "baby expenses", "family fund",
     ],
   },
+  {
+    value: "key",
+    priority: 24,
+    keywords: [
+      "down payment", "booking amount", "advance payment", "security deposit", "keys",
+    ],
+  },
+  {
+    value: "gauge",
+    priority: 22,
+    keywords: [
+      "racing", "performance upgrade", "car upgrade", "bike upgrade", "engine upgrade",
+    ],
+  },
+  {
+    value: "sparkles",
+    priority: 14,
+    keywords: ["dream", "luxury", "special", "wish", "wishlist", "bucket list"],
+  },
+  {
+    value: "flag",
+    priority: 10,
+    keywords: ["milestone", "challenge", "achievement", "campaign"],
+  },
+  {
+    value: "target",
+    priority: 8,
+    keywords: ["goal", "target", "mission", "objective"],
+  },
 ];
-
-const RELATED_ICON_CHOICES: Partial<Record<GoalIconValue, readonly GoalIconValue[]>> = {
-  home: ["home", "building", "landmark", "paintbrush"],
-  hammer: ["hammer", "paintbrush", "building", "home"],
-  shield: ["shield", "wallet", "piggybank", "landmark"],
-  piggybank: ["piggybank", "wallet", "shield", "landmark"],
-  car: ["car", "key", "gauge", "route"],
-  bike: ["bike", "route", "gauge", "key"],
-  smartphone: ["smartphone", "headphones", "camera", "tablet"],
-  laptop: ["laptop", "monitor", "cpu", "tablet"],
-  tablet: ["tablet", "monitor", "laptop", "smartphone"],
-  camera: ["camera", "headphones", "smartphone", "tv"],
-  tv: ["tv", "monitor", "headphones", "gamepad"],
-  gamepad: ["gamepad", "headphones", "tv", "monitor"],
-  target: ["target", "flag", "sparkles", "wallet"],
-};
 
 const DISTINCT_ACCENTS = Array.from({ length: 48 }, (_, index) => {
   const hue = (17 + index * 137) % 360;
@@ -490,10 +443,94 @@ function normalizeGoalText(value: string) {
     .trim();
 }
 
-function containsKeyword(normalizedText: string, keyword: string) {
-  const normalizedKeyword = normalizeGoalText(keyword);
+function containsKeyword(normalizedText: string, normalizedKeyword: string) {
   if (!normalizedKeyword) return false;
   return ` ${normalizedText} `.includes(` ${normalizedKeyword} `);
+}
+
+function isWithinOneEdit(left: string, right: string) {
+  if (left === right) return true;
+  if (Math.abs(left.length - right.length) > 1) return false;
+
+  let leftIndex = 0;
+  let rightIndex = 0;
+  let edits = 0;
+
+  while (leftIndex < left.length && rightIndex < right.length) {
+    if (left[leftIndex] === right[rightIndex]) {
+      leftIndex += 1;
+      rightIndex += 1;
+      continue;
+    }
+
+    edits += 1;
+    if (edits > 1) return false;
+
+    if (left.length > right.length) {
+      leftIndex += 1;
+    } else if (right.length > left.length) {
+      rightIndex += 1;
+    } else {
+      leftIndex += 1;
+      rightIndex += 1;
+    }
+  }
+
+  if (leftIndex < left.length || rightIndex < right.length) edits += 1;
+  return edits <= 1;
+}
+
+function getKeywordScore(normalizedName: string, keyword: string) {
+  const normalizedKeyword = normalizeGoalText(keyword);
+  if (!normalizedKeyword) return 0;
+
+  if (normalizedName === normalizedKeyword) {
+    return 1_200 + normalizedKeyword.length;
+  }
+
+  if (containsKeyword(normalizedName, normalizedKeyword)) {
+    const wordCount = normalizedKeyword.split(" ").length;
+    return 300 + wordCount * 35 + normalizedKeyword.length;
+  }
+
+  if (normalizedKeyword.includes(" ") || normalizedKeyword.length < 5) {
+    return 0;
+  }
+
+  const nearToken = normalizedName
+    .split(" ")
+    .some(
+      (token) =>
+        token.length >= 5 &&
+        Math.abs(token.length - normalizedKeyword.length) <= 1 &&
+        isWithinOneEdit(token, normalizedKeyword),
+    );
+
+  return nearToken ? 115 + normalizedKeyword.length : 0;
+}
+
+function findAutoIconValue(name: string): GoalIconValue | null {
+  const normalizedName = normalizeGoalText(name);
+  if (!normalizedName) return null;
+
+  let bestValue: GoalIconValue | null = null;
+  let bestScore = 0;
+
+  AUTO_ICON_RULES.forEach((rule) => {
+    const keywordScore = rule.keywords.reduce(
+      (highest, keyword) =>
+        Math.max(highest, getKeywordScore(normalizedName, keyword)),
+      0,
+    );
+    const score = keywordScore > 0 ? keywordScore + rule.priority : 0;
+
+    if (score > bestScore) {
+      bestScore = score;
+      bestValue = rule.value;
+    }
+  });
+
+  return bestValue;
 }
 
 function hashGoalSeed(value: string) {
@@ -515,25 +552,18 @@ function getGoalIdentity(goal: GoalPresentationInput, index: number) {
   return `${normalizeGoalText(goal.name) || "goal"}:${goal.icon || "auto"}:${index}`;
 }
 
-function getIconCandidates(preferred: GoalIconValue) {
-  const candidates = RELATED_ICON_CHOICES[preferred] ?? [preferred];
-  return [...new Set([...candidates, ...GOAL_ICONS.map((entry) => entry.value)])];
+function getStoredGoalIconValue(icon?: string | null): GoalIconValue | null {
+  return icon && GOAL_ICON_VALUES.has(icon) ? (icon as GoalIconValue) : null;
 }
 
 export function inferGoalIconValue(
   name: string,
   fallbackIcon?: string | null,
 ): GoalIconValue {
-  const normalizedName = normalizeGoalText(name);
-  const match = AUTO_ICON_RULES.find((rule) =>
-    rule.keywords.some((keyword) => containsKeyword(normalizedName, keyword)),
-  );
+  const inferred = findAutoIconValue(name);
+  if (inferred) return inferred;
 
-  if (match) return match.value;
-  if (fallbackIcon && GOAL_ICON_VALUES.has(fallbackIcon)) {
-    return fallbackIcon as GoalIconValue;
-  }
-  return "target";
+  return getStoredGoalIconValue(fallbackIcon) ?? "target";
 }
 
 export function getGoalIconEntry(goal: GoalPresentationInput): GoalIconEntry {
@@ -551,24 +581,30 @@ export function getDistinctGoalPresentationAssignments(
   const orderedGoals = [...indexedGoals].sort((left, right) =>
     left.identity.localeCompare(right.identity),
   );
-  const usedIcons = new Set<GoalIconValue>();
+  const usedGenericIcons = new Set<GoalIconValue>();
   const usedAccents = new Set<string>();
   const assignments: GoalPresentationAssignment[] = new Array(goals.length);
 
   orderedGoals.forEach(({ goal, index, identity }) => {
-    const preferredValue = inferGoalIconValue(goal.name, goal.icon);
-    const preferredEntry = getGoalIconEntryByValue(preferredValue);
-    const iconCandidates = getIconCandidates(preferredValue);
-    const iconValue =
-      iconCandidates.find((candidate) => !usedIcons.has(candidate)) ??
-      iconCandidates[hashGoalSeed(identity) % iconCandidates.length];
-    usedIcons.add(iconValue);
+    const inferredFromName = findAutoIconValue(goal.name);
+    const storedIcon = getStoredGoalIconValue(goal.icon);
+    const preferredValue = inferredFromName ?? storedIcon ?? "target";
+
+    let iconValue = preferredValue;
+    if (!inferredFromName && (!storedIcon || GENERIC_ICON_VALUES.has(storedIcon))) {
+      iconValue =
+        GENERIC_ICON_CHOICES.find((candidate) => !usedGenericIcons.has(candidate)) ??
+        GENERIC_ICON_CHOICES[hashGoalSeed(identity) % GENERIC_ICON_CHOICES.length];
+      usedGenericIcons.add(iconValue);
+    }
 
     const colorHash = hashGoalSeed(`${identity}:${preferredValue}`);
     const preferredColorIndex = colorHash % DISTINCT_ACCENTS.length;
     let accent = DISTINCT_ACCENTS[preferredColorIndex];
+
     for (let offset = 0; offset < DISTINCT_ACCENTS.length; offset += 1) {
-      const candidate = DISTINCT_ACCENTS[(preferredColorIndex + offset) % DISTINCT_ACCENTS.length];
+      const candidate =
+        DISTINCT_ACCENTS[(preferredColorIndex + offset) % DISTINCT_ACCENTS.length];
       if (!usedAccents.has(candidate)) {
         accent = candidate;
         break;
@@ -578,7 +614,7 @@ export function getDistinctGoalPresentationAssignments(
 
     assignments[index] = {
       iconValue,
-      label: preferredEntry.label,
+      label: getGoalIconEntryByValue(iconValue).label,
       accent,
     };
   });
