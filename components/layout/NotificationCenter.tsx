@@ -366,7 +366,7 @@ export default function NotificationCenter({ state }: NotificationCenterProps) {
                     exit={{ opacity: 0 }}
                     transition={glassTransition}
                     onPointerDown={() => setOpen(false)}
-                    className="fixed inset-0 z-20 bg-[rgb(41_86_200_/_0.045)] backdrop-blur-[3px] backdrop-saturate-105 dark:bg-[rgb(4_9_18_/_0.12)]"
+                    className="fixed inset-0 z-20 bg-transparent"
                   />
                 ) : null}
               </AnimatePresence>
