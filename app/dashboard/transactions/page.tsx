@@ -8,10 +8,11 @@ import TransactionRow from "@/components/transactions/TransactionRow";
 import EmptyState from "@/components/ui/empty-state";
 import { getTransactionIconMeta } from "@/lib/transaction-icons";
 import { loadTransactions } from "@/lib/transactions";
+import styles from "./transactions.module.css";
 
 export const dynamic = "force-dynamic";
 
-const DEFAULT_LIMIT = 15;
+const DEFAULT_LIMIT = 8;
 const STEP_LIMIT = 15;
 const MAX_LIMIT = 100;
 
@@ -296,7 +297,7 @@ export default async function TransactionsPage({
   nextParams.set("limit", String(nextLimit));
 
   return (
-    <div className="space-y-5">
+    <div className={`${styles.page} space-y-3 sm:space-y-5`}>
       <div className="page-heading finance-surface-glass overflow-hidden">
         <div className="min-w-0">
           <h2 className="page-title">Transactions</h2>
@@ -307,12 +308,14 @@ export default async function TransactionsPage({
         </div>
       </div>
 
-      <Suspense fallback={<div className="mb-5 h-12" />}>
-        <TransactionFilters
-          categories={categoryOptions}
-          accounts={accountOptions}
-        />
-      </Suspense>
+      <div className={styles.filtersShell}>
+        <Suspense fallback={<div className="h-10 sm:mb-5 sm:h-12" />}>
+          <TransactionFilters
+            categories={categoryOptions}
+            accounts={accountOptions}
+          />
+        </Suspense>
+      </div>
 
       <div className="finance-panel min-w-0 overflow-hidden p-3 sm:p-5">
         {transactions.length === 0 ? (
