@@ -257,9 +257,11 @@ export default function IncomeExpenseChart({
               const expenseLineId = `${gradientPrefix}-expense-line`;
               const incomeSheenId = `${gradientPrefix}-income-sheen`;
               const expenseSheenId = `${gradientPrefix}-expense-sheen`;
-              const sheenStart = -Math.max(width * 0.42, 120);
-              const sheenEnd = width * 1.08;
-              const sheenWidth = Math.max(width * 0.26, 86);
+              const sheenWidth = Math.round(
+                Math.min(Math.max(width * 0.07, 22), 36),
+              );
+              const sheenStart = -sheenWidth;
+              const sheenEnd = width;
 
               return (
                 <ComposedChart
@@ -358,14 +360,14 @@ export default function IncomeExpenseChart({
                           <animate
                             attributeName="x1"
                             values={`${sheenStart};${sheenEnd};${sheenEnd}`}
-                            keyTimes="0;0.68;1"
+                            keyTimes="0;0.76;1"
                             dur={AMBIENT_SWEEP_DURATION}
                             repeatCount="indefinite"
                           />
                           <animate
                             attributeName="x2"
                             values={`${sheenStart + sheenWidth};${sheenEnd + sheenWidth};${sheenEnd + sheenWidth}`}
-                            keyTimes="0;0.68;1"
+                            keyTimes="0;0.76;1"
                             dur={AMBIENT_SWEEP_DURATION}
                             repeatCount="indefinite"
                           />
@@ -390,16 +392,16 @@ export default function IncomeExpenseChart({
                           <animate
                             attributeName="x1"
                             values={`${sheenStart};${sheenEnd};${sheenEnd}`}
-                            keyTimes="0;0.68;1"
-                            begin="0.3s"
+                            keyTimes="0;0.76;1"
+                            begin="0.45s"
                             dur={AMBIENT_SWEEP_DURATION}
                             repeatCount="indefinite"
                           />
                           <animate
                             attributeName="x2"
                             values={`${sheenStart + sheenWidth};${sheenEnd + sheenWidth};${sheenEnd + sheenWidth}`}
-                            keyTimes="0;0.68;1"
-                            begin="0.3s"
+                            keyTimes="0;0.76;1"
+                            begin="0.45s"
                             dur={AMBIENT_SWEEP_DURATION}
                             repeatCount="indefinite"
                           />
