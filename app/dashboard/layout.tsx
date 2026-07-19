@@ -61,6 +61,8 @@ import "./dashboard-card-label-unify.css";
 import "./quick-actions-launch.css";
 // Standalone Lucide icons stay borderless while retaining their authored size and controls.
 import "./icon-surface-cleanup.css";
+// Reference drawer layout is the final mobile/tablet sidebar authority.
+import "./mobile-sidebar-reference.css";
 
 export const dynamic = "force-dynamic";
 
