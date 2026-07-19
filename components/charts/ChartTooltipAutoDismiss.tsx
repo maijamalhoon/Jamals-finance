@@ -126,7 +126,9 @@ export default function ChartTooltipAutoDismiss() {
 
   return (
     <style>{`
-      ${CHART_SELECTOR}[${DISMISSED_ATTRIBUTE}="true"] .recharts-tooltip-wrapper {
+      ${CHART_SELECTOR}[${DISMISSED_ATTRIBUTE}="true"] .recharts-tooltip-wrapper,
+      ${CHART_SELECTOR}[${DISMISSED_ATTRIBUTE}="true"] .recharts-tooltip-cursor,
+      ${CHART_SELECTOR}[${DISMISSED_ATTRIBUTE}="true"] .recharts-active-dot {
         opacity: 0 !important;
         visibility: hidden !important;
         pointer-events: none !important;
@@ -134,7 +136,9 @@ export default function ChartTooltipAutoDismiss() {
       }
 
       @media (prefers-reduced-motion: reduce) {
-        ${CHART_SELECTOR}[${DISMISSED_ATTRIBUTE}="true"] .recharts-tooltip-wrapper {
+        ${CHART_SELECTOR}[${DISMISSED_ATTRIBUTE}="true"] .recharts-tooltip-wrapper,
+        ${CHART_SELECTOR}[${DISMISSED_ATTRIBUTE}="true"] .recharts-tooltip-cursor,
+        ${CHART_SELECTOR}[${DISMISSED_ATTRIBUTE}="true"] .recharts-active-dot {
           transition: none !important;
         }
       }
