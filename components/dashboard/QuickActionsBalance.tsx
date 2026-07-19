@@ -101,23 +101,28 @@ export default function QuickActionsBalance({
     const originY = triggerRect.top + triggerRect.height / 2;
     const root = document.documentElement;
     let modal: HTMLElement | null = null;
-    let finishTimer = 0;
+    let attached = false;
+    let animationFrame = 0;
     let fallbackTimer = 0;
 
+    trigger.setAttribute("data-launching", "true");
     root.setAttribute("data-quick-action-launch-pending", "true");
 
     const observer = new MutationObserver(() => attachLaunchAnimation());
 
     const cleanup = () => {
       observer.disconnect();
-      window.clearTimeout(finishTimer);
+      window.cancelAnimationFrame(animationFrame);
       window.clearTimeout(fallbackTimer);
       root.removeAttribute("data-quick-action-launch-pending");
+      trigger.removeAttribute("data-launching");
 
       if (modal) {
         modal.classList.remove("quick-action-form-launch");
         modal.style.removeProperty("--quick-action-launch-x");
         modal.style.removeProperty("--quick-action-launch-y");
+        modal.style.removeProperty("--quick-action-launch-mid-x");
+        modal.style.removeProperty("--quick-action-launch-mid-y");
       }
 
       if (launchCleanupRef.current === cleanup) {
@@ -126,27 +131,41 @@ export default function QuickActionsBalance({
     };
 
     function attachLaunchAnimation() {
+      if (attached) return;
+
       const openModals = document.querySelectorAll<HTMLElement>(
         '[data-slot="dialog-content"].finance-modal-content',
       );
       const nextModal = openModals.item(openModals.length - 1);
       if (!nextModal) return;
 
+      attached = true;
       modal = nextModal;
-      const modalRect = modal.getBoundingClientRect();
-      modal.style.setProperty(
-        "--quick-action-launch-x",
-        `${originX - modalRect.left}px`,
-      );
-      modal.style.setProperty(
-        "--quick-action-launch-y",
-        `${originY - modalRect.top}px`,
-      );
-      modal.classList.add("quick-action-form-launch");
-      root.removeAttribute("data-quick-action-launch-pending");
       observer.disconnect();
-      window.clearTimeout(fallbackTimer);
-      finishTimer = window.setTimeout(cleanup, 720);
+
+      animationFrame = window.requestAnimationFrame(() => {
+        if (!modal) return;
+
+        const modalRect = modal.getBoundingClientRect();
+        const modalCenterX = modalRect.left + modalRect.width / 2;
+        const modalCenterY = modalRect.top + modalRect.height / 2;
+        const translateX = originX - modalCenterX;
+        const translateY = originY - modalCenterY;
+
+        modal.style.setProperty("--quick-action-launch-x", `${translateX}px`);
+        modal.style.setProperty("--quick-action-launch-y", `${translateY}px`);
+        modal.style.setProperty(
+          "--quick-action-launch-mid-x",
+          `${translateX * 0.12}px`,
+        );
+        modal.style.setProperty(
+          "--quick-action-launch-mid-y",
+          `${translateY * 0.12}px`,
+        );
+        modal.classList.add("quick-action-form-launch");
+        root.removeAttribute("data-quick-action-launch-pending");
+        modal.addEventListener("animationend", cleanup, { once: true });
+      });
     }
 
     launchCleanupRef.current = cleanup;
@@ -157,7 +176,7 @@ export default function QuickActionsBalance({
       attributeFilter: ["data-open"],
     });
     queueMicrotask(attachLaunchAnimation);
-    fallbackTimer = window.setTimeout(cleanup, 2500);
+    fallbackTimer = window.setTimeout(cleanup, 1800);
   }
 
   function openAction(action: QuickAction, trigger: HTMLButtonElement) {
