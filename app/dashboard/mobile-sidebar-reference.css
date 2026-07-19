@@ -1,26 +1,26 @@
 /*
- * Mobile/tablet navigation drawer — compact reference layout.
+ * Mobile/tablet navigation drawer — roomy, readable reference layout.
  * Navigation data, routes and sheet behaviour stay unchanged.
  */
 
 @media (max-width: 1023px) {
   [data-mobile-navigation-drawer] {
-    width: min(73vw, 18.5rem) !important;
-    max-width: 18.5rem !important;
+    width: min(88vw, 23rem) !important;
+    max-width: 23rem !important;
     height: 100dvh !important;
     max-height: 100dvh !important;
     gap: 0 !important;
     overflow: hidden !important;
     border: 0 !important;
-    border-radius: 0 1.75rem 1.75rem 0 !important;
+    border-radius: 0 2rem 2rem 0 !important;
     background: #ffffff !important;
-    box-shadow: 18px 0 48px rgb(15 23 42 / 0.2) !important;
+    box-shadow: 20px 0 56px rgb(15 23 42 / 0.22) !important;
     backdrop-filter: none !important;
   }
 
   .dark [data-mobile-navigation-drawer] {
     background: #121d33 !important;
-    box-shadow: 18px 0 52px rgb(0 0 0 / 0.5) !important;
+    box-shadow: 20px 0 58px rgb(0 0 0 / 0.52) !important;
   }
 
   /* Keep the title available to assistive technology without showing a header. */
@@ -43,27 +43,32 @@
   }
 
   body:has([data-mobile-navigation-drawer]) [data-slot="sheet-overlay"] {
-    background: rgb(15 23 42 / 0.3) !important;
+    background: rgb(15 23 42 / 0.34) !important;
     backdrop-filter: blur(5px) saturate(0.82) !important;
   }
 
   .dark body:has([data-mobile-navigation-drawer]) [data-slot="sheet-overlay"],
   body.dark:has([data-mobile-navigation-drawer]) [data-slot="sheet-overlay"] {
-    background: rgb(2 8 23 / 0.54) !important;
+    background: rgb(2 8 23 / 0.58) !important;
   }
 
   [data-mobile-navigation-drawer] > nav {
     min-height: 0 !important;
     padding:
-      max(1.35rem, env(safe-area-inset-top))
-      0.65rem
-      max(1.35rem, env(safe-area-inset-bottom)) !important;
+      max(1.5rem, env(safe-area-inset-top))
+      0.85rem
+      max(1.5rem, env(safe-area-inset-bottom)) !important;
     overscroll-behavior: contain;
+    scrollbar-width: none;
+  }
+
+  [data-mobile-navigation-drawer] > nav::-webkit-scrollbar {
+    display: none;
   }
 
   [data-mobile-navigation-drawer] > nav > div {
     display: grid !important;
-    gap: 0.95rem !important;
+    gap: 1rem !important;
   }
 
   [data-mobile-navigation-drawer] > nav > div > section {
@@ -72,17 +77,17 @@
 
   [data-mobile-navigation-drawer] nav section > div:first-child {
     min-height: 0 !important;
-    margin: 0 0 0.28rem !important;
-    padding: 0 0.65rem !important;
+    margin: 0 0 0.38rem !important;
+    padding: 0 0.72rem !important;
   }
 
   [data-mobile-navigation-drawer] nav section h2 {
     color: #8da0bf !important;
     font-family: var(--font-sans) !important;
-    font-size: 0.5rem !important;
-    font-weight: 750 !important;
+    font-size: 0.625rem !important;
+    font-weight: 760 !important;
     line-height: 1rem !important;
-    letter-spacing: 0.15em !important;
+    letter-spacing: 0.16em !important;
   }
 
   .dark [data-mobile-navigation-drawer] nav section h2 {
@@ -96,23 +101,23 @@
   [data-mobile-navigation-drawer] nav section > div:last-child {
     display: grid !important;
     grid-template-columns: minmax(0, 1fr) !important;
-    gap: 0.18rem !important;
+    gap: 0.22rem !important;
   }
 
   [data-mobile-navigation-drawer] nav a {
-    min-height: 2.25rem !important;
-    padding: 0.35rem 0.62rem !important;
-    gap: 0.5rem !important;
+    min-height: 2.75rem !important;
+    padding: 0.48rem 0.72rem !important;
+    gap: 0.68rem !important;
     border: 0 !important;
-    border-radius: 0.78rem !important;
+    border-radius: 0.9rem !important;
     background: transparent !important;
     box-shadow: none !important;
     color: #263651 !important;
     font-family: var(--font-sans) !important;
-    font-size: 0.72rem !important;
-    font-weight: 620 !important;
+    font-size: 0.875rem !important;
+    font-weight: 650 !important;
     line-height: 1.15 !important;
-    letter-spacing: -0.01em !important;
+    letter-spacing: -0.012em !important;
     transform: none !important;
     transition:
       background-color 170ms var(--motion-ease),
@@ -150,12 +155,12 @@
   }
 
   [data-mobile-navigation-drawer] nav a[aria-current="page"]::after {
-    width: 0.38rem;
-    height: 0.38rem;
+    width: 0.42rem;
+    height: 0.42rem;
     margin-left: auto;
     flex: 0 0 auto;
-    border-top: 1.7px solid currentColor;
-    border-right: 1.7px solid currentColor;
+    border-top: 1.8px solid currentColor;
+    border-right: 1.8px solid currentColor;
     border-radius: 1px;
     content: "";
     opacity: 0.72;
@@ -163,9 +168,9 @@
   }
 
   [data-mobile-navigation-drawer] nav a > span:first-child {
-    width: 1.45rem !important;
-    height: 1.45rem !important;
-    flex: 0 0 1.45rem !important;
+    width: 1.72rem !important;
+    height: 1.72rem !important;
+    flex: 0 0 1.72rem !important;
     border: 0 !important;
     border-radius: 0 !important;
     background: transparent !important;
@@ -173,8 +178,8 @@
   }
 
   [data-mobile-navigation-drawer] nav a > span:first-child > svg.lucide {
-    width: 1rem !important;
-    height: 1rem !important;
+    width: 1.15rem !important;
+    height: 1.15rem !important;
     fill: none !important;
     stroke-width: 2.25 !important;
     stroke-linecap: round;
@@ -201,17 +206,44 @@
 
 @media (min-width: 640px) and (max-width: 1023px) {
   [data-mobile-navigation-drawer] {
-    width: min(58vw, 18.5rem) !important;
+    width: min(62vw, 23rem) !important;
   }
 
   [data-mobile-navigation-drawer] > nav {
-    padding-inline: 0.8rem !important;
+    padding-inline: 1rem !important;
   }
 
   [data-mobile-navigation-drawer] nav a {
-    min-height: 2.45rem !important;
-    padding-inline: 0.7rem !important;
-    font-size: 0.78rem !important;
+    min-height: 2.9rem !important;
+    padding-inline: 0.82rem !important;
+    font-size: 0.925rem !important;
+  }
+
+  [data-mobile-navigation-drawer] nav a > span:first-child > svg.lucide {
+    width: 1.2rem !important;
+    height: 1.2rem !important;
+  }
+}
+
+/* Keep short mobile viewports usable without returning to the tiny treatment. */
+@media (max-width: 639px) and (max-height: 760px) {
+  [data-mobile-navigation-drawer] > nav {
+    padding-top: max(1.05rem, env(safe-area-inset-top)) !important;
+    padding-bottom: max(1.05rem, env(safe-area-inset-bottom)) !important;
+  }
+
+  [data-mobile-navigation-drawer] > nav > div {
+    gap: 0.72rem !important;
+  }
+
+  [data-mobile-navigation-drawer] nav section > div:first-child {
+    margin-bottom: 0.22rem !important;
+  }
+
+  [data-mobile-navigation-drawer] nav a {
+    min-height: 2.5rem !important;
+    padding-block: 0.38rem !important;
+    font-size: 0.825rem !important;
   }
 }
 
