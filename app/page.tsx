@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import LandingChartMotion from "@/components/landing/LandingChartMotion";
 import LandingScrollReveal from "@/components/landing/LandingScrollReveal";
 import MathSymbolField from "@/components/landing/MathSymbolField";
 import PremiumLandingPage from "@/components/landing/PremiumLandingPage";
@@ -12,6 +13,7 @@ import "./landing-icon-typography.css";
 import "./landing-header-rounded.css";
 import "./landing-hero-motion.css";
 import "./landing-donut-polish.css";
+import "./landing-chart-travel.css";
 
 // Public landing entry: all layout, preview, section, responsive, motion, and type layers load here.
 export const metadata: Metadata = {
@@ -42,6 +44,7 @@ export default function HomePage() {
     <>
       <LandingScrollReveal />
       <PremiumLandingPage />
+      <LandingChartMotion />
       <MathSymbolField />
     </>
   );
