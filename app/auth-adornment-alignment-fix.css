@@ -61,8 +61,8 @@
 }
 
 /* Grid alignment is deliberately used instead of top/translate positioning.
- * This keeps the mail/lock icons, Change action and password visibility button
- * centred against the actual input card on phones, tablets and large screens. */
+ * A concrete zero-value reset is intentional: CSS optimizers may remove
+ * `translate: none`, allowing older `translate: 0 -50%` rules to leak through. */
 .jf-auth-root
   .auth-field-control
   > :is(.auth-field-icon, .auth-inline-field-action, .auth-password-toggle) {
@@ -74,7 +74,7 @@
   left: auto !important;
   align-self: center !important;
   margin-block: 0 !important;
-  translate: none !important;
+  translate: 0 0 !important;
   transform: none !important;
 }
 
