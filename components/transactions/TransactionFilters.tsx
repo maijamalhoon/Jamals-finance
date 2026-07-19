@@ -1,9 +1,16 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { useCallback, useEffect, useMemo, useState, useTransition } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  useTransition,
+} from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { ChevronDown, Filter, Search, X } from "lucide-react";
+import { Filter, Search, X } from "lucide-react";
 import { BackgroundRefreshStatus } from "@/components/loading/LoadingPrimitives";
 
 export interface TransactionFilterOption {
@@ -21,9 +28,11 @@ export default function TransactionFilters({
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const searchInputRef = useRef<HTMLInputElement>(null);
   const [pending, startNavigation] = useTransition();
 
   const [open, setOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
 
   const activeType = searchParams.get("type") || "all";
   const activeFrom = searchParams.get("from") || "";
@@ -77,6 +86,16 @@ export default function TransactionFilters({
   }, [searchParams]);
 
   useEffect(() => {
+    if (!searchOpen) return;
+
+    const frame = window.requestAnimationFrame(() => {
+      searchInputRef.current?.focus();
+    });
+
+    return () => window.cancelAnimationFrame(frame);
+  }, [searchOpen]);
+
+  useEffect(() => {
     const currentSearch = searchParams.get("search") || "";
     const currentSource = searchParams.get("source") || "";
     const currentPerson = searchParams.get("person") || "";
@@ -106,6 +125,11 @@ export default function TransactionFilters({
     startNavigation(() => router.push(pathname, { scroll: false }));
   }
 
+  function closeSearch(clearValue = false) {
+    if (clearValue) setSearch("");
+    setSearchOpen(false);
+  }
+
   const activeFilterCount = useMemo(() => {
     return [
       activeType !== "all",
@@ -116,7 +140,6 @@ export default function TransactionFilters({
       activeCategory !== "all",
       activeAccount !== "all",
       activeSort !== "newest",
-      search,
       source,
       person,
       item,
@@ -130,70 +153,104 @@ export default function TransactionFilters({
     activeCategory,
     activeAccount,
     activeSort,
-    search,
     source,
     person,
     item,
   ]);
 
+  const activeControlCount = activeFilterCount + (search ? 1 : 0);
+
   return (
     <div className="mb-5 min-w-0 space-y-3" aria-busy={pending || undefined}>
-      <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="finance-control finance-search-control finance-focus flex min-h-11 w-full min-w-0 max-w-[420px] items-center gap-2 px-3 py-2">
-          <Search size={15} className="flex-shrink-0 text-text-secondary" />
+      <div className="flex min-w-0 items-center justify-end gap-2">
+        <div
+          role="search"
+          aria-label="Search transactions"
+          className={`finance-focus flex h-11 shrink-0 items-center overflow-hidden rounded-full border transition-[width,background-color,border-color,box-shadow] duration-300 ease-out ${
+            searchOpen
+              ? "w-[min(26.25rem,calc(100vw-5.5rem))] border-border bg-surface-inset shadow-none"
+              : search
+                ? "w-11 border-transparent bg-brand/10"
+                : "w-11 border-transparent bg-transparent hover:bg-hover"
+          }`}
+        >
+          <button
+            type="button"
+            aria-label={
+              searchOpen ? "Search transactions" : "Open transaction search"
+            }
+            aria-expanded={searchOpen}
+            onClick={() => setSearchOpen(true)}
+            className={`finance-focus grid h-11 w-11 shrink-0 place-items-center rounded-full transition-colors hover:text-text-primary ${
+              search ? "text-brand" : "text-text-secondary"
+            }`}
+          >
+            <Search size={20} strokeWidth={2.1} aria-hidden="true" />
+          </button>
 
+          <label htmlFor="transaction-page-search" className="sr-only">
+            Search transactions
+          </label>
           <input
+            ref={searchInputRef}
+            id="transaction-page-search"
+            type="search"
+            autoComplete="off"
+            tabIndex={searchOpen ? 0 : -1}
+            aria-hidden={!searchOpen}
             value={search}
             onChange={(event) => setSearch(event.target.value)}
+            onKeyDown={(event) => {
+              if (event.key === "Escape") {
+                event.preventDefault();
+                closeSearch();
+              }
+            }}
             placeholder="Search transactions..."
-            className="min-w-0 flex-1 bg-transparent text-sm font-medium text-text-primary placeholder:text-text-secondary outline-none"
+            className={`min-w-0 bg-transparent text-sm font-medium text-text-primary outline-none placeholder:text-text-secondary transition-[width,opacity] duration-200 ${
+              searchOpen
+                ? "mr-1 w-full flex-1 opacity-100"
+                : "pointer-events-none w-0 opacity-0"
+            }`}
           />
 
-          {search ? (
-            <button
-              onClick={() => setSearch("")}
-              className="finance-focus grid h-11 w-11 place-items-center rounded-full text-text-secondary transition-colors hover:bg-hover hover:text-text-primary"
-              aria-label="Clear search"
-              type="button"
-            >
-              <X size={13} />
-            </button>
-          ) : null}
-        </div>
-
-        <div className="flex flex-wrap items-center justify-end gap-2">
-          {activeFilterCount > 0 ? (
-            <button
-              onClick={clearFilters}
-              className="finance-focus min-h-11 rounded-full border border-border bg-surface px-3 py-2 text-xs font-semibold text-text-secondary transition-colors hover:bg-hover hover:text-text-primary"
-              type="button"
-            >
-              Clear all
-            </button>
-          ) : null}
-
           <button
-            onClick={() => setOpen((value) => !value)}
-            aria-expanded={open}
-            className="finance-focus inline-flex min-h-11 items-center gap-2 rounded-full border border-border bg-surface px-4 py-2 text-sm font-semibold text-text-primary shadow-sm transition-all hover:-translate-y-0.5 hover:bg-hover hover:shadow-md"
             type="button"
+            aria-label={search ? "Clear and close search" : "Close search"}
+            tabIndex={searchOpen ? 0 : -1}
+            onClick={() => closeSearch(Boolean(search))}
+            className={`finance-focus mr-1 grid h-9 w-9 shrink-0 place-items-center rounded-full text-text-secondary transition-[opacity,transform,background-color,color] duration-200 hover:bg-hover hover:text-text-primary ${
+              searchOpen
+                ? "scale-100 opacity-100"
+                : "pointer-events-none scale-90 opacity-0"
+            }`}
           >
-            <Filter size={15} />
-            Filters
-            {activeFilterCount > 0 ? (
-              <span className="grid h-5 min-w-5 place-items-center rounded-full bg-active px-1 text-[11px] text-background">
-                {activeFilterCount}
-              </span>
-            ) : null}
-            <ChevronDown
-              size={15}
-              className={`transition-transform ${open ? "rotate-180" : ""}`}
-            />
+            <X size={16} strokeWidth={2.1} aria-hidden="true" />
           </button>
         </div>
+
+        <button
+          onClick={() => setOpen((value) => !value)}
+          aria-label={
+            open ? "Close transaction filters" : "Open transaction filters"
+          }
+          aria-expanded={open}
+          aria-controls="transaction-filter-panel"
+          className={`finance-focus relative grid h-11 w-11 shrink-0 place-items-center rounded-full border border-transparent bg-transparent transition-colors hover:bg-hover hover:text-text-primary ${
+            open || activeFilterCount > 0 ? "text-brand" : "text-text-secondary"
+          }`}
+          type="button"
+        >
+          <Filter size={20} strokeWidth={2.1} aria-hidden="true" />
+          {activeFilterCount > 0 ? (
+            <span className="absolute -right-0.5 -top-0.5 grid h-5 min-w-5 place-items-center rounded-full bg-active px-1 text-[10px] font-bold leading-none text-background">
+              {activeFilterCount}
+            </span>
+          ) : null}
+        </button>
       </div>
 
-      <div className="min-h-5" aria-live="polite">
+      <div aria-live="polite">
         <BackgroundRefreshStatus
           refreshing={pending}
           label="Updating transactions…"
@@ -201,7 +258,10 @@ export default function TransactionFilters({
       </div>
 
       {open ? (
-        <div className="finance-panel-soft grid min-w-0 gap-3 p-3 sm:grid-cols-2 lg:grid-cols-4">
+        <div
+          id="transaction-filter-panel"
+          className="finance-panel-soft grid min-w-0 gap-3 p-3 sm:grid-cols-2 lg:grid-cols-4"
+        >
           <FilterField label="Type">
             <select
               value={activeType}
@@ -240,7 +300,9 @@ export default function TransactionFilters({
           <FilterField label="Category">
             <select
               value={activeCategory}
-              onChange={(event) => updateParams({ category: event.target.value })}
+              onChange={(event) =>
+                updateParams({ category: event.target.value })
+              }
               disabled={categories.length === 0}
               className="finance-control finance-focus h-10 w-full px-3 text-sm text-text-primary outline-none disabled:cursor-not-allowed disabled:opacity-60"
             >
@@ -256,7 +318,9 @@ export default function TransactionFilters({
           <FilterField label="Account">
             <select
               value={activeAccount}
-              onChange={(event) => updateParams({ account: event.target.value })}
+              onChange={(event) =>
+                updateParams({ account: event.target.value })
+              }
               disabled={accounts.length === 0}
               className="finance-control finance-focus h-10 w-full px-3 text-sm text-text-primary outline-none disabled:cursor-not-allowed disabled:opacity-60"
             >
@@ -330,6 +394,18 @@ export default function TransactionFilters({
               className="finance-control finance-focus h-10 w-full px-3 text-sm text-text-primary placeholder:text-text-secondary outline-none"
             />
           </FilterField>
+
+          {activeControlCount > 0 ? (
+            <div className="flex items-end sm:col-span-2 lg:col-span-4 lg:justify-end">
+              <button
+                onClick={clearFilters}
+                className="finance-focus min-h-10 rounded-full border border-border bg-surface px-4 py-2 text-xs font-semibold text-text-secondary transition-colors hover:bg-hover hover:text-text-primary"
+                type="button"
+              >
+                Clear all
+              </button>
+            </div>
+          ) : null}
         </div>
       ) : null}
     </div>
