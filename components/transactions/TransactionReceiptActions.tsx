@@ -8,6 +8,14 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import RefundModal, { type RefundExpense } from "./RefundModal";
 
+const receiptIconProps = {
+  size: 17,
+  strokeWidth: 2.3,
+  strokeLinecap: "round" as const,
+  strokeLinejoin: "round" as const,
+  "aria-hidden": true,
+};
+
 export default function TransactionReceiptActions({
   receiptText,
   receiptId,
@@ -52,11 +60,19 @@ export default function TransactionReceiptActions({
 
   return (
     <>
-      <div className="print:hidden flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:flex-wrap sm:items-center sm:justify-end">
+      <div
+        data-receipt-actions
+        className="print:hidden flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:flex-wrap sm:items-center sm:justify-end"
+      >
         {refundExpense && refundExpense.refundedAmount < refundExpense.amount ? (
-          <Button type="button" variant="success" onClick={() => setRefundOpen(true)}>
-            <RotateCcw size={16} aria-hidden="true" />
-            Record refund
+          <Button
+            type="button"
+            variant="success"
+            onClick={() => setRefundOpen(true)}
+            className="receipt-action receipt-action-refund"
+          >
+            <RotateCcw {...receiptIconProps} />
+            <span>Record refund</span>
           </Button>
         ) : null}
         <Button
@@ -65,21 +81,31 @@ export default function TransactionReceiptActions({
           variant="outline"
           loading={copying}
           loadingLabel="Copying..."
+          className="receipt-action"
         >
           {copied ? (
-            <Check size={16} aria-hidden="true" />
+            <Check {...receiptIconProps} />
           ) : (
-            <Copy size={16} aria-hidden="true" />
+            <Copy {...receiptIconProps} />
           )}
-          {copied ? "Copied" : "Copy receipt"}
+          <span>{copied ? "Copied" : "Copy receipt"}</span>
         </Button>
-        <Button type="button" variant="outline" onClick={handleDownload}>
-          <Download size={16} aria-hidden="true" />
-          Download
+        <Button
+          type="button"
+          variant="outline"
+          onClick={handleDownload}
+          className="receipt-action"
+        >
+          <Download {...receiptIconProps} />
+          <span>Download</span>
         </Button>
-        <Button type="button" onClick={() => window.print()}>
-          <Printer size={16} aria-hidden="true" />
-          Print / Save PDF
+        <Button
+          type="button"
+          onClick={() => window.print()}
+          className="receipt-action receipt-action-primary"
+        >
+          <Printer {...receiptIconProps} />
+          <span>Print / Save PDF</span>
         </Button>
       </div>
       {refundExpense ? (
