@@ -1,5 +1,6 @@
-/* Subtle financial-symbol atmosphere. The symbols stay behind content,
-   use only transform/opacity for motion, and reduce density on smaller screens. */
+/* Premium financial-symbol atmosphere shared by landing and authentication.
+   Motion stays transform/opacity-only, remains pointer-free, and keeps a lower
+   density on compact screens for smooth rendering. */
 
 .landing-math-field {
   position: fixed;
@@ -9,61 +10,110 @@
   pointer-events: none;
   user-select: none;
   contain: layout paint style;
-  opacity: 0.62;
+  opacity: 0.66;
+  filter: saturate(1.06);
+}
+
+/* Authentication uses the same rain inside its own viewport, behind all form
+   content. This changes no authentication layout, fields, or interactions. */
+.jf-auth-root {
+  position: relative;
+  isolation: isolate;
+}
+
+.jf-auth-root > :not(.landing-math-field) {
+  position: relative;
+  z-index: 1;
 }
 
 .auth-math-field {
-  z-index: 4;
-  opacity: 0.5;
+  position: absolute;
+  z-index: 0;
+  opacity: 0.46;
 }
 
 .landing-math-symbol {
+  --math-halo-opacity: 0.2;
+  --math-halo-scale: 1.14;
+
   position: absolute;
   top: -12vh;
   left: var(--math-x);
   display: block;
   width: 1em;
   height: 1em;
+  isolation: isolate;
   color: var(--math-symbol-color);
-  font-family: ui-rounded, "SF Pro Rounded", "Segoe UI Symbol", system-ui, sans-serif;
+  font-family: var(--font-geist-sans), "Geist", ui-rounded, "SF Pro Rounded",
+    "Segoe UI Symbol", system-ui, sans-serif;
   font-size: calc(clamp(1rem, 1.7vw, 2rem) * var(--math-size));
-  font-weight: 680;
+  font-weight: 760;
+  font-variant-numeric: tabular-nums lining-nums;
   line-height: 1;
+  letter-spacing: -0.04em;
   text-align: center;
-  text-shadow: 0 8px 24px color-mix(in srgb, var(--math-symbol-color) 20%, transparent);
+  text-rendering: geometricPrecision;
+  -webkit-font-smoothing: antialiased;
+  text-shadow:
+    0 0 0.42em color-mix(in srgb, var(--math-symbol-color) 22%, transparent),
+    0 0.4em 1.25em color-mix(in srgb, var(--math-symbol-color) 18%, transparent);
   opacity: 0;
-  filter: blur(0.15px);
   transform: translate3d(0, -12vh, 0) rotate(var(--math-rotate-start)) scale(0.78);
+  transform-origin: center;
+  backface-visibility: hidden;
   will-change: transform, opacity;
   animation: jf-symbol-drift var(--math-duration) var(--math-delay) linear infinite;
+}
+
+/* A soft same-colour echo gives each glyph depth without adding a card,
+   border, image, or extra moving layer. */
+.landing-math-symbol::after {
+  content: attr(data-glyph);
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  display: grid;
+  place-items: center;
+  color: inherit;
+  text-shadow: none;
+  opacity: var(--math-halo-opacity);
+  filter: blur(0.17em);
+  transform: scale(var(--math-halo-scale));
+}
+
+.landing-math-symbol:nth-child(even) {
+  animation-name: jf-symbol-drift-mirror;
+}
+
+.landing-math-symbol:nth-child(3n) {
+  --math-halo-opacity: 0.15;
+}
+
+.landing-math-symbol:nth-child(4n + 2) {
+  --math-halo-scale: 1.2;
 }
 
 .landing-math-symbol:nth-child(n + 13) {
   display: none;
 }
 
-.landing-math-symbol-plus { --math-symbol-color: #249a6d; }
-.landing-math-symbol-minus { --math-symbol-color: #d65f69; }
-.landing-math-symbol-multiply { --math-symbol-color: #7f6fd2; }
-.landing-math-symbol-divide { --math-symbol-color: #368eaf; }
-.landing-math-symbol-equals { --math-symbol-color: #b77b2c; }
-.landing-math-symbol-dollar { --math-symbol-color: #2f6ed8; }
+/* Semantic product colours automatically adapt to light and dark themes. */
+.landing-math-symbol-plus { --math-symbol-color: var(--income); }
+.landing-math-symbol-minus { --math-symbol-color: var(--expense); }
+.landing-math-symbol-multiply { --math-symbol-color: var(--investment); }
+.landing-math-symbol-divide { --math-symbol-color: var(--transfer); }
+.landing-math-symbol-equals { --math-symbol-color: var(--payables); }
+.landing-math-symbol-dollar { --math-symbol-color: var(--primary); }
+.landing-math-symbol-percent { --math-symbol-color: var(--goals); }
 
 .dark .landing-math-field {
-  opacity: 0.72;
-  filter: saturate(1.06) brightness(1.05);
+  opacity: 0.76;
+  filter: saturate(1.12) brightness(1.08);
 }
 
 .dark .auth-math-field {
-  opacity: 0.48;
+  opacity: 0.52;
 }
-
-.dark .landing-math-symbol-plus { --math-symbol-color: #6bdba2; }
-.dark .landing-math-symbol-minus { --math-symbol-color: #fa8c93; }
-.dark .landing-math-symbol-multiply { --math-symbol-color: #b3a2ff; }
-.dark .landing-math-symbol-divide { --math-symbol-color: #72cee9; }
-.dark .landing-math-symbol-equals { --math-symbol-color: #efba68; }
-.dark .landing-math-symbol-dollar { --math-symbol-color: #78a8ff; }
 
 @keyframes jf-symbol-drift {
   0% {
@@ -74,11 +124,11 @@
     opacity: calc(var(--math-opacity) * 0.65);
   }
   38% {
-    opacity: calc(var(--math-opacity) * 0.72);
+    opacity: calc(var(--math-opacity) * 0.74);
     transform: translate3d(var(--math-drift-a), 31vh, 0) rotate(-2deg) scale(0.9);
   }
   70% {
-    opacity: calc(var(--math-opacity) * 0.58);
+    opacity: calc(var(--math-opacity) * 0.6);
     transform: translate3d(var(--math-drift-b), 72vh, 0) rotate(var(--math-rotate-end)) scale(0.98);
   }
   100% {
@@ -87,9 +137,35 @@
   }
 }
 
+@keyframes jf-symbol-drift-mirror {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, -12vh, 0) rotate(var(--math-rotate-start)) scale(0.78);
+  }
+  10% {
+    opacity: calc(var(--math-opacity) * 0.62);
+  }
+  38% {
+    opacity: calc(var(--math-opacity) * 0.72);
+    transform: translate3d(calc(var(--math-drift-a) * -1), 31vh, 0) rotate(2deg) scale(0.91);
+  }
+  70% {
+    opacity: calc(var(--math-opacity) * 0.58);
+    transform: translate3d(calc(var(--math-drift-b) * -1), 72vh, 0) rotate(calc(var(--math-rotate-end) * -1)) scale(0.98);
+  }
+  100% {
+    opacity: 0;
+    transform: translate3d(calc(var(--math-drift-c) * -1), 112vh, 0) rotate(calc(var(--math-rotate-end) * -1)) scale(1.04);
+  }
+}
+
 @media (max-width: 1023px) {
   .landing-math-field {
-    opacity: 0.5;
+    opacity: 0.52;
+  }
+
+  .auth-math-field {
+    opacity: 0.42;
   }
 
   .landing-math-symbol {
@@ -104,16 +180,19 @@
 @media (max-width: 639px) {
   .landing-math-field {
     z-index: 2;
-    opacity: 0.4;
+    opacity: 0.42;
   }
 
   .auth-math-field {
-    opacity: 0.38;
+    z-index: 0;
+    opacity: 0.34;
   }
 
   .landing-math-symbol {
     font-size: calc(clamp(0.85rem, 5vw, 1.3rem) * var(--math-size));
-    text-shadow: 0 5px 18px color-mix(in srgb, var(--math-symbol-color) 15%, transparent);
+    text-shadow:
+      0 0 0.34em color-mix(in srgb, var(--math-symbol-color) 20%, transparent),
+      0 0.3em 0.9em color-mix(in srgb, var(--math-symbol-color) 14%, transparent);
   }
 
   .landing-math-symbol:nth-child(n + 7) {
@@ -121,8 +200,8 @@
   }
 }
 
-/* Landing-only responsive scale. Large and LED displays use a visibly stronger
-   symbol size while auth sizing, density, and animation behavior stay unchanged. */
+/* Landing-only responsive scale. Auth stays quieter while large and LED
+   landing displays receive stronger proportional symbols. */
 @media (max-width: 639px) {
   .landing-math-field:not(.auth-math-field) .landing-math-symbol {
     font-size: calc(clamp(1rem, 5.4vw, 1.4rem) * var(--math-size));
