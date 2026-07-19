@@ -79,7 +79,6 @@ export default function QuickActionsBalance({
     summary.value === null ? "Unavailable" : formatCurrency(summary.value);
   const balanceSize = getBalanceSize(displayTotalBalance);
   const quickActionsRef = useRef<HTMLDivElement>(null);
-  const launchCleanupRef = useRef<(() => void) | null>(null);
 
   const [transactionType, setTransactionType] =
     useState<TransactionType>("income");
@@ -156,101 +155,7 @@ export default function QuickActionsBalance({
     };
   }, []);
 
-  useEffect(() => {
-    return () => launchCleanupRef.current?.();
-  }, []);
-
-  function prepareFormLaunch(trigger: HTMLButtonElement) {
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-
-    launchCleanupRef.current?.();
-
-    const triggerRect = trigger.getBoundingClientRect();
-    const originX = triggerRect.left + triggerRect.width / 2;
-    const originY = triggerRect.top + triggerRect.height / 2;
-    const root = document.documentElement;
-    let modal: HTMLElement | null = null;
-    let attached = false;
-    let animationFrame = 0;
-    let fallbackTimer = 0;
-
-    trigger.setAttribute("data-launching", "true");
-    root.setAttribute("data-quick-action-launch-pending", "true");
-
-    const observer = new MutationObserver(() => attachLaunchAnimation());
-
-    const cleanup = () => {
-      observer.disconnect();
-      window.cancelAnimationFrame(animationFrame);
-      window.clearTimeout(fallbackTimer);
-      root.removeAttribute("data-quick-action-launch-pending");
-      trigger.removeAttribute("data-launching");
-
-      if (modal) {
-        modal.classList.remove("quick-action-form-launch");
-        modal.style.removeProperty("--quick-action-launch-x");
-        modal.style.removeProperty("--quick-action-launch-y");
-        modal.style.removeProperty("--quick-action-launch-mid-x");
-        modal.style.removeProperty("--quick-action-launch-mid-y");
-      }
-
-      if (launchCleanupRef.current === cleanup) {
-        launchCleanupRef.current = null;
-      }
-    };
-
-    function attachLaunchAnimation() {
-      if (attached) return;
-
-      const openModals = document.querySelectorAll<HTMLElement>(
-        '[data-slot="dialog-content"].finance-modal-content',
-      );
-      const nextModal = openModals.item(openModals.length - 1);
-      if (!nextModal) return;
-
-      attached = true;
-      modal = nextModal;
-      observer.disconnect();
-
-      animationFrame = window.requestAnimationFrame(() => {
-        if (!modal) return;
-
-        const modalRect = modal.getBoundingClientRect();
-        const modalCenterX = modalRect.left + modalRect.width / 2;
-        const modalCenterY = modalRect.top + modalRect.height / 2;
-        const translateX = originX - modalCenterX;
-        const translateY = originY - modalCenterY;
-
-        modal.style.setProperty("--quick-action-launch-x", `${translateX}px`);
-        modal.style.setProperty("--quick-action-launch-y", `${translateY}px`);
-        modal.style.setProperty(
-          "--quick-action-launch-mid-x",
-          `${translateX * 0.12}px`,
-        );
-        modal.style.setProperty(
-          "--quick-action-launch-mid-y",
-          `${translateY * 0.12}px`,
-        );
-        modal.classList.add("quick-action-form-launch");
-        root.removeAttribute("data-quick-action-launch-pending");
-        modal.addEventListener("animationend", cleanup, { once: true });
-      });
-    }
-
-    launchCleanupRef.current = cleanup;
-    observer.observe(document.body, {
-      childList: true,
-      subtree: true,
-      attributes: true,
-      attributeFilter: ["data-open"],
-    });
-    queueMicrotask(attachLaunchAnimation);
-    fallbackTimer = window.setTimeout(cleanup, 1800);
-  }
-
-  function openAction(action: QuickAction, trigger: HTMLButtonElement) {
-    prepareFormLaunch(trigger);
-
+  function openAction(action: QuickAction) {
     if (action === "income" || action === "expense") {
       setTransactionType(action);
       setTransactionOpen(true);
@@ -315,9 +220,7 @@ export default function QuickActionsBalance({
                   aria-label={action.ariaLabel}
                   title={action.ariaLabel}
                   data-action={action.key}
-                  onClick={(event) =>
-                    openAction(action.key, event.currentTarget)
-                  }
+                  onClick={() => openAction(action.key)}
                   className="dashboard-quick-action finance-focus group"
                 >
                   <span
