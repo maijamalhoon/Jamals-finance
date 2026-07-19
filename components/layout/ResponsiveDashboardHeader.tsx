@@ -46,7 +46,21 @@ export default function ResponsiveDashboardHeader({
 
   if (mode === "desktop") {
     return (
-      <div className="jf-dashboard-header-wrap shrink-0 print:hidden [&_.jf-desktop-header]:!bg-transparent [&_.jf-desktop-header>div]:!border-0">
+      <div className="jf-dashboard-header-wrap shrink-0 print:hidden">
+        <style jsx global>{`
+          @media (min-width: 1024px) {
+            .jf-dashboard-header-wrap,
+            .jf-dashboard-header-wrap .jf-desktop-header {
+              border: 0 !important;
+              background: var(--background) !important;
+              box-shadow: none !important;
+            }
+
+            .jf-dashboard-header-wrap .jf-desktop-header > div {
+              border: 0 !important;
+            }
+          }
+        `}</style>
         <DesktopHeader notificationSlot={notificationSlot} />
       </div>
     );
