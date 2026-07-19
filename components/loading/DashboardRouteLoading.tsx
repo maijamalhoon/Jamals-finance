@@ -25,162 +25,190 @@ type DashboardRouteLoadingVariant =
 
 function DashboardMetricSkeleton({ index }: { index: number }) {
   return (
-    <SkeletonPanel
-      className="dashboard-metric-card flex h-full min-h-[14.25rem] min-w-0 flex-col overflow-hidden p-4 sm:p-5"
-      delay={index * 35}
+    <article
+      className="dashboard-metric-card flex h-full min-w-0 flex-col"
+      aria-hidden="true"
     >
       <div className="flex min-h-0 flex-1 flex-col">
-        <SkeletonLine className="h-3 w-20 sm:w-24" delay={index * 35} />
+        <SkeletonLine className="h-2.5 w-16 sm:w-20" delay={index * 35} />
         <SkeletonLine
-          className="mt-7 h-9 w-[78%] max-w-44 sm:h-10"
+          className="mt-2.5 h-6 w-[78%] max-w-36 sm:h-7"
           delay={20 + index * 35}
         />
-        <div className="relative mt-auto h-[4.75rem] overflow-hidden pt-5">
-          <div className="absolute inset-x-0 bottom-3 h-px bg-border/50" />
+        <div className="relative mt-auto h-8 w-full overflow-hidden pt-2">
           <SkeletonLine
-            className="absolute bottom-7 left-[2%] h-1 w-[31%] origin-left -rotate-[8deg] rounded-full"
+            className="absolute bottom-2 left-[2%] h-1 w-[31%] origin-left -rotate-[7deg]"
             delay={40 + index * 35}
           />
           <SkeletonLine
-            className="absolute bottom-7 left-[31%] h-1 w-[28%] origin-left rotate-[7deg] rounded-full"
+            className="absolute bottom-2 left-[31%] h-1 w-[28%] origin-left rotate-[6deg]"
             delay={55 + index * 35}
           />
           <SkeletonLine
-            className="absolute bottom-5 left-[57%] h-1 w-[39%] origin-left -rotate-[5deg] rounded-full"
+            className="absolute bottom-1.5 left-[57%] h-1 w-[39%] origin-left -rotate-[4deg]"
             delay={70 + index * 35}
           />
         </div>
       </div>
-    </SkeletonPanel>
+    </article>
   );
 }
 
 function DashboardPulseSkeleton({ index }: { index: number }) {
   return (
-    <SkeletonPanel
-      className="dashboard-pulse-tile min-h-[116px] p-4 sm:p-5"
-      delay={index * 30}
+    <article
+      className="dashboard-pulse-tile flex min-w-0 flex-col"
+      aria-hidden="true"
     >
-      <div className="flex items-center justify-between gap-3">
-        <SkeletonLine className="h-3 w-24" delay={index * 30} />
+      <div className="flex min-w-0 items-center justify-between gap-3">
+        <SkeletonLine className="h-2.5 w-20" delay={index * 30} />
         <SkeletonLine
-          className="size-2.5 shrink-0 rounded-full"
+          className="size-2 shrink-0 rounded-full"
           delay={15 + index * 30}
         />
       </div>
       <SkeletonLine
-        className="mt-5 h-7 w-28 max-w-[70%]"
+        className="mt-2.5 h-5 w-24 max-w-[72%]"
         delay={30 + index * 30}
       />
       <SkeletonLine
-        className="mt-3 h-3 w-32 max-w-[84%]"
+        className="mt-auto h-2.5 w-28 max-w-[84%]"
         delay={45 + index * 30}
       />
-    </SkeletonPanel>
+    </article>
   );
 }
 
 function DashboardCardHeaderSkeleton({
   action = true,
   delay = 0,
+  bordered = false,
 }: {
   action?: boolean;
   delay?: number;
+  bordered?: boolean;
 }) {
   return (
-    <div className="flex min-w-0 items-start justify-between gap-3">
-      <div className="flex min-w-0 items-center gap-2">
+    <div
+      className={`flex min-w-0 items-center justify-between gap-3 ${
+        bordered ? "border-b border-border/55 pb-3" : ""
+      }`}
+    >
+      <div className="flex min-w-0 items-center gap-2.5">
         <SkeletonLine
-          className="size-4 shrink-0 rounded-[5px]"
+          className="size-6 shrink-0 rounded-[8px]"
           delay={delay}
         />
-        <SkeletonLine className="h-3 w-24" delay={delay + 15} />
+        <SkeletonLine className="h-2.5 w-24" delay={delay + 15} />
       </div>
       {action ? (
-        <SkeletonLine className="h-8 w-8 shrink-0 rounded-full" delay={delay + 30} />
+        <SkeletonLine
+          className="size-8 shrink-0 rounded-full"
+          delay={delay + 30}
+        />
       ) : null}
+    </div>
+  );
+}
+
+function DashboardDonutSkeleton({ delay = 0 }: { delay?: number }) {
+  return (
+    <div className="relative mx-auto aspect-square w-full max-w-[240px] min-[420px]:max-w-[248px] sm:max-w-[256px] md:max-w-[272px] lg:max-w-[288px] xl:max-w-[300px] 2xl:max-w-[260px]">
+      <SkeletonLine className="absolute inset-0 rounded-full" delay={delay} />
+      <div className="absolute inset-[23%] rounded-full bg-card" />
+      <div className="absolute inset-0 grid place-items-center">
+        <div className="w-[44%] space-y-2">
+          <SkeletonLine className="mx-auto h-5 w-full" delay={delay + 20} />
+          <SkeletonLine className="mx-auto h-2.5 w-3/4" delay={delay + 35} />
+        </div>
+      </div>
     </div>
   );
 }
 
 function DashboardSkeleton() {
   return (
-    <>
-      <SkeletonPanel className="dashboard-balance-hero overflow-hidden">
+    <div data-dashboard-loading className="grid w-full min-w-0 gap-6">
+      <section className="dashboard-balance-hero" aria-hidden="true">
         <div className="dashboard-balance-layout">
           <div className="dashboard-balance-copy min-w-0">
-            <SkeletonLine className="h-3 w-32 sm:w-36" />
-            <SkeletonLine className="mt-4 h-11 w-full max-w-[26rem] sm:h-14 lg:h-16" delay={25} />
+            <SkeletonLine className="h-2.5 w-28 sm:w-32" />
+            <SkeletonLine
+              className="mt-2.5 h-10 w-full max-w-[25rem] sm:h-12 lg:h-14"
+              delay={25}
+            />
           </div>
 
-          <div
-            aria-hidden="true"
-            className="dashboard-balance-actions pointer-events-none"
-          >
+          <div className="dashboard-balance-actions pointer-events-none">
             {Array.from({ length: 4 }, (_, index) => (
               <div
                 key={`dashboard-quick-action-${index}`}
                 className="dashboard-quick-action"
               >
                 <SkeletonLine
-                  className="dashboard-quick-action-icon size-full rounded-[inherit]"
+                  className="size-[2.85rem] rounded-full sm:size-[3.2rem]"
                   delay={50 + index * 30}
                 />
               </div>
             ))}
           </div>
         </div>
-      </SkeletonPanel>
+      </section>
 
       <section
         aria-label="Loading month-to-date financial metrics"
         className="grid w-full grid-cols-1 gap-4 min-[360px]:grid-cols-2 xl:grid-cols-4"
       >
         {Array.from({ length: 4 }, (_, index) => (
-          <DashboardMetricSkeleton key={`dashboard-metric-${index}`} index={index} />
+          <DashboardMetricSkeleton
+            key={`dashboard-metric-${index}`}
+            index={index}
+          />
         ))}
       </section>
 
       <section
         aria-label="Loading today’s financial pulse"
-        className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4"
+        className="grid grid-cols-1 gap-[0.65rem] min-[400px]:grid-cols-2 sm:gap-3 xl:grid-cols-4"
       >
         {Array.from({ length: 4 }, (_, index) => (
-          <DashboardPulseSkeleton key={`dashboard-pulse-${index}`} index={index} />
+          <DashboardPulseSkeleton
+            key={`dashboard-pulse-${index}`}
+            index={index}
+          />
         ))}
       </section>
 
       <div className="grid w-full grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,2fr)]">
-        <SkeletonPanel className="dashboard-graph-card flex h-full min-h-[220px] flex-col overflow-hidden p-4 sm:p-5">
+        <section className="dashboard-graph-card flex h-full min-h-[220px] flex-col overflow-hidden">
           <DashboardCardHeaderSkeleton action={false} />
-          <SkeletonLine className="mt-5 h-9 w-36 max-w-[72%]" delay={25} />
-          <SkeletonLine className="mt-3 h-5 w-40 max-w-[82%]" delay={45} />
-          <div className="relative mt-auto h-[132px] overflow-hidden rounded-[var(--radius-control)]">
-            <div className="absolute inset-x-0 bottom-3 h-px bg-border/60" />
-            <SkeletonLine className="absolute bottom-9 left-[2%] h-1 w-[28%] origin-left -rotate-[8deg]" delay={60} />
-            <SkeletonLine className="absolute bottom-9 left-[28%] h-1 w-[24%] origin-left rotate-[18deg]" delay={80} />
-            <SkeletonLine className="absolute bottom-4 left-[49%] h-1 w-[28%] origin-left -rotate-[20deg]" delay={100} />
-            <SkeletonLine className="absolute bottom-11 left-[74%] h-1 w-[24%] origin-left rotate-[8deg]" delay={120} />
+          <SkeletonLine className="mt-3 h-8 w-36 max-w-[72%]" delay={25} />
+          <SkeletonLine className="mt-2 h-3 w-32 max-w-[82%]" delay={45} />
+          <div className="relative mt-4 h-[124px] min-h-[124px] overflow-hidden sm:h-[138px] sm:min-h-[138px]">
+            <SkeletonLine
+              className="absolute bottom-[34%] left-[2%] h-1 w-[28%] origin-left -rotate-[7deg]"
+              delay={60}
+            />
+            <SkeletonLine
+              className="absolute bottom-[35%] left-[28%] h-1 w-[24%] origin-left rotate-[17deg]"
+              delay={80}
+            />
+            <SkeletonLine
+              className="absolute bottom-[18%] left-[49%] h-1 w-[28%] origin-left -rotate-[19deg]"
+              delay={100}
+            />
+            <SkeletonLine
+              className="absolute bottom-[41%] left-[74%] h-1 w-[24%] origin-left rotate-[7deg]"
+              delay={120}
+            />
           </div>
-        </SkeletonPanel>
+        </section>
 
-        <SkeletonPanel
-          className="finance-reference-card flex h-full min-w-0 flex-col overflow-hidden p-4 sm:p-5 lg:p-6"
-          delay={35}
-        >
+        <section className="finance-reference-card flex h-full min-h-[300px] min-w-0 flex-col overflow-hidden p-4 sm:p-5 lg:p-6">
           <DashboardCardHeaderSkeleton delay={35} />
           <div className="mt-5 grid min-h-0 flex-1 gap-5 md:grid-cols-[minmax(220px,0.86fr)_minmax(280px,1.14fr)] md:items-center">
             <div className="min-w-0">
-              <div className="relative mx-auto aspect-square w-full max-w-[240px] min-[420px]:max-w-[248px] sm:max-w-[256px] md:max-w-[272px] lg:max-w-[288px] xl:max-w-[300px] 2xl:max-w-[260px]">
-                <SkeletonLine className="absolute inset-0 rounded-full" delay={65} />
-                <div className="absolute inset-[22%] rounded-full bg-card" />
-                <div className="absolute inset-0 grid place-items-center">
-                  <div className="w-[42%] space-y-2">
-                    <SkeletonLine className="mx-auto h-7 w-full" delay={85} />
-                    <SkeletonLine className="mx-auto h-3 w-3/4" delay={100} />
-                  </div>
-                </div>
-              </div>
+              <DashboardDonutSkeleton delay={65} />
             </div>
 
             <div className="min-w-0 space-y-2.5">
@@ -194,35 +222,53 @@ function DashboardSkeleton() {
                     delay={90 + index * 25}
                   />
                   <div className="min-w-0 space-y-1.5 md:hidden">
-                    <SkeletonLine className="h-3 w-full" delay={100 + index * 25} />
-                    <SkeletonLine className="h-2.5 w-1/2" delay={110 + index * 25} />
+                    <SkeletonLine
+                      className="h-3 w-full"
+                      delay={100 + index * 25}
+                    />
+                    <SkeletonLine
+                      className="h-2 w-1/2"
+                      delay={110 + index * 25}
+                    />
                   </div>
-                  <SkeletonLine className="h-[3px] min-w-[76px]" delay={120 + index * 25} />
-                  <SkeletonLine className="h-3 w-10 md:w-20" delay={130 + index * 25} />
+                  <SkeletonLine
+                    className="h-[3px] min-w-[76px]"
+                    delay={120 + index * 25}
+                  />
+                  <SkeletonLine
+                    className="h-3 w-10 md:w-20"
+                    delay={130 + index * 25}
+                  />
                 </div>
               ))}
             </div>
           </div>
-        </SkeletonPanel>
+        </section>
 
-        <SkeletonPanel
-          className="finance-reference-card flex h-full min-h-[286px] min-w-0 flex-col overflow-hidden p-3.5 sm:min-h-[300px] sm:p-5"
-          delay={70}
-        >
+        <section className="finance-reference-card flex h-full min-h-[286px] min-w-0 flex-col overflow-hidden p-3.5 sm:min-h-[300px] sm:p-5">
           <div className="flex min-w-0 items-start justify-between gap-3">
             <div className="min-w-0 space-y-2">
-              <SkeletonLine className="h-3 w-36" delay={70} />
-              <SkeletonLine className="h-5 w-48 max-w-full" delay={85} />
+              <SkeletonLine className="h-2.5 w-32" delay={70} />
+              <SkeletonLine className="h-4 w-40 max-w-full" delay={85} />
             </div>
             <div className="flex shrink-0 gap-2">
-              <SkeletonLine className="h-8 w-10 rounded-[8px] sm:h-9 sm:w-11" delay={100} />
-              <SkeletonLine className="h-8 w-10 rounded-[8px] sm:h-9 sm:w-11" delay={115} />
+              <SkeletonLine
+                className="h-8 w-10 rounded-[8px] sm:h-9 sm:w-11"
+                delay={100}
+              />
+              <SkeletonLine
+                className="h-8 w-10 rounded-[8px] sm:h-9 sm:w-11"
+                delay={115}
+              />
             </div>
           </div>
           <div className="relative mt-5 min-h-[180px] flex-1 overflow-hidden rounded-[var(--radius-control)] border border-border/70 p-3 sm:min-h-[196px] sm:p-4">
             <div className="absolute inset-4 grid grid-rows-4">
               {Array.from({ length: 4 }, (_, index) => (
-                <span key={`cashflow-grid-${index}`} className="border-t border-border/55" />
+                <span
+                  key={`cashflow-grid-${index}`}
+                  className="border-t border-border/55"
+                />
               ))}
             </div>
             <SkeletonLine className="absolute bottom-[34%] left-[5%] h-1 w-[23%] origin-left -rotate-[7deg]" delay={130} />
@@ -234,71 +280,107 @@ function DashboardSkeleton() {
             <SkeletonLine className="absolute bottom-[52%] left-[49%] h-1 w-[24%] origin-left rotate-[8deg] opacity-75" delay={185} />
             <SkeletonLine className="absolute bottom-[42%] left-[72%] h-1 w-[23%] origin-left -rotate-[9deg] opacity-75" delay={205} />
           </div>
-        </SkeletonPanel>
+        </section>
       </div>
 
       <div className="grid w-full grid-cols-1 items-stretch gap-4 lg:grid-cols-3">
-        <SkeletonPanel className="finance-reference-card flex h-full min-h-[320px] min-w-0 flex-col overflow-hidden p-4 sm:p-5">
+        <section className="finance-reference-card flex h-full min-h-[300px] min-w-0 flex-col overflow-hidden p-4 sm:p-5">
           <DashboardCardHeaderSkeleton />
-          <div className="mt-7 flex min-h-0 flex-1 items-center gap-5">
-            <div className="relative size-32 shrink-0 sm:size-36">
-              <SkeletonLine className="absolute inset-0 rounded-full" delay={35} />
-              <div className="absolute inset-[25%] rounded-full bg-card" />
+          <div className="mt-4 grid min-h-0 flex-1 items-center gap-6 sm:grid-cols-[minmax(220px,0.95fr)_minmax(0,1.05fr)] sm:gap-5 2xl:grid-cols-1">
+            <div className="flex min-w-0 justify-center">
+              <DashboardDonutSkeleton delay={35} />
             </div>
-            <div className="min-w-0 flex-1 space-y-4">
-              {Array.from({ length: 4 }, (_, index) => (
-                <div key={`spending-legend-${index}`} className="flex items-center gap-2.5">
-                  <SkeletonLine className="size-2.5 shrink-0 rounded-full" delay={60 + index * 25} />
-                  <SkeletonLine className="h-3 flex-1" delay={70 + index * 25} />
-                  <SkeletonLine className="h-3 w-10" delay={80 + index * 25} />
+            <div className="min-w-0 space-y-2.5">
+              {Array.from({ length: 5 }, (_, index) => (
+                <div
+                  key={`spending-legend-${index}`}
+                  className="grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-3"
+                >
+                  <div className="flex min-w-0 items-center gap-2.5">
+                    <SkeletonLine
+                      className="size-2.5 shrink-0 rounded-full"
+                      delay={60 + index * 25}
+                    />
+                    <SkeletonLine
+                      className="h-3 flex-1"
+                      delay={70 + index * 25}
+                    />
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <SkeletonLine
+                      className="h-2.5 w-12"
+                      delay={80 + index * 25}
+                    />
+                    <SkeletonLine
+                      className="h-2.5 w-8"
+                      delay={90 + index * 25}
+                    />
+                  </div>
                 </div>
               ))}
             </div>
           </div>
-        </SkeletonPanel>
+        </section>
 
-        <SkeletonPanel
-          className="finance-reference-card flex h-full min-h-[320px] min-w-0 flex-col overflow-hidden p-4 sm:p-5"
-          delay={35}
-        >
+        <section className="finance-reference-card flex h-full min-h-[300px] min-w-0 flex-col overflow-hidden p-4 sm:p-5">
           <DashboardCardHeaderSkeleton delay={35} />
-          <div className="mt-6 space-y-5">
+          <div className="mt-4 min-h-0 flex-1">
             {Array.from({ length: 4 }, (_, index) => (
-              <div key={`goal-loading-row-${index}`} className="space-y-2.5">
-                <div className="flex items-center gap-3">
-                  <SkeletonLine className="size-8 shrink-0 rounded-full" delay={60 + index * 25} />
-                  <SkeletonLine className="h-3 flex-1" delay={70 + index * 25} />
-                  <SkeletonLine className="h-3 w-12" delay={80 + index * 25} />
+              <div
+                key={`goal-loading-row-${index}`}
+                className="border-b border-border/65 py-2.5 first:pt-0 last:border-b-0 last:pb-0"
+              >
+                <div className="grid min-w-0 grid-cols-[36px_minmax(0,1fr)] items-center gap-2.5">
+                  <SkeletonLine
+                    className="size-9 shrink-0 rounded-full"
+                    delay={60 + index * 25}
+                  />
+                  <div className="min-w-0 space-y-1.5">
+                    <SkeletonLine
+                      className="h-3 w-2/3"
+                      delay={70 + index * 25}
+                    />
+                    <SkeletonLine
+                      className="h-2.5 w-4/5"
+                      delay={80 + index * 25}
+                    />
+                  </div>
                 </div>
-                <SkeletonLine className="h-2 w-full" delay={90 + index * 25} />
+                <SkeletonLine
+                  className="mt-2 h-1.5 w-full"
+                  delay={90 + index * 25}
+                />
               </div>
             ))}
           </div>
-        </SkeletonPanel>
+        </section>
 
-        <SkeletonPanel
-          className="finance-reference-card flex h-full min-h-[320px] min-w-0 flex-col overflow-hidden p-4 sm:p-5"
-          delay={70}
-        >
-          <DashboardCardHeaderSkeleton delay={70} />
-          <div className="mt-5 space-y-2.5">
+        <section className="finance-reference-card flex min-h-[280px] min-w-0 flex-col overflow-hidden p-4 sm:p-5">
+          <DashboardCardHeaderSkeleton bordered delay={70} />
+          <div className="mt-1.5 flex min-w-0 flex-1 flex-col">
             {Array.from({ length: 5 }, (_, index) => (
               <div
                 key={`recent-transaction-loading-row-${index}`}
-                className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 py-2"
+                className="grid min-w-0 grid-cols-[34px_minmax(0,1fr)_auto] items-center gap-2.5 border-b border-border/45 py-3 first:pt-2 last:border-b-0 last:pb-0"
               >
-                <SkeletonLine className="size-9 shrink-0 rounded-full" delay={90 + index * 25} />
-                <div className="min-w-0 space-y-2">
-                  <SkeletonLine className="h-3 w-3/4" delay={100 + index * 25} />
-                  <SkeletonLine className="h-2.5 w-1/2" delay={110 + index * 25} />
-                </div>
-                <SkeletonLine className="h-4 w-16" delay={120 + index * 25} />
+                <SkeletonLine
+                  className="size-[34px] shrink-0 rounded-full"
+                  delay={90 + index * 25}
+                />
+                <SkeletonLine
+                  className="h-3 w-3/4"
+                  delay={100 + index * 25}
+                />
+                <SkeletonLine
+                  className="h-3.5 w-16"
+                  delay={115 + index * 25}
+                />
               </div>
             ))}
           </div>
-        </SkeletonPanel>
+        </section>
       </div>
-    </>
+    </div>
   );
 }
 
@@ -321,7 +403,11 @@ function LedgerSkeleton() {
           <SkeletonLine className="h-5 w-40" />
           <div className="mt-5 space-y-3">
             {Array.from({ length: 5 }, (_, index) => (
-              <SkeletonLine key={`breakdown-${index}`} className="h-9 rounded-[var(--radius-control)]" delay={index * 20} />
+              <SkeletonLine
+                key={`breakdown-${index}`}
+                className="h-9 rounded-[var(--radius-control)]"
+                delay={index * 20}
+              />
             ))}
           </div>
         </SkeletonPanel>
@@ -352,7 +438,11 @@ function PayablesSkeleton() {
       </SkeletonPanel>
       <div className="space-y-4">
         {Array.from({ length: 4 }, (_, index) => (
-          <SkeletonPanel key={`payable-${index}`} className="min-h-[250px]" delay={index * 35}>
+          <SkeletonPanel
+            key={`payable-${index}`}
+            className="min-h-[250px]"
+            delay={index * 35}
+          >
             <div className="grid min-w-0 gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(20rem,0.55fr)]">
               <div className="space-y-3">
                 <SkeletonLine className="h-6 w-24" />
@@ -386,7 +476,11 @@ function InvestmentsSkeleton() {
           </div>
           <div className="grid grid-cols-2 gap-3">
             {Array.from({ length: 4 }, (_, index) => (
-              <SkeletonLine key={`portfolio-metric-${index}`} className="h-20 rounded-[var(--radius-control)]" delay={index * 20} />
+              <SkeletonLine
+                key={`portfolio-metric-${index}`}
+                className="h-20 rounded-[var(--radius-control)]"
+                delay={index * 20}
+              />
             ))}
           </div>
         </div>
@@ -412,7 +506,11 @@ function AnalyticsSkeleton() {
         <SkeletonLine className="h-5 w-48" />
         <div className="mt-5 grid gap-3 sm:grid-cols-3">
           {Array.from({ length: 3 }, (_, index) => (
-            <SkeletonLine key={`analytics-source-${index}`} className="h-28 rounded-[var(--radius-control)]" delay={index * 25} />
+            <SkeletonLine
+              key={`analytics-source-${index}`}
+              className="h-28 rounded-[var(--radius-control)]"
+              delay={index * 25}
+            />
           ))}
         </div>
       </SkeletonPanel>
@@ -427,7 +525,11 @@ function SettingsSkeleton() {
       <div className="grid min-w-0 gap-4 lg:grid-cols-[minmax(14rem,0.38fr)_minmax(0,1fr)]">
         <SkeletonPanel className="space-y-3">
           {Array.from({ length: 6 }, (_, index) => (
-            <SkeletonLine key={`settings-tab-${index}`} className="h-11 rounded-[var(--radius-control)]" delay={index * 20} />
+            <SkeletonLine
+              key={`settings-tab-${index}`}
+              className="h-11 rounded-[var(--radius-control)]"
+              delay={index * 20}
+            />
           ))}
         </SkeletonPanel>
         <FormSkeleton fields={4} />
@@ -443,12 +545,20 @@ function AiSkeleton() {
       <MetricGridSkeleton count={3} />
       <div className="grid min-w-0 gap-4 xl:grid-cols-2">
         {Array.from({ length: 2 }, (_, index) => (
-          <SkeletonPanel key={`ai-panel-${index}`} className="min-h-[300px]" delay={index * 35}>
+          <SkeletonPanel
+            key={`ai-panel-${index}`}
+            className="min-h-[300px]"
+            delay={index * 35}
+          >
             <SkeletonLine className="h-5 w-40" />
             <SkeletonLine className="mt-4 h-20 rounded-[var(--radius-control)]" />
             <div className="mt-4 space-y-3">
               {Array.from({ length: 4 }, (_, row) => (
-                <SkeletonLine key={`ai-panel-${index}-${row}`} className="h-12 rounded-[var(--radius-control)]" delay={row * 20} />
+                <SkeletonLine
+                  key={`ai-panel-${index}-${row}`}
+                  className="h-12 rounded-[var(--radius-control)]"
+                  delay={row * 20}
+                />
               ))}
             </div>
           </SkeletonPanel>
@@ -490,7 +600,7 @@ export default function DashboardRouteLoading({
       label={label}
       className={
         variant === "dashboard"
-          ? "dashboard-overview w-full space-y-6 pb-12"
+          ? "dashboard-overview w-full pb-12"
           : "space-y-5 pb-10 sm:space-y-6"
       }
     >
