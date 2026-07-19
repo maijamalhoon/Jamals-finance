@@ -1,0 +1,24 @@
+/* Final borderless form polish. */
+
+/* Form stays white; inner fields are only slightly darker for separation. */
+html:not(.dark) .finance-modal-content {
+  --surface-inset: #f2f5f9;
+  --input: #f2f5f9;
+}
+
+html:not(.dark) .finance-modal-content .field-input,
+html:not(.dark) .finance-modal-content [data-slot="select-trigger"],
+html:not(.dark) .finance-modal-content select.finance-control,
+html:not(.dark) .finance-modal-content textarea.field-input,
+html:not(.dark) .finance-modal-content [role="listbox"].field-input {
+  background: #f2f5f9 !important;
+}
+
+/* Remove the actual border box from every form button, not only its color. */
+.finance-modal-content button,
+.finance-modal-content [role="button"] {
+  border: 0 !important;
+  border-width: 0 !important;
+  border-style: none !important;
+  outline: none !important;
+}
