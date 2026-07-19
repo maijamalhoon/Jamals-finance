@@ -4,7 +4,7 @@ import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { AlertTriangle, Bell, Clock3, Target } from "lucide-react";
+import { AlertTriangle, BellRing, HandCoins, Target } from "lucide-react";
 
 import { createClient } from "@/lib/supabase/client";
 import type {
@@ -24,15 +24,15 @@ type NotificationPanelContentProps = {
 };
 
 const toneStyles: Record<NotificationTone, string> = {
-  danger: "bg-danger/10 text-danger",
-  warning: "bg-warning/10 text-warning",
-  info: "bg-info/10 text-info",
+  danger: "text-danger",
+  warning: "text-warning",
+  info: "text-info",
 };
 
 const notificationTriggerClassName =
   "finance-control finance-focus relative grid h-11 w-11 shrink-0 place-items-center rounded-[14px] font-sans text-text-secondary outline-none transition-[transform,background-color,border-color,box-shadow,color] hover:-translate-y-0.5 hover:text-text-primary active:scale-[0.97]";
 const GLASS_EASE = [0.22, 1, 0.36, 1] as const;
-const MENU_ICON_STROKE_WIDTH = 2;
+const MENU_ICON_STROKE_WIDTH = 2.35;
 
 function formatAlertDate(dateKey: string) {
   const [year, month, day] = dateKey.split("-").map(Number);
@@ -50,7 +50,7 @@ function NotificationSummaryRow({
   alert: NotificationInboxAlert;
   onNavigate: (alert: NotificationInboxAlert) => void;
 }) {
-  const SourceIcon = alert.source === "goal" ? Target : Clock3;
+  const SourceIcon = alert.source === "goal" ? Target : HandCoins;
   const sourceLabel = alert.source === "goal" ? "Goal" : "Payable";
 
   return (
@@ -58,26 +58,28 @@ function NotificationSummaryRow({
       href={alert.href}
       role="menuitem"
       onClick={() => onNavigate(alert)}
-      className={`finance-focus flex min-w-0 items-center gap-2 rounded-[10px] px-2 py-2 text-left transition-colors hover:bg-surface-soft ${
+      className={`finance-focus flex min-w-0 items-center gap-3 rounded-[13px] px-2.5 py-2.5 text-left transition-colors hover:bg-surface-soft ${
         alert.read === false ? "bg-brand/5" : ""
       }`}
       aria-label={`${alert.title}. Open ${sourceLabel.toLowerCase()}`}
     >
       <span
-        className={`grid size-7 shrink-0 place-items-center rounded-[9px] ${toneStyles[alert.tone]}`}
+        className={`grid size-8 shrink-0 place-items-center ${toneStyles[alert.tone]}`}
       >
         <SourceIcon
-          size={13}
+          size={17}
           strokeWidth={MENU_ICON_STROKE_WIDTH}
+          strokeLinecap="round"
+          strokeLinejoin="round"
           aria-hidden="true"
         />
       </span>
 
       <span className="min-w-0 flex-1">
-        <span className="line-clamp-2 block text-[12px] font-semibold leading-4 text-text-primary">
+        <span className="line-clamp-2 block text-[12.5px] font-semibold leading-[1.15rem] text-text-primary">
           {alert.title}
         </span>
-        <span className="mt-0.5 flex min-w-0 items-center gap-1 text-[9.5px] font-medium leading-3.5 text-text-tertiary">
+        <span className="mt-1 flex min-w-0 flex-wrap items-center gap-x-1.5 gap-y-0.5 text-[10px] font-medium leading-3.5 text-text-tertiary">
           <span>{sourceLabel}</span>
           <span aria-hidden="true">•</span>
           <span>{alert.urgency}</span>
@@ -87,7 +89,10 @@ function NotificationSummaryRow({
       </span>
 
       {alert.read === false ? (
-        <span className="size-1.5 shrink-0 rounded-full bg-brand" aria-label="Unread" />
+        <span
+          className="size-1.5 shrink-0 rounded-full bg-brand"
+          aria-label="Unread"
+        />
       ) : null}
     </Link>
   );
@@ -99,36 +104,72 @@ function NotificationPanelContent({
 }: NotificationPanelContentProps) {
   return (
     <>
-      <div className="px-2 pb-1 pt-0.5">
-        <p className="text-[11px] font-bold leading-5 text-text-primary">
-          Notifications
-        </p>
+      <div className="px-3 pb-2 pt-1.5">
+        <div className="flex items-center gap-2.5">
+          <span className="grid size-8 shrink-0 place-items-center text-info">
+            <BellRing
+              size={18}
+              strokeWidth={MENU_ICON_STROKE_WIDTH}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            />
+          </span>
+          <span className="min-w-0">
+            <span className="block text-[13px] font-bold leading-4 text-text-primary">
+              Notifications
+            </span>
+            <span className="mt-0.5 block text-[10px] font-medium leading-3.5 text-text-tertiary">
+              Goal deadlines and payable dues
+            </span>
+          </span>
+        </div>
       </div>
 
+      <div className="mx-2 h-px bg-divider/70" aria-hidden="true" />
+
       {state.status === "error" ? (
-        <div className="flex items-center gap-2 rounded-[10px] px-2 py-2.5 text-[12px] text-text-secondary">
-          <span className="grid size-7 shrink-0 place-items-center rounded-[9px] bg-danger/10 text-danger">
+        <div className="flex items-start gap-3 rounded-[13px] px-2.5 py-3 text-text-secondary">
+          <span className="grid size-8 shrink-0 place-items-center text-danger">
             <AlertTriangle
-              size={13}
+              size={17}
               strokeWidth={MENU_ICON_STROKE_WIDTH}
+              strokeLinecap="round"
+              strokeLinejoin="round"
               aria-hidden="true"
             />
           </span>
-          <span>Unavailable</span>
+          <span className="min-w-0">
+            <span className="block text-[12px] font-semibold text-text-primary">
+              Notifications unavailable
+            </span>
+            <span className="mt-0.5 block text-[10px] font-medium leading-3.5 text-text-tertiary">
+              Check your connection and try again.
+            </span>
+          </span>
         </div>
       ) : state.visibleAlerts.length === 0 ? (
-        <div className="flex items-center gap-2 rounded-[10px] px-2 py-2.5 text-[12px] text-text-secondary">
-          <span className="grid size-7 shrink-0 place-items-center rounded-[9px] bg-surface-soft text-text-tertiary">
-            <Bell
-              size={13}
+        <div className="flex items-start gap-3 rounded-[13px] px-2.5 py-3 text-text-secondary">
+          <span className="grid size-8 shrink-0 place-items-center text-info">
+            <BellRing
+              size={17}
               strokeWidth={MENU_ICON_STROKE_WIDTH}
+              strokeLinecap="round"
+              strokeLinejoin="round"
               aria-hidden="true"
             />
           </span>
-          <span>No notifications</span>
+          <span className="min-w-0">
+            <span className="block text-[12px] font-semibold text-text-primary">
+              All caught up
+            </span>
+            <span className="mt-0.5 block text-[10px] font-medium leading-3.5 text-text-tertiary">
+              No goal or payable alerts right now.
+            </span>
+          </span>
         </div>
       ) : (
-        <div className="max-h-[min(15rem,calc(100dvh-7rem))] overflow-y-auto overscroll-contain">
+        <div className="max-h-[min(17rem,calc(100dvh-7rem))] overflow-y-auto overscroll-contain px-0.5 py-1">
           {state.visibleAlerts.map((alert) => (
             <NotificationSummaryRow
               key={alert.id}
@@ -145,14 +186,17 @@ function NotificationPanelContent({
 export function NotificationCenterLoading() {
   return (
     <button
+      data-notification-trigger
       type="button"
       disabled
       aria-label="Loading current alerts"
       className={`${notificationTriggerClassName} cursor-wait opacity-70`}
     >
-      <Bell
-        size={18}
+      <BellRing
+        size={19}
         strokeWidth={MENU_ICON_STROKE_WIDTH}
+        strokeLinecap="round"
+        strokeLinejoin="round"
         aria-hidden="true"
       />
     </button>
@@ -252,6 +296,7 @@ export default function NotificationCenter({ state }: NotificationCenterProps) {
                   <motion.div
                     ref={mobilePanelRef}
                     key="mobile-notification-panel"
+                    data-notification-panel
                     data-slot="dropdown-menu-content"
                     role="menu"
                     aria-label="Notifications"
@@ -259,7 +304,7 @@ export default function NotificationCenter({ state }: NotificationCenterProps) {
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: -4, scale: 0.985 }}
                     transition={panelTransition}
-                    className="fixed right-4 z-[70] w-[15.5rem] max-w-[calc(100vw-2rem)] overflow-hidden rounded-[16px] border border-border/80 bg-surface-elevated/98 p-1.5 font-sans shadow-[0_18px_44px_rgb(15_23_42_/_0.18)] backdrop-blur-xl dark:shadow-[0_18px_48px_rgb(0_0_0_/_0.36)] sm:w-[16.5rem] lg:hidden"
+                    className="fixed right-4 z-[70] w-[17rem] max-w-[calc(100vw-2rem)] overflow-hidden rounded-[18px] border border-border/80 bg-surface-elevated/98 p-2 font-sans shadow-[0_18px_44px_rgb(15_23_42_/_0.18)] backdrop-blur-xl dark:shadow-[0_18px_48px_rgb(0_0_0_/_0.36)] sm:w-[18rem] lg:hidden"
                     style={{
                       top: "calc(max(1rem, env(safe-area-inset-top)) + 3.25rem)",
                     }}
@@ -278,6 +323,7 @@ export default function NotificationCenter({ state }: NotificationCenterProps) {
 
       <div ref={rootRef} className="relative z-[80]">
         <button
+          data-notification-trigger
           type="button"
           aria-label={triggerLabel}
           aria-haspopup="menu"
@@ -285,9 +331,11 @@ export default function NotificationCenter({ state }: NotificationCenterProps) {
           onClick={() => setOpen((value) => !value)}
           className={notificationTriggerClassName}
         >
-          <Bell
-            size={18}
+          <BellRing
+            size={19}
             strokeWidth={MENU_ICON_STROKE_WIDTH}
+            strokeLinecap="round"
+            strokeLinejoin="round"
             aria-hidden="true"
           />
           {showCount ? (
@@ -302,10 +350,11 @@ export default function NotificationCenter({ state }: NotificationCenterProps) {
 
         {open ? (
           <div
+            data-notification-panel
             data-slot="dropdown-menu-content"
             role="menu"
             aria-label="Notifications"
-            className="absolute right-0 top-[calc(100%+0.5rem)] z-[70] hidden w-[15rem] max-w-[calc(100vw-4rem)] overflow-hidden rounded-[14px] border border-border/70 bg-surface-elevated/98 p-1.5 font-sans shadow-[0_14px_36px_rgb(15_23_42_/_0.16)] backdrop-blur-xl dark:shadow-[0_16px_40px_rgb(0_0_0_/_0.34)] lg:block"
+            className="absolute right-0 top-[calc(100%+0.5rem)] z-[70] hidden w-[17rem] max-w-[calc(100vw-4rem)] overflow-hidden rounded-[18px] border border-border/70 bg-surface-elevated/98 p-2 font-sans shadow-[0_14px_36px_rgb(15_23_42_/_0.16)] backdrop-blur-xl dark:shadow-[0_16px_40px_rgb(0_0_0_/_0.34)] lg:block"
           >
             <NotificationPanelContent
               state={state}
