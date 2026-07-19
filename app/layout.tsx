@@ -23,6 +23,7 @@ import "./dark-icon-tone.css";
 import { Toaster } from "sonner";
 import DesktopOverscrollBounce from "@/components/motion/DesktopOverscrollBounce";
 import MotionProvider from "@/components/motion/MotionProvider";
+import GlobalConfirmDialog from "@/components/ui/global-confirm-dialog";
 import { CURRENCY_STORAGE_KEY } from "@/lib/currency";
 import ChartTooltipAutoDismiss from "@/components/charts/ChartTooltipAutoDismiss";
 import PWARegister from "./pwa-register";
@@ -202,6 +203,7 @@ export default function RootLayout({
       <body className="bg-background text-foreground antialiased">
         <MotionProvider>
           {children}
+          <GlobalConfirmDialog />
           <DesktopOverscrollBounce />
           <ChartTooltipAutoDismiss />
           <PWARegister />
