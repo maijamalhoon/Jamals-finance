@@ -1,4 +1,4 @@
-import { getAppMonthRange } from "@/lib/dates";
+import { getAppDateParts, getAppMonthRange } from "@/lib/dates";
 import { getPayableStatus } from "@/lib/finance-options";
 import {
   BASE_CURRENCY,
@@ -7,6 +7,13 @@ import {
   normalizeUsdToPkrRate,
   type SupportedCurrency,
 } from "@/lib/currency";
+import {
+  buildDeterministicFinanceAnswer,
+  parseDeterministicFinanceQuestion,
+  type DeterministicFinanceData,
+  type DeterministicFinanceIntent,
+  type FinancePayableRecord,
+} from "@/lib/ai/deterministic-finance-chat";
 import { createClient } from "@/lib/supabase/server";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -156,49 +163,92 @@ function jsonResponse(payload: Record<string, unknown>, status = 200) {
   });
 }
 
-async function getChatSummary() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-    error: authError,
-  } = await supabase.auth.getUser();
+function moneyFormatter(context: CurrencyContext) {
+  return (value: number) =>
+    formatMoney(value, {
+      currency: context.currency,
+      usdToPkrRate: context.rate,
+    });
+}
 
-  if (authError || !user) {
-    return {
-      ok: false as const,
-      response: jsonResponse(
-        {
-          error: "authentication_required",
-          message: "Please log in before using AI insights.",
-        },
-        401,
-      ),
-    };
+async function getExactFinanceData(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  intent: DeterministicFinanceIntent,
+): Promise<DeterministicFinanceData> {
+  if (intent.kind === "spending" || intent.kind === "income") {
+    const { data, error } = await supabase
+      .from("transactions")
+      .select("amount, date, type")
+      .gte("date", intent.range.start)
+      .lte("date", intent.range.end)
+      .is("deleted_at", null);
+
+    if (error) throw new Error("transactions_query_failed");
+    return { transactions: data ?? [] };
   }
 
+  if (intent.kind === "accounts") {
+    const { data, error } = await supabase.from("accounts").select("status");
+    if (error) throw new Error("accounts_query_failed");
+    return { accounts: data ?? [] };
+  }
+
+  if (intent.kind === "payables") {
+    const { data, error } = await supabase
+      .from("liabilities")
+      .select("remaining_amount, due_date, status");
+    if (error) throw new Error("payables_query_failed");
+
+    const payables = ((data ?? []) as RawPayable[]).map(
+      (payable): FinancePayableRecord => ({
+        remaining_amount: payable.remaining_amount,
+        status: getPayableStatus({
+          status: payable.status ?? "pending",
+          remaining_amount: toNumber(payable.remaining_amount),
+          due_date: payable.due_date ?? null,
+        }),
+      }),
+    );
+    return { payables };
+  }
+
+  const { data, error } = await supabase
+    .from("investments")
+    .select(
+      "id, name, symbol, asset_id, quantity, purchase_price, current_price, purchased_at",
+    );
+  if (error) throw new Error("investments_query_failed");
+  return { investments: data ?? [] };
+}
+
+async function getChatSummary(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+) {
   const { year, month, firstDay, lastDay } = getAppMonthRange();
-  const [transactionsResult, goalsResult, investmentsResult, payablesResult, accountsResult] =
-    await Promise.all([
-      supabase
-        .from("transactions")
-        .select("amount, type, categories(name)")
-        .gte("date", firstDay)
-        .lte("date", lastDay)
-        .is("deleted_at", null),
-      supabase
-        .from("goals")
-        .select("current_amount, target_amount, status"),
-      supabase
-        .from("investments")
-        .select("quantity, purchase_price, current_price"),
-      supabase
-        .from("liabilities")
-        .select("remaining_amount, due_date, status"),
-      supabase
-        .from("accounts")
-        .select("balance")
-        .eq("status", "active"),
-    ]);
+  const [
+    transactionsResult,
+    goalsResult,
+    investmentsResult,
+    payablesResult,
+    accountsResult,
+  ] = await Promise.all([
+    supabase
+      .from("transactions")
+      .select("amount, type, categories(name)")
+      .gte("date", firstDay)
+      .lte("date", lastDay)
+      .is("deleted_at", null),
+    supabase
+      .from("goals")
+      .select("current_amount, target_amount, status"),
+    supabase
+      .from("investments")
+      .select("quantity, purchase_price, current_price"),
+    supabase
+      .from("liabilities")
+      .select("remaining_amount, due_date, status"),
+    supabase.from("accounts").select("balance").eq("status", "active"),
+  ]);
 
   const failedQueries = [
     transactionsResult.error,
@@ -209,9 +259,7 @@ async function getChatSummary() {
   ].filter(Boolean);
 
   if (failedQueries.length > 0) {
-    console.error("AI chat fallback summary query failed", {
-      count: failedQueries.length,
-    });
+    throw new Error("finance_summary_query_failed");
   }
 
   const transactions = (transactionsResult.data ?? []) as RawTransaction[];
@@ -251,7 +299,7 @@ async function getChatSummary() {
   const categorySpendingTotals = Array.from(categoryMap.entries())
     .filter(([, amount]) => amount > 0)
     .map(([category, amount]) => ({ category, amount: round(amount) }))
-    .sort((a, b) => b.amount - a.amount)
+    .sort((left, right) => right.amount - left.amount)
     .slice(0, 8);
 
   const totalGoalTarget = goals.reduce(
@@ -306,7 +354,9 @@ async function getChatSummary() {
       cashBalance: round(cashBalance),
       investmentValue: round(investmentValue),
       payableRemaining: round(payableRemaining),
-      estimatedNetWorth: round(cashBalance + investmentValue - payableRemaining),
+      estimatedNetWorth: round(
+        cashBalance + investmentValue - payableRemaining,
+      ),
     },
     categorySpendingTotals,
     goalsSummary: {
@@ -331,7 +381,7 @@ async function getChatSummary() {
     },
   };
 
-  return { ok: true as const, summary };
+  return summary;
 }
 
 function buildPrompt(
@@ -340,9 +390,9 @@ function buildPrompt(
   context: CurrencyContext,
 ) {
   return `You are the finance chat assistant inside Jamal's Finance.
-Answer only from the summarized finance data below. Never invent records, names, or transactions.
+Answer only from the summarized finance data below. Never invent records, names, transactions, dates, or calculations.
 Use ${context.currency} for all user-facing money values. Stored values are PKR and 1 USD = ${context.rate.toFixed(2)} PKR. ${context.live ? "The exchange rate is live." : "The exchange rate is approximate."}
-Keep the answer practical and concise.
+If the requested answer cannot be calculated exactly from this summary, clearly say the required data is unavailable. Keep the answer concise.
 
 Finance summary:
 ${JSON.stringify(summary, null, 2)}
@@ -369,7 +419,6 @@ function parseJsonObject(text: string) {
   } catch {
     const start = cleaned.indexOf("{");
     const end = cleaned.lastIndexOf("}");
-
     if (start < 0 || end <= start) return null;
 
     try {
@@ -407,7 +456,6 @@ async function askGemini(
   const model =
     process.env.GEMINI_MODEL?.trim().replace(/^models\//, "") ||
     GEMINI_MODEL_FALLBACK;
-
   if (!apiKey) return null;
 
   const response = await fetch(
@@ -423,7 +471,7 @@ async function askGemini(
           },
         ],
         generationConfig: {
-          temperature: 0.3,
+          temperature: 0.2,
           maxOutputTokens: 900,
           responseMimeType: "application/json",
         },
@@ -433,9 +481,8 @@ async function askGemini(
   );
 
   const json = (await response.json().catch(() => null)) as GeminiResponse | null;
-
   if (!response.ok || !json || json.error) {
-    console.warn("AI chat provider unavailable; using finance fallback", {
+    console.warn("AI chat provider unavailable; using exact summary fallback", {
       status: json?.error?.status ?? response.statusText,
       code: json?.error?.code ?? response.status,
     });
@@ -451,99 +498,17 @@ async function askGemini(
   return text ? parseGeminiChat(text) : null;
 }
 
-function buildLocalAnswer(
+function buildLocalSummaryAnswer(
   summary: ChatSummary,
-  question: string,
   context: CurrencyContext,
 ) {
-  const normalizedQuestion = question.toLowerCase();
-  const money = (value: number) =>
-    formatMoney(value, {
-      currency: context.currency,
-      usdToPkrRate: context.rate,
-    });
-  const topCategory = summary.categorySpendingTotals[0];
-
-  if (/spend|spent|expense|category|kharch/.test(normalizedQuestion)) {
-    const answer = topCategory
-      ? `${topCategory.category} is your highest spending category this month at ${money(topCategory.amount)}. Your total monthly expenses are ${money(summary.currentMonth.expenses)}, so reviewing this category first will have the biggest impact.`
-      : `No categorized spending is available for this month yet. Add or categorize expenses and I will be able to identify where most of your money is going.`;
-
-    return {
-      answer,
-      followUps: [
-        "How can I reduce my biggest expense?",
-        "What is my monthly cash flow?",
-      ],
-    };
-  }
-
-  if (/cash flow|cashflow|income|saving|save|budget/.test(normalizedQuestion)) {
-    const direction = summary.currentMonth.net >= 0 ? "surplus" : "shortfall";
-    const answer = `This month you recorded ${money(summary.currentMonth.income)} in income and ${money(summary.currentMonth.expenses)} in expenses, leaving a ${direction} of ${money(Math.abs(summary.currentMonth.net))}. Your current savings rate is ${summary.currentMonth.savingsRate}%; ${summary.currentMonth.net >= 0 ? "direct part of the surplus toward goals or investments" : "reduce flexible spending before taking on new commitments"}.`;
-
-    return {
-      answer,
-      followUps: [
-        "Where did I spend the most?",
-        "What should I focus on next?",
-      ],
-    };
-  }
-
-  if (/goal|target/.test(normalizedQuestion)) {
-    const answer = summary.goalsSummary.count > 0
-      ? `You have ${summary.goalsSummary.count} goal${summary.goalsSummary.count === 1 ? "" : "s"}, with ${summary.goalsSummary.completedCount} completed and overall funding at ${summary.goalsSummary.completionPct}%. Use any monthly surplus to consistently fund the highest-priority unfinished goal.`
-      : "You do not have a savings goal recorded yet. Creating one clear target will make it easier to direct monthly surplus and track progress.";
-
-    return {
-      answer,
-      followUps: ["How much can I save this month?", "What should I focus on next?"],
-    };
-  }
-
-  if (/invest|portfolio|profit|loss|pnl/.test(normalizedQuestion)) {
-    const pnlDirection = summary.investmentSummary.totalPnL >= 0 ? "gain" : "loss";
-    const answer = summary.investmentSummary.count > 0
-      ? `Your ${summary.investmentSummary.count} investment record${summary.investmentSummary.count === 1 ? "" : "s"} are currently worth ${money(summary.investmentSummary.currentValue)}, with an estimated ${pnlDirection} of ${money(Math.abs(summary.investmentSummary.totalPnL))}. Review concentration and avoid adding more risk if cash flow or payables need attention first.`
-      : "No investments are currently recorded. Build a stable monthly surplus and emergency buffer before adding new investment risk.";
-
-    return {
-      answer,
-      followUps: ["What is my net balance?", "How can I improve my cash flow?"],
-    };
-  }
-
-  if (/payable|debt|loan|due|liabil/.test(normalizedQuestion)) {
-    const answer = summary.payablesSummary.remaining > 0
-      ? `You have ${money(summary.payablesSummary.remaining)} remaining across ${summary.payablesSummary.count} payable record${summary.payablesSummary.count === 1 ? "" : "s"}, including ${summary.payablesSummary.overdueCount} overdue. Clear overdue items first, then prioritize the largest or most expensive obligation.`
-      : "No outstanding payable balance is visible in your current summary. Keep repayments updated so your net balance remains accurate.";
-
-    return {
-      answer,
-      followUps: ["What should I pay first?", "What is my net balance?"],
-    };
-  }
-
-  if (/balance|worth|financial health|health/.test(normalizedQuestion)) {
-    return {
-      answer: `Your estimated net balance is ${money(summary.netBalance.estimatedNetWorth)}, based on ${money(summary.netBalance.cashBalance)} in cash, ${money(summary.netBalance.investmentValue)} in investments, and ${money(summary.netBalance.payableRemaining)} remaining in payables. The strongest next step is to protect positive monthly cash flow and address any overdue commitments.`,
-      followUps: ["How can I improve my cash flow?", "What should I focus on next?"],
-    };
-  }
-
-  const focus =
-    summary.payablesSummary.overdueCount > 0
-      ? `clear ${summary.payablesSummary.overdueCount} overdue payable record${summary.payablesSummary.overdueCount === 1 ? "" : "s"}`
-      : summary.currentMonth.net < 0
-        ? "reduce flexible spending and restore positive monthly cash flow"
-        : summary.goalsSummary.count > 0 && summary.goalsSummary.completionPct < 100
-          ? "direct part of your monthly surplus toward unfinished goals"
-          : "keep categories and balances updated while maintaining your monthly surplus";
-
+  const money = moneyFormatter(context);
   return {
-    answer: `Your current month net is ${money(summary.currentMonth.net)}, and your estimated net balance is ${money(summary.netBalance.estimatedNetWorth)}. The best next step is to ${focus}.`,
-    followUps: ["Where did I spend the most?", "How can I improve my cash flow?"],
+    answer: `I can calculate exact spending, income, account count, payable totals, and recorded investment profit. For this question, the available summary only shows current-month net of ${money(summary.currentMonth.net)} and estimated net balance of ${money(summary.netBalance.estimatedNetWorth)}; ask for one exact metric or date range.`,
+    followUps: [
+      "How much did I spend this month?",
+      "How much is currently payable?",
+    ],
   };
 }
 
@@ -565,21 +530,72 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const summaryResult = await getChatSummary();
-    if (!summaryResult.ok) return summaryResult.response;
+    const supabase = await createClient();
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+
+    if (authError || !user) {
+      return jsonResponse(
+        {
+          error: "authentication_required",
+          message: "Please log in before using AI insights.",
+        },
+        401,
+      );
+    }
 
     const context = getCurrencyContext(body);
-    const generated = await askGemini(
-      summaryResult.summary,
+    const intent = parseDeterministicFinanceQuestion(
       question,
-      context,
-    ).catch((error: unknown) => {
-      console.warn("AI chat request failed; using finance fallback", {
-        name: error instanceof Error ? error.name : "UnknownError",
-        message: error instanceof Error ? error.message : undefined,
-      });
-      return null;
-    });
+      getAppDateParts(),
+    );
+
+    if (intent) {
+      try {
+        const data = await getExactFinanceData(supabase, intent);
+        const calculated = buildDeterministicFinanceAnswer({
+          intent,
+          question,
+          data,
+          money: moneyFormatter(context),
+        });
+
+        return jsonResponse({
+          provider: "local-calculator",
+          model: "exact-finance-ledger-v1",
+          aiAvailable: true,
+          fallback: false,
+          deterministic: true,
+          ...calculated,
+        });
+      } catch (error) {
+        console.error("Exact finance chat calculation failed", {
+          name: error instanceof Error ? error.name : "UnknownError",
+          message: error instanceof Error ? error.message : undefined,
+        });
+        return jsonResponse(
+          {
+            error: "finance_data_unavailable",
+            message:
+              "I could not read the required finance records, so I did not estimate an answer. Please try again.",
+          },
+          503,
+        );
+      }
+    }
+
+    const summary = await getChatSummary(supabase);
+    const generated = await askGemini(summary, question, context).catch(
+      (error: unknown) => {
+        console.warn("AI chat request failed; using exact summary fallback", {
+          name: error instanceof Error ? error.name : "UnknownError",
+          message: error instanceof Error ? error.message : undefined,
+        });
+        return null;
+      },
+    );
 
     if (generated) {
       return jsonResponse({
@@ -589,6 +605,7 @@ export async function POST(request: NextRequest) {
           GEMINI_MODEL_FALLBACK,
         aiAvailable: true,
         fallback: false,
+        deterministic: false,
         ...generated,
       });
     }
@@ -598,10 +615,11 @@ export async function POST(request: NextRequest) {
       model: "finance-summary-fallback",
       aiAvailable: false,
       fallback: true,
-      ...buildLocalAnswer(summaryResult.summary, question, context),
+      deterministic: false,
+      ...buildLocalSummaryAnswer(summary, context),
     });
   } catch (error) {
-    console.error("AI chat fallback route failed", {
+    console.error("AI chat route failed", {
       name: error instanceof Error ? error.name : "UnknownError",
       message: error instanceof Error ? error.message : undefined,
     });
@@ -609,7 +627,7 @@ export async function POST(request: NextRequest) {
     return jsonResponse(
       {
         error: "chat_unavailable",
-        message: "AI chat is temporarily unavailable. Please try again.",
+        message: "Finance chat is temporarily unavailable. Please try again.",
       },
       503,
     );
