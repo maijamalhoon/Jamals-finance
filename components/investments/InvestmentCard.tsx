@@ -118,6 +118,30 @@ function formatPurchaseDate(value: string | null | undefined) {
   });
 }
 
+function getEditableInvestment(target: ExistingInvestment) {
+  if (!target.is_live_priced || target.purchase_currency === "USD") {
+    return target;
+  }
+
+  const quantity = toFiniteNumber(target.quantity);
+  const unitBuyPrice = toFiniteNumber(target.purchase_price);
+  const savedEnteredAmount = toFiniteNumber(target.purchase_price_original);
+  const enteredPkrAmount =
+    savedEnteredAmount ??
+    (quantity !== null && unitBuyPrice !== null
+      ? quantity * unitBuyPrice
+      : null);
+
+  if (enteredPkrAmount === null || enteredPkrAmount <= 0) return target;
+
+  return {
+    ...target,
+    purchase_price: enteredPkrAmount,
+    purchase_price_original: enteredPkrAmount,
+    purchase_currency: "PKR",
+  };
+}
+
 export default function InvestmentCard({
   inv,
   lots,
@@ -173,6 +197,7 @@ export default function InvestmentCard({
   const isProfit = pnl >= 0;
   const change24h = formatPriceChange(inv.price_change_24h, inv.price_source);
   const purchaseLots = lots?.length ? lots : [inv];
+  const singleLot = purchaseLots[0] ?? inv;
 
   async function handleDelete(target: ExistingInvestment) {
     if (!confirm(`Delete "${target.name}"? This cannot be undone.`)) return;
@@ -202,7 +227,9 @@ export default function InvestmentCard({
           <div className="absolute right-4 top-4 flex gap-1 opacity-100 transition-opacity sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100">
             <button
               type="button"
-              onClick={() => setEditingInvestment(inv)}
+              onClick={() =>
+                setEditingInvestment(getEditableInvestment(singleLot))
+              }
               className="icon-button h-8 w-8"
               aria-label="Edit investment"
             >
@@ -363,7 +390,9 @@ export default function InvestmentCard({
                     </div>
                     <button
                       type="button"
-                      onClick={() => setEditingInvestment(lot)}
+                      onClick={() =>
+                        setEditingInvestment(getEditableInvestment(lot))
+                      }
                       className="icon-button h-8 w-8"
                       aria-label={`Edit ${lot.name} buy`}
                     >
