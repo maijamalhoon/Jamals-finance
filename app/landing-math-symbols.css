@@ -121,6 +121,38 @@
   }
 }
 
+/* Landing-only responsive scale: gently larger at each viewport tier.
+   Auth sizing, symbol density, and animation behavior remain unchanged. */
+@media (max-width: 639px) {
+  .landing-math-field:not(.auth-math-field) .landing-math-symbol {
+    font-size: calc(clamp(1rem, 5.4vw, 1.4rem) * var(--math-size));
+  }
+}
+
+@media (min-width: 640px) and (max-width: 1023px) {
+  .landing-math-field:not(.auth-math-field) .landing-math-symbol {
+    font-size: calc(clamp(1.25rem, 3vw, 1.75rem) * var(--math-size));
+  }
+}
+
+@media (min-width: 1024px) and (max-width: 1439px) {
+  .landing-math-field:not(.auth-math-field) .landing-math-symbol {
+    font-size: calc(clamp(1.55rem, 1.8vw, 2.05rem) * var(--math-size));
+  }
+}
+
+@media (min-width: 1440px) and (max-width: 2199px) {
+  .landing-math-field:not(.auth-math-field) .landing-math-symbol {
+    font-size: calc(clamp(1.75rem, 1.55vw, 2.4rem) * var(--math-size));
+  }
+}
+
+@media (min-width: 2200px) {
+  .landing-math-field:not(.auth-math-field) .landing-math-symbol {
+    font-size: calc(clamp(2rem, 1.25vw, 2.75rem) * var(--math-size));
+  }
+}
+
 @media (prefers-reduced-motion: reduce), (forced-colors: active) {
   .landing-math-field {
     display: none;
