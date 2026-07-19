@@ -143,6 +143,39 @@ function normalizeAssetColorKey(value: string) {
   return value.toLowerCase().replace(/[^a-z0-9]+/g, "");
 }
 
+function normalizeGroupIdentity(value: string | null | undefined) {
+  return normalizeAssetColorKey(normalizeText(value));
+}
+
+function getCanonicalInvestmentType(investment: InvestmentLike) {
+  const source = normalizeKeyText(investment.price_source);
+
+  if (source === "coingecko") return "crypto";
+  if (source === "alpha_vantage") return "stocks";
+
+  const normalizedType = normalizeKeyText(investment.type)
+    .replace(/[\s-]+/g, "_")
+    .replace(/_+/g, "_");
+
+  if (["crypto", "cryptocurrency", "coin"].includes(normalizedType)) {
+    return "crypto";
+  }
+
+  if (
+    ["stock", "stocks", "equity", "equities", "share", "shares"].includes(
+      normalizedType,
+    )
+  ) {
+    return "stocks";
+  }
+
+  if (["realestate", "real_estate"].includes(normalizedType)) {
+    return "real_estate";
+  }
+
+  return normalizedType || "other";
+}
+
 function getBrandAssetColor(groupKey: string) {
   const normalizedGroupKey = normalizeAssetColorKey(groupKey);
   const alias = ASSET_BRAND_ALIASES.find((candidate) =>
@@ -153,19 +186,19 @@ function getBrandAssetColor(groupKey: string) {
 }
 
 export function getInvestmentGroupKey(investment: InvestmentLike) {
-  const assetId = normalizeKeyText(investment.asset_id);
-  const symbol = normalizeKeyText(investment.symbol);
-  const type = normalizeKeyText(investment.type) || "other";
+  const type = getCanonicalInvestmentType(investment);
+  const name = normalizeGroupIdentity(investment.name);
+  const symbol = normalizeGroupIdentity(investment.symbol);
+  const assetId = normalizeGroupIdentity(investment.asset_id);
 
-  if (assetId) {
-    return `${normalizeKeyText(investment.price_source) || "manual"}:${assetId}`;
-  }
+  // The selected market asset name is stable across new and legacy purchases.
+  // Using it first bridges older rows that may be missing symbol/provider metadata,
+  // so repeated buys of the same asset stay in one holding and one chart segment.
+  if (name) return `${type}:${name}`;
+  if (symbol) return `${type}:${symbol}`;
+  if (assetId) return `${type}:${assetId}`;
 
-  if (symbol) {
-    return `${type}:${symbol}`;
-  }
-
-  return `${type}:${normalizeKeyText(investment.name) || investment.id}`;
+  return `${type}:${investment.id}`;
 }
 
 export function getStableAssetColor(groupKey: string) {
@@ -231,7 +264,7 @@ export function aggregateInvestmentHoldings(investments: InvestmentLike[]) {
       {
         firstId: investment.id,
         name: normalizeText(investment.name) || "Investment",
-        type: normalizeText(investment.type) || "other",
+        type: getCanonicalInvestmentType(investment),
         quantity: 0,
         totalInvested: 0,
         weightedCurrentValue: 0,
