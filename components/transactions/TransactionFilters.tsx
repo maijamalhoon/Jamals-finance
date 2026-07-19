@@ -12,11 +12,38 @@ import {
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Filter, Search, X } from "lucide-react";
 import { BackgroundRefreshStatus } from "@/components/loading/LoadingPrimitives";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+} from "@/components/ui/select";
 
 export interface TransactionFilterOption {
   value: string;
   label: string;
 }
+
+const TYPE_OPTIONS: TransactionFilterOption[] = [
+  { value: "all", label: "All" },
+  { value: "income", label: "Income" },
+  { value: "expense", label: "Expense" },
+  { value: "payable", label: "Payable payment" },
+  { value: "refund", label: "Expense refund" },
+  { value: "investment", label: "Investment contribution" },
+  { value: "goal", label: "Goal contribution" },
+  { value: "transfer", label: "Transfer" },
+];
+
+const SORT_OPTIONS: TransactionFilterOption[] = [
+  { value: "newest", label: "Newest first" },
+  { value: "oldest", label: "Oldest first" },
+  { value: "highest", label: "Highest amount" },
+  { value: "lowest", label: "Lowest amount" },
+];
+
+const FILTER_CONTROL_CLASS =
+  "finance-focus h-11 min-h-11 w-full rounded-xl border-0 bg-surface-soft px-3.5 text-sm font-medium text-text-primary shadow-none outline-none transition-colors hover:bg-hover focus:bg-surface-elevated disabled:cursor-not-allowed disabled:opacity-55";
 
 export default function TransactionFilters({
   categories = [],
@@ -47,6 +74,15 @@ export default function TransactionFilters({
   const [source, setSource] = useState(searchParams.get("source") || "");
   const [person, setPerson] = useState(searchParams.get("person") || "");
   const [item, setItem] = useState(searchParams.get("item") || "");
+
+  const categoryOptions = useMemo(
+    () => [{ value: "all", label: "All categories" }, ...categories],
+    [categories],
+  );
+  const accountOptions = useMemo(
+    () => [{ value: "all", label: "All accounts" }, ...accounts],
+    [accounts],
+  );
 
   const updateParams = useCallback(
     (updates: Record<string, string>, resetLimit = true) => {
@@ -161,7 +197,7 @@ export default function TransactionFilters({
   const activeControlCount = activeFilterCount + (search ? 1 : 0);
 
   return (
-    <div className="mb-5 min-w-0 space-y-3" aria-busy={pending || undefined}>
+    <div className="mb-5 min-w-0 space-y-2.5" aria-busy={pending || undefined}>
       <div className="flex min-w-0 items-center justify-end gap-2">
         <div
           role="search"
@@ -260,146 +296,125 @@ export default function TransactionFilters({
       {open ? (
         <div
           id="transaction-filter-panel"
-          className="finance-panel-soft grid min-w-0 gap-3 p-3 sm:grid-cols-2 lg:grid-cols-4"
+          className="ml-auto grid w-full max-w-[72rem] min-w-0 gap-x-3 gap-y-3 pt-1 sm:grid-cols-2 xl:grid-cols-4"
         >
-          <FilterField label="Type">
-            <select
+          <FilterField label="Type" htmlFor="transaction-filter-type">
+            <FilterSelect
+              id="transaction-filter-type"
               value={activeType}
-              onChange={(event) => updateParams({ type: event.target.value })}
-              className="finance-control finance-focus h-10 w-full px-3 text-sm text-text-primary outline-none"
-            >
-              <option value="all">All</option>
-              <option value="income">Income</option>
-              <option value="expense">Expense</option>
-              <option value="payable">Payable payment</option>
-              <option value="refund">Expense refund</option>
-              <option value="investment">Investment contribution</option>
-              <option value="goal">Goal contribution</option>
-              <option value="transfer">Transfer</option>
-            </select>
+              options={TYPE_OPTIONS}
+              onValueChange={(value) => updateParams({ type: value })}
+            />
           </FilterField>
 
-          <FilterField label="From date">
+          <FilterField label="From date" htmlFor="transaction-filter-from">
             <input
+              id="transaction-filter-from"
               type="date"
               value={activeFrom}
               onChange={(event) => updateParams({ from: event.target.value })}
-              className="finance-control finance-focus h-10 w-full px-3 text-sm text-text-primary outline-none"
+              className={FILTER_CONTROL_CLASS}
             />
           </FilterField>
 
-          <FilterField label="To date">
+          <FilterField label="To date" htmlFor="transaction-filter-to">
             <input
+              id="transaction-filter-to"
               type="date"
               value={activeTo}
               onChange={(event) => updateParams({ to: event.target.value })}
-              className="finance-control finance-focus h-10 w-full px-3 text-sm text-text-primary outline-none"
+              className={FILTER_CONTROL_CLASS}
             />
           </FilterField>
 
-          <FilterField label="Category">
-            <select
+          <FilterField label="Category" htmlFor="transaction-filter-category">
+            <FilterSelect
+              id="transaction-filter-category"
               value={activeCategory}
-              onChange={(event) =>
-                updateParams({ category: event.target.value })
-              }
+              options={categoryOptions}
+              onValueChange={(value) => updateParams({ category: value })}
               disabled={categories.length === 0}
-              className="finance-control finance-focus h-10 w-full px-3 text-sm text-text-primary outline-none disabled:cursor-not-allowed disabled:opacity-60"
-            >
-              <option value="all">All categories</option>
-              {categories.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
+            />
           </FilterField>
 
-          <FilterField label="Account">
-            <select
+          <FilterField label="Account" htmlFor="transaction-filter-account">
+            <FilterSelect
+              id="transaction-filter-account"
               value={activeAccount}
-              onChange={(event) =>
-                updateParams({ account: event.target.value })
-              }
+              options={accountOptions}
+              onValueChange={(value) => updateParams({ account: value })}
               disabled={accounts.length === 0}
-              className="finance-control finance-focus h-10 w-full px-3 text-sm text-text-primary outline-none disabled:cursor-not-allowed disabled:opacity-60"
-            >
-              <option value="all">All accounts</option>
-              {accounts.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
+            />
           </FilterField>
 
-          <FilterField label="Sort">
-            <select
+          <FilterField label="Sort" htmlFor="transaction-filter-sort">
+            <FilterSelect
+              id="transaction-filter-sort"
               value={activeSort}
-              onChange={(event) => updateParams({ sort: event.target.value })}
-              className="finance-control finance-focus h-10 w-full px-3 text-sm text-text-primary outline-none"
-            >
-              <option value="newest">Newest first</option>
-              <option value="oldest">Oldest first</option>
-              <option value="highest">Highest amount</option>
-              <option value="lowest">Lowest amount</option>
-            </select>
+              options={SORT_OPTIONS}
+              onValueChange={(value) => updateParams({ sort: value })}
+            />
           </FilterField>
 
-          <FilterField label="Source">
+          <FilterField label="Source" htmlFor="transaction-filter-source">
             <input
+              id="transaction-filter-source"
               value={source}
               onChange={(event) => setSource(event.target.value)}
               placeholder="Ride, salary..."
-              className="finance-control finance-focus h-10 w-full px-3 text-sm text-text-primary placeholder:text-text-secondary outline-none"
+              className={`${FILTER_CONTROL_CLASS} placeholder:text-text-secondary`}
             />
           </FilterField>
 
-          <FilterField label="Person">
+          <FilterField label="Person" htmlFor="transaction-filter-person">
             <input
+              id="transaction-filter-person"
               value={person}
               onChange={(event) => setPerson(event.target.value)}
               placeholder="Person name"
-              className="finance-control finance-focus h-10 w-full px-3 text-sm text-text-primary placeholder:text-text-secondary outline-none"
+              className={`${FILTER_CONTROL_CLASS} placeholder:text-text-secondary`}
             />
           </FilterField>
 
-          <FilterField label="Item">
+          <FilterField label="Item" htmlFor="transaction-filter-item">
             <input
+              id="transaction-filter-item"
               value={item}
               onChange={(event) => setItem(event.target.value)}
               placeholder="Item name"
-              className="finance-control finance-focus h-10 w-full px-3 text-sm text-text-primary placeholder:text-text-secondary outline-none"
+              className={`${FILTER_CONTROL_CLASS} placeholder:text-text-secondary`}
             />
           </FilterField>
 
-          <FilterField label="Min amount">
+          <FilterField label="Min amount" htmlFor="transaction-filter-min">
             <input
+              id="transaction-filter-min"
               type="number"
               min="0"
               value={activeMin}
               onChange={(event) => updateParams({ min: event.target.value })}
               placeholder="0"
-              className="finance-control finance-focus h-10 w-full px-3 text-sm text-text-primary placeholder:text-text-secondary outline-none"
+              className={`${FILTER_CONTROL_CLASS} placeholder:text-text-secondary`}
             />
           </FilterField>
 
-          <FilterField label="Max amount">
+          <FilterField label="Max amount" htmlFor="transaction-filter-max">
             <input
+              id="transaction-filter-max"
               type="number"
               min="0"
               value={activeMax}
               onChange={(event) => updateParams({ max: event.target.value })}
               placeholder="10000"
-              className="finance-control finance-focus h-10 w-full px-3 text-sm text-text-primary placeholder:text-text-secondary outline-none"
+              className={`${FILTER_CONTROL_CLASS} placeholder:text-text-secondary`}
             />
           </FilterField>
 
           {activeControlCount > 0 ? (
-            <div className="flex items-end sm:col-span-2 lg:col-span-4 lg:justify-end">
+            <div className="flex items-end sm:col-span-2 xl:col-span-4 xl:justify-end">
               <button
                 onClick={clearFilters}
-                className="finance-focus min-h-10 rounded-full border border-border bg-surface px-4 py-2 text-xs font-semibold text-text-secondary transition-colors hover:bg-hover hover:text-text-primary"
+                className="finance-focus min-h-10 rounded-full bg-transparent px-3.5 py-2 text-xs font-semibold text-text-secondary transition-colors hover:bg-hover hover:text-text-primary"
                 type="button"
               >
                 Clear all
@@ -412,17 +427,75 @@ export default function TransactionFilters({
   );
 }
 
+function FilterSelect({
+  id,
+  value,
+  options,
+  onValueChange,
+  disabled,
+}: {
+  id: string;
+  value: string;
+  options: TransactionFilterOption[];
+  onValueChange: (value: string) => void;
+  disabled?: boolean;
+}) {
+  const selectedOption = options.find((option) => option.value === value);
+
+  return (
+    <Select
+      value={value}
+      onValueChange={(nextValue) => {
+        if (typeof nextValue === "string") onValueChange(nextValue);
+      }}
+      disabled={disabled}
+    >
+      <SelectTrigger
+        id={id}
+        className={`${FILTER_CONTROL_CLASS} gap-2 pr-3 text-left [&>svg]:ml-auto [&>svg]:text-text-muted`}
+      >
+        <span className="min-w-0 flex-1 truncate text-left">
+          {selectedOption?.label ?? options[0]?.label ?? ""}
+        </span>
+      </SelectTrigger>
+      <SelectContent
+        align="start"
+        sideOffset={6}
+        alignItemWithTrigger={false}
+        className="z-[90] max-h-[min(18rem,var(--available-height))] max-w-[calc(100vw_-_1.5rem)] rounded-2xl border-0 bg-surface-elevated p-1.5 shadow-premium"
+      >
+        {options.map((option) => (
+          <SelectItem
+            key={option.value}
+            value={option.value}
+            className="min-h-10 rounded-xl py-2.5 pr-9 pl-3 text-sm font-medium"
+          >
+            {option.label}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+  );
+}
+
 function FilterField({
   label,
+  htmlFor,
   children,
 }: {
   label: string;
+  htmlFor: string;
   children: ReactNode;
 }) {
   return (
-    <label className="space-y-1.5">
-      <span className="text-xs font-semibold text-text-secondary">{label}</span>
+    <div className="min-w-0 space-y-1.5">
+      <label
+        htmlFor={htmlFor}
+        className="block px-0.5 text-[11px] font-medium leading-none text-text-muted"
+      >
+        {label}
+      </label>
       {children}
-    </label>
+    </div>
   );
 }
