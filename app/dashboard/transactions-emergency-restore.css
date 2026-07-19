@@ -1,7 +1,7 @@
 /*
  * Emergency, exact-route restore for the Transactions page.
- * This file only controls layout/visibility. Transaction data, filtering,
- * sorting, editing and deletion logic remain untouched.
+ * Layout/visibility only. No transaction data, filters, sorting, edit/delete
+ * behavior or database logic is changed here.
  */
 
 [data-jf-page="transactions"],
@@ -19,7 +19,7 @@
   transform: none !important;
 }
 
-[data-jf-page="transactions"] [data-transactions-page] {
+[data-jf-page="transactions"] .jf-unified-page-body > div {
   display: grid !important;
   position: relative !important;
   width: 100% !important;
@@ -38,8 +38,9 @@
   transform: none !important;
 }
 
-[data-jf-page="transactions"] [data-transactions-heading] {
+[data-jf-page="transactions"] .jf-unified-page-body > div > :first-child {
   display: flex !important;
+  position: relative !important;
   grid-column: 1 !important;
   grid-row: 1 !important;
   min-width: 0 !important;
@@ -57,7 +58,7 @@
   pointer-events: auto !important;
 }
 
-[data-jf-page="transactions"] [data-transactions-heading]::before {
+[data-jf-page="transactions"] .jf-unified-page-body > div > :first-child::before {
   display: block !important;
   width: clamp(0.24rem, 0.35vw, 0.34rem) !important;
   height: clamp(1.35rem, 2.1vw, 1.85rem) !important;
@@ -68,7 +69,7 @@
   content: "" !important;
 }
 
-[data-jf-page="transactions"] [data-transactions-heading] .page-title {
+[data-jf-page="transactions"] .jf-unified-page-body > div > :first-child .page-title {
   display: block !important;
   min-width: 0 !important;
   margin: 0 !important;
@@ -82,7 +83,7 @@
   opacity: 1 !important;
 }
 
-[data-jf-page="transactions"] [data-transactions-filters] {
+[data-jf-page="transactions"] .jf-unified-page-body > div > :nth-child(2) {
   display: block !important;
   position: relative !important;
   grid-column: 2 !important;
@@ -99,11 +100,11 @@
   transform: none !important;
 }
 
-[data-jf-page="transactions"] [data-transactions-filters] > div {
+[data-jf-page="transactions"] .jf-unified-page-body > div > :nth-child(2) > div {
   margin: 0 !important;
 }
 
-[data-jf-page="transactions"] [data-transactions-list] {
+[data-jf-page="transactions"] .jf-unified-page-body > div > :nth-child(3) {
   display: block !important;
   position: relative !important;
   grid-column: 1 / -1 !important;
@@ -121,7 +122,7 @@
   inset: auto !important;
 }
 
-[data-jf-page="transactions"] [data-transactions-list] > * {
+[data-jf-page="transactions"] .jf-unified-page-body > div > :nth-child(3) > * {
   width: 100% !important;
   min-width: 0 !important;
   max-width: 100% !important;
@@ -131,32 +132,32 @@
 }
 
 @media (max-width: 639px) {
-  [data-jf-page="transactions"] [data-transactions-page] {
+  [data-jf-page="transactions"] .jf-unified-page-body > div {
     grid-template-columns: minmax(0, 1fr) auto !important;
     column-gap: 0.375rem !important;
     row-gap: 0.7rem !important;
   }
 
-  [data-jf-page="transactions"] [data-transactions-heading] {
+  [data-jf-page="transactions"] .jf-unified-page-body > div > :first-child {
     min-height: 2.5rem !important;
   }
 
-  [data-jf-page="transactions"] [data-transactions-heading] .page-title {
+  [data-jf-page="transactions"] .jf-unified-page-body > div > :first-child .page-title {
     font-size: 1rem !important;
     line-height: 1.25rem !important;
   }
 
-  [data-jf-page="transactions"] [data-transactions-list] {
+  [data-jf-page="transactions"] .jf-unified-page-body > div > :nth-child(3) {
     padding: 0.5rem !important;
   }
 }
 
 @media (max-width: 360px) {
-  [data-jf-page="transactions"] [data-transactions-heading] {
+  [data-jf-page="transactions"] .jf-unified-page-body > div > :first-child {
     gap: 0.4rem !important;
   }
 
-  [data-jf-page="transactions"] [data-transactions-heading] .page-title {
+  [data-jf-page="transactions"] .jf-unified-page-body > div > :first-child .page-title {
     font-size: 0.94rem !important;
   }
 }
