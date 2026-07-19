@@ -106,28 +106,59 @@
   justify-content: flex-end !important;
 }
 
-/* Transactions keep search and filter controls in the requested top-right slot. */
-[data-jf-page="transactions"] {
-  display: grid;
+/*
+ * Transactions use their own stable three-child page structure. Keeping the
+ * original root in normal layout avoids display:contents/Suspense rendering
+ * gaps while retaining the requested label-left and controls-right top row.
+ */
+[data-jf-page="transactions"] .jf-unified-page-body > div {
+  display: grid !important;
   grid-template-columns: auto minmax(0, 1fr);
   align-items: center;
-  column-gap: clamp(0.75rem, 1.5vw, 1.25rem);
+  column-gap: clamp(0.65rem, 1.5vw, 1.25rem);
   row-gap: clamp(0.8rem, 1.4vw, 1.15rem);
-}
-
-[data-jf-page="transactions"] .jf-unified-page-heading {
-  grid-column: 1;
-  grid-row: 1;
-  margin: 0;
-}
-
-[data-jf-page="transactions"] .jf-unified-page-body,
-[data-jf-page="transactions"] .jf-unified-page-body > div {
-  display: contents;
+  min-width: 0;
 }
 
 [data-jf-page="transactions"] .jf-unified-page-body > div > :first-child {
-  display: none !important;
+  display: flex !important;
+  grid-column: 1;
+  grid-row: 1;
+  min-width: 0;
+  min-height: clamp(2rem, 3vw, 2.55rem);
+  align-items: center;
+  gap: clamp(0.55rem, 1vw, 0.75rem);
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+[data-jf-page="transactions"] .jf-unified-page-body > div > :first-child::before {
+  display: block !important;
+  width: clamp(0.24rem, 0.35vw, 0.34rem);
+  height: clamp(1.35rem, 2.1vw, 1.85rem);
+  flex: 0 0 auto;
+  border-radius: 999px;
+  background: var(--jf-page-accent, var(--info));
+  box-shadow: 0 0 0.65rem color-mix(in srgb, var(--jf-page-accent, var(--info)) 20%, transparent);
+  content: "" !important;
+}
+
+[data-jf-page="transactions"]
+  .jf-unified-page-body
+  > div
+  > :first-child
+  .page-title {
+  min-width: 0;
+  margin: 0 !important;
+  color: var(--text-primary);
+  font-family: var(--font-geist-sans), "Geist", ui-sans-serif, system-ui, sans-serif;
+  font-size: clamp(1rem, 0.78rem + 0.55vw, 1.45rem) !important;
+  font-weight: 760;
+  line-height: 1.15;
+  letter-spacing: -0.025em;
 }
 
 [data-jf-page="transactions"] .jf-unified-page-body > div > :nth-child(2) {
@@ -140,10 +171,14 @@
 }
 
 [data-jf-page="transactions"] .jf-unified-page-body > div > :nth-child(3) {
+  display: block !important;
+  visibility: visible !important;
   grid-column: 1 / -1;
   grid-row: 2;
   min-width: 0;
+  min-height: 1px;
   margin: 0 !important;
+  opacity: 1 !important;
 }
 
 @media (max-width: 639px) {
@@ -152,12 +187,35 @@
     margin-bottom: 0.75rem;
   }
 
-  [data-jf-page="transactions"] {
+  [data-jf-page="transactions"] .jf-unified-page-body > div {
+    grid-template-columns: minmax(0, auto) minmax(0, 1fr);
     column-gap: 0.5rem;
+    row-gap: 0.75rem;
+  }
+
+  [data-jf-page="transactions"] .jf-unified-page-body > div > :first-child {
+    min-height: 1.9rem;
   }
 
   [data-jf-page="transactions"] .jf-unified-page-body > div > :nth-child(2) {
     width: auto;
+    max-width: 100%;
+    overflow: visible;
+  }
+}
+
+@media (max-width: 360px) {
+  [data-jf-page="transactions"] .jf-unified-page-body > div {
+    grid-template-columns: auto minmax(0, 1fr);
+    column-gap: 0.375rem;
+  }
+
+  [data-jf-page="transactions"]
+    .jf-unified-page-body
+    > div
+    > :first-child
+    .page-title {
+    font-size: 0.95rem !important;
   }
 }
 
@@ -168,7 +226,8 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  [data-jf-page] .jf-unified-page-accent {
+  [data-jf-page] .jf-unified-page-accent,
+  [data-jf-page="transactions"] .jf-unified-page-body > div > :first-child::before {
     box-shadow: none;
   }
 }
