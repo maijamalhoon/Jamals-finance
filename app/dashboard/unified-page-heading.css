@@ -39,13 +39,13 @@
 }
 
 /* Remove the old decorative header blocks and their embedded action buttons. */
-[data-jf-page="accounts"] .jf-unified-page-body .page-heading:first-child,
-[data-jf-page="income"] .jf-unified-page-body .page-heading:first-child,
-[data-jf-page="goals"] .jf-unified-page-body .page-heading:first-child,
-[data-jf-page="payables"] .jf-unified-page-body .page-heading:first-child,
-[data-jf-page="investments"] .jf-unified-page-body .page-heading:first-child,
-[data-jf-page="expenses"] .jf-unified-page-body .expenses-page-heading:first-child,
-[data-jf-page="ai-insights"] .jf-unified-page-body header:first-child,
+[data-jf-page="accounts"] .jf-unified-page-body > div > .page-heading:first-child,
+[data-jf-page="income"] .jf-unified-page-body > div > .page-heading:first-child,
+[data-jf-page="goals"] .jf-unified-page-body > div > .page-heading:first-child,
+[data-jf-page="payables"] .jf-unified-page-body > div > .page-heading:first-child,
+[data-jf-page="investments"] .jf-unified-page-body > div > .page-heading:first-child,
+[data-jf-page="expenses"] .jf-unified-page-body > div > .expenses-page-heading:first-child,
+[data-jf-page="ai-insights"] .jf-unified-page-body > div > header:first-child,
 [data-jf-page="settings"] .jf-unified-page-body .settings-reference-page-heading {
   display: none !important;
 }
@@ -66,8 +66,8 @@
  * Analytics and Reports retain their essential range/export controls, but the
  * controls no longer share a decorative page header with icons and copy.
  */
-[data-jf-page="analytics"] .jf-unified-page-body .page-heading,
-[data-jf-page="reports"] .jf-unified-page-body .page-heading {
+[data-jf-page="analytics"] .jf-unified-page-body > div > div > .page-heading,
+[data-jf-page="reports"] .jf-unified-page-body > div > .page-heading {
   margin: 0 0 clamp(0.75rem, 1.25vw, 1rem) !important;
   padding: 0 !important;
   border: 0 !important;
@@ -78,19 +78,29 @@
   overflow: visible !important;
 }
 
-[data-jf-page="analytics"] .jf-unified-page-body .page-heading > div {
+[data-jf-page="analytics"] .jf-unified-page-body > div > div > .page-heading > div {
   display: flex !important;
   min-width: 0;
   align-items: center !important;
   justify-content: flex-end !important;
 }
 
-[data-jf-page="analytics"] .jf-unified-page-body .page-heading > div > div:first-child,
-[data-jf-page="reports"] .jf-unified-page-body .page-heading > div:first-child {
+[data-jf-page="analytics"]
+  .jf-unified-page-body
+  > div
+  > div
+  > .page-heading
+  > div
+  > div:first-child,
+[data-jf-page="reports"]
+  .jf-unified-page-body
+  > div
+  > .page-heading
+  > div:first-child {
   display: none !important;
 }
 
-[data-jf-page="reports"] .jf-unified-page-body .page-heading {
+[data-jf-page="reports"] .jf-unified-page-body > div > .page-heading {
   display: flex !important;
   align-items: center !important;
   justify-content: flex-end !important;
