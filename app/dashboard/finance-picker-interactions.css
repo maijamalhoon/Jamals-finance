@@ -1,0 +1,137 @@
+/*
+ * Finance picker interaction polish.
+ * Data, validation, selection behavior and authored animations stay unchanged.
+ */
+
+/* Desktop account/category menus show four comfortable rows, then scroll. */
+@media (min-width: 1024px) {
+  [data-slot="select-content"]:has(
+      [data-scroll-select-value][class~="min-h-14"]
+    ) {
+    max-height: min(15rem, var(--available-height)) !important;
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
+    scrollbar-color: color-mix(in srgb, var(--text-secondary), transparent 55%)
+      transparent;
+  }
+
+  [data-slot="select-content"]:has(
+      [data-scroll-select-value][class~="min-h-16"]
+    ) {
+    max-height: min(17rem, var(--available-height)) !important;
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
+    scrollbar-color: color-mix(in srgb, var(--text-secondary), transparent 55%)
+      transparent;
+  }
+
+  [data-slot="select-content"]:has([data-scroll-select-value])::-webkit-scrollbar {
+    width: 0.35rem;
+  }
+
+  [data-slot="select-content"]:has(
+      [data-scroll-select-value]
+    )::-webkit-scrollbar-thumb {
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--text-secondary), transparent 55%);
+  }
+}
+
+/* Clean shared calendar surface for every finance date field. */
+[id$="-calendar"][role="dialog"] {
+  overflow: hidden auto !important;
+  border: 1px solid color-mix(in srgb, var(--border), transparent 10%) !important;
+  border-radius: 1.15rem !important;
+  background: color-mix(
+    in srgb,
+    var(--surface-elevated),
+    transparent 1%
+  ) !important;
+  padding: 0.75rem !important;
+  box-shadow:
+    0 24px 64px color-mix(in srgb, var(--text-primary) 20%, transparent),
+    inset 0 1px 0 rgb(255 255 255 / 0.05) !important;
+  backdrop-filter: blur(18px) saturate(112%);
+  scrollbar-width: none;
+}
+
+[id$="-calendar"][role="dialog"]::-webkit-scrollbar {
+  display: none;
+}
+
+[id$="-calendar"][role="dialog"] > div:first-child {
+  min-height: 2.5rem;
+  padding: 0 0.1rem 0.55rem !important;
+}
+
+[id$="-calendar"][role="dialog"] > div:first-child > button {
+  border: 1px solid transparent;
+  border-radius: 0.72rem !important;
+  background: transparent;
+}
+
+[id$="-calendar"][role="dialog"] > div:first-child > button:hover,
+[id$="-calendar"][role="dialog"] > div:first-child > button:focus-visible {
+  border-color: color-mix(in srgb, var(--border), transparent 20%);
+  background: var(--surface-soft) !important;
+}
+
+[id$="-calendar"][role="dialog"] > div:first-child > div {
+  font-size: 0.84rem !important;
+  font-weight: 750 !important;
+  letter-spacing: -0.015em !important;
+}
+
+[id$="-calendar"][role="dialog"] > [role="row"] {
+  margin-bottom: 0.15rem;
+  border-radius: 0.7rem;
+  background: color-mix(in srgb, var(--surface-soft), transparent 20%);
+  padding: 0.2rem 0.15rem !important;
+}
+
+[id$="-calendar"][role="dialog"] > [role="row"] > [role="columnheader"] {
+  color: var(--text-tertiary) !important;
+  font-size: 0.62rem !important;
+  font-weight: 750 !important;
+  letter-spacing: 0.06em !important;
+}
+
+[id$="-calendar"][role="dialog"] > [role="grid"] {
+  gap: 0.16rem !important;
+  padding: 0.2rem 0.1rem 0 !important;
+}
+
+[id$="-calendar"][role="dialog"] > [role="grid"] > button {
+  width: 2rem !important;
+  height: 2rem !important;
+  border-radius: 0.65rem !important;
+  font-size: 0.74rem !important;
+  font-weight: 600 !important;
+}
+
+[id$="-calendar"][role="dialog"] > div:last-child {
+  margin-top: 0.55rem !important;
+  padding-top: 0.55rem !important;
+}
+
+[id$="-calendar"][role="dialog"] > div:last-child > button {
+  min-height: 2rem !important;
+  border-radius: 0.7rem !important;
+  padding-inline: 0.7rem !important;
+  font-weight: 750 !important;
+}
+
+/* On touch devices the calendar is a stable centered surface, never trapped
+   between the form and an on-screen keyboard. */
+@media (max-width: 1024px) and (pointer: coarse) {
+  [id$="-calendar"][role="dialog"] {
+    top: 50% !important;
+    right: auto !important;
+    bottom: auto !important;
+    left: 50% !important;
+    width: min(18rem, calc(100vw - 1rem)) !important;
+    max-height: calc(100dvh - 1rem) !important;
+    transform: translate3d(-50%, -50%, 0) !important;
+    transform-origin: center !important;
+  }
+}
