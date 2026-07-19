@@ -73,3 +73,24 @@
     padding: 0.5rem;
   }
 }
+
+.page :global(.page-heading) {
+  gap: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+.page :global(.page-heading)::before,
+.page :global(.page-heading)::after {
+  display: none;
+  content: none;
+}
+
+.page :global(.page-subtitle) {
+  display: none;
+}
