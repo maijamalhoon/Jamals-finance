@@ -60,13 +60,16 @@ export default function AccountIdentityIcon({
   const [logoFailed, setLogoFailed] = useState(false);
   const shouldLoadLogo =
     !forceLucide && shouldAttemptAccountLogo(name, iconKey, type);
-  const logoUrl = useMemo(
-    () =>
-      shouldLoadLogo && name?.trim()
-        ? `/api/account-logo?name=${encodeURIComponent(name.trim())}`
-        : null,
-    [name, shouldLoadLogo],
-  );
+  const logoUrl = useMemo(() => {
+    const cleanName = name?.trim();
+    if (!shouldLoadLogo || !cleanName) return null;
+
+    const params = new URLSearchParams({ name: cleanName });
+    if (type?.trim()) params.set("type", type.trim());
+    if (iconKey?.trim()) params.set("iconKey", iconKey.trim());
+
+    return `/api/account-logo?${params.toString()}`;
+  }, [iconKey, name, shouldLoadLogo, type]);
 
   useEffect(() => {
     setLogoFailed(false);
