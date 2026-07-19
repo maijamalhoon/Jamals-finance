@@ -71,6 +71,8 @@ import "./header-dropdown-responsive.css";
 import "./desktop-header-nav-motion.css";
 // Mobile/tablet bell uses the same motion language and final theme-safe states.
 import "./mobile-notification-bell-motion.css";
+// Every primary route except the dashboard overview shares one compact page label.
+import "./unified-page-heading.css";
 
 export const dynamic = "force-dynamic";
 
