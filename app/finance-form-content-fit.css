@@ -39,9 +39,9 @@
 }
 
 /*
- * Keep the five requested mobile forms content-sized and truly centered.
- * Tailwind v4 uses the individual `translate` property for -translate-x/y.
- * Do not add a second transform translation or the dialog shifts off-screen.
+ * Keep the five requested mobile forms content-sized and centered.
+ * Neutralize Tailwind's individual translate property first, then use one
+ * transform translation so Android browsers cannot leave the dialog at 50%.
  */
 @media (max-width: 639px) {
   html body
@@ -78,7 +78,7 @@
       100dvh - 0.75rem - env(safe-area-inset-top) - env(safe-area-inset-bottom)
     ) !important;
     margin: 0 !important;
-    translate: -50% -50% !important;
-    transform: none !important;
+    translate: none !important;
+    transform: translate3d(-50%, -50%, 0) !important;
   }
 }
