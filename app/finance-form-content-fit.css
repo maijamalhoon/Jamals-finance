@@ -39,9 +39,9 @@
 }
 
 /*
- * The shared mobile modal helper previously pinned both the top and bottom
- * edges. That made the flex body absorb the unused viewport height. Restore a
- * true content-sized modal and center it on both axes.
+ * Keep the five requested mobile forms content-sized and truly centered.
+ * Tailwind v4 uses the individual `translate` property for -translate-x/y.
+ * Do not add a second transform translation or the dialog shifts off-screen.
  */
 @media (max-width: 639px) {
   html body
@@ -78,8 +78,7 @@
       100dvh - 0.75rem - env(safe-area-inset-top) - env(safe-area-inset-bottom)
     ) !important;
     margin: 0 !important;
-    --tw-translate-x: -50%;
-    --tw-translate-y: -50%;
-    transform: translate(-50%, -50%) !important;
+    translate: -50% -50% !important;
+    transform: none !important;
   }
 }
