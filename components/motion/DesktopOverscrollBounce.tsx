@@ -2,19 +2,31 @@
 
 import { useEffect } from "react";
 
+import {
+  applyOverscrollImpulse,
+  canConsumeVerticalScroll,
+  classifyOverscrollInput,
+  getOverscrollMotionProfile,
+  isOverscrollSpringSettled,
+  normalizeWheelDelta,
+  resolveOverscrollDirection,
+  stepOverscrollSpring,
+  type OverscrollMotionProfile,
+  type OverscrollSpringState,
+} from "@/lib/overscroll-bounce";
+
 import styles from "./DesktopOverscrollBounce.module.css";
 
 const OFFSET_PROPERTY = "--jf-desktop-overscroll-y";
-const MAX_OFFSET = 48;
-const EDGE_EPSILON = 1;
-const RELEASE_DELAY = 95;
-const SETTLE_DURATION = 380;
+const EDGE_EPSILON = 1.5;
 
 const BLOCKED_SURFACE_SELECTOR = [
   "[role='dialog']",
+  "[aria-modal='true']",
   "[role='menu']",
   "[data-radix-popper-content-wrapper]",
   "[data-sonner-toaster]",
+  "[data-overscroll-bounce='off']",
 ].join(",");
 
 const EDITABLE_SELECTOR = [
@@ -23,6 +35,16 @@ const EDITABLE_SELECTOR = [
   "select",
   "[contenteditable='true']",
 ].join(",");
+
+const SCROLL_KEYS = new Set([
+  "ArrowDown",
+  "ArrowUp",
+  "End",
+  "Home",
+  "PageDown",
+  "PageUp",
+  " ",
+]);
 
 type ScrollSurface = {
   scrollElement: HTMLElement;
@@ -37,11 +59,28 @@ function isScrollable(element: HTMLElement) {
   );
 }
 
-function findNestedScrollArea(element: HTMLElement, boundary: HTMLElement) {
+function canElementConsumeScroll(element: HTMLElement, deltaY: number) {
+  return (
+    isScrollable(element) &&
+    canConsumeVerticalScroll({
+      scrollTop: element.scrollTop,
+      scrollHeight: element.scrollHeight,
+      clientHeight: element.clientHeight,
+      deltaY,
+      epsilon: EDGE_EPSILON,
+    })
+  );
+}
+
+function findScrollableConsumer(
+  element: HTMLElement,
+  boundary: HTMLElement,
+  deltaY: number,
+) {
   let current: HTMLElement | null = element;
 
   while (current && current !== boundary && current !== document.body) {
-    if (isScrollable(current)) return current;
+    if (canElementConsumeScroll(current, deltaY)) return current;
     current = current.parentElement;
   }
 
@@ -65,7 +104,37 @@ function resolveHtmlTarget(eventTarget: EventTarget | null) {
     : eventTarget.parentElement;
 }
 
-function resolveScrollSurface(eventTarget: EventTarget | null): ScrollSurface | null {
+function resolveDashboardSurface(target: HTMLElement, deltaY: number) {
+  const dashboardShell = target.closest<HTMLElement>("[data-dashboard-shell]");
+  const dashboardScroll =
+    target.closest<HTMLElement>("[data-dashboard-scroll]") ??
+    dashboardShell?.querySelector<HTMLElement>("[data-dashboard-scroll]") ??
+    null;
+
+  if (!dashboardScroll) return null;
+
+  if (
+    dashboardScroll.contains(target) &&
+    findScrollableConsumer(target, dashboardScroll, deltaY)
+  ) {
+    return null;
+  }
+
+  const dashboardContent =
+    dashboardScroll.querySelector<HTMLElement>(".jf-dashboard-content-frame") ??
+    (dashboardScroll.firstElementChild instanceof HTMLElement
+      ? dashboardScroll.firstElementChild
+      : null);
+
+  return dashboardContent
+    ? { scrollElement: dashboardScroll, bounceTarget: dashboardContent }
+    : null;
+}
+
+function resolveScrollSurface(
+  eventTarget: EventTarget | null,
+  deltaY: number,
+): ScrollSurface | null {
   const target = resolveHtmlTarget(eventTarget);
   if (!target) return null;
 
@@ -76,23 +145,10 @@ function resolveScrollSurface(eventTarget: EventTarget | null): ScrollSurface | 
     return null;
   }
 
-  const dashboardScroll = target.closest<HTMLElement>("[data-dashboard-scroll]");
+  const dashboardSurface = resolveDashboardSurface(target, deltaY);
+  if (dashboardSurface) return dashboardSurface;
 
-  if (dashboardScroll) {
-    if (findNestedScrollArea(target, dashboardScroll)) return null;
-
-    const dashboardContent =
-      dashboardScroll.querySelector<HTMLElement>(".jf-dashboard-content-frame") ??
-      (dashboardScroll.firstElementChild instanceof HTMLElement
-        ? dashboardScroll.firstElementChild
-        : null);
-
-    return dashboardContent
-      ? { scrollElement: dashboardScroll, bounceTarget: dashboardContent }
-      : null;
-  }
-
-  if (findNestedScrollArea(target, document.body)) return null;
+  if (findScrollableConsumer(target, document.body, deltaY)) return null;
 
   const scrollingElement = document.scrollingElement;
   const bodyRoot = findBodyRoot(target);
@@ -106,23 +162,6 @@ function resolveScrollSurface(eventTarget: EventTarget | null): ScrollSurface | 
   return { scrollElement: scrollingElement, bounceTarget: bodyRoot };
 }
 
-function normalizeWheelDelta(event: WheelEvent) {
-  if (event.deltaMode === WheelEvent.DOM_DELTA_LINE) return event.deltaY * 16;
-  if (event.deltaMode === WheelEvent.DOM_DELTA_PAGE) {
-    return event.deltaY * window.innerHeight;
-  }
-  return event.deltaY;
-}
-
-function readTranslateY(element: HTMLElement) {
-  const translate = window.getComputedStyle(element).translate;
-  if (!translate || translate === "none") return 0;
-
-  const values = translate.split(/\s+/);
-  const parsed = Number.parseFloat(values[1] ?? values[0]);
-  return Number.isFinite(parsed) ? parsed : 0;
-}
-
 export default function DesktopOverscrollBounce() {
   useEffect(() => {
     const desktopPointer = window.matchMedia(
@@ -131,152 +170,251 @@ export default function DesktopOverscrollBounce() {
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
 
     let activeTarget: HTMLElement | null = null;
-    let offset = 0;
+    let activeScrollElement: HTMLElement | null = null;
+    let activeProfile: OverscrollMotionProfile | null = null;
+    let springState: OverscrollSpringState = { offset: 0, velocity: 0 };
+    let targetOffset = 0;
     let frameId: number | null = null;
     let releaseTimer: number | null = null;
-    let settleTimer: number | null = null;
+    let lastFrameTime = 0;
+    let releasing = false;
 
-    const clearTimer = (timer: number | null) => {
-      if (timer !== null) window.clearTimeout(timer);
+    const clearReleaseTimer = () => {
+      if (releaseTimer !== null) window.clearTimeout(releaseTimer);
+      releaseTimer = null;
     };
 
-    const clearActiveTarget = () => {
+    const hardReset = () => {
       if (frameId !== null) window.cancelAnimationFrame(frameId);
-      clearTimer(releaseTimer);
-      clearTimer(settleTimer);
+      clearReleaseTimer();
 
       frameId = null;
-      releaseTimer = null;
-      settleTimer = null;
-      offset = 0;
+      lastFrameTime = 0;
+      targetOffset = 0;
+      releasing = false;
+      springState = { offset: 0, velocity: 0 };
+      activeProfile = null;
+      activeScrollElement = null;
 
       if (!activeTarget) return;
 
-      activeTarget.classList.remove(styles.bounceTarget, styles.settling);
+      activeTarget.classList.remove(styles.bounceTarget);
       activeTarget.style.removeProperty(OFFSET_PROPERTY);
       activeTarget = null;
     };
 
-    const writeOffset = () => {
+    const renderFrame = (timestamp: number) => {
       frameId = null;
-      if (!activeTarget) return;
-      activeTarget.style.setProperty(OFFSET_PROPERTY, `${offset}px`);
-    };
+      if (!activeTarget || !activeProfile) return;
 
-    const queueOffset = () => {
-      if (frameId !== null) return;
-      frameId = window.requestAnimationFrame(writeOffset);
-    };
+      const elapsed = lastFrameTime
+        ? Math.min(34, Math.max(4, timestamp - lastFrameTime))
+        : 1000 / 60;
+      lastFrameTime = timestamp;
 
-    const prepareTarget = (target: HTMLElement) => {
-      if (activeTarget === target) {
-        if (settleTimer !== null) {
-          offset = readTranslateY(target);
-          clearTimer(settleTimer);
-          settleTimer = null;
-          target.classList.remove(styles.settling);
-          target.style.setProperty(OFFSET_PROPERTY, `${offset}px`);
-        }
+      springState = stepOverscrollSpring(
+        springState,
+        targetOffset,
+        elapsed,
+        activeProfile,
+        releasing,
+      );
+
+      activeTarget.style.setProperty(
+        OFFSET_PROPERTY,
+        `${springState.offset.toFixed(3)}px`,
+      );
+
+      if (isOverscrollSpringSettled(springState, targetOffset)) {
+        springState = { offset: targetOffset, velocity: 0 };
+        activeTarget.style.setProperty(
+          OFFSET_PROPERTY,
+          `${targetOffset.toFixed(3)}px`,
+        );
+        lastFrameTime = 0;
+
+        if (releasing) hardReset();
         return;
       }
 
-      clearActiveTarget();
-      activeTarget = target;
-      activeTarget.classList.add(styles.bounceTarget);
+      frameId = window.requestAnimationFrame(renderFrame);
+    };
+
+    const ensureFrame = () => {
+      if (frameId !== null || !activeTarget || !activeProfile) return;
+      lastFrameTime = 0;
+      frameId = window.requestAnimationFrame(renderFrame);
     };
 
     const release = () => {
-      clearTimer(releaseTimer);
-      releaseTimer = null;
-
+      clearReleaseTimer();
       if (!activeTarget) return;
-      if (frameId !== null) {
-        window.cancelAnimationFrame(frameId);
-        frameId = null;
+
+      targetOffset = 0;
+      releasing = true;
+      ensureFrame();
+    };
+
+    const prepareSurface = (
+      surface: ScrollSurface,
+      profile: OverscrollMotionProfile,
+    ) => {
+      if (
+        activeTarget !== surface.bounceTarget ||
+        activeScrollElement !== surface.scrollElement
+      ) {
+        hardReset();
+        activeTarget = surface.bounceTarget;
+        activeScrollElement = surface.scrollElement;
+        activeTarget.classList.add(styles.bounceTarget);
       }
 
-      activeTarget.classList.add(styles.settling);
-      activeTarget.style.setProperty(OFFSET_PROPERTY, "0px");
-      offset = 0;
+      activeProfile = profile;
+      releasing = false;
+    };
 
-      clearTimer(settleTimer);
-      settleTimer = window.setTimeout(clearActiveTarget, SETTLE_DURATION + 40);
+    const queueRelease = (delay: number) => {
+      clearReleaseTimer();
+      releaseTimer = window.setTimeout(release, delay);
     };
 
     const handleWheel = (event: WheelEvent) => {
-      if (
+      const shouldIgnore =
         !desktopPointer.matches ||
         reducedMotion.matches ||
         event.defaultPrevented ||
         event.ctrlKey ||
         event.metaKey ||
         event.shiftKey ||
-        Math.abs(event.deltaX) > Math.abs(event.deltaY)
-      ) {
+        Math.abs(event.deltaX) > Math.abs(event.deltaY);
+
+      if (shouldIgnore) {
+        release();
         return;
       }
 
-      const deltaY = normalizeWheelDelta(event);
-      if (!deltaY) return;
+      const normalizedDelta = normalizeWheelDelta(
+        event.deltaY,
+        event.deltaMode,
+        window.innerHeight,
+      );
+      if (Math.abs(normalizedDelta) < 0.01) return;
 
-      const surface = resolveScrollSurface(event.target);
+      const surface = resolveScrollSurface(event.target, normalizedDelta);
       if (!surface) {
         release();
         return;
       }
 
-      const { scrollElement, bounceTarget } = surface;
-      const maxScroll = Math.max(
-        0,
-        scrollElement.scrollHeight - scrollElement.clientHeight,
-      );
-      const atTop = scrollElement.scrollTop <= EDGE_EPSILON;
-      const atBottom = scrollElement.scrollTop >= maxScroll - EDGE_EPSILON;
-      const pullingPastTop = deltaY < 0 && atTop;
-      const pullingPastBottom = deltaY > 0 && atBottom;
+      const direction = resolveOverscrollDirection({
+        scrollTop: surface.scrollElement.scrollTop,
+        scrollHeight: surface.scrollElement.scrollHeight,
+        clientHeight: surface.scrollElement.clientHeight,
+        deltaY: normalizedDelta,
+        epsilon: EDGE_EPSILON,
+      });
 
-      if (!pullingPastTop && !pullingPastBottom) {
+      if (!direction || !event.cancelable) {
         release();
         return;
       }
 
       event.preventDefault();
-      prepareTarget(bounceTarget);
 
-      const limitedDelta = Math.min(Math.abs(deltaY), 110);
-      const resistance = Math.max(0.22, 1 - Math.abs(offset) / MAX_OFFSET);
-      const direction = deltaY < 0 ? 1 : -1;
-      offset += direction * limitedDelta * 0.16 * resistance;
-      offset = Math.max(-MAX_OFFSET, Math.min(MAX_OFFSET, offset));
-      queueOffset();
+      const inputKind = classifyOverscrollInput(
+        normalizedDelta,
+        event.deltaMode,
+      );
+      const profile = getOverscrollMotionProfile(
+        window.innerWidth,
+        inputKind,
+      );
 
-      clearTimer(releaseTimer);
-      releaseTimer = window.setTimeout(release, RELEASE_DELAY);
+      prepareSurface(surface, profile);
+
+      if (
+        Math.abs(targetOffset) > 0.01 &&
+        Math.sign(targetOffset) !== direction
+      ) {
+        targetOffset = springState.offset * 0.25;
+        springState.velocity *= 0.35;
+      } else if (
+        Math.abs(springState.offset) > 0.01 &&
+        Math.sign(springState.offset) !== direction
+      ) {
+        springState.velocity *= 0.35;
+      }
+
+      targetOffset = applyOverscrollImpulse(
+        targetOffset,
+        normalizedDelta,
+        direction,
+        profile,
+      );
+
+      ensureFrame();
+      queueRelease(profile.releaseDelay);
+    };
+
+    const handleDocumentScroll = (event: Event) => {
+      if (!activeScrollElement) return;
+
+      const isRootScroll =
+        activeScrollElement === document.scrollingElement &&
+        (event.target === document ||
+          event.target === document.documentElement ||
+          event.target === document.body);
+
+      if (event.target === activeScrollElement || isRootScroll) release();
+    };
+
+    const handleRootScroll = () => {
+      if (activeScrollElement === document.scrollingElement) release();
+    };
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (SCROLL_KEYS.has(event.key)) release();
     };
 
     const handleVisibilityChange = () => {
-      if (document.visibilityState !== "visible") clearActiveTarget();
+      if (document.visibilityState !== "visible") hardReset();
     };
 
     const handleMediaChange = () => {
-      if (!desktopPointer.matches || reducedMotion.matches) clearActiveTarget();
+      if (!desktopPointer.matches || reducedMotion.matches) hardReset();
     };
 
+    const handleViewportChange = () => release();
+
     window.addEventListener("wheel", handleWheel, { passive: false });
-    window.addEventListener("blur", clearActiveTarget);
-    window.addEventListener("resize", release, { passive: true });
+    window.addEventListener("scroll", handleRootScroll, { passive: true });
+    window.addEventListener("blur", hardReset);
+    window.addEventListener("pagehide", hardReset);
+    window.addEventListener("resize", handleViewportChange, { passive: true });
+    window.addEventListener("orientationchange", handleViewportChange, {
+      passive: true,
+    });
+    window.addEventListener("pointerdown", release, { passive: true });
+    window.addEventListener("keydown", handleKeyDown);
+    document.addEventListener("scroll", handleDocumentScroll, true);
     document.addEventListener("visibilitychange", handleVisibilityChange);
     desktopPointer.addEventListener("change", handleMediaChange);
     reducedMotion.addEventListener("change", handleMediaChange);
 
     return () => {
       window.removeEventListener("wheel", handleWheel);
-      window.removeEventListener("blur", clearActiveTarget);
-      window.removeEventListener("resize", release);
+      window.removeEventListener("scroll", handleRootScroll);
+      window.removeEventListener("blur", hardReset);
+      window.removeEventListener("pagehide", hardReset);
+      window.removeEventListener("resize", handleViewportChange);
+      window.removeEventListener("orientationchange", handleViewportChange);
+      window.removeEventListener("pointerdown", release);
+      window.removeEventListener("keydown", handleKeyDown);
+      document.removeEventListener("scroll", handleDocumentScroll, true);
       document.removeEventListener("visibilitychange", handleVisibilityChange);
       desktopPointer.removeEventListener("change", handleMediaChange);
       reducedMotion.removeEventListener("change", handleMediaChange);
-      clearActiveTarget();
+      hardReset();
     };
   }, []);
 
