@@ -8,6 +8,7 @@ type TransactionLoadOptions = {
   account?: string;
   minAmount?: number | null;
   maxAmount?: number | null;
+  includeDeleted?: boolean;
 };
 
 type CategoryRow = {
@@ -26,6 +27,8 @@ type AccountTransferRow = {
   note?: string | null;
   reference?: string | null;
   created_at?: string | null;
+  updated_at?: string | null;
+  deleted_at?: string | null;
   from_account_id?: string | null;
   to_account_id?: string | null;
   from_account?: { name?: string | null } | { name?: string | null }[] | null;
@@ -35,6 +38,7 @@ type AccountTransferRow = {
 type DatedTransaction = {
   date?: string | null;
   created_at?: string | null;
+  updated_at?: string | null;
   id?: string | number | null;
 };
 
@@ -49,6 +53,7 @@ export type LoadedTransaction = DatedTransaction & {
   person_name?: string | null;
   item_name?: string | null;
   goal_contribution_id?: string | null;
+  deleted_at?: string | null;
   categories?: (CategoryRow & { parent?: { name?: string | null } | null }) | null;
   accounts?: { name?: string | null } | null;
   from_account_id?: string | null;
@@ -69,18 +74,20 @@ function getRelationName(
   return relation?.name?.trim() || null;
 }
 
-function mapAccountTransfer(row: AccountTransferRow) {
+function mapAccountTransfer(row: AccountTransferRow): LoadedTransaction {
   const fromName = getRelationName(row.from_account) || "From account";
   const toName = getRelationName(row.to_account) || "To account";
 
   return {
     id: row.id,
-    type: "transfer" as const,
+    type: "transfer",
     amount: row.amount,
     note: row.note,
     reference: row.reference,
     date: row.transfer_date,
     created_at: row.created_at,
+    updated_at: row.updated_at,
+    deleted_at: row.deleted_at,
     source_name: null,
     person_name: null,
     item_name: null,
@@ -96,6 +103,11 @@ export function sortTransactionsNewestFirst<T extends DatedTransaction>(
   transactions: T[],
 ) {
   return [...transactions].sort((a, b) => {
+    const activityDiff =
+      getSortTime(b.updated_at ?? b.created_at) -
+      getSortTime(a.updated_at ?? a.created_at);
+    if (activityDiff !== 0) return activityDiff;
+
     const createdDiff = getSortTime(b.created_at) - getSortTime(a.created_at);
     if (createdDiff !== 0) return createdDiff;
 
@@ -118,9 +130,11 @@ export async function loadTransactions(
       .select(
         "*, categories(id, name, color, icon_key, type, parent_id), accounts(name)",
       )
-      .order("date", { ascending: false })
-      .order("created_at", { ascending: false });
+      .order("updated_at", { ascending: false })
+      .order("created_at", { ascending: false })
+      .order("date", { ascending: false });
 
+    if (!options.includeDeleted) query = query.is("deleted_at", null);
     if (options.type) query = query.eq("type", options.type);
     if (options.from) query = query.gte("date", options.from);
     if (options.to) query = query.lte("date", options.to);
@@ -163,11 +177,13 @@ export async function loadTransactions(
     let transferQuery = supabase
       .from("account_transfers")
       .select(
-        "id, amount, transfer_date, note, reference, created_at, from_account_id, to_account_id, from_account:from_account_id(name), to_account:to_account_id(name)",
+        "id, amount, transfer_date, note, reference, created_at, updated_at, deleted_at, from_account_id, to_account_id, from_account:from_account_id(name), to_account:to_account_id(name)",
       )
-      .order("transfer_date", { ascending: false })
-      .order("created_at", { ascending: false });
+      .order("updated_at", { ascending: false })
+      .order("created_at", { ascending: false })
+      .order("transfer_date", { ascending: false });
 
+    if (!options.includeDeleted) transferQuery = transferQuery.is("deleted_at", null);
     if (options.from) transferQuery = transferQuery.gte("transfer_date", options.from);
     if (options.to) transferQuery = transferQuery.lte("transfer_date", options.to);
     if (
