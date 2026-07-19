@@ -155,7 +155,7 @@ export default function MetricCard({
   const metricAccent = getMetricAccent(iconName, amount, accentColor);
   const graphValue = getProgressValue(comparison, availability);
   const graphDirection = comparison?.direction ?? "none";
-  const animationKey = `${displayAmount}-${comparison?.label ?? "none"}-${graphValue}`;
+  const animationKey = `${comparison?.label ?? "none"}-${graphValue}-${graphDirection}`;
 
   return (
     <article
