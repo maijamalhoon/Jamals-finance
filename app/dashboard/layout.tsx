@@ -37,6 +37,8 @@ import "./content-typography.css";
 import "./transactions-type-icons.css";
 // Receipt polish stays last so its tightly scoped visual system cannot be muted by shared route styles.
 import "./transaction-receipt-premium.css";
+// Receipt controls and content stay inside the viewport without changing their data, icons, or colors.
+import "./transaction-receipt-viewport.css";
 // Compact header controls and menus stay last; selectors remain mobile/tablet scoped.
 import "./mobile-header-detail-polish.css";
 // Final mobile control corrections must win over every earlier compact-header rule.
