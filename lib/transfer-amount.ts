@@ -2,6 +2,7 @@ export type TransferAmountIssue = "missing" | "invalid" | "exceeds-balance";
 
 const BALANCE_EPSILON = 1e-9;
 
+// Validation receives canonical base-currency amounts; display conversion stays at the form boundary.
 export function getAvailableTransferBalance(
   value: number | string | null | undefined,
 ) {
