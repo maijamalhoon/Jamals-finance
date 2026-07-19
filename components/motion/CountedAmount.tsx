@@ -116,7 +116,13 @@ export default function CountedAmount({
 
   useLayoutEffect(() => {
     const element = elementRef.current;
-    if (!element || !parsedAmount || !Number.isFinite(parsedAmount.value)) return;
+    if (!element) return;
+
+    if (!parsedAmount || !Number.isFinite(parsedAmount.value)) {
+      element.textContent = amount;
+      element.style.visibility = "visible";
+      return;
+    }
 
     const reduceMotion = window.matchMedia(
       "(prefers-reduced-motion: reduce)",
@@ -133,6 +139,7 @@ export default function CountedAmount({
       currentValueRef.current = parsedAmount.value;
       hasAnimatedRef.current = true;
       element.textContent = amount;
+      element.style.visibility = "visible";
       return;
     }
 
@@ -147,6 +154,7 @@ export default function CountedAmount({
     hasAnimatedRef.current = true;
     currentValueRef.current = fromValue;
     element.textContent = formatValue(fromValue);
+    element.style.visibility = "visible";
 
     if (fromValue === parsedAmount.value) {
       element.textContent = amount;
@@ -171,7 +179,12 @@ export default function CountedAmount({
   }, [amount, animateOnCompact, delay, duration, parsedAmount]);
 
   return (
-    <span ref={elementRef} aria-label={amount} className="tabular-nums">
+    <span
+      ref={elementRef}
+      aria-label={amount}
+      className="tabular-nums"
+      style={{ visibility: "hidden" }}
+    >
       {amount}
     </span>
   );
