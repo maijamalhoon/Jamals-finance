@@ -301,10 +301,10 @@ export default function PremiumLandingPage() {
 
       <section className="jf-hero">
         <div className="jf-hero-copy">
-          <p className="jf-hero-badge"><Sparkles aria-hidden="true" /> Your finances, in one clear view</p>
-          <h1>Know your money. <span>Plan with confidence.</span></h1>
+          <p className="jf-hero-badge"><Sparkles aria-hidden="true" /> Daily money clarity</p>
+          <h1>See your money clearly. <span>Act with confidence.</span></h1>
           <p className="jf-hero-description">
-            Track income, expenses, accounts, goals, payables, and investments in one connected workspace—so every decision starts with the full picture.
+            Track income, expenses, accounts, goals, payables, and investments in one focused workspace built for everyday decisions.
           </p>
 
           <div className="jf-hero-actions">
@@ -313,9 +313,9 @@ export default function PremiumLandingPage() {
           </div>
 
           <div className="jf-hero-proof" aria-label="Product highlights">
-            <span><Check aria-hidden="true" /> Quick everyday tracking</span>
-            <span><Check aria-hidden="true" /> One connected view</span>
-            <span><Check aria-hidden="true" /> Private by design</span>
+            <span><Check aria-hidden="true" /> Quick daily entries</span>
+            <span><Check aria-hidden="true" /> Clear reports</span>
+            <span><Check aria-hidden="true" /> Private workspace</span>
           </div>
         </div>
 
