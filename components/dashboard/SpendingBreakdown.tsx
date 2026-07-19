@@ -1,10 +1,10 @@
 "use client";
 
-import Link from "next/link";
 import type { CSSProperties } from "react";
 import { BarChart3, PieChart as PieChartIcon } from "lucide-react";
 import { Cell, Pie, PieChart, Tooltip } from "recharts";
 
+import DashboardCardViewLink from "@/components/dashboard/DashboardCardViewLink";
 import { useCurrency } from "@/components/currency/CurrencyProvider";
 import CountedAmount from "@/components/motion/CountedAmount";
 import { useDashboardAnimationReady } from "@/components/motion/useDashboardAnimationReady";
@@ -52,10 +52,6 @@ export default function SpendingBreakdown({
   data,
   total,
   status = "available",
-  periodLabel = new Date().toLocaleDateString("en-US", {
-    month: "long",
-    year: "numeric",
-  }),
 }: {
   data: SpendingData[];
   total: number;
@@ -75,8 +71,9 @@ export default function SpendingBreakdown({
     .map((item) => ({
       ...item,
       value: Number.isFinite(item.value) ? Math.max(item.value, 0) : 0,
-      percentage:
-        Number.isFinite(item.percentage) ? Math.max(item.percentage, 0) : 0,
+      percentage: Number.isFinite(item.percentage)
+        ? Math.max(item.percentage, 0)
+        : 0,
     }))
     .sort((a, b) => b.value - a.value)
     .slice(0, 5);
@@ -89,14 +86,9 @@ export default function SpendingBreakdown({
             <span className="dashboard-list-card-kicker-icon !border-transparent !bg-transparent !text-text-secondary !shadow-none">
               <BarChart3 size={15} strokeWidth={2.3} aria-hidden="true" />
             </span>
-            <div className="min-w-0">
-              <h3 className="truncate text-[11px] font-bold uppercase tracking-[0.12em] text-text-secondary">
-                Spending Breakdown
-              </h3>
-              <p className="mt-1 truncate text-[10px] font-medium text-text-tertiary">
-                {periodLabel}
-              </p>
-            </div>
+            <h3 className="truncate text-[11px] font-bold uppercase tracking-[0.12em] text-text-secondary">
+              Spending Breakdown
+            </h3>
           </div>
         </div>
         <div className="dashboard-chart-empty mt-4 flex-1">
@@ -156,22 +148,15 @@ export default function SpendingBreakdown({
           <span className="dashboard-list-card-kicker-icon !border-transparent !bg-transparent !text-text-secondary !shadow-none">
             <BarChart3 size={15} strokeWidth={2.3} aria-hidden="true" />
           </span>
-          <div className="min-w-0">
-            <h3 className="truncate text-[11px] font-bold uppercase tracking-[0.12em] text-text-secondary">
-              Spending Breakdown
-            </h3>
-            <p className="mt-1 truncate text-[10px] font-medium text-text-tertiary">
-              {periodLabel}
-            </p>
-          </div>
+          <h3 className="truncate text-[11px] font-bold uppercase tracking-[0.12em] text-text-secondary">
+            Spending Breakdown
+          </h3>
         </div>
 
-        <Link
+        <DashboardCardViewLink
           href="/dashboard/expenses"
-          className="dashboard-list-card-action"
-        >
-          Details
-        </Link>
+          label="View all expenses"
+        />
       </div>
 
       <div className="mt-4 grid min-h-0 flex-1 items-center gap-6 sm:grid-cols-[minmax(220px,0.95fr)_minmax(0,1.05fr)] sm:gap-5 2xl:grid-cols-1">
@@ -257,7 +242,9 @@ export default function SpendingBreakdown({
             <div
               key={item.id ?? `${item.name}-${index}`}
               className="motion-card-entry grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-3"
-              style={{ "--motion-reveal-delay": `${index * 55}ms` } as CSSProperties}
+              style={
+                { "--motion-reveal-delay": `${index * 55}ms` } as CSSProperties
+              }
             >
               <div className="flex min-w-0 items-center gap-2.5">
                 <span
