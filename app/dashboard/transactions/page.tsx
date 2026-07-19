@@ -1,10 +1,9 @@
-import Link from "next/link";
 import { Suspense, type ComponentProps } from "react";
 import { ArrowLeftRight } from "lucide-react";
 
 import { createClient } from "@/lib/supabase/server";
 import TransactionFilters from "@/components/transactions/TransactionFilters";
-import TransactionRow from "@/components/transactions/TransactionRow";
+import ViewportTransactionList from "@/components/transactions/ViewportTransactionList";
 import EmptyState from "@/components/ui/empty-state";
 import { getTransactionIconMeta } from "@/lib/transaction-icons";
 import { loadTransactions } from "@/lib/transactions";
@@ -12,7 +11,6 @@ import styles from "./transactions.module.css";
 
 export const dynamic = "force-dynamic";
 
-const DEFAULT_LIMIT = 8;
 const STEP_LIMIT = 15;
 const MAX_LIMIT = 100;
 
@@ -33,7 +31,9 @@ type SearchParams = {
 };
 
 type TransactionSort = "newest" | "oldest" | "highest" | "lowest";
-type TransactionListRow = ComponentProps<typeof TransactionRow>["tx"];
+type TransactionListRow = ComponentProps<
+  typeof ViewportTransactionList
+>["transactions"][number];
 
 function cleanSort(value?: string): TransactionSort {
   return value === "oldest" || value === "highest" || value === "lowest"
@@ -47,13 +47,12 @@ function transactionTime(value: unknown) {
 }
 
 function cleanLimit(value?: string) {
+  if (!value || value.trim() === "") return null;
+
   const parsed = Number(value);
+  if (!Number.isFinite(parsed) || parsed <= 0) return null;
 
-  if (!Number.isFinite(parsed) || parsed <= 0) {
-    return DEFAULT_LIMIT;
-  }
-
-  return Math.min(Math.max(DEFAULT_LIMIT, parsed), MAX_LIMIT);
+  return Math.min(Math.max(1, Math.floor(parsed)), MAX_LIMIT);
 }
 
 function cleanAmount(value?: string) {
@@ -89,7 +88,7 @@ export default async function TransactionsPage({
   const min = resolvedSearchParams.min;
   const max = resolvedSearchParams.max;
   const sort = cleanSort(resolvedSearchParams.sort);
-  const limit = resolvedSearchParams.limit;
+  const requestedLimit = cleanLimit(resolvedSearchParams.limit);
 
   const supabase = await createClient();
 
@@ -138,6 +137,7 @@ export default async function TransactionsPage({
       code: categoriesResult.error.code ?? "unknown",
     });
   }
+
   if (accountsResult.error) {
     console.error("[transactions] Account filters unavailable", {
       code: accountsResult.error.code ?? "unknown",
@@ -166,7 +166,6 @@ export default async function TransactionsPage({
       const categoryName = transaction?.categories?.parent?.name
         ? `${transaction.categories.parent.name} ${transaction.categories?.name ?? ""}`
         : (transaction?.categories?.name ?? "");
-
       const accountName = transaction?.accounts?.name ?? "";
       const semanticType = getTransactionIconMeta({
         type: transaction?.type,
@@ -177,7 +176,6 @@ export default async function TransactionsPage({
         sourceName: transaction?.source_name,
         itemName: transaction?.item_name,
       }).semanticType;
-
       const haystack = [
         transaction?.note,
         transaction?.source_name,
@@ -193,9 +191,7 @@ export default async function TransactionsPage({
         .join(" ")
         .toLowerCase();
 
-      if (type === "payable" && semanticType !== "payable") {
-        return false;
-      }
+      if (type === "payable" && semanticType !== "payable") return false;
 
       if (
         (type === "income" ||
@@ -258,54 +254,33 @@ export default async function TransactionsPage({
       return sort === "newest" ? dateDifference : -dateDifference;
     });
 
-  const visibleLimit = cleanLimit(limit);
-  const visibleTransactions = transactions.slice(0, visibleLimit);
+  const baseParams = new URLSearchParams();
 
-  const hasMore =
-    visibleTransactions.length < transactions.length &&
-    visibleLimit < MAX_LIMIT;
-
-  const nextLimit = Math.min(
-    visibleLimit + STEP_LIMIT,
-    MAX_LIMIT,
-    transactions.length,
-  );
-
-  const nextParams = new URLSearchParams();
-
-  addParam(nextParams, "type", type);
-  addParam(nextParams, "search", search);
-  addParam(nextParams, "from", from);
-  addParam(nextParams, "to", to);
-  addParam(nextParams, "source", source);
-  addParam(nextParams, "category", category);
-  addParam(nextParams, "account", account);
-  addParam(nextParams, "person", person);
-  addParam(nextParams, "item", item);
+  addParam(baseParams, "type", type);
+  addParam(baseParams, "search", search);
+  addParam(baseParams, "from", from);
+  addParam(baseParams, "to", to);
+  addParam(baseParams, "source", source);
+  addParam(baseParams, "category", category);
+  addParam(baseParams, "account", account);
+  addParam(baseParams, "person", person);
+  addParam(baseParams, "item", item);
   addParam(
-    nextParams,
+    baseParams,
     "min",
     minAmount === null ? undefined : String(minAmount),
   );
   addParam(
-    nextParams,
+    baseParams,
     "max",
     maxAmount === null ? undefined : String(maxAmount),
   );
-  addParam(nextParams, "sort", sort === "newest" ? undefined : sort);
-
-  nextParams.set("limit", String(nextLimit));
+  addParam(baseParams, "sort", sort === "newest" ? undefined : sort);
 
   return (
     <div className={`${styles.page} space-y-3 sm:space-y-5`}>
-      <div className="page-heading finance-surface-glass overflow-hidden">
-        <div className="min-w-0">
-          <h2 className="page-title">Transactions</h2>
-          <p className="page-subtitle">
-            Showing {visibleTransactions.length} of {transactions.length}{" "}
-            transaction{transactions.length !== 1 ? "s" : ""}
-          </p>
-        </div>
+      <div className={styles.heading}>
+        <h2 className="page-title">Transactions</h2>
       </div>
 
       <div className={styles.filtersShell}>
@@ -325,39 +300,13 @@ export default async function TransactionsPage({
             description="Try changing filters or search."
           />
         ) : (
-          <>
-            <div className="space-y-1">
-              {visibleTransactions.map((tx) => (
-                <TransactionRow key={tx.id} tx={tx} />
-              ))}
-            </div>
-
-            {hasMore ? (
-              <div className="mt-5 flex flex-col items-center justify-center gap-2 border-t border-border pt-5">
-                <Link
-                  href={`/dashboard/transactions?${nextParams.toString()}`}
-                  scroll={false}
-                  className="finance-focus inline-flex items-center justify-center rounded-full border border-border bg-surface px-5 py-2.5 text-sm font-bold text-text-primary shadow-sm transition-all hover:-translate-y-0.5 hover:bg-hover hover:shadow-md"
-                >
-                  Show{" "}
-                  {Math.min(
-                    STEP_LIMIT,
-                    transactions.length - visibleTransactions.length,
-                  )}{" "}
-                  more
-                </Link>
-
-                <p className="text-xs text-text-secondary">
-                  {visibleTransactions.length} shown,{" "}
-                  {transactions.length - visibleTransactions.length} remaining
-                </p>
-              </div>
-            ) : transactions.length > MAX_LIMIT ? (
-              <p className="mt-5 border-t border-border pt-5 text-center text-xs text-text-secondary">
-                Showing first {MAX_LIMIT}. Use filters to narrow results.
-              </p>
-            ) : null}
-          </>
+          <ViewportTransactionList
+            transactions={transactions}
+            requestedLimit={requestedLimit}
+            baseQuery={baseParams.toString()}
+            stepLimit={STEP_LIMIT}
+            maxLimit={MAX_LIMIT}
+          />
         )}
       </div>
     </div>
