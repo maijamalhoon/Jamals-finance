@@ -1,0 +1,119 @@
+/*
+ * Borderless Lucide icon policy for the authenticated app.
+ *
+ * This removes only decorative icon backgrounds, borders and shadows. Existing
+ * dimensions, spacing, semantic colours, click targets, focus visibility and
+ * component behaviour remain intact.
+ */
+
+/* Shared decorative icon wrappers used across cards, empty states and summaries. */
+[data-dashboard-shell] .finance-icon-bubble,
+[data-dashboard-shell]
+  :is(span, div):has(> svg.lucide:only-child):is(
+    [class*="rounded"][class*="border"],
+    [class*="rounded"][class*="bg-"],
+    [class*="rounded"][class*="shadow"]
+  ):not([data-keep-icon-surface]):not([data-slot*="indicator"]):not([class*="avatar"]):not([class*="badge"]) {
+  border-color: transparent !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+}
+
+/* Icon-only controls keep their authored hit area but no longer look like cards. */
+[data-dashboard-shell] .icon-button,
+[data-dashboard-shell] [data-notification-trigger],
+[data-dashboard-shell]
+  :is(button, a, [role="button"]):has(> svg.lucide:only-child):is(
+    [class*="rounded"][class*="border"],
+    [class*="rounded"][class*="bg-"],
+    [class*="rounded"][class*="shadow"]
+  ):not([data-keep-icon-surface]):not([data-slot*="indicator"]) {
+  border-color: transparent !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+}
+
+[data-dashboard-shell] .icon-button:hover,
+[data-dashboard-shell] .icon-button:active,
+[data-dashboard-shell] [data-notification-trigger]:hover,
+[data-dashboard-shell] [data-notification-trigger]:active,
+[data-dashboard-shell]
+  :is(button, a, [role="button"]):has(> svg.lucide:only-child):is(
+    [class*="rounded"][class*="border"],
+    [class*="rounded"][class*="bg-"],
+    [class*="rounded"][class*="shadow"]
+  ):not([data-keep-icon-surface]):not([data-slot*="indicator"]):is(:hover, :active) {
+  border-color: transparent !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+/* Lucide polish: stronger rounded monoline detail without changing icon size. */
+[data-dashboard-shell]
+  :is(
+    .finance-icon-bubble,
+    .icon-button,
+    [data-notification-trigger],
+    span:has(> svg.lucide:only-child),
+    div:has(> svg.lucide:only-child),
+    button:has(> svg.lucide:only-child),
+    a:has(> svg.lucide:only-child),
+    [role="button"]:has(> svg.lucide:only-child)
+  )
+  > svg.lucide {
+  fill: none !important;
+  stroke: currentColor;
+  stroke-width: 2.35;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  shape-rendering: geometricPrecision;
+  vector-effect: non-scaling-stroke;
+  transform-origin: center;
+  transition:
+    transform 180ms var(--motion-ease),
+    filter 180ms var(--motion-ease),
+    color 180ms var(--motion-ease);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  [data-dashboard-shell]
+    :is(button, a, [role="button"]):has(> svg.lucide:only-child):not(
+      [data-keep-icon-surface]
+    ):hover
+    > svg.lucide,
+  [data-dashboard-shell] .icon-button:hover > svg.lucide,
+  [data-dashboard-shell] [data-notification-trigger]:hover > svg.lucide {
+    transform: translateY(-1px) scale(1.045);
+    filter: drop-shadow(0 2px 3px rgb(15 23 42 / 0.16));
+  }
+}
+
+[data-dashboard-shell]
+  :is(button, a, [role="button"]):has(> svg.lucide:only-child):not(
+    [data-keep-icon-surface]
+  ):active
+  > svg.lucide,
+[data-dashboard-shell] .icon-button:active > svg.lucide,
+[data-dashboard-shell] [data-notification-trigger]:active > svg.lucide {
+  transform: scale(0.94);
+}
+
+/* Keep keyboard focus obvious even though the decorative card surface is gone. */
+[data-dashboard-shell] .icon-button:focus-visible,
+[data-dashboard-shell] [data-notification-trigger]:focus-visible,
+[data-dashboard-shell]
+  :is(button, a, [role="button"]):has(> svg.lucide:only-child):not(
+    [data-keep-icon-surface]
+  ):focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--focus-color), transparent 18%) !important;
+  outline-offset: 3px;
+  box-shadow: none !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-dashboard-shell] svg.lucide {
+    transition: none !important;
+  }
+}
