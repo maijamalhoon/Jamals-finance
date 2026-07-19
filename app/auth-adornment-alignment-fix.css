@@ -1,59 +1,138 @@
 /*
  * Authentication field adornment positioning.
- * Presentation-only: keeps start icons, inline actions and password visibility
- * controls centered inside their inputs without touching form behaviour.
+ *
+ * This is the final auth-field alignment layer and is imported after every
+ * other authentication stylesheet. It keeps leading icons and trailing
+ * actions in dedicated, non-overlapping space on every viewport without
+ * changing input sizes, validation, form state, or authentication behaviour.
  */
 
-.jf-auth-root[data-auth-minimal="true"] .auth-field-control {
-  position: relative;
+.jf-auth-root .auth-field-control {
+  --auth-leading-icon-size: 18px;
+  --auth-leading-inset: 14px;
+  --auth-leading-space: 44px;
+  --auth-trailing-space: 52px;
+  --auth-inline-action-space: 96px;
+
+  position: relative !important;
   isolation: isolate;
+  width: 100%;
+  min-width: 0;
 }
 
-.jf-auth-root[data-auth-minimal="true"]
+.jf-auth-root .auth-field-control > .auth-input {
+  position: relative;
+  z-index: 0;
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  text-indent: 0;
+}
+
+/* Reserve the exact horizontal space occupied by each adornment. These
+ * selectors intentionally target the input element directly so older auth
+ * rules cannot collapse the padding and place text beneath an icon/button. */
+.jf-auth-root
+  .auth-field-control
+  > input.auth-input.auth-input-with-start {
+  padding-inline-start: var(--auth-leading-space) !important;
+}
+
+.jf-auth-root
+  .auth-field-control
+  > input.auth-input.auth-input-with-end {
+  padding-inline-end: var(--auth-trailing-space) !important;
+}
+
+.jf-auth-root
+  .auth-field-control
+  > input.auth-input.auth-input-with-inline-action,
+.jf-auth-root .auth-field-control > input.auth-input[readonly] {
+  padding-inline-end: var(--auth-inline-action-space) !important;
+}
+
+/* Use block-axis inset centring rather than competing translate transforms.
+ * Fixed adornment heights make this stable across mobile, tablet, desktop,
+ * browser zoom, autofill, and dynamic input-height overrides. */
+.jf-auth-root
   .auth-field-control
   > :is(.auth-field-icon, .auth-inline-field-action, .auth-password-toggle) {
-  top: 50% !important;
-  bottom: auto !important;
-  margin: 0 !important;
-  transform: translateY(-50%) !important;
+  position: absolute !important;
+  inset-block: 0 !important;
+  top: 0 !important;
+  bottom: 0 !important;
+  margin-block: auto !important;
+  transform: none !important;
   translate: none !important;
 }
 
-.jf-auth-root[data-auth-minimal="true"]
-  .auth-field-control
-  > .auth-field-icon {
-  width: 18px;
-  height: 18px;
+.jf-auth-root .auth-field-control > .auth-field-icon {
+  inset-inline-start: var(--auth-leading-inset) !important;
+  left: var(--auth-leading-inset) !important;
+  right: auto !important;
+  width: var(--auth-leading-icon-size);
+  height: var(--auth-leading-icon-size);
   display: grid !important;
   place-items: center;
+  flex: 0 0 auto;
   line-height: 0;
   pointer-events: none;
-  z-index: 1;
+  z-index: 2;
 }
 
-.jf-auth-root[data-auth-minimal="true"]
-  .auth-field-control
-  > .auth-inline-field-action {
+.jf-auth-root .auth-field-control > .auth-inline-field-action {
+  inset-inline-end: 7px !important;
+  right: 7px !important;
+  left: auto !important;
+  height: 34px !important;
+  min-height: 34px !important;
   display: inline-flex !important;
   align-items: center;
   justify-content: center;
+  white-space: nowrap;
   line-height: 1 !important;
-  z-index: 2;
+  z-index: 3;
 }
 
-.jf-auth-root[data-auth-minimal="true"]
-  .auth-field-control
-  > .auth-password-toggle {
+.jf-auth-root .auth-field-control > .auth-password-toggle {
+  inset-inline-end: 4px !important;
+  right: 4px !important;
+  left: auto !important;
+  width: 38px !important;
+  height: 38px !important;
+  min-width: 38px !important;
+  min-height: 38px !important;
   display: grid !important;
   place-items: center !important;
+  padding: 0 !important;
   line-height: 0 !important;
-  z-index: 2;
+  z-index: 3;
 }
 
-.jf-auth-root[data-auth-minimal="true"]
+.jf-auth-root
   .auth-field-control
   > :is(.auth-field-icon, .auth-password-toggle)
   svg {
+  width: var(--auth-leading-icon-size);
+  height: var(--auth-leading-icon-size);
   display: block;
   flex: 0 0 auto;
+}
+
+@media (max-width: 759px) {
+  .jf-auth-root .auth-field-control {
+    --auth-leading-inset: 13px;
+    --auth-leading-space: 43px;
+  }
+}
+
+@media (max-width: 420px) {
+  .jf-auth-root .auth-field-control {
+    --auth-inline-action-space: 92px;
+  }
+
+  .jf-auth-root .auth-field-control > .auth-inline-field-action {
+    inset-inline-end: 5px !important;
+    right: 5px !important;
+  }
 }
