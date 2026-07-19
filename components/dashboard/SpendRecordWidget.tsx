@@ -160,9 +160,11 @@ export default function SpendRecordWidget({
             >
               {({ width, height }) => {
                 const sheenId = `${gradientPrefix}-spend-sheen`;
-                const sheenStart = -Math.max(width * 0.42, 100);
-                const sheenEnd = width * 1.08;
-                const sheenWidth = Math.max(width * 0.27, 76);
+                const sheenWidth = Math.round(
+                  Math.min(Math.max(width * 0.07, 22), 36),
+                );
+                const sheenStart = -sheenWidth;
+                const sheenEnd = width;
 
                 return (
                   <AreaChart
@@ -194,14 +196,14 @@ export default function SpendRecordWidget({
                           <animate
                             attributeName="x1"
                             values={`${sheenStart};${sheenEnd};${sheenEnd}`}
-                            keyTimes="0;0.68;1"
+                            keyTimes="0;0.76;1"
                             dur={AMBIENT_SWEEP_DURATION}
                             repeatCount="indefinite"
                           />
                           <animate
                             attributeName="x2"
                             values={`${sheenStart + sheenWidth};${sheenEnd + sheenWidth};${sheenEnd + sheenWidth}`}
-                            keyTimes="0;0.68;1"
+                            keyTimes="0;0.76;1"
                             dur={AMBIENT_SWEEP_DURATION}
                             repeatCount="indefinite"
                           />
