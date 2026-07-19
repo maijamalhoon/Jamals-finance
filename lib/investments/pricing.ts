@@ -1,11 +1,29 @@
 import type { InvestmentLike } from "@/lib/investments/aggregation";
-import { getCryptoPrices } from "@/lib/market/crypto";
-import type { CryptoPrice } from "@/lib/market/crypto";
-import { getInternationalStockPrices } from "@/lib/market/stocks";
-import type { StockPrice } from "@/lib/market/stocks";
+import {
+  getCryptoPrices,
+  searchCryptoAssets,
+} from "@/lib/market/crypto";
+import type {
+  CryptoPrice,
+  CryptoSearchResult,
+} from "@/lib/market/crypto";
+import {
+  getInternationalStockPrices,
+  searchInternationalStocks,
+} from "@/lib/market/stocks";
+import type {
+  StockPrice,
+  StockSearchResult,
+} from "@/lib/market/stocks";
+
+const MAX_LEGACY_LOGO_LOOKUPS = 12;
 
 function normalizeText(value: string | null | undefined) {
   return (value ?? "").trim();
+}
+
+function normalizeMatchText(value: string | null | undefined) {
+  return normalizeText(value).toLowerCase().replace(/[^a-z0-9]+/g, "");
 }
 
 function getStockLogoUrl(symbol: string) {
@@ -16,6 +34,144 @@ function getStockLogoUrl(symbol: string) {
   return `https://financialmodelingprep.com/image-stock/${encodeURIComponent(
     normalizedSymbol,
   )}.png`;
+}
+
+function getMatchScore(
+  investment: InvestmentLike,
+  candidateName: string,
+  candidateSymbol: string,
+) {
+  const investmentName = normalizeMatchText(investment.name);
+  const investmentSymbol = normalizeMatchText(investment.symbol);
+  const normalizedCandidateName = normalizeMatchText(candidateName);
+  const normalizedCandidateSymbol = normalizeMatchText(candidateSymbol);
+
+  if (
+    investmentSymbol &&
+    normalizedCandidateSymbol &&
+    investmentSymbol === normalizedCandidateSymbol
+  ) {
+    return 100;
+  }
+
+  if (
+    investmentName &&
+    normalizedCandidateName &&
+    investmentName === normalizedCandidateName
+  ) {
+    return 90;
+  }
+
+  if (
+    investmentName.length >= 3 &&
+    normalizedCandidateName.length >= 3 &&
+    (normalizedCandidateName.startsWith(investmentName) ||
+      investmentName.startsWith(normalizedCandidateName))
+  ) {
+    return 70;
+  }
+
+  return 0;
+}
+
+function pickBestCryptoMatch(
+  investment: InvestmentLike,
+  results: CryptoSearchResult[],
+) {
+  return results
+    .map((result) => ({
+      result,
+      score: getMatchScore(investment, result.name, result.symbol),
+    }))
+    .filter((entry) => entry.score >= 70)
+    .sort((left, right) => {
+      if (right.score !== left.score) return right.score - left.score;
+
+      const leftRank = left.result.marketCapRank ?? Number.MAX_SAFE_INTEGER;
+      const rightRank = right.result.marketCapRank ?? Number.MAX_SAFE_INTEGER;
+      return leftRank - rightRank;
+    })[0]?.result;
+}
+
+function pickBestStockMatch(
+  investment: InvestmentLike,
+  results: StockSearchResult[],
+) {
+  return results
+    .map((result) => ({
+      result,
+      score: getMatchScore(investment, result.name, result.symbol),
+    }))
+    .filter((entry) => entry.score >= 70)
+    .sort((left, right) => right.score - left.score)[0]?.result;
+}
+
+function isCryptoInvestment(investment: InvestmentLike) {
+  return normalizeText(investment.type).toLowerCase() === "crypto";
+}
+
+function isStockInvestment(investment: InvestmentLike) {
+  const type = normalizeText(investment.type).toLowerCase();
+  return type === "stock" || type === "stocks";
+}
+
+function needsLegacyLogoLookup(investment: InvestmentLike) {
+  if (normalizeText(investment.image_url)) return false;
+
+  if (isCryptoInvestment(investment)) {
+    return !(
+      investment.price_source === "coingecko" &&
+      normalizeText(investment.asset_id)
+    );
+  }
+
+  if (isStockInvestment(investment)) {
+    return !normalizeText(investment.asset_id ?? investment.symbol);
+  }
+
+  return false;
+}
+
+async function resolveLegacyLogo(investment: InvestmentLike) {
+  const query = normalizeText(investment.symbol) || normalizeText(investment.name);
+  if (query.length < 2) return null;
+
+  if (isCryptoInvestment(investment)) {
+    const match = pickBestCryptoMatch(
+      investment,
+      await searchCryptoAssets(query),
+    );
+    return match?.large ?? match?.thumb ?? null;
+  }
+
+  if (isStockInvestment(investment)) {
+    const match = pickBestStockMatch(
+      investment,
+      await searchInternationalStocks(query),
+    );
+    return match ? getStockLogoUrl(match.symbol) : null;
+  }
+
+  return null;
+}
+
+async function resolveLegacyLogos(investments: InvestmentLike[]) {
+  const candidates = investments
+    .filter(needsLegacyLogoLookup)
+    .slice(0, MAX_LEGACY_LOGO_LOOKUPS);
+  const settled = await Promise.allSettled(
+    candidates.map(async (investment) => ({
+      id: investment.id,
+      imageUrl: await resolveLegacyLogo(investment),
+    })),
+  );
+
+  return settled.reduce<Map<string, string>>((logos, entry) => {
+    if (entry.status === "fulfilled" && entry.value.imageUrl) {
+      logos.set(entry.value.id, entry.value.imageUrl);
+    }
+    return logos;
+  }, new Map());
 }
 
 export async function refreshInvestmentMarketPrices<T extends InvestmentLike>(
@@ -47,14 +203,16 @@ export async function refreshInvestmentMarketPrices<T extends InvestmentLike>(
     ),
   );
 
-  const [cryptoSettled, stockSettled] = await Promise.allSettled([
-    cryptoIds.length > 0
-      ? getCryptoPrices(cryptoIds)
-      : Promise.resolve({ prices: {}, live: false }),
-    stockSymbols.length > 0
-      ? getInternationalStockPrices(stockSymbols)
-      : Promise.resolve({ prices: {} }),
-  ]);
+  const [cryptoSettled, stockSettled, legacyLogosSettled] =
+    await Promise.allSettled([
+      cryptoIds.length > 0
+        ? getCryptoPrices(cryptoIds)
+        : Promise.resolve({ prices: {}, live: false }),
+      stockSymbols.length > 0
+        ? getInternationalStockPrices(stockSymbols)
+        : Promise.resolve({ prices: {} }),
+      resolveLegacyLogos(investments),
+    ]);
 
   if (cryptoSettled.status === "rejected") {
     console.error("Failed to refresh crypto prices", cryptoSettled.reason);
@@ -68,6 +226,10 @@ export async function refreshInvestmentMarketPrices<T extends InvestmentLike>(
     cryptoSettled.status === "fulfilled" ? cryptoSettled.value.prices : {};
   const stockPrices: Record<string, StockPrice> =
     stockSettled.status === "fulfilled" ? stockSettled.value.prices : {};
+  const legacyLogos =
+    legacyLogosSettled.status === "fulfilled"
+      ? legacyLogosSettled.value
+      : new Map<string, string>();
 
   return investments.map((investment) => {
     const cryptoPrice = investment.asset_id
@@ -82,9 +244,11 @@ export async function refreshInvestmentMarketPrices<T extends InvestmentLike>(
       existingImageUrl ??
       (investment.price_source === "coingecko"
         ? cryptoPrice?.imageUrl ?? null
-        : investment.price_source === "alpha_vantage"
+        : isStockInvestment(investment) && stockSymbol
           ? getStockLogoUrl(stockSymbol)
-          : null);
+          : null) ??
+      legacyLogos.get(investment.id) ??
+      null;
 
     if (
       investment.is_live_priced &&
