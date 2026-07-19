@@ -1,32 +1,38 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { type CSSProperties, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { createClient } from "@/lib/supabase/client";
-import DatePicker from "@/components/ui/date-picker";
+
+import AccountSelect from "@/components/accounts/AccountSelect";
+import { useCurrency } from "@/components/currency/CurrencyProvider";
 import { Button } from "@/components/ui/button";
+import DatePicker from "@/components/ui/date-picker";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
 import {
   FinanceModalBody,
   FinanceModalFooter,
   FinanceFormField,
   FinanceModalHeader,
-  financeCancelButtonClass,
   financeErrorClass,
   financeModalContentClass,
+  financePrimaryButtonClass,
 } from "@/components/ui/finance-modal";
-import { getAppDateKey } from "@/lib/dates";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { BASE_CURRENCY } from "@/lib/currency";
-import { useCurrency } from "@/components/currency/CurrencyProvider";
-import { CircleDollarSign } from "lucide-react";
+import { getAppDateKey } from "@/lib/dates";
+import { createClient } from "@/lib/supabase/client";
 import { getUserMutationError } from "@/lib/user-errors";
+
+const PAYABLE_ACTION_COLOR = "#9B6A13";
 
 interface Account {
   id: string;
   name: string;
   type: string;
+  balance?: number | string | null;
+  icon_key?: string | null;
 }
 
 interface Payable {
@@ -119,26 +125,17 @@ export default function PaymentModal({ open, onClose, payable, accounts }: Props
 
   return (
     <Dialog open={open} onOpenChange={(nextOpen) => !nextOpen && onClose()}>
-      <DialogContent className={financeModalContentClass}>
-        <FinanceModalHeader
-          title="Record Payment"
-          description="Record a repayment against this payable."
-          icon={CircleDollarSign}
-          tone="success"
-        />
+      <DialogContent
+        className={financeModalContentClass}
+        style={
+          {
+            "--finance-action": PAYABLE_ACTION_COLOR,
+          } as CSSProperties
+        }
+      >
+        <FinanceModalHeader title="Record Payment" />
 
         <FinanceModalBody>
-          <div className="finance-panel-soft min-w-0 p-3">
-            <p className="text-sm font-semibold text-text-primary">{payable.person_name}</p>
-            <p className="mt-1 text-xs text-text-secondary">{payable.reason}</p>
-            <p className="mt-2 break-words text-xs text-text-secondary [overflow-wrap:anywhere]">
-              Remaining:{" "}
-              <span className="font-semibold text-warning">
-                {formatCurrency(payable.remaining_amount)}
-              </span>
-            </p>
-          </div>
-
           <FinanceFormField
             label={`Payment Amount (${BASE_CURRENCY})`}
             htmlFor="payment-amount"
@@ -146,42 +143,37 @@ export default function PaymentModal({ open, onClose, payable, accounts }: Props
             <Input
               id="payment-amount"
               type="number"
+              inputMode="decimal"
+              min="0"
+              step="any"
               value={amount}
-              onChange={(e) => setAmount(e.target.value)}
+              onChange={(event) => setAmount(event.target.value)}
               placeholder="0"
-              className="font-semibold"
+              className="font-semibold tabular-nums"
             />
+            <div className="mt-1.5 space-y-0.5 text-xs leading-4 text-text-secondary">
+              <p className="truncate font-semibold text-text-primary">
+                {payable.person_name}
+                {payable.reason ? ` · ${payable.reason}` : ""}
+              </p>
+              <p>
+                Remaining payable: {formatCurrency(payable.remaining_amount)}
+              </p>
+            </div>
           </FinanceFormField>
 
-          <div>
-            <label className="field-label">Paid From Account</label>
-            <div className="grid max-h-48 gap-2 overflow-y-auto pr-1 sm:grid-cols-2">
-              {accounts.map((account) => (
-                <button
-                  key={account.id}
-                  type="button"
-                  onClick={() => setAccountId(account.id)}
-                  aria-pressed={accountId === account.id}
-                  className={`finance-focus rounded-[18px] border px-3 py-2.5 text-left transition-colors ${
-                    accountId === account.id
-                      ? "border-border bg-card text-text-primary"
-                      : "border-border bg-surface-secondary text-text-secondary hover:bg-hover hover:text-text-primary"
-                  }`}
-                >
-                  <span className="block break-words text-sm font-semibold [overflow-wrap:anywhere]">
-                    {account.name}
-                  </span>
-                  <span
-                    className={`block text-[11px] ${
-                      accountId === account.id ? "text-text-primary" : "text-text-secondary"
-                    }`}
-                  >
-                    {account.type}
-                  </span>
-                </button>
-              ))}
-            </div>
-          </div>
+          <FinanceFormField label="Paid From Account" htmlFor="payment-account">
+            <AccountSelect
+              id="payment-account"
+              value={accountId}
+              onValueChange={setAccountId}
+              accounts={accounts}
+              placeholder="Select account"
+              emptyText="No accounts found"
+              ariaLabel="Payment account"
+              scrollPicker
+            />
+          </FinanceFormField>
 
           <FinanceFormField label="Payment Date" htmlFor="payment-paid-at">
             <DatePicker
@@ -193,38 +185,29 @@ export default function PaymentModal({ open, onClose, payable, accounts }: Props
             />
           </FinanceFormField>
 
-          <FinanceFormField label="Payment Note" htmlFor="payment-note">
-            <Input
+          <FinanceFormField label="Note (Optional)" htmlFor="payment-note">
+            <Textarea
               id="payment-note"
               value={note}
-              onChange={(e) => setNote(e.target.value)}
+              onChange={(event) => setNote(event.target.value)}
               placeholder="Receipt, method, or short note"
+              rows={2}
+              className="resize-none"
             />
           </FinanceFormField>
 
-          {error && (
-            <p className={financeErrorClass}>
-              {error}
-            </p>
-          )}
+          {error ? <p className={financeErrorClass}>{error}</p> : null}
         </FinanceModalBody>
 
         <FinanceModalFooter>
-          <Button
-            type="button"
-            onClick={onClose}
-            disabled={loading}
-            className={financeCancelButtonClass}
-          >
-            Cancel
-          </Button>
           <Button
             type="button"
             onClick={handleSave}
             disabled={loading || !accounts.length}
             loading={loading}
             loadingLabel="Recording payment…"
-            className="primary-action w-full py-3"
+            className={financePrimaryButtonClass}
+            style={{ background: PAYABLE_ACTION_COLOR }}
           >
             Record Payment
           </Button>
