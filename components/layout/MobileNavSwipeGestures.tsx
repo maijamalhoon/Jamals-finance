@@ -252,10 +252,11 @@ export default function MobileNavSwipeGestures() {
 
       event.preventDefault();
       event.stopPropagation();
-      suppressClickUntilRef.current = performance.now() + CLICK_SUPPRESSION_MS;
 
       if (gesture.drawerWasOpen) closeDrawer();
       else openDrawer();
+
+      suppressClickUntilRef.current = performance.now() + CLICK_SUPPRESSION_MS;
     };
 
     const handlePointerCancel = (event: PointerEvent) => {
