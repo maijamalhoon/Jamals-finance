@@ -1,0 +1,39 @@
+/*
+ * Final compact-header control corrections.
+ * UI-only: search, sidebar drawer, notification/profile, and scroll reveal behavior stay unchanged.
+ */
+
+@media (max-width: 1023px) {
+  /* Keep search neutral while closed; brand colour only communicates the active state. */
+  form[data-mobile-control-cluster][role="search"] > button:first-child {
+    color: var(--text-primary) !important;
+  }
+
+  form[data-mobile-control-cluster][role="search"]:focus-within
+    > button:first-child,
+  form[data-mobile-control-cluster][role="search"]
+    > button:first-child[aria-expanded="true"] {
+    color: var(--brand) !important;
+  }
+
+  /* Render exactly one Lucide-style sidebar glyph. */
+  [data-mobile-control-cluster] [data-slot="sheet-trigger"] > span {
+    display: none !important;
+  }
+
+  [data-mobile-control-cluster] [data-slot="sheet-trigger"]::before {
+    content: "";
+    display: block;
+    width: 1.22rem;
+    height: 1.22rem;
+    flex: 0 0 auto;
+    background: currentColor;
+    -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.3' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect width='18' height='18' x='3' y='3' rx='2'/%3E%3Cpath d='M9 3v18'/%3E%3Cpath d='m14 9 3 3-3 3'/%3E%3C/svg%3E") center / contain no-repeat;
+    mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.3' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect width='18' height='18' x='3' y='3' rx='2'/%3E%3Cpath d='M9 3v18'/%3E%3Cpath d='m14 9 3 3-3 3'/%3E%3C/svg%3E") center / contain no-repeat;
+  }
+
+  [data-mobile-control-cluster]
+    [data-slot="sheet-trigger"][aria-expanded="true"] {
+    color: var(--brand) !important;
+  }
+}
