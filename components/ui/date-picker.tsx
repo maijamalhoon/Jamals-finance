@@ -3,6 +3,7 @@
 import {
   useCallback,
   useEffect,
+  useId,
   useMemo,
   useRef,
   useState,
@@ -13,7 +14,8 @@ import type {
   PointerEvent as ReactPointerEvent,
   WheelEvent as ReactWheelEvent,
 } from "react";
-import { CalendarDays } from "lucide-react";
+import { createPortal } from "react-dom";
+import { CalendarDays, ChevronLeft, ChevronRight } from "lucide-react";
 
 import { financeFieldErrorClass } from "@/components/ui/finance-modal";
 import { useTouchWheelPickerMode } from "@/components/ui/touch-wheel-picker";
@@ -22,6 +24,58 @@ import { cn } from "@/lib/utils";
 const DATE_WHEEL_RANGE = 8;
 const MOMENTUM_WINDOW_MS = 220;
 const MAX_MOMENTUM_DAYS = 4;
+const CALENDAR_WIDTH = 276;
+const CALENDAR_HEIGHT_ESTIMATE = 304;
+const CALENDAR_VIEWPORT_GAP = 8;
+const MONTH_NAMES = [
+  "January",
+  "February",
+  "March",
+  "April",
+  "May",
+  "June",
+  "July",
+  "August",
+  "September",
+  "October",
+  "November",
+  "December",
+] as const;
+const WEEKDAY_LABELS = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"] as const;
+const WEEKDAY_NAMES = [
+  "Sunday",
+  "Monday",
+  "Tuesday",
+  "Wednesday",
+  "Thursday",
+  "Friday",
+  "Saturday",
+] as const;
+const CALENDAR_THEME_PROPERTIES = [
+  "--card",
+  "--surface-primary",
+  "--surface-secondary",
+  "--surface-elevated",
+  "--surface-inset",
+  "--surface-soft",
+  "--border",
+  "--divider",
+  "--text-primary",
+  "--text-secondary",
+  "--text-muted",
+  "--text-inverse",
+  "--brand-accent",
+  "--primary-soft",
+  "--hover",
+  "--shadow-overlay",
+] as const;
+
+type CalendarPosition = {
+  left: number;
+  top: number;
+  width: number;
+  transformOrigin: string;
+};
 
 interface DatePickerProps {
   id?: string;
@@ -143,6 +197,38 @@ function getDateError(value: string, minDate?: string, maxDate?: string) {
   return "";
 }
 
+function getCalendarDays(viewMonth: Date) {
+  const year = viewMonth.getFullYear();
+  const month = viewMonth.getMonth();
+  const firstDayOffset = new Date(year, month, 1, 12).getDay();
+  const gridStart = new Date(year, month, 1 - firstDayOffset, 12);
+
+  return Array.from({ length: 42 }, (_, index) => {
+    const day = new Date(gridStart);
+    day.setDate(gridStart.getDate() + index);
+    return day;
+  });
+}
+
+function monthCanContainSelectableDate(
+  viewMonth: Date,
+  minDate?: string,
+  maxDate?: string,
+) {
+  const year = viewMonth.getFullYear();
+  const month = viewMonth.getMonth();
+  const firstDay = dateToIso(new Date(year, month, 1, 12));
+  const lastDay = dateToIso(new Date(year, month + 1, 0, 12));
+
+  if (minDate && lastDay < minDate) return false;
+  if (maxDate && firstDay > maxDate) return false;
+  return true;
+}
+
+function calendarDayAriaLabel(day: Date) {
+  return `${WEEKDAY_NAMES[day.getDay()]}, ${MONTH_NAMES[day.getMonth()]} ${day.getDate()}, ${day.getFullYear()}`;
+}
+
 function DateWheelField({
   id,
   value,
@@ -153,6 +239,8 @@ function DateWheelField({
   minDate,
   maxDate,
   openCalendar,
+  calendarOpen,
+  calendarId,
 }: {
   id?: string;
   value: string;
@@ -163,6 +251,8 @@ function DateWheelField({
   minDate?: string;
   maxDate?: string;
   openCalendar: () => void;
+  calendarOpen: boolean;
+  calendarId: string;
 }) {
   const currentValue = isIsoDate(value) ? value : getTodayIso();
   const baseValueRef = useRef(currentValue);
@@ -386,6 +476,9 @@ function DateWheelField({
       aria-valuetext={isoToDisplay(currentValue)}
       aria-describedby={ariaDescribedBy}
       aria-disabled={disabled || undefined}
+      aria-haspopup="dialog"
+      aria-expanded={calendarOpen}
+      aria-controls={calendarId}
       tabIndex={disabled ? -1 : 0}
       className="field-input relative w-full cursor-ns-resize overflow-hidden p-0 touch-none select-none"
       data-dragging={isDragging ? "true" : undefined}
@@ -434,10 +527,26 @@ export default function DatePicker({
   maxDate,
   scrollPicker = true,
 }: DatePickerProps) {
+  const generatedId = useId().replace(/:/g, "");
+  const calendarId = `${id ?? `date-picker-${generatedId}`}-calendar`;
   const formattedValue = useMemo(() => isoToDisplay(value), [value]);
   const [displayValue, setDisplayValue] = useState(formattedValue);
   const [touched, setTouched] = useState(false);
-  const nativeInputRef = useRef<HTMLInputElement | null>(null);
+  const [calendarOpen, setCalendarOpen] = useState(false);
+  const [viewMonth, setViewMonth] = useState(() => {
+    const initial = isoToDate(value) ?? isoToDate(getTodayIso())!;
+    return new Date(initial.getFullYear(), initial.getMonth(), 1, 12);
+  });
+  const [calendarPosition, setCalendarPosition] = useState<CalendarPosition>({
+    left: CALENDAR_VIEWPORT_GAP,
+    top: CALENDAR_VIEWPORT_GAP,
+    width: CALENDAR_WIDTH,
+    transformOrigin: "top right",
+  });
+  const [calendarTheme, setCalendarTheme] = useState<Record<string, string>>({});
+  const anchorRef = useRef<HTMLDivElement | null>(null);
+  const calendarRef = useRef<HTMLDivElement | null>(null);
+  const textInputRef = useRef<HTMLInputElement | null>(null);
   const wheelLockRef = useRef(0);
   const touchPickerMode = useTouchWheelPickerMode(scrollPicker);
 
@@ -450,6 +559,10 @@ export default function DatePicker({
     if (!touched) setDisplayValue("");
   }, [formattedValue, touched, value]);
 
+  useEffect(() => {
+    if (disabled) setCalendarOpen(false);
+  }, [disabled]);
+
   const error = getDateError(displayValue, minDate, maxDate);
   const internalErrorId = id ? `${id}-error` : undefined;
   const describedBy =
@@ -457,20 +570,132 @@ export default function DatePicker({
       .filter(Boolean)
       .join(" ") || undefined;
 
+  const syncCalendarGeometry = useCallback(() => {
+    const anchor = anchorRef.current;
+    if (!anchor || typeof window === "undefined") return;
+
+    const rect = anchor.getBoundingClientRect();
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
+    const width = Math.min(
+      CALENDAR_WIDTH,
+      Math.max(0, viewportWidth - CALENDAR_VIEWPORT_GAP * 2),
+    );
+    const maxLeft = Math.max(
+      CALENDAR_VIEWPORT_GAP,
+      viewportWidth - width - CALENDAR_VIEWPORT_GAP,
+    );
+    const left = clamp(
+      rect.right - width,
+      CALENDAR_VIEWPORT_GAP,
+      maxLeft,
+    );
+    const spaceBelow = viewportHeight - rect.bottom - CALENDAR_VIEWPORT_GAP;
+    const spaceAbove = rect.top - CALENDAR_VIEWPORT_GAP;
+    const placeAbove =
+      spaceBelow < CALENDAR_HEIGHT_ESTIMATE && spaceAbove > spaceBelow;
+    const maxTop = Math.max(
+      CALENDAR_VIEWPORT_GAP,
+      viewportHeight - CALENDAR_HEIGHT_ESTIMATE - CALENDAR_VIEWPORT_GAP,
+    );
+    const requestedTop = placeAbove
+      ? rect.top - CALENDAR_HEIGHT_ESTIMATE - CALENDAR_VIEWPORT_GAP
+      : rect.bottom + CALENDAR_VIEWPORT_GAP;
+    const top = clamp(
+      requestedTop,
+      CALENDAR_VIEWPORT_GAP,
+      maxTop,
+    );
+
+    const computedStyle = window.getComputedStyle(anchor);
+    const nextTheme: Record<string, string> = {};
+    CALENDAR_THEME_PROPERTIES.forEach((property) => {
+      const propertyValue = computedStyle.getPropertyValue(property).trim();
+      if (propertyValue) nextTheme[property] = propertyValue;
+    });
+
+    setCalendarPosition({
+      left,
+      top,
+      width,
+      transformOrigin: placeAbove ? "bottom right" : "top right",
+    });
+    setCalendarTheme(nextTheme);
+  }, []);
+
+  const focusDateControl = useCallback(() => {
+    const focusTarget =
+      textInputRef.current ??
+      anchorRef.current?.querySelector<HTMLElement>(
+        'input:not([disabled]), [role="spinbutton"][tabindex="0"], button:not([disabled])',
+      );
+    focusTarget?.focus({ preventScroll: true });
+  }, []);
+
+  const closeCalendar = useCallback(
+    (restoreFocus = false) => {
+      setCalendarOpen(false);
+      if (restoreFocus) {
+        window.requestAnimationFrame(focusDateControl);
+      }
+    },
+    [focusDateControl],
+  );
+
   const openCalendar = useCallback(() => {
     if (disabled) return;
-    const input = nativeInputRef.current as
-      | (HTMLInputElement & { showPicker?: () => void })
-      | null;
-    if (!input) return;
+    const startingIso = clampIsoDate(
+      isIsoDate(value) ? value : getTodayIso(),
+      minDate,
+      maxDate,
+    );
+    const startingDate = isoToDate(startingIso) ?? isoToDate(getTodayIso())!;
+    setViewMonth(
+      new Date(startingDate.getFullYear(), startingDate.getMonth(), 1, 12),
+    );
+    setCalendarOpen(true);
+  }, [disabled, maxDate, minDate, value]);
 
-    try {
-      if (typeof input.showPicker === "function") input.showPicker();
-      else input.click();
-    } catch {
-      input.click();
-    }
-  }, [disabled]);
+  useEffect(() => {
+    if (!calendarOpen) return;
+    syncCalendarGeometry();
+
+    const handlePointerDown = (event: PointerEvent) => {
+      const target = event.target as Node | null;
+      if (!target) return;
+      if (
+        anchorRef.current?.contains(target) ||
+        calendarRef.current?.contains(target)
+      ) {
+        return;
+      }
+      closeCalendar();
+    };
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== "Escape") return;
+      event.preventDefault();
+      closeCalendar(true);
+    };
+
+    document.addEventListener("pointerdown", handlePointerDown, true);
+    document.addEventListener("keydown", handleKeyDown);
+    window.addEventListener("resize", syncCalendarGeometry);
+    window.addEventListener("scroll", syncCalendarGeometry, true);
+
+    return () => {
+      document.removeEventListener("pointerdown", handlePointerDown, true);
+      document.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("resize", syncCalendarGeometry);
+      window.removeEventListener("scroll", syncCalendarGeometry, true);
+    };
+  }, [calendarOpen, closeCalendar, syncCalendarGeometry]);
+
+  useEffect(() => {
+    if (!calendarOpen) return;
+    const frame = window.requestAnimationFrame(syncCalendarGeometry);
+    return () => window.cancelAnimationFrame(frame);
+  }, [calendarOpen, syncCalendarGeometry, viewMonth]);
 
   function handleChange(nextRawValue: string) {
     const nextDisplayValue = formatTypedDate(nextRawValue);
@@ -484,13 +709,6 @@ export default function DatePicker({
       return;
     }
     onChange("");
-  }
-
-  function handleNativeChange(nextValue: string) {
-    if (!nextValue || !isWithinRange(nextValue, minDate, maxDate)) return;
-    setTouched(false);
-    setDisplayValue(isoToDisplay(nextValue));
-    onChange(nextValue);
   }
 
   function handleWheel(event: ReactWheelEvent<HTMLInputElement>) {
@@ -512,9 +730,157 @@ export default function DatePicker({
     if (nextValue !== value) onChange(nextValue);
   }
 
+  function selectCalendarDate(nextValue: string) {
+    if (!isWithinRange(nextValue, minDate, maxDate)) return;
+    setTouched(false);
+    setDisplayValue(isoToDisplay(nextValue));
+    onChange(nextValue);
+    closeCalendar(true);
+  }
+
+  function shiftViewMonth(offset: number) {
+    setViewMonth(
+      (current) =>
+        new Date(current.getFullYear(), current.getMonth() + offset, 1, 12),
+    );
+  }
+
+  const calendarDays = useMemo(() => getCalendarDays(viewMonth), [viewMonth]);
+  const todayIso = getTodayIso();
+  const previousMonth = new Date(
+    viewMonth.getFullYear(),
+    viewMonth.getMonth() - 1,
+    1,
+    12,
+  );
+  const nextMonth = new Date(
+    viewMonth.getFullYear(),
+    viewMonth.getMonth() + 1,
+    1,
+    12,
+  );
+  const canGoPrevious = monthCanContainSelectableDate(
+    previousMonth,
+    minDate,
+    maxDate,
+  );
+  const canGoNext = monthCanContainSelectableDate(nextMonth, minDate, maxDate);
+  const canSelectToday = isWithinRange(todayIso, minDate, maxDate);
+
+  const calendar =
+    calendarOpen && typeof document !== "undefined"
+      ? createPortal(
+          <div
+            ref={calendarRef}
+            id={calendarId}
+            role="dialog"
+            aria-label={`${ariaLabel} calendar`}
+            style={
+              {
+                ...calendarPosition,
+                ...calendarTheme,
+              } as CSSProperties
+            }
+            className="fixed z-[140] max-h-[calc(100dvh-1rem)] overflow-y-auto rounded-[1.05rem] bg-surface-elevated p-2.5 text-text-primary shadow-dialog ring-1 ring-border/70 motion-safe:animate-in motion-safe:fade-in-0 motion-safe:zoom-in-95 motion-safe:duration-150"
+          >
+            <div className="flex items-center justify-between gap-2 px-0.5 pb-2">
+              <button
+                type="button"
+                aria-label="Previous month"
+                disabled={!canGoPrevious}
+                onClick={() => shiftViewMonth(-1)}
+                className="finance-focus grid size-8 shrink-0 place-items-center rounded-[0.7rem] text-text-secondary transition-colors hover:bg-hover hover:text-text-primary disabled:pointer-events-none disabled:opacity-30"
+              >
+                <ChevronLeft aria-hidden="true" size={16} strokeWidth={2} />
+              </button>
+
+              <div
+                aria-live="polite"
+                className="min-w-0 flex-1 text-center text-[0.82rem] font-[680] tracking-[-0.01em] text-text-primary"
+              >
+                {MONTH_NAMES[viewMonth.getMonth()]} {viewMonth.getFullYear()}
+              </div>
+
+              <button
+                type="button"
+                aria-label="Next month"
+                disabled={!canGoNext}
+                onClick={() => shiftViewMonth(1)}
+                className="finance-focus grid size-8 shrink-0 place-items-center rounded-[0.7rem] text-text-secondary transition-colors hover:bg-hover hover:text-text-primary disabled:pointer-events-none disabled:opacity-30"
+              >
+                <ChevronRight aria-hidden="true" size={16} strokeWidth={2} />
+              </button>
+            </div>
+
+            <div
+              role="row"
+              className="grid grid-cols-7 gap-0.5 px-0.5 pb-1"
+            >
+              {WEEKDAY_LABELS.map((weekday) => (
+                <div
+                  key={weekday}
+                  role="columnheader"
+                  aria-label={weekday}
+                  className="grid h-6 place-items-center text-[0.64rem] font-semibold uppercase tracking-[0.045em] text-text-muted"
+                >
+                  {weekday}
+                </div>
+              ))}
+            </div>
+
+            <div role="grid" className="grid grid-cols-7 gap-0.5 px-0.5">
+              {calendarDays.map((day) => {
+                const dayIso = dateToIso(day);
+                const isCurrentMonth = day.getMonth() === viewMonth.getMonth();
+                const isSelected = dayIso === value;
+                const isToday = dayIso === todayIso;
+                const isDisabled = !isWithinRange(dayIso, minDate, maxDate);
+
+                return (
+                  <button
+                    key={dayIso}
+                    type="button"
+                    role="gridcell"
+                    aria-label={calendarDayAriaLabel(day)}
+                    aria-selected={isSelected}
+                    aria-current={isToday ? "date" : undefined}
+                    disabled={isDisabled}
+                    onClick={() => selectCalendarDate(dayIso)}
+                    className={cn(
+                      "finance-focus relative grid size-[1.95rem] place-items-center justify-self-center rounded-[0.62rem] text-[0.74rem] font-medium tabular-nums transition-[background-color,color,transform] duration-150 hover:bg-hover active:scale-[0.94] disabled:pointer-events-none disabled:opacity-25",
+                      !isCurrentMonth && "text-text-muted/45",
+                      isCurrentMonth && !isSelected && "text-text-secondary",
+                      isToday &&
+                        !isSelected &&
+                        "bg-primary-soft text-brand hover:bg-primary-soft",
+                      isSelected &&
+                        "bg-brand font-semibold text-text-inverse shadow-sm hover:bg-brand",
+                    )}
+                  >
+                    {day.getDate()}
+                  </button>
+                );
+              })}
+            </div>
+
+            <div className="mt-2 flex items-center justify-end border-t border-divider/70 px-0.5 pt-2">
+              <button
+                type="button"
+                disabled={!canSelectToday}
+                onClick={() => selectCalendarDate(todayIso)}
+                className="finance-focus min-h-8 rounded-[0.65rem] px-2.5 text-[0.72rem] font-semibold text-brand transition-colors hover:bg-primary-soft disabled:pointer-events-none disabled:opacity-30"
+              >
+                Today
+              </button>
+            </div>
+          </div>,
+          document.body,
+        )
+      : null;
+
   return (
     <div className={cn("w-full", className)}>
-      <div className="relative">
+      <div ref={anchorRef} className="relative">
         {touchPickerMode ? (
           <DateWheelField
             id={id}
@@ -526,10 +892,13 @@ export default function DatePicker({
             minDate={minDate}
             maxDate={maxDate}
             openCalendar={openCalendar}
+            calendarOpen={calendarOpen}
+            calendarId={calendarId}
           />
         ) : (
           <>
             <input
+              ref={textInputRef}
               id={id}
               type="text"
               inputMode="numeric"
@@ -539,6 +908,9 @@ export default function DatePicker({
               aria-label={ariaLabel}
               aria-describedby={describedBy}
               aria-invalid={Boolean(touched && error)}
+              aria-haspopup="dialog"
+              aria-expanded={calendarOpen}
+              aria-controls={calendarId}
               maxLength={10}
               onChange={(event) => handleChange(event.target.value)}
               onBlur={() => setTouched(true)}
@@ -549,6 +921,9 @@ export default function DatePicker({
             <button
               type="button"
               aria-label={`Open ${ariaLabel.toLowerCase()} calendar`}
+              aria-haspopup="dialog"
+              aria-expanded={calendarOpen}
+              aria-controls={calendarId}
               disabled={disabled}
               onClick={openCalendar}
               className="finance-focus absolute top-1/2 right-1.5 grid size-8 -translate-y-1/2 place-items-center rounded-lg text-text-secondary transition-colors hover:bg-hover hover:text-text-primary disabled:pointer-events-none disabled:opacity-50"
@@ -557,20 +932,9 @@ export default function DatePicker({
             </button>
           </>
         )}
-
-        <input
-          ref={nativeInputRef}
-          type="date"
-          value={isIsoDate(value) ? value : ""}
-          min={minDate}
-          max={maxDate}
-          disabled={disabled}
-          tabIndex={-1}
-          aria-hidden="true"
-          onChange={(event) => handleNativeChange(event.target.value)}
-          className="pointer-events-none absolute right-0 bottom-0 h-px w-px opacity-0"
-        />
       </div>
+
+      {calendar}
 
       {touched && error ? (
         <p id={internalErrorId} className={financeFieldErrorClass}>
