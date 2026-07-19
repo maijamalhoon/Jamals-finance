@@ -32,35 +32,30 @@ type QuickAction = TransactionType | "transfer" | "invest";
 
 const actions: Array<{
   key: QuickAction;
-  label: string;
   icon: LucideIcon;
   ariaLabel: string;
   tone: "income" | "expense" | "transfer" | "investment";
 }> = [
   {
     key: "income",
-    label: "Income",
     icon: ArrowUp,
     ariaLabel: "Add income",
     tone: "income",
   },
   {
     key: "expense",
-    label: "Expense",
     icon: ArrowDown,
     ariaLabel: "Add expense",
     tone: "expense",
   },
   {
     key: "transfer",
-    label: "Transfer",
     icon: ArrowUpDown,
     ariaLabel: "Transfer money",
     tone: "transfer",
   },
   {
     key: "invest",
-    label: "Invest",
     icon: TrendingUp,
     ariaLabel: "Add investment",
     tone: "investment",
@@ -167,8 +162,6 @@ export default function QuickActionsBalance({
                       strokeWidth={2.25}
                     />
                   </span>
-
-                  <span className="dashboard-quick-action-label">{action.label}</span>
                 </button>
               );
             })}
