@@ -11,6 +11,8 @@ const CACHE_CONTROL =
   "public, max-age=86400, s-maxage=604800, stale-while-revalidate=2592000";
 const MISS_CACHE_CONTROL =
   "public, max-age=3600, s-maxage=86400, stale-while-revalidate=604800";
+const FINANCIAL_ENTITY_PATTERN =
+  /\b(bank|banking|financial|finance|fintech|payments?|wallet|credit union|building society|money transfer|e-?money)\b/i;
 
 type WikidataSearchResult = {
   id?: string;
@@ -87,6 +89,10 @@ function getTokens(value: string) {
     .filter((token) => token.length > 1 && !ignored.has(token));
 }
 
+function isLikelyFinancialEntity(name: string, description = "") {
+  return FINANCIAL_ENTITY_PATTERN.test(`${name} ${description}`);
+}
+
 function scoreMatch(query: string, candidate: string, description = "") {
   const normalizedQuery = normalize(query);
   const normalizedCandidate = normalize(candidate);
@@ -107,11 +113,7 @@ function scoreMatch(query: string, candidate: string, description = "") {
   const overlap = queryTokens.filter((token) => candidateTokens.has(token)).length;
   score += overlap * 18;
 
-  if (
-    /bank|financial|payment|wallet|fintech|credit union|money|finance/i.test(
-      description,
-    )
-  ) {
+  if (isLikelyFinancialEntity(candidate, description)) {
     score += 15;
   }
 
@@ -127,7 +129,6 @@ function readCommonsFilename(entity: WikidataEntity) {
       if (right.rank === "preferred") return 1;
       return 0;
     });
-
     for (const claim of sorted) {
       const value = claim.mainsnak?.datavalue?.value;
       if (typeof value === "string" && value.trim()) return value.trim();
@@ -165,7 +166,14 @@ async function resolveWikidataLogo(searchName: string) {
           item.description,
         ),
       }))
-      .filter(({ item, score }) => Boolean(item.id) && score >= 18)
+      .filter(({ item, score }) => {
+        const identityText = `${item.label ?? ""} ${(item.aliases ?? []).join(" ")}`;
+        return (
+          Boolean(item.id) &&
+          score >= 18 &&
+          isLikelyFinancialEntity(identityText, item.description)
+        );
+      })
       .sort((left, right) => right.score - left.score)
       .slice(0, 4);
 
@@ -218,7 +226,17 @@ async function resolveCompanyDomain(searchName: string) {
         company,
         score: scoreMatch(searchName, company.name ?? ""),
       }))
-      .filter(({ company, score }) => Boolean(company.domain) && score >= 18)
+      .filter(({ company, score }) => {
+        const identityText = `${company.name ?? ""} ${company.domain ?? ""}`.replace(
+          /[.-]/g,
+          " ",
+        );
+        return (
+          Boolean(company.domain) &&
+          score >= 18 &&
+          isLikelyFinancialEntity(identityText)
+        );
+      })
       .sort((left, right) => right.score - left.score)[0]?.company;
 
     const domain = best?.domain?.trim().toLowerCase();
@@ -253,9 +271,20 @@ function logoNotFound() {
 
 export async function GET(request: NextRequest) {
   const rawName = request.nextUrl.searchParams.get("name")?.trim().slice(0, 120);
-  if (!rawName || !shouldAttemptAccountLogo(rawName)) return logoNotFound();
+  const rawType = request.nextUrl.searchParams.get("type")?.trim().slice(0, 40);
+  const rawIconKey = request.nextUrl.searchParams
+    .get("iconKey")
+    ?.trim()
+    .slice(0, 120);
 
-  const knownBrand = detectAccountBrand(rawName);
+  if (
+    !rawName ||
+    !shouldAttemptAccountLogo(rawName, rawIconKey, rawType)
+  ) {
+    return logoNotFound();
+  }
+
+  const knownBrand = detectAccountBrand(rawName, rawIconKey);
   const searchName = knownBrand?.label ?? cleanSearchName(rawName);
   const wikidataLogo = await resolveWikidataLogo(searchName);
   if (wikidataLogo) return redirectToLogo(wikidataLogo);
