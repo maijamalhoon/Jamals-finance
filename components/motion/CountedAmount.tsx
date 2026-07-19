@@ -26,6 +26,8 @@ function splitAmount(amount: string) {
   };
 }
 
+type AnimationProfile = "default" | "dashboard";
+
 type RunningAmountAnimation = {
   element: HTMLSpanElement;
   from: number;
@@ -35,6 +37,8 @@ type RunningAmountAnimation = {
   finalText: string;
   formatValue: (value: number) => string;
   valueRef: MutableRefObject<number>;
+  profile: AnimationProfile;
+  lastText: string;
 };
 
 const runningAnimations = new Map<HTMLSpanElement, RunningAmountAnimation>();
@@ -42,9 +46,31 @@ let sharedAnimationFrame: number | null = null;
 
 const COUNT_DURATION_SCALE = 1.4;
 const MIN_COUNT_DURATION_MS = 1450;
+const DASHBOARD_DURATION_SCALE = 0.92;
+const DASHBOARD_MIN_DURATION_MS = 900;
+const DASHBOARD_MAX_DURATION_MS = 1350;
 
 function smoothStep(progress: number) {
   return progress * progress * (3 - 2 * progress);
+}
+
+function dashboardEase(progress: number) {
+  return 1 - Math.pow(1 - progress, 4);
+}
+
+function getAnimationProgress(progress: number, profile: AnimationProfile) {
+  return profile === "dashboard" ? dashboardEase(progress) : smoothStep(progress);
+}
+
+function getAnimationDuration(duration: number, profile: AnimationProfile) {
+  if (profile === "dashboard") {
+    return Math.min(
+      DASHBOARD_MAX_DURATION_MS,
+      Math.max(duration * 1000 * DASHBOARD_DURATION_SCALE, DASHBOARD_MIN_DURATION_MS),
+    );
+  }
+
+  return Math.max(duration * 1000 * COUNT_DURATION_SCALE, MIN_COUNT_DURATION_MS);
 }
 
 function renderSharedFrame(time: number) {
@@ -62,13 +88,18 @@ function renderSharedFrame(time: number) {
       Math.max((time - animation.startedAt) / animation.durationMs, 0),
       1,
     );
+    const easedProgress = getAnimationProgress(progress, animation.profile);
     const currentValue =
-      animation.from +
-      (animation.to - animation.from) * smoothStep(progress);
+      animation.from + (animation.to - animation.from) * easedProgress;
+    const nextText =
+      progress >= 1 ? animation.finalText : animation.formatValue(currentValue);
 
     animation.valueRef.current = currentValue;
-    element.textContent =
-      progress >= 1 ? animation.finalText : animation.formatValue(currentValue);
+
+    if (nextText !== animation.lastText) {
+      element.textContent = nextText;
+      animation.lastText = nextText;
+    }
 
     if (progress >= 1) {
       animation.valueRef.current = animation.to;
@@ -147,13 +178,22 @@ export default function CountedAmount({
       minimumFractionDigits: parsedAmount.decimals,
       maximumFractionDigits: parsedAmount.decimals,
     });
-    const formatValue = (value: number) =>
-      `${parsedAmount.prefix}${formatter.format(value)}${parsedAmount.suffix}`;
+    const precisionFactor = 10 ** parsedAmount.decimals;
+    const formatValue = (value: number) => {
+      const roundedValue =
+        Math.round(value * precisionFactor) / precisionFactor;
+      const displayValue = Object.is(roundedValue, -0) ? 0 : roundedValue;
+      return `${parsedAmount.prefix}${formatter.format(displayValue)}${parsedAmount.suffix}`;
+    };
     const fromValue = hasAnimatedRef.current ? currentValueRef.current : 0;
+    const profile: AnimationProfile = element.closest(".dashboard-overview")
+      ? "dashboard"
+      : "default";
 
     hasAnimatedRef.current = true;
     currentValueRef.current = fromValue;
-    element.textContent = formatValue(fromValue);
+    const initialText = formatValue(fromValue);
+    element.textContent = initialText;
     element.style.visibility = "visible";
 
     if (fromValue === parsedAmount.value) {
@@ -166,13 +206,12 @@ export default function CountedAmount({
       from: fromValue,
       to: parsedAmount.value,
       startedAt: performance.now() + Math.max(0, delay) * 1000,
-      durationMs: Math.max(
-        duration * 1000 * COUNT_DURATION_SCALE,
-        MIN_COUNT_DURATION_MS,
-      ),
+      durationMs: getAnimationDuration(duration, profile),
       finalText: amount,
       formatValue,
       valueRef: currentValueRef,
+      profile,
+      lastText: initialText,
     });
 
     return () => stopSharedAnimation(element);
