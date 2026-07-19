@@ -55,6 +55,8 @@ import "./mobile-header-detail-polish.css";
 import "./mobile-header-control-fixes.css";
 // Goals Progress is the single visual reference for all dashboard card labels.
 import "./dashboard-card-label-unify.css";
+// Quick-action centering and button-origin form launch are intentionally the final overrides.
+import "./quick-actions-launch.css";
 
 export const dynamic = "force-dynamic";
 
