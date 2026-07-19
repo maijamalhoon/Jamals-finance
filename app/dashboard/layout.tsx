@@ -75,6 +75,8 @@ import "./mobile-notification-bell-motion.css";
 import "./unified-page-heading.css";
 // All content cards and decorative icon wrappers on those routes stay borderless.
 import "./non-dashboard-card-borderless.css";
+// Exact screenshot-approved hero/title blocks are removed and their space is reclaimed.
+import "./cropped-section-removals.css";
 
 export const dynamic = "force-dynamic";
 
