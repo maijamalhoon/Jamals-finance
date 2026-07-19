@@ -31,6 +31,7 @@ import "./card-hover-policy.css";
 import "./top-cards-responsive-tuning.css";
 import "./transactions-responsive-polish.css";
 import "./header-search-polish.css";
+import "./desktop-header-surface.css";
 // Keep the focused overview overrides last so they win only inside their scoped selectors.
 import "./overview-top-metrics.css";
 import "./metric-sparkline-fix.css";
