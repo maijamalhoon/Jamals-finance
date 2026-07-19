@@ -37,6 +37,8 @@ import "./content-typography.css";
 import "./transactions-type-icons.css";
 // Receipt polish stays last so its tightly scoped visual system cannot be muted by shared route styles.
 import "./transaction-receipt-premium.css";
+// Compact header controls and menus stay last; selectors remain mobile/tablet scoped.
+import "./mobile-header-detail-polish.css";
 
 export const dynamic = "force-dynamic";
 
