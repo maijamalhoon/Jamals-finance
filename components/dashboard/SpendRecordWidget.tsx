@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useEffect, useId, useMemo, useState } from "react";
 import { Activity, TrendingUp } from "lucide-react";
 import {
   Area,
@@ -17,6 +17,10 @@ import CountedAmount from "@/components/motion/CountedAmount";
 import { useCurrency } from "@/components/currency/CurrencyProvider";
 import type { DashboardAvailability } from "@/lib/dashboard-financial-semantics";
 
+const AMBIENT_SWEEP_DURATION = "9s";
+const SPEND_CHART_LIGHT =
+  "color-mix(in srgb, var(--danger) 74%, white 26%)";
+
 export default function SpendRecordWidget({
   monthlySpend,
   dailySpend,
@@ -29,6 +33,8 @@ export default function SpendRecordWidget({
   status: DashboardAvailability;
 }) {
   const { formatCurrency } = useCurrency();
+  const [isAmbientMotionReady, setIsAmbientMotionReady] = useState(false);
+  const gradientPrefix = useId().replace(/:/g, "");
   const data = useMemo(
     () =>
       dailyExpenseTrend.map((value, index) => ({
@@ -59,6 +65,53 @@ export default function SpendRecordWidget({
       : typeof dailySpend === "number"
         ? formatCurrency(dailySpend)
         : dailySpend;
+
+  useEffect(() => {
+    setIsAmbientMotionReady(false);
+
+    if (
+      status !== "available" ||
+      !hasSpendData ||
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    ) {
+      return;
+    }
+
+    let cancelled = false;
+    let firstFrame = 0;
+    let secondFrame = 0;
+    let delayTimer = 0;
+
+    const scheduleAmbientMotion = () => {
+      const fontsReady = document.fonts?.ready ?? Promise.resolve();
+
+      void fontsReady.then(() => {
+        if (cancelled) return;
+
+        firstFrame = window.requestAnimationFrame(() => {
+          secondFrame = window.requestAnimationFrame(() => {
+            delayTimer = window.setTimeout(() => {
+              if (!cancelled) setIsAmbientMotionReady(true);
+            }, chartMotion.animationDuration + 240);
+          });
+        });
+      });
+    };
+
+    if (document.readyState === "complete") {
+      scheduleAmbientMotion();
+    } else {
+      window.addEventListener("load", scheduleAmbientMotion, { once: true });
+    }
+
+    return () => {
+      cancelled = true;
+      window.removeEventListener("load", scheduleAmbientMotion);
+      window.cancelAnimationFrame(firstFrame);
+      window.cancelAnimationFrame(secondFrame);
+      window.clearTimeout(delayTimer);
+    };
+  }, [data, hasSpendData, status]);
 
   return (
     <ChartCard eyebrow="Spend Record" eyebrowIcon={<Activity />} className="relative">
@@ -105,65 +158,123 @@ export default function SpendRecordWidget({
               className="h-[124px] min-h-[124px] min-w-0 overflow-hidden sm:h-[138px] sm:min-h-[138px]"
               tone="danger"
             >
-              {({ width, height }) => (
-                <AreaChart
-                  accessibilityLayer
-                  data={data}
-                  height={height}
-                  margin={{ top: 14, right: 4, left: 4, bottom: 2 }}
-                  width={width}
-                >
-                  <XAxis dataKey="day" hide />
-                  <YAxis hide domain={[0, "dataMax"]} />
-                  <Tooltip
-                    cursor={{
-                      stroke: "var(--dashboard-chart-grid)",
-                      strokeDasharray: "4 5",
-                    }}
-                    contentStyle={{
-                      border: "1px solid var(--border)",
-                      borderRadius: 16,
-                      background: "var(--card)",
-                      color: "var(--text-primary)",
-                      boxShadow: "var(--shadow-soft)",
-                    }}
-                    formatter={(value) => [
-                      formatCurrency(Number(value ?? 0)),
-                      "Spend",
-                    ]}
-                    labelFormatter={(label) => `Day ${label}`}
-                  />
-                  {peakPoint ? (
-                    <ReferenceDot
-                      x={peakPoint.day}
-                      y={peakPoint.spend}
-                      r={4.5}
-                      fill="var(--danger)"
-                      stroke="var(--card)"
-                      strokeWidth={2.5}
-                      ifOverflow="extendDomain"
+              {({ width, height }) => {
+                const sheenId = `${gradientPrefix}-spend-sheen`;
+                const sheenStart = -Math.max(width * 0.42, 100);
+                const sheenEnd = width * 1.08;
+                const sheenWidth = Math.max(width * 0.27, 76);
+
+                return (
+                  <AreaChart
+                    accessibilityLayer
+                    data={data}
+                    height={height}
+                    margin={{ top: 14, right: 4, left: 4, bottom: 2 }}
+                    width={width}
+                  >
+                    {isAmbientMotionReady ? (
+                      <defs>
+                        <linearGradient
+                          id={sheenId}
+                          gradientUnits="userSpaceOnUse"
+                          x1={sheenStart}
+                          y1="0"
+                          x2={sheenStart + sheenWidth}
+                          y2="0"
+                        >
+                          <stop offset="0%" stopColor="white" stopOpacity="0" />
+                          <stop offset="34%" stopColor="white" stopOpacity="0" />
+                          <stop offset="52%" stopColor="white" stopOpacity="0.9" />
+                          <stop
+                            offset="68%"
+                            stopColor={SPEND_CHART_LIGHT}
+                            stopOpacity="0.32"
+                          />
+                          <stop offset="100%" stopColor="white" stopOpacity="0" />
+                          <animate
+                            attributeName="x1"
+                            values={`${sheenStart};${sheenEnd};${sheenEnd}`}
+                            keyTimes="0;0.68;1"
+                            dur={AMBIENT_SWEEP_DURATION}
+                            repeatCount="indefinite"
+                          />
+                          <animate
+                            attributeName="x2"
+                            values={`${sheenStart + sheenWidth};${sheenEnd + sheenWidth};${sheenEnd + sheenWidth}`}
+                            keyTimes="0;0.68;1"
+                            dur={AMBIENT_SWEEP_DURATION}
+                            repeatCount="indefinite"
+                          />
+                        </linearGradient>
+                      </defs>
+                    ) : null}
+                    <XAxis dataKey="day" hide />
+                    <YAxis hide domain={[0, "dataMax"]} />
+                    <Tooltip
+                      cursor={{
+                        stroke: "var(--dashboard-chart-grid)",
+                        strokeDasharray: "4 5",
+                      }}
+                      contentStyle={{
+                        border: "1px solid var(--border)",
+                        borderRadius: 16,
+                        background: "var(--card)",
+                        color: "var(--text-primary)",
+                        boxShadow: "var(--shadow-soft)",
+                      }}
+                      formatter={(value) => [
+                        formatCurrency(Number(value ?? 0)),
+                        "Spend",
+                      ]}
+                      labelFormatter={(label) => `Day ${label}`}
                     />
-                  ) : null}
-                  <Area
-                    type="monotone"
-                    dataKey="spend"
-                    activeDot={{
-                      r: 4,
-                      fill: "var(--card)",
-                      stroke: "var(--danger)",
-                      strokeWidth: 2.5,
-                    }}
-                    dot={false}
-                    stroke="var(--danger)"
-                    strokeLinecap="round"
-                    strokeWidth={2.6}
-                    fill="transparent"
-                    baseValue={0}
-                    isAnimationActive
-                    {...chartMotion}
-                  />
-                </AreaChart>
-              )}
+                    {peakPoint ? (
+                      <ReferenceDot
+                        x={peakPoint.day}
+                        y={peakPoint.spend}
+                        r={4.5}
+                        fill="var(--danger)"
+                        stroke="var(--card)"
+                        strokeWidth={2.5}
+                        ifOverflow="extendDomain"
+                      />
+                    ) : null}
+                    <Area
+                      type="monotone"
+                      dataKey="spend"
+                      activeDot={{
+                        r: 4,
+                        fill: "var(--card)",
+                        stroke: "var(--danger)",
+                        strokeWidth: 2.5,
+                      }}
+                      dot={false}
+                      stroke="var(--danger)"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2.6}
+                      fill="transparent"
+                      baseValue={0}
+                      isAnimationActive
+                      {...chartMotion}
+                    />
+                    {isAmbientMotionReady ? (
+                      <Area
+                        type="monotone"
+                        dataKey="spend"
+                        activeDot={false}
+                        dot={false}
+                        stroke={`url(#${sheenId})`}
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={4}
+                        fill="none"
+                        isAnimationActive={false}
+                      />
+                    ) : null}
+                  </AreaChart>
+                );
+              }}
             </ChartFrame>
           </div>
         ) : (
