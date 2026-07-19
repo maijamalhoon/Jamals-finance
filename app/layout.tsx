@@ -9,6 +9,7 @@ import "./finance-form-content-fit.css";
 import "./auth-clean.css";
 import "./auth-clean-fixes.css";
 import "./light-background-tuning.css";
+import "./interaction-lock.css";
 import { Toaster } from "sonner";
 import MotionProvider from "@/components/motion/MotionProvider";
 import { CURRENCY_STORAGE_KEY } from "@/lib/currency";
@@ -56,6 +57,35 @@ const CURRENCY_BOOTSTRAP_SCRIPT = `
     const secure = window.location.protocol === "https:" ? "; Secure" : "";
     document.cookie = key + "=" + encodeURIComponent(saved) + "; Path=/; Max-Age=31536000; SameSite=Lax" + secure;
     window.location.replace(window.location.href);
+  } catch {}
+})();
+`;
+
+const INTERACTION_LOCK_SCRIPT = `
+(() => {
+  try {
+    const marker = "__jfInteractionLockInstalled";
+    if (window[marker]) return;
+    window[marker] = true;
+
+    const preventNativeInteraction = (event) => event.preventDefault();
+
+    document.addEventListener("contextmenu", preventNativeInteraction, {
+      capture: true,
+    });
+    document.addEventListener("dragstart", preventNativeInteraction, {
+      capture: true,
+    });
+    document.addEventListener("selectstart", preventNativeInteraction, {
+      capture: true,
+    });
+    document.addEventListener(
+      "pointerdown",
+      (event) => {
+        if (event.button === 2) event.preventDefault();
+      },
+      { capture: true },
+    );
   } catch {}
 })();
 `;
@@ -150,6 +180,11 @@ export default function RootLayout({
         <script
           dangerouslySetInnerHTML={{
             __html: CURRENCY_BOOTSTRAP_SCRIPT,
+          }}
+        />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: INTERACTION_LOCK_SCRIPT,
           }}
         />
       </head>
