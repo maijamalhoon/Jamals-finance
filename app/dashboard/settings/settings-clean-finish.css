@@ -158,13 +158,6 @@
   content: "Download your profile, preferences, categories, and account summary" !important;
 }
 
-/* Keep category rows focused on the assigned icon and category name. */
-[role="dialog"]:has([role="tablist"])
-  [role="tabpanel"]
-  p[class*="text-[11px]"][class*="truncate"] {
-  display: none !important;
-}
-
 /* Use the cleaner Log Out label while preserving the live signing-out state. */
 .settings-page-polish .settings-core > div > div > button:last-of-type[aria-busy="false"] {
   font-size: 0 !important;
