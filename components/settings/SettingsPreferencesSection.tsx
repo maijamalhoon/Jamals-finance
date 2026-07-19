@@ -5,6 +5,7 @@ import {
   CalendarDays,
   ChevronRight,
   CircleDollarSign,
+  Loader2,
   Save,
   SlidersHorizontal,
 } from "lucide-react";
@@ -32,6 +33,7 @@ import {
   useCurrency,
   type Currency,
 } from "@/components/currency/CurrencyProvider";
+import { createClient } from "@/lib/supabase/client";
 
 const DATE_FORMAT_OPTIONS = [
   { value: "MMM d, yyyy", label: "Jun 22, 2026" },
@@ -151,6 +153,7 @@ function PreferenceRow({
 export default function SettingsPreferencesSection({
   onPreferenceSaved,
 }: SettingsPreferencesSectionProps) {
+  const supabase = createClient();
   const { currency, rateLabel, setCurrency } = useCurrency();
   const [dateFormat, setDateFormat] = useState<DateFormat>("MMM d, yyyy");
   const [currencyOpen, setCurrencyOpen] = useState(false);
@@ -158,6 +161,7 @@ export default function SettingsPreferencesSection({
   const [draftCurrency, setDraftCurrency] = useState<Currency>(currency);
   const [draftDateFormat, setDraftDateFormat] =
     useState<DateFormat>("MMM d, yyyy");
+  const [savingCurrency, setSavingCurrency] = useState(false);
 
   useEffect(() => {
     const storedDateFormat = readStoredDateFormat();
@@ -173,11 +177,42 @@ export default function SettingsPreferencesSection({
     if (dateOpen) setDraftDateFormat(readStoredDateFormat());
   }, [dateOpen]);
 
-  function handleCurrencySubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleCurrencySubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (savingCurrency) return;
+
+    setSavingCurrency(true);
+
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
+
+    if (userError || !user) {
+      setSavingCurrency(false);
+      toast.error("Your account could not be verified. Please sign in again.");
+      return;
+    }
+
+    const { error } = await supabase.from("profiles").upsert(
+      {
+        id: user.id,
+        preferred_currency: draftCurrency,
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: "id" },
+    );
+
+    setSavingCurrency(false);
+
+    if (error) {
+      toast.error("Currency could not be saved to your account. Please try again.");
+      return;
+    }
+
     setCurrency(draftCurrency);
     setCurrencyOpen(false);
-    toast.success(`Currency set to ${draftCurrency}.`);
+    toast.success(`Currency set to ${draftCurrency} for your account.`);
     onPreferenceSaved?.();
   }
 
@@ -217,7 +252,7 @@ export default function SettingsPreferencesSection({
                 Preferences
               </span>
               <span className="mt-0.5 block text-xs leading-5 text-text-secondary">
-                Control currency and date display for this device
+                Currency follows your account; date format stays on this device
               </span>
             </span>
           </div>
@@ -231,7 +266,7 @@ export default function SettingsPreferencesSection({
               </IconBubble>
             }
             title="Currency"
-            description="Choose the currency used across your dashboard"
+            description="Choose the default currency for this account on every device"
             value={currency}
             onClick={() => setCurrencyOpen(true)}
           />
@@ -252,7 +287,12 @@ export default function SettingsPreferencesSection({
         </div>
       </section>
 
-      <Dialog open={currencyOpen} onOpenChange={setCurrencyOpen}>
+      <Dialog
+        open={currencyOpen}
+        onOpenChange={(nextOpen) => {
+          if (!savingCurrency) setCurrencyOpen(nextOpen);
+        }}
+      >
         <DialogContent className={financeModalContentClass}>
           <form
             onSubmit={handleCurrencySubmit}
@@ -260,7 +300,7 @@ export default function SettingsPreferencesSection({
           >
             <FinanceModalHeader
               title="Currency"
-              description="Choose the currency used across your dashboard."
+              description="This becomes your account default on every device."
               icon={CircleDollarSign}
               tone="success"
             />
@@ -273,6 +313,7 @@ export default function SettingsPreferencesSection({
                 <Select
                   value={draftCurrency}
                   onValueChange={(value) => setDraftCurrency(value as Currency)}
+                  disabled={savingCurrency}
                 >
                   <SelectTrigger
                     id="settings-currency-select"
@@ -292,10 +333,15 @@ export default function SettingsPreferencesSection({
               <Button
                 type="submit"
                 size="lg"
+                disabled={savingCurrency}
                 className="min-h-[var(--oneui-control-height-lg)] w-full"
               >
-                <Save size={16} aria-hidden="true" />
-                Set Currency
+                {savingCurrency ? (
+                  <Loader2 size={16} className="animate-spin" aria-hidden="true" />
+                ) : (
+                  <Save size={16} aria-hidden="true" />
+                )}
+                {savingCurrency ? "Saving..." : "Set Currency"}
               </Button>
             </FinanceModalFooter>
           </form>
