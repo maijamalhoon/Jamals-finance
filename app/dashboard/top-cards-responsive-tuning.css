@@ -190,3 +190,132 @@
     padding: 0.66rem !important;
   }
 }
+
+/* Borderless quick-action controls with a calm sequential attention loop. */
+.dashboard-quick-action {
+  min-height: 5.15rem !important;
+  gap: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  transition: transform 220ms cubic-bezier(0.22, 1, 0.36, 1) !important;
+}
+
+.dashboard-quick-action .dashboard-quick-action-icon {
+  width: 3.2rem !important;
+  height: 3.2rem !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  will-change: transform, filter;
+}
+
+.dashboard-quick-action-glyph {
+  width: 1.28rem;
+  height: 1.28rem;
+}
+
+/* Keep the same action hues while balancing them against the dark surface. */
+.dark .dashboard-quick-action .dashboard-quick-action-icon[data-tone="income"] {
+  background: color-mix(in srgb, var(--income) 88%, white 12%) !important;
+}
+
+.dark .dashboard-quick-action .dashboard-quick-action-icon[data-tone="expense"] {
+  background: color-mix(in srgb, var(--expense) 90%, white 10%) !important;
+}
+
+.dark .dashboard-quick-action .dashboard-quick-action-icon[data-tone="transfer"] {
+  background: color-mix(in srgb, var(--transfer) 86%, white 14%) !important;
+}
+
+.dark .dashboard-quick-action .dashboard-quick-action-icon[data-tone="investment"] {
+  background: color-mix(in srgb, var(--investment) 86%, white 14%) !important;
+}
+
+@keyframes dashboard-quick-action-attention {
+  0%,
+  15%,
+  100% {
+    transform: translateY(0) scale(1);
+    filter: brightness(1) saturate(1);
+  }
+
+  4% {
+    transform: translateY(-2px) scale(1.065);
+    filter: brightness(1.08) saturate(1.04);
+  }
+
+  8% {
+    transform: translateY(0) scale(0.995);
+    filter: brightness(0.99) saturate(0.99);
+  }
+
+  12% {
+    transform: translateY(-1px) scale(1.025);
+    filter: brightness(1.04) saturate(1.02);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .dashboard-quick-action .dashboard-quick-action-icon {
+    animation: dashboard-quick-action-attention 6.4s cubic-bezier(0.22, 1, 0.36, 1) infinite;
+  }
+
+  .dashboard-quick-action:nth-child(1) .dashboard-quick-action-icon {
+    animation-delay: 0s;
+  }
+
+  .dashboard-quick-action:nth-child(2) .dashboard-quick-action-icon {
+    animation-delay: 1.6s;
+  }
+
+  .dashboard-quick-action:nth-child(3) .dashboard-quick-action-icon {
+    animation-delay: 3.2s;
+  }
+
+  .dashboard-quick-action:nth-child(4) .dashboard-quick-action-icon {
+    animation-delay: 4.8s;
+  }
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .dashboard-quick-action:hover .dashboard-quick-action-icon {
+    animation: none;
+    transform: translateY(-1px) scale(1.055);
+    filter: brightness(1.05) saturate(1.02);
+    box-shadow: none !important;
+  }
+}
+
+.dashboard-quick-action:active {
+  transform: scale(0.95) !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.dashboard-quick-action:active .dashboard-quick-action-icon {
+  animation: none;
+  transform: scale(0.965);
+  filter: brightness(0.97) saturate(0.98);
+}
+
+@media (max-width: 639px) {
+  .dashboard-quick-action {
+    min-height: 4.8rem !important;
+  }
+
+  .dashboard-quick-action .dashboard-quick-action-icon {
+    width: 2.85rem !important;
+    height: 2.85rem !important;
+  }
+
+  .dashboard-quick-action-glyph {
+    width: 1.18rem;
+    height: 1.18rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dashboard-quick-action .dashboard-quick-action-icon {
+    animation: none !important;
+  }
+}
