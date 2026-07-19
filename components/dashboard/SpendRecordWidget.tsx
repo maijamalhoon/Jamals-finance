@@ -169,7 +169,7 @@ export default function SpendRecordWidget({
                     accessibilityLayer
                     data={data}
                     height={height}
-                    margin={{ top: 14, right: 4, left: 4, bottom: 2 }}
+                    margin={{ top: 14, right: 4, left: 4, bottom: 8 }}
                     width={width}
                   >
                     {isAmbientMotionReady ? (
