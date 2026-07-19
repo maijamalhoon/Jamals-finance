@@ -3,7 +3,7 @@ import type { ReactNode } from "react";
 interface ChartCardProps {
   eyebrow: string;
   eyebrowIcon?: ReactNode;
-  title: string;
+  title?: string;
   description?: string;
   action?: ReactNode;
   legend?: ReactNode;
@@ -40,9 +40,11 @@ export default function ChartCard({
             </p>
           </div>
 
-          <h3 className="mt-1.5 truncate text-[13px] font-semibold leading-none tracking-normal text-text-primary">
-            {title}
-          </h3>
+          {title ? (
+            <h3 className="mt-1.5 truncate text-[13px] font-semibold leading-none tracking-normal text-text-primary">
+              {title}
+            </h3>
+          ) : null}
           {description ? (
             <p className="mt-1 text-[11px] leading-4 text-text-secondary">
               {description}
