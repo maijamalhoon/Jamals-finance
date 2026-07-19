@@ -1,0 +1,411 @@
+/*
+ * Transaction receipt visual system.
+ * Scope: receipt view only. Data, refund logic, copy/download/print behavior,
+ * database reads, calculations, routes, and responsive dashboard shell remain unchanged.
+ */
+
+main:has(> [data-transaction-receipt]) {
+  width: min(100%, 72rem) !important;
+  gap: clamp(0.9rem, 2vw, 1.25rem) !important;
+  font-family: var(--font-geist-sans), var(--font-sans);
+  font-kerning: normal;
+  font-optical-sizing: auto;
+  font-synthesis: none;
+  text-rendering: geometricPrecision;
+  container-name: transaction-receipt-page;
+  container-type: inline-size;
+}
+
+main:has(> [data-transaction-receipt]) > div:first-child {
+  width: 100%;
+  gap: 0.7rem !important;
+}
+
+main:has(> [data-transaction-receipt]) > div:first-child > a {
+  min-height: 2.8rem !important;
+  border-color: color-mix(in srgb, var(--border), transparent 10%) !important;
+  border-radius: 0.95rem !important;
+  background: var(--surface-primary) !important;
+  color: var(--text-primary) !important;
+  box-shadow: none !important;
+  font-family: var(--font-geist-sans), var(--font-sans);
+  font-size: 0.82rem !important;
+  font-weight: 650 !important;
+  letter-spacing: -0.008em;
+  transform: none !important;
+}
+
+main:has(> [data-transaction-receipt]) > div:first-child > a:hover,
+main:has(> [data-transaction-receipt]) > div:first-child > a:focus-visible {
+  border-color: color-mix(in srgb, var(--primary), transparent 72%) !important;
+  background: var(--hover) !important;
+  color: var(--primary) !important;
+  transform: none !important;
+}
+
+main:has(> [data-transaction-receipt]) > div:first-child > a svg,
+[data-receipt-actions] svg {
+  fill: none !important;
+  stroke: currentColor;
+  stroke-width: 2.3 !important;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  shape-rendering: geometricPrecision;
+  vector-effect: non-scaling-stroke;
+}
+
+[data-receipt-actions] {
+  gap: 0.55rem !important;
+}
+
+[data-receipt-actions] .receipt-action {
+  min-height: 2.8rem !important;
+  justify-content: center;
+  gap: 0.5rem !important;
+  border-radius: 0.95rem !important;
+  padding-inline: 0.9rem !important;
+  box-shadow: none !important;
+  font-family: var(--font-geist-sans), var(--font-sans);
+  font-size: 0.8rem !important;
+  font-weight: 650 !important;
+  letter-spacing: -0.008em;
+  transform: none !important;
+}
+
+[data-receipt-actions] .receipt-action:hover,
+[data-receipt-actions] .receipt-action:focus-visible {
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+[data-receipt-actions] .receipt-action-refund {
+  border-color: color-mix(in srgb, var(--success), transparent 58%) !important;
+  background: color-mix(in srgb, var(--success), transparent 88%) !important;
+  color: var(--success) !important;
+}
+
+[data-receipt-actions] .receipt-action-primary {
+  border-color: color-mix(in srgb, var(--primary), transparent 56%) !important;
+  background: color-mix(in srgb, var(--primary), transparent 88%) !important;
+  color: var(--primary) !important;
+}
+
+[data-transaction-receipt] {
+  isolation: isolate;
+  border: 1px solid color-mix(in srgb, var(--border), transparent 4%) !important;
+  border-radius: clamp(1.1rem, 2.5vw, 1.55rem) !important;
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--receipt-accent), transparent 96%) 0,
+      var(--surface-primary) 9.5rem
+    ) !important;
+  box-shadow:
+    var(--surface-highlight),
+    0 18px 46px color-mix(in srgb, var(--text-primary) 7%, transparent) !important;
+}
+
+.dark [data-transaction-receipt] {
+  box-shadow:
+    var(--surface-highlight),
+    0 20px 52px rgb(0 0 0 / 0.22) !important;
+}
+
+[data-transaction-receipt]::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto;
+  z-index: 2;
+  height: 0.2rem;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in srgb, var(--receipt-accent), white 5%) 18%,
+    var(--receipt-accent) 50%,
+    color-mix(in srgb, var(--receipt-accent), white 5%) 82%,
+    transparent
+  );
+  opacity: 0.9;
+  pointer-events: none;
+}
+
+[data-transaction-receipt] > div:first-child {
+  padding: clamp(1.05rem, 2.7vw, 1.65rem) !important;
+  border-color: color-mix(in srgb, var(--divider), transparent 10%) !important;
+}
+
+[data-transaction-receipt] > div:first-child > div {
+  gap: 1rem !important;
+}
+
+[data-transaction-receipt] > div:first-child > div > div:first-child {
+  align-items: flex-start;
+  gap: clamp(0.75rem, 2vw, 1rem) !important;
+}
+
+[data-transaction-receipt] > div:first-child > div > div:first-child > span:first-child {
+  width: clamp(2.8rem, 7vw, 3.35rem) !important;
+  height: clamp(2.8rem, 7vw, 3.35rem) !important;
+  color: var(--receipt-accent) !important;
+}
+
+[data-transaction-receipt] > div:first-child > div > div:first-child > span:first-child svg {
+  width: clamp(1.55rem, 4vw, 1.8rem) !important;
+  height: clamp(1.55rem, 4vw, 1.8rem) !important;
+  fill: none !important;
+  stroke: currentColor;
+  stroke-width: 2.35 !important;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  shape-rendering: geometricPrecision;
+}
+
+[data-transaction-receipt] > div:first-child p:first-of-type {
+  color: color-mix(in srgb, var(--receipt-accent), var(--text-secondary) 38%) !important;
+  font-family: var(--font-geist-sans), var(--font-sans);
+  font-size: 0.66rem !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.14em !important;
+}
+
+[data-transaction-receipt] > div:first-child h2 {
+  max-width: 44rem;
+  margin-top: 0.35rem !important;
+  color: var(--text-primary) !important;
+  font-family: var(--font-geist-sans), var(--font-sans);
+  font-size: clamp(1.35rem, 3.2vw, 2.05rem) !important;
+  font-weight: 700 !important;
+  line-height: 1.14 !important;
+  letter-spacing: -0.035em !important;
+}
+
+[data-transaction-receipt] > div:first-child h2 + p {
+  margin-top: 0.55rem !important;
+  font-family: var(--font-geist-sans), var(--font-sans);
+  font-size: 0.78rem !important;
+  font-weight: 500 !important;
+}
+
+[data-transaction-receipt] > div:first-child > div > span:last-child {
+  min-height: 2rem;
+  display: inline-flex;
+  align-items: center;
+  padding: 0.42rem 0.72rem !important;
+  border-color: color-mix(in srgb, var(--receipt-accent), transparent 68%) !important;
+  border-radius: 999px !important;
+  background: color-mix(in srgb, var(--receipt-accent), transparent 91%) !important;
+  font-family: var(--font-geist-sans), var(--font-sans);
+  font-size: 0.72rem !important;
+  font-weight: 650 !important;
+  letter-spacing: -0.005em;
+}
+
+[data-transaction-receipt] > div:nth-child(2) {
+  grid-template-columns: minmax(0, 1fr) minmax(15rem, 19rem) !important;
+}
+
+[data-transaction-receipt] > div:nth-child(2) > div:first-child {
+  padding: clamp(1rem, 2.5vw, 1.45rem) !important;
+}
+
+[data-transaction-receipt] > div:nth-child(2) > div:first-child > div:first-child {
+  margin-bottom: 0.45rem !important;
+  padding: 0.15rem 0 1.2rem !important;
+  border-bottom-color: color-mix(in srgb, var(--divider), transparent 8%) !important;
+}
+
+[data-transaction-receipt] > div:nth-child(2) > div:first-child > div:first-child > p:first-child {
+  color: var(--text-tertiary) !important;
+  font-family: var(--font-geist-sans), var(--font-sans);
+  font-size: 0.65rem !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.14em !important;
+}
+
+[data-transaction-receipt] > div:nth-child(2) > div:first-child > div:first-child > p:nth-of-type(2) {
+  margin-top: 0.5rem !important;
+  color: var(--receipt-accent) !important;
+  font-family: var(--font-geist-sans), var(--font-sans);
+  font-size: clamp(2.25rem, 7cqi, 4rem) !important;
+  font-weight: 750 !important;
+  line-height: 0.98 !important;
+  letter-spacing: -0.055em !important;
+  font-variant-numeric: tabular-nums lining-nums;
+  font-feature-settings: "tnum" 1, "lnum" 1;
+}
+
+[data-transaction-receipt] > div:nth-child(2) > div:first-child > div:first-child > p:last-child {
+  margin-top: 0.55rem !important;
+  font-family: var(--font-geist-sans), var(--font-sans);
+  font-size: 0.76rem !important;
+  font-weight: 500 !important;
+}
+
+[data-transaction-receipt] > div:nth-child(2) > div:first-child > div:nth-child(2) {
+  gap: 0 !important;
+  column-gap: clamp(0.8rem, 2vw, 1.25rem) !important;
+}
+
+[data-transaction-receipt] div.finance-panel-soft {
+  min-height: 4rem !important;
+  padding: 0.78rem 0.15rem !important;
+  border-bottom-color: color-mix(in srgb, var(--divider), transparent 14%) !important;
+}
+
+[data-transaction-receipt] div.finance-panel-soft > div:first-child {
+  gap: 0.42rem !important;
+  margin-bottom: 0.32rem !important;
+  color: var(--text-tertiary) !important;
+  font-family: var(--font-geist-sans), var(--font-sans);
+  font-size: 0.62rem !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.1em !important;
+}
+
+[data-transaction-receipt] div.finance-panel-soft > div:first-child svg {
+  width: 0.88rem !important;
+  height: 0.88rem !important;
+  color: color-mix(in srgb, var(--receipt-accent), var(--text-secondary) 30%) !important;
+  fill: none !important;
+  stroke: currentColor;
+  stroke-width: 2.25 !important;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+[data-transaction-receipt] div.finance-panel-soft > p {
+  color: var(--text-primary) !important;
+  font-family: var(--font-geist-sans), var(--font-sans);
+  font-size: clamp(0.82rem, 1.7cqi, 0.92rem) !important;
+  font-weight: 600 !important;
+  line-height: 1.35rem !important;
+  letter-spacing: -0.01em;
+  font-variant-numeric: tabular-nums lining-nums;
+}
+
+[data-transaction-receipt] aside.finance-panel-soft {
+  padding: clamp(1rem, 2.4vw, 1.35rem) !important;
+  border-left-color: color-mix(in srgb, var(--divider), transparent 8%) !important;
+  background: color-mix(in srgb, var(--surface-secondary), transparent 34%) !important;
+}
+
+[data-transaction-receipt] aside.finance-panel-soft > p:first-child {
+  color: color-mix(in srgb, var(--receipt-accent), var(--text-secondary) 34%) !important;
+  font-family: var(--font-geist-sans), var(--font-sans);
+  font-size: 0.65rem !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.13em !important;
+}
+
+[data-transaction-receipt] aside.finance-panel-soft > div {
+  margin-top: 0.55rem !important;
+}
+
+@container transaction-receipt-page (max-width: 48rem) {
+  main:has(> [data-transaction-receipt]) > div:first-child {
+    align-items: stretch !important;
+  }
+
+  main:has(> [data-transaction-receipt]) > div:first-child > a {
+    width: 100% !important;
+    justify-content: center;
+  }
+
+  [data-receipt-actions] {
+    display: grid !important;
+    width: 100% !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  [data-receipt-actions] .receipt-action {
+    width: 100% !important;
+    min-width: 0;
+    padding-inline: 0.65rem !important;
+  }
+
+  [data-transaction-receipt] > div:first-child > div {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+  }
+
+  [data-transaction-receipt] > div:first-child > div > span:last-child {
+    margin-left: clamp(3.55rem, 9vw, 4.35rem);
+  }
+
+  [data-transaction-receipt] > div:nth-child(2) {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  [data-transaction-receipt] aside.finance-panel-soft {
+    border-top: 1px solid color-mix(in srgb, var(--divider), transparent 8%) !important;
+    border-left: 0 !important;
+  }
+}
+
+@container transaction-receipt-page (max-width: 34rem) {
+  [data-receipt-actions] {
+    gap: 0.48rem !important;
+  }
+
+  [data-receipt-actions] .receipt-action {
+    min-height: 2.75rem !important;
+    font-size: 0.74rem !important;
+  }
+
+  [data-transaction-receipt] > div:first-child > div > div:first-child > span:first-child {
+    width: 2.6rem !important;
+    height: 2.6rem !important;
+  }
+
+  [data-transaction-receipt] > div:first-child h2 {
+    font-size: 1.25rem !important;
+    line-height: 1.48rem !important;
+  }
+
+  [data-transaction-receipt] > div:first-child > div > span:last-child {
+    margin-left: 3.35rem;
+  }
+
+  [data-transaction-receipt] > div:nth-child(2) > div:first-child > div:nth-child(2) {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  [data-transaction-receipt] div.finance-panel-soft {
+    min-height: 3.75rem !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  main:has(> [data-transaction-receipt]) *,
+  [data-receipt-actions] * {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}
+
+@media print {
+  main:has(> [data-transaction-receipt]) {
+    width: 100% !important;
+    padding: 0 !important;
+    color: #111 !important;
+  }
+
+  [data-transaction-receipt] {
+    border: 1px solid #d7d7d7 !important;
+    background: #fff !important;
+    color: #111 !important;
+    box-shadow: none !important;
+  }
+
+  [data-transaction-receipt]::before {
+    background: #111 !important;
+  }
+
+  [data-transaction-receipt] * {
+    color: #111 !important;
+    text-shadow: none !important;
+    box-shadow: none !important;
+  }
+}
