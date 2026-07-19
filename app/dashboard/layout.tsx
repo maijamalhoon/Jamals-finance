@@ -23,6 +23,7 @@ import "./top-cards-polish.css";
 import "./card-hover-policy.css";
 import "./top-cards-responsive-tuning.css";
 import "./transactions-responsive-polish.css";
+import "./transaction-receipt-premium.css";
 import "./header-search-polish.css";
 // Keep the focused overview overrides last so they win only inside their scoped selectors.
 import "./overview-top-metrics.css";
