@@ -1,6 +1,11 @@
 "use client";
 
-import { useLayoutEffect, useMemo, useRef } from "react";
+import {
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  type MutableRefObject,
+} from "react";
 
 function splitAmount(amount: string) {
   const cleanAmount = String(amount ?? "").trim();
@@ -21,16 +26,89 @@ function splitAmount(amount: string) {
   };
 }
 
+type RunningAmountAnimation = {
+  element: HTMLSpanElement;
+  from: number;
+  to: number;
+  startedAt: number;
+  durationMs: number;
+  finalText: string;
+  formatValue: (value: number) => string;
+  valueRef: MutableRefObject<number>;
+};
+
+const runningAnimations = new Map<HTMLSpanElement, RunningAmountAnimation>();
+let sharedAnimationFrame: number | null = null;
+
+function easeOutCubic(progress: number) {
+  return 1 - Math.pow(1 - progress, 3);
+}
+
+function renderSharedFrame(time: number) {
+  sharedAnimationFrame = null;
+
+  runningAnimations.forEach((animation, element) => {
+    if (!element.isConnected) {
+      runningAnimations.delete(element);
+      return;
+    }
+
+    if (time < animation.startedAt) return;
+
+    const progress = Math.min(
+      Math.max((time - animation.startedAt) / animation.durationMs, 0),
+      1,
+    );
+    const currentValue =
+      animation.from +
+      (animation.to - animation.from) * easeOutCubic(progress);
+
+    animation.valueRef.current = currentValue;
+    element.textContent =
+      progress >= 1 ? animation.finalText : animation.formatValue(currentValue);
+
+    if (progress >= 1) {
+      animation.valueRef.current = animation.to;
+      runningAnimations.delete(element);
+    }
+  });
+
+  if (runningAnimations.size > 0) {
+    sharedAnimationFrame = requestAnimationFrame(renderSharedFrame);
+  }
+}
+
+function startSharedAnimation(animation: RunningAmountAnimation) {
+  runningAnimations.set(animation.element, animation);
+
+  if (sharedAnimationFrame === null) {
+    sharedAnimationFrame = requestAnimationFrame(renderSharedFrame);
+  }
+}
+
+function stopSharedAnimation(element: HTMLSpanElement) {
+  runningAnimations.delete(element);
+
+  if (runningAnimations.size === 0 && sharedAnimationFrame !== null) {
+    cancelAnimationFrame(sharedAnimationFrame);
+    sharedAnimationFrame = null;
+  }
+}
+
 export default function CountedAmount({
   amount,
   duration = 1.4,
+  delay = 0,
   animateOnCompact = false,
 }: {
   amount: string;
   duration?: number;
+  delay?: number;
   animateOnCompact?: boolean;
 }) {
   const elementRef = useRef<HTMLSpanElement>(null);
+  const currentValueRef = useRef(0);
+  const hasAnimatedRef = useRef(false);
   const parsedAmount = useMemo(() => splitAmount(amount), [amount]);
 
   useLayoutEffect(() => {
@@ -41,8 +119,16 @@ export default function CountedAmount({
       "(prefers-reduced-motion: reduce)",
     ).matches;
     const compactViewport = window.matchMedia("(max-width: 1023px)").matches;
+    const shouldAnimate =
+      !reduceMotion &&
+      (animateOnCompact || !compactViewport) &&
+      duration > 0;
 
-    if (reduceMotion || (!animateOnCompact && compactViewport) || duration <= 0) {
+    stopSharedAnimation(element);
+
+    if (!shouldAnimate) {
+      currentValueRef.current = parsedAmount.value;
+      hasAnimatedRef.current = true;
       element.textContent = amount;
       return;
     }
@@ -53,84 +139,30 @@ export default function CountedAmount({
     });
     const formatValue = (value: number) =>
       `${parsedAmount.prefix}${formatter.format(value)}${parsedAmount.suffix}`;
-    const durationMs = duration * 1000;
-    const frameIntervalMs = compactViewport ? 1000 / 30 : 1000 / 45;
+    const fromValue = hasAnimatedRef.current ? currentValueRef.current : 0;
 
-    let frameId = 0;
-    let observer: IntersectionObserver | null = null;
-    let visibilityListener: (() => void) | null = null;
-    let cancelled = false;
-    let started = false;
+    hasAnimatedRef.current = true;
+    currentValueRef.current = fromValue;
+    element.textContent = formatValue(fromValue);
 
-    element.textContent = formatValue(0);
-
-    const startAnimation = () => {
-      if (cancelled || started) return;
-
-      if (document.visibilityState === "hidden") {
-        visibilityListener = () => {
-          if (document.visibilityState !== "visible") return;
-          document.removeEventListener("visibilitychange", visibilityListener!);
-          visibilityListener = null;
-          startAnimation();
-        };
-        document.addEventListener("visibilitychange", visibilityListener);
-        return;
-      }
-
-      started = true;
-      observer?.disconnect();
-      observer = null;
-
-      const startedAt = performance.now();
-      let lastRenderedAt = startedAt - frameIntervalMs;
-
-      const renderFrame = (time: number) => {
-        if (cancelled) return;
-
-        const progress = Math.min((time - startedAt) / durationMs, 1);
-        const easedProgress = 1 - Math.pow(1 - progress, 3);
-
-        if (time - lastRenderedAt >= frameIntervalMs || progress >= 1) {
-          const currentValue = parsedAmount.value * easedProgress;
-          element.textContent = progress >= 1 ? amount : formatValue(currentValue);
-          lastRenderedAt = time;
-        }
-
-        if (progress < 1) {
-          frameId = requestAnimationFrame(renderFrame);
-        }
-      };
-
-      frameId = requestAnimationFrame(renderFrame);
-    };
-
-    if ("IntersectionObserver" in window) {
-      observer = new IntersectionObserver(
-        (entries) => {
-          if (entries.some((entry) => entry.isIntersecting)) {
-            startAnimation();
-          }
-        },
-        {
-          rootMargin: "120px 0px",
-          threshold: 0.01,
-        },
-      );
-      observer.observe(element);
-    } else {
-      startAnimation();
+    if (fromValue === parsedAmount.value) {
+      element.textContent = amount;
+      return;
     }
 
-    return () => {
-      cancelled = true;
-      observer?.disconnect();
-      cancelAnimationFrame(frameId);
-      if (visibilityListener) {
-        document.removeEventListener("visibilitychange", visibilityListener);
-      }
-    };
-  }, [amount, animateOnCompact, duration, parsedAmount]);
+    startSharedAnimation({
+      element,
+      from: fromValue,
+      to: parsedAmount.value,
+      startedAt: performance.now() + Math.max(0, delay) * 1000,
+      durationMs: Math.max(duration * 1000, 1),
+      finalText: amount,
+      formatValue,
+      valueRef: currentValueRef,
+    });
+
+    return () => stopSharedAnimation(element);
+  }, [amount, animateOnCompact, delay, duration, parsedAmount]);
 
   return (
     <span ref={elementRef} aria-label={amount} className="tabular-nums">
