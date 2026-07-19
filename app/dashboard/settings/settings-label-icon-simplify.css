@@ -1,0 +1,36 @@
+/* Settings-only simplification requested for section labels and appearance. */
+
+/* Section headings now show text only. Row/action icons remain untouched. */
+.settings-page-polish .settings-reference-section-heading {
+  gap: 0 !important;
+}
+
+.settings-page-polish
+  .settings-reference-section-heading
+  > span[aria-hidden="true"]:first-child {
+  display: none !important;
+}
+
+/* Theme selection remains fully accessible, but only the three Lucide glyphs
+   are visible. The active surface already communicates the selected mode. */
+.settings-page-polish .settings-reference-theme-option {
+  gap: 0 !important;
+  padding-inline: 0.5rem !important;
+}
+
+.settings-page-polish
+  .settings-reference-theme-option
+  > span:not(.settings-reference-theme-icon),
+.settings-page-polish .settings-reference-theme-option > svg {
+  display: none !important;
+}
+
+.settings-page-polish .settings-reference-theme-icon,
+.settings-page-polish .settings-reference-theme-icon svg {
+  width: 1.2rem !important;
+  height: 1.2rem !important;
+}
+
+.settings-page-polish .settings-reference-theme-icon svg {
+  stroke-width: 2.35 !important;
+}
