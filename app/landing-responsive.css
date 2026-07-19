@@ -546,3 +546,18 @@
     scale: 1 !important;
   }
 }
+
+/* Landing separators cleanup */
+.jf-value-rail,
+.jf-workflow-section {
+  box-shadow: none;
+}
+
+.jf-value-item + .jf-value-item {
+  box-shadow: none;
+}
+
+.jf-workflow-list::before {
+  display: none;
+  content: none;
+}
