@@ -2,8 +2,9 @@
  * Authentication field adornment positioning.
  *
  * Final presentation-only layer for login, sign-up, forgot-password and
- * reset-password fields. It gives every icon/action its own space and centres
- * it against the actual input height without changing auth behaviour.
+ * reset-password fields. The input, leading icon and trailing action share one
+ * grid cell, so every adornment stays vertically centred without relying on
+ * absolute-position transforms that can drift at different viewport sizes.
  */
 
 .jf-auth-root .auth-field-control {
@@ -15,9 +16,19 @@
 
   position: relative !important;
   isolation: isolate;
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) !important;
+  align-items: center !important;
   width: 100%;
   min-width: 0;
   overflow: visible;
+}
+
+.jf-auth-root .auth-field-control > .auth-input,
+.jf-auth-root
+  .auth-field-control
+  > :is(.auth-field-icon, .auth-inline-field-action, .auth-password-toggle) {
+  grid-area: 1 / 1 !important;
 }
 
 .jf-auth-root .auth-field-control > .auth-input {
@@ -49,61 +60,77 @@
   padding-inline-end: var(--auth-inline-action-space) !important;
 }
 
-/* Use one centring method only. Older auth layers used a mixture of the
- * individual `translate` property and `transform`, which could leave icons
- * attached to the upper edge. This final rule resets both and centres against
- * the input on every viewport and browser zoom level. */
+/* Grid alignment is deliberately used instead of top/translate positioning.
+ * This keeps the mail/lock icons, Change action and password visibility button
+ * centred against the actual input card on phones, tablets and large screens. */
 .jf-auth-root
   .auth-field-control
   > :is(.auth-field-icon, .auth-inline-field-action, .auth-password-toggle) {
-  position: absolute !important;
-  top: 50% !important;
+  position: relative !important;
+  inset: auto !important;
+  top: auto !important;
+  right: auto !important;
   bottom: auto !important;
-  margin: 0 !important;
-  translate: 0 0 !important;
-  transform: translateY(-50%) !important;
+  left: auto !important;
+  align-self: center !important;
+  margin-block: 0 !important;
+  translate: none !important;
+  transform: none !important;
 }
 
 .jf-auth-root .auth-field-control > .auth-field-icon {
-  left: var(--auth-leading-inset) !important;
-  right: auto !important;
+  justify-self: start !important;
   width: var(--auth-leading-icon-size);
   height: var(--auth-leading-icon-size);
+  margin-inline-start: var(--auth-leading-inset) !important;
   display: grid !important;
   place-items: center !important;
   flex: 0 0 auto;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  color: var(--text-muted);
   line-height: 0 !important;
   pointer-events: none;
   z-index: 2;
 }
 
 .jf-auth-root .auth-field-control > .auth-inline-field-action {
-  right: 8px !important;
-  left: auto !important;
+  justify-self: end !important;
   width: auto !important;
   min-width: 70px;
+  max-width: calc(100% - var(--auth-leading-space) - 8px);
   height: 34px !important;
   min-height: 34px !important;
+  margin-inline-end: 8px !important;
   padding-inline: 8px !important;
   display: inline-flex !important;
-  align-items: center;
-  justify-content: center;
-  overflow: visible !important;
+  align-items: center !important;
+  justify-content: center !important;
+  overflow: hidden !important;
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  text-overflow: ellipsis;
   white-space: nowrap;
   line-height: 1 !important;
   z-index: 3;
 }
 
 .jf-auth-root .auth-field-control > .auth-password-toggle {
-  right: 7px !important;
-  left: auto !important;
+  justify-self: end !important;
   width: 38px !important;
   height: 38px !important;
   min-width: 38px !important;
   min-height: 38px !important;
+  margin-inline-end: 7px !important;
   padding: 0 !important;
   display: grid !important;
   place-items: center !important;
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
   line-height: 0 !important;
   z-index: 3;
 }
@@ -132,12 +159,12 @@
   }
 
   .jf-auth-root .auth-field-control > .auth-inline-field-action {
-    right: 6px !important;
     min-width: 68px;
+    margin-inline-end: 6px !important;
     padding-inline: 6px !important;
   }
 
   .jf-auth-root .auth-field-control > .auth-password-toggle {
-    right: 6px !important;
+    margin-inline-end: 6px !important;
   }
 }
