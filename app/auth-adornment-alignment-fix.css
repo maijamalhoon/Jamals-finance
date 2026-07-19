@@ -1,0 +1,59 @@
+/*
+ * Authentication field adornment positioning.
+ * Presentation-only: keeps start icons, inline actions and password visibility
+ * controls centered inside their inputs without touching form behaviour.
+ */
+
+.jf-auth-root[data-auth-minimal="true"] .auth-field-control {
+  position: relative;
+  isolation: isolate;
+}
+
+.jf-auth-root[data-auth-minimal="true"]
+  .auth-field-control
+  > :is(.auth-field-icon, .auth-inline-field-action, .auth-password-toggle) {
+  top: 50% !important;
+  bottom: auto !important;
+  margin: 0 !important;
+  transform: translateY(-50%) !important;
+  translate: none !important;
+}
+
+.jf-auth-root[data-auth-minimal="true"]
+  .auth-field-control
+  > .auth-field-icon {
+  width: 18px;
+  height: 18px;
+  display: grid !important;
+  place-items: center;
+  line-height: 0;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.jf-auth-root[data-auth-minimal="true"]
+  .auth-field-control
+  > .auth-inline-field-action {
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  line-height: 1 !important;
+  z-index: 2;
+}
+
+.jf-auth-root[data-auth-minimal="true"]
+  .auth-field-control
+  > .auth-password-toggle {
+  display: grid !important;
+  place-items: center !important;
+  line-height: 0 !important;
+  z-index: 2;
+}
+
+.jf-auth-root[data-auth-minimal="true"]
+  .auth-field-control
+  > :is(.auth-field-icon, .auth-password-toggle)
+  svg {
+  display: block;
+  flex: 0 0 auto;
+}
