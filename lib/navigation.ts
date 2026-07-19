@@ -1,16 +1,16 @@
 import {
+  BadgeDollarSign,
   BarChart3,
+  BrainCircuit,
   BriefcaseBusiness,
   FileBarChart,
+  Gauge,
   HandCoins,
-  LayoutDashboard,
+  Landmark,
+  Receipt,
   ReceiptText,
-  Settings,
-  Sparkles,
+  Settings2,
   Target,
-  TrendingDown,
-  TrendingUp,
-  WalletCards,
   type LucideIcon,
 } from "lucide-react";
 
@@ -32,7 +32,7 @@ export const NAV_GROUPS: NavGroup[] = [
       {
         label: "Dashboard",
         href: "/dashboard",
-        icon: LayoutDashboard,
+        icon: Gauge,
       },
     ],
   },
@@ -47,17 +47,17 @@ export const NAV_GROUPS: NavGroup[] = [
       {
         label: "Accounts",
         href: "/dashboard/accounts",
-        icon: WalletCards,
+        icon: Landmark,
       },
       {
         label: "Income",
         href: "/dashboard/income",
-        icon: TrendingUp,
+        icon: BadgeDollarSign,
       },
       {
         label: "Expenses",
         href: "/dashboard/expenses",
-        icon: TrendingDown,
+        icon: Receipt,
       },
     ],
   },
@@ -97,7 +97,7 @@ export const NAV_GROUPS: NavGroup[] = [
       {
         label: "AI Insights",
         href: "/dashboard/ai-insights",
-        icon: Sparkles,
+        icon: BrainCircuit,
       },
       {
         label: "Reports",
@@ -112,7 +112,7 @@ export const NAV_GROUPS: NavGroup[] = [
       {
         label: "Settings",
         href: "/dashboard/settings",
-        icon: Settings,
+        icon: Settings2,
       },
     ],
   },
