@@ -30,6 +30,8 @@ const INTERACTIVE_SELECTOR = [
   "label",
   "summary",
   "form",
+  "svg",
+  "canvas",
   '[role="button"]',
   '[role="link"]',
   '[role="menu"]',
@@ -42,6 +44,8 @@ const INTERACTIVE_SELECTOR = [
   '[role="listbox"]',
   '[role="option"]',
   '[contenteditable="true"]',
+  '[data-chart]',
+  '[class*="recharts"]',
   '[data-swipe-navigation-ignore]',
 ].join(",");
 
@@ -147,10 +151,6 @@ function closeDrawer() {
   );
 }
 
-function getOpenEdgeWidth() {
-  return Math.min(96, Math.max(56, window.innerWidth * 0.2));
-}
-
 function getSwipeDistance() {
   return Math.min(88, Math.max(58, window.innerWidth * 0.16));
 }
@@ -182,7 +182,6 @@ export default function MobileNavSwipeGestures() {
 
       if (!drawerOpen) {
         if (
-          event.clientX > getOpenEdgeWidth() ||
           isTransactionSearchOpen() ||
           hasOtherBlockingSurface() ||
           isInteractiveTarget(event.target) ||
