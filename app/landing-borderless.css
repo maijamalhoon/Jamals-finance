@@ -20,22 +20,41 @@
 }
 
 /*
- * Curve the actual section surface instead of drawing a nearly-flat pseudo element.
- * The shallow vertical radius keeps the divider visible on wide screens without
- * increasing section height or changing any content spacing.
+ * Keep the value rail and workflow as clean inset surfaces so their rounded
+ * corners remain visible instead of reading like full-width divider bars.
  */
 .jf-value-rail,
 .jf-workflow-section {
-  --jf-section-curve-depth: clamp(1.35rem, 2vw, 2.25rem);
+  --jf-section-radius: clamp(1.4rem, 2.4vw, 2.5rem);
   position: relative;
+  width: min(calc(100% - clamp(1rem, 3vw, 4rem)), 112.5rem);
+  margin-inline: auto;
   overflow: hidden;
-  border-radius: 0 0 50% 50% / 0 0 var(--jf-section-curve-depth) var(--jf-section-curve-depth);
-  box-shadow: inset 0 1px 0 var(--jf-line);
+  border-radius: var(--jf-section-radius);
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+.jf-value-rail {
+  margin-block: clamp(0.55rem, 1vw, 0.9rem) 0;
+}
+
+.jf-workflow-section {
+  margin-block: clamp(0.75rem, 1.4vw, 1.25rem);
 }
 
 @media (max-width: 639px) {
   .jf-value-rail,
   .jf-workflow-section {
-    --jf-section-curve-depth: 1.15rem;
+    --jf-section-radius: 1.25rem;
+    width: calc(100% - 1rem);
+  }
+
+  .jf-value-rail {
+    margin-top: 0.5rem;
+  }
+
+  .jf-workflow-section {
+    margin-block: 0.65rem;
   }
 }
