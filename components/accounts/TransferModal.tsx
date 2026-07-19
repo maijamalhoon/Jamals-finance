@@ -12,6 +12,7 @@ import { getAppDateKey } from "@/lib/dates";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import AccountSelect from "@/components/accounts/AccountSelect";
+import { useCurrency } from "@/components/currency/CurrencyProvider";
 import {
   FinanceModalBody,
   FinanceModalFooter,
@@ -21,7 +22,7 @@ import {
   financeModalContentClass,
   financePrimaryButtonClass,
 } from "@/components/ui/finance-modal";
-import { BASE_CURRENCY, formatMoney } from "@/lib/currency";
+import { BASE_CURRENCY } from "@/lib/currency";
 import { getUserMutationError } from "@/lib/user-errors";
 import {
   getAvailableTransferBalance,
@@ -48,6 +49,7 @@ const TRANSFER_ACTION_COLOR = "#A35D2D";
 export default function TransferModal({ open, onClose, onSuccess }: Props) {
   const supabase = useMemo(() => createClient(), []);
   const router = useRouter();
+  const { formatCurrency } = useCurrency();
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [fromAccountId, setFromAccountId] = useState("");
   const [toAccountId, setToAccountId] = useState("");
@@ -68,6 +70,10 @@ export default function TransferModal({ open, onClose, onSuccess }: Props) {
     [accounts, fromAccountId],
   );
   const availableBalance = getAvailableTransferBalance(fromAccount?.balance);
+  const formattedAvailableBalance = formatCurrency(availableBalance, {
+    fromCurrency: BASE_CURRENCY,
+    maximumFractionDigits: 2,
+  });
   const amountIssue = getTransferAmountIssue(amount, availableBalance);
   const amountError =
     amountTouched && amountIssue === "missing"
@@ -75,13 +81,7 @@ export default function TransferModal({ open, onClose, onSuccess }: Props) {
       : amountTouched && amountIssue === "invalid"
         ? "Enter a transfer amount greater than 0."
         : amountTouched && amountIssue === "exceeds-balance"
-          ? `Amount exceeds the available balance of ${formatMoney(
-              availableBalance,
-              {
-                currency: BASE_CURRENCY,
-                maximumFractionDigits: 2,
-              },
-            )}.`
+          ? `Amount exceeds the available balance of ${formattedAvailableBalance}.`
           : null;
 
   useEffect(() => {
@@ -320,10 +320,7 @@ export default function TransferModal({ open, onClose, onSuccess }: Props) {
                   hint={
                     <span id="transfer-amount-balance">
                       {fromAccount
-                        ? `Available: ${formatMoney(availableBalance, {
-                            currency: BASE_CURRENCY,
-                            maximumFractionDigits: 2,
-                          })}`
+                        ? `Available: ${formattedAvailableBalance}`
                         : "Select a source account."}
                     </span>
                   }
