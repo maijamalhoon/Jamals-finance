@@ -105,6 +105,17 @@
   }
 }
 
+/* Preserve a small ink-safe area so the final balance digit is never clipped. */
+@media (min-width: 640px) {
+  [data-dashboard-scroll]
+    .dashboard-overview
+    .dashboard-balance-amount {
+    width: calc(100% + 0.08em);
+    padding-inline-end: 0.08em;
+    box-sizing: border-box;
+  }
+}
+
 /* Keep the click response short and tactile; forms use their own native dialog motion. */
 .dashboard-quick-action {
   border: 0 !important;
