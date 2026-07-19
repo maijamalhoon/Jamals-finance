@@ -58,6 +58,12 @@ export default function AccountCard({ account }: AccountCardProps) {
   const brand = detectAccountBrand(account.name, account.icon_key);
   const accent = brand?.accentColor ?? getAccountAccentColor(account.accent_color);
   const archived = account.status === "archived";
+  const identityRenderKey = [
+    account.id,
+    account.name,
+    account.icon_key ?? "",
+    account.type ?? "",
+  ].join(":");
 
   async function handleStatusChange() {
     if (changingStatus) return;
@@ -106,6 +112,7 @@ export default function AccountCard({ account }: AccountCardProps) {
 
         <div className="relative flex items-start justify-between gap-3">
           <AccountIdentityIcon
+            key={identityRenderKey}
             name={account.name}
             iconKey={account.icon_key}
             type={account.type}
