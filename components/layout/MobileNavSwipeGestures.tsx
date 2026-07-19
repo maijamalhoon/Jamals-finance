@@ -14,10 +14,10 @@ type SwipeGesture = {
 };
 
 const MOBILE_VIEWPORT_QUERY = "(max-width: 1023px)";
-const AXIS_LOCK_DISTANCE = 10;
-const HORIZONTAL_DOMINANCE = 1.2;
-const QUICK_FLICK_MIN_DISTANCE = 36;
-const QUICK_FLICK_MIN_VELOCITY = 0.35;
+const AXIS_LOCK_DISTANCE = 8;
+const HORIZONTAL_DOMINANCE = 1.15;
+const QUICK_FLICK_MIN_DISTANCE = 28;
+const QUICK_FLICK_MIN_VELOCITY = 0.28;
 const CLICK_SUPPRESSION_MS = 420;
 
 const INTERACTIVE_SELECTOR = [
@@ -79,9 +79,14 @@ function getMobileDrawer() {
   );
 }
 
+function getMobileDrawerTrigger() {
+  return document.querySelector<HTMLElement>(
+    '[data-mobile-control-cluster] [data-slot="sheet-trigger"]',
+  );
+}
+
 function isDrawerOpen() {
-  const drawer = getMobileDrawer();
-  return Boolean(drawer && isVisible(drawer));
+  return getMobileDrawerTrigger()?.getAttribute("aria-expanded") === "true";
 }
 
 function hasOtherBlockingSurface() {
@@ -127,12 +132,27 @@ function isInsideHorizontalScroller(target: EventTarget | null) {
 }
 
 function openDrawer() {
-  const trigger = document.querySelector<HTMLElement>(
-    '[data-mobile-control-cluster] [data-slot="sheet-trigger"]',
-  );
-
+  const trigger = getMobileDrawerTrigger();
   if (!trigger || trigger.getAttribute("aria-expanded") === "true") return;
+
+  // The compact header intentionally becomes inert while hidden. Temporarily
+  // lift that state so the swipe gesture can activate the real Sheet trigger.
+  const inertHost = trigger.closest<HTMLElement>("[inert]");
+  const hadInert = Boolean(inertHost?.hasAttribute("inert"));
+  const previousAriaHidden = inertHost?.getAttribute("aria-hidden") ?? null;
+
+  if (hadInert) inertHost?.removeAttribute("inert");
+  if (inertHost) inertHost.setAttribute("aria-hidden", "false");
+
   trigger.click();
+
+  window.requestAnimationFrame(() => {
+    if (!inertHost) return;
+    if (hadInert) inertHost.setAttribute("inert", "");
+
+    if (previousAriaHidden === null) inertHost.removeAttribute("aria-hidden");
+    else inertHost.setAttribute("aria-hidden", previousAriaHidden);
+  });
 }
 
 function closeDrawer() {
@@ -152,7 +172,7 @@ function closeDrawer() {
 }
 
 function getSwipeDistance() {
-  return Math.min(88, Math.max(58, window.innerWidth * 0.16));
+  return Math.min(72, Math.max(48, window.innerWidth * 0.14));
 }
 
 export default function MobileNavSwipeGestures() {
