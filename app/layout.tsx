@@ -19,6 +19,7 @@ import "./auth-adornment-alignment-fix.css";
 // Final dark-mode-only icon tone lift; light mode and semantic hues stay intact.
 import "./dark-icon-tone.css";
 import { Toaster } from "sonner";
+import DesktopOverscrollBounce from "@/components/motion/DesktopOverscrollBounce";
 import MotionProvider from "@/components/motion/MotionProvider";
 import { CURRENCY_STORAGE_KEY } from "@/lib/currency";
 import ChartTooltipAutoDismiss from "@/components/charts/ChartTooltipAutoDismiss";
@@ -199,6 +200,7 @@ export default function RootLayout({
       <body className="bg-background text-foreground antialiased">
         <MotionProvider>
           {children}
+          <DesktopOverscrollBounce />
           <ChartTooltipAutoDismiss />
           <PWARegister />
           <Toaster
