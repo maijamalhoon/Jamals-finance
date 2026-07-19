@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
-import { Activity, CalendarDays, TrendingUp } from "lucide-react";
+import { Activity, TrendingUp } from "lucide-react";
 import {
   Area,
   AreaChart,
@@ -48,47 +48,41 @@ export default function SpendRecordWidget({
     return peak.spend > 0 && uniqueValues.size > 1 ? peak : null;
   }, [data]);
   const displaySpend =
-    monthlySpend === null ? "Unavailable"
-    : typeof monthlySpend === "number" ?
-      formatCurrency(monthlySpend)
-    : monthlySpend;
+    monthlySpend === null
+      ? "Unavailable"
+      : typeof monthlySpend === "number"
+        ? formatCurrency(monthlySpend)
+        : monthlySpend;
   const displayDailyAverage =
-    dailySpend === null ? "Unavailable"
-    : typeof dailySpend === "number" ? formatCurrency(dailySpend)
-    : dailySpend;
+    dailySpend === null
+      ? "Unavailable"
+      : typeof dailySpend === "number"
+        ? formatCurrency(dailySpend)
+        : dailySpend;
 
   return (
-    <ChartCard
-      eyebrow="Spend Record"
-      eyebrowIcon={<Activity />}
-      title="Month-to-Date"
-      className="relative"
-    >
+    <ChartCard eyebrow="Spend Record" eyebrowIcon={<Activity />} className="relative">
       <div className="flex min-h-0 flex-1 flex-col">
-        <div className="grid gap-3 pt-1 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end">
-          <div className="min-w-0">
-            <p className="text-[clamp(1.65rem,5vw,2.15rem)] font-black leading-none tracking-[-0.035em] text-text-primary tabular-nums [overflow-wrap:anywhere]">
-              {monthlySpend === null ? displaySpend : <CountedAmount amount={displaySpend} duration={0.85} />}
-            </p>
-            <div className="mt-2 inline-flex max-w-full items-center gap-2 border border-transparent bg-transparent px-2.5 py-1 text-[10px] font-semibold text-text-secondary sm:text-[11px]">
-              <TrendingUp size={13} className="shrink-0 text-danger" aria-hidden="true" />
-              <span className="truncate">
-                {status === "available" ? `${displayDailyAverage} daily average` : "Spend data is temporarily unavailable"}
-              </span>
-            </div>
+        <div className="pt-1">
+          <p className="text-[clamp(1.65rem,5vw,2.15rem)] font-black leading-none tracking-[-0.035em] text-text-primary tabular-nums [overflow-wrap:anywhere]">
+            {monthlySpend === null ? (
+              displaySpend
+            ) : (
+              <CountedAmount amount={displaySpend} duration={0.85} />
+            )}
+          </p>
+          <div className="mt-2 inline-flex max-w-full items-center gap-2 border border-transparent bg-transparent px-2.5 py-1 text-[10px] font-semibold text-text-secondary sm:text-[11px]">
+            <TrendingUp
+              size={13}
+              className="shrink-0 text-danger"
+              aria-hidden="true"
+            />
+            <span className="truncate">
+              {status === "available"
+                ? `${displayDailyAverage} daily average`
+                : "Spend data is temporarily unavailable"}
+            </span>
           </div>
-
-          {status === "available" && peakPoint ? (
-            <div className="hidden min-w-[96px] border border-transparent bg-transparent px-3 py-2 text-right shadow-none sm:block">
-              <div className="flex items-center justify-end gap-1.5 text-[9px] font-bold uppercase tracking-[0.1em] text-text-tertiary">
-                <CalendarDays size={12} aria-hidden="true" />
-                Peak day
-              </div>
-              <p className="mt-1 text-sm font-black text-text-primary tabular-nums">
-                Day {peakPoint.day}
-              </p>
-            </div>
-          ) : null}
         </div>
 
         {status === "unavailable" ? (
@@ -97,21 +91,16 @@ export default function SpendRecordWidget({
               <span className="dashboard-chart-empty-icon">
                 <Activity size={16} />
               </span>
-              <p className="text-xs font-semibold text-text-primary">Spend record unavailable</p>
-              <p className="mt-1 text-[11px] text-text-secondary">Refresh to try loading it again.</p>
+              <p className="text-xs font-semibold text-text-primary">
+                Spend record unavailable
+              </p>
+              <p className="mt-1 text-[11px] text-text-secondary">
+                Refresh to try loading it again.
+              </p>
             </div>
           </div>
         ) : hasSpendData ? (
           <div className="mt-4 border border-transparent bg-transparent p-2.5 shadow-none sm:p-3">
-            <div className="mb-2 flex items-center justify-between gap-3 px-1">
-              <p className="text-[10px] font-bold uppercase tracking-[0.1em] text-text-tertiary">
-                Daily spending
-              </p>
-              <span className="text-[10px] font-semibold text-text-tertiary tabular-nums">
-                {data.length} days
-              </span>
-            </div>
-
             <ChartFrame
               className="h-[124px] min-h-[124px] min-w-0 overflow-hidden sm:h-[138px] sm:min-h-[138px]"
               tone="danger"
@@ -183,8 +172,12 @@ export default function SpendRecordWidget({
               <span className="dashboard-chart-empty-icon">
                 <Activity size={16} />
               </span>
-              <p className="text-xs font-semibold text-text-primary">No spend yet</p>
-              <p className="mt-1 text-[11px] text-text-secondary">This month is clear.</p>
+              <p className="text-xs font-semibold text-text-primary">
+                No spend yet
+              </p>
+              <p className="mt-1 text-[11px] text-text-secondary">
+                This month is clear.
+              </p>
             </div>
           </div>
         )}
