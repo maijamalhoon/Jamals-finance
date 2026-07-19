@@ -1,54 +1,33 @@
-/* Keep the income and expense form fully inside the usable viewport.
-   Do not rely on left: 50% plus translateX(-50%): Android Chrome and
-   desktop-mode scaling can resolve that combination against a different
-   containing block and push half of the modal off-screen. Explicit horizontal
-   edges plus auto margins keep the form centered at mobile and tablet widths. */
-[data-slot="dialog-content"].finance-modal-content:has(#transaction-amount) {
-  top: max(0.375rem, env(safe-area-inset-top)) !important;
-  right: max(0.375rem, env(safe-area-inset-right)) !important;
-  bottom: max(0.375rem, env(safe-area-inset-bottom)) !important;
-  left: max(0.375rem, env(safe-area-inset-left)) !important;
-  width: min(
-    calc(100vw - 0.75rem - env(safe-area-inset-left) - env(safe-area-inset-right)),
-    var(--finance-modal-max-width, 32rem)
-  ) !important;
-  height: max-content !important;
-  max-height: none !important;
-  margin: auto !important;
-  transform: none !important;
-}
+/*
+ * Income/Expense viewport safety.
+ * Mobile and tablet keep the proven edge-and-auto-margin positioning.
+ * Desktop and large screens deliberately fall back to DialogContent's native
+ * top-1/2 / left-1/2 centering so no viewport edge rule can pull the modal up.
+ */
 
-/* Desktop only: pin all four viewport edges and let auto margins center a
-   definite fit-content box. Reset both translate systems so Tailwind/Base UI
-   motion cannot move the modal above the visual centre. */
-@media (min-width: 1024px) {
-  html body
-    [data-slot="dialog-content"].finance-modal-content:has(#transaction-amount) {
-    position: fixed !important;
-    inset: 0 !important;
-    width: min(calc(100vw - 2rem), var(--finance-modal-max-width, 32rem)) !important;
-    height: fit-content !important;
-    min-height: 0 !important;
-    max-height: calc(100dvh - 2rem) !important;
+@media (max-width: 1023px) {
+  [data-slot="dialog-content"].finance-modal-content:has(#transaction-amount) {
+    top: max(0.375rem, env(safe-area-inset-top)) !important;
+    right: max(0.375rem, env(safe-area-inset-right)) !important;
+    bottom: max(0.375rem, env(safe-area-inset-bottom)) !important;
+    left: max(0.375rem, env(safe-area-inset-left)) !important;
+    width: min(
+      calc(
+        100vw - 0.75rem - env(safe-area-inset-left) -
+          env(safe-area-inset-right)
+      ),
+      var(--finance-modal-max-width, 32rem)
+    ) !important;
+    height: max-content !important;
+    max-height: none !important;
     margin: auto !important;
     translate: none !important;
     transform: none !important;
   }
-
-  html body
-    [data-slot="dialog-content"].finance-modal-content:has(#transaction-amount)
-    .finance-modal-body {
-    min-height: 0 !important;
-    overflow-x: hidden !important;
-    overflow-y: auto !important;
-    overscroll-behavior: contain !important;
-  }
 }
 
-/* Only genuinely short landscape-style viewports need a hard cap. The form's
-   height-specific compact rules reduce the controls before this fallback is
-   reached. */
-@media (max-height: 560px) {
+/* Only genuinely short mobile/tablet landscape viewports need a hard cap. */
+@media (max-width: 1023px) and (max-height: 560px) {
   [data-slot="dialog-content"].finance-modal-content:has(#transaction-amount) {
     height: auto !important;
     max-height: calc(100dvh - 0.5rem) !important;
