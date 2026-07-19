@@ -49,6 +49,19 @@ type AccountIdentityIconProps = {
   forceLucide?: boolean;
 };
 
+function getLogoLookupName(name?: string | null, iconKey?: string | null) {
+  if (iconKey?.startsWith("lookup:")) {
+    try {
+      const savedLookup = decodeURIComponent(iconKey.slice(7)).trim();
+      if (savedLookup) return savedLookup;
+    } catch {
+      // Fall back to the current account name when a legacy value is malformed.
+    }
+  }
+
+  return name?.trim() ?? "";
+}
+
 export default function AccountIdentityIcon({
   name,
   iconKey,
@@ -58,18 +71,19 @@ export default function AccountIdentityIcon({
   forceLucide = false,
 }: AccountIdentityIconProps) {
   const [logoFailed, setLogoFailed] = useState(false);
+  const logoLookupName = getLogoLookupName(name, iconKey);
   const shouldLoadLogo =
-    !forceLucide && shouldAttemptAccountLogo(name, iconKey, type);
+    !forceLucide &&
+    shouldAttemptAccountLogo(logoLookupName, iconKey, type);
   const logoUrl = useMemo(() => {
-    const cleanName = name?.trim();
-    if (!shouldLoadLogo || !cleanName) return null;
+    if (!shouldLoadLogo || !logoLookupName) return null;
 
-    const params = new URLSearchParams({ name: cleanName });
+    const params = new URLSearchParams({ name: logoLookupName });
     if (type?.trim()) params.set("type", type.trim());
     if (iconKey?.trim()) params.set("iconKey", iconKey.trim());
 
     return `/api/account-logo?${params.toString()}`;
-  }, [iconKey, name, shouldLoadLogo, type]);
+  }, [iconKey, logoLookupName, shouldLoadLogo, type]);
 
   useEffect(() => {
     setLogoFailed(false);
