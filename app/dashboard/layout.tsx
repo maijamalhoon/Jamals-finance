@@ -65,6 +65,8 @@ import "./quick-actions-launch.css";
 import "./icon-surface-cleanup.css";
 // Reference drawer layout is the final mobile/tablet sidebar authority.
 import "./mobile-sidebar-reference.css";
+// Profile and notification dropdowns share one responsive, anchored surface.
+import "./header-dropdown-responsive.css";
 
 export const dynamic = "force-dynamic";
 
