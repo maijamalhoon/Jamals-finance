@@ -29,6 +29,8 @@ type Transaction = Omit<ExistingTransaction, "type"> & {
   amount?: number | string | null;
   date?: string | null;
   created_at?: string | null;
+  updated_at?: string | null;
+  deleted_at?: string | null;
   note?: string | null;
   source_name?: string | null;
   person_name?: string | null;
@@ -88,6 +90,7 @@ export default function TransactionRow({ tx }: { tx: Transaction }) {
   const [deleting, setDeleting] = useState(false);
 
   const type = normalizeType(tx.type);
+  const isDeleted = Boolean(tx.deleted_at);
   const iconMeta = getTransactionIconMeta({
     type,
     note: tx.note,
@@ -109,9 +112,10 @@ export default function TransactionRow({ tx }: { tx: Transaction }) {
   const isTransactionsPage = pathname === "/dashboard/transactions";
 
   const canEdit =
+    !isDeleted &&
     (type === "income" || type === "expense") &&
     iconMeta.semanticType !== "payable";
-  const canDelete = type !== "investment";
+  const canDelete = !isDeleted && type !== "investment";
 
   async function deleteGoalContribution() {
     if (!tx.goal_contribution_id) {
@@ -134,15 +138,25 @@ export default function TransactionRow({ tx }: { tx: Transaction }) {
     if (error) throw error;
   }
 
+  async function softDeleteLedgerRow() {
+    const tableName = type === "transfer" ? "account_transfers" : "transactions";
+    const { error } = await supabase
+      .from(tableName)
+      .update({ deleted_at: new Date().toISOString() })
+      .eq("id", tx.id)
+      .is("deleted_at", null);
+    if (error) throw error;
+  }
+
   async function handleDelete() {
-    if (!tx.id || deleting) return;
+    if (!tx.id || deleting || isDeleted) return;
 
     const confirmed = confirm(
       iconMeta.semanticType === "goal"
-        ? "Delete this goal contribution? Goal progress will be reduced by the same amount."
+        ? "Delete this goal contribution? Goal progress will be reduced and the ledger entry will remain in deleted history."
         : iconMeta.semanticType === "payable"
-          ? "Delete this payable payment? The payable balance will be restored."
-          : "Delete this transaction? This cannot be undone.",
+          ? "Delete this payable payment? The payable balance will be restored and the ledger entry will remain in deleted history."
+          : "Move this transaction to deleted history? It will be excluded from active balances and calculations.",
     );
     if (!confirmed) return;
 
@@ -154,16 +168,10 @@ export default function TransactionRow({ tx }: { tx: Transaction }) {
       } else if (iconMeta.semanticType === "payable") {
         await deletePayablePayment();
       } else {
-        const tableName =
-          type === "transfer" ? "account_transfers" : "transactions";
-        const { error } = await supabase
-          .from(tableName)
-          .delete()
-          .eq("id", tx.id);
-        if (error) throw error;
+        await softDeleteLedgerRow();
       }
 
-      toast.success("Transaction deleted.");
+      toast.success("Transaction moved to deleted history.");
       router.refresh();
     } catch {
       toast.error("Could not delete this transaction. Please try again.");
@@ -182,9 +190,14 @@ export default function TransactionRow({ tx }: { tx: Transaction }) {
     <>
       <article
         data-transaction-row
+        data-deleted={isDeleted || undefined}
         className={`group grid min-w-0 grid-cols-[40px_minmax(0,1fr)_auto] items-center gap-x-3 gap-y-2 border-b border-border/55 px-2 py-3.5 last:border-b-0 sm:px-3 md:grid-cols-[40px_minmax(0,1fr)_minmax(110px,auto)_auto] md:gap-x-4 ${
           isTransactionsPage
             ? "cursor-pointer transform-gpu transition-transform duration-200 ease-out hover:-translate-y-px active:translate-y-0 active:scale-[0.99] motion-reduce:transform-none motion-reduce:transition-none"
+            : ""
+        } ${
+          isDeleted
+            ? "bg-black/[0.035] opacity-60 grayscale-[0.45] dark:bg-black/20"
             : ""
         }`}
         onClick={(event) => openReceiptFromRow(event.target)}
@@ -203,13 +216,15 @@ export default function TransactionRow({ tx }: { tx: Transaction }) {
         tabIndex={isTransactionsPage ? 0 : undefined}
         aria-label={
           isTransactionsPage
-            ? `Open receipt for ${categoryLabel}`
+            ? `Open receipt for ${categoryLabel}${isDeleted ? ", deleted" : ""}`
             : undefined
         }
       >
         <span
           className="grid size-10 shrink-0 place-items-center"
-          style={{ color: iconMeta.accent }}
+          style={{
+            color: isDeleted ? "var(--text-secondary)" : iconMeta.accent,
+          }}
           aria-label={`${iconMeta.label} icon`}
         >
           <TransactionIcon
@@ -221,15 +236,23 @@ export default function TransactionRow({ tx }: { tx: Transaction }) {
           />
         </span>
 
-        <p className="min-w-0 truncate text-sm font-bold text-text-primary">
-          {categoryLabel}
-        </p>
+        <div className="flex min-w-0 items-center gap-2">
+          <p className="min-w-0 truncate text-sm font-bold text-text-primary">
+            {categoryLabel}
+          </p>
+          {isDeleted ? (
+            <span className="shrink-0 rounded-full bg-black/10 px-2 py-0.5 text-[10px] font-black uppercase tracking-[0.08em] text-text-secondary dark:bg-white/10">
+              Deleted
+            </span>
+          ) : null}
+        </div>
 
         <p
-          className={`max-w-[44vw] shrink-0 truncate text-right text-sm font-black tracking-[-0.015em] tabular-nums sm:max-w-none ${getTransactionToneClass(
-            type,
-            iconMeta.semanticType,
-          )}`}
+          className={`max-w-[44vw] shrink-0 truncate text-right text-sm font-black tracking-[-0.015em] tabular-nums sm:max-w-none ${
+            isDeleted
+              ? "text-text-secondary"
+              : getTransactionToneClass(type, iconMeta.semanticType)
+          }`}
           title={displayAmount}
         >
           {displayAmount}
