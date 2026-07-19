@@ -13,6 +13,11 @@ import {
   Target,
 } from "lucide-react";
 
+import {
+  announceHeaderPopoverOpen,
+  getHeaderPopoverSource,
+  HEADER_POPOVER_OPEN_EVENT,
+} from "@/lib/header-popovers";
 import { createClient } from "@/lib/supabase/client";
 import type {
   NotificationInboxAlert,
@@ -229,6 +234,23 @@ export default function NotificationCenter({ state }: NotificationCenterProps) {
     setLocalState(state);
   }, [state]);
 
+  useEffect(() => {
+    function handleOtherHeaderPopover(event: Event) {
+      const source = getHeaderPopoverSource(event);
+      if (source && source !== "notifications") setOpen(false);
+    }
+
+    window.addEventListener(
+      HEADER_POPOVER_OPEN_EVENT,
+      handleOtherHeaderPopover,
+    );
+    return () =>
+      window.removeEventListener(
+        HEADER_POPOVER_OPEN_EVENT,
+        handleOtherHeaderPopover,
+      );
+  }, []);
+
   const displayedCount =
     localState.unreadAlertCount ??
     localState.totalActiveAlertCountFromCheckedRecords;
@@ -321,6 +343,14 @@ export default function NotificationCenter({ state }: NotificationCenterProps) {
     router.push(alert.href);
   }
 
+  function handleTriggerClick() {
+    setOpen((current) => {
+      const nextOpen = !current;
+      if (nextOpen) announceHeaderPopoverOpen("notifications");
+      return nextOpen;
+    });
+  }
+
   return (
     <>
       {typeof document !== "undefined"
@@ -329,14 +359,14 @@ export default function NotificationCenter({ state }: NotificationCenterProps) {
               <AnimatePresence>
                 {open ? (
                   <motion.div
-                    key="mobile-notification-glass"
+                    key="notification-glass"
                     aria-hidden="true"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
                     transition={glassTransition}
                     onPointerDown={() => setOpen(false)}
-                    className="fixed inset-0 z-30 bg-[rgb(41_86_200_/_0.07)] backdrop-blur-[4px] backdrop-saturate-105 dark:bg-[rgb(41_86_200_/_0.1)] lg:hidden"
+                    className="fixed inset-0 z-20 bg-[rgb(41_86_200_/_0.045)] backdrop-blur-[3px] backdrop-saturate-105 dark:bg-[rgb(4_9_18_/_0.12)]"
                   />
                 ) : null}
               </AnimatePresence>
@@ -354,7 +384,7 @@ export default function NotificationCenter({ state }: NotificationCenterProps) {
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: -4, scale: 0.985 }}
                     transition={panelTransition}
-                    className="fixed right-4 z-[70] w-[18rem] max-w-[calc(100vw-2rem)] overflow-hidden rounded-[18px] border border-border/65 bg-surface-elevated/98 p-1.5 font-sans shadow-[0_18px_44px_rgb(15_23_42_/_0.16)] backdrop-blur-xl dark:shadow-[0_18px_48px_rgb(0_0_0_/_0.32)] sm:w-[19rem] lg:hidden"
+                    className="fixed right-4 z-[70] w-[18rem] max-w-[calc(100vw-2rem)] origin-top-right overflow-hidden rounded-[18px] border border-border/65 bg-surface-elevated/98 p-1.5 font-sans shadow-[0_18px_44px_rgb(15_23_42_/_0.16)] backdrop-blur-xl dark:shadow-[0_18px_48px_rgb(0_0_0_/_0.32)] sm:w-[19rem] lg:hidden"
                     style={{
                       top: "calc(max(1rem, env(safe-area-inset-top)) + 3.25rem)",
                     }}
@@ -378,7 +408,7 @@ export default function NotificationCenter({ state }: NotificationCenterProps) {
           aria-label={triggerLabel}
           aria-haspopup="menu"
           aria-expanded={open}
-          onClick={() => setOpen((value) => !value)}
+          onClick={handleTriggerClick}
           className={notificationTriggerClassName}
         >
           <Bell
@@ -398,20 +428,27 @@ export default function NotificationCenter({ state }: NotificationCenterProps) {
           ) : null}
         </button>
 
-        {open ? (
-          <div
-            data-notification-panel
-            data-slot="dropdown-menu-content"
-            role="menu"
-            aria-label="Notifications"
-            className="absolute right-0 top-[calc(100%+0.45rem)] z-[70] hidden w-[18rem] max-w-[calc(100vw-4rem)] overflow-hidden rounded-[18px] border border-border/60 bg-surface-elevated/98 p-1.5 font-sans shadow-[0_14px_36px_rgb(15_23_42_/_0.14)] backdrop-blur-xl dark:shadow-[0_16px_40px_rgb(0_0_0_/_0.3)] lg:block"
-          >
-            <NotificationPanelContent
-              state={localState}
-              onNavigate={handleNavigate}
-            />
-          </div>
-        ) : null}
+        <AnimatePresence>
+          {open ? (
+            <motion.div
+              key="desktop-notification-panel"
+              data-notification-panel
+              data-slot="dropdown-menu-content"
+              role="menu"
+              aria-label="Notifications"
+              initial={{ opacity: 0, y: -6, scale: 0.985 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -4, scale: 0.985 }}
+              transition={panelTransition}
+              className="absolute right-0 top-[calc(100%+0.45rem)] z-[70] hidden w-[18rem] max-w-[calc(100vw-4rem)] origin-top-right overflow-hidden rounded-[18px] border border-border/60 bg-surface-elevated/98 p-1.5 font-sans shadow-[0_14px_36px_rgb(15_23_42_/_0.14)] backdrop-blur-xl dark:shadow-[0_16px_40px_rgb(0_0_0_/_0.3)] lg:block"
+            >
+              <NotificationPanelContent
+                state={localState}
+                onNavigate={handleNavigate}
+              />
+            </motion.div>
+          ) : null}
+        </AnimatePresence>
       </div>
     </>
   );
