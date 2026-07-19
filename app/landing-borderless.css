@@ -19,41 +19,23 @@
   box-shadow: none !important;
 }
 
-/* Keep the value rail divider softly curved without adding extra section height. */
-.jf-value-rail {
-  --jf-value-curve-depth: clamp(0.65rem, 1.1vw, 1rem);
-  box-shadow: inset 0 1px 0 var(--jf-line);
-}
-
-.jf-value-rail::after {
-  position: absolute;
-  right: -1%;
-  bottom: calc(var(--jf-value-curve-depth) * -1 + 1px);
-  left: -1%;
-  height: var(--jf-value-curve-depth);
-  border-radius: 0 0 50% 50% / 0 0 100% 100%;
-  background: inherit;
-  backdrop-filter: inherit;
-  pointer-events: none;
-  content: "";
-}
-
-/* Match the workflow section with the same restrained curved lower edge. */
+/*
+ * Curve the actual section surface instead of drawing a nearly-flat pseudo element.
+ * The shallow vertical radius keeps the divider visible on wide screens without
+ * increasing section height or changing any content spacing.
+ */
+.jf-value-rail,
 .jf-workflow-section {
-  --jf-workflow-curve-depth: clamp(0.7rem, 1.15vw, 1.05rem);
+  --jf-section-curve-depth: clamp(1.35rem, 2vw, 2.25rem);
   position: relative;
+  overflow: hidden;
+  border-radius: 0 0 50% 50% / 0 0 var(--jf-section-curve-depth) var(--jf-section-curve-depth);
   box-shadow: inset 0 1px 0 var(--jf-line);
 }
 
-.jf-workflow-section::after {
-  position: absolute;
-  right: -1%;
-  bottom: calc(var(--jf-workflow-curve-depth) * -1 + 1px);
-  left: -1%;
-  z-index: 1;
-  height: var(--jf-workflow-curve-depth);
-  border-radius: 0 0 50% 50% / 0 0 100% 100%;
-  background: inherit;
-  pointer-events: none;
-  content: "";
+@media (max-width: 639px) {
+  .jf-value-rail,
+  .jf-workflow-section {
+    --jf-section-curve-depth: 1.15rem;
+  }
 }
