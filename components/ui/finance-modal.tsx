@@ -1,12 +1,18 @@
 "use client";
 
-import type React from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import type { LucideIcon } from "lucide-react";
 import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { useOptionalCurrency } from "@/components/currency/CurrencyProvider";
+import {
+  BASE_CURRENCY,
+  FALLBACK_USD_PKR_RATE,
+  convertMoney,
+} from "@/lib/currency";
 import { cn } from "@/lib/utils";
 
 type FinanceTone =
@@ -16,6 +22,16 @@ type FinanceTone =
   | "info"
   | "investment"
   | "warning";
+
+type CurrencyInputProps = {
+  value?: string | number | readonly string[];
+  type?: string;
+  min?: string | number;
+  max?: string | number;
+  onChange?: React.ChangeEventHandler<HTMLInputElement>;
+  onFocus?: React.FocusEventHandler<HTMLInputElement>;
+  onBlur?: React.FocusEventHandler<HTMLInputElement>;
+};
 
 export const financeModalContentClass =
   "finance-modal-content finance-panel flex max-h-[calc(100dvh-0.75rem)] w-[calc(100vw-0.75rem)] max-w-md [--finance-modal-max-width:28rem] flex-col gap-0 overflow-hidden p-0 text-text-primary shadow-premium sm:max-h-[min(90dvh,46rem)] sm:w-full";
@@ -118,6 +134,104 @@ const financeActionModalPolish = `
   border-bottom-right-radius: 0 !important;
 }
 `;
+
+function toEditableCurrencyValue(value: number) {
+  if (!Number.isFinite(value)) return "";
+
+  const rounded = Math.round((value + Number.EPSILON) * 100_000_000) / 100_000_000;
+  return String(Object.is(rounded, -0) ? 0 : rounded);
+}
+
+function convertCurrencyConstraint(
+  value: string | number | undefined,
+  currency: "PKR" | "USD",
+  rate: number,
+) {
+  if (value === undefined || value === "" || currency === BASE_CURRENCY) {
+    return value;
+  }
+
+  const numericValue = Number(value);
+  if (!Number.isFinite(numericValue)) return value;
+
+  return toEditableCurrencyValue(
+    convertMoney(numericValue, BASE_CURRENCY, currency, rate),
+  );
+}
+
+function CurrencyAwareInput({
+  child,
+  currency,
+  rate,
+}: {
+  child: React.ReactElement<CurrencyInputProps>;
+  currency: "PKR" | "USD";
+  rate: number;
+}) {
+  const sourceValue = Array.isArray(child.props.value)
+    ? child.props.value[0]
+    : child.props.value;
+  const baseValue = sourceValue === undefined ? "" : String(sourceValue);
+  const displayValue = useMemo(() => {
+    if (baseValue === "" || currency === BASE_CURRENCY) return baseValue;
+
+    const numericValue = Number(baseValue);
+    if (!Number.isFinite(numericValue)) return baseValue;
+
+    return toEditableCurrencyValue(
+      convertMoney(numericValue, BASE_CURRENCY, currency, rate),
+    );
+  }, [baseValue, currency, rate]);
+  const [editing, setEditing] = useState(false);
+  const [draftValue, setDraftValue] = useState(displayValue);
+
+  useEffect(() => {
+    if (!editing) setDraftValue(displayValue);
+  }, [displayValue, editing]);
+
+  if (
+    currency === BASE_CURRENCY ||
+    child.props.type !== "number" ||
+    !child.props.onChange
+  ) {
+    return child;
+  }
+
+  return React.cloneElement(child, {
+    value: editing ? draftValue : displayValue,
+    min: convertCurrencyConstraint(child.props.min, currency, rate),
+    max: convertCurrencyConstraint(child.props.max, currency, rate),
+    onFocus: (event: React.FocusEvent<HTMLInputElement>) => {
+      setDraftValue(displayValue);
+      setEditing(true);
+      child.props.onFocus?.(event);
+    },
+    onChange: (event: React.ChangeEvent<HTMLInputElement>) => {
+      const nextDisplayValue = event.target.value;
+      setDraftValue(nextDisplayValue);
+
+      let nextBaseValue = nextDisplayValue;
+      if (nextDisplayValue !== "") {
+        const numericValue = Number(nextDisplayValue);
+        if (Number.isFinite(numericValue)) {
+          nextBaseValue = toEditableCurrencyValue(
+            convertMoney(numericValue, currency, BASE_CURRENCY, rate),
+          );
+        }
+      }
+
+      child.props.onChange?.({
+        ...event,
+        target: { ...event.target, value: nextBaseValue },
+        currentTarget: { ...event.currentTarget, value: nextBaseValue },
+      } as React.ChangeEvent<HTMLInputElement>);
+    },
+    onBlur: (event: React.FocusEvent<HTMLInputElement>) => {
+      setEditing(false);
+      child.props.onBlur?.(event);
+    },
+  });
+}
 
 interface FinanceModalHeaderProps {
   title: string;
@@ -227,15 +341,29 @@ export function FinanceFormField({
   children: React.ReactNode;
   className?: string;
 }) {
+  const currencyContext = useOptionalCurrency();
+  const currency = currencyContext?.currency ?? BASE_CURRENCY;
+  const rate = currencyContext?.rate ?? FALLBACK_USD_PKR_RATE;
+  const isCurrencyAmountField =
+    typeof label === "string" && label.includes(`(${BASE_CURRENCY})`);
+  const resolvedLabel =
+    isCurrencyAmountField ? label.replace(BASE_CURRENCY, currency) : label;
+  const resolvedChildren =
+    isCurrencyAmountField && React.isValidElement<CurrencyInputProps>(children) ? (
+      <CurrencyAwareInput child={children} currency={currency} rate={rate} />
+    ) : (
+      children
+    );
+
   return (
     <div
       data-slot="finance-form-field"
       className={cn("finance-form-field min-w-0", className)}
     >
       <label className="field-label" htmlFor={htmlFor}>
-        {label}
+        {resolvedLabel}
       </label>
-      {children}
+      {resolvedChildren}
       {error ? (
         <p className={financeFieldErrorClass}>{error}</p>
       ) : hint ? (
