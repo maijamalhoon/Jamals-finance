@@ -31,6 +31,7 @@ type ChartTooltipPayload = Array<{
 
 type RangeKey = "7d" | "30d";
 
+const AMBIENT_SWEEP_DURATION = "9s";
 const INCOME_CHART_COLOR =
   "color-mix(in srgb, var(--income) 88%, var(--primary) 12%)";
 const INCOME_CHART_LIGHT =
@@ -105,8 +106,9 @@ export default function IncomeExpenseChart({
       data.map((point, index) => ({
         ...point,
         income: Number.isFinite(Number(point.income)) ? Number(point.income) : 0,
-        expenses:
-          Number.isFinite(Number(point.expenses)) ? Number(point.expenses) : 0,
+        expenses: Number.isFinite(Number(point.expenses))
+          ? Number(point.expenses)
+          : 0,
         day: point.day ?? index + 1,
       })),
     [data],
@@ -356,15 +358,15 @@ export default function IncomeExpenseChart({
                           <animate
                             attributeName="x1"
                             values={`${sheenStart};${sheenEnd};${sheenEnd}`}
-                            keyTimes="0;0.72;1"
-                            dur="4.6s"
+                            keyTimes="0;0.68;1"
+                            dur={AMBIENT_SWEEP_DURATION}
                             repeatCount="indefinite"
                           />
                           <animate
                             attributeName="x2"
                             values={`${sheenStart + sheenWidth};${sheenEnd + sheenWidth};${sheenEnd + sheenWidth}`}
-                            keyTimes="0;0.72;1"
-                            dur="4.6s"
+                            keyTimes="0;0.68;1"
+                            dur={AMBIENT_SWEEP_DURATION}
                             repeatCount="indefinite"
                           />
                         </linearGradient>
@@ -388,17 +390,17 @@ export default function IncomeExpenseChart({
                           <animate
                             attributeName="x1"
                             values={`${sheenStart};${sheenEnd};${sheenEnd}`}
-                            keyTimes="0;0.72;1"
-                            begin="0.18s"
-                            dur="4.6s"
+                            keyTimes="0;0.68;1"
+                            begin="0.3s"
+                            dur={AMBIENT_SWEEP_DURATION}
                             repeatCount="indefinite"
                           />
                           <animate
                             attributeName="x2"
                             values={`${sheenStart + sheenWidth};${sheenEnd + sheenWidth};${sheenEnd + sheenWidth}`}
-                            keyTimes="0;0.72;1"
-                            begin="0.18s"
-                            dur="4.6s"
+                            keyTimes="0;0.68;1"
+                            begin="0.3s"
+                            dur={AMBIENT_SWEEP_DURATION}
                             repeatCount="indefinite"
                           />
                         </linearGradient>
