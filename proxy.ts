@@ -12,7 +12,7 @@ export async function proxy(request: NextRequest) {
   if (!shouldRewriteAIChat) return sessionResponse;
 
   const destination = request.nextUrl.clone();
-  destination.pathname = "/api/ai-insights/chat";
+  destination.pathname = "/api/ai-insights/exact";
 
   const rewriteResponse = NextResponse.rewrite(destination);
 
