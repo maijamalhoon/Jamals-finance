@@ -13,12 +13,20 @@ const CONTENT_TYPOGRAPHY_ROUTES = [
   "/dashboard/ai-insights",
 ] as const;
 
+const REMAINING_TYPE_ICON_ROUTES = [
+  "/dashboard/accounts",
+  "/dashboard/reports",
+] as const;
+
 const TRANSACTIONS_TYPOGRAPHY_ROUTE = "/dashboard/transactions";
 
-function usesContentTypography(pathname: string | null) {
+function matchesRouteGroup(
+  pathname: string | null,
+  routes: readonly string[],
+) {
   if (!pathname) return false;
 
-  return CONTENT_TYPOGRAPHY_ROUTES.some(
+  return routes.some(
     (route) => pathname === route || pathname.startsWith(`${route}/`),
   );
 }
@@ -29,11 +37,19 @@ export default function DashboardContentScope({
   children: ReactNode;
 }) {
   const pathname = usePathname();
-  const isTypographyPage = usesContentTypography(pathname);
+  const isTypographyPage = matchesRouteGroup(
+    pathname,
+    CONTENT_TYPOGRAPHY_ROUTES,
+  );
+  const isRemainingTypeIconPage = matchesRouteGroup(
+    pathname,
+    REMAINING_TYPE_ICON_ROUTES,
+  );
   const isTransactionsPage = pathname === TRANSACTIONS_TYPOGRAPHY_ROUTE;
   const scopeClasses = [
     "jf-dashboard-content-frame mx-auto w-full max-w-[1480px] min-w-0",
     isTypographyPage ? "finance-content-typography" : "",
+    isRemainingTypeIconPage ? "finance-remaining-type-icons" : "",
     isTransactionsPage ? "transactions-page-type-icons" : "",
   ]
     .filter(Boolean)
@@ -43,6 +59,9 @@ export default function DashboardContentScope({
     <div
       className={scopeClasses}
       data-finance-content-typography={isTypographyPage ? "true" : undefined}
+      data-finance-remaining-type-icons={
+        isRemainingTypeIconPage ? "true" : undefined
+      }
       data-transactions-type-icons={isTransactionsPage ? "true" : undefined}
     >
       {children}
