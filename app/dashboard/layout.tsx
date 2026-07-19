@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
+import { cookies } from "next/headers";
 import { Suspense } from "react";
 
+import { CurrencyProvider } from "@/components/currency/CurrencyProvider";
 import ConnectionStatus from "@/components/layout/ConnectionStatus";
 import DashboardContentScope from "@/components/layout/DashboardContentScope";
 import FloatingActions from "@/components/layout/FloatingActions";
@@ -10,6 +12,11 @@ import NotificationCenter, {
 } from "@/components/layout/NotificationCenter";
 import ResponsiveDashboardHeader from "@/components/layout/ResponsiveDashboardHeader";
 import DashboardScrollRestoration from "@/components/motion/DashboardScrollRestoration";
+import {
+  BASE_CURRENCY,
+  CURRENCY_STORAGE_KEY,
+  isSupportedCurrency,
+} from "@/lib/currency";
 import type { NotificationState } from "@/lib/notifications";
 import { loadDashboardNotifications } from "@/lib/notifications-server";
 
@@ -67,11 +74,16 @@ async function NotificationCenterSlot({
   return <NotificationCenter state={state} />;
 }
 
-export default function DashboardLayout({
+export default async function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const cookieStore = await cookies();
+  const storedCurrency = cookieStore.get(CURRENCY_STORAGE_KEY)?.value;
+  const storedPreference =
+    isSupportedCurrency(storedCurrency) ? storedCurrency : null;
+  const initialCurrency = storedPreference ?? BASE_CURRENCY;
   const notificationStatePromise = loadDashboardNotifications();
   const notificationSlot = (
     <Suspense fallback={<NotificationCenterLoading />}>
@@ -80,34 +92,39 @@ export default function DashboardLayout({
   );
 
   return (
-    <div
-      data-dashboard-shell
-      className="relative flex h-dvh min-w-0 overflow-hidden bg-background text-foreground"
+    <CurrencyProvider
+      initialCurrency={initialCurrency}
+      hasStoredPreference={storedPreference !== null}
     >
       <div
-        aria-hidden="true"
-        className="jf-node4-dashboard-ambient pointer-events-none absolute inset-0 z-0"
-      />
-      <div
-        aria-hidden="true"
-        className="jf-dashboard-grid pointer-events-none absolute inset-0 z-0 opacity-[0.34]"
-      />
+        data-dashboard-shell
+        className="relative flex h-dvh min-w-0 overflow-hidden bg-background text-foreground"
+      >
+        <div
+          aria-hidden="true"
+          className="jf-node4-dashboard-ambient pointer-events-none absolute inset-0 z-0"
+        />
+        <div
+          aria-hidden="true"
+          className="jf-dashboard-grid pointer-events-none absolute inset-0 z-0 opacity-[0.34]"
+        />
 
-      <div className="relative z-10 flex w-full min-w-0 flex-1 flex-col overflow-hidden">
-        <ResponsiveDashboardHeader notificationSlot={notificationSlot} />
-        <ConnectionStatus />
-        <DashboardScrollRestoration />
-        <MobileScrollContactGuard />
+        <div className="relative z-10 flex w-full min-w-0 flex-1 flex-col overflow-hidden">
+          <ResponsiveDashboardHeader notificationSlot={notificationSlot} />
+          <ConnectionStatus />
+          <DashboardScrollRestoration />
+          <MobileScrollContactGuard />
 
-        <main
-          data-dashboard-scroll
-          className="jf-dashboard-scroll relative flex-1 overflow-y-auto overscroll-contain px-3 pb-[var(--jf-mobile-content-bottom)] pt-[5rem] sm:px-5 sm:pb-[calc(var(--jf-mobile-content-bottom)+0.5rem)] sm:pt-[5.25rem] lg:px-6 lg:pb-10 lg:pt-6 xl:px-7"
-        >
-          <DashboardContentScope>{children}</DashboardContentScope>
-        </main>
+          <main
+            data-dashboard-scroll
+            className="jf-dashboard-scroll relative flex-1 overflow-y-auto overscroll-contain px-3 pb-[var(--jf-mobile-content-bottom)] pt-[5rem] sm:px-5 sm:pb-[calc(var(--jf-mobile-content-bottom)+0.5rem)] sm:pt-[5.25rem] lg:px-6 lg:pb-10 lg:pt-6 xl:px-7"
+          >
+            <DashboardContentScope>{children}</DashboardContentScope>
+          </main>
 
-        <FloatingActions />
+          <FloatingActions />
+        </div>
       </div>
-    </div>
+    </CurrencyProvider>
   );
 }
