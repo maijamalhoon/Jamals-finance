@@ -47,6 +47,41 @@
   display: none;
 }
 
+/* Shared top-right icon-only action used by dashboard cards.
+   It intentionally has no visible border or shadow; the arrow carries the motion. */
+[data-dashboard-scroll] .dashboard-card-view-link {
+  border: 0 !important;
+  background: transparent;
+  box-shadow: none !important;
+}
+
+[data-dashboard-scroll] .dashboard-card-view-link-icon {
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transform-origin: center;
+  animation: dashboard-card-view-arrow-nudge 2.8s var(--motion-ease) infinite;
+  transition: transform 180ms var(--motion-ease);
+}
+
+@keyframes dashboard-card-view-arrow-nudge {
+  0%,
+  68%,
+  100% {
+    transform: translateX(0);
+  }
+  78% {
+    transform: translateX(3px);
+  }
+  88% {
+    transform: translateX(0);
+  }
+  94% {
+    transform: translateX(1.5px);
+  }
+}
+
 @media (hover: hover) and (pointer: fine) {
   [data-dashboard-scroll] :is(.dashboard-list-card-action, .dashboard-card-action):hover {
     transform: translateY(-1px);
@@ -66,10 +101,25 @@
   [data-dashboard-scroll] :is(.dashboard-list-card-action, .dashboard-card-action):hover::after {
     transform: translateX(2px);
   }
+
+  [data-dashboard-scroll] .dashboard-card-view-link:hover {
+    background: var(--hover);
+    color: var(--primary);
+    transform: translateY(-1px);
+  }
+
+  [data-dashboard-scroll] .dashboard-card-view-link:hover .dashboard-card-view-link-icon {
+    animation-play-state: paused;
+    transform: translateX(3px);
+  }
 }
 
 [data-dashboard-scroll] :is(.dashboard-list-card-action, .dashboard-card-action):active {
   transform: scale(0.97);
+}
+
+[data-dashboard-scroll] .dashboard-card-view-link:active {
+  transform: scale(0.94);
 }
 
 .dark [data-dashboard-scroll] :is(.dashboard-list-card-action, .dashboard-card-action) {
@@ -125,8 +175,11 @@
 
 @media (prefers-reduced-motion: reduce) {
   [data-dashboard-scroll] :is(.dashboard-list-card-action, .dashboard-card-action),
-  [data-dashboard-scroll] :is(.dashboard-list-card-action, .dashboard-card-action)::after {
+  [data-dashboard-scroll] :is(.dashboard-list-card-action, .dashboard-card-action)::after,
+  [data-dashboard-scroll] .dashboard-card-view-link,
+  [data-dashboard-scroll] .dashboard-card-view-link-icon {
     transform: none !important;
     transition: none !important;
+    animation: none !important;
   }
 }
