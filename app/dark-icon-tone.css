@@ -1,0 +1,44 @@
+/*
+ * Dark-mode-only icon tone refinement.
+ *
+ * Keeps every authored semantic hue, size, stroke width, layout and interaction
+ * intact while lifting Lucide strokes slightly toward white for better contrast
+ * on dark surfaces. Light mode is completely unaffected.
+ */
+
+html.dark body :where(svg.lucide):not([data-preserve-dark-icon-tone]) {
+  stroke: color-mix(in srgb, currentColor 84%, white 16%) !important;
+}
+
+/* A small number of Lucide glyphs may use a currentColor fill for a dot or
+   marker. Match that detail to the lifted outline tone. */
+html.dark
+  body
+  :where(svg.lucide):not([data-preserve-dark-icon-tone])
+  :where([fill="currentColor"]) {
+  fill: color-mix(in srgb, currentColor 84%, white 16%) !important;
+}
+
+/* Icons intentionally rendered as dark/inverse foreground on a light semantic
+   button keep their original contrast instead of being lifted. */
+html.dark
+  body
+  :where(
+    [class*="text-primary-foreground"],
+    [class*="text-[var(--status-foreground)]"],
+    [class*="text-text-inverse"],
+    [class*="text-white"],
+    [data-preserve-dark-icon-tone]
+  )
+  :where(svg.lucide),
+html.dark
+  body
+  :where(svg.lucide):is(
+    [class*="text-primary-foreground"],
+    [class*="text-[var(--status-foreground)]"],
+    [class*="text-text-inverse"],
+    [class*="text-white"],
+    [data-preserve-dark-icon-tone]
+  ) {
+  stroke: currentColor !important;
+}
