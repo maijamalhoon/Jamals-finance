@@ -1,0 +1,112 @@
+/*
+ * Final mobile/tablet notification bell polish.
+ * Matches the desktop navigation icon motion while preserving notification logic.
+ */
+
+@media (max-width: 1023px) {
+  html body [data-mobile-control-cluster] [data-notification-trigger] {
+    border: 0 !important;
+    border-radius: 0.95rem !important;
+    background: transparent !important;
+    color: var(--warning) !important;
+    box-shadow: none !important;
+    filter: none !important;
+    transform: translateY(0) scale(1) !important;
+    transform-origin: center;
+    transition:
+      background-color 180ms var(--motion-ease),
+      color 180ms var(--motion-ease),
+      transform 180ms var(--motion-ease) !important;
+  }
+
+  html body [data-mobile-control-cluster] [data-notification-trigger]::before {
+    color: var(--warning) !important;
+    transform: translateY(0) scale(1) rotate(0deg);
+    transform-origin: center;
+    filter: none;
+    transition:
+      transform 210ms var(--motion-ease),
+      filter 210ms var(--motion-ease),
+      color 180ms var(--motion-ease) !important;
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    html body [data-mobile-control-cluster] [data-notification-trigger]:hover {
+      background: var(--hover) !important;
+      color: var(--warning) !important;
+      transform: translateY(-1px) scale(1.025) !important;
+    }
+
+    html body
+      [data-mobile-control-cluster]
+      [data-notification-trigger]:hover::before {
+      transform: translateY(-1.5px) scale(1.085) rotate(0deg) !important;
+      filter: drop-shadow(
+        0 3px 5px color-mix(in srgb, currentColor 34%, transparent)
+      ) !important;
+    }
+  }
+
+  html body
+    [data-mobile-control-cluster]
+    [data-notification-trigger]:focus-visible {
+    background: var(--hover) !important;
+    color: var(--warning) !important;
+  }
+
+  html body [data-mobile-control-cluster] [data-notification-trigger]:active {
+    background: var(--surface-soft) !important;
+    color: var(--warning) !important;
+    transform: translateY(0) scale(0.955) !important;
+    transition-duration: 90ms !important;
+  }
+
+  html body
+    [data-mobile-control-cluster]
+    [data-notification-trigger]:active::before {
+    transform: translateY(0) scale(0.9) rotate(-2deg) !important;
+    filter: none !important;
+    transition-duration: 90ms !important;
+  }
+
+  html body
+    [data-mobile-control-cluster]
+    [data-notification-trigger][aria-expanded="true"] {
+    background: var(--hover) !important;
+    color: var(--warning) !important;
+  }
+
+  html body
+    [data-mobile-control-cluster]
+    [data-notification-trigger][aria-expanded="true"]::before {
+    animation: jf-mobile-notification-bell-open 380ms var(--motion-ease) both;
+  }
+}
+
+@keyframes jf-mobile-notification-bell-open {
+  0% {
+    transform: translateY(2px) scale(0.84);
+    filter: none;
+  }
+  58% {
+    transform: translateY(-2px) scale(1.12);
+    filter: drop-shadow(
+      0 3px 6px color-mix(in srgb, currentColor 38%, transparent)
+    );
+  }
+  100% {
+    transform: translateY(0) scale(1);
+    filter: drop-shadow(
+      0 2px 4px color-mix(in srgb, currentColor 22%, transparent)
+    );
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html body [data-mobile-control-cluster] [data-notification-trigger],
+  html body [data-mobile-control-cluster] [data-notification-trigger]::before {
+    animation: none !important;
+    transition: none !important;
+    transform: none !important;
+  }
+}
