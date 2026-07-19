@@ -8,6 +8,7 @@ import "./finance-form-final-polish.css";
 import "./finance-form-content-fit.css";
 import "./auth-clean.css";
 import "./auth-clean-fixes.css";
+import "./light-background-tuning.css";
 import { Toaster } from "sonner";
 import MotionProvider from "@/components/motion/MotionProvider";
 import { CurrencyProvider } from "@/components/currency/CurrencyProvider";
