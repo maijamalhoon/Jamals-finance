@@ -12,6 +12,7 @@ import "./settings-clean-finish.css";
 import "./settings-appearance-global.css";
 import "./settings-type-icon-system.css";
 import "./settings-icon-detail-fix.css";
+import "./settings-profile-customization.css";
 
 export const dynamic = "force-dynamic";
 
@@ -109,6 +110,12 @@ export default async function SettingsPage() {
       : typeof metadata.name === "string"
         ? metadata.name
         : "";
+  const avatarUrl =
+    typeof metadata.avatar_url === "string"
+      ? metadata.avatar_url
+      : typeof metadata.picture === "string"
+        ? metadata.picture
+        : null;
 
   return (
     <div className="settings-page-polish">
@@ -116,6 +123,7 @@ export default async function SettingsPage() {
         email={user.email ?? ""}
         userId={user.id}
         displayName={displayName}
+        avatarUrl={avatarUrl}
         categories={(categories ?? []) as PersistentSettingsCategory[]}
         categoryUsage={categoryUsage}
         categoriesAvailable={categoriesAvailable}
