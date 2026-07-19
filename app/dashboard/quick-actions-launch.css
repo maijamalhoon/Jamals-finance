@@ -15,6 +15,9 @@
     min-width: 0;
     flex-direction: column;
     align-items: center;
+    padding-inline: 0.5rem;
+    overflow: visible;
+    box-sizing: border-box;
     text-align: center !important;
   }
 
@@ -35,27 +38,42 @@
   [data-dashboard-scroll]
     .dashboard-overview
     .dashboard-balance-amount {
+    display: block;
     width: 100%;
+    max-width: 100%;
+    margin-inline: auto;
     margin-top: clamp(0.55rem, 2.4vw, 0.75rem) !important;
-    padding-inline: 0.08em;
+    padding-inline: 0.16em;
     overflow: visible;
-    font-size: clamp(2.8rem, 14.5vw, 4rem) !important;
-    line-height: 0.98 !important;
-    letter-spacing: -0.06em;
+    box-sizing: border-box;
+    font-size: clamp(2.65rem, 13.6vw, 3.8rem) !important;
+    line-height: 1.04 !important;
+    letter-spacing: -0.045em;
     text-align: center;
     text-wrap: nowrap;
   }
 
   [data-dashboard-scroll]
     .dashboard-overview
+    .dashboard-balance-amount > span {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    padding-inline: 0.08em;
+    overflow: visible;
+    box-sizing: border-box;
+  }
+
+  [data-dashboard-scroll]
+    .dashboard-overview
     .dashboard-balance-amount[data-balance-size="long"] {
-    font-size: clamp(2.25rem, 11.5vw, 3.3rem) !important;
+    font-size: clamp(2.12rem, 10.9vw, 3.15rem) !important;
   }
 
   [data-dashboard-scroll]
     .dashboard-overview
     .dashboard-balance-amount[data-balance-size="xlong"] {
-    font-size: clamp(1.85rem, 9.4vw, 2.75rem) !important;
+    font-size: clamp(1.75rem, 8.9vw, 2.6rem) !important;
   }
 
   [data-dashboard-scroll]
