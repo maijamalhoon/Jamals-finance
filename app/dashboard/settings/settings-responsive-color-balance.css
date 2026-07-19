@@ -1,0 +1,226 @@
+/*
+ * Settings-only visual balance.
+ * Keeps every existing handler, value, dialog and data source unchanged.
+ */
+
+/* Each visible action gets its own semantic accent instead of repeating blue. */
+.settings-page-polish
+  .settings-reference-preferences-wrapper
+  .finance-panel
+  > button:nth-of-type(1)
+  .finance-icon-bubble {
+  color: #7c3aed !important;
+}
+
+.settings-page-polish
+  .settings-reference-preferences-wrapper
+  .finance-panel
+  > button:nth-of-type(2)
+  .finance-icon-bubble {
+  color: #0891b2 !important;
+}
+
+.settings-page-polish
+  .settings-reference-profile-security
+  .settings-reference-group
+  > .settings-reference-row:nth-of-type(1)
+  .settings-reference-row-icon {
+  color: #2563eb !important;
+}
+
+.settings-page-polish
+  .settings-reference-profile-security
+  .settings-reference-group
+  > .settings-reference-row:nth-of-type(2)
+  .settings-reference-row-icon {
+  color: #059669 !important;
+}
+
+.settings-page-polish
+  .settings-reference-categories-wrapper
+  .finance-panel
+  > button:nth-of-type(1)
+  .finance-icon-bubble {
+  color: #f97316 !important;
+}
+
+.settings-page-polish
+  .settings-reference-categories-wrapper
+  .finance-panel
+  > button:nth-of-type(2)
+  .finance-icon-bubble {
+  color: #c026d3 !important;
+}
+
+.settings-page-polish
+  .settings-reference-data
+  .settings-reference-row-icon {
+  color: #0ea5e9 !important;
+}
+
+/* System, Light and Dark stay icon-only, but each mode is immediately distinct. */
+.settings-page-polish
+  .settings-reference-theme-option:nth-child(1)
+  .settings-reference-theme-icon {
+  color: #64748b !important;
+}
+
+.settings-page-polish
+  .settings-reference-theme-option:nth-child(2)
+  .settings-reference-theme-icon {
+  color: #f59e0b !important;
+}
+
+.settings-page-polish
+  .settings-reference-theme-option:nth-child(3)
+  .settings-reference-theme-icon {
+  color: #8b5cf6 !important;
+}
+
+.settings-page-polish .settings-reference-theme-option:nth-child(1).is-active {
+  background: color-mix(in srgb, #64748b 11%, var(--card)) !important;
+  box-shadow:
+    0 5px 14px rgb(15 23 42 / 0.07),
+    inset 0 0 0 1px color-mix(in srgb, #64748b 24%, transparent) !important;
+}
+
+.settings-page-polish .settings-reference-theme-option:nth-child(2).is-active {
+  background: color-mix(in srgb, #f59e0b 11%, var(--card)) !important;
+  box-shadow:
+    0 5px 14px rgb(15 23 42 / 0.07),
+    inset 0 0 0 1px color-mix(in srgb, #f59e0b 24%, transparent) !important;
+}
+
+.settings-page-polish .settings-reference-theme-option:nth-child(3).is-active {
+  background: color-mix(in srgb, #8b5cf6 11%, var(--card)) !important;
+  box-shadow:
+    0 5px 14px rgb(15 23 42 / 0.07),
+    inset 0 0 0 1px color-mix(in srgb, #8b5cf6 24%, transparent) !important;
+}
+
+.dark .settings-page-polish .settings-reference-theme-option.is-active {
+  box-shadow:
+    0 7px 18px rgb(0 0 0 / 0.2),
+    inset 0 0 0 1px currentColor !important;
+}
+
+/* Tablet and desktop use a deliberate two-column rhythm matching the reference. */
+@media (min-width: 48rem) {
+  .settings-page-polish .settings-experience-v2 {
+    width: min(100%, 74rem) !important;
+    padding-inline: clamp(0.75rem, 2vw, 1.25rem) !important;
+  }
+
+  .settings-page-polish .settings-reference-grid {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) !important;
+    grid-template-areas:
+      "appearance preferences"
+      "profile categories"
+      "data data" !important;
+    column-gap: clamp(1rem, 2.4vw, 1.75rem) !important;
+    row-gap: clamp(1.15rem, 2.4vw, 1.7rem) !important;
+    align-items: start !important;
+  }
+
+  .settings-page-polish .settings-reference-appearance {
+    grid-area: appearance !important;
+  }
+
+  .settings-page-polish .settings-reference-preferences-wrapper {
+    grid-area: preferences !important;
+  }
+
+  .settings-page-polish .settings-reference-profile-security {
+    grid-area: profile !important;
+  }
+
+  .settings-page-polish .settings-reference-categories-wrapper {
+    grid-area: categories !important;
+  }
+
+  .settings-page-polish .settings-reference-data {
+    grid-area: data !important;
+    grid-column: 1 / -1 !important;
+  }
+
+  .settings-page-polish .settings-reference-data .settings-reference-logout {
+    width: calc(50% - clamp(0.5rem, 1.2vw, 0.875rem)) !important;
+    max-width: none !important;
+    margin-right: auto !important;
+    margin-left: 0 !important;
+  }
+
+  .settings-page-polish .settings-reference-section-heading {
+    padding-bottom: 0.62rem !important;
+  }
+}
+
+/* Portrait tablets stay compact without squeezing row content. */
+@media (min-width: 48rem) and (max-width: 63.99rem) {
+  .settings-page-polish .settings-reference-row,
+  .settings-page-polish
+    .settings-reference-preferences-wrapper
+    .finance-panel
+    > button,
+  .settings-page-polish
+    .settings-reference-categories-wrapper
+    .finance-panel
+    > button {
+    min-height: 4.75rem !important;
+    gap: 0.72rem !important;
+    padding-inline: 0.9rem !important;
+  }
+
+  .settings-page-polish
+    .settings-reference-preferences-wrapper
+    .finance-state-pill {
+    display: none !important;
+  }
+
+  .settings-page-polish .settings-reference-row-title,
+  .settings-page-polish
+    .settings-reference-preferences-wrapper
+    .finance-panel
+    > button
+    .min-w-0.flex-1
+    > span:first-child,
+  .settings-page-polish
+    .settings-reference-categories-wrapper
+    .finance-panel
+    > button
+    .min-w-0.flex-1
+    > span:first-child {
+    font-size: 0.9rem !important;
+  }
+
+  .settings-page-polish .settings-reference-row-description,
+  .settings-page-polish
+    .settings-reference-preferences-wrapper
+    .finance-panel
+    > button
+    .min-w-0.flex-1
+    > span:last-child,
+  .settings-page-polish
+    .settings-reference-categories-wrapper
+    .finance-panel
+    > button
+    .min-w-0.flex-1
+    > span:last-child {
+    font-size: 0.7rem !important;
+  }
+}
+
+@media (min-width: 75rem) {
+  .settings-page-polish .settings-experience-v2 {
+    width: min(100%, 76rem) !important;
+  }
+
+  .settings-page-polish .settings-account-card {
+    padding: 1.3rem 1.35rem !important;
+  }
+
+  .settings-page-polish .settings-account-stat {
+    min-height: 4.35rem !important;
+  }
+}
