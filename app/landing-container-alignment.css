@@ -1,0 +1,45 @@
+/* Shared landing-page container alignment.
+   Keeps every public section inside the same responsive shell and inner gutter as the floating header. */
+.jf-node4-landing {
+  --jf-shell: var(--jf-wide-shell);
+  --jf-content-gutter: clamp(0.7rem, 1.4vw, 1rem);
+}
+
+.jf-node4-landing :where(
+  .jf-header-inner,
+  .jf-hero,
+  .jf-section,
+  .jf-value-rail > div,
+  .jf-landing-footer > div
+) {
+  width: var(--jf-wide-shell);
+  max-width: 100%;
+  margin-inline: auto;
+  box-sizing: border-box;
+}
+
+.jf-node4-landing :where(
+  .jf-hero,
+  .jf-section,
+  .jf-value-rail > div,
+  .jf-landing-footer > div
+) {
+  padding-inline: var(--jf-content-gutter);
+}
+
+.jf-node4-landing :where(
+  .jf-header-inner,
+  .jf-hero,
+  .jf-section,
+  .jf-value-rail > div,
+  .jf-landing-footer > div
+) > * {
+  min-width: 0;
+  max-width: 100%;
+}
+
+@media (max-width: 639px) {
+  .jf-node4-landing {
+    --jf-content-gutter: 0.65rem;
+  }
+}
