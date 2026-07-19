@@ -11,7 +11,7 @@ import "./auth-clean-fixes.css";
 import "./light-background-tuning.css";
 import { Toaster } from "sonner";
 import MotionProvider from "@/components/motion/MotionProvider";
-import { CurrencyProvider } from "@/components/currency/CurrencyProvider";
+import { CURRENCY_STORAGE_KEY } from "@/lib/currency";
 import ChartTooltipAutoDismiss from "@/components/charts/ChartTooltipAutoDismiss";
 import PWARegister from "./pwa-register";
 import {
@@ -29,6 +29,36 @@ const geistMono = Geist_Mono({
 });
 
 const siteUrl = "https://jamals-finance-sable.vercel.app";
+
+const CURRENCY_BOOTSTRAP_SCRIPT = `
+(() => {
+  try {
+    const key = ${JSON.stringify(CURRENCY_STORAGE_KEY)};
+    const saved = window.localStorage.getItem(key);
+    if (saved !== "PKR" && saved !== "USD") return;
+
+    const cookieEntry = document.cookie
+      .split("; ")
+      .find((entry) => entry.startsWith(key + "="));
+    const cookieValue = cookieEntry
+      ? decodeURIComponent(cookieEntry.slice(key.length + 1))
+      : null;
+    const syncKey = key + "-cookie-sync";
+
+    if (cookieValue === saved) {
+      window.sessionStorage.removeItem(syncKey);
+      return;
+    }
+
+    if (window.sessionStorage.getItem(syncKey) === saved) return;
+
+    window.sessionStorage.setItem(syncKey, saved);
+    const secure = window.location.protocol === "https:" ? "; Secure" : "";
+    document.cookie = key + "=" + encodeURIComponent(saved) + "; Path=/; Max-Age=31536000; SameSite=Lax" + secure;
+    window.location.replace(window.location.href);
+  } catch {}
+})();
+`;
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
@@ -117,22 +147,25 @@ export default function RootLayout({
             __html: THEME_BOOTSTRAP_SCRIPT,
           }}
         />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: CURRENCY_BOOTSTRAP_SCRIPT,
+          }}
+        />
       </head>
       <body className="bg-background text-foreground antialiased">
         <MotionProvider>
-          <CurrencyProvider>
-            {children}
-            <ChartTooltipAutoDismiss />
-            <PWARegister />
-            <Toaster
-              position="top-right"
-              toastOptions={{
-                classNames: {
-                  toast: "theme-toast",
-                },
-              }}
-            />
-          </CurrencyProvider>
+          {children}
+          <ChartTooltipAutoDismiss />
+          <PWARegister />
+          <Toaster
+            position="top-right"
+            toastOptions={{
+              classNames: {
+                toast: "theme-toast",
+              },
+            }}
+          />
         </MotionProvider>
       </body>
     </html>
