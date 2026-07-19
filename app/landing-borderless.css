@@ -1,0 +1,20 @@
+/* Landing-only final override: keep every public landing surface borderless. */
+.jf-node4-landing,
+.jf-node4-landing *,
+.jf-node4-landing *::before,
+.jf-node4-landing *::after {
+  border: 0 !important;
+  border-width: 0 !important;
+  border-style: none !important;
+  outline: 0 !important;
+  outline-width: 0 !important;
+  outline-style: none !important;
+}
+
+/* Remove interaction rings without changing backgrounds, layout, motion, or card depth. */
+.jf-node4-landing :is(a, button, input, select, textarea, [tabindex]):focus,
+.jf-node4-landing :is(a, button, input, select, textarea, [tabindex]):focus-visible,
+.jf-node4-landing :is(a, button, input, select, textarea, [tabindex]):active {
+  outline: none !important;
+  box-shadow: none !important;
+}
