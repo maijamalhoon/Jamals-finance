@@ -265,7 +265,7 @@ export default function InvestmentOverviewWidget({
           </div>
         </div>
       ) : (
-        <div className="mt-5 grid min-h-0 flex-1 gap-5 2xl:grid-cols-[minmax(220px,0.86fr)_minmax(280px,1.14fr)] 2xl:items-center">
+        <div className="mt-5 grid min-h-0 flex-1 gap-5 md:grid-cols-[minmax(220px,0.86fr)_minmax(280px,1.14fr)] md:items-center">
           <div className="min-w-0">
             <p className="sr-only">
               Priced portfolio value {allocationTotalValue}. Performance is {pnlLabel}.
@@ -365,11 +365,12 @@ export default function InvestmentOverviewWidget({
               return (
                 <div
                   key={investment.id}
-                  className="grid min-w-0 grid-cols-[auto_minmax(0,1fr)_minmax(76px,0.9fr)_auto] items-center gap-2.5 px-3 py-2.5 sm:grid-cols-[auto_minmax(110px,1fr)_minmax(110px,1.2fr)_auto] sm:gap-3 sm:px-4 sm:py-3"
+                  title={`${investment.name}${investment.symbol ? ` (${investment.symbol.toUpperCase()})` : ""}`}
+                  className="grid min-w-0 grid-cols-[auto_minmax(0,1fr)_minmax(76px,0.9fr)_auto] items-center gap-2.5 px-3 py-2.5 sm:grid-cols-[auto_minmax(110px,1fr)_minmax(110px,1.2fr)_auto] sm:gap-3 sm:px-4 sm:py-3 md:grid-cols-[auto_minmax(110px,1fr)_auto] md:gap-4"
                 >
                   <AssetLogo entry={investment} size={34} />
 
-                  <div className="min-w-0">
+                  <div className="min-w-0 md:hidden">
                     <p className="truncate text-xs font-semibold text-text-primary sm:text-sm">
                       {investment.name}
                     </p>
@@ -388,17 +389,32 @@ export default function InvestmentOverviewWidget({
                   />
 
                   <span
-                    className="shrink-0 text-xs font-black tabular-nums sm:text-sm"
+                    className="shrink-0 text-xs font-black tabular-nums sm:text-sm md:hidden"
                     style={{ color: investment.color }}
                   >
                     {formatAllocation(allocation)}
                   </span>
+
+                  <div className="hidden shrink-0 items-baseline justify-end gap-2 text-right md:flex">
+                    <span className="text-xs font-bold text-text-primary tabular-nums lg:text-sm">
+                      {formatCurrency(investment.value, { compact: true })}
+                    </span>
+                    <span
+                      className="text-xs font-black tabular-nums lg:text-sm"
+                      style={{ color: investment.color }}
+                    >
+                      {formatAllocation(allocation)}
+                    </span>
+                  </div>
                 </div>
               );
             })}
 
             {otherInvestments.length > 0 ? (
-              <div className="grid min-w-0 grid-cols-[auto_minmax(0,1fr)_minmax(76px,0.9fr)_auto] items-center gap-2.5 px-3 py-2.5 sm:grid-cols-[auto_minmax(110px,1fr)_minmax(110px,1.2fr)_auto] sm:gap-3 sm:px-4 sm:py-3">
+              <div
+                title="Other assets"
+                className="grid min-w-0 grid-cols-[auto_minmax(0,1fr)_minmax(76px,0.9fr)_auto] items-center gap-2.5 px-3 py-2.5 sm:grid-cols-[auto_minmax(110px,1fr)_minmax(110px,1.2fr)_auto] sm:gap-3 sm:px-4 sm:py-3 md:grid-cols-[auto_minmax(110px,1fr)_auto] md:gap-4"
+              >
                 <span
                   className="grid shrink-0 place-items-center rounded-full"
                   style={{
@@ -412,7 +428,7 @@ export default function InvestmentOverviewWidget({
                   <Layers3 size={17} strokeWidth={2.1} />
                 </span>
 
-                <div className="min-w-0">
+                <div className="min-w-0 md:hidden">
                   <p className="truncate text-xs font-semibold text-text-primary sm:text-sm">
                     Other assets
                   </p>
@@ -426,11 +442,23 @@ export default function InvestmentOverviewWidget({
                 />
 
                 <span
-                  className="shrink-0 text-xs font-black tabular-nums sm:text-sm"
+                  className="shrink-0 text-xs font-black tabular-nums sm:text-sm md:hidden"
                   style={{ color: OTHER_ASSETS_COLOR }}
                 >
                   {formatAllocation(otherAssetsAllocation)}
                 </span>
+
+                <div className="hidden shrink-0 items-baseline justify-end gap-2 text-right md:flex">
+                  <span className="text-xs font-bold text-text-primary tabular-nums lg:text-sm">
+                    {formatCurrency(otherAssetsValue, { compact: true })}
+                  </span>
+                  <span
+                    className="text-xs font-black tabular-nums lg:text-sm"
+                    style={{ color: OTHER_ASSETS_COLOR }}
+                  >
+                    {formatAllocation(otherAssetsAllocation)}
+                  </span>
+                </div>
               </div>
             ) : null}
 
