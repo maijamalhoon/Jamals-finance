@@ -17,6 +17,18 @@
   }
 }
 
+/* The form emergence is the click response; remove the older button squash. */
+.dashboard-quick-action:active {
+  transform: none !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.dashboard-quick-action:active .dashboard-quick-action-icon {
+  transform: none !important;
+  box-shadow: none !important;
+}
+
 html[data-quick-action-launch-pending="true"]
   [data-slot="dialog-content"].finance-modal-content {
   opacity: 0 !important;
