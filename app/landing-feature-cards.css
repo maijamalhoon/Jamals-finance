@@ -1,0 +1,30 @@
+/* Landing capability cards: visible surfaces without outline borders. */
+.jf-feature-list {
+  gap: clamp(0.7rem, 1.2vw, 0.95rem);
+}
+
+.jf-feature {
+  border: 0;
+  outline: 0;
+  background: color-mix(in srgb, var(--jf-surface-solid) 86%, transparent);
+  box-shadow: 0 14px 34px rgb(28 49 82 / 0.07);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+.dark .jf-feature {
+  background: color-mix(in srgb, var(--jf-surface-solid) 90%, transparent);
+  box-shadow: 0 16px 38px rgb(0 0 0 / 0.22);
+}
+
+.jf-feature:hover {
+  background: var(--jf-surface-solid);
+  box-shadow: var(--jf-shadow-soft);
+}
+
+@media (max-width: 639px) {
+  .jf-feature {
+    border-radius: 0.9rem;
+    padding: 1rem;
+  }
+}
