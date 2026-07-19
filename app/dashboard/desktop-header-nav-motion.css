@@ -1,0 +1,132 @@
+/*
+ * One motion language for the ten desktop navigation icons.
+ * Search, notifications and profile remain intentionally outside this scope.
+ */
+
+@media (min-width: 1024px) {
+  .jf-desktop-header
+    nav[aria-label="Desktop dashboard navigation"]
+    > a {
+    transform: translateY(0) scale(1);
+    transform-origin: center;
+    transition:
+      background-color 180ms var(--motion-ease),
+      color 180ms var(--motion-ease),
+      transform 180ms var(--motion-ease) !important;
+  }
+
+  .jf-desktop-header
+    nav[aria-label="Desktop dashboard navigation"]
+    > a
+    > svg.lucide {
+    transform: translateY(0) scale(1) rotate(0deg);
+    transform-origin: center;
+    filter: none;
+    transition:
+      transform 210ms var(--motion-ease),
+      filter 210ms var(--motion-ease),
+      color 180ms var(--motion-ease) !important;
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .jf-desktop-header
+      nav[aria-label="Desktop dashboard navigation"]
+      > a:hover {
+      transform: translateY(-1px) scale(1.025) !important;
+    }
+
+    .jf-desktop-header
+      nav[aria-label="Desktop dashboard navigation"]
+      > a:hover
+      > svg.lucide {
+      transform: translateY(-1.5px) scale(1.085) rotate(0deg) !important;
+      filter: drop-shadow(
+        0 3px 5px color-mix(in srgb, currentColor 34%, transparent)
+      ) !important;
+    }
+  }
+
+  .jf-desktop-header
+    nav[aria-label="Desktop dashboard navigation"]
+    > a:active {
+    transform: translateY(0) scale(0.955) !important;
+    transition-duration: 90ms !important;
+  }
+
+  .jf-desktop-header
+    nav[aria-label="Desktop dashboard navigation"]
+    > a:active
+    > svg.lucide {
+    transform: translateY(0) scale(0.9) rotate(-2deg) !important;
+    filter: none !important;
+    transition-duration: 90ms !important;
+  }
+
+  .jf-desktop-header
+    nav[aria-label="Desktop dashboard navigation"]
+    > a:focus-visible
+    > svg.lucide {
+    transform: translateY(-1px) scale(1.06) !important;
+  }
+
+  .jf-desktop-header
+    nav[aria-label="Desktop dashboard navigation"]
+    > a[aria-current="page"]
+    > svg.lucide {
+    animation: jf-desktop-nav-icon-activate 380ms var(--motion-ease) both;
+  }
+
+  .jf-desktop-header
+    nav[aria-label="Desktop dashboard navigation"]
+    > a[aria-current="page"]
+    > span[aria-hidden="true"] {
+    transform-origin: center;
+    animation: jf-desktop-nav-indicator-activate 360ms var(--motion-ease) both;
+  }
+}
+
+@keyframes jf-desktop-nav-icon-activate {
+  0% {
+    transform: translateY(2px) scale(0.84);
+    filter: none;
+  }
+  58% {
+    transform: translateY(-2px) scale(1.12);
+    filter: drop-shadow(
+      0 3px 6px color-mix(in srgb, currentColor 38%, transparent)
+    );
+  }
+  100% {
+    transform: translateY(0) scale(1);
+    filter: none;
+  }
+}
+
+@keyframes jf-desktop-nav-indicator-activate {
+  0% {
+    opacity: 0;
+    transform: scaleX(0.25) translateY(2px);
+  }
+  100% {
+    opacity: 1;
+    transform: scaleX(1) translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .jf-desktop-header
+    nav[aria-label="Desktop dashboard navigation"]
+    > a,
+  .jf-desktop-header
+    nav[aria-label="Desktop dashboard navigation"]
+    > a
+    > svg.lucide,
+  .jf-desktop-header
+    nav[aria-label="Desktop dashboard navigation"]
+    > a[aria-current="page"]
+    > span[aria-hidden="true"] {
+    animation: none !important;
+    transition: none !important;
+    transform: none !important;
+  }
+}
