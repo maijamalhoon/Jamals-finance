@@ -33,11 +33,11 @@ const dashboardOverviewStyles = `
     /* Keep the content-heavy primary cards tall enough for charts and holdings. */
     .dashboard-overview-layout > div.grid:nth-last-child(2) > :nth-child(2),
     .dashboard-overview-layout > div.grid:nth-last-child(2) > :nth-child(3) {
-      height: 470px !important;
-      min-height: 470px !important;
+      height: 450px !important;
+      min-height: 450px !important;
     }
 
-    /* Let the supporting row size itself from real content instead of forcing 470px. */
+    /* Let the supporting row size itself from real content instead of forcing the primary-card height. */
     .dashboard-overview-layout > div.grid:nth-last-child(2) > :nth-child(1),
     .dashboard-overview-layout > div.grid:last-child > :nth-child(1),
     .dashboard-overview-layout > div.grid:last-child > :nth-child(2),
