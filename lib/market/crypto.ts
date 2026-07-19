@@ -18,6 +18,7 @@ export type CryptoPrice = {
   pkr: number | null;
   change24h: number | null;
   lastUpdatedAt: string | null;
+  imageUrl: string | null;
 };
 
 export type CryptoPriceResponse = {
@@ -38,10 +39,12 @@ type CoinGeckoSearchResponse = {
   coins?: CoinGeckoSearchCoin[];
 };
 
-type CoinGeckoSimplePriceRow = {
-  usd?: unknown;
-  usd_24h_change?: unknown;
-  last_updated_at?: unknown;
+type CoinGeckoMarketRow = {
+  id?: unknown;
+  image?: unknown;
+  current_price?: unknown;
+  price_change_percentage_24h?: unknown;
+  last_updated?: unknown;
 };
 
 function isNonEmptyString(value: unknown): value is string {
@@ -117,46 +120,48 @@ export async function getCryptoPrices(ids: string[]): Promise<CryptoPriceRespons
 
   const params = new URLSearchParams({
     ids: cryptoIds.join(","),
-    vs_currencies: "usd",
-    include_24hr_change: "true",
-    include_last_updated_at: "true",
+    vs_currency: "usd",
+    price_change_percentage: "24h",
     precision: "full",
   });
 
-  const [priceResponse, exchangeRate] = await Promise.all([
-    fetch(`${COINGECKO_API_BASE}/simple/price?${params}`, {
+  const [marketResponse, exchangeRate] = await Promise.all([
+    fetch(`${COINGECKO_API_BASE}/coins/markets?${params}`, {
       headers: { accept: "application/json" },
       next: { revalidate: 60 },
     }),
     getUsdToPkrRate(),
   ]);
 
-  if (!priceResponse.ok) {
-    const error = new Error("CoinGecko price lookup failed");
-    error.name = priceResponse.status === 429 ? "RateLimitError" : "MarketApiError";
+  if (!marketResponse.ok) {
+    const error = new Error("CoinGecko market lookup failed");
+    error.name = marketResponse.status === 429 ? "RateLimitError" : "MarketApiError";
     throw error;
   }
 
-  const data = (await priceResponse.json()) as Record<
-    string,
-    CoinGeckoSimplePriceRow
-  >;
+  const data = (await marketResponse.json()) as CoinGeckoMarketRow[];
+  const marketRows = new Map(
+    data
+      .filter((row) => isNonEmptyString(row.id))
+      .map((row) => [String(row.id).trim().toLowerCase(), row]),
+  );
 
   const prices = cryptoIds.reduce<Record<string, CryptoPrice>>((acc, id) => {
-    const row = data[id];
-    const usd = toNumberOrNull(row?.usd);
-    const lastUpdated = toNumberOrNull(row?.last_updated_at);
+    const row = marketRows.get(id);
+    const usd = toNumberOrNull(row?.current_price);
 
     acc[id] = {
       usd,
       pkr: usd === null ? null : usd * exchangeRate.rate,
-      change24h: toNumberOrNull(row?.usd_24h_change),
-      lastUpdatedAt:
-        lastUpdated === null ? null : new Date(lastUpdated * 1000).toISOString(),
+      change24h: toNumberOrNull(row?.price_change_percentage_24h),
+      lastUpdatedAt: isNonEmptyString(row?.last_updated)
+        ? row.last_updated
+        : null,
+      imageUrl: isNonEmptyString(row?.image) ? row.image : null,
     };
 
     return acc;
   }, {});
 
-  return { prices, live: priceResponse.ok };
+  return { prices, live: marketResponse.ok };
 }
