@@ -13,14 +13,14 @@ export default function DashboardCardViewLink({
       href={href}
       aria-label={label}
       title={label}
-      className="finance-focus group grid size-9 shrink-0 place-items-center rounded-xl border border-border bg-surface-primary p-0 text-text-secondary shadow-sm transition-[background-color,border-color,color,transform,box-shadow] hover:-translate-y-0.5 hover:border-primary/30 hover:bg-hover hover:text-primary hover:shadow-md active:translate-y-0 active:scale-[0.97] sm:size-10"
+      className="dashboard-card-view-link finance-focus group grid size-9 shrink-0 place-items-center rounded-xl border-0 bg-transparent p-0 text-text-secondary shadow-none transition-[background-color,color,transform] hover:bg-hover hover:text-primary active:scale-[0.94] sm:size-10"
     >
       <ArrowRight
         size={16}
         strokeWidth={2.3}
         strokeLinecap="round"
         strokeLinejoin="round"
-        className="transition-transform duration-200 group-hover:translate-x-0.5"
+        className="dashboard-card-view-link-icon"
         aria-hidden="true"
       />
     </Link>
