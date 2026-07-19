@@ -220,11 +220,15 @@ function CurrencyAwareInput({
         }
       }
 
-      child.props.onChange?.({
-        ...event,
-        target: { ...event.target, value: nextBaseValue },
-        currentTarget: { ...event.currentTarget, value: nextBaseValue },
-      } as React.ChangeEvent<HTMLInputElement>);
+      const input = event.currentTarget;
+      const visibleValue = input.value;
+
+      try {
+        input.value = nextBaseValue;
+        child.props.onChange?.(event);
+      } finally {
+        input.value = visibleValue;
+      }
     },
     onBlur: (event: React.FocusEvent<HTMLInputElement>) => {
       setEditing(false);
