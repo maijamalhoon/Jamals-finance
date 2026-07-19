@@ -17,7 +17,10 @@ import {
   getTransactionPrefix,
   getTransactionToneClass,
 } from "@/lib/transaction-icons";
-import { loadTransactions } from "@/lib/transactions";
+import {
+  loadTransactions,
+  sortTransactionsNewestFirst,
+} from "@/lib/transactions";
 
 interface TransactionCategory {
   id?: string | null;
@@ -49,30 +52,6 @@ interface Transaction {
   item_name?: string | null;
   categories: TransactionCategory | null;
   accounts: { name: string } | null;
-}
-
-function transactionTime(value: unknown) {
-  const parsed = new Date(String(value ?? "")).getTime();
-  return Number.isNaN(parsed) ? 0 : parsed;
-}
-
-function sortLikeTransactionsPage(rows: Transaction[]) {
-  return [...rows].sort((left, right) => {
-    const dateDifference =
-      transactionTime(right.date) - transactionTime(left.date);
-    if (dateDifference !== 0) return dateDifference;
-
-    const createdDifference =
-      transactionTime(right.created_at) - transactionTime(left.created_at);
-    if (createdDifference !== 0) return createdDifference;
-
-    const activityDifference =
-      transactionTime(right.updated_at ?? right.created_at) -
-      transactionTime(left.updated_at ?? left.created_at);
-    if (activityDifference !== 0) return activityDifference;
-
-    return String(right.id ?? "").localeCompare(String(left.id ?? ""));
-  });
 }
 
 function getTransactionLabel(
@@ -143,23 +122,24 @@ export default function RecentTransactions({
 }) {
   const supabase = useMemo(() => createClient(), []);
   const [latestTransactions, setLatestTransactions] = useState<Transaction[]>(
-    () => sortLikeTransactionsPage(transactions).slice(0, 5),
+    () => sortTransactionsNewestFirst(transactions).slice(0, 5),
   );
 
   useEffect(() => {
     let cancelled = false;
 
-    setLatestTransactions(sortLikeTransactionsPage(transactions).slice(0, 5));
+    setLatestTransactions(sortTransactionsNewestFirst(transactions).slice(0, 5));
 
     async function loadLatestTransactions() {
       const rows = await loadTransactions(supabase, {
-        includeDeleted: true,
+        includeDeleted: false,
       });
 
       if (cancelled) return;
 
       setLatestTransactions(
-        sortLikeTransactionsPage(rows as unknown as Transaction[]).slice(0, 5),
+        sortTransactionsNewestFirst(rows)
+          .slice(0, 5) as unknown as Transaction[],
       );
     }
 
@@ -170,7 +150,7 @@ export default function RecentTransactions({
   }, [supabase, transactions]);
 
   const visibleTransactions = useMemo(
-    () => sortLikeTransactionsPage(latestTransactions).slice(0, 5),
+    () => sortTransactionsNewestFirst(latestTransactions).slice(0, 5),
     [latestTransactions],
   );
 
