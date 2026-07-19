@@ -24,7 +24,6 @@
 
   /* One consistent premium surface for the three floating controls. */
   [data-mobile-control-cluster] [data-slot="sheet-trigger"],
-  [data-mobile-control-cluster] > button,
   [data-mobile-control-cluster] [data-notification-trigger],
   [data-mobile-control-cluster] [data-profile-trigger] {
     border-color: color-mix(in srgb, var(--border), transparent 4%) !important;
@@ -43,7 +42,6 @@
   }
 
   .dark [data-mobile-control-cluster] [data-slot="sheet-trigger"],
-  .dark [data-mobile-control-cluster] > button,
   .dark [data-mobile-control-cluster] [data-notification-trigger],
   .dark [data-mobile-control-cluster] [data-profile-trigger] {
     background:
