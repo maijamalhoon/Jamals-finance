@@ -1,24 +1,39 @@
 /*
- * Borderless Settings page finish.
+ * Clean borderless Settings cards.
  *
  * Presentation only: profile, theme, preferences, categories, data actions,
  * Supabase operations, dialogs, state, and responsive behavior remain intact.
  */
 
-/* Remove persistent card shells from the Settings page only. */
-.settings-page-polish .finance-panel,
+/* Main settings sections use soft cards without outlines. */
+.settings-page-polish .finance-panel {
+  overflow: hidden !important;
+  border: 0 !important;
+  border-radius: clamp(1rem, 2vw, 1.25rem) !important;
+  background: color-mix(
+    in srgb,
+    var(--surface-primary),
+    var(--surface-secondary) 18%
+  ) !important;
+  box-shadow:
+    0 1px 2px color-mix(in srgb, var(--text-primary) 4%, transparent),
+    0 10px 28px color-mix(in srgb, var(--text-primary) 7%, transparent) !important;
+}
+
 .settings-page-polish .summary-card {
   border: 0 !important;
-  border-radius: 0 !important;
-  background: transparent !important;
-  box-shadow: none !important;
+  border-radius: 1rem !important;
+  background: color-mix(
+    in srgb,
+    var(--surface-primary),
+    var(--surface-secondary) 20%
+  ) !important;
+  box-shadow:
+    0 1px 2px color-mix(in srgb, var(--text-primary) 4%, transparent),
+    0 8px 22px color-mix(in srgb, var(--text-primary) 6%, transparent) !important;
 }
 
-.settings-page-polish .finance-panel {
-  overflow: visible !important;
-}
-
-/* Keep actions readable through spacing and a light interaction state, not cards. */
+/* Rows remain borderless and gain only a soft interaction state. */
 .settings-page-polish .finance-panel > button,
 .settings-page-polish .finance-panel > a {
   border: 0 !important;
@@ -31,27 +46,24 @@
 .settings-page-polish .finance-panel > button:focus-visible,
 .settings-page-polish .finance-panel > a:hover,
 .settings-page-polish .finance-panel > a:focus-visible {
-  background: color-mix(in srgb, var(--hover), transparent 18%) !important;
+  background: color-mix(in srgb, var(--hover), transparent 10%) !important;
 }
 
-/* Old row dividers and launcher borders are no longer needed without card shells. */
+/* Remove old dividers; spacing and card surfaces provide the grouping. */
 .settings-page-polish .finance-panel > div[class*="ml-[76px]"],
-.settings-page-polish .settings-preferences-divider,
+.settings-page-polish .settings-preferences-divider {
+  display: none !important;
+}
+
 .settings-page-polish
   .settings-experience-v2
   > section
   .finance-panel
   > button:nth-of-type(2) {
   border: 0 !important;
-  background: transparent !important;
 }
 
-.settings-page-polish .finance-panel > div[class*="ml-[76px]"],
-.settings-page-polish .settings-preferences-divider {
-  display: none !important;
-}
-
-/* Appearance choices remain fully functional but no longer look like cards. */
+/* Appearance choices are soft borderless mini-cards. */
 .settings-page-polish
   .settings-core
   > div
@@ -59,7 +71,12 @@
   > section:nth-of-type(2)
   [role="radio"] {
   border: 0 !important;
-  background: transparent !important;
+  border-radius: 0.9rem !important;
+  background: color-mix(
+    in srgb,
+    var(--surface-secondary),
+    transparent 8%
+  ) !important;
   box-shadow: none !important;
 }
 
@@ -75,7 +92,7 @@
   > div
   > section:nth-of-type(2)
   [role="radio"]:focus-visible {
-  background: color-mix(in srgb, var(--hover), transparent 18%) !important;
+  background: var(--hover) !important;
 }
 
 .settings-page-polish
@@ -85,27 +102,35 @@
   > section:nth-of-type(2)
   [role="radio"][aria-checked="true"] {
   border: 0 !important;
-  background: color-mix(in srgb, var(--primary), transparent 92%) !important;
-  box-shadow: none !important;
+  background: color-mix(in srgb, var(--primary), transparent 90%) !important;
+  box-shadow: inset 3px 0 0 var(--primary) !important;
 }
 
-/* Remove decorative borders from page-level identity and status elements. */
+/* Decorative elements remain outline-free. */
 .settings-page-polish .settings-profile-customization .finance-panel [data-slot="avatar"],
 .settings-page-polish .finance-state-pill {
   border: 0 !important;
   box-shadow: none !important;
 }
 
-/* Sign out stays visually distinct through colour only. */
+/* Sign out stays distinct through a soft danger card, never a border. */
 .settings-page-polish .settings-core > div > div > button:last-of-type {
   border: 0 !important;
-  box-shadow: none !important;
+  border-radius: 1rem !important;
+  background: color-mix(in srgb, var(--danger), transparent 92%) !important;
+  box-shadow: 0 8px 20px color-mix(in srgb, var(--danger) 10%, transparent) !important;
 }
 
-/* Avoid card-like surfaces returning in dark mode. */
+/* Dark mode keeps the same card hierarchy without outlines. */
 .dark .settings-page-polish .finance-panel,
 .dark .settings-page-polish .summary-card {
   border: 0 !important;
-  background: transparent !important;
-  box-shadow: none !important;
+  background: color-mix(
+    in srgb,
+    var(--surface-primary),
+    var(--surface-secondary) 26%
+  ) !important;
+  box-shadow:
+    0 1px 1px rgb(0 0 0 / 0.12),
+    0 12px 30px rgb(0 0 0 / 0.22) !important;
 }
