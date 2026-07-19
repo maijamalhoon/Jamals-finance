@@ -131,6 +131,39 @@
     filter 130ms ease !important;
 }
 
+/* Dark mode uses deeper, cleaner semantic tones without changing light mode. */
+.dark [data-dashboard-shell]
+  .dashboard-quick-action
+  .dashboard-quick-action-icon[data-tone="income"] {
+  background: #2eb889 !important;
+}
+
+.dark [data-dashboard-shell]
+  .dashboard-quick-action
+  .dashboard-quick-action-icon[data-tone="expense"] {
+  background: #e8736d !important;
+}
+
+.dark [data-dashboard-shell]
+  .dashboard-quick-action
+  .dashboard-quick-action-icon[data-tone="transfer"] {
+  background: #5b91d1 !important;
+}
+
+.dark [data-dashboard-shell]
+  .dashboard-quick-action
+  .dashboard-quick-action-icon[data-tone="investment"] {
+  background: #8d72d6 !important;
+}
+
+/* Slightly stronger Lucide strokes for only these four quick-action glyphs. */
+[data-dashboard-shell]
+  .dashboard-quick-action
+  .dashboard-quick-action-icon
+  > .dashboard-quick-action-glyph {
+  stroke-width: 2.6 !important;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .dashboard-quick-action,
   .dashboard-quick-action .dashboard-quick-action-icon {
