@@ -10,6 +10,7 @@ import {
 import {
   buildDeterministicFinanceAnswer,
   parseDeterministicFinanceQuestion,
+  parseFinanceDateRange,
   type DeterministicFinanceData,
   type DeterministicFinanceIntent,
   type FinancePayableRecord,
@@ -19,6 +20,9 @@ import { POST as postFallbackChat } from "../chat/route";
 import { NextRequest, NextResponse } from "next/server";
 
 export const dynamic = "force-dynamic";
+
+const CHAT_CONTEXT_COOKIE = "jamals_finance_chat_context";
+const CHAT_CONTEXT_MAX_AGE = 60 * 30;
 
 type CurrencyContext = {
   currency: SupportedCurrency;
@@ -31,6 +35,11 @@ type RawPayable = {
   status?: string | null;
 };
 
+type DirectChatAnswer = {
+  answer: string;
+  followUps: string[];
+};
+
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;
 }
@@ -38,6 +47,14 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 function toNumber(value: number | string | null | undefined) {
   const parsed = Number(value);
   return Number.isFinite(parsed) ? parsed : 0;
+}
+
+function normalizeQuestion(value: string) {
+  return value
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
 function getCurrencyContext(body: unknown): CurrencyContext {
@@ -66,6 +83,122 @@ function jsonResponse(payload: Record<string, unknown>, status = 200) {
     status,
     headers: { "Cache-Control": "no-store" },
   });
+}
+
+function getStoredFinanceQuestion(request: NextRequest) {
+  const encoded = request.cookies.get(CHAT_CONTEXT_COOKIE)?.value;
+  if (!encoded) return "";
+
+  try {
+    return decodeURIComponent(encoded).replace(/\s+/g, " ").trim().slice(0, 500);
+  } catch {
+    return "";
+  }
+}
+
+function rememberFinanceQuestion(
+  response: NextResponse,
+  resolvedQuestion: string,
+) {
+  response.cookies.set({
+    name: CHAT_CONTEXT_COOKIE,
+    value: encodeURIComponent(resolvedQuestion.slice(0, 500)),
+    httpOnly: true,
+    sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
+    path: "/",
+    maxAge: CHAT_CONTEXT_MAX_AGE,
+  });
+
+  return response;
+}
+
+function getDirectChatAnswer(question: string): DirectChatAnswer | null {
+  const normalized = normalizeQuestion(question);
+
+  const asksHowToAddIncome =
+    /\b(how|where|steps?|way|can i)\b.*\b(add|record|create|enter)\b.*\b(income|earning|earnings)\b/.test(
+      normalized,
+    ) ||
+    /\b(add|record|create|enter)\b.*\b(income|earning|earnings)\b.*\b(how|where)\b/.test(
+      normalized,
+    );
+
+  if (asksHowToAddIncome) {
+    return {
+      answer:
+        "Open the Income page from the dashboard navigation, tap Add Income, enter the amount, source, account, and date, then save it. The new entry will appear in Income and Transactions.",
+      followUps: [
+        "How much did I earn this month?",
+        "How many income entries do I have?",
+      ],
+    };
+  }
+
+  if (/^(hi|hey|hello|salam|assalam o alaikum|assalamualaikum)$/.test(normalized)) {
+    return {
+      answer:
+        "Hi! Ask me for an exact spending, income, account, payable, or investment calculation. You can include a date, week, month, year, category, or asset name.",
+      followUps: [
+        "How much did I spend this month?",
+        "How many assets do I have and what are their names?",
+      ],
+    };
+  }
+
+  if (/^(uff+|ugh+|hmm+|oh no|not correct|wrong)$/.test(normalized)) {
+    return {
+      answer:
+        "Sorry, that answer did not follow your question correctly. Ask the full finance question again, or give only the missing date or category and I will apply it to your previous finance question.",
+      followUps: [
+        "How much did I spend on July 16, 2026?",
+        "How many assets do I have and what are their names?",
+      ],
+    };
+  }
+
+  return null;
+}
+
+function resolveFinanceQuestion(
+  question: string,
+  previousQuestion: string,
+  now: ReturnType<typeof getAppDateParts>,
+) {
+  const directIntent = parseDeterministicFinanceQuestion(question, now);
+  if (directIntent) {
+    return { resolvedQuestion: question, intent: directIntent };
+  }
+
+  if (!previousQuestion) {
+    return { resolvedQuestion: question, intent: null };
+  }
+
+  const normalized = normalizeQuestion(question);
+  const hasStandaloneRange = Boolean(parseFinanceDateRange(question, now));
+  const looksLikeFollowUp =
+    hasStandaloneRange ||
+    /^(i am asking|im asking|i mean|for|on|in|about|same|the same|that|this|what about)\b/.test(
+      normalized,
+    ) ||
+    /\b(all time|same date|same day|same week|same month|same year|that date|that day|that period)\b/.test(
+      normalized,
+    );
+
+  if (!looksLikeFollowUp) {
+    return { resolvedQuestion: question, intent: null };
+  }
+
+  const resolvedQuestion = `${previousQuestion} ${question}`
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, 500);
+  const resolvedIntent = parseDeterministicFinanceQuestion(resolvedQuestion, now);
+
+  return {
+    resolvedQuestion: resolvedIntent ? resolvedQuestion : question,
+    intent: resolvedIntent,
+  };
 }
 
 function createFallbackRequest(request: NextRequest, body: unknown) {
@@ -171,13 +304,31 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const intent = parseDeterministicFinanceQuestion(
+  const directAnswer = getDirectChatAnswer(question);
+  if (directAnswer) {
+    return jsonResponse({
+      provider: "local-conversation",
+      model: "finance-chat-conversation-v1",
+      aiAvailable: true,
+      fallback: false,
+      deterministic: true,
+      ...directAnswer,
+    });
+  }
+
+  const now = getAppDateParts();
+  const previousQuestion = getStoredFinanceQuestion(request);
+  const { resolvedQuestion, intent } = resolveFinanceQuestion(
     question,
-    getAppDateParts(),
+    previousQuestion,
+    now,
   );
 
   if (!intent) {
-    return postFallbackChat(createFallbackRequest(request, body));
+    const forwardedBody = isRecord(body)
+      ? { ...body, question: resolvedQuestion }
+      : { question: resolvedQuestion };
+    return postFallbackChat(createFallbackRequest(request, forwardedBody));
   }
 
   try {
@@ -201,7 +352,7 @@ export async function POST(request: NextRequest) {
     const data = await getExactFinanceData(supabase, intent);
     const calculated = buildDeterministicFinanceAnswer({
       intent,
-      question,
+      question: resolvedQuestion,
       data,
       money: (value) =>
         formatMoney(value, {
@@ -210,14 +361,18 @@ export async function POST(request: NextRequest) {
         }),
     });
 
-    return jsonResponse({
-      provider: "local-calculator",
-      model: "exact-finance-ledger-v2",
-      aiAvailable: true,
-      fallback: false,
-      deterministic: true,
-      ...calculated,
-    });
+    return rememberFinanceQuestion(
+      jsonResponse({
+        provider: "local-calculator",
+        model: "exact-finance-ledger-v3",
+        aiAvailable: true,
+        fallback: false,
+        deterministic: true,
+        contextual: resolvedQuestion !== question,
+        ...calculated,
+      }),
+      resolvedQuestion,
+    );
   } catch (error) {
     console.error("Exact finance chat calculation failed", {
       name: error instanceof Error ? error.name : "UnknownError",
