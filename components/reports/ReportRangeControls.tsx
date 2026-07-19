@@ -1,7 +1,12 @@
 "use client";
 
 import { useEffect, useState, useTransition } from "react";
-import { CalendarRange, Printer } from "lucide-react";
+import {
+  CalendarDays,
+  CalendarRange,
+  ChevronDown,
+  Printer,
+} from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 import { BackgroundRefreshStatus } from "@/components/loading/LoadingPrimitives";
@@ -71,49 +76,75 @@ export default function ReportRangeControls({
   }
 
   return (
-    <div className="finance-panel min-w-0 p-3 print:hidden sm:p-4" aria-busy={pending || undefined}>
+    <div
+      className="finance-panel min-w-0 p-3 print:hidden sm:p-4"
+      aria-busy={pending || undefined}
+    >
       <div className="flex min-w-0 flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
         <div className="grid min-w-0 flex-1 gap-3 sm:grid-cols-3">
           <label className="space-y-1.5">
-            <span className="text-xs font-semibold text-text-secondary">Report period</span>
-            <select
-              value={selectedPeriod}
-              onChange={(event) => selectPeriod(event.target.value as ReportPeriod)}
-              className="finance-control finance-focus h-11 w-full px-3 text-sm text-text-primary outline-none"
-            >
-              <option value="week">Weekly report</option>
-              <option value="month">Monthly report</option>
-              <option value="sixMonth">Six-month report</option>
-              <option value="year">Year-to-date report</option>
-              <option value="custom">Custom date report</option>
-            </select>
+            <span className="text-xs font-semibold text-text-secondary">
+              Report period
+            </span>
+            <div data-report-native-icon-control>
+              <select
+                value={selectedPeriod}
+                onChange={(event) =>
+                  selectPeriod(event.target.value as ReportPeriod)
+                }
+                className="finance-control finance-focus h-11 w-full px-3 text-sm text-text-primary outline-none"
+              >
+                <option value="week">Weekly report</option>
+                <option value="month">Monthly report</option>
+                <option value="sixMonth">Six-month report</option>
+                <option value="year">Year-to-date report</option>
+                <option value="custom">Custom date report</option>
+              </select>
+              <ChevronDown aria-hidden="true" size={16} />
+            </div>
           </label>
 
           {selectedPeriod === "custom" ? (
             <>
               <label className="space-y-1.5">
-                <span className="text-xs font-semibold text-text-secondary">From</span>
-                <input
-                  type="date"
-                  value={customStart}
-                  onChange={(event) => setCustomStart(event.target.value)}
-                  className="finance-control finance-focus h-11 w-full px-3 text-sm text-text-primary outline-none"
-                />
+                <span className="text-xs font-semibold text-text-secondary">
+                  From
+                </span>
+                <div data-report-native-icon-control>
+                  <input
+                    type="date"
+                    value={customStart}
+                    onChange={(event) => setCustomStart(event.target.value)}
+                    className="finance-control finance-focus h-11 w-full px-3 text-sm text-text-primary outline-none"
+                  />
+                  <CalendarDays aria-hidden="true" size={16} />
+                </div>
               </label>
               <label className="space-y-1.5">
-                <span className="text-xs font-semibold text-text-secondary">To</span>
-                <input
-                  type="date"
-                  value={customEnd}
-                  onChange={(event) => setCustomEnd(event.target.value)}
-                  className="finance-control finance-focus h-11 w-full px-3 text-sm text-text-primary outline-none"
-                />
+                <span className="text-xs font-semibold text-text-secondary">
+                  To
+                </span>
+                <div data-report-native-icon-control>
+                  <input
+                    type="date"
+                    value={customEnd}
+                    onChange={(event) => setCustomEnd(event.target.value)}
+                    className="finance-control finance-focus h-11 w-full px-3 text-sm text-text-primary outline-none"
+                  />
+                  <CalendarDays aria-hidden="true" size={16} />
+                </div>
               </label>
             </>
           ) : (
             <div className="finance-panel-soft flex min-h-11 items-center gap-2 px-3 text-xs text-text-secondary sm:col-span-2">
-              <CalendarRange aria-hidden="true" size={15} className="shrink-0 text-info" />
-              <span>{start} to {end}</span>
+              <CalendarRange
+                aria-hidden="true"
+                size={15}
+                className="shrink-0 text-info"
+              />
+              <span>
+                {start} to {end}
+              </span>
             </div>
           )}
         </div>
@@ -124,7 +155,11 @@ export default function ReportRangeControls({
               Apply range
             </Button>
           ) : null}
-          <Button type="button" variant="outline" onClick={() => window.print()}>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => window.print()}
+          >
             <Printer aria-hidden="true" size={15} />
             Print report
           </Button>
@@ -135,7 +170,10 @@ export default function ReportRangeControls({
         {error ? (
           <p className="text-xs font-medium text-danger">{error}</p>
         ) : (
-          <BackgroundRefreshStatus refreshing={pending} label="Preparing report..." />
+          <BackgroundRefreshStatus
+            refreshing={pending}
+            label="Preparing report..."
+          />
         )}
       </div>
     </div>
