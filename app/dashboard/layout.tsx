@@ -59,6 +59,8 @@ import "./mobile-header-control-fixes.css";
 import "./dashboard-card-label-unify.css";
 // Quick-action centering and button-origin form launch are intentionally the final overrides.
 import "./quick-actions-launch.css";
+// Standalone Lucide icons stay borderless while retaining their authored size and controls.
+import "./icon-surface-cleanup.css";
 
 export const dynamic = "force-dynamic";
 
