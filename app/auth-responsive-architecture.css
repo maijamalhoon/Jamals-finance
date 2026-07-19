@@ -1,0 +1,563 @@
+/*
+ * Responsive authentication architecture.
+ *
+ * This layer is intentionally limited to the minimal authentication shell used
+ * by login, sign-up, password recovery, and reset-password states. It changes
+ * presentation only; form state, validation, navigation, and Supabase logic are
+ * untouched.
+ */
+
+.jf-auth-root[data-auth-minimal="true"] {
+  --auth-header-height: 58px;
+  --auth-footer-height: 34px;
+  --auth-card-width: 432px;
+  --auth-card-radius: 20px;
+  --auth-card-padding-x: 26px;
+  --auth-card-padding-y: 25px;
+  --auth-form-offset: clamp(92px, 15vh, 144px);
+  width: 100%;
+  height: 100dvh;
+  min-height: 100svh;
+  overflow: hidden;
+  background: var(--background);
+}
+
+.jf-auth-root[data-auth-minimal="true"] .jf-auth-header {
+  position: relative;
+  z-index: 2;
+  width: min(100%, 1120px);
+  height: var(--auth-header-height);
+  min-height: var(--auth-header-height);
+  padding: 0 clamp(16px, 3vw, 30px);
+  border: 0;
+  background: transparent;
+}
+
+.jf-auth-root[data-auth-minimal="true"] .jf-auth-brand {
+  gap: 10px;
+  color: var(--text-primary);
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+}
+
+.jf-auth-root[data-auth-minimal="true"] .jf-auth-brand-mark {
+  width: 34px;
+  height: 34px;
+  border: 0;
+  border-radius: 11px;
+  background: var(--primary-soft);
+  box-shadow: none;
+}
+
+.jf-auth-root[data-auth-minimal="true"] .jf-auth-brand-mark svg {
+  width: 19px;
+  height: 19px;
+}
+
+.jf-auth-root[data-auth-minimal="true"] .jf-auth-home-link {
+  min-height: 38px;
+  padding-inline: 9px;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  font-size: 13px;
+}
+
+.jf-auth-root[data-auth-minimal="true"] .jf-auth-layout,
+.jf-auth-root[data-auth-minimal="true"] .jf-auth-layout-compact {
+  width: 100%;
+  min-height: 0;
+  flex: 1 1 auto;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: var(--auth-form-offset) 16px 22px;
+  overflow: hidden;
+}
+
+.jf-auth-root[data-auth-minimal="true"] .jf-auth-card {
+  width: min(100%, var(--auth-card-width));
+  max-width: var(--auth-card-width);
+  max-height: 100%;
+  min-width: 0;
+  padding: var(--auth-card-padding-y) var(--auth-card-padding-x);
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: none;
+  border: 0;
+  border-radius: var(--auth-card-radius);
+  background: var(--surface-primary);
+  box-shadow: 0 18px 46px rgb(15 23 42 / 0.1);
+}
+
+.jf-auth-root[data-auth-minimal="true"] .jf-auth-card::-webkit-scrollbar {
+  display: none;
+}
+
+.dark .jf-auth-root[data-auth-minimal="true"] .jf-auth-card {
+  box-shadow: 0 18px 46px rgb(0 0 0 / 0.24);
+}
+
+.jf-auth-root[data-auth-minimal="true"] .jf-auth-card-head {
+  margin-bottom: 16px;
+}
+
+.jf-auth-root[data-auth-minimal="true"] .jf-auth-card-meta {
+  margin-bottom: 7px;
+  gap: 10px;
+}
+
+.jf-auth-root[data-auth-minimal="true"] .jf-auth-card-labels {
+  gap: 6px 12px;
+}
+
+.jf-auth-root[data-auth-minimal="true"] .auth-eyebrow,
+.jf-auth-root[data-auth-minimal="true"] .auth-progress {
+  min-height: auto !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  font-size: 10.5px !important;
+  font-weight: 680 !important;
+  letter-spacing: 0.075em !important;
+  line-height: 1.2 !important;
+}
+
+.jf-auth-root[data-auth-minimal="true"] .jf-auth-card-head h1 {
+  max-width: 20ch;
+  margin: 0;
+  font-size: clamp(29px, 2.4vw, 34px) !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.05em !important;
+  line-height: 1.06 !important;
+  text-wrap: balance;
+}
+
+.jf-auth-root[data-auth-minimal="true"] .jf-auth-card-head p {
+  max-width: 48ch;
+  margin-top: 7px;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.jf-auth-root[data-auth-minimal="true"] .jf-auth-card-body,
+.jf-auth-root[data-auth-minimal="true"] .auth-step,
+.jf-auth-root[data-auth-minimal="true"] .jf-auth-card-body form,
+.jf-auth-root[data-auth-minimal="true"] .auth-field,
+.jf-auth-root[data-auth-minimal="true"] .auth-field-control {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.jf-auth-root[data-auth-minimal="true"] .jf-auth-card-body form > .auth-field + .auth-field,
+.jf-auth-root[data-auth-minimal="true"] .jf-auth-card-body form > .auth-field + label.auth-field,
+.jf-auth-root[data-auth-minimal="true"] .jf-auth-card-body form > label.auth-field + .auth-field,
+.jf-auth-root[data-auth-minimal="true"] .jf-auth-card-body form > label.auth-field + label.auth-field {
+  margin-top: 11px !important;
+}
+
+.jf-auth-root[data-auth-minimal="true"] .auth-field-label {
+  margin-bottom: 5px !important;
+  color: var(--text-secondary);
+  font-size: 11px !important;
+  font-weight: 650 !important;
+  letter-spacing: 0.04em;
+  line-height: 1.25;
+  text-transform: uppercase;
+}
+
+.jf-auth-root[data-auth-minimal="true"] .auth-input,
+.jf-auth-root[data-auth-minimal="true"] .auth-primary-action,
+.jf-auth-root[data-auth-minimal="true"] .auth-provider-action {
+  min-height: 47px !important;
+  height: 47px;
+  border-radius: 12px !important;
+}
+
+.jf-auth-root[data-auth-minimal="true"] .auth-input {
+  padding-inline: 14px !important;
+  border: 1px solid transparent !important;
+  background: var(--surface-secondary) !important;
+  box-shadow: none !important;
+  font-size: 15px !important;
+  font-weight: 500 !important;
+}
+
+.jf-auth-root[data-auth-minimal="true"] .auth-input-with-start {
+  padding-left: 44px !important;
+}
+
+.jf-auth-root[data-auth-minimal="true"] .auth-input-with-end {
+  padding-right: 52px !important;
+}
+
+.jf-auth-root[data-auth-minimal="true"] .auth-input-with-inline-action,
+.jf-auth-root[data-auth-minimal="true"] .auth-input[readonly] {
+  padding-right: 96px !important;
+}
+
+.jf-auth-root[data-auth-minimal="true"] .auth-field-icon {
+  left: 14px !important;
+  color: var(--text-muted);
+}
+
+.jf-auth-root[data-auth-minimal="true"] .auth-field-icon svg,
+.jf-auth-root[data-auth-minimal="true"] .auth-password-toggle svg {
+  width: 18px;
+  height: 18px;
+}
+
+.jf-auth-root[data-auth-minimal="true"] .auth-inline-field-action {
+  right: 7px !important;
+  min-width: 70px;
+  min-height: 34px !important;
+  padding-inline: 8px !important;
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  font-size: 12px !important;
+  font-weight: 680 !important;
+}
+
+.jf-auth-root[data-auth-minimal="true"] .auth-password-toggle {
+  right: 4px !important;
+  width: 38px !important;
+  height: 38px !important;
+  min-width: 38px !important;
+  min-height: 38px !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.jf-auth-root[data-auth-minimal="true"] .auth-field-message {
+  min-height: 0 !important;
+  padding-top: 3px !important;
+}
+
+.jf-auth-root[data-auth-minimal="true"] .auth-field-helper,
+.jf-auth-root[data-auth-minimal="true"] .auth-field-error {
+  font-size: 10.5px !important;
+  line-height: 1.35 !important;
+}
+
+.jf-auth-root[data-auth-minimal="true"] .auth-provider-action {
+  gap: 10px;
+  border: 0 !important;
+  background: var(--surface-secondary) !important;
+  box-shadow: none !important;
+  font-size: 14px !important;
+  font-weight: 650 !important;
+}
+
+.jf-auth-root[data-auth-minimal="true"] .auth-divider {
+  gap: 10px !important;
+  margin: 12px 0 !important;
+}
+
+.jf-auth-root[data-auth-minimal="true"] .auth-primary-action {
+  margin-top: 10px !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  font-size: 14px !important;
+  font-weight: 680 !important;
+}
+
+.jf-auth-root[data-auth-minimal="true"] .auth-step-back {
+  min-height: 30px !important;
+  margin: 0 0 7px !important;
+  padding: 0 4px !important;
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  font-size: 12px !important;
+}
+
+.jf-auth-root[data-auth-minimal="true"] .auth-mode-switch {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 3px 6px;
+  margin-top: 11px !important;
+  font-size: 12px !important;
+  line-height: 1.4 !important;
+}
+
+.jf-auth-root[data-auth-minimal="true"] .auth-mode-switch button {
+  margin-left: 0 !important;
+}
+
+.jf-auth-root[data-auth-minimal="true"] .auth-legal-copy {
+  margin-top: 6px !important;
+  font-size: 10px !important;
+  line-height: 1.35 !important;
+}
+
+.jf-auth-root[data-auth-minimal="true"] .auth-password-requirements {
+  margin-top: 7px !important;
+  padding: 8px 10px !important;
+  border: 0 !important;
+  border-radius: 11px !important;
+  background: var(--surface-secondary) !important;
+  box-shadow: none !important;
+}
+
+.jf-auth-root[data-auth-minimal="true"] .auth-password-requirements > div {
+  font-size: 11px !important;
+}
+
+.jf-auth-root[data-auth-minimal="true"] .auth-feedback {
+  margin-top: 7px !important;
+  padding: 8px 10px !important;
+  border: 0 !important;
+  border-radius: 11px !important;
+  box-shadow: none !important;
+  font-size: 10.5px !important;
+}
+
+.jf-auth-root[data-auth-minimal="true"] .jf-auth-footer {
+  height: var(--auth-footer-height);
+  min-height: var(--auth-footer-height);
+  padding-bottom: max(5px, env(safe-area-inset-bottom));
+  font-size: 10px;
+}
+
+@media (min-width: 1440px) {
+  .jf-auth-root[data-auth-minimal="true"] {
+    --auth-form-offset: clamp(126px, 17vh, 168px);
+  }
+
+  .jf-auth-root[data-auth-minimal="true"] .jf-auth-header {
+    width: min(100%, 1080px);
+  }
+}
+
+@media (min-width: 760px) and (max-width: 1023px) {
+  .jf-auth-root[data-auth-minimal="true"] {
+    --auth-header-height: 56px;
+    --auth-card-width: 430px;
+    --auth-form-offset: clamp(104px, 16vh, 138px);
+  }
+
+  .jf-auth-root[data-auth-minimal="true"] .jf-auth-header {
+    width: 100%;
+    padding-inline: 16px;
+  }
+
+  .jf-auth-root[data-auth-minimal="true"] .jf-auth-layout,
+  .jf-auth-root[data-auth-minimal="true"] .jf-auth-layout-compact {
+    padding-inline: 18px;
+  }
+}
+
+@media (max-width: 759px) {
+  .jf-auth-root[data-auth-minimal="true"] {
+    --auth-header-height: 48px;
+    --auth-footer-height: 0px;
+    --auth-card-width: 430px;
+    --auth-card-radius: 17px;
+    --auth-card-padding-x: 12px;
+    --auth-card-padding-y: 14px;
+    --auth-form-offset: clamp(96px, 19vh, 148px);
+  }
+
+  .jf-auth-root[data-auth-minimal="true"] .jf-auth-header {
+    width: 100%;
+    padding-inline: 10px !important;
+  }
+
+  .jf-auth-root[data-auth-minimal="true"] .jf-auth-brand {
+    gap: 8px;
+    font-size: 13px !important;
+  }
+
+  .jf-auth-root[data-auth-minimal="true"] .jf-auth-brand-mark {
+    width: 32px;
+    height: 32px;
+    border-radius: 10px;
+  }
+
+  .jf-auth-root[data-auth-minimal="true"] .jf-auth-brand-mark svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  .jf-auth-root[data-auth-minimal="true"] .jf-auth-home-link {
+    width: 36px;
+    min-width: 36px;
+    height: 36px;
+    min-height: 36px;
+    justify-content: center;
+    padding: 0 !important;
+  }
+
+  .jf-auth-root[data-auth-minimal="true"] .jf-auth-home-link span {
+    display: none;
+  }
+
+  .jf-auth-root[data-auth-minimal="true"] .jf-auth-layout,
+  .jf-auth-root[data-auth-minimal="true"] .jf-auth-layout-compact {
+    padding-right: 4px !important;
+    padding-bottom: max(8px, env(safe-area-inset-bottom)) !important;
+    padding-left: 4px !important;
+  }
+
+  .jf-auth-root[data-auth-minimal="true"] .jf-auth-card {
+    width: 100% !important;
+    max-width: var(--auth-card-width) !important;
+    padding: var(--auth-card-padding-y) var(--auth-card-padding-x) !important;
+    border-radius: var(--auth-card-radius) !important;
+    box-shadow: 0 12px 32px rgb(15 23 42 / 0.1) !important;
+  }
+
+  .dark .jf-auth-root[data-auth-minimal="true"] .jf-auth-card {
+    box-shadow: 0 12px 32px rgb(0 0 0 / 0.22) !important;
+  }
+
+  .jf-auth-root[data-auth-minimal="true"] .jf-auth-card-head {
+    margin-bottom: 11px !important;
+  }
+
+  .jf-auth-root[data-auth-minimal="true"] .jf-auth-card-meta {
+    margin-bottom: 5px !important;
+  }
+
+  .jf-auth-root[data-auth-minimal="true"] .auth-eyebrow,
+  .jf-auth-root[data-auth-minimal="true"] .auth-progress {
+    font-size: 9.5px !important;
+  }
+
+  .jf-auth-root[data-auth-minimal="true"] .jf-auth-card-head h1 {
+    max-width: 100%;
+    font-size: clamp(22px, 7vw, 27px) !important;
+    line-height: 1.04 !important;
+  }
+
+  .jf-auth-root[data-auth-minimal="true"] .jf-auth-card-head p {
+    display: none !important;
+  }
+
+  .jf-auth-root[data-auth-minimal="true"] .jf-auth-card-body form > .auth-field + .auth-field,
+  .jf-auth-root[data-auth-minimal="true"] .jf-auth-card-body form > .auth-field + label.auth-field,
+  .jf-auth-root[data-auth-minimal="true"] .jf-auth-card-body form > label.auth-field + .auth-field,
+  .jf-auth-root[data-auth-minimal="true"] .jf-auth-card-body form > label.auth-field + label.auth-field {
+    margin-top: 8px !important;
+  }
+
+  .jf-auth-root[data-auth-minimal="true"] .auth-input,
+  .jf-auth-root[data-auth-minimal="true"] .auth-primary-action,
+  .jf-auth-root[data-auth-minimal="true"] .auth-provider-action {
+    min-height: 44px !important;
+    height: 44px;
+    border-radius: 11px !important;
+  }
+
+  .jf-auth-root[data-auth-minimal="true"] .auth-input {
+    font-size: 14px !important;
+  }
+
+  .jf-auth-root[data-auth-minimal="true"] .auth-field-label {
+    margin-bottom: 4px !important;
+    font-size: 10px !important;
+  }
+
+  .jf-auth-root[data-auth-minimal="true"] .auth-divider {
+    margin-block: 9px !important;
+  }
+
+  .jf-auth-root[data-auth-minimal="true"] .auth-primary-action {
+    margin-top: 8px !important;
+  }
+
+  .jf-auth-root[data-auth-minimal="true"] .auth-mode-switch {
+    margin-top: 8px !important;
+    font-size: 11px !important;
+  }
+
+  .jf-auth-root[data-auth-minimal="true"] .auth-legal-copy {
+    margin-top: 5px !important;
+    font-size: 9px !important;
+  }
+
+  .jf-auth-root[data-auth-minimal="true"] .auth-step-back {
+    min-height: 28px !important;
+    margin-bottom: 5px !important;
+    font-size: 11px !important;
+  }
+
+  .jf-auth-root[data-auth-minimal="true"] .auth-field-helper,
+  .jf-auth-root[data-auth-minimal="true"] .auth-field-error,
+  .jf-auth-root[data-auth-minimal="true"] .auth-feedback {
+    font-size: 9.5px !important;
+  }
+
+  .jf-auth-root[data-auth-minimal="true"] .jf-auth-footer {
+    display: none !important;
+  }
+}
+
+@media (max-width: 420px) {
+  .jf-auth-root[data-auth-minimal="true"] {
+    --auth-card-padding-x: 11px;
+    --auth-card-padding-y: 13px;
+  }
+
+  .jf-auth-root[data-auth-minimal="true"] .jf-auth-brand span:last-child {
+    max-width: 190px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .jf-auth-root[data-auth-minimal="true"] .auth-input-with-inline-action,
+  .jf-auth-root[data-auth-minimal="true"] .auth-input[readonly] {
+    padding-right: 91px !important;
+  }
+}
+
+@media (max-width: 759px) and (max-height: 620px) {
+  .jf-auth-root[data-auth-minimal="true"] {
+    --auth-header-height: 46px;
+    --auth-form-offset: 12px;
+  }
+
+  .jf-auth-root[data-auth-minimal="true"] .jf-auth-layout,
+  .jf-auth-root[data-auth-minimal="true"] .jf-auth-layout-compact {
+    padding-bottom: max(6px, env(safe-area-inset-bottom)) !important;
+  }
+
+  .jf-auth-root[data-auth-minimal="true"] .jf-auth-card {
+    padding-top: 11px !important;
+    padding-bottom: 11px !important;
+  }
+
+  .jf-auth-root[data-auth-minimal="true"] .jf-auth-card-head {
+    margin-bottom: 8px !important;
+  }
+
+  .jf-auth-root[data-auth-minimal="true"] .jf-auth-card-head h1 {
+    font-size: 21px !important;
+  }
+
+  .jf-auth-root[data-auth-minimal="true"] .auth-legal-copy,
+  .jf-auth-root[data-auth-minimal="true"] .auth-field-helper {
+    display: none !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .jf-auth-root[data-auth-minimal="true"] *,
+  .jf-auth-root[data-auth-minimal="true"] *::before,
+  .jf-auth-root[data-auth-minimal="true"] *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
