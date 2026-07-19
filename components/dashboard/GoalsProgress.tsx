@@ -1,9 +1,9 @@
 "use client";
 
-import Link from "next/link";
 import { useMemo, type CSSProperties, type ReactNode } from "react";
 import { CheckCircle2, Target } from "lucide-react";
 
+import DashboardCardViewLink from "@/components/dashboard/DashboardCardViewLink";
 import { useCurrency } from "@/components/currency/CurrencyProvider";
 import {
   getDistinctGoalPresentationAssignments,
@@ -229,6 +229,8 @@ export default function GoalsProgress({
     );
   }
 
+  const viewLabel = hasHiddenGoals ? "View all goals" : "View goal details";
+
   return (
     <section className="finance-reference-card motion-card-entry flex h-full min-h-[300px] min-w-0 flex-col overflow-hidden p-4 sm:p-5">
       <div className="flex min-w-0 items-start justify-between gap-3">
@@ -242,9 +244,7 @@ export default function GoalsProgress({
         </div>
 
         {status === "available" && goals.length > 0 ? (
-          <Link href="/dashboard/goals" className="dashboard-list-card-action">
-            {hasHiddenGoals ? "View all" : "Details"}
-          </Link>
+          <DashboardCardViewLink href="/dashboard/goals" label={viewLabel} />
         ) : null}
       </div>
 
