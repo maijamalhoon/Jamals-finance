@@ -12,6 +12,7 @@ import "./light-background-tuning.css";
 import "./interaction-lock.css";
 import "./auth-control-alignment.css";
 import "./scrollbar-visibility.css";
+import "./public-icon-surface-cleanup.css";
 import { Toaster } from "sonner";
 import MotionProvider from "@/components/motion/MotionProvider";
 import { CURRENCY_STORAGE_KEY } from "@/lib/currency";
