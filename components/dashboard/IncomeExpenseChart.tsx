@@ -137,7 +137,11 @@ export default function IncomeExpenseChart({
   useEffect(() => {
     setIsAmbientMotionReady(false);
 
-    if (!hasCashFlow || window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    if (
+      status !== "available" ||
+      !hasCashFlow ||
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    ) {
       return;
     }
 
@@ -175,7 +179,7 @@ export default function IncomeExpenseChart({
       window.cancelAnimationFrame(secondFrame);
       window.clearTimeout(delayTimer);
     };
-  }, [hasCashFlow, range, visibleRows]);
+  }, [hasCashFlow, range, status, visibleRows]);
 
   return (
     <section className="finance-reference-card motion-card-entry flex h-full min-h-[286px] min-w-0 flex-col overflow-hidden p-3.5 sm:min-h-[300px] sm:p-5">
@@ -203,10 +207,7 @@ export default function IncomeExpenseChart({
               type="button"
               aria-label={`Show ${label} cash flow`}
               aria-pressed={range === value}
-              onClick={() => {
-                setIsAmbientMotionReady(false);
-                setRange(value);
-              }}
+              onClick={() => setRange(value)}
               className={`finance-focus min-h-8 min-w-10 rounded-[8px] px-2.5 text-[10px] font-semibold tracking-[0.02em] transition-[background-color,color,box-shadow,transform] duration-200 ease-out active:scale-[0.97] sm:min-h-9 sm:min-w-11 sm:rounded-[9px] sm:px-3 sm:text-[11px] ${
                 range === value
                   ? "bg-surface-primary text-text-primary shadow-[0_1px_3px_rgba(15,23,42,0.12)]"
