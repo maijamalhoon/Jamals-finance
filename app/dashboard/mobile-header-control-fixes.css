@@ -3,6 +3,23 @@
  * UI-only: search, sidebar drawer, notification/profile, and scroll reveal behavior stay unchanged.
  */
 
+/* Notification trigger stays a clean icon-only action on every viewport. */
+html body [data-notification-trigger] {
+  position: relative !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+html body [data-notification-trigger]:hover,
+html body [data-notification-trigger]:focus-visible,
+html body [data-notification-trigger]:active {
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
 @media (max-width: 1023px) {
   /* Keep search neutral while closed; brand colour only communicates the active state. */
   form[data-mobile-control-cluster][role="search"] > button:first-child {
@@ -38,10 +55,6 @@
   }
 
   /* Plain Lucide Bell only: no dot, no ringing marks, with a stronger outline. */
-  html body [data-mobile-control-cluster] [data-notification-trigger] {
-    position: relative !important;
-  }
-
   html body [data-mobile-control-cluster] [data-notification-trigger] svg {
     display: none !important;
     visibility: hidden !important;
@@ -67,12 +80,8 @@
   }
 }
 
-/* Desktop header now uses the exact same plain Lucide Bell as mobile. */
+/* Desktop header uses the exact same plain Lucide Bell as mobile. */
 @media (min-width: 1024px) {
-  html body [data-notification-trigger] {
-    position: relative !important;
-  }
-
   html body [data-notification-trigger] > svg {
     display: none !important;
     visibility: hidden !important;
