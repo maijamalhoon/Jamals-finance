@@ -47,6 +47,8 @@ const CARD_SELECTORS = [
   ".jf-final-cta",
 ].join(",");
 
+const MAX_STAGGER_ORDER = 6;
+
 type ScrollDirection = "up" | "down";
 
 export default function LandingScrollReveal() {
@@ -68,20 +70,29 @@ export default function LandingScrollReveal() {
         ? "card"
         : "soft";
       element.style.setProperty("--landing-reveal-order", "0");
+      element.style.setProperty("--landing-reveal-order-up", "0");
     });
 
     STAGGER_GROUPS.forEach((selector) => {
-      root.querySelectorAll<HTMLElement>(selector).forEach((element, index) => {
+      const group = Array.from(root.querySelectorAll<HTMLElement>(selector));
+
+      group.forEach((element, index) => {
         element.style.setProperty(
           "--landing-reveal-order",
-          String(Math.min(index, 7)),
+          String(Math.min(index, MAX_STAGGER_ORDER)),
+        );
+        element.style.setProperty(
+          "--landing-reveal-order-up",
+          String(Math.min(group.length - index - 1, MAX_STAGGER_ORDER)),
         );
       });
     });
 
     root.classList.add("landing-reveal-ready");
+    root.dataset.landingScrollDirection = "down";
 
-    let observer: IntersectionObserver | null = null;
+    let revealObserver: IntersectionObserver | null = null;
+    let resetObserver: IntersectionObserver | null = null;
     let frame = 0;
     let lastScrollY = window.scrollY;
     let scrollDirection: ScrollDirection = "down";
@@ -99,36 +110,57 @@ export default function LandingScrollReveal() {
       revealItems.forEach((element) => reveal(element, "down"));
     };
 
-    const setupObserver = () => {
-      observer?.disconnect();
+    const setupObservers = () => {
+      revealObserver?.disconnect();
+      resetObserver?.disconnect();
 
       if (reducedMotionQuery.matches || !("IntersectionObserver" in window)) {
         revealEverything();
         return;
       }
 
-      observer = new IntersectionObserver(
+      const resetBuffer = window.innerHeight * 0.22;
+      revealItems.forEach((element) => {
+        const bounds = element.getBoundingClientRect();
+        const isFarOutsideViewport =
+          bounds.bottom < -resetBuffer ||
+          bounds.top > window.innerHeight + resetBuffer;
+
+        if (isFarOutsideViewport) conceal(element);
+      });
+
+      // Reveals happen inside the visible viewport so the user sees the full motion.
+      revealObserver = new IntersectionObserver(
         (entries) => {
           entries.forEach((entry) => {
-            const element = entry.target as HTMLElement;
-
-            if (entry.isIntersecting) {
-              reveal(element, scrollDirection);
-              return;
-            }
-
-            // Reset only after the component has fully left the buffered viewport.
-            // It can then replay naturally when reached again from either direction.
-            conceal(element);
+            if (!entry.isIntersecting) return;
+            reveal(entry.target as HTMLElement, scrollDirection);
           });
         },
         {
-          threshold: 0.01,
-          rootMargin: "5% 0px 5% 0px",
+          threshold: 0.06,
+          rootMargin: "-3% 0px -7% 0px",
         },
       );
 
-      revealItems.forEach((element) => observer?.observe(element));
+      // Reset farther outside the viewport to prevent flicker at screen edges.
+      resetObserver = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) return;
+            conceal(entry.target as HTMLElement);
+          });
+        },
+        {
+          threshold: 0,
+          rootMargin: "22% 0px 22% 0px",
+        },
+      );
+
+      revealItems.forEach((element) => {
+        revealObserver?.observe(element);
+        resetObserver?.observe(element);
+      });
     };
 
     const updateScrollState = () => {
@@ -136,7 +168,7 @@ export default function LandingScrollReveal() {
       const nextScrollY = window.scrollY;
       const delta = nextScrollY - lastScrollY;
 
-      if (Math.abs(delta) > 3) {
+      if (Math.abs(delta) > 2) {
         scrollDirection = delta > 0 ? "down" : "up";
         root.dataset.landingScrollDirection = scrollDirection;
         lastScrollY = nextScrollY;
@@ -155,20 +187,26 @@ export default function LandingScrollReveal() {
       frame = window.requestAnimationFrame(updateScrollState);
     };
 
+    const onResize = () => {
+      onScroll();
+      setupObservers();
+    };
+
     const onReducedMotionChange = () => {
-      setupObserver();
+      setupObservers();
     };
 
     updateScrollState();
-    setupObserver();
+    setupObservers();
     window.addEventListener("scroll", onScroll, { passive: true });
-    window.addEventListener("resize", onScroll, { passive: true });
+    window.addEventListener("resize", onResize, { passive: true });
     reducedMotionQuery.addEventListener("change", onReducedMotionChange);
 
     return () => {
-      observer?.disconnect();
+      revealObserver?.disconnect();
+      resetObserver?.disconnect();
       window.removeEventListener("scroll", onScroll);
-      window.removeEventListener("resize", onScroll);
+      window.removeEventListener("resize", onResize);
       reducedMotionQuery.removeEventListener("change", onReducedMotionChange);
       if (frame) window.cancelAnimationFrame(frame);
 
@@ -178,6 +216,7 @@ export default function LandingScrollReveal() {
         delete element.dataset.landingRevealDirection;
         delete element.dataset.landingRevealVariant;
         element.style.removeProperty("--landing-reveal-order");
+        element.style.removeProperty("--landing-reveal-order-up");
       });
       root.classList.remove("landing-reveal-ready");
       delete root.dataset.landingScrollDirection;
