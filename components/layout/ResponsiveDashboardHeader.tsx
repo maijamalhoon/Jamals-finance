@@ -39,14 +39,14 @@ export default function ResponsiveDashboardHeader({
     return (
       <div
         aria-hidden="true"
-        className="min-h-0 shrink-0 print:hidden lg:min-h-[88px] lg:border-b lg:border-border lg:bg-surface-primary/95"
+        className="min-h-0 shrink-0 print:hidden lg:min-h-[88px]"
       />
     );
   }
 
   if (mode === "desktop") {
     return (
-      <div className="jf-dashboard-header-wrap shrink-0 print:hidden">
+      <div className="jf-dashboard-header-wrap shrink-0 print:hidden [&_.jf-desktop-header]:!bg-transparent [&_.jf-desktop-header>div]:!border-0">
         <DesktopHeader notificationSlot={notificationSlot} />
       </div>
     );
