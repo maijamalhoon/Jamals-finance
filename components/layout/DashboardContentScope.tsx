@@ -127,6 +127,7 @@ export default function DashboardContentScope({
   return (
     <div
       className={scopeClasses}
+      style={headingStyle}
       data-finance-content-typography={isTypographyPage ? "true" : undefined}
       data-finance-remaining-type-icons={
         isRemainingTypeIconPage ? "true" : undefined
@@ -135,22 +136,25 @@ export default function DashboardContentScope({
       data-jf-page={pageHeading?.key}
     >
       {pageHeading ? (
-        <>
-          <header
-            className="jf-unified-page-heading"
-            style={headingStyle}
-            aria-labelledby={`jf-${pageHeading.key}-page-title`}
-          >
-            <span className="jf-unified-page-accent" aria-hidden="true" />
-            <h1
-              id={`jf-${pageHeading.key}-page-title`}
-              className="jf-unified-page-title"
-            >
-              {pageHeading.label}
-            </h1>
-          </header>
+        isTransactionsPage ? (
           <div className="jf-unified-page-body">{children}</div>
-        </>
+        ) : (
+          <>
+            <header
+              className="jf-unified-page-heading"
+              aria-labelledby={`jf-${pageHeading.key}-page-title`}
+            >
+              <span className="jf-unified-page-accent" aria-hidden="true" />
+              <h1
+                id={`jf-${pageHeading.key}-page-title`}
+                className="jf-unified-page-title"
+              >
+                {pageHeading.label}
+              </h1>
+            </header>
+            <div className="jf-unified-page-body">{children}</div>
+          </>
+        )
       ) : (
         children
       )}
