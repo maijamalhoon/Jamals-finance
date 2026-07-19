@@ -190,23 +190,36 @@ export default function GoalsProgress({
   const viewLabel = hasHiddenGoals ? "View all goals" : "View goal details";
 
   return (
-    <section className="finance-reference-card motion-card-entry flex h-full min-h-[300px] min-w-0 flex-col overflow-hidden p-4 sm:p-5">
-      <div className="flex min-w-0 items-start justify-between gap-3">
-        <div className="flex min-w-0 items-center gap-2">
-          <span className="dashboard-list-card-kicker-icon">
-            <Target />
-          </span>
-          <h3 className="truncate text-[11px] font-bold uppercase tracking-[0.12em] text-text-secondary">
-            Goals Progress
-          </h3>
+    <>
+      <style>{`
+        @media (min-width: 768px) and (max-width: 1023.98px) {
+          .dashboard-overview .grid.items-stretch:has(> * > .dashboard-goals-progress-card) {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+          }
+
+          .dashboard-overview .grid.items-stretch:has(> * > .dashboard-goals-progress-card) > :first-child {
+            grid-column: 1 / -1;
+          }
+        }
+      `}</style>
+      <section className="dashboard-goals-progress-card finance-reference-card motion-card-entry flex h-full min-h-[300px] min-w-0 flex-col overflow-hidden p-4 sm:p-5">
+        <div className="flex min-w-0 items-start justify-between gap-3">
+          <div className="flex min-w-0 items-center gap-2">
+            <span className="dashboard-list-card-kicker-icon">
+              <Target />
+            </span>
+            <h3 className="truncate text-[11px] font-bold uppercase tracking-[0.12em] text-text-secondary">
+              Goals Progress
+            </h3>
+          </div>
+
+          {status === "available" && goals.length > 0 ? (
+            <DashboardCardViewLink href="/dashboard/goals" label={viewLabel} />
+          ) : null}
         </div>
 
-        {status === "available" && goals.length > 0 ? (
-          <DashboardCardViewLink href="/dashboard/goals" label={viewLabel} />
-        ) : null}
-      </div>
-
-      <div className="mt-4 flex min-h-0 flex-1 flex-col">{content}</div>
-    </section>
+        <div className="mt-4 flex min-h-0 flex-1 flex-col">{content}</div>
+      </section>
+    </>
   );
 }
