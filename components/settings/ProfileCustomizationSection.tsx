@@ -2,9 +2,9 @@
 
 import {
   Camera,
-  ChevronRight,
   ImageUp,
   Loader2,
+  Pencil,
   Save,
   UserRound,
 } from "lucide-react";
@@ -38,6 +38,11 @@ type ProfileCustomizationSectionProps = {
   email: string;
   displayName: string;
   avatarUrl: string | null;
+  stats: {
+    transactions: number | null;
+    categories: number | null;
+    accounts: number | null;
+  };
 };
 
 function getFallbackName(displayName: string, email: string) {
@@ -48,11 +53,16 @@ function getFallbackName(displayName: string, email: string) {
   );
 }
 
+function formatStat(value: number | null) {
+  return value === null ? "—" : new Intl.NumberFormat("en-PK").format(value);
+}
+
 export default function ProfileCustomizationSection({
   userId,
   email,
   displayName,
   avatarUrl,
+  stats,
 }: ProfileCustomizationSectionProps) {
   const router = useRouter();
   const supabase = createClient();
@@ -77,6 +87,28 @@ export default function ProfileCustomizationSection({
   useEffect(() => {
     setCurrentAvatarUrl(avatarUrl);
   }, [avatarUrl]);
+
+  useEffect(() => {
+    function handleProfileUpdate(event: Event) {
+      const detail = (
+        event as CustomEvent<{
+          displayName?: string;
+          avatarUrl?: string | null;
+        }>
+      ).detail;
+
+      if (detail?.displayName) {
+        setProfileName(detail.displayName);
+        setDraftName(detail.displayName);
+      }
+      if (detail && "avatarUrl" in detail) {
+        setCurrentAvatarUrl(detail.avatarUrl ?? null);
+      }
+    }
+
+    window.addEventListener("jamal-profile-updated", handleProfileUpdate);
+    return () => window.removeEventListener("jamal-profile-updated", handleProfileUpdate);
+  }, []);
 
   useEffect(() => {
     return () => {
@@ -180,44 +212,47 @@ export default function ProfileCustomizationSection({
   }
 
   const visibleAvatarUrl = previewUrl ?? currentAvatarUrl;
+  const accountStats = [
+    { label: "Transactions", value: stats.transactions },
+    { label: "Categories", value: stats.categories },
+    { label: "Accounts", value: stats.accounts },
+  ];
 
   return (
-    <div className="settings-profile-customization">
-      <section aria-labelledby="profile-settings-label">
-        <h2 id="profile-settings-label" className="settings-section-label">
-          Profile
-        </h2>
+    <div className="settings-profile-customization settings-account-overview">
+      <section aria-label="Account overview" className="settings-account-card">
+        <div className="settings-account-card-topline">
+          <Avatar className="settings-account-avatar">
+            {currentAvatarUrl ? (
+              <AvatarImage src={currentAvatarUrl} alt={profileName} />
+            ) : null}
+            <AvatarFallback className="settings-account-avatar-fallback">
+              <UserRound size={24} strokeWidth={2.35} aria-hidden="true" />
+            </AvatarFallback>
+          </Avatar>
 
-        <div className="finance-panel min-w-0 overflow-hidden">
+          <div className="settings-account-identity">
+            <span className="settings-account-name">{profileName}</span>
+            <span className="settings-account-email">{email}</span>
+          </div>
+
           <button
             type="button"
             onClick={() => setOpen(true)}
-            className="finance-focus flex w-full min-w-0 items-center gap-3 px-4 py-4 text-left transition-colors hover:bg-hover focus-visible:bg-hover sm:px-5"
+            className="finance-focus settings-account-edit"
           >
-            <Avatar className="size-11 shrink-0 border border-border bg-surface-secondary">
-              {currentAvatarUrl ? (
-                <AvatarImage src={currentAvatarUrl} alt={profileName} />
-              ) : null}
-              <AvatarFallback className="bg-surface-secondary text-text-primary">
-                <UserRound size={21} aria-hidden="true" />
-              </AvatarFallback>
-            </Avatar>
-
-            <span className="min-w-0 flex-1">
-              <span className="block text-[15px] font-semibold leading-5 text-text-primary">
-                Customize Profile
-              </span>
-              <span className="mt-0.5 block text-xs leading-5 text-text-secondary">
-                Upload a profile image and set your display name
-              </span>
-            </span>
-
-            <ChevronRight
-              size={18}
-              className="shrink-0 text-text-secondary"
-              aria-hidden="true"
-            />
+            <Pencil size={15} strokeWidth={2.35} aria-hidden="true" />
+            <span>Edit</span>
           </button>
+        </div>
+
+        <div className="settings-account-stats" aria-label="Account statistics">
+          {accountStats.map((stat) => (
+            <div key={stat.label} className="settings-account-stat">
+              <strong>{formatStat(stat.value)}</strong>
+              <span>{stat.label}</span>
+            </div>
+          ))}
         </div>
       </section>
 
@@ -240,7 +275,10 @@ export default function ProfileCustomizationSection({
               <div className="flex flex-col items-center gap-3 rounded-[var(--oneui-control-radius)] border border-border bg-surface-secondary px-4 py-5 text-center">
                 <Avatar className="size-24 border border-border bg-card shadow-theme">
                   {visibleAvatarUrl ? (
-                    <AvatarImage src={visibleAvatarUrl} alt={draftName || profileName} />
+                    <AvatarImage
+                      src={visibleAvatarUrl}
+                      alt={draftName || profileName}
+                    />
                   ) : null}
                   <AvatarFallback className="bg-card text-text-primary">
                     <UserRound size={36} aria-hidden="true" />
@@ -281,7 +319,10 @@ export default function ProfileCustomizationSection({
                 </p>
               </div>
 
-              <FinanceFormField label="Display name" htmlFor="custom-profile-name">
+              <FinanceFormField
+                label="Display name"
+                htmlFor="custom-profile-name"
+              >
                 <Input
                   id="custom-profile-name"
                   value={draftName}
@@ -301,7 +342,11 @@ export default function ProfileCustomizationSection({
                 className="min-h-[var(--oneui-control-height-lg)] w-full"
               >
                 {saving ? (
-                  <Loader2 size={17} className="animate-spin" aria-hidden="true" />
+                  <Loader2
+                    size={17}
+                    className="animate-spin"
+                    aria-hidden="true"
+                  />
                 ) : (
                   <Save size={17} aria-hidden="true" />
                 )}
