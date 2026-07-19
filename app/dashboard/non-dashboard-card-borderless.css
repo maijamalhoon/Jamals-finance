@@ -1,0 +1,147 @@
+/*
+ * Borderless content-card policy for primary dashboard routes only.
+ *
+ * The dashboard overview has no data-jf-page attribute, so it is intentionally
+ * excluded. This layer changes presentation only: content, controls, forms,
+ * charts, calculations and data behavior remain untouched.
+ */
+
+/* Remove visual borders, rings and outlines from card-like content surfaces. */
+[data-jf-page]
+  .jf-unified-page-body
+  :where(
+    .finance-panel,
+    .finance-panel-soft,
+    .finance-reference-card,
+    .summary-card,
+    .account-card-shell,
+    .settings-reference-section,
+    .expenses-summary-item,
+    .expenses-section,
+    .expenses-ledger,
+    .expenses-account-item,
+    [class*="-card"],
+    [class*="_card"],
+    [class*="-panel"],
+    [class*="_panel"],
+    [class*="-tile"],
+    [class*="_tile"],
+    [class*="-surface"],
+    [class*="_surface"]
+  ) {
+  border-color: transparent !important;
+  outline: 0 !important;
+  box-shadow: none !important;
+  --tw-ring-shadow: 0 0 #0000 !important;
+  --tw-ring-offset-shadow: 0 0 #0000 !important;
+}
+
+/* Keep the same borderless result during hover, focus-within and active states. */
+[data-jf-page]
+  .jf-unified-page-body
+  :where(
+    .finance-panel,
+    .finance-panel-soft,
+    .finance-reference-card,
+    .summary-card,
+    .account-card-shell,
+    .settings-reference-section,
+    .expenses-summary-item,
+    .expenses-section,
+    .expenses-ledger,
+    .expenses-account-item,
+    [class*="-card"],
+    [class*="_card"],
+    [class*="-panel"],
+    [class*="_panel"],
+    [class*="-tile"],
+    [class*="_tile"],
+    [class*="-surface"],
+    [class*="_surface"]
+  ):is(:hover, :focus, :focus-within, :active) {
+  border-color: transparent !important;
+  outline: 0 !important;
+  box-shadow: none !important;
+}
+
+/* Remove card-edge decorative strokes without changing any card content. */
+[data-jf-page]
+  .jf-unified-page-body
+  :where([class*="card-line"], [class*="card-outline"], [class*="panel-outline"]) {
+  border-color: transparent !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+/* Decorative Lucide icon wrappers become plain semantic icons. */
+[data-jf-page]
+  .jf-unified-page-body
+  :where(
+    .finance-icon-container,
+    .finance-icon-bubble,
+    .dashboard-list-card-kicker-icon,
+    .settings-reference-row-icon,
+    .settings-reference-theme-icon,
+    .profile-menu-icon,
+    [class*="icon-container"],
+    [class*="icon-bubble"],
+    [class*="icon-wrapper"],
+    [class*="icon-wrap"],
+    [class*="icon-shell"]
+  ):not([class*="avatar"]):not([class*="badge"]),
+[data-jf-page]
+  .jf-unified-page-body
+  :where(span, div):has(> svg.lucide:only-child):is(
+    [class*="rounded"],
+    [class*="border"],
+    [class*="bg-"],
+    [class*="shadow"]
+  ):not([class*="avatar"]):not([class*="badge"]):not([data-slot*="avatar"]) {
+  border-color: transparent !important;
+  outline: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+/* Account brand/logo wrappers follow the same plain-icon treatment. */
+[data-jf-page="accounts"]
+  .jf-unified-page-body
+  .account-card-shell
+  span:has(> img:only-child) {
+  border-color: transparent !important;
+  outline: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+/* Preserve the authored semantic color and size while polishing line quality. */
+[data-jf-page]
+  .jf-unified-page-body
+  :where(
+    .finance-icon-container,
+    .finance-icon-bubble,
+    .dashboard-list-card-kicker-icon,
+    .settings-reference-row-icon,
+    .settings-reference-theme-icon,
+    .profile-menu-icon,
+    span:has(> svg.lucide:only-child),
+    div:has(> svg.lucide:only-child)
+  )
+  > svg.lucide {
+  fill: none !important;
+  stroke: currentColor;
+  stroke-width: 2.35;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  shape-rendering: geometricPrecision;
+  vector-effect: non-scaling-stroke;
+}
+
+/* Transaction search and filter controls are intentionally not selected above. */
+[data-jf-page="transactions"]
+  .jf-unified-page-body
+  :where(form, nav, [role="search"], [data-transaction-filters]) {
+  isolation: isolate;
+}
