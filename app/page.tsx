@@ -8,7 +8,6 @@ import "./landing-polish.css";
 import "./landing-preview.css";
 import "./landing-sections.css";
 import "./landing-responsive.css";
-import "./landing-math-symbols.css";
 import "./landing-icon-typography.css";
 import "./landing-header-rounded.css";
 import "./landing-hero-motion.css";
