@@ -8,6 +8,7 @@ import { createClient } from "@/lib/supabase/client";
 import { getAppDateKey } from "@/lib/dates";
 import { BASE_CURRENCY } from "@/lib/currency";
 import { serializeCsv } from "@/lib/csv";
+import { downloadBlob } from "@/lib/client-download";
 
 export default function ExportButton({
   from,
@@ -112,16 +113,12 @@ export default function ExportButton({
       ];
 
       const csv = serializeCsv(rows);
-      const blob = new Blob(["\uFEFF", csv], { type: "text/csv;charset=utf-8;" });
-      const url = URL.createObjectURL(blob);
-      const anchor = document.createElement("a");
-      anchor.href = url;
+      const blob = new Blob(["\uFEFF", csv], {
+        type: "text/csv;charset=utf-8",
+      });
       const rangeSuffix = from && to ? `${from}-to-${to}` : getAppDateKey();
-      anchor.download = `jamals-finance-${rangeSuffix}.csv`;
-      anchor.click();
-      anchor.remove();
-      URL.revokeObjectURL(url);
-      toast.success("Export ready");
+      downloadBlob(blob, `jamals-finance-${rangeSuffix}.csv`);
+      toast.success("Export downloaded");
     } catch {
       toast.error("Could not export transactions. Please try again.");
     } finally {
