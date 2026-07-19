@@ -17,7 +17,7 @@
     gap: 0 !important;
     padding-inline-start: max(0.9rem, env(safe-area-inset-left));
     padding-inline-end: max(0.9rem, env(safe-area-inset-right));
-    transform: none !important;
+    transform: translateX(var(--quick-actions-center-offset, 0px)) !important;
   }
 
   @supports (width: 100dvw) {
