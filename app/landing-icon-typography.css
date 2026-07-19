@@ -95,3 +95,8 @@
   font-variant-numeric: tabular-nums lining-nums;
   font-feature-settings: "tnum" 1, "lnum" 1;
 }
+
+/* Hide workflow step counters while preserving the existing icons and layout. */
+.jf-node4-landing .jf-step-number {
+  display: none;
+}
