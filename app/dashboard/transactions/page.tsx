@@ -247,15 +247,15 @@ export default async function TransactionsPage({
         return sort === "highest" ? amountDifference : -amountDifference;
       }
 
-      const dateDifference =
-        transactionTime(right.date) - transactionTime(left.date);
-      if (dateDifference !== 0) {
-        return sort === "newest" ? dateDifference : -dateDifference;
-      }
-
       const createdDifference =
         transactionTime(right.created_at) - transactionTime(left.created_at);
-      return sort === "newest" ? createdDifference : -createdDifference;
+      if (createdDifference !== 0) {
+        return sort === "newest" ? createdDifference : -createdDifference;
+      }
+
+      const dateDifference =
+        transactionTime(right.date) - transactionTime(left.date);
+      return sort === "newest" ? dateDifference : -dateDifference;
     });
 
   const visibleLimit = cleanLimit(limit);
