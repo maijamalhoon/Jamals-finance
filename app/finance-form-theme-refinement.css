@@ -147,7 +147,6 @@ html:not(.dark) .finance-modal-content {
   height: var(--finance-control-height) !important;
   min-height: var(--finance-control-height) !important;
   max-height: var(--finance-control-height) !important;
-  border-color: var(--border) !important;
   border-radius: 0.9rem !important;
   background: var(--surface-inset) !important;
   color: var(--text-primary) !important;
@@ -212,6 +211,43 @@ html:not(.dark) .finance-modal-content {
 .dark .finance-modal-content .success-action,
 .dark .finance-modal-content .danger-action {
   color: #ffffff !important;
+}
+
+/*
+ * Borderless finance forms. Remove visible borders, separators and focus
+ * outlines throughout the shared finance modal system while retaining clear
+ * focus feedback through a restrained surface-color shift.
+ */
+.finance-modal-content,
+.finance-modal-content * {
+  border-color: transparent !important;
+  outline: none !important;
+}
+
+.finance-modal-content .field-input:focus,
+.finance-modal-content .field-input:focus-visible,
+.finance-modal-content [data-slot="select-trigger"]:focus,
+.finance-modal-content [data-slot="select-trigger"]:focus-visible,
+.finance-modal-content select.finance-control:focus,
+.finance-modal-content select.finance-control:focus-visible,
+.finance-modal-content textarea.field-input:focus,
+.finance-modal-content textarea.field-input:focus-visible,
+.finance-modal-content [role="listbox"].field-input:focus,
+.finance-modal-content [role="listbox"].field-input:focus-visible {
+  box-shadow: none !important;
+  background: color-mix(
+    in srgb,
+    var(--surface-inset),
+    var(--brand-accent) 5%
+  ) !important;
+}
+
+.finance-modal-content button:focus,
+.finance-modal-content button:focus-visible,
+.finance-modal-content [role="button"]:focus,
+.finance-modal-content [role="button"]:focus-visible {
+  outline: none !important;
+  box-shadow: none !important;
 }
 
 /*
