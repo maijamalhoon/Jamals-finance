@@ -37,7 +37,6 @@ const actions = [
     label: "Add Income",
     hint: "Record money in",
     icon: TrendingUp,
-    tone: "text-success",
     iconTone: "bg-success/10 text-success ring-success/15",
   },
   {
@@ -45,7 +44,6 @@ const actions = [
     label: "Add Expense",
     hint: "Track spending",
     icon: TrendingDown,
-    tone: "text-danger",
     iconTone: "bg-danger/10 text-danger ring-danger/15",
   },
   {
@@ -53,7 +51,6 @@ const actions = [
     label: "Add Investment",
     hint: "Grow portfolio",
     icon: BarChart2,
-    tone: "finance-investment-quick-dot",
     iconTone: "finance-investment-quick-icon",
   },
   {
@@ -61,7 +58,6 @@ const actions = [
     label: "Transfer Money",
     hint: "Move between accounts",
     icon: ArrowLeftRight,
-    tone: "text-info",
     iconTone: "bg-info/10 text-info ring-info/15",
   },
   {
@@ -69,7 +65,6 @@ const actions = [
     label: "Add Goal",
     hint: "Plan savings",
     icon: Target,
-    tone: "text-warning",
     iconTone: "bg-warning/10 text-warning ring-warning/15",
   },
 ] satisfies Array<{
@@ -77,7 +72,6 @@ const actions = [
   label: string;
   hint: string;
   icon: LucideIcon;
-  tone: string;
   iconTone: string;
 }>;
 
@@ -86,26 +80,26 @@ const motionEase = [0.16, 1, 0.3, 1] as const;
 const menuVariants: Variants = {
   initial: {
     opacity: 0,
-    y: 12,
-    scale: 0.96,
+    y: 10,
+    scale: 0.975,
   },
   animate: {
     opacity: 1,
     y: 0,
     scale: 1,
     transition: {
-      duration: 0.2,
+      duration: 0.18,
       ease: motionEase,
-      staggerChildren: 0.035,
-      delayChildren: 0.02,
+      staggerChildren: 0.025,
+      delayChildren: 0.015,
     },
   },
   exit: {
     opacity: 0,
-    y: 10,
-    scale: 0.97,
+    y: 8,
+    scale: 0.98,
     transition: {
-      duration: 0.16,
+      duration: 0.14,
       ease: motionEase,
     },
   },
@@ -114,24 +108,21 @@ const menuVariants: Variants = {
 const itemVariants: Variants = {
   initial: {
     opacity: 0,
-    y: 6,
-    x: 6,
+    y: 4,
   },
   animate: {
     opacity: 1,
     y: 0,
-    x: 0,
     transition: {
-      duration: 0.16,
+      duration: 0.14,
       ease: motionEase,
     },
   },
   exit: {
     opacity: 0,
-    y: 4,
-    x: 4,
+    y: 3,
     transition: {
-      duration: 0.12,
+      duration: 0.1,
       ease: motionEase,
     },
   },
@@ -184,6 +175,17 @@ export default function FloatingActions() {
     if (modalOpen) setOpen(false);
   }, [modalOpen]);
 
+  useEffect(() => {
+    if (!open) return;
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setOpen(false);
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [open]);
+
   function handleAction(key: ActionKey) {
     setOpen(false);
 
@@ -215,7 +217,7 @@ export default function FloatingActions() {
   return (
     <>
       <div
-        className={`jf-floating-actions fixed bottom-[calc(1rem+env(safe-area-inset-bottom))] right-3 z-40 flex flex-col items-end gap-3 transition-all duration-200 print:hidden sm:right-5 lg:bottom-8 lg:right-8 ${
+        className={`jf-floating-actions fixed bottom-[calc(1rem+env(safe-area-inset-bottom))] right-3 z-40 flex flex-col items-end gap-2.5 transition-all duration-200 print:hidden sm:right-5 lg:bottom-8 lg:right-8 ${
           modalOpen ? "pointer-events-none translate-y-2 opacity-0" : ""
         }`}
         aria-hidden={modalOpen ? "true" : undefined}
@@ -230,32 +232,30 @@ export default function FloatingActions() {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="fixed inset-0 -z-10 cursor-default bg-background/40 backdrop-blur-[1px] lg:bg-transparent lg:backdrop-blur-0"
+                className="fixed inset-0 -z-10 cursor-default bg-background/25 backdrop-blur-[2px] lg:bg-transparent lg:backdrop-blur-0"
               />
 
               <motion.div
                 id="quick-finance-actions"
-                role="group"
+                role="menu"
                 aria-label="Quick finance actions"
                 variants={menuVariants}
                 initial="initial"
                 animate="animate"
                 exit="exit"
                 className={[
-                  "w-[236px] origin-bottom-right overflow-hidden rounded-[22px]",
-                  "border border-border/80 bg-card/96 p-2.5 text-card-foreground",
+                  "w-[252px] origin-bottom-right overflow-hidden rounded-[20px]",
+                  "border border-border/70 bg-card/95 p-2 text-card-foreground",
                   "shadow-[var(--shadow-premium)] backdrop-blur-xl",
                 ].join(" ")}
               >
-                <div className="mb-2 flex items-center justify-between px-2 pt-1">
-                  <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-muted-foreground">
+                <div className="px-2.5 pb-1.5 pt-1">
+                  <p className="text-[12px] font-semibold leading-5 tracking-[-0.01em] text-muted-foreground">
                     Quick actions
                   </p>
-
-                  <span className="h-1.5 w-1.5 rounded-full bg-active" />
                 </div>
 
-                <div className="space-y-1.5">
+                <div className="space-y-1">
                   {actions.map((action) => {
                     const Icon = action.icon;
 
@@ -263,47 +263,33 @@ export default function FloatingActions() {
                       <motion.button
                         key={action.key}
                         type="button"
+                        role="menuitem"
                         variants={itemVariants}
-                        whileHover={{
-                          x: -2,
-                          y: -1,
-                        }}
-                        whileTap={{
-                          scale: 0.985,
-                        }}
+                        whileTap={{ scale: 0.985 }}
                         onClick={() => handleAction(action.key)}
                         className={[
-                          "finance-focus group flex w-full items-center gap-3 rounded-[16px] px-2.5 py-2.5 text-left",
-                          "border border-transparent bg-transparent transition-all duration-200",
-                          "hover:border-border hover:bg-muted/55 hover:shadow-[var(--shadow-soft)]",
-                          "active:bg-muted/70 dark:hover:border-border-strong dark:hover:bg-surface-tinted",
+                          "finance-focus group flex w-full items-center gap-3 rounded-[14px] px-2.5 py-2.5 text-left",
+                          "bg-transparent transition-colors duration-150",
+                          "hover:bg-muted/60 active:bg-muted/80 dark:hover:bg-surface-tinted",
                         ].join(" ")}
                       >
                         <span
                           className={[
-                            "grid h-9 w-9 shrink-0 place-items-center rounded-[13px] ring-1 transition-transform duration-200 group-hover:scale-[1.04]",
+                            "grid h-8 w-8 shrink-0 place-items-center rounded-[10px] ring-1 ring-inset",
+                            "transition-transform duration-150 group-hover:scale-[1.03]",
                             action.iconTone,
                           ].join(" ")}
                         >
-                          <Icon size={17} strokeWidth={2.35} />
+                          <Icon size={16} strokeWidth={2.15} />
                         </span>
 
                         <span className="min-w-0 flex-1">
-                          <span className="block whitespace-nowrap text-[13px] font-bold leading-4 tracking-[-0.01em] text-foreground">
+                          <span className="block whitespace-nowrap text-[13px] font-semibold leading-4 tracking-[-0.01em] text-foreground">
                             {action.label}
                           </span>
-                          <span className="mt-0.5 block whitespace-nowrap text-[11px] font-medium leading-3 text-muted-foreground">
+                          <span className="mt-0.5 block whitespace-nowrap text-[11px] font-medium leading-3.5 text-muted-foreground">
                             {action.hint}
                           </span>
-                        </span>
-
-                        <span
-                          className={[
-                            "h-1.5 w-1.5 shrink-0 rounded-full opacity-70 transition-all duration-200 group-hover:scale-125 group-hover:opacity-100",
-                            action.tone,
-                          ].join(" ")}
-                        >
-                          <span className="block h-full w-full rounded-full bg-current" />
                         </span>
                       </motion.button>
                     );
@@ -320,44 +306,33 @@ export default function FloatingActions() {
           aria-expanded={open}
           aria-controls="quick-finance-actions"
           onClick={() => setOpen((current) => !current)}
-          whileHover={{
-            y: -2,
-            scale: 1.035,
-          }}
-          whileTap={{
-            scale: 0.94,
-          }}
+          whileHover={{ y: -1, scale: 1.025 }}
+          whileTap={{ scale: 0.94 }}
           transition={{
             type: "spring",
-            stiffness: 360,
-            damping: 22,
+            stiffness: 380,
+            damping: 24,
           }}
           className={[
-            "finance-focus relative grid h-[56px] w-[56px] place-items-center overflow-hidden rounded-[21px] sm:h-[58px] sm:w-[58px]",
-            "bg-active text-primary-foreground ring-1 ring-active/25",
+            "finance-focus relative grid h-[54px] w-[54px] place-items-center rounded-full sm:h-[56px] sm:w-[56px]",
+            "bg-active text-primary-foreground ring-1 ring-active/30 dark:ring-white/10",
             "shadow-[var(--shadow-lg)]",
-            "transition-[filter,box-shadow] duration-200 hover:brightness-105",
+            "transition-[filter,box-shadow] duration-200 hover:brightness-[1.03]",
           ].join(" ")}
         >
-          <span className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_34%_24%,color-mix(in_srgb,var(--brand-on-accent),transparent_66%),transparent_34%)]" />
-          <span className="pointer-events-none absolute inset-x-2 top-1 h-5 rounded-full bg-primary-foreground/12 blur-md" />
-
           <motion.span
             animate={{
               rotate: open ? 45 : 0,
-              scale: open ? 0.96 : 1,
+              scale: open ? 0.94 : 1,
             }}
             transition={{
               type: "spring",
-              stiffness: 340,
-              damping: 22,
+              stiffness: 360,
+              damping: 24,
             }}
-            className={[
-              "relative z-10 grid h-8 w-8 place-items-center rounded-full",
-              "bg-primary-foreground/12 text-primary-foreground ring-1 ring-primary-foreground/15 backdrop-blur-sm",
-            ].join(" ")}
+            className="relative z-10 grid place-items-center"
           >
-            <Plus size={25} strokeWidth={2.55} />
+            <Plus size={24} strokeWidth={2.35} />
           </motion.span>
         </motion.button>
       </div>
