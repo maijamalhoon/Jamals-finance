@@ -20,6 +20,7 @@ import { BASE_CURRENCY, formatMoney } from "@/lib/currency";
 import InvestmentModal, { ExistingInvestment } from "./InvestmentModal";
 import { toast } from "sonner";
 import { getUserMutationError } from "@/lib/user-errors";
+import { calculateInvestmentPosition } from "@/lib/investments/calculations";
 
 const CONFIG: Record<
   string,
@@ -118,30 +119,6 @@ function formatPurchaseDate(value: string | null | undefined) {
   });
 }
 
-function getEditableInvestment(target: ExistingInvestment) {
-  if (!target.is_live_priced || target.purchase_currency === "USD") {
-    return target;
-  }
-
-  const quantity = toFiniteNumber(target.quantity);
-  const unitBuyPrice = toFiniteNumber(target.purchase_price);
-  const savedEnteredAmount = toFiniteNumber(target.purchase_price_original);
-  const enteredPkrAmount =
-    savedEnteredAmount ??
-    (quantity !== null && unitBuyPrice !== null
-      ? quantity * unitBuyPrice
-      : null);
-
-  if (enteredPkrAmount === null || enteredPkrAmount <= 0) return target;
-
-  return {
-    ...target,
-    purchase_price: enteredPkrAmount,
-    purchase_price_original: enteredPkrAmount,
-    purchase_currency: "PKR",
-  };
-}
-
 export default function InvestmentCard({
   inv,
   lots,
@@ -173,9 +150,14 @@ export default function InvestmentCard({
         ? "Live via CoinGecko"
         : "Manual asset";
 
-  const qty = Number(inv.quantity);
-  const buyPrice = Number(inv.purchase_price);
-  const curPrice = Number(inv.current_price);
+  const position = calculateInvestmentPosition(
+    inv.quantity,
+    inv.purchase_price,
+    inv.current_price,
+  );
+  const qty = position?.quantity ?? 0;
+  const buyPrice = position?.purchasePrice ?? 0;
+  const curPrice = position?.currentPrice ?? 0;
   const originalBuyPrice = toFiniteNumber(inv.purchase_price_original);
   const purchaseCurrency = inv.purchase_currency === "USD" ? "USD" : "PKR";
   const liveUsdPrice =
@@ -190,10 +172,9 @@ export default function InvestmentCard({
     purchaseCurrency === "USD" && originalBuyPrice !== null
       ? `Original ${formatUsd(originalBuyPrice)}`
       : `${BASE_CURRENCY} cost basis`;
-  const totalCost = qty * buyPrice;
-  const currentValue = qty * curPrice;
-  const pnl = currentValue - totalCost;
-  const pnlPct = totalCost > 0 ? (pnl / totalCost) * 100 : 0;
+  const currentValue = position?.currentValue ?? 0;
+  const pnl = position?.totalPnL ?? 0;
+  const pnlPct = position?.totalPnLPct ?? 0;
   const isProfit = pnl >= 0;
   const change24h = formatPriceChange(inv.price_change_24h, inv.price_source);
   const purchaseLots = lots?.length ? lots : [inv];
@@ -228,7 +209,7 @@ export default function InvestmentCard({
             <button
               type="button"
               onClick={() =>
-                setEditingInvestment(getEditableInvestment(singleLot))
+                setEditingInvestment(singleLot)
               }
               className="icon-button h-8 w-8"
               aria-label="Edit investment"
@@ -391,7 +372,7 @@ export default function InvestmentCard({
                     <button
                       type="button"
                       onClick={() =>
-                        setEditingInvestment(getEditableInvestment(lot))
+                        setEditingInvestment(lot)
                       }
                       className="icon-button h-8 w-8"
                       aria-label={`Edit ${lot.name} buy`}

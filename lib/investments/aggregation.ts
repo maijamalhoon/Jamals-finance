@@ -1,4 +1,5 @@
-import { CHART_COLOR_PALETTE } from "@/lib/theme-colors";
+import { CHART_COLOR_PALETTE } from "../theme-colors";
+import { calculateInvestmentPosition } from "./calculations";
 
 export type InvestmentLike = {
   id: string;
@@ -126,11 +127,6 @@ const ASSET_BRAND_ALIASES = Object.keys(ASSET_BRAND_COLORS).sort(
   (left, right) => right.length - left.length,
 );
 
-function toFiniteNumber(value: number | string | null | undefined) {
-  const parsed = Number(value);
-  return Number.isFinite(parsed) ? parsed : 0;
-}
-
 function normalizeText(value: string | null | undefined) {
   return (value ?? "").trim().replace(/\s+/g, " ");
 }
@@ -254,9 +250,15 @@ export function aggregateInvestmentHoldings(investments: InvestmentLike[]) {
 
   investments.forEach((investment) => {
     const groupKey = getInvestmentGroupKey(investment);
-    const quantity = toFiniteNumber(investment.quantity);
-    const purchasePrice = toFiniteNumber(investment.purchase_price);
-    const currentPrice = toFiniteNumber(investment.current_price);
+    const position = calculateInvestmentPosition(
+      investment.quantity,
+      investment.purchase_price,
+      investment.current_price,
+    );
+
+    if (!position || position.quantity <= 0) return;
+
+    const { quantity, currentPrice } = position;
     const currentOriginal = Number(investment.current_price_original);
     const existing = groups.get(groupKey);
     const current =
@@ -283,8 +285,8 @@ export function aggregateInvestmentHoldings(investments: InvestmentLike[]) {
       };
 
     current.quantity += quantity;
-    current.totalInvested += quantity * purchasePrice;
-    current.weightedCurrentValue += quantity * currentPrice;
+    current.totalInvested += position.totalInvested;
+    current.weightedCurrentValue += position.currentValue;
     current.itemCount += 1;
 
     if (current.latestCurrentPrice === null && currentPrice > 0) {
@@ -333,8 +335,13 @@ export function aggregateInvestmentHoldings(investments: InvestmentLike[]) {
         (group.quantity > 0
           ? group.weightedCurrentValue / group.quantity
           : group.latestCurrentPrice ?? 0);
-      const currentValue = group.quantity * currentPrice;
-      const totalPnL = currentValue - group.totalInvested;
+      const position = calculateInvestmentPosition(
+        group.quantity,
+        averageBuyPrice,
+        currentPrice,
+      );
+      const currentValue = position?.currentValue ?? 0;
+      const totalPnL = position?.totalPnL ?? 0;
 
       return {
         id: group.firstId,
@@ -349,8 +356,7 @@ export function aggregateInvestmentHoldings(investments: InvestmentLike[]) {
         totalInvested: group.totalInvested,
         currentValue,
         totalPnL,
-        totalPnLPct:
-          group.totalInvested > 0 ? (totalPnL / group.totalInvested) * 100 : 0,
+        totalPnLPct: position?.totalPnLPct ?? 0,
         asset_id: group.assetId,
         symbol: group.symbol,
         image_url: group.imageUrl,

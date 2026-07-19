@@ -4,6 +4,7 @@ import {
   getAppDateParts,
   getDaysInMonth,
 } from "../dates";
+import { calculateInvestmentPosition } from "../investments/calculations";
 import { FEATURE_COLOR_HEX } from "../theme-colors";
 
 export type AnalyticsPresetPeriod =
@@ -931,18 +932,21 @@ export function calculateInvestmentMetrics(
   purchasePriceValue: unknown,
   currentPriceValue: unknown,
 ) {
-  const quantity = toFiniteNumber(quantityValue);
-  const purchasePrice = toFiniteNumber(purchasePriceValue);
-  const currentPrice = toFiniteNumber(currentPriceValue);
-  if (
-    quantity === null || purchasePrice === null || currentPrice === null ||
-    quantity < 0 || purchasePrice < 0 || currentPrice < 0
-  ) return null;
-  const invested = quantity * purchasePrice;
-  const value = quantity * currentPrice;
-  const pnl = value - invested;
-  if (![invested, value, pnl].every(Number.isFinite)) return null;
-  return { invested, value, pnl, pnlPct: invested > 0 ? roundTo((pnl / invested) * 100) : null };
+  const position = calculateInvestmentPosition(
+    quantityValue,
+    purchasePriceValue,
+    currentPriceValue,
+  );
+
+  if (!position) return null;
+
+  return {
+    invested: position.totalInvested,
+    value: position.currentValue,
+    pnl: position.totalPnL,
+    pnlPct:
+      position.totalPnLPct === null ? null : roundTo(position.totalPnLPct),
+  };
 }
 
 export function summarizeInvestmentPortfolio(

@@ -18,6 +18,7 @@ import {
   type PeriodRanges,
 } from "./analytics/calculations";
 import { formatAppMonth } from "./dates";
+import { calculateInvestmentPosition } from "./investments/calculations";
 
 export type DashboardDirection = "up" | "down" | "flat" | "none";
 export type DashboardSentiment =
@@ -405,24 +406,21 @@ export function calculateDashboardPricedPortfolio(
   let totalValue = 0;
 
   for (const investment of investments) {
-    const quantity = toFiniteNumber(investment.quantity);
-    const purchasePrice = toFiniteNumber(investment.purchasePrice);
-    const currentPrice = toFiniteNumber(investment.currentPrice);
+    const position = calculateInvestmentPosition(
+      investment.quantity,
+      investment.purchasePrice,
+      investment.currentPrice,
+    );
     if (
-      quantity === null ||
-      purchasePrice === null ||
-      currentPrice === null ||
-      quantity <= 0 ||
-      purchasePrice < 0 ||
-      currentPrice <= 0
+      !position ||
+      position.quantity <= 0 ||
+      position.purchasePrice < 0 ||
+      position.currentPrice <= 0
     ) {
       continue;
     }
-    const invested = quantity * purchasePrice;
-    const value = quantity * currentPrice;
-    if (!Number.isFinite(invested) || !Number.isFinite(value)) continue;
-    totalInvested += invested;
-    totalValue += value;
+    totalInvested += position.totalInvested;
+    totalValue += position.currentValue;
   }
 
   const safeInvested = finiteOrZero(totalInvested);
