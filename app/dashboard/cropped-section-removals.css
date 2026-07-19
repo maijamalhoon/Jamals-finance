@@ -1,0 +1,118 @@
+/*
+ * Screenshot-matched removals for the eight explicitly approved page sections.
+ *
+ * This file is intentionally route-scoped through data-jf-page. It never runs
+ * on the dashboard overview, does not hide financial rows/cards below the
+ * approved top blocks, and does not alter data fetching, calculations or state.
+ */
+
+/* Reports: remove the duplicate report summary/export hero only. */
+[data-jf-page="reports"]
+  .jf-unified-page-body
+  > div[data-print-report]
+  > .page-heading:first-child,
+/* AI Insights: remove the duplicate internal page title only. */
+[data-jf-page="ai-insights"]
+  .jf-unified-page-body
+  > div
+  > header:first-child,
+/* Analytics: remove the intro/date/range-control hero as one approved block. */
+[data-jf-page="analytics"]
+  .jf-unified-page-body
+  > div
+  > div
+  > header.page-heading:first-child,
+/* Payables: remove the Money Tools hero and its Add Payable action. */
+[data-jf-page="payables"]
+  .jf-unified-page-body
+  > div
+  > .page-heading:first-child,
+/* Goals: remove Savings Targets / Goals Progress / New Goal hero. */
+[data-jf-page="goals"]
+  .jf-unified-page-body
+  > div
+  > .page-heading:first-child,
+/* Expenses: remove the duplicate title and Add Expense row. */
+[data-jf-page="expenses"]
+  .jf-unified-page-body
+  > div[data-expenses-page]
+  > .expenses-page-heading:first-child,
+/* Income: remove the duplicate title/count/Add Income hero. */
+[data-jf-page="income"]
+  .jf-unified-page-body
+  > div
+  > .page-heading:first-child,
+/* Accounts: remove the complete portfolio summary/Add Account hero. */
+[data-jf-page="accounts"]
+  .jf-unified-page-body
+  > div
+  > section.page-heading:first-child {
+  display: none !important;
+  visibility: hidden !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  min-height: 0 !important;
+  height: 0 !important;
+  overflow: hidden !important;
+}
+
+/* Collapse every leftover space-y/grid gap after the removed first block. */
+[data-jf-page="reports"]
+  .jf-unified-page-body
+  > div[data-print-report]
+  > .page-heading:first-child
+  + *,
+[data-jf-page="ai-insights"]
+  .jf-unified-page-body
+  > div
+  > header:first-child
+  + *,
+[data-jf-page="analytics"]
+  .jf-unified-page-body
+  > div
+  > div
+  > header.page-heading:first-child
+  + *,
+[data-jf-page="payables"]
+  .jf-unified-page-body
+  > div
+  > .page-heading:first-child
+  + *,
+[data-jf-page="goals"]
+  .jf-unified-page-body
+  > div
+  > .page-heading:first-child
+  + *,
+[data-jf-page="expenses"]
+  .jf-unified-page-body
+  > div[data-expenses-page]
+  > .expenses-page-heading:first-child
+  + *,
+[data-jf-page="income"]
+  .jf-unified-page-body
+  > div
+  > .page-heading:first-child
+  + *,
+[data-jf-page="accounts"]
+  .jf-unified-page-body
+  > div
+  > section.page-heading:first-child
+  + * {
+  margin-top: 0 !important;
+  margin-block-start: 0 !important;
+}
+
+/* Keep the first surviving content section fully available and in normal flow. */
+[data-jf-page="reports"] .jf-unified-page-body > div[data-print-report] > :not(.page-heading):first-of-type,
+[data-jf-page="ai-insights"] .jf-unified-page-body > div > :not(header):first-of-type,
+[data-jf-page="analytics"] .jf-unified-page-body > div > div > :not(header):first-of-type,
+[data-jf-page="payables"] .jf-unified-page-body > div > :not(.page-heading):first-of-type,
+[data-jf-page="goals"] .jf-unified-page-body > div > :not(.page-heading):first-of-type,
+[data-jf-page="expenses"] .jf-unified-page-body > div[data-expenses-page] > :not(.expenses-page-heading):first-of-type,
+[data-jf-page="income"] .jf-unified-page-body > div > :not(.page-heading):first-of-type,
+[data-jf-page="accounts"] .jf-unified-page-body > div > :not(.page-heading):first-of-type {
+  position: relative;
+  visibility: visible;
+  opacity: 1;
+}
