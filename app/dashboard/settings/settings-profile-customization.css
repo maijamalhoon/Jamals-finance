@@ -63,6 +63,7 @@
   grid-area: profile-customize;
   width: 100%;
   min-width: 0;
+  align-self: start;
 }
 
 .settings-page-polish .settings-profile-customization > section {
@@ -70,6 +71,7 @@
 }
 
 .settings-page-polish .settings-section-label {
+  display: block !important;
   margin: 0;
   padding: 0.1rem 0.5rem 0.55rem;
   color: var(--text-secondary);
