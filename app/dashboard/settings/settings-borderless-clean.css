@@ -1,0 +1,111 @@
+/*
+ * Borderless Settings page finish.
+ *
+ * Presentation only: profile, theme, preferences, categories, data actions,
+ * Supabase operations, dialogs, state, and responsive behavior remain intact.
+ */
+
+/* Remove persistent card shells from the Settings page only. */
+.settings-page-polish .finance-panel,
+.settings-page-polish .summary-card {
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.settings-page-polish .finance-panel {
+  overflow: visible !important;
+}
+
+/* Keep actions readable through spacing and a light interaction state, not cards. */
+.settings-page-polish .finance-panel > button,
+.settings-page-polish .finance-panel > a {
+  border: 0 !important;
+  border-radius: 0.9rem !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.settings-page-polish .finance-panel > button:hover,
+.settings-page-polish .finance-panel > button:focus-visible,
+.settings-page-polish .finance-panel > a:hover,
+.settings-page-polish .finance-panel > a:focus-visible {
+  background: color-mix(in srgb, var(--hover), transparent 18%) !important;
+}
+
+/* Old row dividers and launcher borders are no longer needed without card shells. */
+.settings-page-polish .finance-panel > div[class*="ml-[76px]"],
+.settings-page-polish .settings-preferences-divider,
+.settings-page-polish
+  .settings-experience-v2
+  > section
+  .finance-panel
+  > button:nth-of-type(2) {
+  border: 0 !important;
+  background: transparent !important;
+}
+
+.settings-page-polish .finance-panel > div[class*="ml-[76px]"],
+.settings-page-polish .settings-preferences-divider {
+  display: none !important;
+}
+
+/* Appearance choices remain fully functional but no longer look like cards. */
+.settings-page-polish
+  .settings-core
+  > div
+  > div
+  > section:nth-of-type(2)
+  [role="radio"] {
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.settings-page-polish
+  .settings-core
+  > div
+  > div
+  > section:nth-of-type(2)
+  [role="radio"]:hover,
+.settings-page-polish
+  .settings-core
+  > div
+  > div
+  > section:nth-of-type(2)
+  [role="radio"]:focus-visible {
+  background: color-mix(in srgb, var(--hover), transparent 18%) !important;
+}
+
+.settings-page-polish
+  .settings-core
+  > div
+  > div
+  > section:nth-of-type(2)
+  [role="radio"][aria-checked="true"] {
+  border: 0 !important;
+  background: color-mix(in srgb, var(--primary), transparent 92%) !important;
+  box-shadow: none !important;
+}
+
+/* Remove decorative borders from page-level identity and status elements. */
+.settings-page-polish .settings-profile-customization .finance-panel [data-slot="avatar"],
+.settings-page-polish .finance-state-pill {
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+/* Sign out stays visually distinct through colour only. */
+.settings-page-polish .settings-core > div > div > button:last-of-type {
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+/* Avoid card-like surfaces returning in dark mode. */
+.dark .settings-page-polish .finance-panel,
+.dark .settings-page-polish .summary-card {
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
