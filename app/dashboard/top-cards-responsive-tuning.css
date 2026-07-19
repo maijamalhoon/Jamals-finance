@@ -30,10 +30,6 @@
   height: 1.18rem;
 }
 
-.dashboard-quick-action-label {
-  font-size: 0.68rem !important;
-}
-
 /* Amount typography responds to the actual card width and value length. */
 .dashboard-metric-card {
   container-type: inline-size;
@@ -118,10 +114,6 @@
   .dashboard-quick-action-glyph {
     width: 1.08rem;
     height: 1.08rem;
-  }
-
-  .dashboard-quick-action-label {
-    font-size: 0.61rem !important;
   }
 
   .dashboard-metric-card {
