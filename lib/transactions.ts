@@ -96,11 +96,11 @@ export function sortTransactionsNewestFirst<T extends DatedTransaction>(
   transactions: T[],
 ) {
   return [...transactions].sort((a, b) => {
-    const dateDiff = getSortTime(b.date) - getSortTime(a.date);
-    if (dateDiff !== 0) return dateDiff;
-
     const createdDiff = getSortTime(b.created_at) - getSortTime(a.created_at);
     if (createdDiff !== 0) return createdDiff;
+
+    const dateDiff = getSortTime(b.date) - getSortTime(a.date);
+    if (dateDiff !== 0) return dateDiff;
 
     return String(b.id ?? "").localeCompare(String(a.id ?? ""));
   });
