@@ -58,8 +58,15 @@ function findBodyRoot(element: HTMLElement) {
   return current?.parentElement === document.body ? current : null;
 }
 
+function resolveHtmlTarget(eventTarget: EventTarget | null) {
+  if (!(eventTarget instanceof Element)) return null;
+  return eventTarget instanceof HTMLElement
+    ? eventTarget
+    : eventTarget.parentElement;
+}
+
 function resolveScrollSurface(eventTarget: EventTarget | null): ScrollSurface | null {
-  const target = eventTarget instanceof HTMLElement ? eventTarget : null;
+  const target = resolveHtmlTarget(eventTarget);
   if (!target) return null;
 
   if (
@@ -118,7 +125,9 @@ function readTranslateY(element: HTMLElement) {
 
 export default function DesktopOverscrollBounce() {
   useEffect(() => {
-    const desktopPointer = window.matchMedia("(hover: hover) and (pointer: fine)");
+    const desktopPointer = window.matchMedia(
+      "(any-hover: hover) and (any-pointer: fine)",
+    );
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
 
     let activeTarget: HTMLElement | null = null;
