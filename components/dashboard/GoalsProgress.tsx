@@ -11,10 +11,10 @@ import {
   type GoalPresentationAssignment,
 } from "@/components/goals/goal-icons";
 import {
-  useAnimatedGoalValue,
   useProgressReveal,
   useReducedMotion,
 } from "@/components/goals/use-animated-goal-value";
+import CountedAmount from "@/components/motion/CountedAmount";
 import EmptyState from "@/components/ui/empty-state";
 import type { DashboardAvailability } from "@/lib/dashboard-financial-semantics";
 
@@ -83,10 +83,16 @@ function AnimatedCurrency({
   value: number;
   delay?: number;
 }) {
-  const animatedValue = useAnimatedGoalValue(value, delay, 820);
   const { formatCurrency } = useCurrency();
 
-  return <>{formatCurrency(animatedValue)}</>;
+  return (
+    <CountedAmount
+      amount={formatCurrency(value)}
+      animateOnCompact
+      delay={delay / 1000}
+      duration={0.82}
+    />
+  );
 }
 
 function getGoalProgress(goal: Goal) {
