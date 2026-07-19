@@ -22,3 +22,15 @@ html:not(.dark) .finance-modal-content [role="listbox"].field-input {
   border-style: none !important;
   outline: none !important;
 }
+
+/*
+ * Income/Expense account control is the visual reference. The shared marker is
+ * applied inside AccountSelect itself, so Goal, Transfer, Payable and
+ * Investment receive exactly the same rendered height in touch and select mode.
+ */
+.finance-modal-content .finance-account-select {
+  height: clamp(3rem, 6.7dvh, 3.35rem) !important;
+  min-height: clamp(3rem, 6.7dvh, 3.35rem) !important;
+  max-height: clamp(3rem, 6.7dvh, 3.35rem) !important;
+  padding-block: clamp(0.25rem, 0.75dvh, 0.38rem) !important;
+}
