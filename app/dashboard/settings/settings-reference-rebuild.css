@@ -1,0 +1,814 @@
+/* Reference-led Settings rebuild. UI only: existing storage, auth, category, export,
+   theme and profile logic remain in their original handlers. */
+
+.settings-page-polish {
+  min-width: 0;
+}
+
+.settings-page-polish .settings-experience-v2 {
+  width: min(100%, 72rem);
+  min-width: 0;
+  margin-inline: auto;
+  padding: clamp(0.25rem, 1vw, 0.75rem) clamp(0.15rem, 1vw, 0.75rem)
+    clamp(2.5rem, 6vw, 5rem);
+  color: var(--text-primary);
+  font-family: var(--font-geist-sans), var(--font-sans), ui-sans-serif, system-ui,
+    sans-serif;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+}
+
+.settings-reference-page-heading {
+  margin: 0 0 clamp(1rem, 2.4vw, 1.6rem);
+  padding-inline: clamp(0.2rem, 0.8vw, 0.5rem);
+}
+
+.settings-reference-page-heading h1 {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: clamp(1.85rem, 4vw, 2.55rem);
+  font-weight: 760;
+  line-height: 1;
+  letter-spacing: -0.045em;
+}
+
+/* Account overview */
+.settings-page-polish .settings-account-overview {
+  width: 100%;
+  min-width: 0;
+  margin: 0 0 clamp(1.15rem, 2.6vw, 1.8rem) !important;
+}
+
+.settings-page-polish .settings-account-card {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  min-width: 0;
+  border: 0;
+  border-radius: clamp(1.25rem, 3vw, 1.7rem);
+  background:
+    radial-gradient(circle at 88% 12%, rgb(255 255 255 / 0.08), transparent 30%),
+    linear-gradient(145deg, #17191f, #24262c 62%, #1c1e24);
+  padding: clamp(1rem, 2.4vw, 1.4rem);
+  color: #f7f9fc;
+  box-shadow:
+    0 20px 48px rgb(15 23 42 / 0.16),
+    inset 0 1px 0 rgb(255 255 255 / 0.06);
+}
+
+.dark .settings-page-polish .settings-account-card {
+  background:
+    radial-gradient(circle at 88% 12%, rgb(159 177 255 / 0.1), transparent 31%),
+    linear-gradient(145deg, #111722, #182235 68%, #121a28);
+  box-shadow:
+    0 24px 56px rgb(0 0 0 / 0.34),
+    inset 0 1px 0 rgb(255 255 255 / 0.055);
+}
+
+.settings-account-card::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  top: -5rem;
+  right: -4rem;
+  width: 12rem;
+  height: 12rem;
+  border-radius: 999px;
+  border: 1px solid rgb(255 255 255 / 0.05);
+  box-shadow: inset 0 0 0 2rem rgb(255 255 255 / 0.018);
+}
+
+.settings-account-card-topline {
+  display: grid;
+  min-width: 0;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: clamp(0.75rem, 2vw, 1rem);
+}
+
+.settings-account-avatar {
+  width: clamp(3rem, 8vw, 4rem) !important;
+  height: clamp(3rem, 8vw, 4rem) !important;
+  flex: 0 0 auto;
+  border: 2px solid rgb(255 255 255 / 0.18) !important;
+  background: #30343d !important;
+  box-shadow: 0 8px 24px rgb(0 0 0 / 0.28);
+}
+
+.settings-account-avatar-fallback {
+  background: #30343d !important;
+  color: #f7f9fc !important;
+}
+
+.settings-account-identity {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 0.18rem;
+}
+
+.settings-account-name,
+.settings-account-email {
+  display: block;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.settings-account-name {
+  color: #ffffff;
+  font-size: clamp(1rem, 2.3vw, 1.25rem);
+  font-weight: 730;
+  line-height: 1.2;
+  letter-spacing: -0.025em;
+  text-transform: capitalize;
+}
+
+.settings-account-email {
+  color: rgb(226 232 240 / 0.66);
+  font-size: clamp(0.7rem, 1.6vw, 0.82rem);
+  font-weight: 500;
+  line-height: 1.25;
+}
+
+.settings-account-edit {
+  display: inline-flex;
+  min-height: 2.5rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.38rem;
+  border: 1px solid rgb(255 255 255 / 0.1);
+  border-radius: 999px;
+  background: rgb(255 255 255 / 0.085);
+  padding: 0.55rem 0.85rem;
+  color: #ffffff;
+  font-size: 0.78rem;
+  font-weight: 650;
+  line-height: 1;
+  backdrop-filter: blur(12px);
+  transition:
+    transform 180ms var(--motion-ease),
+    background-color 180ms var(--motion-ease),
+    border-color 180ms var(--motion-ease);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .settings-account-edit:hover {
+    transform: translateY(-1px);
+    border-color: rgb(255 255 255 / 0.2);
+    background: rgb(255 255 255 / 0.13);
+  }
+}
+
+.settings-account-edit:active {
+  transform: scale(0.97);
+}
+
+.settings-account-stats {
+  display: grid;
+  min-width: 0;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: clamp(0.45rem, 1.5vw, 0.75rem);
+  margin-top: clamp(1rem, 2.3vw, 1.25rem);
+}
+
+.settings-account-stat {
+  display: grid;
+  min-width: 0;
+  min-height: clamp(4.25rem, 10vw, 5.2rem);
+  place-content: center;
+  gap: 0.3rem;
+  border: 1px solid rgb(255 255 255 / 0.055);
+  border-radius: clamp(0.85rem, 2vw, 1.1rem);
+  background: rgb(255 255 255 / 0.065);
+  padding: 0.65rem 0.35rem;
+  text-align: center;
+}
+
+.settings-account-stat strong {
+  overflow: hidden;
+  color: #ffffff;
+  font-size: clamp(1rem, 2.7vw, 1.35rem);
+  font-weight: 760;
+  line-height: 1;
+  text-overflow: ellipsis;
+  font-variant-numeric: tabular-nums lining-nums;
+}
+
+.settings-account-stat span {
+  overflow: hidden;
+  color: rgb(226 232 240 / 0.58);
+  font-size: clamp(0.58rem, 1.6vw, 0.72rem);
+  font-weight: 580;
+  line-height: 1.15;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Responsive page structure */
+.settings-reference-grid {
+  display: grid;
+  min-width: 0;
+  grid-template-columns: minmax(0, 1fr);
+  gap: clamp(1.15rem, 2.8vw, 1.8rem);
+  align-items: start;
+}
+
+.settings-reference-section {
+  min-width: 0;
+  margin: 0 !important;
+}
+
+.settings-reference-section-heading {
+  display: flex;
+  min-height: 2rem;
+  align-items: center;
+  gap: 0.55rem;
+  margin: 0;
+  padding: 0 clamp(0.2rem, 0.8vw, 0.45rem) 0.55rem;
+  color: var(--text-secondary);
+  font-size: clamp(0.7rem, 1.45vw, 0.78rem);
+  font-weight: 720;
+  line-height: 1;
+  letter-spacing: 0.115em;
+  text-transform: uppercase;
+}
+
+.settings-reference-section-heading > span {
+  display: grid;
+  width: 1.3rem;
+  height: 1.3rem;
+  place-items: center;
+  color: var(--primary);
+}
+
+.settings-reference-section-heading svg,
+.settings-reference-row svg,
+.settings-reference-theme-option svg,
+.settings-security-panel svg,
+.settings-reference-logout svg {
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  shape-rendering: geometricPrecision;
+}
+
+.settings-reference-group,
+.settings-page-polish .settings-reference-preferences-wrapper .finance-panel,
+.settings-page-polish .settings-reference-categories-wrapper .finance-panel {
+  min-width: 0;
+  overflow: hidden;
+  border: 0 !important;
+  border-radius: clamp(1.1rem, 2.5vw, 1.45rem) !important;
+  background: var(--card) !important;
+  box-shadow:
+    0 12px 34px rgb(15 23 42 / 0.07),
+    inset 0 0 0 1px color-mix(in srgb, var(--border), transparent 55%) !important;
+}
+
+.dark .settings-reference-group,
+.dark .settings-page-polish .settings-reference-preferences-wrapper .finance-panel,
+.dark .settings-page-polish .settings-reference-categories-wrapper .finance-panel {
+  box-shadow:
+    0 15px 38px rgb(0 0 0 / 0.24),
+    inset 0 0 0 1px color-mix(in srgb, var(--border), transparent 48%) !important;
+}
+
+.settings-reference-row {
+  display: flex;
+  width: 100%;
+  min-width: 0;
+  min-height: clamp(4.65rem, 8.5vw, 5.4rem);
+  align-items: center;
+  gap: clamp(0.75rem, 2vw, 1rem);
+  border: 0;
+  background: transparent;
+  padding: clamp(0.85rem, 2vw, 1.05rem) clamp(0.9rem, 2.3vw, 1.25rem);
+  text-align: left;
+}
+
+.settings-reference-row-button {
+  cursor: pointer;
+  transition:
+    background-color 160ms var(--motion-ease),
+    transform 160ms var(--motion-ease);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .settings-reference-row-button:hover {
+    background: var(--hover);
+  }
+}
+
+.settings-reference-row-button:active {
+  transform: scale(0.995);
+}
+
+.settings-reference-row-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.settings-reference-row-icon {
+  display: grid;
+  width: clamp(2.35rem, 5vw, 2.65rem);
+  height: clamp(2.35rem, 5vw, 2.65rem);
+  flex: 0 0 auto;
+  place-items: center;
+  color: var(--primary);
+}
+
+.settings-reference-row-copy {
+  display: flex;
+  min-width: 0;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: 0.18rem;
+}
+
+.settings-reference-row-title {
+  color: var(--text-primary);
+  font-size: clamp(0.92rem, 1.8vw, 1.02rem);
+  font-weight: 670;
+  line-height: 1.25;
+  letter-spacing: -0.018em;
+}
+
+.settings-reference-row-description {
+  color: var(--text-secondary);
+  font-size: clamp(0.7rem, 1.45vw, 0.8rem);
+  font-weight: 470;
+  line-height: 1.35;
+}
+
+.settings-reference-row-value {
+  display: inline-flex;
+  min-height: 1.85rem;
+  flex: 0 0 auto;
+  align-items: center;
+  border-radius: 0.65rem;
+  background: var(--surface-secondary);
+  padding: 0.35rem 0.55rem;
+  color: var(--text-secondary);
+  font-size: 0.7rem;
+  font-weight: 680;
+  line-height: 1;
+}
+
+.settings-reference-row-chevron {
+  flex: 0 0 auto;
+  color: var(--text-tertiary);
+}
+
+.settings-reference-divider,
+.settings-page-polish .settings-reference-preferences-wrapper .settings-preferences-divider,
+.settings-page-polish .settings-reference-categories-wrapper .finance-panel > div[class*="h-px"] {
+  height: 1px !important;
+  margin-left: clamp(4rem, 9vw, 4.75rem) !important;
+  background: color-mix(in srgb, var(--border), transparent 30%) !important;
+}
+
+/* Appearance */
+.settings-reference-appearance-control {
+  display: grid;
+  min-width: 0;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.4rem;
+  border: 0;
+  border-radius: clamp(1.1rem, 2.5vw, 1.45rem);
+  background: var(--surface-secondary);
+  padding: 0.45rem;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--border), transparent 55%);
+}
+
+.settings-reference-theme-option {
+  display: grid;
+  min-width: 0;
+  min-height: clamp(3.1rem, 7vw, 3.7rem);
+  grid-template-columns: auto minmax(0, auto) auto;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(0.3rem, 1vw, 0.5rem);
+  border: 0;
+  border-radius: clamp(0.85rem, 2vw, 1rem);
+  background: transparent;
+  padding: 0.6rem clamp(0.45rem, 1.5vw, 0.75rem);
+  color: var(--text-tertiary);
+  font-size: clamp(0.72rem, 1.55vw, 0.86rem);
+  font-weight: 650;
+  line-height: 1;
+  transition:
+    background-color 180ms var(--motion-ease),
+    color 180ms var(--motion-ease),
+    box-shadow 180ms var(--motion-ease),
+    transform 180ms var(--motion-ease);
+}
+
+.settings-reference-theme-option.is-active {
+  background: var(--card);
+  color: var(--primary);
+  box-shadow:
+    0 8px 20px rgb(15 23 42 / 0.09),
+    inset 0 0 0 1px color-mix(in srgb, var(--primary), transparent 82%);
+}
+
+.dark .settings-reference-theme-option.is-active {
+  box-shadow:
+    0 10px 24px rgb(0 0 0 / 0.22),
+    inset 0 0 0 1px color-mix(in srgb, var(--primary), transparent 70%);
+}
+
+.settings-reference-theme-option:active {
+  transform: scale(0.98);
+}
+
+.settings-reference-theme-icon {
+  display: grid;
+  width: 1.4rem;
+  height: 1.4rem;
+  place-items: center;
+}
+
+/* Existing preference and category functionality, restyled in place. */
+.settings-page-polish .settings-reference-preferences-wrapper .settings-preferences-slot {
+  grid-area: auto !important;
+  width: 100% !important;
+  min-width: 0 !important;
+}
+
+.settings-page-polish .settings-reference-preferences-wrapper .settings-preferences-slot > section {
+  position: static !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.settings-page-polish
+  .settings-reference-preferences-wrapper
+  .settings-preferences-slot
+  > section::before,
+.settings-page-polish
+  .settings-reference-preferences-wrapper
+  .settings-preferences-slot
+  > section::after,
+.settings-page-polish
+  .settings-reference-preferences-wrapper
+  .settings-preferences-intro,
+.settings-page-polish
+  .settings-reference-preferences-wrapper
+  .settings-preferences-intro
+  + .settings-preferences-divider {
+  display: none !important;
+  content: none !important;
+}
+
+.settings-page-polish .settings-reference-preferences-wrapper .finance-panel > button,
+.settings-page-polish .settings-reference-categories-wrapper .finance-panel > button {
+  display: flex !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  min-height: clamp(4.65rem, 8.5vw, 5.4rem) !important;
+  align-items: center !important;
+  gap: clamp(0.75rem, 2vw, 1rem) !important;
+  border: 0 !important;
+  background: transparent !important;
+  padding: clamp(0.85rem, 2vw, 1.05rem)
+    clamp(0.9rem, 2.3vw, 1.25rem) !important;
+  text-align: left !important;
+}
+
+.settings-page-polish
+  .settings-reference-preferences-wrapper
+  .finance-panel
+  > button:hover,
+.settings-page-polish
+  .settings-reference-categories-wrapper
+  .finance-panel
+  > button:hover {
+  background: var(--hover) !important;
+}
+
+.settings-page-polish
+  .settings-reference-preferences-wrapper
+  .finance-icon-bubble,
+.settings-page-polish
+  .settings-reference-categories-wrapper
+  .finance-icon-bubble {
+  display: grid !important;
+  width: clamp(2.35rem, 5vw, 2.65rem) !important;
+  height: clamp(2.35rem, 5vw, 2.65rem) !important;
+  min-width: clamp(2.35rem, 5vw, 2.65rem) !important;
+  flex: 0 0 auto !important;
+  place-items: center !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  color: var(--primary) !important;
+  box-shadow: none !important;
+}
+
+.settings-page-polish
+  .settings-reference-preferences-wrapper
+  .finance-panel
+  > button
+  .min-w-0.flex-1
+  > span:first-child,
+.settings-page-polish
+  .settings-reference-categories-wrapper
+  .finance-panel
+  > button
+  .min-w-0.flex-1
+  > span:first-child {
+  color: var(--text-primary) !important;
+  font-size: clamp(0.92rem, 1.8vw, 1.02rem) !important;
+  font-weight: 670 !important;
+  line-height: 1.25 !important;
+  letter-spacing: -0.018em !important;
+}
+
+.settings-page-polish
+  .settings-reference-preferences-wrapper
+  .finance-panel
+  > button
+  .min-w-0.flex-1
+  > span:last-child,
+.settings-page-polish
+  .settings-reference-categories-wrapper
+  .finance-panel
+  > button
+  .min-w-0.flex-1
+  > span:last-child {
+  display: block !important;
+  margin-top: 0.18rem !important;
+  color: var(--text-secondary) !important;
+  font-size: clamp(0.7rem, 1.45vw, 0.8rem) !important;
+  font-weight: 470 !important;
+  line-height: 1.35 !important;
+}
+
+.settings-page-polish .settings-reference-preferences-wrapper .finance-state-pill {
+  display: inline-flex !important;
+  min-height: 1.85rem !important;
+  border: 0 !important;
+  border-radius: 0.65rem !important;
+  background: var(--surface-secondary) !important;
+  padding: 0.35rem 0.55rem !important;
+  color: var(--text-secondary) !important;
+  font-size: 0.7rem !important;
+  font-weight: 680 !important;
+}
+
+.settings-page-polish .settings-reference-preferences-wrapper .finance-panel > button > svg,
+.settings-page-polish .settings-reference-categories-wrapper .finance-panel > button > svg {
+  flex: 0 0 auto !important;
+  color: var(--text-tertiary) !important;
+  stroke-width: 2.35 !important;
+}
+
+.settings-page-polish .settings-reference-categories-wrapper > section,
+.settings-page-polish .settings-reference-categories-wrapper > section > section {
+  width: 100% !important;
+  max-width: none !important;
+  margin: 0 !important;
+}
+
+.settings-page-polish
+  .settings-reference-categories-wrapper
+  > section
+  > p:first-child,
+.settings-page-polish
+  .settings-reference-categories-wrapper
+  > section
+  > section
+  > p:first-child {
+  display: none !important;
+}
+
+/* Security dialog content */
+.settings-security-panel {
+  display: grid;
+  gap: 0.9rem;
+  border: 1px solid color-mix(in srgb, var(--border), transparent 15%);
+  border-radius: 1.15rem;
+  background: var(--surface-secondary);
+  padding: 1rem;
+}
+
+.settings-security-panel-muted {
+  background: var(--card);
+}
+
+.settings-security-panel-heading {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.settings-security-panel-icon {
+  display: grid;
+  width: 2.5rem;
+  height: 2.5rem;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: 0.85rem;
+  background: var(--primary-soft);
+  color: var(--primary);
+}
+
+.settings-security-panel-heading > span:nth-child(2) {
+  display: flex;
+  min-width: 0;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.settings-security-panel-heading strong {
+  color: var(--text-primary);
+  font-size: 0.9rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.settings-security-panel-heading small {
+  color: var(--text-secondary);
+  font-size: 0.72rem;
+  font-weight: 470;
+  line-height: 1.35;
+}
+
+.settings-coming-soon {
+  display: inline-flex;
+  min-height: 1.75rem;
+  flex: 0 0 auto;
+  align-items: center;
+  border-radius: 999px;
+  background: var(--surface-secondary);
+  padding: 0.32rem 0.55rem;
+  color: var(--text-secondary);
+  font-size: 0.62rem;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0.04em;
+}
+
+.settings-security-feedback {
+  margin: 0;
+  font-size: 0.72rem;
+  font-weight: 620;
+  line-height: 1.4;
+}
+
+/* Data and logout */
+.settings-reference-data {
+  min-width: 0;
+}
+
+.settings-reference-logout {
+  display: inline-flex;
+  width: 100%;
+  min-height: 3.65rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.55rem;
+  margin-top: 0.85rem;
+  border: 0;
+  border-radius: clamp(1rem, 2.4vw, 1.3rem);
+  background: color-mix(in srgb, var(--danger), transparent 91%);
+  color: var(--danger);
+  font-size: 0.92rem;
+  font-weight: 700;
+  line-height: 1;
+  transition:
+    background-color 180ms var(--motion-ease),
+    transform 180ms var(--motion-ease);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .settings-reference-logout:hover {
+    background: color-mix(in srgb, var(--danger), transparent 86%);
+  }
+}
+
+.settings-reference-logout:active {
+  transform: scale(0.99);
+}
+
+.settings-reference-logout:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
+@media (min-width: 56rem) {
+  .settings-reference-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: clamp(1.25rem, 2.5vw, 2rem);
+    row-gap: clamp(1.35rem, 2.5vw, 1.9rem);
+  }
+
+  .settings-reference-data {
+    grid-column: 1 / -1;
+  }
+
+  .settings-reference-data .settings-reference-group {
+    width: 100%;
+  }
+
+  .settings-reference-logout {
+    max-width: 28rem;
+    margin-inline: auto;
+  }
+}
+
+@media (min-width: 75rem) {
+  .settings-page-polish .settings-experience-v2 {
+    padding-inline: 1rem;
+  }
+
+  .settings-account-card {
+    padding: 1.45rem !important;
+  }
+}
+
+@media (max-width: 36rem) {
+  .settings-page-polish .settings-experience-v2 {
+    padding-inline: 0;
+  }
+
+  .settings-reference-page-heading {
+    padding-inline: 0.3rem;
+  }
+
+  .settings-account-card {
+    border-radius: 1.35rem !important;
+    padding: 0.95rem !important;
+  }
+
+  .settings-account-edit {
+    min-width: 2.6rem;
+    padding-inline: 0.65rem;
+  }
+
+  .settings-account-edit span {
+    display: none;
+  }
+
+  .settings-reference-theme-option {
+    grid-template-columns: auto minmax(0, auto);
+  }
+
+  .settings-reference-theme-option > svg:last-child {
+    display: none;
+  }
+
+  .settings-reference-row-value,
+  .settings-page-polish .settings-reference-preferences-wrapper .finance-state-pill {
+    display: none !important;
+  }
+}
+
+@media (max-width: 22rem) {
+  .settings-account-card-topline {
+    gap: 0.58rem;
+  }
+
+  .settings-account-avatar {
+    width: 2.75rem !important;
+    height: 2.75rem !important;
+  }
+
+  .settings-account-stat {
+    min-height: 3.85rem;
+    padding-inline: 0.2rem;
+  }
+
+  .settings-account-stat span {
+    font-size: 0.54rem;
+  }
+
+  .settings-reference-theme-option {
+    gap: 0.2rem;
+    padding-inline: 0.3rem;
+    font-size: 0.68rem;
+  }
+
+  .settings-reference-row,
+  .settings-page-polish .settings-reference-preferences-wrapper .finance-panel > button,
+  .settings-page-polish .settings-reference-categories-wrapper .finance-panel > button {
+    gap: 0.55rem !important;
+    padding-inline: 0.72rem !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .settings-account-edit,
+  .settings-reference-row-button,
+  .settings-reference-theme-option,
+  .settings-reference-logout {
+    transition: none !important;
+  }
+}
