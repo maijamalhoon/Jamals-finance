@@ -1,21 +1,36 @@
 /*
- * Transaction receipt viewport fit.
- * Scope: receipt route only. Keeps receipt data, icons, colors, actions, and
- * refund/copy/download/print behavior unchanged while compacting the layout.
+ * Transaction receipt portrait slip.
+ * Scope: receipt route only. The structure remains identical on phone, tablet,
+ * desktop, and large displays. Data, icons, colors, calculations, routes, and
+ * refund/copy/download/print functionality remain unchanged.
  */
 
 [data-dashboard-scroll]:has([data-transaction-receipt]) {
-  padding-bottom: max(0.55rem, env(safe-area-inset-bottom)) !important;
+  overflow-y: hidden !important;
+  overscroll-behavior: none !important;
+  padding-bottom: max(0.65rem, env(safe-area-inset-bottom)) !important;
+}
+
+.jf-dashboard-content-frame:has([data-transaction-receipt]) {
+  min-height: 100%;
 }
 
 main:has(> [data-transaction-receipt]) {
-  gap: 0.55rem !important;
+  --receipt-fit-scale: 1;
+  width: min(100%, 34rem) !important;
+  max-width: 34rem !important;
+  margin-inline: auto !important;
+  gap: 0.7rem !important;
   padding-bottom: 0 !important;
+  transform: scale(var(--receipt-fit-scale));
+  transform-origin: top center;
+  will-change: transform;
 }
 
-/* Keep every receipt control in one compact icon-only toolbar. */
+/* One compact icon-only action row on every viewport. */
 main:has(> [data-transaction-receipt]) > div:first-child {
   display: flex !important;
+  width: 100% !important;
   flex-direction: row !important;
   flex-wrap: nowrap !important;
   align-items: center !important;
@@ -24,16 +39,17 @@ main:has(> [data-transaction-receipt]) > div:first-child {
 }
 
 main:has(> [data-transaction-receipt]) > div:first-child > a {
-  inline-size: 2.7rem !important;
-  min-inline-size: 2.7rem !important;
-  max-inline-size: 2.7rem !important;
-  block-size: 2.7rem !important;
-  min-block-size: 2.7rem !important;
-  flex: 0 0 2.7rem;
+  inline-size: 2.65rem !important;
+  min-inline-size: 2.65rem !important;
+  max-inline-size: 2.65rem !important;
+  block-size: 2.65rem !important;
+  min-block-size: 2.65rem !important;
+  flex: 0 0 2.65rem;
   justify-content: center !important;
   gap: 0 !important;
   padding: 0 !important;
   overflow: hidden;
+  border-radius: 0.9rem !important;
   font-size: 0 !important;
   line-height: 0 !important;
 }
@@ -57,15 +73,16 @@ main:has(> [data-transaction-receipt]) > div:first-child > a svg {
 }
 
 [data-receipt-actions] .receipt-action {
-  inline-size: 2.7rem !important;
-  min-inline-size: 2.7rem !important;
-  max-inline-size: 2.7rem !important;
-  block-size: 2.7rem !important;
-  min-block-size: 2.7rem !important;
-  flex: 0 0 2.7rem;
+  inline-size: 2.65rem !important;
+  min-inline-size: 2.65rem !important;
+  max-inline-size: 2.65rem !important;
+  block-size: 2.65rem !important;
+  min-block-size: 2.65rem !important;
+  flex: 0 0 2.65rem;
   gap: 0 !important;
   padding: 0 !important;
   overflow: hidden;
+  border-radius: 0.9rem !important;
   font-size: 0 !important;
   line-height: 0 !important;
 }
@@ -81,250 +98,225 @@ main:has(> [data-transaction-receipt]) > div:first-child > a svg {
   height: 1.08rem !important;
 }
 
-/* Compact receipt header without removing any receipt information. */
+/* Portrait paper surface. */
+[data-transaction-receipt] {
+  width: 100% !important;
+  border-radius: 1.35rem !important;
+  box-shadow:
+    var(--surface-highlight),
+    0 18px 42px color-mix(in srgb, var(--text-primary) 8%, transparent) !important;
+}
+
+.dark [data-transaction-receipt] {
+  box-shadow:
+    var(--surface-highlight),
+    0 20px 46px rgb(0 0 0 / 0.24) !important;
+}
+
+/* Receipt identity/header. The badge always sits below the title block. */
 [data-transaction-receipt] > div:first-child {
-  padding: 0.72rem 0.82rem !important;
+  padding: 0.95rem 1rem 0.9rem !important;
 }
 
 [data-transaction-receipt] > div:first-child > div {
-  flex-direction: row !important;
-  align-items: center !important;
-  justify-content: space-between !important;
-  gap: 0.65rem !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: stretch !important;
+  justify-content: flex-start !important;
+  gap: 0.7rem !important;
 }
 
 [data-transaction-receipt] > div:first-child > div > div:first-child {
+  width: 100%;
   min-width: 0;
-  align-items: center !important;
-  gap: 0.55rem !important;
+  align-items: flex-start !important;
+  gap: 0.7rem !important;
 }
 
 [data-transaction-receipt] > div:first-child > div > div:first-child > span:first-child {
-  width: 2.35rem !important;
-  height: 2.35rem !important;
+  width: 2.55rem !important;
+  height: 2.55rem !important;
 }
 
 [data-transaction-receipt] > div:first-child > div > div:first-child > span:first-child svg {
-  width: 1.35rem !important;
-  height: 1.35rem !important;
+  width: 1.42rem !important;
+  height: 1.42rem !important;
 }
 
 [data-transaction-receipt] > div:first-child p:first-of-type {
-  font-size: 0.56rem !important;
-  line-height: 0.75rem !important;
-  letter-spacing: 0.11em !important;
+  font-size: 0.61rem !important;
+  line-height: 0.78rem !important;
+  letter-spacing: 0.125em !important;
 }
 
 [data-transaction-receipt] > div:first-child h2 {
-  margin-top: 0.12rem !important;
-  font-size: clamp(1.02rem, 4.6vw, 1.35rem) !important;
-  line-height: 1.15 !important;
-  letter-spacing: -0.028em !important;
+  margin-top: 0.15rem !important;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  font-size: clamp(1.18rem, 4.8vw, 1.48rem) !important;
+  line-height: 1.12 !important;
+  letter-spacing: -0.032em !important;
+  text-wrap: balance;
 }
 
 [data-transaction-receipt] > div:first-child h2 + p {
-  margin-top: 0.2rem !important;
-  font-size: 0.64rem !important;
-  line-height: 0.85rem !important;
+  margin-top: 0.25rem !important;
+  font-size: 0.72rem !important;
+  line-height: 0.96rem !important;
 }
 
 [data-transaction-receipt] > div:first-child > div > span:last-child {
-  min-height: 1.55rem !important;
-  margin-left: auto !important;
-  padding: 0.24rem 0.48rem !important;
-  font-size: 0.6rem !important;
-  line-height: 0.78rem !important;
+  align-self: flex-start;
+  min-height: 1.75rem !important;
+  margin-left: 3.25rem !important;
+  padding: 0.32rem 0.62rem !important;
+  font-size: 0.66rem !important;
+  line-height: 0.9rem !important;
 }
 
-/* Densify the body so the whole receipt stays inside the device viewport. */
+/* The body is always a single portrait column, including on desktop. */
 [data-transaction-receipt] > div:nth-child(2) {
+  display: grid !important;
   grid-template-columns: minmax(0, 1fr) !important;
-  gap: 0.5rem !important;
-  padding: 0.58rem 0.78rem 0.7rem !important;
+  gap: 0.75rem !important;
+  padding: 0.8rem 1rem 0.9rem !important;
 }
 
 [data-transaction-receipt] > div:nth-child(2) > div:first-child {
+  min-width: 0;
   padding: 0 !important;
 }
 
 [data-transaction-receipt] > div:nth-child(2) > div:first-child > :not([hidden]) ~ :not([hidden]) {
-  margin-top: 0.46rem !important;
+  margin-top: 0.68rem !important;
 }
 
+/* Amount block. */
 [data-transaction-receipt] > div:nth-child(2) > div:first-child > div:first-child {
   margin-bottom: 0 !important;
-  padding: 0.52rem 0.62rem !important;
+  padding: 0.72rem 0.8rem !important;
+  border-radius: 1rem !important;
 }
 
 [data-transaction-receipt] > div:nth-child(2) > div:first-child > div:first-child > p:first-child {
-  font-size: 0.54rem !important;
-  line-height: 0.72rem !important;
-  letter-spacing: 0.11em !important;
+  font-size: 0.58rem !important;
+  line-height: 0.76rem !important;
+  letter-spacing: 0.12em !important;
 }
 
 [data-transaction-receipt] > div:nth-child(2) > div:first-child > div:first-child > p:nth-of-type(2) {
-  margin-top: 0.18rem !important;
-  font-size: clamp(1.62rem, 8.6vw, 2.35rem) !important;
-  line-height: 0.98 !important;
+  margin-top: 0.24rem !important;
+  overflow-wrap: anywhere;
+  font-size: clamp(2rem, 9vw, 2.8rem) !important;
+  line-height: 0.96 !important;
+  letter-spacing: -0.052em !important;
 }
 
 [data-transaction-receipt] > div:nth-child(2) > div:first-child > div:first-child > p:last-child {
-  margin-top: 0.2rem !important;
-  font-size: 0.62rem !important;
-  line-height: 0.82rem !important;
+  margin-top: 0.28rem !important;
+  font-size: 0.7rem !important;
+  line-height: 0.92rem !important;
 }
 
+/* Identical two-column receipt detail grid on every device. */
 [data-transaction-receipt] > div:nth-child(2) > div:first-child > div:nth-child(2) {
+  display: grid !important;
   grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-  column-gap: 0.68rem !important;
+  column-gap: 0.78rem !important;
   row-gap: 0 !important;
 }
 
 [data-transaction-receipt] div.finance-panel-soft {
-  min-height: 3.05rem !important;
-  padding: 0.38rem 0.08rem !important;
+  min-width: 0;
+  min-height: 3.35rem !important;
+  padding: 0.5rem 0.08rem !important;
+  border-bottom-color: color-mix(in srgb, var(--divider), transparent 12%) !important;
 }
 
 [data-transaction-receipt] div.finance-panel-soft > div:first-child {
-  gap: 0.3rem !important;
-  margin-bottom: 0.14rem !important;
-  font-size: 0.52rem !important;
-  line-height: 0.68rem !important;
-  letter-spacing: 0.075em !important;
+  gap: 0.34rem !important;
+  margin-bottom: 0.18rem !important;
+  font-size: 0.55rem !important;
+  line-height: 0.72rem !important;
+  letter-spacing: 0.085em !important;
 }
 
 [data-transaction-receipt] div.finance-panel-soft > div:first-child svg {
-  width: 0.75rem !important;
-  height: 0.75rem !important;
+  width: 0.78rem !important;
+  height: 0.78rem !important;
 }
 
 [data-transaction-receipt] div.finance-panel-soft > p {
   overflow-wrap: anywhere;
-  font-size: clamp(0.68rem, 2.7vw, 0.78rem) !important;
-  line-height: 0.96rem !important;
+  font-size: clamp(0.74rem, 2.8vw, 0.86rem) !important;
+  line-height: 1.08rem !important;
 }
 
+/* Extra details stay below the primary details as part of the same slip. */
 [data-transaction-receipt] aside.finance-panel-soft {
+  min-width: 0;
   min-height: 0 !important;
-  padding: 0.38rem 0 0 !important;
+  padding: 0.65rem 0.78rem 0.1rem !important;
+  border-top: 1px solid color-mix(in srgb, var(--divider), transparent 8%) !important;
+  border-left: 0 !important;
+  border-radius: 0.95rem !important;
+  background: color-mix(in srgb, var(--surface-secondary), transparent 42%) !important;
 }
 
 [data-transaction-receipt] aside.finance-panel-soft > p:first-child {
-  font-size: 0.54rem !important;
-  line-height: 0.72rem !important;
-  letter-spacing: 0.1em !important;
+  font-size: 0.6rem !important;
+  line-height: 0.78rem !important;
+  letter-spacing: 0.115em !important;
 }
 
 [data-transaction-receipt] aside.finance-panel-soft > div {
   display: grid !important;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  column-gap: 0.68rem;
-  row-gap: 0;
-  margin-top: 0.12rem !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  column-gap: 0.78rem !important;
+  row-gap: 0 !important;
+  margin-top: 0.18rem !important;
 }
 
-/* Tablet and desktop keep the same data in a wider, shorter arrangement. */
-@media (min-width: 48.001rem) {
-  [data-transaction-receipt] > div:nth-child(2) {
-    grid-template-columns: minmax(0, 1fr) minmax(12.5rem, 16rem) !important;
-    gap: 0.85rem !important;
-  }
-
-  [data-transaction-receipt] > div:nth-child(2) > div:first-child > div:nth-child(2) {
-    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
-  }
-
-  [data-transaction-receipt] aside.finance-panel-soft {
-    padding: 0.2rem 0 0 0.8rem !important;
-  }
-
-  [data-transaction-receipt] aside.finance-panel-soft > div {
-    grid-template-columns: minmax(0, 1fr);
-  }
-}
-
-/* Extra compaction for short phones and landscape viewports. */
-@media (max-width: 48rem) and (max-height: 46rem) {
-  [data-dashboard-scroll]:has([data-transaction-receipt]) {
-    padding-bottom: max(0.3rem, env(safe-area-inset-bottom)) !important;
-  }
-
+/* Very narrow phones keep the same structure; only spacing scales down gently. */
+@media (max-width: 22rem) {
   main:has(> [data-transaction-receipt]) {
-    gap: 0.35rem !important;
+    gap: 0.55rem !important;
   }
 
   main:has(> [data-transaction-receipt]) > div:first-child > a,
   [data-receipt-actions] .receipt-action {
-    inline-size: 2.38rem !important;
-    min-inline-size: 2.38rem !important;
-    max-inline-size: 2.38rem !important;
-    block-size: 2.38rem !important;
-    min-block-size: 2.38rem !important;
-    flex-basis: 2.38rem;
+    inline-size: 2.45rem !important;
+    min-inline-size: 2.45rem !important;
+    max-inline-size: 2.45rem !important;
+    block-size: 2.45rem !important;
+    min-block-size: 2.45rem !important;
+    flex-basis: 2.45rem;
   }
 
-  [data-transaction-receipt] > div:first-child {
-    padding: 0.5rem 0.62rem !important;
-  }
-
-  [data-transaction-receipt] > div:first-child > div > div:first-child > span:first-child {
-    width: 2rem !important;
-    height: 2rem !important;
-  }
-
-  [data-transaction-receipt] > div:first-child > div > div:first-child > span:first-child svg {
-    width: 1.15rem !important;
-    height: 1.15rem !important;
-  }
-
-  [data-transaction-receipt] > div:first-child h2 {
-    font-size: 0.95rem !important;
-  }
-
-  [data-transaction-receipt] > div:first-child h2 + p {
-    font-size: 0.56rem !important;
-  }
-
+  [data-transaction-receipt] > div:first-child,
   [data-transaction-receipt] > div:nth-child(2) {
-    gap: 0.32rem !important;
-    padding: 0.4rem 0.58rem 0.48rem !important;
+    padding-inline: 0.78rem !important;
   }
 
-  [data-transaction-receipt] > div:nth-child(2) > div:first-child > div:first-child {
-    padding: 0.38rem 0.5rem !important;
-  }
-
-  [data-transaction-receipt] > div:nth-child(2) > div:first-child > div:first-child > p:nth-of-type(2) {
-    font-size: 1.45rem !important;
-  }
-
-  [data-transaction-receipt] div.finance-panel-soft {
-    min-height: 2.58rem !important;
-    padding: 0.25rem 0.06rem !important;
-  }
-
-  [data-transaction-receipt] div.finance-panel-soft > div:first-child {
-    margin-bottom: 0.08rem !important;
-    font-size: 0.46rem !important;
-    line-height: 0.6rem !important;
-  }
-
-  [data-transaction-receipt] div.finance-panel-soft > p {
-    font-size: 0.62rem !important;
-    line-height: 0.78rem !important;
-  }
-
-  [data-transaction-receipt] aside.finance-panel-soft {
-    padding-top: 0.22rem !important;
+  [data-transaction-receipt] > div:nth-child(2) > div:first-child > div:nth-child(2),
+  [data-transaction-receipt] aside.finance-panel-soft > div {
+    column-gap: 0.58rem !important;
   }
 }
 
 @media print {
   [data-dashboard-scroll]:has([data-transaction-receipt]) {
-    padding-bottom: 0 !important;
+    overflow: visible !important;
+    padding: 0 !important;
   }
 
   main:has(> [data-transaction-receipt]) {
-    gap: 0 !important;
+    width: 100% !important;
+    max-width: none !important;
+    transform: none !important;
+  }
+
+  [data-transaction-receipt] {
+    box-shadow: none !important;
   }
 }
