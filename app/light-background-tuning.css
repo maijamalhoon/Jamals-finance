@@ -1,0 +1,27 @@
+/* Light-mode page canvas tuning only.
+   Keeps cards, controls, icons, typography, and dark mode unchanged. */
+
+:root:not(.dark) {
+  --page-background: #f1f4f8;
+}
+
+:root:not(.dark) body {
+  background-color: var(--page-background);
+}
+
+/* Public shells own their backdrop gradients, so only their light base is
+   darkened by the same subtle amount while all decorative layers remain. */
+:root:not(.dark) .jf-node4-landing {
+  background:
+    radial-gradient(circle at 6% 5%, rgb(49 91 216 / 0.15), transparent 28rem),
+    radial-gradient(circle at 94% 13%, rgb(116 82 199 / 0.13), transparent 30rem),
+    linear-gradient(180deg, #f6f8fd 0%, #f1f4f8 48%, #ecf1f7 100%);
+}
+
+:root:not(.dark) .jf-auth-root {
+  background:
+    radial-gradient(circle at 8% 7%, var(--auth-glow-a), transparent 28rem),
+    radial-gradient(circle at 92% 14%, var(--auth-glow-b), transparent 30rem),
+    radial-gradient(circle at 48% 96%, var(--auth-glow-c), transparent 34rem),
+    linear-gradient(145deg, #f6f8fd 0%, #f1f4f8 48%, #ecf1f7 100%);
+}
