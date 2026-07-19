@@ -33,6 +33,8 @@ import "./card-borderless-policy.css";
 import "./dashboard-overview-type-icons.css";
 // Keep route-specific content typography last so it cannot leak into other pages.
 import "./content-typography.css";
+// Accounts and reports are the final untouched content routes in the type/icon audit.
+import "./remaining-content-type-icons.css";
 // Transactions typography/icons are scoped to the exact transactions route only.
 import "./transactions-type-icons.css";
 // Receipt polish stays last so its tightly scoped visual system cannot be muted by shared route styles.
