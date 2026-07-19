@@ -29,6 +29,7 @@ const DESKTOP_HEADER_HREFS = [
   "/dashboard/goals",
   "/dashboard/payables",
   "/dashboard/ai-insights",
+  "/dashboard/reports",
 ] as const;
 
 const DESKTOP_HEADER_NAV_ITEMS = DESKTOP_HEADER_HREFS.map((href) =>
@@ -114,7 +115,7 @@ export default function Header({ notificationSlot }: HeaderProps) {
       <div className="mx-auto flex min-h-[4.75rem] w-full max-w-[1600px] min-w-0 items-center gap-2.5 rounded-[20px] border-0 bg-surface-primary px-3 shadow-none xl:gap-3 xl:px-4">
         <nav
           aria-label="Desktop dashboard navigation"
-          className="grid min-w-0 flex-1 grid-cols-10 items-center gap-0.5 min-[1180px]:gap-1 2xl:gap-1.5"
+          className="grid min-w-0 flex-1 grid-cols-11 items-center gap-0.5 min-[1180px]:gap-1 2xl:gap-1.5"
         >
           {DESKTOP_HEADER_NAV_ITEMS.map(({ label, href, icon: Icon }) => {
             const active = isNavItemActive(pathname, href);
