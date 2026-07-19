@@ -73,6 +73,8 @@ import "./desktop-header-nav-motion.css";
 import "./mobile-notification-bell-motion.css";
 // Every primary route except the dashboard overview shares one compact page label.
 import "./unified-page-heading.css";
+// All content cards and decorative icon wrappers on those routes stay borderless.
+import "./non-dashboard-card-borderless.css";
 
 export const dynamic = "force-dynamic";
 
