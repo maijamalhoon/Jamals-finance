@@ -59,7 +59,13 @@
   .finance-reference-card
   > div:first-child
   h3,
-/* Portfolio card kicker beside its icon. */
+/* Simplified Investments kicker beside its icon. */
+.dashboard-overview-layout
+  .finance-reference-card
+  > header:first-child
+  > div:first-child
+  > span:last-child,
+/* Keep compatibility with the previous nested Investments header. */
 .dashboard-overview-layout
   .finance-reference-card
   > header:first-child
