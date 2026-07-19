@@ -42,6 +42,8 @@ interface Transaction {
   note: string | null;
   date: string;
   created_at?: string | null;
+  updated_at?: string | null;
+  deleted_at?: string | null;
   source_name?: string | null;
   person_name?: string | null;
   item_name?: string | null;
@@ -49,11 +51,47 @@ interface Transaction {
   accounts: { name: string } | null;
 }
 
-type CategoryVisualRow = {
+type TransferRelation =
+  | { name?: string | null }
+  | { name?: string | null }[]
+  | null;
+
+type TransferRow = {
   id: string;
-  icon_key: string | null;
-  type: string | null;
+  amount: number | string | null;
+  note: string | null;
+  transfer_date: string;
+  created_at?: string | null;
+  updated_at?: string | null;
+  deleted_at?: string | null;
+  from_account?: TransferRelation;
+  to_account?: TransferRelation;
 };
+
+function firstRelation<T>(value: T | T[] | null | undefined): T | null {
+  return Array.isArray(value) ? (value[0] ?? null) : (value ?? null);
+}
+
+function mapTransfer(row: TransferRow): Transaction {
+  const fromName = firstRelation(row.from_account)?.name?.trim() || "From account";
+  const toName = firstRelation(row.to_account)?.name?.trim() || "To account";
+
+  return {
+    id: row.id,
+    type: "transfer",
+    amount: row.amount,
+    note: row.note,
+    date: row.transfer_date,
+    created_at: row.created_at,
+    updated_at: row.updated_at,
+    deleted_at: row.deleted_at,
+    source_name: null,
+    person_name: null,
+    item_name: null,
+    categories: null,
+    accounts: { name: `${fromName} -> ${toName}` },
+  };
+}
 
 function getTransactionLabel(
   transaction: Transaction,
@@ -122,92 +160,75 @@ export default function RecentTransactions({
   status: DashboardAvailability;
 }) {
   const supabase = useMemo(() => createClient(), []);
-  const [categoryVisuals, setCategoryVisuals] = useState<
-    Record<string, CategoryVisualRow>
-  >({});
-  const [goalTransactions, setGoalTransactions] = useState<Transaction[]>([]);
+  const [latestTransactions, setLatestTransactions] = useState<Transaction[]>(
+    () => sortTransactionsNewestFirst(transactions).slice(0, 5),
+  );
 
   useEffect(() => {
     let cancelled = false;
-    const categoryIds = Array.from(
-      new Set(
-        transactions
-          .map((transaction) => transaction.categories?.id)
-          .filter((value): value is string => Boolean(value)),
-      ),
-    );
 
-    async function loadPersistentVisualsAndGoals() {
-      const categoryRequest =
-        categoryIds.length > 0
-          ? supabase
-              .from("categories")
-              .select("id, icon_key, type")
-              .in("id", categoryIds)
-          : Promise.resolve({ data: [], error: null });
+    setLatestTransactions(sortTransactionsNewestFirst(transactions).slice(0, 5));
 
-      const goalsRequest = supabase
-        .from("transactions")
-        .select(
-          "id, type, amount, note, date, created_at, source_name, person_name, item_name, categories(id, name, color, icon_key, type), accounts(name)",
-        )
-        .eq("type", "goal")
-        .order("date", { ascending: false })
-        .order("created_at", { ascending: false })
-        .limit(5);
-
-      const [categoryResult, goalResult] = await Promise.all([
-        categoryRequest,
-        goalsRequest,
+    async function loadLatestTransactions() {
+      const [transactionResult, transferResult] = await Promise.all([
+        supabase
+          .from("transactions")
+          .select(
+            "id, type, amount, note, date, created_at, updated_at, deleted_at, source_name, person_name, item_name, categories(id, name, color, icon_key, type), accounts(name)",
+          )
+          .is("deleted_at", null)
+          .order("updated_at", { ascending: false })
+          .order("created_at", { ascending: false })
+          .limit(5),
+        supabase
+          .from("account_transfers")
+          .select(
+            "id, amount, note, transfer_date, created_at, updated_at, deleted_at, from_account:from_account_id(name), to_account:to_account_id(name)",
+          )
+          .is("deleted_at", null)
+          .order("updated_at", { ascending: false })
+          .order("created_at", { ascending: false })
+          .limit(5),
       ]);
+
       if (cancelled) return;
 
-      if (!categoryResult.error) {
-        const nextVisuals = Object.fromEntries(
-          ((categoryResult.data ?? []) as CategoryVisualRow[]).map((row) => [
-            row.id,
-            row,
-          ]),
-        );
-        setCategoryVisuals(nextVisuals);
-      }
+      const fallbackTransactions = transactions.filter(
+        (transaction) => transaction.type !== "transfer",
+      );
+      const fallbackTransfers = transactions.filter(
+        (transaction) => transaction.type === "transfer",
+      );
+      const transactionRows = transactionResult.error
+        ? fallbackTransactions
+        : ((transactionResult.data ?? []) as unknown as Transaction[]);
+      const transferRows = transferResult.error
+        ? fallbackTransfers
+        : ((transferResult.data ?? []) as unknown as TransferRow[]).map(
+            mapTransfer,
+          );
 
-      if (!goalResult.error) {
-        setGoalTransactions(
-          (goalResult.data ?? []) as unknown as Transaction[],
-        );
-      }
+      const unique = new Map<string, Transaction>();
+      [...transactionRows, ...transferRows].forEach((transaction) => {
+        if (!transaction.id || transaction.deleted_at) return;
+        unique.set(`${transaction.type}:${transaction.id}`, transaction);
+      });
+
+      setLatestTransactions(
+        sortTransactionsNewestFirst(Array.from(unique.values())).slice(0, 5),
+      );
     }
 
-    void loadPersistentVisualsAndGoals();
+    void loadLatestTransactions();
     return () => {
       cancelled = true;
     };
   }, [supabase, transactions]);
 
-  const visibleTransactions = useMemo(() => {
-    const enrichedTransactions = transactions.map((transaction) => {
-      const categoryId = transaction.categories?.id;
-      const visual = categoryId ? categoryVisuals[categoryId] : null;
-      if (!transaction.categories || !visual) return transaction;
-
-      return {
-        ...transaction,
-        categories: {
-          ...transaction.categories,
-          icon_key: visual.icon_key,
-          type: visual.type,
-        },
-      };
-    });
-
-    const unique = new Map<string, Transaction>();
-    [...enrichedTransactions, ...goalTransactions].forEach((transaction) => {
-      unique.set(`${transaction.type}:${transaction.id}`, transaction);
-    });
-
-    return sortTransactionsNewestFirst(Array.from(unique.values())).slice(0, 5);
-  }, [categoryVisuals, goalTransactions, transactions]);
+  const visibleTransactions = useMemo(
+    () => sortTransactionsNewestFirst(latestTransactions).slice(0, 5),
+    [latestTransactions],
+  );
 
   return (
     <section className="finance-reference-card motion-card-entry flex min-h-[280px] min-w-0 flex-col overflow-hidden p-4 sm:p-5">
