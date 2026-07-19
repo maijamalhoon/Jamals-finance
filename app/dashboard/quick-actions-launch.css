@@ -46,7 +46,7 @@
     padding-inline: 0.16em;
     overflow: visible;
     box-sizing: border-box;
-    font-size: clamp(2.65rem, 13.6vw, 3.8rem) !important;
+    font-size: clamp(2.25rem, 11.2vw, 3.3rem) !important;
     line-height: 1.04 !important;
     letter-spacing: -0.045em;
     text-align: center;
@@ -62,18 +62,19 @@
     padding-inline: 0.08em;
     overflow: visible;
     box-sizing: border-box;
+    text-align: center;
   }
 
   [data-dashboard-scroll]
     .dashboard-overview
     .dashboard-balance-amount[data-balance-size="long"] {
-    font-size: clamp(2.12rem, 10.9vw, 3.15rem) !important;
+    font-size: clamp(1.8rem, 9vw, 2.65rem) !important;
   }
 
   [data-dashboard-scroll]
     .dashboard-overview
     .dashboard-balance-amount[data-balance-size="xlong"] {
-    font-size: clamp(1.75rem, 8.9vw, 2.6rem) !important;
+    font-size: clamp(1.45rem, 7.25vw, 2.2rem) !important;
   }
 
   [data-dashboard-scroll]
