@@ -7,6 +7,8 @@ import {
 } from "lucide-react";
 import type { ReactNode } from "react";
 
+import MathSymbolField from "@/components/landing/MathSymbolField";
+
 export default function AuthShell({
   children,
   eyebrow,
@@ -33,6 +35,8 @@ export default function AuthShell({
       data-auth-minimal={minimal || undefined}
       data-auth-compact={compact || undefined}
     >
+      <MathSymbolField variant="auth" />
+
       <header className="jf-auth-header">
         <Link
           href="/"
