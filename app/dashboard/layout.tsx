@@ -20,6 +20,7 @@ import {
 } from "@/lib/currency";
 import type { NotificationState } from "@/lib/notifications";
 import { loadDashboardNotifications } from "@/lib/notifications-server";
+import { createClient } from "@/lib/supabase/server";
 
 import "./dashboard-performance.css";
 import "./desktop-dashboard-layout.css";
@@ -87,11 +88,31 @@ export default async function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const cookieStore = await cookies();
+  const [cookieStore, supabase] = await Promise.all([cookies(), createClient()]);
   const storedCurrency = cookieStore.get(CURRENCY_STORAGE_KEY)?.value;
   const storedPreference =
     isSupportedCurrency(storedCurrency) ? storedCurrency : null;
-  const initialCurrency = storedPreference ?? BASE_CURRENCY;
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  let accountPreference = null;
+
+  if (user) {
+    const { data: profile, error } = await supabase
+      .from("profiles")
+      .select("preferred_currency")
+      .eq("id", user.id)
+      .maybeSingle();
+
+    if (!error && isSupportedCurrency(profile?.preferred_currency)) {
+      accountPreference = profile.preferred_currency;
+    }
+  }
+
+  const initialCurrency =
+    accountPreference ?? storedPreference ?? BASE_CURRENCY;
   const notificationStatePromise = loadDashboardNotifications();
   const notificationSlot = (
     <Suspense fallback={<NotificationCenterLoading />}>
@@ -102,7 +123,9 @@ export default async function DashboardLayout({
   return (
     <CurrencyProvider
       initialCurrency={initialCurrency}
-      hasStoredPreference={storedPreference !== null}
+      hasStoredPreference={
+        accountPreference !== null || storedPreference !== null
+      }
     >
       <div
         data-dashboard-shell
