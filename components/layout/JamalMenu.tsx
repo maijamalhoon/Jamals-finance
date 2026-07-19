@@ -35,6 +35,11 @@ type ProfileSummary = {
   avatarUrl: string | null;
 };
 
+type ProfileUpdatedDetail = {
+  displayName?: unknown;
+  avatarUrl?: unknown;
+};
+
 const FALLBACK_PROFILE: ProfileSummary = {
   displayName: "Jamal",
   avatarUrl: null,
@@ -97,6 +102,27 @@ export default function JamalMenu({
       active = false;
     };
   }, [supabase]);
+
+  useEffect(() => {
+    function handleProfileUpdated(event: Event) {
+      const detail = (event as CustomEvent<ProfileUpdatedDetail>).detail;
+      if (!detail) return;
+
+      if (typeof detail.displayName === "string" && detail.displayName.trim()) {
+        setDisplayName(detail.displayName);
+      }
+
+      if (typeof detail.avatarUrl === "string" || detail.avatarUrl === null) {
+        setAvatarUrl(detail.avatarUrl);
+      }
+
+      profileRequest = null;
+    }
+
+    window.addEventListener("jamal-profile-updated", handleProfileUpdated);
+    return () =>
+      window.removeEventListener("jamal-profile-updated", handleProfileUpdated);
+  }, []);
 
   async function handleSignOut() {
     await supabase.auth.signOut();
