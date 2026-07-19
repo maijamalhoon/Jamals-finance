@@ -39,6 +39,8 @@ import "./transactions-type-icons.css";
 import "./transaction-receipt-premium.css";
 // Compact header controls and menus stay last; selectors remain mobile/tablet scoped.
 import "./mobile-header-detail-polish.css";
+// Final mobile control corrections must win over every earlier compact-header rule.
+import "./mobile-header-control-fixes.css";
 
 export const dynamic = "force-dynamic";
 
