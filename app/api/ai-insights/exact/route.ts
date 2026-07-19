@@ -8,6 +8,10 @@ import {
   type SupportedCurrency,
 } from "@/lib/currency";
 import {
+  buildAssetBreakdownAnswer,
+  isAssetBreakdownRequest,
+} from "@/lib/ai/asset-breakdown";
+import {
   buildDeterministicFinanceAnswer,
   parseDeterministicFinanceQuestion,
   parseFinanceDateRange,
@@ -23,6 +27,8 @@ export const dynamic = "force-dynamic";
 
 const CHAT_CONTEXT_COOKIE = "jamals_finance_chat_context";
 const CHAT_CONTEXT_MAX_AGE = 60 * 30;
+const ASSET_CONTEXT_QUESTION =
+  "How many assets do I have and what are their names and values?";
 
 type CurrencyContext = {
   currency: SupportedCurrency;
@@ -318,13 +324,17 @@ export async function POST(request: NextRequest) {
 
   const now = getAppDateParts();
   const previousQuestion = getStoredFinanceQuestion(request);
+  const assetBreakdownRequested = isAssetBreakdownRequest(
+    question,
+    previousQuestion,
+  );
   const { resolvedQuestion, intent } = resolveFinanceQuestion(
     question,
     previousQuestion,
     now,
   );
 
-  if (!intent) {
+  if (!intent && !assetBreakdownRequested) {
     const forwardedBody = isRecord(body)
       ? { ...body, question: resolvedQuestion }
       : { question: resolvedQuestion };
@@ -349,22 +359,45 @@ export async function POST(request: NextRequest) {
     }
 
     const context = getCurrencyContext(body);
-    const data = await getExactFinanceData(supabase, intent);
+    const money = (value: number) =>
+      formatMoney(value, {
+        currency: context.currency,
+        usdToPkrRate: context.rate,
+      });
+
+    if (assetBreakdownRequested) {
+      const data = await getExactFinanceData(supabase, { kind: "assets" });
+      const calculated = buildAssetBreakdownAnswer(
+        data.investments ?? [],
+        money,
+      );
+
+      return rememberFinanceQuestion(
+        jsonResponse({
+          provider: "local-calculator",
+          model: "exact-finance-ledger-v4",
+          aiAvailable: true,
+          fallback: false,
+          deterministic: true,
+          contextual: Boolean(previousQuestion),
+          ...calculated,
+        }),
+        ASSET_CONTEXT_QUESTION,
+      );
+    }
+
+    const data = await getExactFinanceData(supabase, intent!);
     const calculated = buildDeterministicFinanceAnswer({
-      intent,
+      intent: intent!,
       question: resolvedQuestion,
       data,
-      money: (value) =>
-        formatMoney(value, {
-          currency: context.currency,
-          usdToPkrRate: context.rate,
-        }),
+      money,
     });
 
     return rememberFinanceQuestion(
       jsonResponse({
         provider: "local-calculator",
-        model: "exact-finance-ledger-v3",
+        model: "exact-finance-ledger-v4",
         aiAvailable: true,
         fallback: false,
         deterministic: true,
