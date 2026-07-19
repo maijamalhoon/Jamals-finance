@@ -19,7 +19,7 @@ type ConfirmAction = {
   destructive: boolean;
 };
 
-function getActionElement(event: MouseEvent) {
+function getActionElement(event: MouseEvent): HTMLElement | null {
   const selector =
     'button, [role="button"], a, input[type="button"], input[type="submit"]';
 
@@ -27,7 +27,9 @@ function getActionElement(event: MouseEvent) {
     if (node instanceof HTMLElement && node.matches(selector)) return node;
   }
 
-  return event.target instanceof HTMLElement ? event.target.closest(selector) : null;
+  return event.target instanceof HTMLElement
+    ? event.target.closest<HTMLElement>(selector)
+    : null;
 }
 
 function getConfirmAction(message: string): ConfirmAction {
