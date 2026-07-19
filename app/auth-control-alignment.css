@@ -26,3 +26,15 @@
   align-items: center;
   justify-content: center;
 }
+
+/* Keep the email input and primary action comfortably separated on phones.
+   The shared #auth-email field is used only by the login-entry and password
+   recovery forms, so sign-up and desktop spacing remain unchanged. */
+@media (max-width: 759px) {
+  .jf-auth-root[data-auth-minimal="true"]
+    .auth-step
+    > form:has(#auth-email)
+    .auth-primary-action {
+    margin-top: 14px !important;
+  }
+}
