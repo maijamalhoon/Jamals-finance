@@ -13,6 +13,8 @@
   --auth-leading-space: 46px;
   --auth-trailing-space: 54px;
   --auth-inline-action-space: 98px;
+  --auth-adornment-translate-x: 0px;
+  --auth-adornment-translate-y: 0px;
 
   position: relative !important;
   isolation: isolate;
@@ -61,8 +63,8 @@
 }
 
 /* Grid alignment is deliberately used instead of top/translate positioning.
- * A concrete zero-value reset is intentional: CSS optimizers may remove
- * `translate: none`, allowing older `translate: 0 -50%` rules to leak through. */
+ * The custom-property reset must remain dynamic so production CSS optimizers
+ * cannot drop it and reveal an older `translate: 0 -50%` declaration. */
 .jf-auth-root
   .auth-field-control
   > :is(.auth-field-icon, .auth-inline-field-action, .auth-password-toggle) {
@@ -74,7 +76,8 @@
   left: auto !important;
   align-self: center !important;
   margin-block: 0 !important;
-  translate: 0 0 !important;
+  translate: var(--auth-adornment-translate-x)
+    var(--auth-adornment-translate-y) !important;
   transform: none !important;
 }
 
