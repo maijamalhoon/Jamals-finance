@@ -2,6 +2,8 @@
 
 import { useEffect } from "react";
 
+import styles from "./FinancePickerKeyboardGuard.module.css";
+
 const FINANCE_PICKER_SELECTOR = [
   ".finance-account-select",
   '[data-slot="select-trigger"]',
@@ -89,5 +91,5 @@ export default function FinancePickerKeyboardGuard() {
     };
   }, []);
 
-  return null;
+  return <span aria-hidden="true" className={styles.guard} />;
 }
