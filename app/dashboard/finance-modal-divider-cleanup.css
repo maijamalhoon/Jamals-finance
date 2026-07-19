@@ -1,0 +1,19 @@
+/* Final finance modal divider cleanup.
+ * Keep every form's existing layout, spacing, colors and behavior; remove only
+ * the horizontal header/footer separator lines across all dashboard finance dialogs.
+ */
+html body [data-slot="dialog-content"].finance-modal-content > [data-slot="dialog-header"],
+html body [data-slot="dialog-content"].finance-modal-content > .finance-modal-header,
+html body [role="dialog"].finance-modal-content > [data-slot="dialog-header"],
+html body [role="dialog"].finance-modal-content > .finance-modal-header,
+html body [data-slot="dialog-content"].finance-modal-content > [data-slot="dialog-footer"],
+html body [data-slot="dialog-content"].finance-modal-content > .finance-modal-footer,
+html body [role="dialog"].finance-modal-content > [data-slot="dialog-footer"],
+html body [role="dialog"].finance-modal-content > .finance-modal-footer {
+  border: 0 !important;
+  border-block-width: 0 !important;
+  border-top-width: 0 !important;
+  border-bottom-width: 0 !important;
+  border-style: none !important;
+  border-color: transparent !important;
+}
