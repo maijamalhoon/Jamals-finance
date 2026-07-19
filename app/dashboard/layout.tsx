@@ -77,6 +77,8 @@ import "./unified-page-heading.css";
 import "./non-dashboard-card-borderless.css";
 // Exact screenshot-approved hero/title blocks are removed and their space is reclaimed.
 import "./cropped-section-removals.css";
+// Final finance modal rule: no horizontal divider lines in any form header or footer.
+import "./finance-modal-divider-cleanup.css";
 
 export const dynamic = "force-dynamic";
 
