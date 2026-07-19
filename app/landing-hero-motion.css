@@ -1,0 +1,522 @@
+/* Landing hero motion and viewport-fit overrides.
+   Imported last so the existing design, data and navigation behavior stay intact. */
+
+.jf-hero-description::after {
+  content: "Built for daily income tracking";
+  width: max-content;
+  max-width: 0;
+  min-height: 1.35rem;
+  margin-top: 0.55rem;
+  display: block;
+  overflow: hidden;
+  border-right: 1.5px solid color-mix(in srgb, var(--jf-blue) 82%, transparent);
+  color: var(--jf-blue);
+  font-size: 0.82rem;
+  font-weight: 720;
+  line-height: 1.35rem;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+}
+
+.jf-dashboard-preview > * {
+  position: relative;
+  z-index: 1;
+}
+
+.jf-dashboard-preview::after {
+  position: absolute;
+  inset: -35% auto -35% -45%;
+  z-index: 0;
+  width: 34%;
+  rotate: 12deg;
+  background: linear-gradient(90deg, transparent, rgb(255 255 255 / 0.24), transparent);
+  opacity: 0;
+  pointer-events: none;
+  content: "";
+}
+
+.jf-chart-panel,
+.jf-activity-panel,
+.jf-preview-metrics > div,
+.jf-activity-list > div,
+.jf-insight-visual,
+.jf-donut,
+.jf-mini-bars > span,
+.jf-insight-bars b {
+  transition:
+    transform 260ms cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 260ms ease,
+    filter 260ms ease,
+    opacity 260ms ease,
+    background-color 260ms ease;
+}
+
+.jf-chart {
+  isolation: isolate;
+}
+
+.jf-chart::before {
+  position: absolute;
+  top: 0;
+  bottom: 1.1rem;
+  left: -12%;
+  z-index: 2;
+  width: 12%;
+  background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--jf-blue) 26%, transparent), transparent);
+  opacity: 0;
+  pointer-events: none;
+  content: "";
+}
+
+.jf-chart::after {
+  position: absolute;
+  top: 0.15rem;
+  right: 0.15rem;
+  z-index: 3;
+  border-radius: 999px;
+  padding: 0.28rem 0.48rem;
+  color: var(--jf-blue);
+  background: color-mix(in srgb, var(--jf-surface-solid) 92%, transparent);
+  box-shadow: 0 8px 22px rgb(29 50 84 / 0.12), inset 0 0 0 1px var(--jf-line);
+  font-size: 0.56rem;
+  font-weight: 740;
+  opacity: 0;
+  translate: 0 0.35rem;
+  transition: opacity 180ms ease, translate 220ms cubic-bezier(0.16, 1, 0.3, 1);
+  pointer-events: none;
+  content: "W7  ·  +8.4%";
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .jf-dashboard-preview:hover {
+    box-shadow: 0 30px 82px rgb(28 49 82 / 0.16), inset 0 1px 0 rgb(255 255 255 / 0.62);
+  }
+
+  .dark .jf-dashboard-preview:hover {
+    box-shadow: 0 30px 82px rgb(0 0 0 / 0.42), inset 0 1px 0 rgb(255 255 255 / 0.08);
+  }
+
+  .jf-preview-balance:hover .jf-balance-orbit {
+    transform: rotate(8deg) scale(1.055);
+    filter: drop-shadow(0 12px 24px rgb(14 31 74 / 0.22));
+  }
+
+  .jf-preview-metrics > div:hover,
+  .jf-chart-panel:hover,
+  .jf-activity-panel:hover {
+    transform: translateY(-3px);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--jf-blue) 18%, var(--jf-line)), 0 14px 30px rgb(28 49 82 / 0.09);
+  }
+
+  .jf-chart-panel:hover .jf-chart-line {
+    stroke-width: 6;
+    filter: drop-shadow(0 5px 7px color-mix(in srgb, var(--jf-blue) 34%, transparent));
+  }
+
+  .jf-chart-panel:hover .jf-chart-area {
+    opacity: 0.94;
+  }
+
+  .jf-chart-panel:hover .jf-chart::before {
+    opacity: 1;
+    animation: jf-chart-hover-scan 1.45s linear infinite;
+  }
+
+  .jf-chart-panel:hover .jf-chart::after {
+    opacity: 1;
+    translate: 0 0;
+  }
+
+  .jf-activity-list > div:hover {
+    transform: translateX(4px);
+    background: color-mix(in srgb, var(--jf-blue-soft) 38%, var(--jf-soft));
+  }
+
+  .jf-insight-visual:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--jf-shadow), inset 0 1px 0 rgb(255 255 255 / 0.5);
+  }
+
+  .jf-insight-visual:hover .jf-donut {
+    transform: rotate(5deg) scale(1.035);
+    filter: drop-shadow(0 14px 24px rgb(49 91 216 / 0.18));
+  }
+
+  .jf-insight-visual:hover .jf-mini-bars > span:nth-child(odd) {
+    filter: brightness(1.12);
+  }
+
+  .jf-insight-visual:hover .jf-mini-bars > span:nth-child(even) {
+    filter: brightness(0.94);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .jf-hero-description::after {
+    animation:
+      jf-hero-feature-type 16s steps(26, end) infinite,
+      jf-type-caret 720ms step-end infinite;
+  }
+
+  .jf-hero h1 span {
+    background-size: 220% 100%;
+    animation: jf-heading-gradient-loop 7s ease-in-out infinite;
+  }
+
+  .jf-hero-badge svg {
+    transform-origin: center;
+    animation: jf-badge-spark 3.8s ease-in-out infinite;
+  }
+
+  .jf-hero-proof span:nth-child(1) svg { animation: jf-proof-pulse 6s 0s ease-in-out infinite; }
+  .jf-hero-proof span:nth-child(2) svg { animation: jf-proof-pulse 6s 2s ease-in-out infinite; }
+  .jf-hero-proof span:nth-child(3) svg { animation: jf-proof-pulse 6s 4s ease-in-out infinite; }
+
+  .jf-dashboard-preview::after {
+    animation: jf-preview-sheen 8s 2.2s ease-in-out infinite;
+  }
+
+  .jf-live-pill > span {
+    animation: jf-live-dot 2.4s ease-out infinite;
+  }
+
+  .jf-chart-line {
+    stroke-dasharray: 980;
+    stroke-dashoffset: 980;
+    animation: jf-chart-loop-draw 6.4s 480ms cubic-bezier(0.16, 1, 0.3, 1) infinite;
+  }
+
+  .jf-chart-area {
+    animation: jf-chart-area-loop 6.4s 480ms ease-in-out infinite;
+  }
+
+  .jf-insight-bars b {
+    transform-origin: left center;
+    animation: jf-insight-progress-loop 7.5s ease-in-out infinite;
+  }
+
+  .jf-mini-bars > span {
+    transform-origin: center bottom;
+    animation: jf-mini-bar-loop 5.6s ease-in-out infinite;
+  }
+
+  .jf-mini-bars > span:nth-child(2) { animation-delay: 160ms; }
+  .jf-mini-bars > span:nth-child(3) { animation-delay: 320ms; }
+  .jf-mini-bars > span:nth-child(4) { animation-delay: 480ms; }
+  .jf-mini-bars > span:nth-child(5) { animation-delay: 640ms; }
+  .jf-mini-bars > span:nth-child(6) { animation-delay: 800ms; }
+  .jf-mini-bars > span:nth-child(7) { animation-delay: 960ms; }
+}
+
+@keyframes jf-hero-feature-type {
+  0% { content: "Built for daily income tracking"; max-width: 0; opacity: 1; }
+  8%, 20% { content: "Built for daily income tracking"; max-width: 22rem; opacity: 1; }
+  24% { content: "Built for daily income tracking"; max-width: 0; opacity: 1; }
+  24.01% { content: "Clear expense and cash-flow control"; max-width: 0; opacity: 1; }
+  33%, 45% { content: "Clear expense and cash-flow control"; max-width: 22rem; opacity: 1; }
+  49% { content: "Clear expense and cash-flow control"; max-width: 0; opacity: 1; }
+  49.01% { content: "Goals, payables and investments"; max-width: 0; opacity: 1; }
+  58%, 70% { content: "Goals, payables and investments"; max-width: 22rem; opacity: 1; }
+  74% { content: "Goals, payables and investments"; max-width: 0; opacity: 1; }
+  74.01% { content: "Private reports with useful insights"; max-width: 0; opacity: 1; }
+  83%, 95% { content: "Private reports with useful insights"; max-width: 22rem; opacity: 1; }
+  100% { content: "Private reports with useful insights"; max-width: 0; opacity: 1; }
+}
+
+@keyframes jf-type-caret {
+  0%, 48% { border-right-color: color-mix(in srgb, var(--jf-blue) 82%, transparent); }
+  49%, 100% { border-right-color: transparent; }
+}
+
+@keyframes jf-heading-gradient-loop {
+  0%, 100% { background-position: 0% 50%; filter: saturate(1); }
+  50% { background-position: 100% 50%; filter: saturate(1.12); }
+}
+
+@keyframes jf-badge-spark {
+  0%, 100% { transform: rotate(0deg) scale(1); filter: none; }
+  45% { transform: rotate(-10deg) scale(1.08); filter: drop-shadow(0 3px 7px color-mix(in srgb, var(--jf-amber) 38%, transparent)); }
+  58% { transform: rotate(8deg) scale(1.03); }
+}
+
+@keyframes jf-proof-pulse {
+  0%, 78%, 100% { transform: scale(1); filter: none; }
+  86% { transform: scale(1.16); filter: drop-shadow(0 3px 6px color-mix(in srgb, var(--jf-green) 34%, transparent)); }
+}
+
+@keyframes jf-preview-sheen {
+  0%, 68% { left: -45%; opacity: 0; }
+  72% { opacity: 0.58; }
+  88% { left: 125%; opacity: 0.18; }
+  100% { left: 125%; opacity: 0; }
+}
+
+@keyframes jf-live-dot {
+  0% { box-shadow: 0 0 0 0 color-mix(in srgb, currentColor 26%, transparent); }
+  70% { box-shadow: 0 0 0 7px transparent; }
+  100% { box-shadow: 0 0 0 0 transparent; }
+}
+
+@keyframes jf-chart-loop-draw {
+  0% { stroke-dashoffset: 980; opacity: 0.45; }
+  19%, 76% { stroke-dashoffset: 0; opacity: 1; }
+  96%, 100% { stroke-dashoffset: -980; opacity: 0.48; }
+}
+
+@keyframes jf-chart-area-loop {
+  0%, 100% { opacity: 0.12; }
+  20%, 76% { opacity: 0.75; }
+  88% { opacity: 0.42; }
+}
+
+@keyframes jf-chart-hover-scan {
+  from { left: -12%; }
+  to { left: 104%; }
+}
+
+@keyframes jf-insight-progress-loop {
+  0%, 100% { transform: scaleX(0.9); filter: brightness(0.98); }
+  45%, 70% { transform: scaleX(1); filter: brightness(1.08); }
+}
+
+@keyframes jf-mini-bar-loop {
+  0%, 100% { transform: scaleY(0.9); opacity: 0.58; }
+  45% { transform: scaleY(1.045); opacity: 0.88; }
+}
+
+/* Keep the complete hero inside the first viewport without changing its content. */
+@media (min-width: 1101px) {
+  .jf-hero {
+    height: calc(100svh - 4rem);
+    min-height: 37rem;
+    padding-block: clamp(1.4rem, 3.8svh, 3.4rem);
+  }
+}
+
+@media (min-width: 700px) and (max-width: 1100px) {
+  .jf-hero {
+    height: calc(100svh - 4rem);
+    min-height: 35rem;
+    padding-block: clamp(1rem, 2.5svh, 1.8rem);
+    grid-template-columns: minmax(0, 0.86fr) minmax(0, 1.14fr);
+    align-items: center;
+    gap: clamp(1.25rem, 3vw, 2.25rem);
+  }
+
+  .jf-hero-copy {
+    max-width: none;
+    text-align: left;
+    justify-self: stretch;
+  }
+
+  .jf-hero-badge,
+  .jf-hero-actions,
+  .jf-hero h1,
+  .jf-hero-description {
+    margin-inline: 0;
+  }
+
+  .jf-hero-proof {
+    justify-content: flex-start;
+  }
+
+  .jf-hero h1 {
+    max-width: 10.5ch;
+    margin-top: 0.85rem;
+    font-size: clamp(2.75rem, 5.9vw, 4.35rem);
+  }
+
+  .jf-hero-description {
+    margin-top: 0.9rem;
+    font-size: clamp(0.82rem, 1.45vw, 1rem);
+    line-height: 1.52;
+  }
+
+  .jf-hero-actions {
+    margin-top: 1rem;
+  }
+
+  .jf-hero-proof {
+    margin-top: 0.85rem;
+    gap: 0.4rem 0.8rem;
+    font-size: 0.68rem;
+  }
+
+  .jf-dashboard-preview {
+    width: 100%;
+    max-height: calc(100svh - 7rem);
+    justify-self: stretch;
+    padding: 0.72rem;
+  }
+
+  .jf-preview-topbar { padding: 0.25rem 0.25rem 0.5rem; }
+  .jf-preview-balance { min-height: clamp(6.2rem, 17svh, 8.6rem); padding: 0.95rem; }
+  .jf-preview-balance strong { font-size: clamp(1.55rem, 3.4vw, 2.35rem); }
+  .jf-balance-orbit { width: clamp(4.3rem, 8.5vw, 5.8rem); }
+  .jf-preview-metrics { margin-top: 0.5rem; gap: 0.42rem; }
+  .jf-preview-metrics > div { padding: 0.58rem; }
+  .jf-preview-metrics p { margin-top: 0.38rem; }
+  .jf-preview-grid { margin-top: 0.5rem; gap: 0.42rem; grid-template-columns: minmax(0, 1.08fr) minmax(9.5rem, 0.92fr); }
+  .jf-chart-panel,
+  .jf-activity-panel { padding: 0.62rem; }
+  .jf-chart { height: clamp(5.3rem, 13svh, 7rem); margin-top: 0.45rem; }
+  .jf-activity-list { margin-top: 0.45rem; gap: 0.3rem; }
+  .jf-activity-list > div { padding: 0.36rem; gap: 0.38rem; }
+}
+
+@media (max-width: 699px) {
+  .jf-hero {
+    height: calc(100svh - 3.65rem);
+    min-height: 31.5rem;
+    padding-block: clamp(0.65rem, 1.8svh, 1.15rem);
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto minmax(0, 1fr);
+    align-content: stretch;
+    gap: clamp(0.6rem, 1.6svh, 0.95rem);
+    overflow: clip;
+  }
+
+  .jf-hero h1 {
+    margin-top: 0.62rem;
+    font-size: clamp(2.05rem, 10.4vw, 3.15rem);
+    line-height: 0.94;
+  }
+
+  .jf-hero-description {
+    margin-top: 0.62rem;
+    font-size: clamp(0.74rem, 2.65vw, 0.86rem);
+    line-height: 1.42;
+  }
+
+  .jf-hero-description::after {
+    min-height: 1.1rem;
+    margin: 0.3rem auto 0;
+    font-size: clamp(0.65rem, 2.35vw, 0.75rem);
+    line-height: 1.1rem;
+  }
+
+  .jf-hero-badge {
+    min-height: 1.65rem;
+    padding-inline: 0.58rem;
+    font-size: 0.65rem;
+  }
+
+  .jf-hero-actions {
+    margin-top: 0.72rem;
+    grid-template-columns: minmax(0, 1.3fr) minmax(0, 0.7fr);
+    gap: 0.45rem;
+  }
+
+  .jf-hero-actions .jf-button {
+    min-height: 2.45rem;
+    padding-inline: 0.58rem;
+    border-radius: 0.7rem;
+    font-size: 0.7rem;
+  }
+
+  .jf-hero-proof {
+    margin-top: 0.58rem;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    justify-items: center;
+    gap: 0.25rem;
+    font-size: clamp(0.52rem, 1.95vw, 0.62rem);
+    text-align: center;
+  }
+
+  .jf-hero-proof span,
+  .jf-hero-proof span:last-child {
+    grid-column: auto;
+    justify-self: center;
+    gap: 0.24rem;
+  }
+
+  .jf-hero-proof svg {
+    width: 0.72rem;
+    height: 0.72rem;
+  }
+
+  .jf-dashboard-preview {
+    width: 100%;
+    height: 100%;
+    min-height: 0;
+    align-self: stretch;
+    padding: 0.42rem;
+    border-radius: 0.95rem;
+  }
+
+  .jf-preview-topbar { padding: 0.12rem 0.18rem 0.3rem; }
+  .jf-preview-topbar p,
+  .jf-panel-heading p { font-size: 0.53rem; }
+  .jf-preview-topbar strong,
+  .jf-panel-heading strong { font-size: 0.66rem; }
+  .jf-live-pill { min-height: 1.25rem; padding-inline: 0.42rem; font-size: 0.5rem; }
+  .jf-preview-balance { min-height: clamp(4.7rem, 12svh, 6.4rem); padding: 0.62rem; border-radius: 0.78rem; }
+  .jf-preview-balance p { font-size: 0.55rem; }
+  .jf-preview-balance strong { margin-top: 0.18rem; font-size: clamp(1.25rem, 6vw, 1.7rem); }
+  .jf-preview-balance > div:first-child > span { min-height: 1.25rem; margin-top: 0.35rem; padding-inline: 0.38rem; font-size: 0.5rem; }
+  .jf-balance-orbit { width: clamp(3.1rem, 13vw, 4rem); }
+  .jf-balance-orbit svg { width: 1.3rem; height: 1.3rem; }
+  .jf-preview-metrics { margin-top: 0.34rem; gap: 0.28rem; }
+  .jf-preview-metrics > div { padding: 0.35rem; border-radius: 0.62rem; }
+  .jf-preview-metrics > div > span { width: 1.15rem; height: 1.15rem; border-radius: 0.4rem; }
+  .jf-preview-metrics > div > span svg { width: 0.67rem; height: 0.67rem; }
+  .jf-preview-metrics p { margin-top: 0.2rem; font-size: 0.48rem; }
+  .jf-preview-metrics strong { margin-top: 0.06rem; font-size: clamp(0.58rem, 2.2vw, 0.68rem); }
+  .jf-preview-grid { margin-top: 0.34rem; grid-template-columns: minmax(0, 1.08fr) minmax(7.4rem, 0.92fr); gap: 0.28rem; }
+  .jf-chart-panel,
+  .jf-activity-panel { padding: 0.38rem; border-radius: 0.62rem; }
+  .jf-panel-heading > svg { width: 0.72rem; height: 0.72rem; }
+  .jf-chart { height: clamp(3.7rem, 9.5svh, 5rem); margin-top: 0.24rem; }
+  .jf-chart-line { stroke-width: 3.5; }
+  .jf-chart-labels { font-size: 0.4rem; }
+  .jf-activity-list { margin-top: 0.25rem; gap: 0.2rem; }
+  .jf-activity-list > div { grid-template-columns: auto minmax(0, 1fr); padding: 0.24rem; gap: 0.26rem; border-radius: 0.48rem; }
+  .jf-activity-list b { grid-column: 2; font-size: 0.47rem; }
+  .jf-activity-list strong { font-size: 0.5rem; }
+  .jf-activity-list small { font-size: 0.42rem; }
+  .jf-activity-dot { width: 0.32rem; height: 0.32rem; }
+}
+
+@media (max-width: 390px), (max-width: 699px) and (max-height: 690px) {
+  .jf-hero {
+    min-height: 27rem;
+    padding-block: 0.45rem;
+    gap: 0.42rem;
+  }
+
+  .jf-hero h1 {
+    margin-top: 0.42rem;
+    font-size: clamp(1.82rem, 9.5vw, 2.45rem);
+  }
+
+  .jf-hero-description {
+    margin-top: 0.42rem;
+    font-size: 0.69rem;
+    line-height: 1.32;
+  }
+
+  .jf-hero-description::after {
+    margin-top: 0.2rem;
+    font-size: 0.61rem;
+  }
+
+  .jf-hero-actions { margin-top: 0.48rem; }
+  .jf-hero-actions .jf-button { min-height: 2.15rem; font-size: 0.62rem; }
+  .jf-hero-proof { margin-top: 0.34rem; font-size: 0.48rem; }
+  .jf-dashboard-preview { padding: 0.32rem; }
+  .jf-preview-balance { min-height: 4.15rem; padding: 0.48rem; }
+  .jf-preview-balance strong { font-size: 1.15rem; }
+  .jf-preview-balance > div:first-child > span { margin-top: 0.2rem; }
+  .jf-preview-metrics { margin-top: 0.24rem; }
+  .jf-preview-grid { margin-top: 0.24rem; }
+  .jf-chart { height: 3.35rem; }
+  .jf-activity-list { gap: 0.12rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .jf-hero-description::after {
+    max-width: 22rem;
+    border-right-color: transparent;
+    content: "Built for daily income tracking";
+  }
+}
