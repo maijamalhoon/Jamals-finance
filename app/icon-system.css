@@ -138,6 +138,18 @@
   vector-effect: non-scaling-stroke;
 }
 
+/* Keep mobile/tablet drawer scrolling available without showing a scrollbar. */
+[data-mobile-navigation-drawer] nav {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+[data-mobile-navigation-drawer] nav::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
 /* Outline-only icon presentation inside mobile/tablet navigation tiles. */
 [data-mobile-navigation-drawer] nav a > span:first-child {
   border-color: transparent !important;
