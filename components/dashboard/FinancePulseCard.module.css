@@ -43,8 +43,8 @@
 .dot {
   position: relative;
   z-index: 0;
-  width: 0.31rem;
-  height: 0.31rem;
+  width: clamp(0.34rem, calc(0.31rem + 0.08vw), 0.44rem);
+  height: clamp(0.34rem, calc(0.31rem + 0.08vw), 0.44rem);
   flex: 0 0 auto;
   border-radius: 999px;
   transform-origin: center;
