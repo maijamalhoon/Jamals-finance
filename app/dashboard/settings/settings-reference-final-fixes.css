@@ -1,0 +1,37 @@
+/* Final isolation from legacy Settings layout selectors. */
+.settings-page-polish .settings-experience-v2 {
+  display: block !important;
+  grid-template-columns: none !important;
+  grid-template-rows: none !important;
+  grid-template-areas: none !important;
+  gap: 0 !important;
+}
+
+.settings-page-polish .settings-reference-grid {
+  display: grid !important;
+}
+
+.settings-page-polish
+  .settings-reference-categories-wrapper
+  .finance-panel
+  > div[class*="ml-[76px]"] {
+  display: block !important;
+}
+
+.settings-page-polish .settings-account-overview,
+.settings-page-polish .settings-reference-grid,
+.settings-page-polish .settings-reference-section {
+  grid-column: auto !important;
+  grid-row: auto !important;
+  grid-area: auto !important;
+}
+
+@media (min-width: 56rem) {
+  .settings-page-polish .settings-reference-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  .settings-page-polish .settings-reference-data {
+    grid-column: 1 / -1 !important;
+  }
+}
