@@ -1,16 +1,16 @@
 /*
  * Dashboard overview card label alignment.
- * Goals Progress is the visual reference: 20px Lucide icon, 11px Geist label,
+ * Compact reference: 18px Lucide icon, 10px Geist label,
  * 700 weight, 0.12em tracking. Icon colours and all card behaviour stay intact.
  */
 
 .dashboard-overview-layout {
-  --dashboard-card-label-icon-box: 2rem;
-  --dashboard-card-label-icon-size: 1.25rem;
-  --dashboard-card-label-font-size: 0.6875rem;
+  --dashboard-card-label-icon-box: 1.75rem;
+  --dashboard-card-label-icon-size: 1.125rem;
+  --dashboard-card-label-font-size: 0.625rem;
 }
 
-/* Match every card-label icon box to the Goals Progress header. */
+/* Match every card-label icon box to the compact dashboard reference. */
 .dashboard-overview-layout .dashboard-list-card-kicker-icon,
 .dashboard-overview-layout
   .finance-reference-card
@@ -83,7 +83,7 @@
   font-family: var(--font-sans) !important;
   font-size: var(--dashboard-card-label-font-size) !important;
   font-weight: 700 !important;
-  line-height: 1rem !important;
+  line-height: 0.875rem !important;
   letter-spacing: 0.12em !important;
   text-transform: uppercase !important;
 }
