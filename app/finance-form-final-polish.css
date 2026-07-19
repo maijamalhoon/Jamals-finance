@@ -128,3 +128,313 @@ html:not(.dark) .finance-modal-content [role="listbox"].field-input {
 .finance-modal-content #investment-current-price {
   padding-right: 6.55rem !important;
 }
+
+/*
+ * Transfer, Goal, Investment, Payable and Account use Income/Expense as the
+ * exact geometry reference. These selectors are intentionally limited to the
+ * five requested forms so no unrelated dialog or page can inherit the sizing.
+ */
+.finance-modal-content:has(#transfer-amount),
+.finance-modal-content:has(#goal-name),
+.finance-modal-content:has(#investment-quantity),
+.finance-modal-content:has(#payable-original-value),
+.finance-modal-content:has(#account-name) {
+  --finance-control-height: 3.25rem;
+  --finance-action-height: 3.25rem;
+  --finance-field-gap: 0.75rem;
+  --finance-content-padding-x: 1.25rem;
+  width: min(calc(100vw - 0.75rem), 32rem) !important;
+  max-width: 32rem !important;
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: calc(
+    100dvh - 0.75rem - env(safe-area-inset-top) - env(safe-area-inset-bottom)
+  ) !important;
+  overflow: hidden !important;
+}
+
+.finance-modal-content:has(#transfer-amount) .finance-modal-header,
+.finance-modal-content:has(#goal-name) .finance-modal-header,
+.finance-modal-content:has(#investment-quantity) .finance-modal-header,
+.finance-modal-content:has(#payable-original-value) .finance-modal-header,
+.finance-modal-content:has(#account-name) .finance-modal-header {
+  min-height: 3.65rem !important;
+  border: 0 !important;
+  border-top: 0 !important;
+  border-bottom: 0 !important;
+  padding: 0.75rem 3.75rem 0.75rem var(--finance-content-padding-x) !important;
+}
+
+.finance-modal-content:has(#transfer-amount) .finance-modal-body,
+.finance-modal-content:has(#goal-name) .finance-modal-body,
+.finance-modal-content:has(#investment-quantity) .finance-modal-body,
+.finance-modal-content:has(#payable-original-value) .finance-modal-body,
+.finance-modal-content:has(#account-name) .finance-modal-body {
+  min-height: 0 !important;
+  flex: 1 1 auto !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  overscroll-behavior: contain !important;
+  padding: 0.8rem var(--finance-content-padding-x) !important;
+  scrollbar-width: none !important;
+}
+
+.finance-modal-content:has(#transfer-amount) .finance-modal-body::-webkit-scrollbar,
+.finance-modal-content:has(#goal-name) .finance-modal-body::-webkit-scrollbar,
+.finance-modal-content:has(#investment-quantity) .finance-modal-body::-webkit-scrollbar,
+.finance-modal-content:has(#payable-original-value) .finance-modal-body::-webkit-scrollbar,
+.finance-modal-content:has(#account-name) .finance-modal-body::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+
+.finance-modal-content:has(#transfer-amount)
+  .finance-modal-body
+  > :not([hidden])
+  ~ :not([hidden]),
+.finance-modal-content:has(#goal-name)
+  .finance-modal-body
+  > :not([hidden])
+  ~ :not([hidden]),
+.finance-modal-content:has(#investment-quantity)
+  .finance-modal-body
+  > :not([hidden])
+  ~ :not([hidden]),
+.finance-modal-content:has(#payable-original-value)
+  .finance-modal-body
+  > :not([hidden])
+  ~ :not([hidden]),
+.finance-modal-content:has(#account-name)
+  .finance-modal-body
+  > :not([hidden])
+  ~ :not([hidden]) {
+  margin-block-start: var(--finance-field-gap) !important;
+}
+
+.finance-modal-content:has(#transfer-amount) .finance-modal-body > .grid,
+.finance-modal-content:has(#goal-name) .finance-modal-body > .grid,
+.finance-modal-content:has(#investment-quantity) .finance-modal-body > .grid,
+.finance-modal-content:has(#payable-original-value) .finance-modal-body > .grid,
+.finance-modal-content:has(#account-name) .finance-modal-body > .grid {
+  gap: var(--finance-field-gap) !important;
+}
+
+.finance-modal-content:has(#transfer-amount) .field-label,
+.finance-modal-content:has(#goal-name) .field-label,
+.finance-modal-content:has(#investment-quantity) .field-label,
+.finance-modal-content:has(#payable-original-value) .field-label,
+.finance-modal-content:has(#account-name) .field-label {
+  display: block;
+  margin-bottom: 0.35rem !important;
+  font-size: 0.75rem !important;
+  font-weight: 650 !important;
+  line-height: 1rem !important;
+  letter-spacing: 0.01em !important;
+}
+
+.finance-modal-content:has(#transfer-amount) .field-input,
+.finance-modal-content:has(#transfer-amount) [data-slot="select-trigger"],
+.finance-modal-content:has(#transfer-amount) select.finance-control,
+.finance-modal-content:has(#goal-name) .field-input,
+.finance-modal-content:has(#goal-name) [data-slot="select-trigger"],
+.finance-modal-content:has(#goal-name) select.finance-control,
+.finance-modal-content:has(#investment-quantity) .field-input,
+.finance-modal-content:has(#investment-quantity) [data-slot="select-trigger"],
+.finance-modal-content:has(#investment-quantity) select.finance-control,
+.finance-modal-content:has(#payable-original-value) .field-input,
+.finance-modal-content:has(#payable-original-value) [data-slot="select-trigger"],
+.finance-modal-content:has(#payable-original-value) select.finance-control,
+.finance-modal-content:has(#account-name) .field-input,
+.finance-modal-content:has(#account-name) [data-slot="select-trigger"],
+.finance-modal-content:has(#account-name) select.finance-control {
+  box-sizing: border-box !important;
+  width: 100% !important;
+  height: var(--finance-control-height) !important;
+  min-height: var(--finance-control-height) !important;
+  max-height: var(--finance-control-height) !important;
+  border-radius: 0.9rem !important;
+}
+
+.finance-modal-content:has(#transfer-amount) .finance-modal-footer,
+.finance-modal-content:has(#goal-name) .finance-modal-footer,
+.finance-modal-content:has(#investment-quantity) .finance-modal-footer,
+.finance-modal-content:has(#payable-original-value) .finance-modal-footer,
+.finance-modal-content:has(#account-name) .finance-modal-footer {
+  grid-template-columns: minmax(0, 1fr) !important;
+  gap: 0 !important;
+  border: 0 !important;
+  border-top: 0 !important;
+  border-bottom: 0 !important;
+  padding: 0.75rem var(--finance-content-padding-x)
+    calc(0.75rem + env(safe-area-inset-bottom)) !important;
+}
+
+.finance-modal-content:has(#transfer-amount) .finance-modal-footer > button,
+.finance-modal-content:has(#goal-name) .finance-modal-footer > button,
+.finance-modal-content:has(#investment-quantity) .finance-modal-footer > button,
+.finance-modal-content:has(#payable-original-value) .finance-modal-footer > button,
+.finance-modal-content:has(#account-name) .finance-modal-footer > button {
+  width: 100% !important;
+  height: var(--finance-action-height) !important;
+  min-height: var(--finance-action-height) !important;
+  max-height: var(--finance-action-height) !important;
+  border: 0 !important;
+  border-radius: 0.9rem !important;
+  font-size: 0.95rem !important;
+  font-weight: 700 !important;
+}
+
+@media (max-width: 1024px) {
+  .finance-modal-content:has(#transfer-amount),
+  .finance-modal-content:has(#goal-name),
+  .finance-modal-content:has(#investment-quantity),
+  .finance-modal-content:has(#payable-original-value),
+  .finance-modal-content:has(#account-name) {
+    --finance-control-height: 3.5rem;
+    --finance-action-height: 3.5rem;
+    --finance-field-gap: 0.78rem;
+    --finance-content-padding-x: 1rem;
+  }
+}
+
+@media (max-height: 760px) {
+  .finance-modal-content:has(#transfer-amount),
+  .finance-modal-content:has(#goal-name),
+  .finance-modal-content:has(#investment-quantity),
+  .finance-modal-content:has(#payable-original-value),
+  .finance-modal-content:has(#account-name) {
+    --finance-control-height: 2.85rem;
+    --finance-action-height: 2.95rem;
+    --finance-field-gap: 0.38rem;
+  }
+
+  .finance-modal-content:has(#transfer-amount) .finance-modal-header,
+  .finance-modal-content:has(#goal-name) .finance-modal-header,
+  .finance-modal-content:has(#investment-quantity) .finance-modal-header,
+  .finance-modal-content:has(#payable-original-value) .finance-modal-header,
+  .finance-modal-content:has(#account-name) .finance-modal-header {
+    min-height: 2.9rem !important;
+    padding-top: 0.48rem !important;
+    padding-bottom: 0.44rem !important;
+  }
+
+  .finance-modal-content:has(#transfer-amount) .finance-modal-body,
+  .finance-modal-content:has(#goal-name) .finance-modal-body,
+  .finance-modal-content:has(#investment-quantity) .finance-modal-body,
+  .finance-modal-content:has(#payable-original-value) .finance-modal-body,
+  .finance-modal-content:has(#account-name) .finance-modal-body {
+    padding-top: 0.44rem !important;
+    padding-bottom: 0.44rem !important;
+  }
+
+  .finance-modal-content:has(#transfer-amount) .finance-modal-footer,
+  .finance-modal-content:has(#goal-name) .finance-modal-footer,
+  .finance-modal-content:has(#investment-quantity) .finance-modal-footer,
+  .finance-modal-content:has(#payable-original-value) .finance-modal-footer,
+  .finance-modal-content:has(#account-name) .finance-modal-footer {
+    padding-top: 0.42rem !important;
+    padding-bottom: calc(0.42rem + env(safe-area-inset-bottom)) !important;
+  }
+}
+
+@media (max-height: 620px) {
+  .finance-modal-content:has(#transfer-amount),
+  .finance-modal-content:has(#goal-name),
+  .finance-modal-content:has(#investment-quantity),
+  .finance-modal-content:has(#payable-original-value),
+  .finance-modal-content:has(#account-name) {
+    --finance-control-height: 2.58rem;
+    --finance-action-height: 2.7rem;
+    --finance-field-gap: 0.28rem;
+    max-height: calc(100dvh - 0.25rem) !important;
+  }
+
+  .finance-modal-content:has(#transfer-amount) .finance-modal-header,
+  .finance-modal-content:has(#goal-name) .finance-modal-header,
+  .finance-modal-content:has(#investment-quantity) .finance-modal-header,
+  .finance-modal-content:has(#payable-original-value) .finance-modal-header,
+  .finance-modal-content:has(#account-name) .finance-modal-header {
+    min-height: 2.68rem !important;
+    padding-top: 0.36rem !important;
+    padding-bottom: 0.32rem !important;
+  }
+
+  .finance-modal-content:has(#transfer-amount) .finance-modal-body,
+  .finance-modal-content:has(#goal-name) .finance-modal-body,
+  .finance-modal-content:has(#investment-quantity) .finance-modal-body,
+  .finance-modal-content:has(#payable-original-value) .finance-modal-body,
+  .finance-modal-content:has(#account-name) .finance-modal-body {
+    padding-top: 0.32rem !important;
+    padding-bottom: 0.32rem !important;
+  }
+
+  .finance-modal-content:has(#transfer-amount) .field-label,
+  .finance-modal-content:has(#goal-name) .field-label,
+  .finance-modal-content:has(#investment-quantity) .field-label,
+  .finance-modal-content:has(#payable-original-value) .field-label,
+  .finance-modal-content:has(#account-name) .field-label {
+    margin-bottom: 0.08rem !important;
+    font-size: 0.62rem !important;
+    line-height: 0.75rem !important;
+  }
+
+  .finance-modal-content:has(#transfer-amount) .finance-modal-footer,
+  .finance-modal-content:has(#goal-name) .finance-modal-footer,
+  .finance-modal-content:has(#investment-quantity) .finance-modal-footer,
+  .finance-modal-content:has(#payable-original-value) .finance-modal-footer,
+  .finance-modal-content:has(#account-name) .finance-modal-footer {
+    padding-top: 0.32rem !important;
+    padding-bottom: calc(0.32rem + env(safe-area-inset-bottom)) !important;
+  }
+}
+
+@media (max-height: 520px) {
+  .finance-modal-content:has(#transfer-amount),
+  .finance-modal-content:has(#goal-name),
+  .finance-modal-content:has(#investment-quantity),
+  .finance-modal-content:has(#payable-original-value),
+  .finance-modal-content:has(#account-name) {
+    --finance-control-height: 2.3rem;
+    --finance-action-height: 2.42rem;
+    --finance-field-gap: 0.2rem;
+  }
+
+  .finance-modal-content:has(#transfer-amount) .finance-modal-header,
+  .finance-modal-content:has(#goal-name) .finance-modal-header,
+  .finance-modal-content:has(#investment-quantity) .finance-modal-header,
+  .finance-modal-content:has(#payable-original-value) .finance-modal-header,
+  .finance-modal-content:has(#account-name) .finance-modal-header {
+    min-height: 2.42rem !important;
+    padding-top: 0.25rem !important;
+    padding-bottom: 0.22rem !important;
+  }
+
+  .finance-modal-content:has(#transfer-amount) .finance-modal-body,
+  .finance-modal-content:has(#goal-name) .finance-modal-body,
+  .finance-modal-content:has(#investment-quantity) .finance-modal-body,
+  .finance-modal-content:has(#payable-original-value) .finance-modal-body,
+  .finance-modal-content:has(#account-name) .finance-modal-body {
+    padding-top: 0.22rem !important;
+    padding-bottom: 0.22rem !important;
+  }
+
+  .finance-modal-content:has(#transfer-amount) .field-label,
+  .finance-modal-content:has(#goal-name) .field-label,
+  .finance-modal-content:has(#investment-quantity) .field-label,
+  .finance-modal-content:has(#payable-original-value) .field-label,
+  .finance-modal-content:has(#account-name) .field-label {
+    margin-bottom: 0.04rem !important;
+    font-size: 0.56rem !important;
+    line-height: 0.66rem !important;
+  }
+
+  .finance-modal-content:has(#transfer-amount) .finance-modal-footer,
+  .finance-modal-content:has(#goal-name) .finance-modal-footer,
+  .finance-modal-content:has(#investment-quantity) .finance-modal-footer,
+  .finance-modal-content:has(#payable-original-value) .finance-modal-footer,
+  .finance-modal-content:has(#account-name) .finance-modal-footer {
+    padding-top: 0.22rem !important;
+    padding-bottom: calc(0.22rem + env(safe-area-inset-bottom)) !important;
+  }
+}
