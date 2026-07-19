@@ -8,6 +8,7 @@
 
 /* Shared decorative icon wrappers used across cards, empty states and summaries. */
 [data-dashboard-shell] .finance-icon-bubble,
+[data-dashboard-shell] .dashboard-quick-action-icon,
 [data-dashboard-shell]
   :is(span, div):has(> svg.lucide:only-child):is(
     [class*="rounded"][class*="border"],
@@ -54,6 +55,7 @@
 [data-dashboard-shell]
   :is(
     .finance-icon-bubble,
+    .dashboard-quick-action-icon,
     .icon-button,
     [data-notification-trigger],
     span:has(> svg.lucide:only-child),
@@ -83,6 +85,7 @@
       [data-keep-icon-surface]
     ):hover
     > svg.lucide,
+  [data-dashboard-shell] .dashboard-quick-action:hover .dashboard-quick-action-icon > svg.lucide,
   [data-dashboard-shell] .icon-button:hover > svg.lucide,
   [data-dashboard-shell] [data-notification-trigger]:hover > svg.lucide {
     transform: translateY(-1px) scale(1.045);
@@ -95,6 +98,7 @@
     [data-keep-icon-surface]
   ):active
   > svg.lucide,
+[data-dashboard-shell] .dashboard-quick-action:active .dashboard-quick-action-icon > svg.lucide,
 [data-dashboard-shell] .icon-button:active > svg.lucide,
 [data-dashboard-shell] [data-notification-trigger]:active > svg.lucide {
   transform: scale(0.94);
