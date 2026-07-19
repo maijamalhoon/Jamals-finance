@@ -139,7 +139,7 @@ export default function AccountSelect({
         ariaLabel={ariaLabel ?? placeholder}
         disabled={unavailable}
         className={cn(
-          "field-input h-auto min-h-12 w-full gap-3 px-3 py-2 pr-3 text-left",
+          "finance-account-select field-input h-auto min-h-12 w-full gap-3 px-3 py-2 pr-3 text-left",
           className,
         )}
         itemClassName="px-3 py-2"
@@ -167,7 +167,7 @@ export default function AccountSelect({
         id={id}
         onWheel={scrollPicker ? scrollBehavior.onTriggerWheel : undefined}
         className={cn(
-          "field-input h-auto min-h-12 w-full gap-3 px-3 py-2 pr-3 text-left",
+          "finance-account-select field-input h-auto min-h-12 w-full gap-3 px-3 py-2 pr-3 text-left",
           "data-placeholder:text-text-secondary [&>svg]:ml-1",
           scrollPicker && scrollSelectStyles.trigger,
           className,
