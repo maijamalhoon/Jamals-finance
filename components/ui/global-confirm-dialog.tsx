@@ -186,7 +186,7 @@ export default function GlobalConfirmDialog() {
         data-global-confirm-dialog
         className="w-[calc(100vw-1rem)] max-w-[28rem] gap-0 rounded-[18px] border border-black/10 bg-[#ffffff] p-0 text-[#171717] shadow-[0_24px_80px_rgb(0_0_0/0.22)] dark:border-white/10 dark:bg-[#222222] dark:text-[#f5f5f5] dark:shadow-[0_26px_90px_rgb(0_0_0/0.55)] sm:w-full"
       >
-        <div className="px-4 pb-4 pt-4 sm:px-5 sm:pb-4 sm:pt-4.5">
+        <div className="px-4 pb-4 pt-4 sm:px-5 sm:pb-4 sm:pt-[1.125rem]">
           <DialogTitle className="text-[17px] font-semibold leading-6 tracking-[-0.015em] text-[#171717] dark:text-[#f5f5f5]">
             Are you sure?
           </DialogTitle>
