@@ -35,9 +35,15 @@ const SIZE_CLASSES = {
 };
 
 const ICON_SIZES = {
-  sm: 16,
-  md: 19,
-  lg: 23,
+  sm: 15,
+  md: 18,
+  lg: 22,
+};
+
+const LOGO_PADDING_CLASSES = {
+  sm: "p-[3px]",
+  md: "p-1",
+  lg: "p-1.5",
 };
 
 type AccountIdentityIconProps = {
@@ -92,7 +98,7 @@ export default function AccountIdentityIcon({
   const fallbackKey = inferAccountIconKey(name, iconKey, type);
   const Icon = ICON_MAP[fallbackKey] ?? Landmark;
   const wrapperClass = cn(
-    "inline-grid shrink-0 place-items-center text-[var(--account-accent,var(--text-secondary))]",
+    "inline-grid shrink-0 place-items-center overflow-hidden rounded-[30%] border border-white/15 bg-white text-[var(--account-accent,var(--text-secondary))] shadow-sm",
     SIZE_CLASSES[size],
     className,
   );
@@ -104,7 +110,10 @@ export default function AccountIdentityIcon({
         <img
           src={logoUrl}
           alt={`${name ?? "Account"} logo`}
-          className="h-full w-full object-contain"
+          className={cn(
+            "block h-full w-full rounded-[24%] object-contain",
+            LOGO_PADDING_CLASSES[size],
+          )}
           loading="lazy"
           decoding="async"
           onError={() => setLogoFailed(true)}
