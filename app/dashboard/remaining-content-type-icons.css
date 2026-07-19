@@ -1,0 +1,138 @@
+/*
+ * Final typography/icon pass for dashboard routes that were not covered by the
+ * earlier dedicated systems: Accounts (including history) and Reports.
+ *
+ * Auth, landing, forms, dashboard overview, transactions, settings, receipt,
+ * header/sidebar, and previously polished finance routes are intentionally out
+ * of scope. Authored dimensions, colours, spacing, data, and behavior remain intact.
+ */
+
+.finance-remaining-type-icons {
+  font-family: var(--font-sans);
+  font-kerning: normal;
+  font-optical-sizing: auto;
+  font-synthesis: none;
+  text-rendering: geometricPrecision;
+}
+
+.finance-remaining-type-icons
+  :where(h1, h2, h3, h4, h5, h6, [role="heading"], .page-title):not(
+    [role="dialog"] *,
+    [data-finance-form] *
+  ) {
+  font-family: var(--font-sans);
+  font-weight: 700;
+}
+
+.finance-remaining-type-icons
+  :where(p, li, dt, dd, th, td, small, figcaption, input, select, textarea):not(
+    [role="dialog"] *,
+    [data-finance-form] *
+  ) {
+  font-family: var(--font-sans);
+}
+
+.finance-remaining-type-icons
+  :where(
+    button,
+    a,
+    label,
+    summary,
+    [role="button"],
+    [role="link"],
+    [role="tab"],
+    [role="menuitem"],
+    [role="option"]
+  ):not([role="dialog"] *, [data-finance-form] *) {
+  font-family: var(--font-sans);
+  font-weight: 600;
+}
+
+.finance-remaining-type-icons
+  :where(.font-black, .font-extrabold, .font-bold):not(
+    [role="dialog"] *,
+    [data-finance-form] *
+  ) {
+  font-weight: 700;
+}
+
+.finance-remaining-type-icons
+  :where(.font-semibold):not([role="dialog"] *, [data-finance-form] *) {
+  font-weight: 600;
+}
+
+.finance-remaining-type-icons
+  :where(.font-medium):not([role="dialog"] *, [data-finance-form] *) {
+  font-weight: 500;
+}
+
+.finance-remaining-type-icons
+  :where(
+    .tabular-nums,
+    .finance-amount,
+    [data-amount],
+    [data-slot="money"]
+  ):not([role="dialog"] *, [data-finance-form] *) {
+  font-family: var(--font-sans);
+  font-variant-numeric: tabular-nums lining-nums;
+  font-feature-settings: "tnum" 1, "lnum" 1;
+}
+
+/* Keep every authored width and height; only unify the glyph drawing language. */
+.finance-remaining-type-icons
+  :where(svg.lucide):not([role="dialog"] *, [data-finance-form] *) {
+  fill: none;
+  flex-shrink: 0;
+  stroke: currentColor;
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  shape-rendering: geometricPrecision;
+  vector-effect: non-scaling-stroke;
+}
+
+/* Reports still use native controls; replace browser-default corner glyphs only. */
+.finance-remaining-type-icons [data-report-native-icon-control] {
+  position: relative;
+}
+
+.finance-remaining-type-icons
+  [data-report-native-icon-control]
+  :where(select, input[type="date"]) {
+  appearance: none;
+  -webkit-appearance: none;
+  padding-right: 2.65rem;
+}
+
+.finance-remaining-type-icons
+  [data-report-native-icon-control]
+  > svg.lucide {
+  position: absolute;
+  right: 0.85rem;
+  top: 50%;
+  z-index: 1;
+  width: 1rem;
+  height: 1rem;
+  transform: translateY(-50%);
+  color: var(--text-secondary);
+  pointer-events: none;
+}
+
+.finance-remaining-type-icons
+  [data-report-native-icon-control]
+  input[type="date"]::-webkit-calendar-picker-indicator {
+  position: absolute;
+  inset: 0 0 0 auto;
+  width: 2.75rem;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.finance-remaining-type-icons
+  [data-report-native-icon-control]
+  input[type="date"]::-webkit-inner-spin-button {
+  display: none;
+}
