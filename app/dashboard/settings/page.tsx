@@ -17,6 +17,7 @@ import "./settings-borderless-clean.css";
 import "./settings-reference-rebuild.css";
 import "./settings-reference-final-fixes.css";
 import "./settings-label-icon-simplify.css";
+import "./settings-responsive-color-balance.css";
 
 export const dynamic = "force-dynamic";
 
