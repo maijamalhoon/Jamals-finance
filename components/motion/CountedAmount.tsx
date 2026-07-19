@@ -40,8 +40,11 @@ type RunningAmountAnimation = {
 const runningAnimations = new Map<HTMLSpanElement, RunningAmountAnimation>();
 let sharedAnimationFrame: number | null = null;
 
-function easeOutCubic(progress: number) {
-  return 1 - Math.pow(1 - progress, 3);
+const COUNT_DURATION_SCALE = 1.4;
+const MIN_COUNT_DURATION_MS = 1450;
+
+function smoothStep(progress: number) {
+  return progress * progress * (3 - 2 * progress);
 }
 
 function renderSharedFrame(time: number) {
@@ -61,7 +64,7 @@ function renderSharedFrame(time: number) {
     );
     const currentValue =
       animation.from +
-      (animation.to - animation.from) * easeOutCubic(progress);
+      (animation.to - animation.from) * smoothStep(progress);
 
     animation.valueRef.current = currentValue;
     element.textContent =
@@ -155,7 +158,10 @@ export default function CountedAmount({
       from: fromValue,
       to: parsedAmount.value,
       startedAt: performance.now() + Math.max(0, delay) * 1000,
-      durationMs: Math.max(duration * 1000, 1),
+      durationMs: Math.max(
+        duration * 1000 * COUNT_DURATION_SCALE,
+        MIN_COUNT_DURATION_MS,
+      ),
       finalText: amount,
       formatValue,
       valueRef: currentValueRef,
