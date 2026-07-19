@@ -16,6 +16,8 @@ import "./auth-responsive-architecture.css";
 import "./scrollbar-visibility.css";
 import "./public-icon-surface-cleanup.css";
 import "./auth-adornment-alignment-fix.css";
+// Shared transform-only symbol rain for the landing and authentication surfaces.
+import "./landing-math-symbols.css";
 // Final dark-mode-only icon tone lift; light mode and semantic hues stay intact.
 import "./dark-icon-tone.css";
 import { Toaster } from "sonner";
