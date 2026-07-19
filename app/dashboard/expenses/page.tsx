@@ -84,11 +84,8 @@ export default async function ExpensesPage({
 
   return (
     <div data-expenses-page className="expenses-page">
-      <header className="expenses-hero page-heading finance-surface-glass">
-        <div className="min-w-0">
-          <h2 className="page-title">Expenses</h2>
-          <p className="page-subtitle">{expenses.length} total entries</p>
-        </div>
+      <header className="expenses-page-heading">
+        <h1 className="expenses-page-label">Expenses</h1>
         <AddExpenseButton />
       </header>
 
@@ -97,8 +94,8 @@ export default async function ExpensesPage({
         className="expenses-summary-grid"
         aria-label="Expense overview"
       >
-        <article className="expenses-summary-card summary-card min-w-0">
-          <p className="mb-1.5 text-xs font-semibold text-text-secondary">
+        <article className="expenses-summary-item min-w-0">
+          <p className="expenses-summary-label text-xs font-semibold text-text-secondary">
             This Month
           </p>
           <p className="expenses-summary-amount break-words text-xl font-bold text-text-primary">
@@ -106,8 +103,8 @@ export default async function ExpensesPage({
           </p>
         </article>
 
-        <article className="expenses-summary-card summary-card min-w-0">
-          <p className="mb-1.5 text-xs font-semibold text-text-secondary">
+        <article className="expenses-summary-item min-w-0">
+          <p className="expenses-summary-label text-xs font-semibold text-text-secondary">
             This Year
           </p>
           <p className="expenses-summary-amount break-words text-xl font-bold text-text-primary">
@@ -115,30 +112,22 @@ export default async function ExpensesPage({
           </p>
         </article>
 
-        <article className="expenses-summary-card expenses-summary-card-featured summary-card min-w-0">
-          <p className="mb-1.5 text-xs font-semibold text-text-secondary">
+        <article className="expenses-summary-item expenses-summary-item-featured min-w-0">
+          <p className="expenses-summary-label text-xs font-semibold text-text-secondary">
             Highest Month Ever
           </p>
           <p className="expenses-summary-amount break-words text-xl font-bold text-danger">
             <Money amount={highestMonth} />
           </p>
-          <p className="mt-0.5 text-xs text-text-secondary">
-            Your most expensive month
-          </p>
         </article>
       </section>
 
       <div className="expenses-insights-grid">
-        <section className="expenses-section-panel finance-panel">
+        <section className="expenses-section">
           <div className="expenses-section-heading">
-            <div className="min-w-0">
-              <h3 className="text-sm font-semibold text-text-primary">
-                Expenses by Account
-              </h3>
-              <p className="expenses-section-copy text-xs text-text-secondary">
-                Where your recorded spending came from
-              </p>
-            </div>
+            <h2 className="expenses-section-title text-sm font-semibold text-text-primary">
+              Expenses by Account
+            </h2>
           </div>
 
           {expenses.length === 0 ? (
@@ -159,7 +148,7 @@ export default async function ExpensesPage({
               ).map(([account, amount]) => (
                 <article
                   key={account}
-                  className="expenses-account-item finance-panel-soft min-w-0"
+                  className="expenses-account-item min-w-0"
                 >
                   <p className="truncate text-xs font-medium text-text-secondary">
                     {account}
@@ -174,16 +163,11 @@ export default async function ExpensesPage({
         </section>
 
         {categories.length > 0 && (
-          <section className="expenses-section-panel finance-panel">
+          <section className="expenses-section">
             <div className="expenses-section-heading">
-              <div className="min-w-0">
-                <h3 className="text-sm font-semibold text-text-primary">
-                  This Month by Category
-                </h3>
-                <p className="expenses-section-copy text-xs text-text-secondary">
-                  Your month-to-date spending mix
-                </p>
-              </div>
+              <h2 className="expenses-section-title text-sm font-semibold text-text-primary">
+                This Month by Category
+              </h2>
             </div>
 
             <div className="expenses-category-list">
@@ -224,16 +208,11 @@ export default async function ExpensesPage({
         )}
       </div>
 
-      <section className="expenses-ledger finance-panel">
+      <section className="expenses-ledger">
         <div className="expenses-ledger-heading">
-          <div className="min-w-0">
-            <h3 className="text-sm font-semibold text-text-primary">
-              All Expenses
-            </h3>
-            <p className="expenses-section-copy text-xs text-text-secondary">
-              Your complete expense history
-            </p>
-          </div>
+          <h2 className="expenses-section-title text-sm font-semibold text-text-primary">
+            All Expenses
+          </h2>
           <span className="expenses-entry-count text-xs font-medium text-text-secondary">
             {expenses.length === 0
               ? "0 entries"

@@ -1,110 +1,68 @@
 /* Expense page presentation only.
-   Data queries, calculations, icons, type, forms, and transaction behavior stay untouched. */
+   Data, calculations, core icons, forms, actions, states, and motion stay unchanged. */
 
 .expenses-page {
   display: grid;
   min-width: 0;
-  gap: clamp(0.85rem, 1.4vw, 1.2rem);
-  padding-bottom: 0.75rem;
+  gap: clamp(1.35rem, 2.2vw, 2rem);
+  padding: 0.15rem 0.1rem clamp(1rem, 2vw, 1.75rem);
 }
 
-.expenses-page .expenses-hero {
-  isolation: isolate;
-  min-height: 6.25rem;
-  overflow: hidden;
-  align-items: center;
-  padding: clamp(1rem, 2vw, 1.35rem) clamp(1rem, 2.4vw, 1.6rem);
-  border-color: color-mix(in srgb, var(--danger), var(--border) 82%);
-  background:
-    linear-gradient(
-      112deg,
-      color-mix(in srgb, var(--danger), transparent 93%),
-      transparent 48%
-    ),
-    var(--card);
-  box-shadow: var(--shadow-sm);
-}
-
-.expenses-page .expenses-hero::after {
-  position: absolute;
-  z-index: -1;
-  right: -3.75rem;
-  bottom: -6.25rem;
-  width: 15rem;
-  height: 15rem;
-  border-radius: 999px;
-  background: radial-gradient(
-    circle,
-    color-mix(in srgb, var(--danger), transparent 84%),
-    transparent 68%
-  );
-  content: "";
-  pointer-events: none;
-}
-
-.expenses-page .expenses-hero > * {
-  position: relative;
-  z-index: 1;
-}
-
-.expenses-page .expenses-hero .page-subtitle {
-  margin-top: 0.2rem;
-}
-
-.expenses-page .expenses-hero .danger-action {
+/* One quiet route label and the existing action; no hero card or decorative layer. */
+.expenses-page-heading {
+  display: flex;
+  min-width: 0;
   min-height: 2.75rem;
-  padding-inline: 1rem;
-  border-color: transparent;
-  box-shadow: 0 7px 18px color-mix(in srgb, var(--danger), transparent 78%);
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
 }
 
+.expenses-page-label {
+  min-width: 0;
+  color: var(--text-primary);
+  font-size: clamp(1.05rem, 1.35vw, 1.25rem);
+  font-weight: 720;
+  line-height: 1.25;
+  letter-spacing: -0.022em;
+}
+
+.expenses-page-heading .danger-action {
+  min-height: 2.55rem;
+  flex-shrink: 0;
+  padding: 0.55rem 0.95rem;
+  border: 0;
+  box-shadow: none;
+}
+
+/* Metrics are grouped by rhythm and typography instead of separate cards. */
 .expenses-summary-grid {
   display: grid;
+  min-width: 0;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: clamp(0.65rem, 1.2vw, 0.9rem);
+  align-items: start;
+  gap: clamp(1.15rem, 3vw, 3.5rem);
+  padding-block: clamp(0.15rem, 0.6vw, 0.45rem);
 }
 
-.expenses-page .expenses-summary-card {
-  position: relative;
-  min-height: 7.3rem;
-  overflow: hidden;
-  padding: clamp(0.9rem, 1.6vw, 1.15rem);
-  border-color: color-mix(in srgb, var(--border), transparent 18%);
-  background: var(--card);
-  box-shadow: var(--shadow-xs);
+.expenses-summary-item {
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
 }
 
-.expenses-page .expenses-summary-card::after {
-  position: absolute;
-  right: 0;
-  bottom: 0;
-  left: 0;
-  height: 0.16rem;
-  border-radius: 999px 999px 0 0;
-  background: color-mix(in srgb, var(--danger), transparent 58%);
-  content: "";
+.expenses-summary-label {
+  line-height: 1.35;
+  letter-spacing: 0.015em;
 }
 
-.expenses-page .expenses-summary-card-featured {
-  border-color: color-mix(in srgb, var(--danger), var(--border) 72%);
-  background:
-    linear-gradient(
-      135deg,
-      color-mix(in srgb, var(--danger), transparent 92%),
-      transparent 70%
-    ),
-    var(--card);
-}
-
-.expenses-page .expenses-summary-card-featured::after {
-  background: var(--danger);
-}
-
-.expenses-page .expenses-summary-amount {
-  margin-top: 0.55rem;
-  font-size: clamp(1.15rem, 2vw, 1.55rem);
-  line-height: 1.18;
-  letter-spacing: -0.025em;
+.expenses-summary-amount {
+  margin-top: clamp(0.38rem, 0.8vw, 0.62rem);
+  font-size: clamp(1.35rem, 2.35vw, 2.05rem);
+  line-height: 1.08;
+  letter-spacing: -0.035em;
   overflow-wrap: anywhere;
 }
 
@@ -112,68 +70,70 @@
   display: grid;
   min-width: 0;
   grid-template-columns: minmax(0, 0.82fr) minmax(0, 1.18fr);
-  align-items: stretch;
-  gap: clamp(0.85rem, 1.4vw, 1.2rem);
+  align-items: start;
+  gap: clamp(2rem, 4vw, 4.75rem);
 }
 
 .expenses-insights-grid > :only-child {
   grid-column: 1 / -1;
 }
 
-.expenses-page .expenses-section-panel {
+.expenses-section,
+.expenses-ledger {
   min-width: 0;
-  padding: clamp(1rem, 1.8vw, 1.35rem);
-  border-color: color-mix(in srgb, var(--border), transparent 14%);
-  background: var(--card);
-  box-shadow: var(--shadow-xs);
+  border: 0;
+  outline: 0;
+  background: transparent;
+  box-shadow: none;
 }
 
 .expenses-section-heading,
 .expenses-ledger-heading {
   display: flex;
   min-width: 0;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
-  gap: 0.75rem;
+  gap: 0.85rem;
 }
 
-.expenses-section-copy {
-  margin-top: 0.25rem;
-  line-height: 1.45;
+.expenses-section-title {
+  min-width: 0;
+  line-height: 1.35;
+  letter-spacing: -0.012em;
 }
 
 .expenses-account-grid {
   display: grid;
+  min-width: 0;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0.65rem;
-  margin-top: 1rem;
+  column-gap: clamp(1.25rem, 2.4vw, 2.5rem);
+  row-gap: clamp(0.9rem, 1.5vw, 1.3rem);
+  margin-top: clamp(0.9rem, 1.5vw, 1.2rem);
 }
 
-.expenses-page .expenses-account-item {
+.expenses-account-item {
   display: flex;
-  min-height: 4.65rem;
   min-width: 0;
   flex-direction: column;
   justify-content: center;
-  padding: 0.85rem 0.95rem;
+  padding: 0.1rem 0;
   border: 0;
-  border-radius: calc(var(--radius-card) - 0.25rem);
-  background: color-mix(in srgb, var(--surface-secondary), transparent 12%);
+  background: transparent;
   box-shadow: none;
 }
 
-.expenses-page .expenses-account-amount {
-  margin-top: 0.38rem;
-  line-height: 1.3;
-  letter-spacing: -0.012em;
+.expenses-account-amount {
+  margin-top: 0.32rem;
+  line-height: 1.25;
+  letter-spacing: -0.015em;
   overflow-wrap: anywhere;
 }
 
 .expenses-category-list {
   display: grid;
   min-width: 0;
-  gap: 0.8rem;
-  margin-top: 1rem;
+  gap: clamp(0.9rem, 1.35vw, 1.15rem);
+  margin-top: clamp(0.9rem, 1.5vw, 1.2rem);
 }
 
 .expenses-category-item {
@@ -185,193 +145,172 @@
   min-width: 0;
   grid-template-columns: minmax(0, 1fr) minmax(5.75rem, auto);
   align-items: start;
-  gap: 0.75rem;
+  gap: 0.85rem;
   margin-bottom: 0.48rem;
 }
 
 .expenses-category-count {
-  padding: 0.15rem 0.42rem;
-  border-radius: 999px;
-  background: color-mix(in srgb, var(--surface-secondary), transparent 8%);
+  color: var(--text-tertiary);
   white-space: nowrap;
 }
 
 .expenses-progress-track {
-  height: 0.34rem;
+  height: 0.3rem;
   overflow: hidden;
   border-radius: 999px;
-  background: color-mix(in srgb, var(--surface-secondary), transparent 5%);
+  background: color-mix(in srgb, var(--surface-secondary), transparent 12%);
 }
 
-.expenses-page .expenses-ledger {
-  min-width: 0;
-  overflow: hidden;
-  padding: 0;
-  border-color: color-mix(in srgb, var(--border), transparent 12%);
-  background: var(--card);
-  box-shadow: var(--shadow-xs);
-}
-
-.expenses-ledger-heading {
-  align-items: center;
-  padding: clamp(1rem, 1.8vw, 1.3rem) clamp(1rem, 2vw, 1.4rem);
-  border-bottom: 1px solid color-mix(in srgb, var(--border), transparent 28%);
+.expenses-ledger {
+  padding-top: clamp(0.15rem, 0.5vw, 0.4rem);
 }
 
 .expenses-entry-count {
   flex-shrink: 0;
-  padding: 0.35rem 0.65rem;
-  border-radius: 999px;
-  background: color-mix(in srgb, var(--surface-secondary), transparent 4%);
   white-space: nowrap;
 }
 
 .expenses-ledger-list {
+  display: grid;
   min-width: 0;
+  gap: 0.1rem;
+  margin-top: clamp(0.55rem, 1vw, 0.85rem);
 }
 
+/* The shared row retains all view/edit/delete behavior without table-box styling. */
 .expenses-page .expenses-ledger-list [data-transaction-row] {
   margin: 0;
-  padding: 0.9rem 1.15rem !important;
+  padding: 0.74rem 0.25rem !important;
   border: 0 !important;
-  border-bottom: 1px solid color-mix(in srgb, var(--border), transparent 36%) !important;
-  border-radius: 0 !important;
+  border-radius: 0.8rem !important;
   background: transparent !important;
-}
-
-.expenses-page .expenses-ledger-list [data-transaction-row]:last-child {
-  border-bottom: 0 !important;
+  box-shadow: none !important;
 }
 
 .expenses-page .expenses-ledger-list [data-transaction-row]:hover,
 .expenses-page .expenses-ledger-list [data-transaction-row]:focus-within {
-  background: color-mix(in srgb, var(--surface-secondary), transparent 52%) !important;
+  border: 0 !important;
+  background: color-mix(in srgb, var(--surface-secondary), transparent 56%) !important;
+  box-shadow: none !important;
 }
 
 .expenses-page .expenses-ledger-list [data-transaction-row] > :last-child button {
   border-color: transparent !important;
   background: transparent !important;
+  box-shadow: none !important;
 }
 
 .expenses-page .expenses-ledger nav {
-  margin: 0;
-  padding: 1rem 1.15rem;
-  border-color: color-mix(in srgb, var(--border), transparent 28%);
+  margin-top: clamp(0.75rem, 1.2vw, 1rem);
+  padding: 0;
+  border: 0;
 }
 
-.expenses-page .expenses-ledger > [data-empty-state] {
-  min-height: 17rem;
-  margin: 0;
+.expenses-page .expenses-ledger nav :where(a, span[aria-disabled="true"]) {
+  border-color: transparent;
+  box-shadow: none;
 }
 
-@media (max-width: 1023px) {
+.expenses-page :where(.expenses-section, .expenses-ledger) > [data-empty-state] {
+  min-height: clamp(13rem, 26vw, 17rem);
+  margin-top: 0.75rem;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+@media (max-width: 899px) {
   .expenses-insights-grid {
     grid-template-columns: minmax(0, 1fr);
+    gap: clamp(1.65rem, 4vw, 2.35rem);
   }
 }
 
 @media (max-width: 639px) {
   .expenses-page {
-    gap: 0.75rem;
-    padding-bottom: 0.25rem;
+    gap: 1.25rem;
+    padding-inline: 0;
+    padding-bottom: 0.5rem;
   }
 
-  .expenses-page .expenses-hero {
-    min-height: auto;
-    align-items: flex-start;
-    padding: 0.95rem;
+  .expenses-page-heading {
+    min-height: 2.6rem;
+    gap: 0.7rem;
   }
 
-  .expenses-page .expenses-hero::after {
-    right: -5.5rem;
-    bottom: -7rem;
+  .expenses-page-label {
+    font-size: 1rem;
+  }
+
+  .expenses-page-heading .danger-action {
+    min-height: 2.45rem;
+    padding: 0.5rem 0.78rem;
+    font-size: 0.78rem;
+  }
+
+  .expenses-page-heading .danger-action svg {
+    width: 0.9rem;
+    height: 0.9rem;
   }
 
   .expenses-summary-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 0.65rem;
+    column-gap: clamp(0.9rem, 5vw, 1.5rem);
+    row-gap: 1rem;
   }
 
-  .expenses-page .expenses-summary-card {
-    min-height: 5.95rem;
-    padding: 0.85rem;
-  }
-
-  .expenses-page .expenses-summary-card-featured {
+  .expenses-summary-item-featured {
     grid-column: 1 / -1;
   }
 
-  .expenses-page .expenses-summary-amount {
-    margin-top: 0.38rem;
-    font-size: 1.05rem;
-    line-height: 1.25;
-  }
-
-  .expenses-page .expenses-section-panel {
-    padding: 0.95rem;
+  .expenses-summary-amount {
+    margin-top: 0.32rem;
+    font-size: clamp(1.12rem, 5.4vw, 1.4rem);
+    line-height: 1.15;
   }
 
   .expenses-account-grid {
-    gap: 0.55rem;
-    margin-top: 0.85rem;
-  }
-
-  .expenses-page .expenses-account-item {
-    min-height: 4.25rem;
-    padding: 0.72rem 0.78rem;
+    column-gap: 1rem;
+    row-gap: 0.9rem;
+    margin-top: 0.8rem;
   }
 
   .expenses-category-list {
     gap: 0.9rem;
-    margin-top: 0.9rem;
+    margin-top: 0.8rem;
   }
 
   .expenses-category-meta {
     grid-template-columns: minmax(0, 1fr) minmax(5rem, auto);
-    gap: 0.5rem;
-  }
-
-  .expenses-category-count {
-    padding-inline: 0.35rem;
-  }
-
-  .expenses-ledger-heading {
-    padding: 0.95rem;
-  }
-
-  .expenses-entry-count {
-    padding: 0.3rem 0.5rem;
+    gap: 0.55rem;
   }
 
   .expenses-page .expenses-ledger-list [data-transaction-row] {
-    padding: 0.8rem 0.85rem !important;
+    padding: 0.72rem 0.05rem !important;
   }
 
   .expenses-page .expenses-ledger-list [data-transaction-row] > :last-child {
     margin-top: 0 !important;
-    padding-top: 0.35rem !important;
+    padding-top: 0.3rem !important;
     border-top: 0 !important;
   }
 
-  .expenses-page .expenses-ledger nav {
-    padding: 0.9rem;
+  .expenses-page .expenses-ledger nav > div {
+    justify-content: space-between;
   }
 }
 
 @media (max-width: 419px) {
-  .expenses-page .expenses-hero {
-    align-items: stretch;
-  }
-
-  .expenses-page .expenses-hero .danger-action {
-    width: 100%;
+  .expenses-page {
+    gap: 1.15rem;
   }
 
   .expenses-summary-grid {
     grid-template-columns: minmax(0, 1fr);
+    gap: 0.85rem;
   }
 
-  .expenses-page .expenses-summary-card-featured {
+  .expenses-summary-item-featured {
     grid-column: auto;
   }
 
@@ -396,8 +335,16 @@
   }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .expenses-page * {
-    scroll-behavior: auto;
+@media (min-width: 1400px) {
+  .expenses-page {
+    gap: 2.15rem;
+  }
+
+  .expenses-summary-grid {
+    gap: 4.5rem;
+  }
+
+  .expenses-insights-grid {
+    gap: 5.5rem;
   }
 }
