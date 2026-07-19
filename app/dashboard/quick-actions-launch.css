@@ -105,14 +105,29 @@
   }
 }
 
-/* Preserve a small ink-safe area so the final balance digit is never clipped. */
+/* Keep every glyph edge visible; earlier overview rules intentionally clip other amounts. */
+[data-dashboard-scroll] .dashboard-overview .dashboard-balance-copy,
+[data-dashboard-scroll] .dashboard-overview .dashboard-balance-amount,
+[data-dashboard-scroll] .dashboard-overview .dashboard-balance-amount > span {
+  overflow: visible !important;
+}
+
+/* Reserve real width for the final glyph instead of relying on padding inside a clipped box. */
 @media (min-width: 640px) {
   [data-dashboard-scroll]
     .dashboard-overview
     .dashboard-balance-amount {
-    width: calc(100% + 0.08em);
-    padding-inline-end: 0.08em;
+    width: calc(100% + 0.2em) !important;
+    max-width: none !important;
+    padding-inline-end: 0.2em !important;
     box-sizing: border-box;
+  }
+
+  [data-dashboard-scroll]
+    .dashboard-overview
+    .dashboard-balance-amount > span {
+    display: inline-block;
+    padding-inline-end: 0.08em;
   }
 }
 
