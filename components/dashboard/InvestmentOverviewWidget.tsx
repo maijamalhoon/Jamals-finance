@@ -1,10 +1,10 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
-import { ArrowRight, BriefcaseBusiness, Layers3, Package } from "lucide-react";
+import { BriefcaseBusiness, Layers3, Package } from "lucide-react";
 import { Cell, Pie, PieChart, Tooltip } from "recharts";
 
+import DashboardCardViewLink from "@/components/dashboard/DashboardCardViewLink";
 import ChartFrame from "@/components/ui/chart-frame";
 import { useCurrency } from "@/components/currency/CurrencyProvider";
 import CountedAmount from "@/components/motion/CountedAmount";
@@ -212,47 +212,42 @@ export default function InvestmentOverviewWidget({
   const isProfit = totalPnLPct !== null && totalPnLPct > 0;
   const isLoss = totalPnLPct !== null && totalPnLPct < 0;
   const pnlColor =
-    isProfit ? "var(--success)"
-    : isLoss ? "var(--danger)"
-    : "var(--text-secondary)";
+    isProfit
+      ? "var(--success)"
+      : isLoss
+        ? "var(--danger)"
+        : "var(--text-secondary)";
   const pnlLabel =
-    totalPnLPct === null ? "P&L unavailable"
-    : `${isProfit ? "+" : ""}${totalPnLPct.toFixed(1)}%`;
+    totalPnLPct === null
+      ? "P&L unavailable"
+      : `${isProfit ? "+" : ""}${totalPnLPct.toFixed(1)}%`;
   const emptyTitle =
-    availability === "unavailable" ? "Portfolio unavailable"
-    : investments.length === 0 ? "No holdings yet"
-    : "Pricing unavailable";
+    availability === "unavailable"
+      ? "Portfolio unavailable"
+      : investments.length === 0
+        ? "No holdings yet"
+        : "Pricing unavailable";
   const emptyDescription =
-    availability === "unavailable" ? "Refresh when your connection is stable."
-    : investments.length === 0 ? "Add investments to see allocation."
-    : "Current prices are missing, so value and performance are not shown.";
+    availability === "unavailable"
+      ? "Refresh when your connection is stable."
+      : investments.length === 0
+        ? "Add investments to see allocation."
+        : "Current prices are missing, so value and performance are not shown.";
 
   return (
     <section className="finance-reference-card motion-card-entry flex h-full min-w-0 flex-col overflow-hidden p-4 sm:p-5 lg:p-6">
       <header className="flex min-w-0 items-start justify-between gap-3">
-        <div className="min-w-0">
-          <div className="flex min-w-0 items-center gap-2 text-[10px] font-bold uppercase tracking-[0.16em] text-text-secondary">
-            <span className="dashboard-list-card-kicker-icon !border-transparent !bg-transparent !text-text-secondary !shadow-none">
-              <BriefcaseBusiness size={15} strokeWidth={2.3} aria-hidden="true" />
-            </span>
-            <span className="truncate">Investments</span>
-          </div>
-          <h3 className="mt-3 text-xl font-semibold leading-tight tracking-tight text-text-primary sm:text-2xl">
-            Portfolio Overview
-          </h3>
-          <p className="mt-1 text-xs leading-5 text-text-secondary sm:text-sm">
-            Allocation by priced current value
-          </p>
+        <div className="flex min-w-0 items-center gap-2 text-[10px] font-bold uppercase tracking-[0.16em] text-text-secondary">
+          <span className="dashboard-list-card-kicker-icon !border-transparent !bg-transparent !text-text-secondary !shadow-none">
+            <BriefcaseBusiness size={15} strokeWidth={2.3} aria-hidden="true" />
+          </span>
+          <span className="truncate">Investments</span>
         </div>
 
-        <Link
+        <DashboardCardViewLink
           href="/dashboard/investments"
-          className="dashboard-card-action finance-focus mt-1 inline-flex min-h-10 shrink-0 items-center gap-1.5 rounded-xl px-3 text-xs sm:px-4 sm:text-sm"
-          aria-label="Open investment details"
-        >
-          Details
-          <ArrowRight size={14} />
-        </Link>
+          label="View all investments"
+        />
       </header>
 
       {allocationData.length === 0 ? (
@@ -261,8 +256,12 @@ export default function InvestmentOverviewWidget({
             <span className="dashboard-chart-empty-icon">
               <Package size={16} />
             </span>
-            <p className="text-xs font-semibold text-text-primary">{emptyTitle}</p>
-            <p className="mt-1 text-[11px] text-text-secondary">{emptyDescription}</p>
+            <p className="text-xs font-semibold text-text-primary">
+              {emptyTitle}
+            </p>
+            <p className="mt-1 text-[11px] text-text-secondary">
+              {emptyDescription}
+            </p>
           </div>
         </div>
       ) : (
@@ -437,7 +436,8 @@ export default function InvestmentOverviewWidget({
 
             {unpricedCount > 0 ? (
               <p className="px-1 text-[10px] font-semibold leading-4 text-warning">
-                {unpricedCount} unpriced {unpricedCount === 1 ? "holding" : "holdings"} excluded
+                {unpricedCount} unpriced{" "}
+                {unpricedCount === 1 ? "holding" : "holdings"} excluded
               </p>
             ) : null}
           </div>
