@@ -121,6 +121,7 @@ export default async function TransactionsPage({
       account,
       minAmount,
       maxAmount,
+      includeDeleted: true,
     }),
     supabase
       .from("categories")
@@ -186,6 +187,7 @@ export default async function TransactionsPage({
         accountName,
         transaction?.type,
         semanticType,
+        transaction?.deleted_at ? "deleted" : null,
       ]
         .filter(Boolean)
         .join(" ")
@@ -241,6 +243,13 @@ export default async function TransactionsPage({
         const amountDifference =
           Number(right.amount ?? 0) - Number(left.amount ?? 0);
         return sort === "highest" ? amountDifference : -amountDifference;
+      }
+
+      const activityDifference =
+        transactionTime(right.updated_at ?? right.created_at) -
+        transactionTime(left.updated_at ?? left.created_at);
+      if (activityDifference !== 0) {
+        return sort === "newest" ? activityDifference : -activityDifference;
       }
 
       const createdDifference =
