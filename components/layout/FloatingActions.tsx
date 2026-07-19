@@ -5,16 +5,21 @@ import dynamic from "next/dynamic";
 import { usePathname, useRouter } from "next/navigation";
 import { AnimatePresence, motion, type Variants } from "framer-motion";
 import {
+  ArrowDown,
   ArrowLeftRight,
-  BarChart2,
+  ArrowUp,
+  HandCoins,
+  Landmark,
   Plus,
   Target,
-  TrendingDown,
   TrendingUp,
   type LucideIcon,
 } from "lucide-react";
 
 const TransferModal = dynamic(() => import("@/components/accounts/TransferModal"), {
+  ssr: false,
+});
+const AccountModal = dynamic(() => import("@/components/accounts/AccountModal"), {
   ssr: false,
 });
 const TransactionModal = dynamic(
@@ -28,51 +33,67 @@ const InvestmentModal = dynamic(
   () => import("@/components/investments/InvestmentModal"),
   { ssr: false },
 );
+const PayableModal = dynamic(() => import("@/components/payables/PayableModal"), {
+  ssr: false,
+});
 
-type ActionKey = "income" | "expense" | "investment" | "transfer" | "goal";
+type ActionKey =
+  | "income"
+  | "expense"
+  | "investment"
+  | "transfer"
+  | "goal"
+  | "payable"
+  | "account";
 
 const actions = [
   {
     key: "income",
-    label: "Add Income",
-    hint: "Record money in",
-    icon: TrendingUp,
-    iconTone: "bg-success/10 text-success ring-success/15",
+    ariaLabel: "Add income",
+    icon: ArrowUp,
+    color: "text-income",
   },
   {
     key: "expense",
-    label: "Add Expense",
-    hint: "Track spending",
-    icon: TrendingDown,
-    iconTone: "bg-danger/10 text-danger ring-danger/15",
+    ariaLabel: "Add expense",
+    icon: ArrowDown,
+    color: "text-expense",
   },
   {
     key: "investment",
-    label: "Add Investment",
-    hint: "Grow portfolio",
-    icon: BarChart2,
-    iconTone: "finance-investment-quick-icon",
+    ariaLabel: "Add investment",
+    icon: TrendingUp,
+    color: "text-investment",
   },
   {
     key: "transfer",
-    label: "Transfer Money",
-    hint: "Move between accounts",
+    ariaLabel: "Transfer money",
     icon: ArrowLeftRight,
-    iconTone: "bg-info/10 text-info ring-info/15",
+    color: "text-transfer",
   },
   {
     key: "goal",
-    label: "Add Goal",
-    hint: "Plan savings",
+    ariaLabel: "Add goal",
     icon: Target,
-    iconTone: "bg-warning/10 text-warning ring-warning/15",
+    color: "text-goals",
+  },
+  {
+    key: "payable",
+    ariaLabel: "Add payable",
+    icon: HandCoins,
+    color: "text-payables",
+  },
+  {
+    key: "account",
+    ariaLabel: "Add account",
+    icon: Landmark,
+    color: "text-active",
   },
 ] satisfies Array<{
   key: ActionKey;
-  label: string;
-  hint: string;
+  ariaLabel: string;
   icon: LucideIcon;
-  iconTone: string;
+  color: string;
 }>;
 
 const motionEase = [0.16, 1, 0.3, 1] as const;
@@ -80,26 +101,29 @@ const motionEase = [0.16, 1, 0.3, 1] as const;
 const menuVariants: Variants = {
   initial: {
     opacity: 0,
-    y: 10,
-    scale: 0.975,
+    y: 12,
+    scale: 0.955,
+    filter: "blur(7px)",
   },
   animate: {
     opacity: 1,
     y: 0,
     scale: 1,
+    filter: "blur(0px)",
     transition: {
-      duration: 0.18,
+      duration: 0.22,
       ease: motionEase,
-      staggerChildren: 0.025,
-      delayChildren: 0.015,
+      staggerChildren: 0.035,
+      delayChildren: 0.025,
     },
   },
   exit: {
     opacity: 0,
-    y: 8,
-    scale: 0.98,
+    y: 9,
+    scale: 0.97,
+    filter: "blur(4px)",
     transition: {
-      duration: 0.14,
+      duration: 0.15,
       ease: motionEase,
     },
   },
@@ -108,19 +132,23 @@ const menuVariants: Variants = {
 const itemVariants: Variants = {
   initial: {
     opacity: 0,
-    y: 4,
+    y: 7,
+    scale: 0.86,
   },
   animate: {
     opacity: 1,
     y: 0,
+    scale: 1,
     transition: {
-      duration: 0.14,
-      ease: motionEase,
+      type: "spring",
+      stiffness: 470,
+      damping: 29,
     },
   },
   exit: {
     opacity: 0,
-    y: 3,
+    y: 4,
+    scale: 0.92,
     transition: {
       duration: 0.1,
       ease: motionEase,
@@ -138,10 +166,18 @@ export default function FloatingActions() {
   const [transferOpen, setTransferOpen] = useState(false);
   const [goalOpen, setGoalOpen] = useState(false);
   const [investmentOpen, setInvestmentOpen] = useState(false);
+  const [payableOpen, setPayableOpen] = useState(false);
+  const [accountOpen, setAccountOpen] = useState(false);
   const [externalDialogOpen, setExternalDialogOpen] = useState(false);
   const [txType, setTxType] = useState<"income" | "expense">("income");
   const modalOpen =
-    transactionOpen || transferOpen || goalOpen || investmentOpen || externalDialogOpen;
+    transactionOpen ||
+    transferOpen ||
+    goalOpen ||
+    investmentOpen ||
+    payableOpen ||
+    accountOpen ||
+    externalDialogOpen;
 
   useEffect(() => {
     if (!available) return;
@@ -168,6 +204,8 @@ export default function FloatingActions() {
     setTransferOpen(false);
     setGoalOpen(false);
     setInvestmentOpen(false);
+    setPayableOpen(false);
+    setAccountOpen(false);
     setExternalDialogOpen(false);
   }, [available]);
 
@@ -205,7 +243,17 @@ export default function FloatingActions() {
       return;
     }
 
-    setGoalOpen(true);
+    if (key === "goal") {
+      setGoalOpen(true);
+      return;
+    }
+
+    if (key === "payable") {
+      setPayableOpen(true);
+      return;
+    }
+
+    setAccountOpen(true);
   }
 
   function refreshAfterSuccess() {
@@ -223,7 +271,7 @@ export default function FloatingActions() {
         aria-hidden={modalOpen ? "true" : undefined}
       >
         <AnimatePresence>
-          {open && !modalOpen && (
+          {open && !modalOpen ? (
             <>
               <motion.button
                 type="button"
@@ -232,7 +280,7 @@ export default function FloatingActions() {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="fixed inset-0 -z-10 cursor-default bg-background/25 backdrop-blur-[2px] lg:bg-transparent lg:backdrop-blur-0"
+                className="fixed inset-0 -z-10 cursor-default bg-background/20 backdrop-blur-[3px] lg:bg-transparent lg:backdrop-blur-0"
               />
 
               <motion.div
@@ -243,19 +291,9 @@ export default function FloatingActions() {
                 initial="initial"
                 animate="animate"
                 exit="exit"
-                className={[
-                  "w-[252px] origin-bottom-right overflow-hidden rounded-[20px]",
-                  "border border-border/70 bg-card/95 p-2 text-card-foreground",
-                  "shadow-[var(--shadow-premium)] backdrop-blur-xl",
-                ].join(" ")}
+                className="origin-bottom-right overflow-hidden rounded-[22px] border border-border/60 bg-card/94 p-2.5 text-card-foreground shadow-[0_18px_50px_rgb(15_23_42_/_0.16)] backdrop-blur-2xl dark:border-border-strong/55 dark:bg-surface-elevated/94 dark:shadow-[0_22px_56px_rgb(0_0_0_/_0.42)]"
               >
-                <div className="px-2.5 pb-1.5 pt-1">
-                  <p className="text-[12px] font-semibold leading-5 tracking-[-0.01em] text-muted-foreground">
-                    Quick actions
-                  </p>
-                </div>
-
-                <div className="space-y-1">
+                <div className="grid grid-cols-4 gap-1.5">
                   {actions.map((action) => {
                     const Icon = action.icon;
 
@@ -264,40 +302,29 @@ export default function FloatingActions() {
                         key={action.key}
                         type="button"
                         role="menuitem"
+                        aria-label={action.ariaLabel}
+                        data-keep-icon-surface
                         variants={itemVariants}
-                        whileTap={{ scale: 0.985 }}
+                        whileHover={{ y: -2, scale: 1.055 }}
+                        whileTap={{ scale: 0.9 }}
                         onClick={() => handleAction(action.key)}
-                        className={[
-                          "finance-focus group flex w-full items-center gap-3 rounded-[14px] px-2.5 py-2.5 text-left",
-                          "bg-transparent transition-colors duration-150",
-                          "hover:bg-muted/60 active:bg-muted/80 dark:hover:bg-surface-tinted",
-                        ].join(" ")}
+                        className={`finance-focus group relative grid size-11 place-items-center rounded-[14px] bg-transparent ${action.color} transition-[background-color,filter] duration-150 hover:bg-surface-secondary/90 hover:drop-shadow-[0_5px_8px_rgb(15_23_42_/_0.12)] dark:hover:bg-surface-soft/70`}
                       >
-                        <span
-                          className={[
-                            "grid h-8 w-8 shrink-0 place-items-center rounded-[10px] ring-1 ring-inset",
-                            "transition-transform duration-150 group-hover:scale-[1.03]",
-                            action.iconTone,
-                          ].join(" ")}
-                        >
-                          <Icon size={16} strokeWidth={2.15} />
-                        </span>
-
-                        <span className="min-w-0 flex-1">
-                          <span className="block whitespace-nowrap text-[13px] font-semibold leading-4 tracking-[-0.01em] text-foreground">
-                            {action.label}
-                          </span>
-                          <span className="mt-0.5 block whitespace-nowrap text-[11px] font-medium leading-3.5 text-muted-foreground">
-                            {action.hint}
-                          </span>
-                        </span>
+                        <Icon
+                          size={20}
+                          strokeWidth={2.4}
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          aria-hidden="true"
+                          className="transition-transform duration-150 group-hover:scale-105"
+                        />
                       </motion.button>
                     );
                   })}
                 </div>
               </motion.div>
             </>
-          )}
+          ) : null}
         </AnimatePresence>
 
         <motion.button
@@ -305,34 +332,37 @@ export default function FloatingActions() {
           aria-label={open ? "Close quick actions" : "Open quick actions"}
           aria-expanded={open}
           aria-controls="quick-finance-actions"
+          data-keep-icon-surface
           onClick={() => setOpen((current) => !current)}
           whileHover={{ y: -1, scale: 1.025 }}
-          whileTap={{ scale: 0.94 }}
+          whileTap={{ scale: 0.92 }}
+          animate={{ borderRadius: open ? 18 : 20 }}
           transition={{
             type: "spring",
-            stiffness: 380,
-            damping: 24,
+            stiffness: 390,
+            damping: 25,
           }}
-          className={[
-            "finance-focus relative grid h-[54px] w-[54px] place-items-center rounded-full sm:h-[56px] sm:w-[56px]",
-            "bg-active text-primary-foreground ring-1 ring-active/30 dark:ring-white/10",
-            "shadow-[var(--shadow-lg)]",
-            "transition-[filter,box-shadow] duration-200 hover:brightness-[1.03]",
-          ].join(" ")}
+          className="finance-focus relative grid h-[54px] w-[54px] place-items-center bg-active text-primary-foreground shadow-[0_14px_30px_color-mix(in_srgb,var(--active)_28%,transparent)] transition-[filter,box-shadow] duration-200 hover:brightness-[1.04] sm:h-[56px] sm:w-[56px]"
         >
           <motion.span
             animate={{
               rotate: open ? 45 : 0,
-              scale: open ? 0.94 : 1,
+              scale: open ? 0.96 : 1,
             }}
             transition={{
               type: "spring",
-              stiffness: 360,
-              damping: 24,
+              stiffness: 430,
+              damping: 25,
             }}
             className="relative z-10 grid place-items-center"
           >
-            <Plus size={24} strokeWidth={2.35} />
+            <Plus
+              size={25}
+              strokeWidth={2.5}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            />
           </motion.span>
         </motion.button>
       </div>
@@ -370,6 +400,21 @@ export default function FloatingActions() {
           open
           onClose={() => setInvestmentOpen(false)}
           onSuccess={refreshAfterSuccess}
+        />
+      ) : null}
+
+      {payableOpen ? (
+        <PayableModal open onClose={() => setPayableOpen(false)} />
+      ) : null}
+
+      {accountOpen ? (
+        <AccountModal
+          open
+          onClose={() => setAccountOpen(false)}
+          onSuccess={() => {
+            setAccountOpen(false);
+            refreshAfterSuccess();
+          }}
         />
       ) : null}
     </>
