@@ -1,0 +1,72 @@
+/*
+ * Borderless Lucide presentation for landing, authentication and onboarding.
+ * Wrapper geometry and all controls remain unchanged; only decorative icon
+ * surfaces are removed.
+ */
+
+[data-auth-root] :is(.jf-auth-brand-mark, .jf-auth-card-icon),
+[data-auth-root]
+  :is(span, div):has(> svg.lucide:only-child):is(
+    [class*="rounded"][class*="border"],
+    [class*="rounded"][class*="bg-"],
+    [class*="rounded"][class*="shadow"]
+  ):not([data-keep-icon-surface]):not([data-slot*="indicator"]),
+.jf-node4-landing
+  :is(
+    .jf-brand-mark,
+    .jf-feature-icon,
+    .jf-step-icon,
+    .jf-privacy-icon,
+    .jf-cta-icon,
+    .jf-balance-orbit,
+    .jf-preview-metrics > div > span
+  ) {
+  border-color: transparent !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+}
+
+[data-auth-root]
+  :is(.jf-auth-brand-mark, .jf-auth-card-icon, span, div)
+  > svg.lucide,
+.jf-node4-landing
+  :is(
+    .jf-brand-mark,
+    .jf-feature-icon,
+    .jf-step-icon,
+    .jf-privacy-icon,
+    .jf-cta-icon,
+    .jf-balance-orbit,
+    .jf-preview-metrics > div > span
+  )
+  > svg.lucide {
+  fill: none !important;
+  stroke: currentColor;
+  stroke-width: 2.35;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  shape-rendering: geometricPrecision;
+  vector-effect: non-scaling-stroke;
+  transform-origin: center;
+  transition:
+    transform 180ms var(--motion-ease),
+    filter 180ms var(--motion-ease),
+    color 180ms var(--motion-ease);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .jf-node4-landing .jf-feature:hover .jf-feature-icon > svg.lucide,
+  .jf-node4-landing .jf-workflow-step:hover .jf-step-icon > svg.lucide,
+  [data-auth-root] a:hover > .jf-auth-brand-mark > svg.lucide {
+    transform: translateY(-1px) scale(1.045);
+    filter: drop-shadow(0 2px 3px rgb(15 23 42 / 0.14));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-auth-root] svg.lucide,
+  .jf-node4-landing svg.lucide {
+    transition: none !important;
+  }
+}
