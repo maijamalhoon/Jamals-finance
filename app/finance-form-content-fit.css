@@ -19,7 +19,7 @@
   flex: 0 1 auto !important;
 }
 
-/* Use the exact Income/Expense AccountSelect footprint, including short screens. */
+/* Keep the shared account picker consistent outside compact mobile layouts. */
 :is(
     .finance-modal-content:has(#transfer-amount),
     .finance-modal-content:has(#goal-name),
@@ -36,6 +36,31 @@
   min-height: clamp(3rem, 6.7dvh, 3.35rem) !important;
   max-height: clamp(3rem, 6.7dvh, 3.35rem) !important;
   padding-block: clamp(0.25rem, 0.75dvh, 0.38rem) !important;
+}
+
+/*
+ * The Income/Expense reference uses a visibly taller account row on phones and
+ * tablets. Apply that exact 4rem touch footprint only to the four requested
+ * account pickers; all other inputs, forms, and transaction modals stay unchanged.
+ */
+@media (max-width: 1023px) {
+  html body
+    :is(
+      .finance-modal-content:has(#transfer-amount),
+      .finance-modal-content:has(#goal-name),
+      .finance-modal-content:has(#investment-quantity),
+      .finance-modal-content:has(#payable-original-value),
+      .finance-modal-content[style*="#A35D2D" i],
+      .finance-modal-content[style*="#157462" i],
+      .finance-modal-content[style*="#6849B8" i],
+      .finance-modal-content[style*="#9B6A13" i]
+    )
+    .finance-account-select {
+    height: 4rem !important;
+    min-height: 4rem !important;
+    max-height: 4rem !important;
+    padding-block: 0.5rem !important;
+  }
 }
 
 /*
