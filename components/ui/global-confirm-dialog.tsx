@@ -19,6 +19,11 @@ type ConfirmAction = {
   destructive: boolean;
 };
 
+type ConfirmCopy = {
+  primary: string;
+  secondary?: string;
+};
+
 function getActionElement(event: MouseEvent): HTMLElement | null {
   const selector =
     'button, [role="button"], a, input[type="button"], input[type="submit"]';
@@ -44,25 +49,56 @@ function getConfirmAction(message: string): ConfirmAction {
   };
 }
 
-function getConfirmDescription(message: string) {
-  const compact = message.trim().replace(/\s+/g, " ");
-  if (!compact) return "Do you want to continue with this action?";
+function normalizeSupportingCopy(value: string) {
+  const compact = value.trim().replace(/\s+/g, " ");
+  if (!compact) return undefined;
 
-  const action = compact.match(/^(delete|remove|archive|restore)\b/i)?.[1];
-  if (!action) return compact;
-
-  const normalized = action.toLowerCase();
-  const rest = compact.slice(action.length).trimStart();
-  let description = `Do you want to ${normalized} ${rest}`;
-
-  if (
-    (normalized === "delete" || normalized === "remove") &&
-    !/cannot be undone|progress|balance|existing transactions/i.test(description)
-  ) {
-    description += " This action cannot be undone.";
+  if (/^this cannot be undone\.?$/i.test(compact)) {
+    return "This action cannot be undone.";
   }
 
-  return description;
+  return /[.!?]$/.test(compact) ? compact : `${compact}.`;
+}
+
+function getConfirmCopy(message: string): ConfirmCopy {
+  const compact = message.trim().replace(/\s+/g, " ");
+  if (!compact) {
+    return {
+      primary: "This action will update your data.",
+      secondary: "Please confirm that you want to continue.",
+    };
+  }
+
+  const actionMatch = compact.match(/^(delete|remove|archive|restore)\b/i);
+  if (!actionMatch) return { primary: compact };
+
+  const action = actionMatch[1].toLowerCase();
+  const questionMarkIndex = compact.indexOf("?");
+  const firstPart = (
+    questionMarkIndex >= 0 ? compact.slice(0, questionMarkIndex) : compact
+  ).trim();
+  const trailingPart =
+    questionMarkIndex >= 0 ? compact.slice(questionMarkIndex + 1).trim() : "";
+  const subject = firstPart
+    .slice(actionMatch[0].length)
+    .trim()
+    .replace(/[.!?]+$/, "");
+
+  const primary = subject
+    ? `This will ${action} ${subject}.`
+    : `This will ${action} the selected item.`;
+
+  let secondary = normalizeSupportingCopy(trailingPart);
+
+  if (!secondary && (action === "delete" || action === "remove")) {
+    secondary = "This action cannot be undone.";
+  } else if (!secondary && action === "archive") {
+    secondary = "You can restore it later from archived accounts.";
+  } else if (!secondary && action === "restore") {
+    secondary = "The account will become active again.";
+  }
+
+  return { primary, secondary };
 }
 
 export default function GlobalConfirmDialog() {
@@ -113,8 +149,8 @@ export default function GlobalConfirmDialog() {
     () => getConfirmAction(request?.message ?? ""),
     [request?.message],
   );
-  const description = useMemo(
-    () => getConfirmDescription(request?.message ?? ""),
+  const copy = useMemo(
+    () => getConfirmCopy(request?.message ?? ""),
     [request?.message],
   );
 
@@ -148,34 +184,44 @@ export default function GlobalConfirmDialog() {
       <DialogContent
         showCloseButton={false}
         data-global-confirm-dialog
-        className="w-[calc(100vw-1rem)] max-w-[25rem] gap-0 overflow-hidden rounded-[28px] border-border/80 bg-card p-0 text-text-primary shadow-[0_28px_90px_rgb(0_0_0/0.28)] sm:w-full"
+        className="w-[calc(100vw-1rem)] max-w-[28rem] gap-0 rounded-[18px] border border-black/10 bg-[#ffffff] p-0 text-[#171717] shadow-[0_24px_80px_rgb(0_0_0/0.22)] dark:border-white/10 dark:bg-[#222222] dark:text-[#f5f5f5] dark:shadow-[0_26px_90px_rgb(0_0_0/0.55)] sm:w-full"
       >
-        <div className="px-5 pb-5 pt-5 sm:px-6 sm:pb-6 sm:pt-6">
-          <DialogTitle className="text-[20px] font-black leading-7 tracking-[-0.02em] text-text-primary">
+        <div className="px-4 pb-4 pt-4 sm:px-5 sm:pb-4 sm:pt-4.5">
+          <DialogTitle className="text-[17px] font-semibold leading-6 tracking-[-0.015em] text-[#171717] dark:text-[#f5f5f5]">
             Are you sure?
           </DialogTitle>
-          <DialogDescription className="mt-2 text-sm font-medium leading-6 text-text-secondary">
-            {description}
-          </DialogDescription>
-        </div>
 
-        <div className="grid grid-cols-2 gap-2.5 border-t border-border bg-surface-secondary/65 p-3.5 sm:p-4">
-          <button
-            type="button"
-            onClick={closeDialog}
-            className="finance-focus inline-flex min-h-[46px] items-center justify-center rounded-full border border-border bg-card px-4 text-sm font-bold text-text-primary transition-[background-color,border-color,transform] duration-[var(--motion-duration-fast)] hover:bg-hover active:scale-[0.985]"
-          >
-            Cancel
-          </button>
-          <button
-            type="button"
-            onClick={confirmAction}
-            className={`finance-focus inline-flex min-h-[46px] items-center justify-center rounded-full px-4 text-sm font-black text-text-inverse shadow-sm transition-[filter,transform,box-shadow] duration-[var(--motion-duration-fast)] hover:brightness-[1.05] active:scale-[0.985] ${
-              action.destructive ? "bg-danger" : "bg-active"
-            }`}
-          >
-            {action.label}
-          </button>
+          <DialogDescription className="mt-4 text-left">
+            <span className="block text-[15px] font-medium leading-6 text-[#303030] dark:text-[#f1f1f1]">
+              {copy.primary}
+            </span>
+            {copy.secondary ? (
+              <span className="mt-1 block text-[13px] font-normal leading-5 text-[#707070] dark:text-[#b9b9b9]">
+                {copy.secondary}
+              </span>
+            ) : null}
+          </DialogDescription>
+
+          <div className="mt-4 flex items-center justify-end gap-2.5">
+            <button
+              type="button"
+              onClick={closeDialog}
+              className="finance-focus inline-flex h-11 min-w-[68px] items-center justify-center rounded-full border border-black/15 bg-transparent px-4 text-sm font-semibold text-[#242424] transition-[background-color,border-color,transform] duration-[var(--motion-duration-fast)] hover:bg-black/[0.045] active:scale-[0.98] dark:border-white/20 dark:text-[#f1f1f1] dark:hover:bg-white/[0.07] sm:h-9"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={confirmAction}
+              className={`finance-focus inline-flex h-11 min-w-[68px] items-center justify-center rounded-full px-4 text-sm font-bold text-white shadow-none transition-[background-color,filter,transform] duration-[var(--motion-duration-fast)] hover:brightness-[1.04] active:scale-[0.98] sm:h-9 ${
+                action.destructive
+                  ? "bg-[#ff1744] hover:bg-[#ed123d] dark:bg-[#ff1744] dark:hover:bg-[#ff3158]"
+                  : "bg-active"
+              }`}
+            >
+              {action.label}
+            </button>
+          </div>
         </div>
       </DialogContent>
     </Dialog>
