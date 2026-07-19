@@ -18,22 +18,21 @@
   transform: none !important;
 }
 
-/* Desktop only: use one explicit two-axis translation. The previous four-edge
-   auto-margin technique could resolve the intrinsic modal height against the
-   top edge in desktop Chrome, making Income and Expense appear too high. */
+/* Desktop only: pin all four viewport edges and let auto margins center a
+   definite fit-content box. Reset both translate systems so Tailwind/Base UI
+   motion cannot move the modal above the visual centre. */
 @media (min-width: 1024px) {
   html body
     [data-slot="dialog-content"].finance-modal-content:has(#transaction-amount) {
-    top: 50% !important;
-    right: auto !important;
-    bottom: auto !important;
-    left: 50% !important;
+    position: fixed !important;
+    inset: 0 !important;
     width: min(calc(100vw - 2rem), var(--finance-modal-max-width, 32rem)) !important;
-    height: auto !important;
+    height: fit-content !important;
+    min-height: 0 !important;
     max-height: calc(100dvh - 2rem) !important;
-    margin: 0 !important;
+    margin: auto !important;
     translate: none !important;
-    transform: translate3d(-50%, -50%, 0) !important;
+    transform: none !important;
   }
 
   html body
