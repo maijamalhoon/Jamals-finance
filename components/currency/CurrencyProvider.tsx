@@ -10,6 +10,7 @@ import {
   type ReactNode,
 } from "react";
 import {
+  BASE_CURRENCY,
   CURRENCY_CHANGE_EVENT,
   CURRENCY_STORAGE_KEY,
   FALLBACK_USD_PKR_RATE,
@@ -33,28 +34,51 @@ type CurrencyContextValue = {
   getCurrencyLabel: (currency?: SupportedCurrency) => string;
 };
 
+type CurrencyProviderProps = {
+  children: ReactNode;
+  initialCurrency?: SupportedCurrency;
+  hasStoredPreference?: boolean;
+};
+
 const CurrencyContext = createContext<CurrencyContextValue | null>(null);
+const CURRENCY_COOKIE_MAX_AGE = 60 * 60 * 24 * 365;
 
 export type Currency = SupportedCurrency;
 export type FormatOptions = MoneyFormatOptions;
 
-export function CurrencyProvider({ children }: { children: ReactNode }) {
-  const [currency, setCurrencyState] = useState<SupportedCurrency>("PKR");
+function persistCurrencyPreference(currency: SupportedCurrency) {
+  if (typeof window === "undefined") return;
+
+  window.localStorage.setItem(CURRENCY_STORAGE_KEY, currency);
+
+  const secure = window.location.protocol === "https:" ? "; Secure" : "";
+  document.cookie = `${CURRENCY_STORAGE_KEY}=${encodeURIComponent(currency)}; Path=/; Max-Age=${CURRENCY_COOKIE_MAX_AGE}; SameSite=Lax${secure}`;
+}
+
+export function CurrencyProvider({
+  children,
+  initialCurrency = BASE_CURRENCY,
+  hasStoredPreference = false,
+}: CurrencyProviderProps) {
+  const [currency, setCurrencyState] =
+    useState<SupportedCurrency>(initialCurrency);
   const [rate, setRate] = useState(FALLBACK_USD_PKR_RATE);
   const [live, setLive] = useState(false);
 
   useEffect(() => {
-    const saved = window.localStorage.getItem(CURRENCY_STORAGE_KEY);
-
-    if (isSupportedCurrency(saved)) {
-      setCurrencyState(saved);
+    if (hasStoredPreference) {
+      persistCurrencyPreference(initialCurrency);
+      setCurrencyState(initialCurrency);
       return;
     }
 
-    const regionalDefault = getDefaultCurrencyFromRegion();
-    window.localStorage.setItem(CURRENCY_STORAGE_KEY, regionalDefault);
-    setCurrencyState(regionalDefault);
-  }, []);
+    const saved = window.localStorage.getItem(CURRENCY_STORAGE_KEY);
+    const nextCurrency =
+      isSupportedCurrency(saved) ? saved : getDefaultCurrencyFromRegion();
+
+    persistCurrencyPreference(nextCurrency);
+    setCurrencyState(nextCurrency);
+  }, [hasStoredPreference, initialCurrency]);
 
   useEffect(() => {
     let cancelled = false;
@@ -88,6 +112,7 @@ export function CurrencyProvider({ children }: { children: ReactNode }) {
         detail?.currency ?? window.localStorage.getItem(CURRENCY_STORAGE_KEY);
 
       if (isSupportedCurrency(nextCurrency)) {
+        persistCurrencyPreference(nextCurrency);
         setCurrencyState(nextCurrency);
       }
     }
@@ -97,6 +122,7 @@ export function CurrencyProvider({ children }: { children: ReactNode }) {
         event.key === CURRENCY_STORAGE_KEY &&
         isSupportedCurrency(event.newValue)
       ) {
+        persistCurrencyPreference(event.newValue);
         setCurrencyState(event.newValue);
       }
     }
@@ -111,7 +137,7 @@ export function CurrencyProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const setCurrency = useCallback((nextCurrency: SupportedCurrency) => {
-    window.localStorage.setItem(CURRENCY_STORAGE_KEY, nextCurrency);
+    persistCurrencyPreference(nextCurrency);
     setCurrencyState(nextCurrency);
     window.dispatchEvent(
       new CustomEvent(CURRENCY_CHANGE_EVENT, {
@@ -158,8 +184,12 @@ export function CurrencyProvider({ children }: { children: ReactNode }) {
   );
 }
 
+export function useOptionalCurrency() {
+  return useContext(CurrencyContext);
+}
+
 export function useCurrency() {
-  const context = useContext(CurrencyContext);
+  const context = useOptionalCurrency();
 
   if (!context) {
     throw new Error("useCurrency must be used inside CurrencyProvider.");
@@ -169,7 +199,7 @@ export function useCurrency() {
 }
 
 export function dispatchCurrencyChange(currency: SupportedCurrency) {
-  window.localStorage.setItem(CURRENCY_STORAGE_KEY, currency);
+  persistCurrencyPreference(currency);
   window.dispatchEvent(
     new CustomEvent(CURRENCY_CHANGE_EVENT, { detail: { currency } }),
   );
