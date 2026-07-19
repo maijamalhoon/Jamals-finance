@@ -1,22 +1,14 @@
 import InsightsPanel from "@/components/ai-insights/InsightsPanel";
-import { Sparkles } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
 export default function AIInsightsPage() {
   return (
-    <div className="space-y-4 sm:space-y-5">
-      <header className="flex min-w-0 items-start gap-3 px-1 py-1 sm:items-center sm:gap-4 sm:py-2">
-        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[16px] bg-active/10 text-active sm:h-11 sm:w-11">
-          <Sparkles size={19} aria-hidden="true" />
-        </span>
-        <div className="min-w-0">
-          <h2 className="page-title">AI Insights</h2>
-          <p className="page-subtitle">
-            Clear guidance from your latest financial activity, powered by
-            Gemini.
-          </p>
-        </div>
+    <div className="mx-auto w-full max-w-[1600px] space-y-5 sm:space-y-6">
+      <header className="min-w-0 px-0.5">
+        <h1 className="text-base font-semibold tracking-tight text-text-primary sm:text-lg">
+          AI Insights
+        </h1>
       </header>
 
       <div className="min-w-0">

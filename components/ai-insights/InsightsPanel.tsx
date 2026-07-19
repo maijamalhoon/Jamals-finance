@@ -3,20 +3,11 @@
 import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
 import {
   AlertTriangle,
-  ArrowUpRight,
-  Bot,
-  CheckCircle2,
-  Clock3,
-  Landmark,
   Lightbulb,
   Loader2,
-  MessageCircle,
-  ReceiptText,
   RefreshCw,
   Send,
-  Sparkles,
   TrendingUp,
-  WalletCards,
 } from "lucide-react";
 import { useCurrency } from "@/components/currency/CurrencyProvider";
 
@@ -113,8 +104,6 @@ const STARTER_PROMPTS = [
   "What should I focus on next?",
 ];
 
-const SUMMARY_ICONS = [Landmark, ReceiptText, WalletCards, Clock3];
-
 const INSIGHT_STYLE = {
   positive: {
     icon: TrendingUp,
@@ -158,7 +147,7 @@ function HealthMeter({ score, label }: { score: number; label: string }) {
   const offset = circumference - (score / 100) * circumference;
 
   return (
-    <div className="flex min-w-0 items-center gap-4 sm:gap-5 lg:flex-col lg:items-start lg:gap-4">
+    <div className="flex min-w-0 items-center gap-4 sm:gap-5 md:flex-col md:items-start md:gap-4">
       <div
         className="relative h-24 w-24 shrink-0 sm:h-28 sm:w-28"
         role="progressbar"
@@ -203,10 +192,6 @@ function HealthMeter({ score, label }: { score: number; label: string }) {
         <p className="mt-1.5 text-lg font-semibold tracking-tight text-text-primary">
           {label}
         </p>
-        <p className="mt-1 max-w-[22rem] text-xs leading-relaxed text-text-secondary">
-          A live view of your cash flow, commitments, and recent financial
-          activity.
-        </p>
       </div>
     </div>
   );
@@ -215,10 +200,10 @@ function HealthMeter({ score, label }: { score: number; label: string }) {
 function OverviewSkeleton() {
   return (
     <section
-      className="grid min-w-0 overflow-hidden rounded-[26px] bg-card shadow-[var(--shadow-sm)] lg:grid-cols-[260px_minmax(0,1fr)]"
+      className="grid min-w-0 gap-7 py-2 md:grid-cols-[220px_minmax(0,1fr)] md:items-center md:gap-8 lg:grid-cols-[240px_minmax(0,1fr)] xl:gap-12"
       aria-label="Loading financial overview"
     >
-      <div className="flex items-center gap-4 bg-surface-secondary p-5 sm:p-6 lg:flex-col lg:items-start">
+      <div className="flex items-center gap-4 md:flex-col md:items-start">
         <div className="h-24 w-24 shrink-0 animate-pulse rounded-full bg-skeleton sm:h-28 sm:w-28" />
         <div className="min-w-0 flex-1 space-y-2">
           <div className="h-3 w-24 animate-pulse rounded-full bg-skeleton" />
@@ -226,7 +211,7 @@ function OverviewSkeleton() {
           <div className="h-3 w-full max-w-52 animate-pulse rounded-full bg-skeleton" />
         </div>
       </div>
-      <div className="grid grid-cols-2 gap-x-5 gap-y-7 p-5 sm:p-6 xl:grid-cols-4">
+      <div className="grid grid-cols-2 gap-x-6 gap-y-7 sm:gap-x-10 xl:grid-cols-4 xl:gap-x-8">
         {[1, 2, 3, 4].map((item) => (
           <div key={item} className="min-w-0 space-y-3">
             <div className="h-3 w-20 animate-pulse rounded-full bg-skeleton" />
@@ -364,15 +349,15 @@ export default function InsightsPanel() {
   }, [load]);
 
   return (
-    <div className="min-w-0 space-y-4 sm:space-y-5">
+    <div className="min-w-0 space-y-8 sm:space-y-10 xl:space-y-12">
       {loading ?
         <OverviewSkeleton />
       : data || summaryCards.length > 0 ?
         <section
-          className="grid min-w-0 overflow-hidden rounded-[26px] bg-card shadow-[var(--shadow-sm)] lg:grid-cols-[260px_minmax(0,1fr)]"
+          className="grid min-w-0 gap-7 py-2 md:grid-cols-[220px_minmax(0,1fr)] md:items-center md:gap-8 lg:grid-cols-[240px_minmax(0,1fr)] xl:gap-12"
           aria-label="Financial overview"
         >
-          <div className="bg-surface-secondary p-5 sm:p-6">
+          <div className="min-w-0">
             {data ?
               <HealthMeter
                 score={data.healthScore}
@@ -388,51 +373,34 @@ export default function InsightsPanel() {
           {summaryCards.length > 0 ?
             <div
               data-mobile-summary-grid
-              className="grid min-w-0 grid-cols-2 gap-x-5 gap-y-7 p-5 sm:p-6 xl:grid-cols-4 xl:items-center"
+              className="grid min-w-0 grid-cols-2 gap-x-6 gap-y-7 sm:gap-x-10 xl:grid-cols-4 xl:items-center xl:gap-x-8"
             >
-              {summaryCards.map((card, index) => {
-                const Icon = SUMMARY_ICONS[index % SUMMARY_ICONS.length];
-
-                return (
-                  <div key={card.label} className="min-w-0">
-                    <div className="flex min-w-0 items-center gap-2">
-                      <Icon
-                        size={15}
-                        className={`shrink-0 ${SUMMARY_TONE[card.tone]}`}
-                        aria-hidden="true"
-                      />
-                      <p className="truncate text-[11px] font-semibold uppercase tracking-[0.08em] text-text-secondary">
-                        {card.label}
-                      </p>
-                    </div>
-                    <p className="mt-2 break-words text-base font-semibold tracking-tight text-text-primary [overflow-wrap:anywhere] sm:text-lg">
-                      {card.value}
-                    </p>
-                    <p className="mt-1 break-words text-[11px] leading-relaxed text-text-secondary">
-                      {card.caption}
-                    </p>
-                  </div>
-                );
-              })}
+              {summaryCards.map((card) => (
+                <div key={card.label} className="min-w-0">
+                  <p
+                    className={`truncate text-[11px] font-semibold uppercase tracking-[0.08em] ${SUMMARY_TONE[card.tone]}`}
+                  >
+                    {card.label}
+                  </p>
+                  <p className="mt-2 break-words text-base font-semibold tracking-tight text-text-primary [overflow-wrap:anywhere] sm:text-lg">
+                    {card.value}
+                  </p>
+                  <p className="mt-1 break-words text-[11px] leading-relaxed text-text-secondary">
+                    {card.caption}
+                  </p>
+                </div>
+              ))}
             </div>
           : null}
         </section>
       : null}
 
-      <div className="grid min-w-0 grid-cols-1 gap-4 sm:gap-5 xl:grid-cols-[minmax(0,1.55fr)_minmax(300px,0.75fr)]">
-        <section className="min-w-0 rounded-[26px] bg-card p-5 shadow-[var(--shadow-sm)] sm:p-6">
+      <div className="grid min-w-0 grid-cols-1 gap-8 lg:grid-cols-[minmax(0,1.45fr)_minmax(280px,0.75fr)] lg:gap-10 xl:gap-14">
+        <section className="min-w-0">
           <div className="mb-6 flex min-w-0 items-center justify-between gap-3">
-            <div className="flex min-w-0 items-center gap-3">
-              <Sparkles size={19} className="shrink-0 text-active" />
-              <div className="min-w-0">
-                <h3 className="text-base font-semibold tracking-tight text-text-primary">
-                  Your financial briefing
-                </h3>
-                <p className="mt-0.5 text-xs text-text-secondary">
-                  Personalized by Gemini from your latest activity
-                </p>
-              </div>
-            </div>
+            <h2 className="text-base font-semibold tracking-tight text-text-primary">
+              Financial briefing
+            </h2>
             <button
               onClick={() => load({ regenerate: true })}
               disabled={loading || regenerating}
@@ -481,8 +449,7 @@ export default function InsightsPanel() {
             </div>
           : error ?
             <div className="flex min-h-56 flex-col items-center justify-center text-center">
-              <Bot size={28} className="text-text-secondary" />
-              <p className="mt-3 text-sm font-semibold text-text-primary">
+              <p className="text-sm font-semibold text-text-primary">
                 {error}
               </p>
               <p className="mt-1 text-xs text-text-secondary">
@@ -498,8 +465,7 @@ export default function InsightsPanel() {
             </div>
           : emptyMessage ?
             <div className="flex min-h-56 flex-col items-center justify-center text-center">
-              <Sparkles size={28} className="text-active" />
-              <p className="mt-3 text-sm font-semibold text-text-primary">
+              <p className="text-sm font-semibold text-text-primary">
                 Your briefing is ready to grow
               </p>
               <p className="mt-1 max-w-sm text-xs leading-relaxed text-text-secondary">
@@ -542,23 +508,15 @@ export default function InsightsPanel() {
           }
         </section>
 
-        <aside className="min-w-0 rounded-[26px] bg-surface-secondary p-5 sm:p-6">
-          <div className="mb-5 flex items-center gap-3">
-            <CheckCircle2 size={18} className="text-success" />
-            <div>
-              <h3 className="text-base font-semibold tracking-tight text-text-primary">
-                Next best moves
-              </h3>
-              <p className="mt-0.5 text-xs text-text-secondary">
-                Small steps with the biggest impact
-              </p>
-            </div>
-          </div>
+        <aside className="min-w-0">
+          <h2 className="mb-6 text-base font-semibold tracking-tight text-text-primary">
+            Next best moves
+          </h2>
 
           {loading ?
             <div className="space-y-4">
               {[1, 2, 3].map((item) => (
-                <div key={item} className="space-y-2 rounded-[18px] bg-card p-4">
+                <div key={item} className="space-y-2 py-2">
                   <div className="h-3 w-32 animate-pulse rounded-full bg-skeleton" />
                   <div className="h-3 w-full animate-pulse rounded-full bg-skeleton" />
                 </div>
@@ -569,7 +527,7 @@ export default function InsightsPanel() {
               {data.suggestedActions.map((action, index) => (
                 <li
                   key={`${action.priority}-${action.title}`}
-                  className="rounded-[18px] bg-card p-4 shadow-[var(--shadow-xs)]"
+                  className="min-w-0 py-1"
                 >
                   <div className="flex min-w-0 items-start gap-3">
                     <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-active/10 text-[11px] font-bold text-active">
@@ -605,19 +563,11 @@ export default function InsightsPanel() {
       </div>
 
       {summary ?
-        <section className="grid min-w-0 gap-7 rounded-[26px] bg-card p-5 shadow-[var(--shadow-sm)] sm:p-6 lg:grid-cols-2 lg:gap-10">
+        <section className="grid min-w-0 gap-8 md:grid-cols-2 md:gap-10 xl:gap-16">
           <div className="min-w-0">
-            <div className="mb-5 flex items-center gap-3">
-              <WalletCards size={18} className="text-info" />
-              <div>
-                <h3 className="text-sm font-semibold text-text-primary">
-                  Spending focus
-                </h3>
-                <p className="mt-0.5 text-xs text-text-secondary">
-                  Your highest expense categories
-                </p>
-              </div>
-            </div>
+            <h2 className="mb-6 text-sm font-semibold text-text-primary">
+              Spending focus
+            </h2>
 
             {topCategories.length ?
               <div className="space-y-4">
@@ -652,24 +602,16 @@ export default function InsightsPanel() {
           </div>
 
           <div className="min-w-0">
-            <div className="mb-5 flex items-center gap-3">
-              <ArrowUpRight size={18} className="text-success" />
-              <div>
-                <h3 className="text-sm font-semibold text-text-primary">
-                  Recent pulse
-                </h3>
-                <p className="mt-0.5 text-xs text-text-secondary">
-                  Net movement across recent months
-                </p>
-              </div>
-            </div>
+            <h2 className="mb-6 text-sm font-semibold text-text-primary">
+              Recent pulse
+            </h2>
 
             {summary.recentTrendTotals.length ?
-              <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 lg:grid-cols-1 2xl:grid-cols-3">
+              <div className="grid grid-cols-1 gap-5 sm:grid-cols-3 md:grid-cols-1 xl:grid-cols-3">
                 {summary.recentTrendTotals.map((trend) => (
                   <div
                     key={trend.month}
-                    className="min-w-0 rounded-[18px] bg-surface-secondary px-4 py-3.5"
+                    className="min-w-0 py-1"
                   >
                     <div className="flex min-w-0 items-start justify-between gap-3">
                       <p className="text-[11px] font-semibold uppercase tracking-wide text-text-secondary">
@@ -702,18 +644,10 @@ export default function InsightsPanel() {
         </section>
       : null}
 
-      <section className="min-w-0 rounded-[26px] bg-card p-4 shadow-[var(--shadow-sm)] sm:p-6">
-        <div className="mb-5 flex min-w-0 items-center gap-3 px-1">
-          <MessageCircle size={19} className="shrink-0 text-active" />
-          <div className="min-w-0">
-            <h3 className="text-base font-semibold tracking-tight text-text-primary">
-              Ask your finances
-            </h3>
-            <p className="mt-0.5 text-xs text-text-secondary">
-              Get answers grounded in your own financial summary
-            </p>
-          </div>
-        </div>
+      <section className="min-w-0">
+        <h2 className="mb-6 text-base font-semibold tracking-tight text-text-primary">
+          Ask your finances
+        </h2>
 
         <div
           className={`mb-4 max-h-[420px] overflow-y-auto ${
@@ -722,9 +656,8 @@ export default function InsightsPanel() {
           aria-live="polite"
         >
           {chatMessages.length === 0 ?
-            <div className="flex min-h-[210px] flex-col items-center justify-center rounded-[22px] bg-surface-secondary px-4 py-7 text-center">
-              <Sparkles size={24} className="text-active" />
-              <p className="mt-3 text-sm font-semibold text-text-primary">
+            <div className="flex min-h-[190px] flex-col items-center justify-center px-4 py-6 text-center">
+              <p className="text-sm font-semibold text-text-primary">
                 What would you like to understand?
               </p>
               <p className="mt-1 max-w-md text-xs leading-relaxed text-text-secondary">
@@ -737,7 +670,7 @@ export default function InsightsPanel() {
                     key={prompt}
                     type="button"
                     onClick={() => setQuestion(prompt)}
-                    className="finance-focus rounded-full bg-card px-3.5 py-2 text-[11px] font-medium text-text-secondary shadow-[var(--shadow-xs)] transition-colors hover:text-text-primary"
+                    className="finance-focus rounded-full bg-surface-secondary px-3.5 py-2 text-[11px] font-medium text-text-secondary transition-colors hover:bg-hover hover:text-text-primary"
                   >
                     {prompt}
                   </button>
