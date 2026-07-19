@@ -1,0 +1,15 @@
+/*
+ * Keep every page and nested scroll area fully scrollable while hiding
+ * native scrollbar chrome across desktop, tablet, and mobile browsers.
+ * No overflow behavior is changed here.
+ */
+* {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+*::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
+}
