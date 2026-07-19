@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { Eye, Pencil, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -80,6 +80,7 @@ function getCategoryLabel(tx: Transaction, type: TransactionType) {
 
 export default function TransactionRow({ tx }: { tx: Transaction }) {
   const router = useRouter();
+  const pathname = usePathname();
   const supabase = useMemo(() => createClient(), []);
   const { formatCurrency } = useCurrency();
 
@@ -105,6 +106,7 @@ export default function TransactionRow({ tx }: { tx: Transaction }) {
   const receiptHref = tx.id
     ? `/dashboard/transactions/${encodeURIComponent(String(tx.id))}`
     : "/dashboard/transactions";
+  const isTransactionsPage = pathname === "/dashboard/transactions";
 
   const canEdit =
     (type === "income" || type === "expense") &&
@@ -170,11 +172,36 @@ export default function TransactionRow({ tx }: { tx: Transaction }) {
     }
   }
 
+  function openReceiptFromRow(target: EventTarget | null) {
+    if (!isTransactionsPage) return;
+    if (target instanceof HTMLElement && target.closest("button")) return;
+    router.push(receiptHref);
+  }
+
   return (
     <>
       <article
         data-transaction-row
-        className="group grid min-w-0 grid-cols-[40px_minmax(0,1fr)_auto] items-center gap-x-3 gap-y-2 border-b border-border/55 px-2 py-3.5 last:border-b-0 sm:px-3 md:grid-cols-[40px_minmax(0,1fr)_minmax(110px,auto)_auto] md:gap-x-4"
+        className={`group grid min-w-0 grid-cols-[40px_minmax(0,1fr)_auto] items-center gap-x-3 gap-y-2 border-b border-border/55 px-2 py-3.5 last:border-b-0 sm:px-3 md:grid-cols-[40px_minmax(0,1fr)_minmax(110px,auto)_auto] md:gap-x-4 ${isTransactionsPage ? "cursor-pointer" : ""}`}
+        onClick={(event) => openReceiptFromRow(event.target)}
+        onKeyDown={(event) => {
+          if (
+            !isTransactionsPage ||
+            (event.key !== "Enter" && event.key !== " ")
+          ) {
+            return;
+          }
+
+          event.preventDefault();
+          openReceiptFromRow(event.target);
+        }}
+        role={isTransactionsPage ? "link" : undefined}
+        tabIndex={isTransactionsPage ? 0 : undefined}
+        aria-label={
+          isTransactionsPage
+            ? `Open receipt for ${categoryLabel}`
+            : undefined
+        }
       >
         <span
           className="grid size-10 shrink-0 place-items-center"
@@ -205,15 +232,17 @@ export default function TransactionRow({ tx }: { tx: Transaction }) {
         </p>
 
         <div className="col-start-2 col-span-2 flex items-center justify-end gap-1.5 md:col-span-1 md:col-start-auto">
-          <button
-            onClick={() => router.push(receiptHref)}
-            className="finance-focus grid size-9 place-items-center rounded-full text-text-secondary transition-colors hover:bg-hover hover:text-active"
-            aria-label={`View ${categoryLabel}`}
-            title="View"
-            type="button"
-          >
-            <Eye size={15} strokeWidth={2.3} />
-          </button>
+          {!isTransactionsPage ? (
+            <button
+              onClick={() => router.push(receiptHref)}
+              className="finance-focus grid size-9 place-items-center rounded-full text-text-secondary transition-colors hover:bg-hover hover:text-active"
+              aria-label={`View ${categoryLabel}`}
+              title="View"
+              type="button"
+            >
+              <Eye size={15} strokeWidth={2.3} />
+            </button>
+          ) : null}
 
           {canEdit ? (
             <button
