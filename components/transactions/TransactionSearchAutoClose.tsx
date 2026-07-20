@@ -47,12 +47,30 @@ export default function TransactionSearchAutoClose() {
       if (input.type !== "text") input.type = "text";
     };
 
+    const focusSearchInput = () => {
+      input.focus({ preventScroll: true });
+      const caretPosition = input.value.length;
+      input.setSelectionRange(caretPosition, caretPosition);
+    };
+
+    const dismissKeyboard = () => {
+      if (document.activeElement === input) input.blur();
+    };
+
     removeNativeClearControl();
 
     const typeObserver = new MutationObserver(removeNativeClearControl);
     typeObserver.observe(input, {
       attributes: true,
       attributeFilter: ["type"],
+    });
+
+    const openStateObserver = new MutationObserver(() => {
+      if (searchControl.dataset.open !== "true") dismissKeyboard();
+    });
+    openStateObserver.observe(searchControl, {
+      attributes: true,
+      attributeFilter: ["data-open"],
     });
 
     let closeTimer: number | null = null;
@@ -76,16 +94,22 @@ export default function TransactionSearchAutoClose() {
           searchControl.dataset.open === "true" &&
           !input.value.trim()
         ) {
+          dismissKeyboard();
           closeButton.click();
         }
       }, AUTO_CLOSE_DELAY_MS);
     };
 
     const handleOpen = () => {
+      // Focus during the original tap so mobile browsers open their keyboard.
+      removeNativeClearControl();
+      focusSearchInput();
+
       if (openFrame !== null) window.cancelAnimationFrame(openFrame);
       openFrame = window.requestAnimationFrame(() => {
         openFrame = null;
         removeNativeClearControl();
+        focusSearchInput();
         scheduleAutoClose();
       });
     };
@@ -101,17 +125,30 @@ export default function TransactionSearchAutoClose() {
       if (searchControl.dataset.open === "true") scheduleAutoClose();
     };
 
+    const handleClose = () => {
+      cancelAutoClose();
+      dismissKeyboard();
+    };
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") dismissKeyboard();
+    };
+
     openButton.addEventListener("click", handleOpen);
     input.addEventListener("input", handleInput);
-    closeButton.addEventListener("click", cancelAutoClose);
+    input.addEventListener("keydown", handleKeyDown);
+    closeButton.addEventListener("click", handleClose);
 
     return () => {
       cancelAutoClose();
+      dismissKeyboard();
       typeObserver.disconnect();
+      openStateObserver.disconnect();
       if (openFrame !== null) window.cancelAnimationFrame(openFrame);
       openButton.removeEventListener("click", handleOpen);
       input.removeEventListener("input", handleInput);
-      closeButton.removeEventListener("click", cancelAutoClose);
+      input.removeEventListener("keydown", handleKeyDown);
+      closeButton.removeEventListener("click", handleClose);
     };
   }, []);
 
