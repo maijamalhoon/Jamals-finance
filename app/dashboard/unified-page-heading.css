@@ -57,6 +57,270 @@
   margin-left: auto;
 }
 
+/*
+ * Only the seven approved page-level actions are lifted into the shared label
+ * row. Their React components, modal state, export logic and original icons are
+ * untouched; the visible treatment is a transparent standalone icon target.
+ */
+@media screen {
+  :is(
+    [data-jf-page="income"],
+    [data-jf-page="expenses"],
+    [data-jf-page="investments"],
+    [data-jf-page="goals"],
+    [data-jf-page="payables"],
+    [data-jf-page="accounts"],
+    [data-jf-page="reports"]
+  ) {
+    position: relative;
+    --jf-header-action-size: 2.75rem;
+  }
+
+  :is(
+    [data-jf-page="income"],
+    [data-jf-page="expenses"],
+    [data-jf-page="investments"],
+    [data-jf-page="goals"],
+    [data-jf-page="payables"],
+    [data-jf-page="accounts"],
+    [data-jf-page="reports"]
+  )
+    .jf-unified-page-heading {
+    padding-inline-end: calc(var(--jf-header-action-size) + 0.35rem) !important;
+  }
+
+  :is(
+    [data-jf-page="income"],
+    [data-jf-page="expenses"],
+    [data-jf-page="investments"],
+    [data-jf-page="goals"],
+    [data-jf-page="payables"],
+    [data-jf-page="accounts"]
+  )
+    .jf-unified-page-body
+    > div
+    > div:first-child {
+    position: absolute !important;
+    z-index: 4;
+    inset-block-start: 0;
+    inset-inline-end: 0;
+    display: flex !important;
+    width: auto !important;
+    min-width: 0 !important;
+    min-height: var(--jf-header-action-size) !important;
+    align-items: center !important;
+    justify-content: flex-end !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  [data-jf-page="reports"].jf-dashboard-content-frame
+    .jf-unified-page-body
+    > div[data-print-report]
+    > .page-heading:first-child {
+    position: absolute !important;
+    z-index: 4;
+    inset-block-start: 0;
+    inset-inline-end: 0;
+    display: flex !important;
+    width: auto !important;
+    min-width: 0 !important;
+    min-height: var(--jf-header-action-size) !important;
+    align-items: center !important;
+    justify-content: flex-end !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: visible !important;
+  }
+
+  [data-jf-page="reports"].jf-dashboard-content-frame
+    .jf-unified-page-body
+    > div[data-print-report]
+    > .page-heading:first-child
+    > div:last-child {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-end !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  :is(
+    [data-jf-page="income"],
+    [data-jf-page="expenses"],
+    [data-jf-page="investments"],
+    [data-jf-page="goals"],
+    [data-jf-page="payables"],
+    [data-jf-page="accounts"]
+  )
+    .jf-unified-page-body
+    > div
+    > div:first-child
+    > button,
+  [data-jf-page="reports"].jf-dashboard-content-frame
+    .jf-unified-page-body
+    > div[data-print-report]
+    > .page-heading:first-child
+    > div:last-child
+    button {
+    display: inline-flex !important;
+    inline-size: var(--jf-header-action-size) !important;
+    block-size: var(--jf-header-action-size) !important;
+    min-inline-size: var(--jf-header-action-size) !important;
+    min-block-size: var(--jf-header-action-size) !important;
+    max-inline-size: var(--jf-header-action-size) !important;
+    max-block-size: var(--jf-header-action-size) !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: visible !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    outline: 0 !important;
+    background: transparent !important;
+    background-image: none !important;
+    box-shadow: none !important;
+    color: var(--jf-page-accent, var(--brand)) !important;
+    font-size: 0 !important;
+    line-height: 0 !important;
+    letter-spacing: 0 !important;
+    opacity: 0.92;
+    cursor: pointer;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    transition: opacity var(--motion-duration-fast) ease, filter var(--motion-duration-fast) ease !important;
+  }
+
+  [data-jf-page="reports"].jf-dashboard-content-frame
+    .jf-unified-page-body
+    > div[data-print-report]
+    > .page-heading:first-child
+    > div:last-child
+    button
+    span {
+    gap: 0 !important;
+  }
+
+  :is(
+    [data-jf-page="income"],
+    [data-jf-page="expenses"],
+    [data-jf-page="investments"],
+    [data-jf-page="goals"],
+    [data-jf-page="payables"],
+    [data-jf-page="accounts"]
+  )
+    .jf-unified-page-body
+    > div
+    > div:first-child
+    > button::before,
+  :is(
+    [data-jf-page="income"],
+    [data-jf-page="expenses"],
+    [data-jf-page="investments"],
+    [data-jf-page="goals"],
+    [data-jf-page="payables"],
+    [data-jf-page="accounts"]
+  )
+    .jf-unified-page-body
+    > div
+    > div:first-child
+    > button::after,
+  [data-jf-page="reports"].jf-dashboard-content-frame
+    .jf-unified-page-body
+    > div[data-print-report]
+    > .page-heading:first-child
+    > div:last-child
+    button::before,
+  [data-jf-page="reports"].jf-dashboard-content-frame
+    .jf-unified-page-body
+    > div[data-print-report]
+    > .page-heading:first-child
+    > div:last-child
+    button::after {
+    display: none !important;
+    content: none !important;
+  }
+
+  :is(
+    [data-jf-page="income"],
+    [data-jf-page="expenses"],
+    [data-jf-page="investments"],
+    [data-jf-page="goals"],
+    [data-jf-page="payables"],
+    [data-jf-page="accounts"]
+  )
+    .jf-unified-page-body
+    > div
+    > div:first-child
+    > button
+    > svg,
+  [data-jf-page="reports"].jf-dashboard-content-frame
+    .jf-unified-page-body
+    > div[data-print-report]
+    > .page-heading:first-child
+    > div:last-child
+    button:not([data-loading="true"])
+    > span
+    > span:first-child
+    > svg:first-child {
+    transform-origin: center;
+    animation: jf-header-action-attention 4.8s ease-in-out infinite;
+  }
+
+  :is(
+    [data-jf-page="income"],
+    [data-jf-page="expenses"],
+    [data-jf-page="investments"],
+    [data-jf-page="goals"],
+    [data-jf-page="payables"],
+    [data-jf-page="accounts"]
+  )
+    .jf-unified-page-body
+    > div
+    > div:first-child
+    > button:is(:hover, :focus-visible),
+  [data-jf-page="reports"].jf-dashboard-content-frame
+    .jf-unified-page-body
+    > div[data-print-report]
+    > .page-heading:first-child
+    > div:last-child
+    button:is(:hover, :focus-visible) {
+    opacity: 1;
+    filter: saturate(1.08);
+  }
+}
+
+@keyframes jf-header-action-attention {
+  0%,
+  68%,
+  100% {
+    transform: translateY(0) scale(1);
+    opacity: 0.9;
+  }
+
+  75% {
+    transform: translateY(-1px) scale(1.08);
+    opacity: 1;
+  }
+
+  82% {
+    transform: translateY(0) scale(0.985);
+    opacity: 0.96;
+  }
+
+  89% {
+    transform: translateY(-0.5px) scale(1.04);
+    opacity: 1;
+  }
+
+  95% {
+    transform: translateY(0) scale(1);
+    opacity: 0.92;
+  }
+}
+
 /* Remove the old decorative header blocks and their embedded action buttons. */
 [data-jf-page="accounts"] .jf-unified-page-body > div > .page-heading:first-child,
 [data-jf-page="income"] .jf-unified-page-body > div > .page-heading:first-child,
@@ -154,5 +418,28 @@
 @media (prefers-reduced-motion: reduce) {
   [data-jf-page] .jf-unified-page-accent {
     box-shadow: none;
+  }
+
+  :is(
+    [data-jf-page="income"],
+    [data-jf-page="expenses"],
+    [data-jf-page="investments"],
+    [data-jf-page="goals"],
+    [data-jf-page="payables"],
+    [data-jf-page="accounts"]
+  )
+    .jf-unified-page-body
+    > div
+    > div:first-child
+    > button
+    > svg,
+  [data-jf-page="reports"].jf-dashboard-content-frame
+    .jf-unified-page-body
+    > div[data-print-report]
+    > .page-heading:first-child
+    > div:last-child
+    button
+    svg {
+    animation: none !important;
   }
 }
