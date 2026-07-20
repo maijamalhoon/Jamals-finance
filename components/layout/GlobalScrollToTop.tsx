@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
-import { ArrowUp } from "lucide-react";
+import { ArrowBigUp } from "lucide-react";
 
 type ScrollTarget = Window | HTMLElement;
 
@@ -122,7 +122,7 @@ export default function GlobalScrollToTop() {
           aria-label="Scroll to top"
           disabled={launching}
           onClick={handleScrollToTop}
-          initial={{ opacity: 0, y: 16, scale: 0.86 }}
+          initial={false}
           animate={
             launching
               ? shouldReduceMotion
@@ -134,11 +134,12 @@ export default function GlobalScrollToTop() {
                     filter: ["blur(0px)", "blur(0px)", "blur(2px)"],
                   }
               : shouldReduceMotion
-                ? { opacity: 1, y: 0, scale: 1 }
+                ? { opacity: 1, y: 0, scale: 1, rotate: 0 }
                 : {
                     opacity: 1,
-                    y: [0, -7, 0],
-                    scale: [1, 1.05, 1],
+                    y: [0, -4, 0],
+                    scale: [1, 1.055, 1],
+                    rotate: [0, -1.5, 1.5, 0],
                     filter: "blur(0px)",
                   }
           }
@@ -160,22 +161,21 @@ export default function GlobalScrollToTop() {
               : shouldReduceMotion
                 ? { duration: 0.16, ease: motionEase }
                 : {
-                    duration: 1.45,
+                    duration: 1.8,
                     repeat: Number.POSITIVE_INFINITY,
                     ease: "easeInOut",
                   }
           }
-          whileHover={launching ? undefined : { y: -9, scale: 1.08 }}
-          whileTap={launching ? undefined : { scale: 0.9 }}
-          className={`fixed right-3 z-[70] grid size-11 place-items-center border-0 !bg-transparent p-0 text-slate-700 !shadow-none outline-none transition-colors duration-200 hover:!bg-transparent hover:text-slate-800 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-active disabled:pointer-events-none sm:right-5 lg:right-8 dark:text-slate-100 dark:hover:text-white ${positionClass}`}
+          whileHover={launching ? undefined : { y: -7, scale: 1.07 }}
+          whileTap={launching ? undefined : { scale: 0.92 }}
+          className={`fixed right-3 z-[70] grid size-11 appearance-none place-items-center border-0 !bg-transparent p-0 text-slate-700 !shadow-none outline-none transition-colors duration-200 [-webkit-tap-highlight-color:transparent] hover:!bg-transparent hover:text-slate-800 focus:!bg-transparent focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-active active:!bg-transparent disabled:pointer-events-none sm:right-5 lg:right-8 dark:!bg-transparent dark:text-slate-100 dark:hover:text-white ${positionClass}`}
         >
-          <ArrowUp
-            size={32}
-            strokeWidth={4.25}
+          <ArrowBigUp
+            size={35}
+            strokeWidth={2.8}
             strokeLinecap="round"
             strokeLinejoin="round"
             aria-hidden="true"
-            className="drop-shadow-[0_4px_7px_rgb(15_23_42_/_0.18)] dark:drop-shadow-[0_5px_8px_rgb(0_0_0_/_0.38)]"
           />
         </motion.button>
       ) : null}
