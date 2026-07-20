@@ -22,7 +22,7 @@
 /*
  * Transactions owns its component layout, but the compact controls need an
  * explicit column on narrow screens. The open-search presentation is handled
- * inside transactions.module.css without changing this parent grid at runtime.
+ * without changing the parent page grid at runtime.
  */
 .transactions-page-type-icons > div {
   display: grid !important;
@@ -96,8 +96,59 @@
     line-height: 1.35rem !important;
   }
 
+  /*
+   * The filters shell spans the complete top row on mobile. Closed controls
+   * remain aligned right; opening search uses the same row at full width and
+   * paints over the heading instead of squeezing into its text.
+   */
   .transactions-page-type-icons > div > :nth-child(2) {
-    max-width: calc(100vw - 1.5rem) !important;
+    grid-column: 1 / -1 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    justify-self: stretch !important;
+  }
+
+  .transactions-page-type-icons
+    > div
+    > :nth-child(2)
+    > div
+    > div:first-child {
+    width: 100% !important;
+  }
+
+  .transactions-page-type-icons
+    > div
+    > :nth-child(2)
+    > div
+    > div:first-child:has(#transaction-page-search[aria-hidden="false"]) {
+    gap: 0 !important;
+  }
+
+  .transactions-page-type-icons
+    > div
+    > :nth-child(2)
+    [role="search"]:has(#transaction-page-search[aria-hidden="false"]) {
+    z-index: 8 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    flex: 1 1 100% !important;
+    background: var(--background) !important;
+  }
+
+  .transactions-page-type-icons
+    > div
+    > :nth-child(2)
+    > div
+    > div:first-child:has(#transaction-page-search[aria-hidden="false"])
+    > button[aria-controls="transaction-filter-panel"] {
+    width: 0 !important;
+    min-width: 0 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    overflow: hidden !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+    transform: scale(0.8) !important;
   }
 }
 
