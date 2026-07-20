@@ -34,6 +34,25 @@ export default async function AnalyticsLoading() {
     );
   }
 
+  if (animationMode === "fast") {
+    return (
+      <div
+        role="status"
+        aria-busy="true"
+        aria-label="Loading analytics"
+        data-fast-animation-route-loading="true"
+        className="min-h-8 pb-4"
+      >
+        <span className="jf-fast-route-loader" aria-hidden="true">
+          <span />
+          <span />
+          <span />
+        </span>
+        <span className="sr-only">Loading analytics</span>
+      </div>
+    );
+  }
+
   return (
     <div role="status" aria-busy="true" aria-label="Loading analytics" className="min-w-0 pb-8">
       <span className="sr-only">Loading analytics</span>
