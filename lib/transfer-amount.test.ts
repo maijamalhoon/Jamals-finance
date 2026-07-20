@@ -21,6 +21,17 @@ describe("transfer amount limits", () => {
     );
   });
 
+  it("allows Max when its 8-decimal input is microscopically rounded up", () => {
+    const availableBalance = 19397902.691168567;
+
+    expect(
+      getTransferAmountIssue("19397902.69116857", availableBalance),
+    ).toBeNull();
+    expect(
+      getTransferAmountIssue("19397902.69116858", availableBalance),
+    ).toBe("exceeds-balance");
+  });
+
   it("preserves decimal balances when applying Max", () => {
     expect(getMaximumTransferInput(35042.75)).toBe("35042.75");
     expect(getMaximumTransferInput(0)).toBe("");
