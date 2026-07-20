@@ -57,7 +57,7 @@ export default function NoAnimationPerformanceMode() {
       if (idleHandle !== null && "cancelIdleCallback" in window) {
         window.cancelIdleCallback(idleHandle);
       }
-      if (timeoutHandle !== null) window.clearTimeout(timeoutHandle);
+      if (timeoutHandle !== null) globalThis.clearTimeout(timeoutHandle);
 
       idleHandle = null;
       timeoutHandle = null;
@@ -80,7 +80,7 @@ export default function NoAnimationPerformanceMode() {
           timeout: 350,
         });
       } else {
-        timeoutHandle = window.setTimeout(prefetchAllRoutes, 0);
+        timeoutHandle = globalThis.setTimeout(prefetchAllRoutes, 0);
       }
     };
 
