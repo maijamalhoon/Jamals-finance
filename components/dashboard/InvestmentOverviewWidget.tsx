@@ -8,6 +8,7 @@ import DashboardCardViewLink from "@/components/dashboard/DashboardCardViewLink"
 import ChartFrame from "@/components/ui/chart-frame";
 import { useCurrency } from "@/components/currency/CurrencyProvider";
 import CountedAmount from "@/components/motion/CountedAmount";
+import { useDashboardAnimationReady } from "@/components/motion/useDashboardAnimationReady";
 import {
   aggregateInvestmentHoldings,
   getAssetInitials,
@@ -196,6 +197,7 @@ export default function InvestmentOverviewWidget({
   unpricedCount: number;
 }) {
   const { formatCurrency } = useCurrency();
+  const { reduceMotion, durationScale } = useDashboardAnimationReady();
   const allocationData = buildAllocationData(investments);
   const visibleInvestments = allocationData.slice(0, 3);
   const otherInvestments = allocationData.slice(3);
@@ -285,9 +287,9 @@ export default function InvestmentOverviewWidget({
                       innerRadius="52%"
                       outerRadius="78%"
                       paddingAngle={2}
-                      isAnimationActive
+                      isAnimationActive={!reduceMotion}
                       animationBegin={0}
-                      animationDuration={700}
+                      animationDuration={Math.round(700 * durationScale)}
                       animationEasing="ease-out"
                       stroke="var(--card)"
                       strokeWidth={3}
