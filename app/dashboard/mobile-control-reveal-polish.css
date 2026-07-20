@@ -1,0 +1,157 @@
+/*
+ * Final compact-control timing and surface layer.
+ * Keeps reveal timing independent from Framer's earlier idle timer and removes
+ * temporary card/badge surfaces from the four icon-only controls.
+ */
+@media (max-width: 1023px) {
+  body[data-mobile-scroll-reveal="true"]:not(
+      :has(#mobile-inline-transaction-search[aria-hidden="false"])
+    )
+    [data-mobile-control-cluster] {
+    opacity: 1 !important;
+    filter: opacity(1) !important;
+    clip-path: inset(0 0 0 0 round 0.875rem) !important;
+    transform: none !important;
+    pointer-events: auto !important;
+  }
+
+  body[data-mobile-scroll-reveal="true"]:not(
+      :has(#mobile-inline-transaction-search[aria-hidden="false"])
+    )
+    form[data-mobile-control-cluster][role="search"] {
+    left: 4.25rem !important;
+    width: 2.75rem !important;
+  }
+
+  html body
+    [data-dashboard-shell][data-dashboard-shell]
+    [data-mobile-control-cluster][data-mobile-control-cluster],
+  html body
+    [data-dashboard-shell][data-dashboard-shell]
+    [data-mobile-control-cluster][data-mobile-control-cluster]:hover,
+  html body
+    [data-dashboard-shell][data-dashboard-shell]
+    [data-mobile-control-cluster][data-mobile-control-cluster]:focus-within {
+    background: transparent !important;
+    background-color: transparent !important;
+    background-image: none !important;
+    border-color: transparent !important;
+    box-shadow: none !important;
+    filter: none;
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+  }
+
+  html body
+    [data-dashboard-shell][data-dashboard-shell]
+    [data-mobile-control-cluster][data-mobile-control-cluster]
+    button,
+  html body
+    [data-dashboard-shell][data-dashboard-shell]
+    [data-mobile-control-cluster][data-mobile-control-cluster]
+    button:hover,
+  html body
+    [data-dashboard-shell][data-dashboard-shell]
+    [data-mobile-control-cluster][data-mobile-control-cluster]
+    button:focus-visible,
+  html body
+    [data-dashboard-shell][data-dashboard-shell]
+    [data-mobile-control-cluster][data-mobile-control-cluster]
+    button:active,
+  html body
+    [data-dashboard-shell][data-dashboard-shell]
+    [data-mobile-control-cluster][data-mobile-control-cluster]
+    button[aria-expanded="true"],
+  html body
+    [data-dashboard-shell][data-dashboard-shell]
+    [data-mobile-control-cluster][data-mobile-control-cluster]
+    button[data-popup-open] {
+    border: 0 !important;
+    border-color: transparent !important;
+    outline: 0 !important;
+    background: transparent !important;
+    background-color: transparent !important;
+    background-image: none !important;
+    box-shadow: none !important;
+    filter: none !important;
+    -webkit-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+    --tw-ring-offset-width: 0px !important;
+    --tw-ring-offset-shadow: 0 0 #0000 !important;
+    --tw-ring-shadow: 0 0 #0000 !important;
+  }
+
+  html body
+    [data-dashboard-shell][data-dashboard-shell]
+    form[data-mobile-control-cluster][data-mobile-control-cluster][role="search"] {
+    position: fixed;
+    border: 0 !important;
+    outline: 0 !important;
+    background: transparent !important;
+    background-color: transparent !important;
+    background-image: none !important;
+    box-shadow: none !important;
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+  }
+
+  html body
+    [data-dashboard-shell][data-dashboard-shell]
+    form[data-mobile-control-cluster][data-mobile-control-cluster][role="search"]::after {
+    content: "";
+    position: absolute;
+    right: 0.5rem;
+    bottom: 0.1rem;
+    left: 0.5rem;
+    height: 1px;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--brand) 64%, var(--border));
+    opacity: 0;
+    transform: scaleX(0.35);
+    transform-origin: center;
+    pointer-events: none;
+    transition:
+      opacity 170ms ease,
+      transform 360ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  html body
+    [data-dashboard-shell][data-dashboard-shell]
+    form[data-mobile-control-cluster][data-mobile-control-cluster][role="search"]:has(
+      #mobile-inline-transaction-search[aria-hidden="false"]
+    )::after {
+    opacity: 1;
+    transform: scaleX(1);
+  }
+
+  html body
+    [data-dashboard-shell][data-dashboard-shell]
+    form[data-mobile-control-cluster][data-mobile-control-cluster][role="search"]
+    input,
+  html body
+    [data-dashboard-shell][data-dashboard-shell]
+    form[data-mobile-control-cluster][data-mobile-control-cluster][role="search"]
+    input:hover,
+  html body
+    [data-dashboard-shell][data-dashboard-shell]
+    form[data-mobile-control-cluster][data-mobile-control-cluster][role="search"]
+    input:focus,
+  html body
+    [data-dashboard-shell][data-dashboard-shell]
+    form[data-mobile-control-cluster][data-mobile-control-cluster][role="search"]
+    input:focus-visible {
+    border: 0 !important;
+    outline: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html body
+      [data-dashboard-shell]
+      form[data-mobile-control-cluster][role="search"]::after {
+      transition-duration: 1ms !important;
+    }
+  }
+}
