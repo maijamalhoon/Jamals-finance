@@ -63,6 +63,9 @@ export default async function AccountsPage() {
     accountTotals.set(transaction.account_id, current);
   });
 
+  const accountGridClass =
+    "grid auto-rows-fr grid-cols-1 gap-3 sm:grid-cols-[repeat(auto-fill,minmax(252px,280px))] sm:justify-start";
+
   return (
     <div className="space-y-5">
       <div className="flex justify-end">
@@ -93,7 +96,7 @@ export default async function AccountsPage() {
               <h3 id="active-accounts-heading" className="text-sm font-bold text-text-primary">
                 Active accounts
               </h3>
-              <div className="grid auto-rows-fr grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+              <div className={accountGridClass}>
                 {activeAccountList.map((account) => (
                   <AccountCard
                     key={account.id}
@@ -117,7 +120,7 @@ export default async function AccountsPage() {
                   Read-only accounts remain available for history and reports.
                 </p>
               </div>
-              <div className="grid auto-rows-fr grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+              <div className={accountGridClass}>
                 {archivedAccountList.map((account) => (
                   <AccountCard
                     key={account.id}
