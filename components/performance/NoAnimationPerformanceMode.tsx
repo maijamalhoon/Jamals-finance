@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 
 import {
   ANIMATION_MODE_CHANGE_EVENT,
@@ -33,9 +33,13 @@ function getDashboardHref(target: EventTarget | null) {
 }
 
 export default function NoAnimationPerformanceMode() {
+  const pathname = usePathname();
   const router = useRouter();
+  const insideDashboard = pathname.startsWith("/dashboard");
 
   useEffect(() => {
+    if (!insideDashboard) return;
+
     const prefetchedRoutes = new Set<string>();
     let idleHandle: number | null = null;
     let timeoutHandle: number | null = null;
@@ -50,10 +54,7 @@ export default function NoAnimationPerformanceMode() {
     };
 
     const cancelScheduledWork = () => {
-      if (
-        idleHandle !== null &&
-        "cancelIdleCallback" in window
-      ) {
+      if (idleHandle !== null && "cancelIdleCallback" in window) {
         window.cancelIdleCallback(idleHandle);
       }
       if (timeoutHandle !== null) window.clearTimeout(timeoutHandle);
@@ -117,7 +118,7 @@ export default function NoAnimationPerformanceMode() {
         handleAnimationModeChange,
       );
     };
-  }, [router]);
+  }, [insideDashboard, router]);
 
   return null;
 }
