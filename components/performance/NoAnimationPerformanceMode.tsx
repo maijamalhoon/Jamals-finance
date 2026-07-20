@@ -133,6 +133,7 @@ export default function AnimationPerformanceMode() {
     let idleHandle: number | null = null;
     let timeoutHandle: ReturnType<typeof globalThis.setTimeout> | null = null;
     let lastPointerIntentTarget: Element | null = null;
+    let intentListenersAttached = false;
 
     const getActiveMode = () => getDocumentAnimationMode();
 
@@ -173,6 +174,43 @@ export default function AnimationPerformanceMode() {
       timeoutHandle = null;
     };
 
+    const handleUserIntent = (event: Event) => {
+      const target = event.target instanceof Element ? event.target : null;
+
+      if (event.type === "pointerover") {
+        const interactiveTarget: Element | null = target
+          ? target.closest(
+              "a[href], button[aria-label], [role='button'][aria-label]",
+            )
+          : null;
+        if (interactiveTarget === lastPointerIntentTarget) return;
+        lastPointerIntentTarget = interactiveTarget;
+      }
+
+      const href = getDashboardHref(target);
+      if (href) prefetchRoute(href);
+
+      const modalKey = getModalIntent(target);
+      if (modalKey) preloadModal(modalKey);
+    };
+
+    const attachIntentListeners = () => {
+      if (intentListenersAttached) return;
+      intentListenersAttached = true;
+      document.addEventListener("pointerover", handleUserIntent, true);
+      document.addEventListener("pointerdown", handleUserIntent, true);
+      document.addEventListener("focusin", handleUserIntent, true);
+    };
+
+    const detachIntentListeners = () => {
+      if (!intentListenersAttached) return;
+      intentListenersAttached = false;
+      lastPointerIntentTarget = null;
+      document.removeEventListener("pointerover", handleUserIntent, true);
+      document.removeEventListener("pointerdown", handleUserIntent, true);
+      document.removeEventListener("focusin", handleUserIntent, true);
+    };
+
     const runBoundedWarmup = (expectedMode: AnimationMode) => {
       if (
         document.visibilityState !== "visible" ||
@@ -199,9 +237,11 @@ export default function AnimationPerformanceMode() {
         !isPerformanceAnimationMode(mode) ||
         document.visibilityState !== "visible"
       ) {
+        detachIntentListeners();
         return;
       }
 
+      attachIntentListeners();
       const warm = () => runBoundedWarmup(mode);
 
       if (typeof window.requestIdleCallback === "function") {
@@ -216,40 +256,27 @@ export default function AnimationPerformanceMode() {
       }
     };
 
-    const handleUserIntent = (event: Event) => {
-      const target = event.target instanceof Element ? event.target : null;
-
-      if (event.type === "pointerover") {
-        const interactiveTarget = target?.closest(
-          "a[href], button[aria-label], [role='button'][aria-label]",
-        );
-        if (interactiveTarget === lastPointerIntentTarget) return;
-        lastPointerIntentTarget = interactiveTarget;
-      }
-
-      const href = getDashboardHref(target);
-      if (href) prefetchRoute(href);
-
-      const modalKey = getModalIntent(target);
-      if (modalKey) preloadModal(modalKey);
-    };
-
     const handleAnimationModeChange = (event: Event) => {
       const nextMode = (event as CustomEvent<AnimationMode>).detail;
-      if (isPerformanceAnimationMode(nextMode)) warmPerformanceExperience();
-      else cancelScheduledWork();
+      if (isPerformanceAnimationMode(nextMode)) {
+        warmPerformanceExperience();
+      } else {
+        cancelScheduledWork();
+        detachIntentListeners();
+      }
     };
 
     const handleVisibilityChange = () => {
-      if (document.visibilityState === "visible") warmPerformanceExperience();
-      else cancelScheduledWork();
+      if (document.visibilityState === "visible") {
+        warmPerformanceExperience();
+      } else {
+        cancelScheduledWork();
+        detachIntentListeners();
+      }
     };
 
     warmPerformanceExperience();
 
-    document.addEventListener("pointerover", handleUserIntent, true);
-    document.addEventListener("pointerdown", handleUserIntent, true);
-    document.addEventListener("focusin", handleUserIntent, true);
     document.addEventListener("visibilitychange", handleVisibilityChange);
     window.addEventListener(
       ANIMATION_MODE_CHANGE_EVENT,
@@ -258,9 +285,7 @@ export default function AnimationPerformanceMode() {
 
     return () => {
       cancelScheduledWork();
-      document.removeEventListener("pointerover", handleUserIntent, true);
-      document.removeEventListener("pointerdown", handleUserIntent, true);
-      document.removeEventListener("focusin", handleUserIntent, true);
+      detachIntentListeners();
       document.removeEventListener("visibilitychange", handleVisibilityChange);
       window.removeEventListener(
         ANIMATION_MODE_CHANGE_EVENT,
