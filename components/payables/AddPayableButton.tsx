@@ -7,13 +7,19 @@ import PayableModal from "./PayableModal";
 
 export default function AddPayableButton() {
   const [open, setOpen] = useState(false);
+  const label = "Add Payable";
 
   return (
     <>
       <PageHeadingActionPortal page="payables">
-        <button type="button" onClick={() => setOpen(true)} className="primary-action">
+        <button
+          type="button"
+          aria-label={label}
+          onClick={() => setOpen(true)}
+          className="primary-action"
+        >
           <Plus size={16} />
-          Add Payable
+          <span className="sr-only">{label}</span>
         </button>
       </PageHeadingActionPortal>
       <PayableModal open={open} onClose={() => setOpen(false)} />
