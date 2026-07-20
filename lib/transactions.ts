@@ -99,6 +99,38 @@ function mapAccountTransfer(row: AccountTransferRow): LoadedTransaction {
   };
 }
 
+function finiteAmount(value?: number | null) {
+  return typeof value === "number" && Number.isFinite(value) ? value : null;
+}
+
+async function loadTransactionHistory(
+  supabase: SupabaseClient,
+  options: TransactionLoadOptions,
+) {
+  const category =
+    options.category && options.category !== "all" ? options.category : null;
+  const account = options.account && options.account !== "all" ? options.account : null;
+
+  const { data, error } = await supabase.rpc("load_ledger_history", {
+    p_type: options.type ?? null,
+    p_from: options.from ?? null,
+    p_to: options.to ?? null,
+    p_category: category,
+    p_account: account,
+    p_min_amount: finiteAmount(options.minAmount),
+    p_max_amount: finiteAmount(options.maxAmount),
+  });
+
+  if (error) {
+    console.error("Failed to load transaction history", {
+      code: error.code ?? "unknown",
+    });
+    return [];
+  }
+
+  return (data ?? []) as unknown as LoadedTransaction[];
+}
+
 export function sortTransactionsNewestFirst<T extends DatedTransaction>(
   transactions: T[],
 ) {
@@ -124,98 +156,94 @@ export async function loadTransactions(
 ): Promise<LoadedTransaction[]> {
   let rows: LoadedTransaction[] = [];
 
-  if (options.type !== "transfer") {
-    let query = supabase
-      .from("transactions")
-      .select(
-        "*, categories(id, name, color, icon_key, type, parent_id), accounts(name)",
-      )
-      .order("updated_at", { ascending: false })
-      .order("created_at", { ascending: false })
-      .order("date", { ascending: false });
-
-    if (!options.includeDeleted) query = query.is("deleted_at", null);
-    if (options.type) query = query.eq("type", options.type);
-    if (options.from) query = query.gte("date", options.from);
-    if (options.to) query = query.lte("date", options.to);
-    if (options.category && options.category !== "all") {
-      query = query.eq("category_id", options.category);
-    }
-    if (options.account && options.account !== "all") {
-      query = query.eq("account_id", options.account);
-    }
-    if (
-      typeof options.minAmount === "number" &&
-      Number.isFinite(options.minAmount)
-    ) {
-      query = query.gte("amount", options.minAmount);
-    }
-    if (
-      typeof options.maxAmount === "number" &&
-      Number.isFinite(options.maxAmount)
-    ) {
-      query = query.lte("amount", options.maxAmount);
-    }
-
-    const { data, error } = await query;
-    if (error) {
-      console.error("Failed to load transactions", {
-        code: error.code ?? "unknown",
-      });
-    } else {
-      rows = (data ?? []) as unknown as LoadedTransaction[];
-    }
-  }
-
-  const categoryFilterActive = Boolean(
-    options.category && options.category !== "all",
-  );
-  const shouldLoadTransfers =
-    !categoryFilterActive && (!options.type || options.type === "transfer");
-
-  if (shouldLoadTransfers) {
-    let transferQuery = supabase
-      .from("account_transfers")
-      .select(
-        "id, amount, transfer_date, note, reference, created_at, updated_at, deleted_at, from_account_id, to_account_id, from_account:from_account_id(name), to_account:to_account_id(name)",
-      )
-      .order("updated_at", { ascending: false })
-      .order("created_at", { ascending: false })
-      .order("transfer_date", { ascending: false });
-
-    if (!options.includeDeleted) transferQuery = transferQuery.is("deleted_at", null);
-    if (options.from) transferQuery = transferQuery.gte("transfer_date", options.from);
-    if (options.to) transferQuery = transferQuery.lte("transfer_date", options.to);
-    if (
-      typeof options.minAmount === "number" &&
-      Number.isFinite(options.minAmount)
-    ) {
-      transferQuery = transferQuery.gte("amount", options.minAmount);
-    }
-    if (
-      typeof options.maxAmount === "number" &&
-      Number.isFinite(options.maxAmount)
-    ) {
-      transferQuery = transferQuery.lte("amount", options.maxAmount);
-    }
-
-    const { data: transfers, error: transferError } = await transferQuery;
-    if (transferError) {
-      console.error("Failed to load account transfers", {
-        code: transferError.code ?? "unknown",
-      });
-    } else {
-      const accountFilter =
-        options.account && options.account !== "all" ? options.account : null;
-      const mappedTransfers = ((transfers ?? []) as AccountTransferRow[])
-        .filter(
-          (transfer) =>
-            !accountFilter ||
-            transfer.from_account_id === accountFilter ||
-            transfer.to_account_id === accountFilter,
+  if (options.includeDeleted) {
+    rows = await loadTransactionHistory(supabase, options);
+  } else {
+    if (options.type !== "transfer") {
+      let query = supabase
+        .from("transactions")
+        .select(
+          "*, categories(id, name, color, icon_key, type, parent_id), accounts(name)",
         )
-        .map(mapAccountTransfer);
-      rows = [...rows, ...mappedTransfers];
+        .is("deleted_at", null)
+        .order("updated_at", { ascending: false })
+        .order("created_at", { ascending: false })
+        .order("date", { ascending: false });
+
+      if (options.type) query = query.eq("type", options.type);
+      if (options.from) query = query.gte("date", options.from);
+      if (options.to) query = query.lte("date", options.to);
+      if (options.category && options.category !== "all") {
+        query = query.eq("category_id", options.category);
+      }
+      if (options.account && options.account !== "all") {
+        query = query.eq("account_id", options.account);
+      }
+      if (finiteAmount(options.minAmount) !== null) {
+        query = query.gte("amount", options.minAmount as number);
+      }
+      if (finiteAmount(options.maxAmount) !== null) {
+        query = query.lte("amount", options.maxAmount as number);
+      }
+
+      const { data, error } = await query;
+      if (error) {
+        console.error("Failed to load transactions", {
+          code: error.code ?? "unknown",
+        });
+      } else {
+        rows = (data ?? []) as unknown as LoadedTransaction[];
+      }
+    }
+
+    const categoryFilterActive = Boolean(
+      options.category && options.category !== "all",
+    );
+    const shouldLoadTransfers =
+      !categoryFilterActive && (!options.type || options.type === "transfer");
+
+    if (shouldLoadTransfers) {
+      let transferQuery = supabase
+        .from("account_transfers")
+        .select(
+          "id, amount, transfer_date, note, reference, created_at, updated_at, deleted_at, from_account_id, to_account_id, from_account:from_account_id(name), to_account:to_account_id(name)",
+        )
+        .is("deleted_at", null)
+        .order("updated_at", { ascending: false })
+        .order("created_at", { ascending: false })
+        .order("transfer_date", { ascending: false });
+
+      if (options.from) {
+        transferQuery = transferQuery.gte("transfer_date", options.from);
+      }
+      if (options.to) {
+        transferQuery = transferQuery.lte("transfer_date", options.to);
+      }
+      if (finiteAmount(options.minAmount) !== null) {
+        transferQuery = transferQuery.gte("amount", options.minAmount as number);
+      }
+      if (finiteAmount(options.maxAmount) !== null) {
+        transferQuery = transferQuery.lte("amount", options.maxAmount as number);
+      }
+
+      const { data: transfers, error: transferError } = await transferQuery;
+      if (transferError) {
+        console.error("Failed to load account transfers", {
+          code: transferError.code ?? "unknown",
+        });
+      } else {
+        const accountFilter =
+          options.account && options.account !== "all" ? options.account : null;
+        const mappedTransfers = ((transfers ?? []) as AccountTransferRow[])
+          .filter(
+            (transfer) =>
+              !accountFilter ||
+              transfer.from_account_id === accountFilter ||
+              transfer.to_account_id === accountFilter,
+          )
+          .map(mapAccountTransfer);
+        rows = [...rows, ...mappedTransfers];
+      }
     }
   }
 
