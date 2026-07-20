@@ -1,6 +1,9 @@
 export type TransferAmountIssue = "missing" | "invalid" | "exceeds-balance";
 
-const BALANCE_EPSILON = 1e-9;
+// The transfer field keeps up to 8 decimal places. Max can therefore round the
+// stored balance upward by a few billionths, which must not be treated as a
+// real overdraft.
+const BALANCE_EPSILON = 1e-8;
 
 // Validation receives canonical base-currency amounts; display conversion stays at the form boundary.
 export function getAvailableTransferBalance(
