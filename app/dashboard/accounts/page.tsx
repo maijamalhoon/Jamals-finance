@@ -64,7 +64,7 @@ export default async function AccountsPage() {
   });
 
   const accountGridClass =
-    "grid auto-rows-fr grid-cols-1 gap-3 sm:grid-cols-[repeat(auto-fill,minmax(252px,280px))] sm:justify-start";
+    "grid max-w-full auto-rows-fr grid-cols-1 gap-3 sm:grid-cols-[repeat(auto-fill,minmax(248px,272px))] sm:justify-start";
 
   return (
     <div className="space-y-5">
