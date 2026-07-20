@@ -21,6 +21,10 @@ export default function TransactionSearchAutoClose() {
 
     if (!input || !searchControl || !openButton || !closeButton) return;
 
+    // Keep the custom close control only; mobile browsers add their own clear "X"
+    // to search inputs after text is entered.
+    input.type = "text";
+
     let closeTimer: number | null = null;
     let openFrame: number | null = null;
 
