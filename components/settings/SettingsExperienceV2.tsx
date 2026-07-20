@@ -5,6 +5,7 @@ import { SlidersHorizontal, Tags } from "lucide-react";
 import CategorySettingsSection from "@/components/settings/CategorySettingsSection";
 import type { PersistentSettingsCategory } from "@/components/settings/CategoryManagementExperience";
 import ProfileCustomizationSection from "@/components/settings/ProfileCustomizationSection";
+import SettingsAnimationPreviewControl from "@/components/settings/SettingsAnimationPreviewControl";
 import {
   SettingsAppearanceSection,
   SettingsDataSection,
@@ -52,7 +53,10 @@ export default function SettingsExperienceV2(props: SettingsExperienceV2Props) {
       />
 
       <div className="settings-reference-grid">
-        <SettingsAppearanceSection />
+        <div className="settings-reference-appearance settings-reference-appearance-slot">
+          <SettingsAppearanceSection />
+          <SettingsAnimationPreviewControl />
+        </div>
 
         <section className="settings-reference-section settings-reference-preferences-wrapper">
           <h2 className="settings-reference-section-heading">
