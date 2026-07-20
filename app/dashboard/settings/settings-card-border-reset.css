@@ -1,7 +1,7 @@
 /*
  * Settings card border reset.
  * Removes card borders, outlines, and inset outline shadows only.
- * Layout, spacing, colors, interactions, and all Settings logic stay unchanged.
+ * Layout, spacing, interactions, data, and Settings logic stay unchanged.
  */
 
 .settings-page-polish .settings-account-card,
@@ -61,4 +61,61 @@
 
 .dark .settings-page-polish .settings-reference-theme-option.is-active {
   box-shadow: 0 7px 18px rgb(0 0 0 / 0.2) !important;
+}
+
+/*
+ * Profile overview color correction.
+ * Use semantic surfaces in both themes and remove the decorative texture only.
+ * No sizing, spacing, content, or interaction rules are changed here.
+ */
+.settings-page-polish .settings-account-card {
+  background: color-mix(
+    in srgb,
+    var(--card) 96%,
+    var(--surface-secondary) 4%
+  ) !important;
+  color: var(--text-primary) !important;
+}
+
+.dark .settings-page-polish .settings-account-card {
+  background: color-mix(
+    in srgb,
+    var(--card) 88%,
+    var(--surface-secondary) 12%
+  ) !important;
+}
+
+.settings-page-polish .settings-account-card::after {
+  display: none !important;
+  content: none !important;
+}
+
+.settings-page-polish .settings-account-name,
+.settings-page-polish .settings-account-stat strong,
+.settings-page-polish .settings-account-edit {
+  color: var(--text-primary) !important;
+}
+
+.settings-page-polish .settings-account-email,
+.settings-page-polish .settings-account-stat span {
+  color: var(--text-secondary) !important;
+}
+
+.settings-page-polish .settings-account-stat,
+.settings-page-polish .settings-account-edit,
+.settings-page-polish .settings-account-avatar,
+.settings-page-polish .settings-account-avatar-fallback {
+  border: 0 !important;
+  background: var(--surface-secondary) !important;
+}
+
+.settings-page-polish .settings-account-avatar-fallback {
+  color: var(--text-primary) !important;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .settings-page-polish .settings-account-edit:hover {
+    border: 0 !important;
+    background: var(--hover) !important;
+  }
 }
