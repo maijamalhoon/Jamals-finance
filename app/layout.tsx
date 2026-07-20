@@ -102,6 +102,136 @@ const INTERACTION_LOCK_SCRIPT = `
 })();
 `;
 
+const NATIVE_ICON_TOOLTIP_CLEANUP_SCRIPT = `
+(() => {
+  try {
+    const marker = "__jfNativeIconTooltipCleanupInstalled";
+    if (window[marker]) return;
+    window[marker] = true;
+
+    const interactiveSelector =
+      "button, a, [role='button'], [role='menuitem'], [role='tab']";
+    const knownIconSelector =
+      "svg.lucide, svg[class*='lucide-'], [data-icon], img[data-icon]";
+
+    const isIconTooltipTarget = (element) => {
+      if (!(element instanceof Element)) return false;
+
+      if (element.matches("svg, img")) {
+        return (
+          element.matches(knownIconSelector) ||
+          Boolean(element.closest(interactiveSelector))
+        );
+      }
+
+      if (element.matches(interactiveSelector)) {
+        return Boolean(element.querySelector("svg, img, [data-icon]"));
+      }
+
+      return Boolean(element.querySelector(knownIconSelector));
+    };
+
+    const cleanTitleAttribute = (element) => {
+      if (!(element instanceof Element) || !isIconTooltipTarget(element)) return;
+
+      const title = element.getAttribute("title")?.trim();
+      if (!title) return;
+
+      const hasAccessibleLabel =
+        element.hasAttribute("aria-label") ||
+        element.hasAttribute("aria-labelledby");
+      const hasVisibleText = Boolean(element.textContent?.trim());
+
+      if (!hasAccessibleLabel && !hasVisibleText) {
+        element.setAttribute("aria-label", title);
+      }
+
+      element.removeAttribute("title");
+    };
+
+    const cleanSvgTitle = (titleNode) => {
+      if (!(titleNode instanceof SVGTitleElement)) return;
+
+      const svg = titleNode.parentElement;
+      if (!(svg instanceof SVGElement)) return;
+
+      const control = svg.closest(interactiveSelector);
+      const isKnownIcon = svg.matches(knownIconSelector);
+      if (!control && !isKnownIcon) return;
+
+      const label = titleNode.textContent?.trim();
+
+      if (label && control) {
+        const hasAccessibleLabel =
+          control.hasAttribute("aria-label") ||
+          control.hasAttribute("aria-labelledby");
+        const controlText = control.textContent?.trim();
+
+        if (!hasAccessibleLabel && controlText === label) {
+          control.setAttribute("aria-label", label);
+        }
+      } else if (
+        label &&
+        !svg.hasAttribute("aria-label") &&
+        !svg.hasAttribute("aria-labelledby")
+      ) {
+        svg.setAttribute("aria-label", label);
+      }
+
+      titleNode.remove();
+    };
+
+    const cleanWithin = (root) => {
+      if (!(root instanceof Element || root instanceof Document)) return;
+
+      if (root instanceof Element && root.matches("svg > title")) {
+        cleanSvgTitle(root);
+      }
+
+      root.querySelectorAll("svg > title").forEach(cleanSvgTitle);
+
+      if (root instanceof Element && root.hasAttribute("title")) {
+        cleanTitleAttribute(root);
+      }
+
+      root.querySelectorAll("[title]").forEach(cleanTitleAttribute);
+    };
+
+    const runCleanup = () => cleanWithin(document);
+
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", runCleanup, { once: true });
+    } else {
+      runCleanup();
+    }
+
+    const observer = new MutationObserver((mutations) => {
+      for (const mutation of mutations) {
+        if (mutation.type === "attributes") {
+          cleanTitleAttribute(mutation.target);
+          continue;
+        }
+
+        mutation.addedNodes.forEach((node) => {
+          if (!(node instanceof Element)) return;
+
+          cleanWithin(node);
+          const titledAncestor = node.parentElement?.closest("[title]");
+          if (titledAncestor) cleanTitleAttribute(titledAncestor);
+        });
+      }
+    });
+
+    observer.observe(document.documentElement, {
+      subtree: true,
+      childList: true,
+      attributes: true,
+      attributeFilter: ["title"],
+    });
+  } catch {}
+})();
+`;
+
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
@@ -197,6 +327,11 @@ export default function RootLayout({
         <script
           dangerouslySetInnerHTML={{
             __html: INTERACTION_LOCK_SCRIPT,
+          }}
+        />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: NATIVE_ICON_TOOLTIP_CLEANUP_SCRIPT,
           }}
         />
       </head>
