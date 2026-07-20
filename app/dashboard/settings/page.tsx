@@ -21,6 +21,7 @@ import "./settings-responsive-color-balance.css";
 import "./settings-card-border-reset.css";
 import "./settings-row-hover-unify.css";
 import "./settings-animation-control.css";
+import "./settings-layout-alignment.css";
 
 export const dynamic = "force-dynamic";
 
@@ -106,7 +107,6 @@ export default async function SettingsPage() {
       : null;
 
     if (!categoryId) return usage;
-
     usage[categoryId] = (usage[categoryId] ?? 0) + 1;
     return usage;
   }, {});
