@@ -93,6 +93,10 @@ export default function Header({ notificationSlot }: HeaderProps) {
               transform 150ms cubic-bezier(0.4, 0, 0.2, 1) !important;
           }
 
+          .jf-desktop-header [data-header-tooltip] {
+            position: relative;
+          }
+
           @media (hover: hover) and (pointer: fine) {
             .jf-desktop-header-tools [data-header-search-trigger]:hover,
             .jf-desktop-header-tools [data-notification-trigger]:hover,
@@ -100,6 +104,63 @@ export default function Header({ notificationSlot }: HeaderProps) {
               background-color: var(--hover) !important;
               color: var(--text-primary) !important;
               transform: translateY(0) scale(1) !important;
+            }
+
+            .jf-desktop-header [data-header-tooltip]::after {
+              content: attr(data-header-tooltip);
+              position: absolute;
+              top: calc(100% + 0.35rem);
+              left: 50%;
+              z-index: 120;
+              width: max-content;
+              max-width: 10rem;
+              padding: 0.24rem 0.44rem;
+              border: 0;
+              border-radius: 6px;
+              outline: 0;
+              background: color-mix(
+                in srgb,
+                var(--text-primary) 94%,
+                transparent
+              );
+              box-shadow: 0 4px 12px rgb(15 23 42 / 0.14);
+              color: var(--background);
+              font-family: var(--font-geist-sans), sans-serif;
+              font-size: 10px;
+              font-weight: 650;
+              line-height: 1;
+              letter-spacing: 0.01em;
+              white-space: nowrap;
+              pointer-events: none;
+              opacity: 0;
+              visibility: hidden;
+              transform: translate(-50%, -3px) scale(0.98);
+              transform-origin: top center;
+              transition:
+                opacity 120ms ease,
+                transform 120ms ease,
+                visibility 0s linear 120ms;
+            }
+
+            .dark .jf-desktop-header [data-header-tooltip]::after {
+              box-shadow: 0 5px 14px rgb(0 0 0 / 0.28);
+            }
+
+            .jf-desktop-header [data-header-tooltip]:hover::after,
+            .jf-desktop-header [data-header-tooltip]:has(:focus-visible)::after {
+              opacity: 1;
+              visibility: visible;
+              transform: translate(-50%, 0) scale(1);
+              transition-delay: 220ms, 220ms, 0s;
+            }
+
+            .jf-desktop-header
+              [data-header-tooltip][data-tooltip-disabled="true"]::after,
+            .jf-desktop-header
+              [data-header-tooltip]:has([aria-expanded="true"])::after,
+            .jf-desktop-header
+              [data-header-tooltip]:has([data-popup-open])::after {
+              display: none;
             }
           }
 
@@ -125,9 +186,9 @@ export default function Header({ notificationSlot }: HeaderProps) {
                 key={href}
                 href={href}
                 aria-label={label}
-                title={label}
                 aria-current={active ? "page" : undefined}
                 data-active={active ? "true" : "false"}
+                data-header-tooltip={label}
                 className={`${desktopNavItemBaseClass} ${
                   active
                     ? desktopNavItemActiveClass
@@ -156,73 +217,86 @@ export default function Header({ notificationSlot }: HeaderProps) {
         />
 
         <div className="jf-desktop-header-tools flex min-w-0 shrink-0 items-center gap-1.5 [&>button]:!border-transparent [&>button]:!bg-transparent [&>button]:!shadow-none">
-          <form
-            role="search"
-            aria-label="Search transactions"
-            onSubmit={handleSearch}
-            className={`finance-focus flex h-11 shrink-0 items-center overflow-hidden rounded-full border transition-[width,background-color,border-color,box-shadow] duration-300 ease-out ${
-              searchOpen
-                ? "w-[clamp(12rem,22vw,18rem)] border-border bg-surface-inset shadow-none"
-                : "w-11 border-transparent bg-transparent hover:bg-hover"
-            }`}
+          <div
+            data-header-tooltip="Search"
+            data-tooltip-disabled={searchOpen ? "true" : undefined}
+            className="shrink-0"
           >
-            <button
-              data-header-search-trigger
-              type={searchOpen ? "submit" : "button"}
-              aria-label={
-                searchOpen ? "Search transactions" : "Open transaction search"
-              }
-              onClick={() => {
-                if (!searchOpen) setSearchOpen(true);
-              }}
-              className="finance-focus grid h-11 w-11 shrink-0 place-items-center rounded-full text-text-secondary transition-[background-color,color,transform] duration-150 hover:text-text-primary"
+            <form
+              role="search"
+              aria-label="Search transactions"
+              onSubmit={handleSearch}
+              className={`finance-focus flex h-11 shrink-0 items-center overflow-hidden rounded-full border transition-[width,background-color,border-color,box-shadow] duration-300 ease-out ${
+                searchOpen
+                  ? "w-[clamp(12rem,22vw,18rem)] border-border bg-surface-inset shadow-none"
+                  : "w-11 border-transparent bg-transparent hover:bg-hover"
+              }`}
             >
-              <Search size={20} strokeWidth={2.1} aria-hidden="true" />
-            </button>
-
-            <label htmlFor="desktop-inline-transaction-search" className="sr-only">
-              Search transactions
-            </label>
-            <input
-              ref={searchInputRef}
-              id="desktop-inline-transaction-search"
-              type="search"
-              autoComplete="off"
-              tabIndex={searchOpen ? 0 : -1}
-              aria-hidden={!searchOpen}
-              value={query}
-              onChange={(event) => setQuery(event.target.value)}
-              onKeyDown={(event) => {
-                if (event.key === "Escape") {
-                  event.preventDefault();
-                  closeSearch();
+              <button
+                data-header-search-trigger
+                type={searchOpen ? "submit" : "button"}
+                aria-label={
+                  searchOpen ? "Search transactions" : "Open transaction search"
                 }
-              }}
-              placeholder="Search transactions..."
-              className={`min-w-0 bg-transparent text-sm text-text-primary outline-none placeholder:text-text-secondary transition-[width,opacity] duration-200 ${
-                searchOpen
-                  ? "mr-1 w-full flex-1 opacity-100"
-                  : "pointer-events-none w-0 opacity-0"
-              }`}
-            />
+                onClick={() => {
+                  if (!searchOpen) setSearchOpen(true);
+                }}
+                className="finance-focus grid h-11 w-11 shrink-0 place-items-center rounded-full text-text-secondary transition-[background-color,color,transform] duration-150 hover:text-text-primary"
+              >
+                <Search size={20} strokeWidth={2.1} aria-hidden="true" />
+              </button>
 
-            <button
-              type="button"
-              aria-label="Close transaction search"
-              tabIndex={searchOpen ? 0 : -1}
-              onClick={closeSearch}
-              className={`finance-focus mr-1 grid h-9 w-9 shrink-0 place-items-center rounded-full text-text-secondary transition-[opacity,transform,background-color,color] duration-200 hover:bg-hover hover:text-text-primary ${
-                searchOpen
-                  ? "scale-100 opacity-100"
-                  : "pointer-events-none scale-90 opacity-0"
-              }`}
-            >
-              <X size={16} strokeWidth={2.1} aria-hidden="true" />
-            </button>
-          </form>
+              <label
+                htmlFor="desktop-inline-transaction-search"
+                className="sr-only"
+              >
+                Search transactions
+              </label>
+              <input
+                ref={searchInputRef}
+                id="desktop-inline-transaction-search"
+                type="search"
+                autoComplete="off"
+                tabIndex={searchOpen ? 0 : -1}
+                aria-hidden={!searchOpen}
+                value={query}
+                onChange={(event) => setQuery(event.target.value)}
+                onKeyDown={(event) => {
+                  if (event.key === "Escape") {
+                    event.preventDefault();
+                    closeSearch();
+                  }
+                }}
+                placeholder="Search transactions..."
+                className={`min-w-0 bg-transparent text-sm text-text-primary outline-none placeholder:text-text-secondary transition-[width,opacity] duration-200 ${
+                  searchOpen
+                    ? "mr-1 w-full flex-1 opacity-100"
+                    : "pointer-events-none w-0 opacity-0"
+                }`}
+              />
 
-          {notificationSlot}
-          <JamalMenu align="right" placement="bottom" variant="avatar" />
+              <button
+                type="button"
+                aria-label="Close transaction search"
+                tabIndex={searchOpen ? 0 : -1}
+                onClick={closeSearch}
+                className={`finance-focus mr-1 grid h-9 w-9 shrink-0 place-items-center rounded-full text-text-secondary transition-[opacity,transform,background-color,color] duration-200 hover:bg-hover hover:text-text-primary ${
+                  searchOpen
+                    ? "scale-100 opacity-100"
+                    : "pointer-events-none scale-90 opacity-0"
+                }`}
+              >
+                <X size={16} strokeWidth={2.1} aria-hidden="true" />
+              </button>
+            </form>
+          </div>
+
+          <div data-header-tooltip="Notifications" className="shrink-0">
+            {notificationSlot}
+          </div>
+          <div data-header-tooltip="Profile" className="shrink-0">
+            <JamalMenu align="right" placement="bottom" variant="avatar" />
+          </div>
         </div>
       </div>
     </header>
