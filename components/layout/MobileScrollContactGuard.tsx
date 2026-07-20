@@ -171,8 +171,10 @@ export default function MobileScrollContactGuard() {
       document.removeEventListener("pointercancel", releasePointer, true);
       window.removeEventListener("blur", resetContact);
       window.removeEventListener("resize", syncTopState);
+      activePointerId = null;
+      pointerStartedInsideScroll = false;
+      document.body.removeAttribute(BODY_CONTACT_ATTRIBUTE);
       document.body.removeAttribute(BODY_TOP_ATTRIBUTE);
-      resetContact();
     };
   }, []);
 
