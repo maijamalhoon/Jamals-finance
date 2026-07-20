@@ -21,9 +21,19 @@ export default function TransactionSearchAutoClose() {
 
     if (!input || !searchControl || !openButton || !closeButton) return;
 
-    // Keep the custom close control only; mobile browsers add their own clear "X"
-    // to search inputs after text is entered.
-    input.type = "text";
+    // Keep only the app's custom close control. React can restore the JSX
+    // search type during re-renders, so enforce text whenever that happens.
+    const removeNativeClearControl = () => {
+      if (input.type !== "text") input.type = "text";
+    };
+
+    removeNativeClearControl();
+
+    const typeObserver = new MutationObserver(removeNativeClearControl);
+    typeObserver.observe(input, {
+      attributes: true,
+      attributeFilter: ["type"],
+    });
 
     let closeTimer: number | null = null;
     let openFrame: number | null = null;
@@ -55,11 +65,14 @@ export default function TransactionSearchAutoClose() {
       if (openFrame !== null) window.cancelAnimationFrame(openFrame);
       openFrame = window.requestAnimationFrame(() => {
         openFrame = null;
+        removeNativeClearControl();
         scheduleAutoClose();
       });
     };
 
     const handleInput = () => {
+      window.requestAnimationFrame(removeNativeClearControl);
+
       if (input.value.trim()) {
         cancelAutoClose();
         return;
@@ -74,6 +87,7 @@ export default function TransactionSearchAutoClose() {
 
     return () => {
       cancelAutoClose();
+      typeObserver.disconnect();
       if (openFrame !== null) window.cancelAnimationFrame(openFrame);
       openButton.removeEventListener("click", handleOpen);
       input.removeEventListener("input", handleInput);
