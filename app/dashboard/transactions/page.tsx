@@ -1,6 +1,7 @@
 import { Suspense, type ComponentProps } from "react";
 import { ArrowLeftRight } from "lucide-react";
 
+import AddIncomeButton from "@/components/income/AddIncomeButton";
 import { createClient } from "@/lib/supabase/server";
 import TransactionFilters from "@/components/transactions/TransactionFilters";
 import ViewportTransactionList from "@/components/transactions/ViewportTransactionList";
@@ -99,6 +100,20 @@ export default async function TransactionsPage({
 
   const minAmount = cleanAmount(min);
   const maxAmount = cleanAmount(max);
+  const hasActiveFilters = Boolean(
+    type ||
+      searchTerm ||
+      from ||
+      to ||
+      sourceTerm ||
+      category ||
+      account ||
+      personTerm ||
+      itemTerm ||
+      minAmount !== null ||
+      maxAmount !== null ||
+      sort !== "newest",
+  );
 
   const requestedDatabaseType =
     type === "payable"
@@ -312,8 +327,20 @@ export default async function TransactionsPage({
         {transactions.length === 0 ? (
           <EmptyState
             icon={ArrowLeftRight}
-            title="No transactions found"
-            description="Try changing filters or search."
+            title={hasActiveFilters ? "No transactions found" : "No transactions yet"}
+            description={
+              hasActiveFilters
+                ? "Try changing the filters or search."
+                : "Your account activity will appear here."
+            }
+            action={
+              hasActiveFilters ? undefined : (
+                <AddIncomeButton
+                  label="Add a transaction"
+                  showIcon={false}
+                />
+              )
+            }
           />
         ) : (
           <ViewportTransactionList
