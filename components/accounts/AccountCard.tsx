@@ -155,7 +155,7 @@ export default function AccountCard({ account }: AccountCardProps) {
           </p>
         </div>
 
-        <div className="relative mt-4 grid min-w-0 grid-cols-[minmax(0,1fr)_minmax(5.5rem,0.72fr)] items-end gap-4 p-3">
+        <div className="relative mt-4 grid min-w-0 grid-cols-[minmax(0,1fr)_minmax(6.75rem,0.76fr)] items-end gap-3 p-3">
           <div className="min-w-0">
             <p className="text-[10px] font-semibold uppercase tracking-[0.13em] text-text-secondary">
               Balance
@@ -167,7 +167,7 @@ export default function AccountCard({ account }: AccountCardProps) {
           </div>
 
           <div className="min-w-0 space-y-2 text-right">
-            <div className="min-w-0">
+            <div className="min-w-0 rounded-xl bg-success-soft px-2.5 py-2">
               <p className="text-[9px] font-bold uppercase tracking-[0.12em] text-success">
                 Total in
               </p>
@@ -176,7 +176,7 @@ export default function AccountCard({ account }: AccountCardProps) {
               </p>
             </div>
 
-            <div className="min-w-0">
+            <div className="min-w-0 rounded-xl bg-danger-soft px-2.5 py-2">
               <p className="text-[9px] font-bold uppercase tracking-[0.12em] text-danger">
                 Total out
               </p>
