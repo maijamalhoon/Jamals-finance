@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { AlertTriangle, Database, Sparkles, WifiOff } from "lucide-react";
+import { AlertTriangle, Sparkles, WifiOff } from "lucide-react";
 
 import AnalyticsRangeControls from "@/components/analytics/AnalyticsRangeControls";
 import { CashFlowCharts } from "@/components/analytics/AnalyticsCharts";
@@ -22,7 +22,6 @@ import {
   buildIncomeSourceSummary,
   calculateKpisForRanges,
   calculatePeriodFacts,
-  formatRangeLabel,
   getLargestEntries,
   type AnalyticsAccountStatus,
   type AnalyticsDataStatus,
@@ -112,26 +111,15 @@ export default function AnalyticsClient({
   return (
     <div className="min-h-full min-w-0 text-text-primary">
       <div className="space-y-4 sm:space-y-5">
-        <header className="page-heading min-w-0 overflow-hidden">
-          <div className="grid min-w-0 gap-5 xl:grid-cols-[minmax(0,1fr)_auto] xl:items-end">
-            <div className="min-w-0">
-              <h2 className="page-title">Analytics</h2>
-              <p className="page-subtitle">A truthful view of cash flow, spending, income sources, and your current portfolio.</p>
-              <p className="mt-3 inline-flex max-w-full items-center gap-2 rounded-full border border-border bg-muted/60 px-3 py-1.5 text-xs font-semibold text-text-secondary">
-                <Database aria-hidden="true" className="size-3.5 shrink-0" />
-                <span className="truncate" title={formatRangeLabel(selection.current)}>{formatRangeLabel(selection.current)}</span>
-              </p>
-            </div>
-
-            <AnalyticsRangeControls
-              selection={selection}
-              now={now}
-              pending={pending}
-              onPresetChange={changePreset}
-              onCustomChange={changeCustom}
-            />
-          </div>
-        </header>
+        <div className="flex min-w-0 justify-end">
+          <AnalyticsRangeControls
+            selection={selection}
+            now={now}
+            pending={pending}
+            onPresetChange={changePreset}
+            onCustomChange={changeCustom}
+          />
+        </div>
 
         {!online ? (
           <InlineNotice tone="warning" role="status" className="flex items-start gap-2">
