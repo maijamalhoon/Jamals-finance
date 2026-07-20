@@ -137,8 +137,9 @@ export default async function ExpensesPage({
           <EmptyState
             compact
             icon={Landmark}
-            title="No account spending yet"
-            description="Expense totals by account will appear after your first spend is recorded."
+            title="No expenses yet"
+            description="Record your first expense to see account totals here."
+            action={<AddExpenseButton />}
           />
         ) : (
           <div className="grid gap-2 md:grid-cols-2 xl:grid-cols-4">
@@ -233,8 +234,9 @@ export default async function ExpensesPage({
         {expenses.length === 0 ? (
           <EmptyState
             icon={TrendingDown}
-            title="No expense records yet"
-            description="Record your first expense to unlock category breakdowns and spend patterns."
+            title="No expenses yet"
+            description="Record your first expense to see it here."
+            action={<AddExpenseButton />}
           />
         ) : (
           <>
