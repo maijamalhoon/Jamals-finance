@@ -139,7 +139,9 @@ export default async function ExpensesPage({
             icon={Landmark}
             title="No expenses yet"
             description="Record your first expense to see account totals here."
-            action={<AddExpenseButton />}
+            action={
+              <AddExpenseButton label="Add an expense" showIcon={false} />
+            }
           />
         ) : (
           <div className="grid gap-2 md:grid-cols-2 xl:grid-cols-4">
@@ -236,7 +238,9 @@ export default async function ExpensesPage({
             icon={TrendingDown}
             title="No expenses yet"
             description="Record your first expense to see it here."
-            action={<AddExpenseButton />}
+            action={
+              <AddExpenseButton label="Add an expense" showIcon={false} />
+            }
           />
         ) : (
           <>
