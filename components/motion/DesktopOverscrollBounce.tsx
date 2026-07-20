@@ -14,6 +14,11 @@ import {
   type OverscrollMotionProfile,
   type OverscrollSpringState,
 } from "@/lib/overscroll-bounce";
+import {
+  getAnimationDurationScale,
+  getAnimationPlaybackRate,
+  getDocumentAnimationMode,
+} from "@/lib/animation-preference";
 
 import styles from "./DesktopOverscrollBounce.module.css";
 
@@ -164,6 +169,13 @@ function resolveScrollSurface(
 
 export default function DesktopOverscrollBounce() {
   useEffect(() => {
+    const animationMode = getDocumentAnimationMode();
+
+    // No-animation mode must never create a transform-based bounce or RAF loop.
+    if (animationMode === "none") return;
+
+    const playbackRate = getAnimationPlaybackRate(animationMode);
+    const durationScale = getAnimationDurationScale(animationMode);
     const desktopPointer = window.matchMedia(
       "(any-hover: hover) and (any-pointer: fine)",
     );
@@ -207,9 +219,10 @@ export default function DesktopOverscrollBounce() {
       frameId = null;
       if (!activeTarget || !activeProfile) return;
 
-      const elapsed = lastFrameTime
-        ? Math.min(34, Math.max(4, timestamp - lastFrameTime))
-        : 1000 / 60;
+      const elapsed =
+        (lastFrameTime
+          ? Math.min(34, Math.max(4, timestamp - lastFrameTime))
+          : 1000 / 60) * playbackRate;
       lastFrameTime = timestamp;
 
       springState = stepOverscrollSpring(
@@ -275,7 +288,10 @@ export default function DesktopOverscrollBounce() {
 
     const queueRelease = (delay: number) => {
       clearReleaseTimer();
-      releaseTimer = window.setTimeout(release, delay);
+      releaseTimer = window.setTimeout(
+        release,
+        Math.max(0, Math.round(delay * durationScale)),
+      );
     };
 
     const handleWheel = (event: WheelEvent) => {
