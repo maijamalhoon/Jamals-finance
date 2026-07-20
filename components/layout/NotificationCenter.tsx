@@ -255,7 +255,6 @@ export default function NotificationCenter({ state }: NotificationCenterProps) {
     localState.unreadAlertCount ??
     localState.totalActiveAlertCountFromCheckedRecords;
   const showCount = displayedCount !== null && displayedCount > 0;
-  const badgeCount = displayedCount ?? 0;
   const triggerLabel = getNotificationTriggerLabel(localState);
   const glassTransition = reduceMotion
     ? { duration: 0.01 }
@@ -419,12 +418,21 @@ export default function NotificationCenter({ state }: NotificationCenterProps) {
             aria-hidden="true"
           />
           {showCount ? (
-            <span
+            <motion.span
               aria-hidden="true"
-              className="absolute -right-0.5 -top-0.5 grid min-h-[1.15rem] min-w-[1.15rem] place-items-center rounded-full border-2 border-surface-primary bg-brand px-1 text-[9px] font-bold leading-none text-primary-foreground"
-            >
-              {badgeCount > 9 ? "9+" : badgeCount}
-            </span>
+              initial={false}
+              animate={
+                reduceMotion
+                  ? { opacity: 1, scale: 1 }
+                  : { opacity: [1, 0.42, 1], scale: [1, 0.9, 1] }
+              }
+              transition={
+                reduceMotion
+                  ? { duration: 0.01 }
+                  : { duration: 2.4, ease: "easeInOut", repeat: Infinity }
+              }
+              className="absolute right-0.5 top-0.5 size-2.5 rounded-full bg-red-700 dark:bg-red-400"
+            />
           ) : null}
         </button>
 
