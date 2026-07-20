@@ -65,11 +65,11 @@ function DialogContent({
             render={
               <button
                 type="button"
-                className="finance-dialog-close finance-focus absolute top-3 right-3 z-10 grid size-8 place-items-center border-0 bg-transparent p-0 text-[var(--finance-action,var(--text-secondary))] shadow-none transition-[opacity,transform] hover:opacity-65 active:scale-90"
+                className="finance-dialog-close finance-focus absolute top-3 right-3 z-10 grid size-[1.875rem] place-items-center border-0 bg-transparent p-0 text-[var(--finance-action,var(--text-secondary))] shadow-none transition-[opacity,transform] hover:opacity-65 active:scale-90"
               />
             }
           >
-            <XIcon size={19} strokeWidth={1.8} />
+            <XIcon size={21} strokeWidth={2.15} />
             <span className="sr-only">Close</span>
           </DialogPrimitive.Close>
         ) : null}
