@@ -85,6 +85,8 @@ import "./page-heading-size-tuning.css";
 import "./compact-header-icon-only.css";
 // Finger-release timing and icon-only compact surfaces are the final mobile authority.
 import "./mobile-control-reveal-polish.css";
+// Expanded mobile/tablet header search has no underline, border, outline, or focus ring.
+import "./mobile-header-search-borderless.css";
 
 export const dynamic = "force-dynamic";
 
