@@ -1,0 +1,238 @@
+/*
+ * Final Settings-only modal treatment for Profile Details and Account Security.
+ * Presentation only: profile, authentication, verification, password and
+ * session-management handlers remain unchanged.
+ */
+
+:is(
+  .finance-modal-content:has(#settings-reference-display-name),
+  .finance-modal-content:has(.settings-security-panel)
+) {
+  top: 50% !important;
+  right: auto !important;
+  bottom: auto !important;
+  left: 50% !important;
+  width: min(
+    calc(100vw - 1rem),
+    var(--settings-profile-modal-width, 32rem)
+  ) !important;
+  height: max-content !important;
+  max-height: calc(
+    100dvh - 1rem - env(safe-area-inset-top) - env(safe-area-inset-bottom)
+  ) !important;
+  margin: 0 !important;
+  transform: translate3d(-50%, -50%, 0) !important;
+  border: 0 !important;
+  background: var(--card) !important;
+  box-shadow: 0 14px 34px rgb(0 0 0 / 0.2) !important;
+}
+
+.finance-modal-content:has(#settings-reference-display-name) {
+  --settings-profile-accent: var(--investment);
+}
+
+.finance-modal-content:has(.settings-security-panel) {
+  --settings-profile-modal-width: 36rem;
+  --settings-profile-accent: var(--info);
+}
+
+:is(
+  .finance-modal-content:has(#settings-reference-display-name),
+  .finance-modal-content:has(.settings-security-panel)
+)::before {
+  content: "";
+  position: absolute;
+  z-index: 4;
+  top: 0.8rem;
+  left: 0;
+  width: 0.28rem;
+  height: 2.7rem;
+  border-radius: 0 999px 999px 0;
+  background: var(--settings-profile-accent);
+  pointer-events: none;
+}
+
+:is(
+  .finance-modal-content:has(#settings-reference-display-name),
+  .finance-modal-content:has(.settings-security-panel)
+) .finance-modal-header {
+  min-height: 4.25rem !important;
+  padding: 1rem 3.75rem 0.9rem 1.25rem !important;
+  border: 0 !important;
+  background: var(--card) !important;
+  box-shadow: none !important;
+}
+
+:is(
+  .finance-modal-content:has(#settings-reference-display-name),
+  .finance-modal-content:has(.settings-security-panel)
+) .finance-modal-header .finance-icon-container,
+:is(
+  .finance-modal-content:has(#settings-reference-display-name),
+  .finance-modal-content:has(.settings-security-panel)
+) .finance-modal-header [data-slot="dialog-description"] {
+  display: none !important;
+}
+
+:is(
+  .finance-modal-content:has(#settings-reference-display-name),
+  .finance-modal-content:has(.settings-security-panel)
+) .finance-modal-header > div {
+  gap: 0 !important;
+}
+
+:is(
+  .finance-modal-content:has(#settings-reference-display-name),
+  .finance-modal-content:has(.settings-security-panel)
+) .finance-modal-header [data-slot="dialog-title"] {
+  font-size: 1.15rem !important;
+  line-height: 1.4rem !important;
+}
+
+:is(
+  .finance-modal-content:has(#settings-reference-display-name),
+  .finance-modal-content:has(.settings-security-panel)
+) .finance-modal-body {
+  min-height: 0 !important;
+  border: 0 !important;
+  background: var(--card) !important;
+  box-shadow: none !important;
+}
+
+/* Profile Details: one clean field stack and one semantic primary action. */
+.finance-modal-content:has(#settings-reference-display-name)
+  .finance-modal-body {
+  flex: 0 1 auto !important;
+}
+
+.finance-modal-content:has(#settings-reference-display-name)
+  [data-slot="finance-form-field"]:has(> #settings-reference-email)
+  > p {
+  display: none !important;
+}
+
+.finance-modal-content:has(#settings-reference-display-name)
+  .finance-modal-body
+  > button[type="submit"] {
+  width: 100% !important;
+  min-height: var(--oneui-control-height-lg) !important;
+  border: 0 !important;
+  background: var(--investment) !important;
+  color: var(--text-inverse) !important;
+  box-shadow: none !important;
+}
+
+.finance-modal-content:has(#settings-reference-display-name)
+  .finance-modal-body
+  > button[type="submit"]
+  > svg:not(.animate-spin) {
+  display: none !important;
+}
+
+/* Security: remove the nested-card stack while preserving every control. */
+.finance-modal-content:has(.settings-security-panel)
+  .finance-modal-body {
+  flex: 1 1 auto !important;
+  max-height: calc(
+    100dvh - 5.25rem - env(safe-area-inset-top) - env(safe-area-inset-bottom)
+  ) !important;
+  overflow-y: auto !important;
+  overscroll-behavior: contain;
+}
+
+.finance-modal-content:has(.settings-security-panel)
+  .settings-security-panel {
+  gap: 0.8rem !important;
+  margin: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  padding: 0.25rem 0 !important;
+  box-shadow: none !important;
+}
+
+.finance-modal-content:has(.settings-security-panel)
+  .settings-security-panel
+  + .settings-security-panel {
+  margin-top: 0.65rem !important;
+  padding-top: 0.75rem !important;
+}
+
+.finance-modal-content:has(.settings-security-panel)
+  .settings-security-panel-icon {
+  width: 1.75rem !important;
+  height: 1.75rem !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  color: var(--settings-profile-accent) !important;
+  box-shadow: none !important;
+}
+
+.finance-modal-content:has(.settings-security-panel)
+  .settings-security-panel-heading {
+  gap: 0.7rem !important;
+  align-items: flex-start !important;
+}
+
+.finance-modal-content:has(.settings-security-panel)
+  .settings-security-panel-heading strong {
+  font-size: 0.95rem !important;
+  line-height: 1.25rem !important;
+}
+
+.finance-modal-content:has(.settings-security-panel)
+  .settings-security-panel-heading small {
+  font-size: 0.75rem !important;
+  line-height: 1.15rem !important;
+}
+
+.finance-modal-content:has(.settings-security-panel)
+  .settings-coming-soon {
+  min-height: 1.65rem !important;
+  border: 0 !important;
+  background: var(--surface-inset) !important;
+  box-shadow: none !important;
+}
+
+.finance-modal-content:has(.settings-security-panel)
+  .settings-security-panel:first-child
+  > button,
+.finance-modal-content:has(.settings-security-panel)
+  .settings-security-panel:first-child
+  form
+  button[type="submit"] {
+  border: 0 !important;
+  background: var(--info) !important;
+  color: var(--text-inverse) !important;
+  box-shadow: none !important;
+}
+
+.finance-modal-content:has(.settings-security-panel)
+  .settings-security-panel:last-child
+  > button {
+  border: 0 !important;
+  background: color-mix(in srgb, var(--danger), transparent 88%) !important;
+  color: var(--danger) !important;
+  box-shadow: none !important;
+}
+
+.dark :is(
+  .finance-modal-content:has(#settings-reference-display-name),
+  .finance-modal-content:has(.settings-security-panel)
+) {
+  box-shadow: 0 14px 34px rgb(0 0 0 / 0.28) !important;
+}
+
+@media (max-width: 36rem) {
+  .finance-modal-content:has(.settings-security-panel)
+    .settings-security-panel-heading {
+    gap: 0.6rem !important;
+  }
+
+  .finance-modal-content:has(.settings-security-panel)
+    .settings-coming-soon {
+    padding-inline: 0.5rem !important;
+    font-size: 0.58rem !important;
+  }
+}
