@@ -7,6 +7,7 @@ import {
   motionEase,
   viewportReveal,
 } from "@/components/motion/animation-config";
+import { scaleAnimationSeconds } from "@/lib/animation-preference";
 
 type MotionRevealProps<T extends ElementType = "div"> = {
   as?: T;
@@ -36,7 +37,11 @@ export default function MotionReveal<T extends ElementType = "div">({
           : { opacity: 1, y: 0, scale: 1 }
       }
       viewport={viewportReveal}
-      transition={{ duration: motionDurations.deliberate, ease: motionEase, delay }}
+      transition={{
+        duration: motionDurations.deliberate,
+        ease: motionEase,
+        delay: scaleAnimationSeconds(delay),
+      }}
       {...props}
     >
       {children}
