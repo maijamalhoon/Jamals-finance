@@ -64,49 +64,63 @@
 }
 
 /*
- * Keep the existing theme glyphs and animate only their selected state.
- * The active Sun, Moon, or Monitor fills from the inside while the previous
- * selection smoothly returns to its original outline appearance.
+ * Keep the existing Sun, Moon, and Monitor glyphs. Lucide draws their visible
+ * parts as child SVG shapes, so the selected fill must be applied directly to
+ * those shapes rather than only to the outer svg element.
  */
 .settings-page-polish .settings-reference-theme-icon svg {
-  fill: transparent !important;
-  fill-opacity: 0;
   transform: scale(1);
   transform-origin: center;
+  transition: transform 190ms var(--motion-ease);
+}
+
+.settings-page-polish
+  .settings-reference-theme-icon
+  svg
+  :is(path, circle, rect, polygon) {
+  fill: transparent !important;
+  fill-opacity: 0;
   transition:
     fill 190ms var(--motion-ease),
-    fill-opacity 190ms var(--motion-ease),
-    transform 190ms var(--motion-ease);
+    fill-opacity 190ms var(--motion-ease);
 }
 
 .settings-page-polish
   .settings-reference-theme-option.is-active
   .settings-reference-theme-icon
   svg {
+  animation: settings-theme-icon-selected 280ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.settings-page-polish
+  .settings-reference-theme-option.is-active
+  .settings-reference-theme-icon
+  svg
+  :is(path, circle, rect, polygon) {
   fill: currentColor !important;
   fill-opacity: 1;
-  animation: settings-theme-icon-selected 280ms cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
 @keyframes settings-theme-icon-selected {
   0% {
-    fill-opacity: 0;
     transform: scale(0.82);
   }
 
   62% {
-    fill-opacity: 1;
     transform: scale(1.12);
   }
 
   100% {
-    fill-opacity: 1;
     transform: scale(1);
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .settings-page-polish .settings-reference-theme-icon svg {
+  .settings-page-polish .settings-reference-theme-icon svg,
+  .settings-page-polish
+    .settings-reference-theme-icon
+    svg
+    :is(path, circle, rect, polygon) {
     transition: none;
   }
 
