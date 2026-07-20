@@ -162,25 +162,27 @@ export default function GlobalScrollToTop() {
               launching || shouldReduceMotion
                 ? { y: 0, scale: 1, rotate: 0 }
                 : {
-                    y: [0, -8, 0],
-                    scale: [1, 1.14, 1],
-                    rotate: [0, -2, 2, 0],
+                    y: [0, -12, 0, 0],
+                    scale: [1, 1.2, 1, 1],
+                    rotate: [0, -3, 3, 0],
                   }
             }
             transition={
               launching || shouldReduceMotion
                 ? { duration: 0.16 }
                 : {
-                    duration: 1.35,
+                    duration: 1.25,
+                    times: [0, 0.24, 0.48, 1],
                     repeat: Number.POSITIVE_INFINITY,
+                    repeatDelay: 0.45,
                     ease: "easeInOut",
                   }
             }
             className="grid place-items-center"
           >
             <ArrowUp
-              size={34}
-              strokeWidth={5.25}
+              size={36}
+              strokeWidth={5.75}
               strokeLinecap="round"
               strokeLinejoin="round"
             />
