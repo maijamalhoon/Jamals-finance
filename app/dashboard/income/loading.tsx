@@ -1,5 +1,5 @@
-import DashboardRouteLoading from "@/components/loading/DashboardRouteLoading";
+import AnimationAwareDashboardRouteLoading from "@/components/loading/AnimationAwareDashboardRouteLoading";
 
 export default function IncomeLoading() {
-  return <DashboardRouteLoading variant="income" />;
+  return <AnimationAwareDashboardRouteLoading variant="income" />;
 }
