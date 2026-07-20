@@ -9,7 +9,7 @@ const BODY_TOP_ATTRIBUTE = "data-mobile-dashboard-top";
 const BODY_REVEAL_ATTRIBUTE = "data-mobile-scroll-reveal";
 const TOP_THRESHOLD = 1;
 const SCROLL_DIRECTION_THRESHOLD = 1;
-const RELEASE_REVEAL_DELAY = 1_500;
+const RELEASE_REVEAL_DELAY = 1_000;
 const REVEAL_VISIBLE_DURATION = 2_000;
 
 type ScrollDirection = "up" | "down" | null;
