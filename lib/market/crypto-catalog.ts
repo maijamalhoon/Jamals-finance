@@ -5,6 +5,7 @@ export type CryptoCatalogAsset = {
   aliases: readonly string[];
   rank: number;
   logoUrl: string;
+  binanceSymbol: string | null;
 };
 
 type CryptoCatalogSeed = readonly [
@@ -132,6 +133,13 @@ const CRYPTO_SEEDS: readonly CryptoCatalogSeed[] = [
   ["terra-luna", "Terra Classic", "LUNC"],
 ];
 
+function getDefaultBinanceSymbol(symbol: string) {
+  const normalized = symbol.trim().toUpperCase();
+  if (normalized === "USDT") return null;
+  if (normalized === "BTT") return "BTTCUSDT";
+  return `${normalized}USDT`;
+}
+
 export const CRYPTO_CATALOG: readonly CryptoCatalogAsset[] = CRYPTO_SEEDS.map(
   ([id, name, symbol, aliases = [], logoSymbol], index) => ({
     id,
@@ -140,6 +148,7 @@ export const CRYPTO_CATALOG: readonly CryptoCatalogAsset[] = CRYPTO_SEEDS.map(
     aliases,
     rank: index + 1,
     logoUrl: `${ICON_BASE}/${(logoSymbol ?? symbol).toLowerCase()}.png`,
+    binanceSymbol: getDefaultBinanceSymbol(symbol),
   }),
 );
 
