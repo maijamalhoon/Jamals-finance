@@ -174,3 +174,174 @@
     height: 2.45rem !important;
   }
 }
+
+/*
+ * Settings action dialogs use the same centred, compact language as the
+ * finalised finance forms. These selectors are intentionally limited to the
+ * category, category-list, currency and date-format dialogs.
+ */
+:is(
+  .finance-modal-content:has(#settings-category-name),
+  .finance-modal-content:has(#settings-currency-select),
+  .finance-modal-content:has(#settings-date-format-select),
+  .finance-modal-content:not(:has(#settings-category-name)):has([role="tablist"])
+) {
+  top: 50% !important;
+  right: auto !important;
+  bottom: auto !important;
+  left: 50% !important;
+  width: min(calc(100vw - 1rem), var(--finance-modal-max-width, 32rem)) !important;
+  height: max-content !important;
+  max-height: calc(100dvh - 1rem - env(safe-area-inset-top) - env(safe-area-inset-bottom)) !important;
+  margin: 0 !important;
+  transform: translate3d(-50%, -50%, 0) !important;
+  border: 0 !important;
+  box-shadow: 0 14px 34px rgb(0 0 0 / 0.2) !important;
+}
+
+:is(
+  .finance-modal-content:has(#settings-category-name),
+  .finance-modal-content:has(#settings-currency-select),
+  .finance-modal-content:has(#settings-date-format-select),
+  .finance-modal-content:not(:has(#settings-category-name)):has([role="tablist"])
+)::before {
+  content: "";
+  position: absolute;
+  z-index: 4;
+  top: 0.8rem;
+  left: 0;
+  width: 0.28rem;
+  height: 2.7rem;
+  border-radius: 0 999px 999px 0;
+  background: var(--settings-dialog-accent, var(--active));
+  pointer-events: none;
+}
+
+.finance-modal-content:has(#settings-category-name) {
+  --settings-dialog-accent: var(--success);
+}
+
+.finance-modal-content:has(#settings-category-name):has(
+    [role="radio"]:nth-child(2)[aria-checked="true"]
+  ) {
+  --settings-dialog-accent: var(--danger);
+}
+
+.finance-modal-content:not(:has(#settings-category-name)):has([role="tablist"]) {
+  --settings-dialog-accent: var(--investment);
+}
+
+.finance-modal-content:has(#settings-currency-select) {
+  --settings-dialog-accent: var(--active);
+}
+
+.finance-modal-content:has(#settings-date-format-select) {
+  --settings-dialog-accent: var(--warning);
+}
+
+:is(
+  .finance-modal-content:has(#settings-category-name),
+  .finance-modal-content:has(#settings-currency-select),
+  .finance-modal-content:has(#settings-date-format-select),
+  .finance-modal-content:not(:has(#settings-category-name)):has([role="tablist"])
+) .finance-modal-header {
+  min-height: 4.25rem !important;
+  padding: 1rem 3.75rem 0.9rem 1.25rem !important;
+  border: 0 !important;
+  background: var(--card) !important;
+  box-shadow: none !important;
+}
+
+:is(
+  .finance-modal-content:has(#settings-category-name),
+  .finance-modal-content:has(#settings-currency-select),
+  .finance-modal-content:has(#settings-date-format-select),
+  .finance-modal-content:not(:has(#settings-category-name)):has([role="tablist"])
+) .finance-modal-header .finance-icon-container,
+:is(
+  .finance-modal-content:has(#settings-category-name),
+  .finance-modal-content:has(#settings-currency-select),
+  .finance-modal-content:has(#settings-date-format-select),
+  .finance-modal-content:not(:has(#settings-category-name)):has([role="tablist"])
+) .finance-modal-header [data-slot="dialog-description"] {
+  display: none !important;
+}
+
+:is(
+  .finance-modal-content:has(#settings-category-name),
+  .finance-modal-content:has(#settings-currency-select),
+  .finance-modal-content:has(#settings-date-format-select),
+  .finance-modal-content:not(:has(#settings-category-name)):has([role="tablist"])
+) .finance-modal-header > div {
+  gap: 0 !important;
+}
+
+:is(
+  .finance-modal-content:has(#settings-category-name),
+  .finance-modal-content:has(#settings-currency-select),
+  .finance-modal-content:has(#settings-date-format-select),
+  .finance-modal-content:not(:has(#settings-category-name)):has([role="tablist"])
+) .finance-modal-header [data-slot="dialog-title"] {
+  font-size: 1.15rem !important;
+  line-height: 1.4rem !important;
+}
+
+:is(
+  .finance-modal-content:has(#settings-category-name),
+  .finance-modal-content:has(#settings-currency-select),
+  .finance-modal-content:has(#settings-date-format-select),
+  .finance-modal-content:not(:has(#settings-category-name)):has([role="tablist"])
+) .finance-modal-body {
+  flex: 0 1 auto !important;
+  border: 0 !important;
+  background: var(--card) !important;
+}
+
+:is(
+  .finance-modal-content:has(#settings-currency-select),
+  .finance-modal-content:has(#settings-date-format-select)
+) .finance-modal-footer {
+  border: 0 !important;
+  background: var(--card) !important;
+  box-shadow: none !important;
+}
+
+.finance-modal-content:has(#settings-currency-select)
+  .finance-modal-footer
+  button[type="submit"] {
+  border: 0 !important;
+  background: var(--active) !important;
+  color: var(--text-inverse) !important;
+  box-shadow: none !important;
+}
+
+.finance-modal-content:has(#settings-date-format-select)
+  .finance-modal-footer
+  button[type="submit"] {
+  border: 0 !important;
+  background: var(--warning) !important;
+  color: var(--status-foreground) !important;
+  box-shadow: none !important;
+}
+
+:is(
+  .finance-modal-content:has(#settings-currency-select),
+  .finance-modal-content:has(#settings-date-format-select)
+) .finance-modal-footer button[type="submit"] > svg:not(.animate-spin) {
+  display: none !important;
+}
+
+.finance-modal-content:not(:has(#settings-category-name)):has([role="tablist"])
+  .finance-modal-body {
+  max-height: min(70dvh, 36rem) !important;
+  overflow-y: auto !important;
+}
+
+.dark :is(
+  .finance-modal-content:has(#settings-category-name),
+  .finance-modal-content:has(#settings-currency-select),
+  .finance-modal-content:has(#settings-date-format-select),
+  .finance-modal-content:not(:has(#settings-category-name)):has([role="tablist"])
+) {
+  box-shadow: 0 14px 34px rgb(0 0 0 / 0.28) !important;
+}
