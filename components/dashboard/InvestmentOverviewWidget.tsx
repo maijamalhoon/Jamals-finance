@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useMemo } from "react";
 import Image from "next/image";
 import { BriefcaseBusiness, Layers3, Package } from "lucide-react";
 import { Cell, Pie, PieChart, Tooltip } from "recharts";
@@ -9,6 +10,7 @@ import ChartFrame from "@/components/ui/chart-frame";
 import { useCurrency } from "@/components/currency/CurrencyProvider";
 import CountedAmount from "@/components/motion/CountedAmount";
 import { useDashboardAnimationReady } from "@/components/motion/useDashboardAnimationReady";
+import { useLiveInvestmentRows } from "@/components/investments/useLiveInvestmentRows";
 import {
   aggregateInvestmentHoldings,
   getAssetInitials,
@@ -75,6 +77,7 @@ const ASSET_ACCENTS: Record<string, string> = {
 };
 
 const OTHER_ASSETS_COLOR = "#5b7187";
+const LIVE_PORTFOLIO_EVENT = "jamals:live-portfolio-value";
 
 function getAssetAccent(holding: AggregatedInvestment) {
   const symbol = holding.symbol?.trim().toLowerCase() ?? "";
@@ -198,21 +201,50 @@ export default function InvestmentOverviewWidget({
 }) {
   const { formatCurrency } = useCurrency();
   const { reduceMotion, durationScale } = useDashboardAnimationReady();
-  const allocationData = buildAllocationData(investments);
+  const liveInvestments = useLiveInvestmentRows(investments);
+  const initialAllocationData = useMemo(
+    () => buildAllocationData(investments),
+    [investments],
+  );
+  const allocationData = useMemo(
+    () => buildAllocationData(liveInvestments),
+    [liveInvestments],
+  );
   const visibleInvestments = allocationData.slice(0, 3);
   const otherInvestments = allocationData.slice(3);
   const allocationTotalValue = allocationData.reduce(
     (sum, investment) => sum + investment.value,
     0,
   );
+  const initialTotalValue = initialAllocationData.reduce(
+    (sum, investment) => sum + investment.value,
+    0,
+  );
+  const totalInvested = allocationData.reduce(
+    (sum, investment) => sum + investment.holding.totalInvested,
+    0,
+  );
+  const resolvedTotalPnLPct =
+    totalInvested > 0
+      ? ((allocationTotalValue - totalInvested) / totalInvested) * 100
+      : totalPnLPct;
+  const resolvedUnpricedCount = liveInvestments.filter((investment) => {
+    const quantity = Number(investment.quantity);
+    const currentPrice = Number(investment.current_price);
+    return (
+      Number.isFinite(quantity) &&
+      quantity > 0 &&
+      (!Number.isFinite(currentPrice) || currentPrice <= 0)
+    );
+  }).length;
   const otherAssetsValue = otherInvestments.reduce(
     (sum, investment) => sum + investment.value,
     0,
   );
   const otherAssetsAllocation =
     allocationTotalValue > 0 ? (otherAssetsValue / allocationTotalValue) * 100 : 0;
-  const isProfit = totalPnLPct !== null && totalPnLPct > 0;
-  const isLoss = totalPnLPct !== null && totalPnLPct < 0;
+  const isProfit = resolvedTotalPnLPct !== null && resolvedTotalPnLPct > 0;
+  const isLoss = resolvedTotalPnLPct !== null && resolvedTotalPnLPct < 0;
   const pnlColor =
     isProfit
       ? "var(--success)"
@@ -220,21 +252,34 @@ export default function InvestmentOverviewWidget({
         ? "var(--danger)"
         : "var(--text-secondary)";
   const pnlLabel =
-    totalPnLPct === null
+    resolvedTotalPnLPct === null
       ? "P&L unavailable"
-      : `${isProfit ? "+" : ""}${totalPnLPct.toFixed(1)}%`;
+      : `${isProfit ? "+" : ""}${resolvedTotalPnLPct.toFixed(1)}%`;
   const emptyTitle =
     availability === "unavailable"
       ? "Portfolio unavailable"
-      : investments.length === 0
+      : liveInvestments.length === 0
         ? "No holdings yet"
         : "Pricing unavailable";
   const emptyDescription =
     availability === "unavailable"
       ? "Refresh when your connection is stable."
-      : investments.length === 0
+      : liveInvestments.length === 0
         ? "Add investments to see allocation."
         : "Current prices are missing, so value and performance are not shown.";
+
+  useEffect(() => {
+    if (!Number.isFinite(allocationTotalValue) || !Number.isFinite(initialTotalValue)) {
+      return;
+    }
+
+    const delta = allocationTotalValue - initialTotalValue;
+    const target = window as Window & { __jamalsLivePortfolioDelta?: number };
+    target.__jamalsLivePortfolioDelta = delta;
+    window.dispatchEvent(
+      new CustomEvent(LIVE_PORTFOLIO_EVENT, { detail: { delta } }),
+    );
+  }, [allocationTotalValue, initialTotalValue]);
 
   return (
     <section className="finance-reference-card motion-card-entry flex h-full min-w-0 flex-col overflow-hidden p-4 sm:p-5 lg:p-6">
@@ -271,8 +316,8 @@ export default function InvestmentOverviewWidget({
           <div className="min-w-0">
             <p className="sr-only">
               Priced portfolio value {allocationTotalValue}. Performance is {pnlLabel}.
-              {unpricedCount > 0
-                ? ` ${unpricedCount} holdings are excluded because current pricing is unavailable.`
+              {resolvedUnpricedCount > 0
+                ? ` ${resolvedUnpricedCount} holdings are excluded because current pricing is unavailable.`
                 : ""}
             </p>
 
@@ -343,7 +388,7 @@ export default function InvestmentOverviewWidget({
                     className="mt-2 text-sm font-bold leading-none tabular-nums sm:text-base"
                     style={{ color: pnlColor }}
                   >
-                    {totalPnLPct === null ? (
+                    {resolvedTotalPnLPct === null ? (
                       pnlLabel
                     ) : (
                       <CountedAmount amount={pnlLabel} />
@@ -464,10 +509,10 @@ export default function InvestmentOverviewWidget({
               </div>
             ) : null}
 
-            {unpricedCount > 0 ? (
+            {resolvedUnpricedCount > 0 ? (
               <p className="px-1 text-[10px] font-semibold leading-4 text-warning">
-                {unpricedCount} unpriced{" "}
-                {unpricedCount === 1 ? "holding" : "holdings"} excluded
+                {resolvedUnpricedCount} unpriced{" "}
+                {resolvedUnpricedCount === 1 ? "holding" : "holdings"} excluded
               </p>
             ) : null}
           </div>

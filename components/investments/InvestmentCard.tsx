@@ -78,7 +78,7 @@ function formatPriceChange(
   if (typeof value !== "number" || !Number.isFinite(value)) return null;
 
   return `${value >= 0 ? "+" : ""}${value.toFixed(2)}%${
-    source === "coingecko" ? " 24h" : ""
+    source === "coingecko" || source === "binance" ? " 24h" : ""
   }`;
 }
 
@@ -148,7 +148,9 @@ export default function InvestmentCard({
       ? "Latest quote via Alpha Vantage"
       : inv.price_source === "coingecko"
         ? "Live via CoinGecko"
-        : "Manual asset";
+        : inv.price_source === "binance"
+          ? "Live via Binance"
+          : "Manual asset";
 
   const position = calculateInvestmentPosition(
     inv.quantity,
@@ -165,7 +167,8 @@ export default function InvestmentCard({
       ? formatUsd(inv.current_price_original)
       : null;
   const currentUsdValue =
-    inv.current_price_currency === "USD" && toFiniteNumber(inv.current_price_original) !== null
+    inv.current_price_currency === "USD" &&
+    toFiniteNumber(inv.current_price_original) !== null
       ? formatUsd((toFiniteNumber(inv.current_price_original) ?? 0) * qty)
       : null;
   const purchaseSecondary =
@@ -208,9 +211,7 @@ export default function InvestmentCard({
           <div className="absolute right-4 top-4 flex gap-1 opacity-100 transition-opacity sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100">
             <button
               type="button"
-              onClick={() =>
-                setEditingInvestment(singleLot)
-              }
+              onClick={() => setEditingInvestment(singleLot)}
               className="icon-button h-8 w-8"
               aria-label="Edit investment"
             >
@@ -371,9 +372,7 @@ export default function InvestmentCard({
                     </div>
                     <button
                       type="button"
-                      onClick={() =>
-                        setEditingInvestment(lot)
-                      }
+                      onClick={() => setEditingInvestment(lot)}
                       className="icon-button h-8 w-8"
                       aria-label={`Edit ${lot.name} buy`}
                     >

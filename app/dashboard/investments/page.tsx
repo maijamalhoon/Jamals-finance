@@ -1,13 +1,8 @@
 import { createClient } from "@/lib/supabase/server";
 import AddInvestmentButton from "@/components/investments/AddInvestmentButton";
-import InvestmentOverview from "@/components/investments/InvestmentOverview";
+import InvestmentOverviewLive from "@/components/investments/InvestmentOverviewLive";
 import EmptyState from "@/components/ui/empty-state";
 import { AlertTriangle, BarChart2 } from "lucide-react";
-import {
-  aggregateInvestmentHoldings,
-  getAggregatedPortfolioTotals,
-} from "@/lib/investments/aggregation";
-import { refreshInvestmentMarketPrices } from "@/lib/investments/pricing";
 
 export const dynamic = "force-dynamic";
 
@@ -46,11 +41,6 @@ export default async function InvestmentsPage() {
   }
 
   const list = (investments ?? []) as InvestmentRow[];
-  const pricedList = await refreshInvestmentMarketPrices(list);
-
-  const groupedHoldings = aggregateInvestmentHoldings(pricedList);
-  const { totalInvested, totalValue, totalPnL, totalPnLPct } =
-    getAggregatedPortfolioTotals(groupedHoldings);
 
   return (
     <div className="space-y-5">
@@ -81,14 +71,7 @@ export default async function InvestmentsPage() {
           />
         </div>
       ) : (
-        <InvestmentOverview
-          investments={pricedList}
-          groupedHoldings={groupedHoldings}
-          totalInvested={totalInvested}
-          totalValue={totalValue}
-          totalPnL={totalPnL}
-          totalPnLPct={totalPnLPct}
-        />
+        <InvestmentOverviewLive investments={list} />
       )}
     </div>
   );

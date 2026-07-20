@@ -1,5 +1,8 @@
 import { createClient } from "@/lib/supabase/server";
-import AccountCard from "@/components/accounts/AccountCard";
+import AccountsLiveGrid, {
+  type AccountGridAccount,
+  type AccountLinkedInvestment,
+} from "@/components/accounts/AccountsLiveGrid";
 import AddAccountButton from "@/components/accounts/AddAccountButton";
 import EmptyState from "@/components/ui/empty-state";
 import { AlertTriangle, Landmark } from "lucide-react";
@@ -9,6 +12,13 @@ export const dynamic = "force-dynamic";
 type AccountTotals = {
   inflow: number;
   outflow: number;
+};
+
+type AccountTransactionRow = {
+  account_id: string | null;
+  type: string;
+  amount: number | string | null;
+  investment_id: string | null;
 };
 
 function getAccountTotals(
@@ -31,21 +41,31 @@ export default async function AccountsPage() {
     { data: accounts, error: accountsError },
     { data: transactions, error: transactionsError },
     { data: transfers, error: transfersError },
+    { data: investments, error: investmentsError },
   ] = await Promise.all([
     supabase
       .from("accounts")
       .select("*")
       .order("created_at", { ascending: true }),
-    supabase.from("transactions").select("account_id, type, amount"),
+    supabase
+      .from("transactions")
+      .select("account_id, type, amount, investment_id"),
     supabase
       .from("account_transfers")
       .select("from_account_id, to_account_id, amount"),
+    supabase
+      .from("investments")
+      .select(
+        "id, name, type, quantity, purchase_price, current_price, purchased_at, asset_id, symbol, image_url, price_source, current_price_original, current_price_currency, price_updated_at, price_change_24h, is_live_priced",
+      )
+      .order("created_at", { ascending: false }),
   ]);
 
   const pageErrors = [
     accountsError,
     transactionsError,
     transfersError,
+    investmentsError,
   ].filter(Boolean);
 
   if (pageErrors.length > 0) {
@@ -56,16 +76,10 @@ export default async function AccountsPage() {
   }
 
   const safeAccounts = accounts ?? [];
-  const activeAccountList = safeAccounts.filter(
-    (account) => account.status !== "archived",
-  );
-  const archivedAccountList = safeAccounts.filter(
-    (account) => account.status === "archived",
-  );
-
   const accountTotals = new Map<string, AccountTotals>();
+  const investmentAccountIds = new Map<string, string>();
 
-  (transactions ?? []).forEach((transaction) => {
+  ((transactions ?? []) as AccountTransactionRow[]).forEach((transaction) => {
     if (!transaction.account_id) return;
 
     const current = getAccountTotals(accountTotals, transaction.account_id);
@@ -77,6 +91,10 @@ export default async function AccountsPage() {
 
     if (transaction.type === "expense" || transaction.type === "investment") {
       current.outflow += amount;
+    }
+
+    if (transaction.type === "investment" && transaction.investment_id) {
+      investmentAccountIds.set(transaction.investment_id, transaction.account_id);
     }
   });
 
@@ -92,8 +110,24 @@ export default async function AccountsPage() {
     }
   });
 
-  const accountGridClass =
-    "grid w-full auto-rows-fr grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4 2xl:grid-cols-5";
+  const accountsWithTotals = safeAccounts.map((account) => ({
+    ...account,
+    ...(accountTotals.get(account.id) ?? { inflow: 0, outflow: 0 }),
+  })) as AccountGridAccount[];
+
+  const activeAccountList = accountsWithTotals.filter(
+    (account) => account.status !== "archived",
+  );
+  const archivedAccountList = accountsWithTotals.filter(
+    (account) => account.status === "archived",
+  );
+
+  const linkedInvestments = investmentsError
+    ? []
+    : ((investments ?? []).map((investment) => ({
+        ...investment,
+        account_id: investmentAccountIds.get(investment.id) ?? null,
+      })) as AccountLinkedInvestment[]);
 
   return (
     <div className="space-y-5">
@@ -121,50 +155,11 @@ export default async function AccountsPage() {
           />
         </div>
       ) : (
-        <div className="space-y-6">
-          {activeAccountList.length > 0 ? (
-            <section aria-labelledby="active-accounts-heading" className="space-y-3">
-              <h3 id="active-accounts-heading" className="text-sm font-bold text-text-primary">
-                Active accounts
-              </h3>
-              <div className={accountGridClass}>
-                {activeAccountList.map((account) => (
-                  <AccountCard
-                    key={account.id}
-                    account={{
-                      ...account,
-                      ...(accountTotals.get(account.id) ?? { inflow: 0, outflow: 0 }),
-                    }}
-                  />
-                ))}
-              </div>
-            </section>
-          ) : null}
-
-          {archivedAccountList.length > 0 ? (
-            <section aria-labelledby="archived-accounts-heading" className="space-y-3">
-              <div>
-                <h3 id="archived-accounts-heading" className="text-sm font-bold text-text-primary">
-                  Archived accounts
-                </h3>
-                <p className="text-xs text-text-secondary">
-                  Read-only accounts remain available for history and reports.
-                </p>
-              </div>
-              <div className={accountGridClass}>
-                {archivedAccountList.map((account) => (
-                  <AccountCard
-                    key={account.id}
-                    account={{
-                      ...account,
-                      ...(accountTotals.get(account.id) ?? { inflow: 0, outflow: 0 }),
-                    }}
-                  />
-                ))}
-              </div>
-            </section>
-          ) : null}
-        </div>
+        <AccountsLiveGrid
+          activeAccounts={activeAccountList}
+          archivedAccounts={archivedAccountList}
+          investments={linkedInvestments}
+        />
       )}
     </div>
   );

@@ -15,6 +15,8 @@ import { useCurrency } from "@/components/currency/CurrencyProvider";
 import CountedAmount from "@/components/motion/CountedAmount";
 import type { DashboardBalanceSummary } from "@/lib/dashboard-financial-semantics";
 
+const LIVE_PORTFOLIO_EVENT = "jamals:live-portfolio-value";
+
 const TransferModal = dynamic(() => import("@/components/accounts/TransferModal"), {
   ssr: false,
 });
@@ -29,6 +31,8 @@ const InvestmentModal = dynamic(
 
 type TransactionType = "income" | "expense";
 type QuickAction = TransactionType | "transfer" | "invest";
+
+type LivePortfolioEvent = CustomEvent<{ delta?: number }>;
 
 const actions: Array<{
   key: QuickAction;
@@ -75,8 +79,11 @@ export default function QuickActionsBalance({
 }) {
   const router = useRouter();
   const { formatCurrency } = useCurrency();
+  const [portfolioDelta, setPortfolioDelta] = useState(0);
+  const resolvedBalance =
+    summary.value === null ? null : summary.value + portfolioDelta;
   const displayTotalBalance =
-    summary.value === null ? "Unavailable" : formatCurrency(summary.value);
+    resolvedBalance === null ? "Unavailable" : formatCurrency(resolvedBalance);
   const balanceSize = getBalanceSize(displayTotalBalance);
   const quickActionsRef = useRef<HTMLDivElement>(null);
 
@@ -86,6 +93,21 @@ export default function QuickActionsBalance({
   const [transactionOpen, setTransactionOpen] = useState(false);
   const [transferOpen, setTransferOpen] = useState(false);
   const [investmentOpen, setInvestmentOpen] = useState(false);
+
+  useEffect(() => {
+    const target = window as Window & { __jamalsLivePortfolioDelta?: number };
+    const initialDelta = Number(target.__jamalsLivePortfolioDelta ?? 0);
+    if (Number.isFinite(initialDelta)) setPortfolioDelta(initialDelta);
+
+    function handleLivePortfolio(event: Event) {
+      const nextDelta = Number((event as LivePortfolioEvent).detail?.delta ?? 0);
+      if (Number.isFinite(nextDelta)) setPortfolioDelta(nextDelta);
+    }
+
+    window.addEventListener(LIVE_PORTFOLIO_EVENT, handleLivePortfolio);
+    return () =>
+      window.removeEventListener(LIVE_PORTFOLIO_EVENT, handleLivePortfolio);
+  }, []);
 
   useEffect(() => {
     const actionsElement = quickActionsRef.current;
@@ -192,12 +214,12 @@ export default function QuickActionsBalance({
               data-balance-size={balanceSize}
               title={displayTotalBalance}
             >
-              {summary.value === null ? (
+              {resolvedBalance === null ? (
                 displayTotalBalance
               ) : (
                 <CountedAmount
                   amount={displayTotalBalance}
-                  duration={1.65}
+                  duration={0.65}
                   animateOnCompact
                 />
               )}
