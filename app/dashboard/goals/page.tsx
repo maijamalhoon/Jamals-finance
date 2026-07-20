@@ -99,23 +99,9 @@ export default async function GoalsPage() {
 
   return (
     <div className="space-y-4 sm:space-y-5">
-      <section className="page-heading finance-surface-glass motion-card-entry overflow-hidden">
-        <div className="flex min-w-0 flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div className="min-w-0">
-            <div className="dashboard-list-card-kicker">
-              <span className="dashboard-list-card-kicker-icon">
-                <Target />
-              </span>
-              <span className="truncate">Savings Targets</span>
-            </div>
-            <h2 className="page-title">Goals Progress</h2>
-            <p className="page-subtitle break-words">
-              {completed.length} of {list.length} completed
-            </p>
-          </div>
-          <AddGoalButton accounts={accountList} />
-        </div>
-      </section>
+      <div className="flex justify-end">
+        <AddGoalButton accounts={accountList} />
+      </div>
 
       {list.length > 0 && (
         <GoalSummaryStats
