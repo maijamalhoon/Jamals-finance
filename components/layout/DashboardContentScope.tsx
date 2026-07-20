@@ -1,7 +1,7 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import type { CSSProperties, ReactNode } from "react";
+import { useEffect, useState, type CSSProperties, type ReactNode } from "react";
 
 const CONTENT_TYPOGRAPHY_ROUTES = [
   "/dashboard/income",
@@ -102,6 +102,7 @@ export default function DashboardContentScope({
   children: ReactNode;
 }) {
   const pathname = usePathname();
+  const [initialDocumentReady, setInitialDocumentReady] = useState(false);
   const isTypographyPage = matchesRouteGroup(
     pathname,
     CONTENT_TYPOGRAPHY_ROUTES,
@@ -112,6 +113,7 @@ export default function DashboardContentScope({
   );
   const isTransactionsPage = pathname === TRANSACTIONS_TYPOGRAPHY_ROUTE;
   const pageHeading = getPageHeadingMeta(pathname);
+  const gateInitialReveal = pageHeading !== null;
   const scopeClasses = [
     "jf-dashboard-content-frame mx-auto w-full max-w-[1480px] min-w-0",
     isTypographyPage ? "finance-content-typography" : "",
@@ -124,6 +126,39 @@ export default function DashboardContentScope({
     ? ({ "--jf-page-accent": pageHeading.accent } as CSSProperties)
     : undefined;
 
+  useEffect(() => {
+    let cancelled = false;
+    let firstFrame = 0;
+    let secondFrame = 0;
+
+    const revealAfterFinalLayout = async () => {
+      try {
+        await document.fonts?.ready;
+      } catch {
+        // Font readiness should never prevent the page from becoming visible.
+      }
+
+      firstFrame = window.requestAnimationFrame(() => {
+        secondFrame = window.requestAnimationFrame(() => {
+          if (!cancelled) setInitialDocumentReady(true);
+        });
+      });
+    };
+
+    if (document.readyState === "complete") {
+      void revealAfterFinalLayout();
+    } else {
+      window.addEventListener("load", revealAfterFinalLayout, { once: true });
+    }
+
+    return () => {
+      cancelled = true;
+      window.removeEventListener("load", revealAfterFinalLayout);
+      window.cancelAnimationFrame(firstFrame);
+      window.cancelAnimationFrame(secondFrame);
+    };
+  }, []);
+
   return (
     <div
       className={scopeClasses}
@@ -134,6 +169,9 @@ export default function DashboardContentScope({
       }
       data-transactions-type-icons={isTransactionsPage ? "true" : undefined}
       data-jf-page={isTransactionsPage ? undefined : pageHeading?.key}
+      data-jf-initial-reveal={
+        gateInitialReveal ? (initialDocumentReady ? "ready" : "pending") : undefined
+      }
     >
       {isTransactionsPage ? (
         children
