@@ -176,4 +176,22 @@
     margin-right: auto !important;
     margin-left: auto !important;
   }
+
+  /* Keep all six selector icons proportional as their cards grow. */
+  .settings-page-polish
+    .settings-reference-appearance-control
+    .settings-reference-theme-icon,
+  .settings-page-polish
+    .settings-reference-appearance-control
+    .settings-reference-theme-icon
+    svg {
+    width: clamp(1.45rem, 2vw, 1.75rem) !important;
+    height: clamp(1.45rem, 2vw, 1.75rem) !important;
+  }
+
+  .settings-page-polish
+    .settings-reference-appearance-control
+    .settings-reference-theme-icon {
+    flex-basis: clamp(1.45rem, 2vw, 1.75rem) !important;
+  }
 }
