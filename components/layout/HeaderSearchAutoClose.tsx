@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 
-const AUTO_CLOSE_DELAY_MS = 3000;
+const AUTO_CLOSE_DELAY_MS = 6000;
 
 export default function HeaderSearchAutoClose() {
   useEffect(() => {
