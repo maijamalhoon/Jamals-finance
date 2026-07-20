@@ -3,7 +3,7 @@
  * Keeps existing content, handlers, state, theme and animation behaviour unchanged.
  */
 
-/* Appearance controls always consume the full available section width, including mobile. */
+/* Keep the existing Appearance control fluid at every size. */
 .settings-page-polish .settings-reference-grid > .settings-reference-appearance,
 .settings-page-polish
   .settings-reference-grid
@@ -29,57 +29,210 @@
   flex-shrink: 0 !important;
 }
 
-/* Tablet, desktop and large-screen structure. Mobile stacking remains untouched. */
+/*
+ * Tablet, desktop and large-screen structure only.
+ * Mobile stacking, sizing and order remain untouched.
+ */
 @media (min-width: 48rem) {
-  .settings-page-polish .settings-profile-customization {
-    width: 100% !important;
-    max-width: none !important;
-    margin-right: auto !important;
-    margin-left: auto !important;
-  }
-
+  .settings-page-polish .settings-experience-v2,
+  .settings-page-polish .settings-profile-customization,
+  .settings-page-polish .settings-profile-customization > section,
+  .settings-page-polish .settings-account-card,
   .settings-page-polish .settings-reference-grid {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: none !important;
+  }
+
+  .settings-page-polish .settings-profile-customization,
+  .settings-page-polish .settings-reference-grid {
+    margin-right: 0 !important;
+    margin-left: 0 !important;
+  }
+
+  /* The two-column content uses exactly the same left and right edges as the profile card. */
+  .settings-page-polish .settings-reference-grid {
+    --settings-primary-card-height: clamp(11rem, 18vw, 11.5rem);
+    display: grid !important;
     grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-    grid-template-areas: none !important;
+    grid-template-areas:
+      "appearance preferences"
+      "profile categories"
+      "data data" !important;
+    grid-auto-flow: row !important;
+    grid-auto-rows: auto !important;
+    column-gap: clamp(1rem, 2.4vw, 1.75rem) !important;
+    row-gap: clamp(1.15rem, 2.4vw, 1.7rem) !important;
     align-items: start !important;
+    justify-items: stretch !important;
+    padding: 0 !important;
   }
 
-  .settings-page-polish .settings-reference-grid > .settings-reference-appearance {
-    grid-column: 1 !important;
-    grid-row: 1 !important;
+  .settings-page-polish
+    .settings-reference-grid
+    > .settings-reference-appearance {
+    grid-area: appearance !important;
   }
 
-  .settings-page-polish .settings-reference-preferences-wrapper {
-    grid-column: 2 !important;
-    grid-row: 1 !important;
+  .settings-page-polish
+    .settings-reference-grid
+    > .settings-reference-preferences-wrapper {
+    grid-area: preferences !important;
   }
 
-  .settings-page-polish .settings-reference-profile-security {
-    grid-column: 1 !important;
-    grid-row: 2 !important;
+  .settings-page-polish
+    .settings-reference-grid
+    > .settings-reference-profile-security {
+    grid-area: profile !important;
   }
 
-  .settings-page-polish .settings-reference-categories-wrapper {
-    grid-column: 2 !important;
-    grid-row: 2 !important;
+  .settings-page-polish
+    .settings-reference-grid
+    > .settings-reference-categories-wrapper {
+    grid-area: categories !important;
+  }
+
+  .settings-page-polish .settings-reference-grid > .settings-reference-data {
+    grid-area: data !important;
+    grid-column: 1 / -1 !important;
+  }
+
+  .settings-page-polish
+    .settings-reference-grid
+    > .settings-reference-appearance,
+  .settings-page-polish
+    .settings-reference-grid
+    > .settings-reference-preferences-wrapper,
+  .settings-page-polish
+    .settings-reference-grid
+    > .settings-reference-profile-security,
+  .settings-page-polish
+    .settings-reference-grid
+    > .settings-reference-categories-wrapper,
+  .settings-page-polish .settings-reference-grid > .settings-reference-data {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: none !important;
+    margin: 0 !important;
+    align-self: start !important;
+  }
+
+  /* Matching heading boxes keep the left and right cards on the exact same top line. */
+  .settings-page-polish
+    .settings-reference-grid
+    > .settings-reference-appearance
+    .settings-reference-section-heading,
+  .settings-page-polish
+    .settings-reference-grid
+    > .settings-reference-preferences-wrapper
+    > .settings-reference-section-heading,
+  .settings-page-polish
+    .settings-reference-grid
+    > .settings-reference-profile-security
+    > .settings-reference-section-heading,
+  .settings-page-polish
+    .settings-reference-grid
+    > .settings-reference-categories-wrapper
+    > .settings-reference-section-heading {
+    min-height: 2rem !important;
+    margin-top: 0 !important;
+    padding-top: 0 !important;
+  }
+
+  /* Appearance is two stacked controls whose combined height matches the card beside it. */
+  .settings-page-polish
+    .settings-reference-grid
+    > .settings-reference-appearance {
+    display: flex !important;
+    flex-direction: column !important;
+  }
+
+  .settings-page-polish
+    .settings-reference-grid
+    > .settings-reference-appearance
+    > .settings-reference-section {
+    display: flex !important;
+    min-width: 0 !important;
+    flex-direction: column !important;
+  }
+
+  .settings-page-polish
+    .settings-reference-grid
+    > .settings-reference-appearance
+    > .settings-reference-section
+    > .settings-reference-appearance-control,
+  .settings-page-polish
+    .settings-reference-grid
+    > .settings-reference-appearance
+    > .settings-reference-animation-control {
+    height: calc((var(--settings-primary-card-height) - 0.5rem) / 2) !important;
+    min-height: 0 !important;
+  }
+
+  .settings-page-polish
+    .settings-reference-grid
+    > .settings-reference-appearance
+    > .settings-reference-animation-control {
+    margin-top: 0.5rem !important;
+  }
+
+  .settings-page-polish
+    .settings-reference-grid
+    > .settings-reference-appearance
+    .settings-reference-theme-option {
+    min-height: 0 !important;
+  }
+
+  /* All four primary content cards share one height so both rows stay level. */
+  .settings-page-polish
+    .settings-reference-preferences-wrapper
+    .finance-panel,
+  .settings-page-polish
+    .settings-reference-profile-security
+    .settings-reference-group,
+  .settings-page-polish
+    .settings-reference-categories-wrapper
+    .finance-panel {
+    display: flex !important;
+    width: 100% !important;
+    height: var(--settings-primary-card-height) !important;
+    min-height: var(--settings-primary-card-height) !important;
+    flex-direction: column !important;
+  }
+
+  .settings-page-polish
+    .settings-reference-preferences-wrapper
+    .finance-panel
+    > button,
+  .settings-page-polish
+    .settings-reference-categories-wrapper
+    .finance-panel
+    > button,
+  .settings-page-polish
+    .settings-reference-profile-security
+    .settings-reference-group
+    > .settings-reference-row {
+    min-height: 0 !important;
+    flex: 1 1 0 !important;
+  }
+
+  .settings-page-polish
+    .settings-reference-preferences-wrapper
+    .settings-preferences-divider,
+  .settings-page-polish
+    .settings-reference-categories-wrapper
+    .finance-panel
+    > div[class*="h-px"],
+  .settings-page-polish
+    .settings-reference-profile-security
+    .settings-reference-divider {
+    flex: 0 0 1px !important;
   }
 
   .settings-page-polish .settings-reference-data {
     display: grid !important;
-    grid-column: 1 / -1 !important;
-    grid-row: 3 !important;
     grid-template-columns: minmax(0, 1fr) !important;
     justify-items: stretch !important;
-  }
-
-  .settings-page-polish .settings-reference-grid > .settings-reference-appearance,
-  .settings-page-polish .settings-reference-preferences-wrapper,
-  .settings-page-polish .settings-reference-profile-security,
-  .settings-page-polish .settings-reference-categories-wrapper,
-  .settings-page-polish .settings-reference-data {
-    width: 100% !important;
-    min-width: 0 !important;
-    max-width: none !important;
   }
 
   .settings-page-polish .settings-reference-data .settings-reference-logout {
@@ -89,101 +242,4 @@
     margin-right: 0 !important;
     margin-left: 0 !important;
   }
-}
-
-/*
- * Keep Appearance, Preferences, Profile and Categories content cards at one
- * shared responsive height. Only the layout boxes are adjusted; all inner
- * content, active states, handlers and animations remain unchanged.
- */
-.settings-page-polish .settings-reference-grid {
-  --settings-primary-card-height: clamp(11rem, 22vw, 11.5rem);
-}
-
-.settings-page-polish
-  .settings-reference-grid
-  > .settings-reference-appearance {
-  display: flex !important;
-  min-width: 0 !important;
-  flex-direction: column !important;
-}
-
-.settings-page-polish
-  .settings-reference-grid
-  > .settings-reference-appearance
-  > .settings-reference-section {
-  display: flex !important;
-  min-width: 0 !important;
-  flex-direction: column !important;
-}
-
-.settings-page-polish
-  .settings-reference-grid
-  > .settings-reference-appearance
-  > .settings-reference-section
-  > .settings-reference-appearance-control,
-.settings-page-polish
-  .settings-reference-grid
-  > .settings-reference-appearance
-  > .settings-reference-animation-control {
-  height: calc((var(--settings-primary-card-height) - 0.5rem) / 2) !important;
-  min-height: 0 !important;
-}
-
-.settings-page-polish
-  .settings-reference-grid
-  > .settings-reference-appearance
-  > .settings-reference-animation-control {
-  margin-top: 0.5rem !important;
-}
-
-.settings-page-polish
-  .settings-reference-grid
-  > .settings-reference-appearance
-  .settings-reference-theme-option {
-  min-height: 0 !important;
-}
-
-.settings-page-polish
-  .settings-reference-preferences-wrapper
-  .finance-panel,
-.settings-page-polish
-  .settings-reference-profile-security
-  .settings-reference-group,
-.settings-page-polish
-  .settings-reference-categories-wrapper
-  .finance-panel {
-  display: flex !important;
-  height: var(--settings-primary-card-height) !important;
-  min-height: var(--settings-primary-card-height) !important;
-  flex-direction: column !important;
-}
-
-.settings-page-polish
-  .settings-reference-preferences-wrapper
-  .finance-panel
-  > button,
-.settings-page-polish
-  .settings-reference-categories-wrapper
-  .finance-panel
-  > button,
-.settings-page-polish
-  .settings-reference-profile-security
-  .settings-reference-group
-  > .settings-reference-row {
-  min-height: 0 !important;
-  flex: 1 1 0 !important;
-}
-
-.settings-page-polish
-  .settings-reference-preferences-wrapper
-  .settings-preferences-divider,
-.settings-page-polish
-  .settings-reference-categories-wrapper
-  .finance-panel
-  > div[class*="h-px"],
-.settings-page-polish
-  .settings-reference-profile-security
-  .settings-reference-divider {
-  flex: 0 0 1px !important;
 }
