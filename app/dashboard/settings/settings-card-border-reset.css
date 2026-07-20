@@ -64,9 +64,9 @@
 }
 
 /*
- * Keep the existing Sun, Moon, and Monitor glyphs. Lucide draws their visible
- * parts as child SVG shapes, so the selected fill must be applied directly to
- * those shapes rather than only to the outer svg element.
+ * Keep the existing theme glyphs and animate only their selected state.
+ * Lucide renders the visible icon parts as child SVG shapes, so fill those
+ * shapes directly while leaving each original icon component unchanged.
  */
 .settings-page-polish .settings-reference-theme-icon svg {
   transform: scale(1);
@@ -99,6 +99,24 @@
   :is(path, circle, rect, polygon) {
   fill: currentColor !important;
   fill-opacity: 1;
+}
+
+/*
+ * Filled Moon and Monitor were showing a lighter second tone where their
+ * original stroke overlapped the new fill. Remove only that overlapping stroke;
+ * Sun remains unchanged and Monitor stand lines retain their original shape.
+ */
+.settings-page-polish
+  .settings-reference-theme-option:nth-child(1).is-active
+  .settings-reference-theme-icon
+  svg
+  rect,
+.settings-page-polish
+  .settings-reference-theme-option:nth-child(3).is-active
+  .settings-reference-theme-icon
+  svg
+  path {
+  stroke: none !important;
 }
 
 @keyframes settings-theme-icon-selected {
