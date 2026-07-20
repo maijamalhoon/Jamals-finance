@@ -43,7 +43,7 @@ const SORT_OPTIONS: TransactionFilterOption[] = [
 ];
 
 const FILTER_CONTROL_CLASS =
-  "finance-focus h-11 min-h-11 w-full rounded-xl border-0 bg-surface-soft px-3.5 text-sm font-medium text-text-primary shadow-none outline-none transition-colors hover:bg-hover focus:bg-surface-elevated disabled:cursor-not-allowed disabled:opacity-55";
+  "!h-12 !min-h-12 w-full rounded-2xl !border-0 bg-surface-soft !px-4 !text-sm font-semibold text-text-primary shadow-none !outline-none !ring-0 transition-[background-color,color] hover:bg-hover focus:bg-surface-inset focus:!outline-none focus:!ring-0 focus-visible:!outline-none focus-visible:!ring-0 disabled:cursor-not-allowed disabled:opacity-50";
 
 export default function TransactionFilters({
   categories = [],
@@ -69,11 +69,11 @@ export default function TransactionFilters({
   const activeCategory = searchParams.get("category") || "all";
   const activeAccount = searchParams.get("account") || "all";
   const activeSort = searchParams.get("sort") || "newest";
+  const activeSource = searchParams.get("source") || "";
+  const activePerson = searchParams.get("person") || "";
+  const activeItem = searchParams.get("item") || "";
 
   const [search, setSearch] = useState(searchParams.get("search") || "");
-  const [source, setSource] = useState(searchParams.get("source") || "");
-  const [person, setPerson] = useState(searchParams.get("person") || "");
-  const [item, setItem] = useState(searchParams.get("item") || "");
 
   const categoryOptions = useMemo(
     () => [{ value: "all", label: "All categories" }, ...categories],
@@ -116,9 +116,6 @@ export default function TransactionFilters({
 
   useEffect(() => {
     setSearch(searchParams.get("search") || "");
-    setSource(searchParams.get("source") || "");
-    setPerson(searchParams.get("person") || "");
-    setItem(searchParams.get("item") || "");
   }, [searchParams]);
 
   useEffect(() => {
@@ -133,31 +130,43 @@ export default function TransactionFilters({
 
   useEffect(() => {
     const currentSearch = searchParams.get("search") || "";
-    const currentSource = searchParams.get("source") || "";
-    const currentPerson = searchParams.get("person") || "";
-    const currentItem = searchParams.get("item") || "";
 
-    if (
-      search === currentSearch &&
-      source === currentSource &&
-      person === currentPerson &&
-      item === currentItem
-    ) {
-      return;
-    }
+    if (search === currentSearch) return;
 
     const timer = window.setTimeout(() => {
-      updateParams({ search, source, person, item }, true);
+      updateParams({ search }, true);
     }, 350);
 
     return () => window.clearTimeout(timer);
-  }, [search, source, person, item, searchParams, updateParams]);
+  }, [search, searchParams, updateParams]);
+
+  useEffect(() => {
+    if (!open) return;
+
+    function closeOnEscape(event: KeyboardEvent) {
+      if (event.key === "Escape") setOpen(false);
+    }
+
+    window.addEventListener("keydown", closeOnEscape);
+    return () => window.removeEventListener("keydown", closeOnEscape);
+  }, [open]);
+
+  useEffect(() => {
+    if (!open) return;
+
+    const mobileViewport = window.matchMedia("(max-width: 639px)");
+    if (!mobileViewport.matches) return;
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [open]);
 
   function clearFilters() {
     setSearch("");
-    setSource("");
-    setPerson("");
-    setItem("");
     startNavigation(() => router.push(pathname, { scroll: false }));
   }
 
@@ -176,9 +185,9 @@ export default function TransactionFilters({
       activeCategory !== "all",
       activeAccount !== "all",
       activeSort !== "newest",
-      source,
-      person,
-      item,
+      activeSource,
+      activePerson,
+      activeItem,
     ].filter(Boolean).length;
   }, [
     activeType,
@@ -189,15 +198,18 @@ export default function TransactionFilters({
     activeCategory,
     activeAccount,
     activeSort,
-    source,
-    person,
-    item,
+    activeSource,
+    activePerson,
+    activeItem,
   ]);
 
   const activeControlCount = activeFilterCount + (search ? 1 : 0);
 
   return (
-    <div className="mb-5 min-w-0 space-y-2.5" aria-busy={pending || undefined}>
+    <div
+      className="relative mb-5 min-w-0 space-y-2.5"
+      aria-busy={pending || undefined}
+    >
       <div className="flex min-w-0 items-center justify-end gap-2">
         <div
           role="search"
@@ -294,134 +306,132 @@ export default function TransactionFilters({
       </div>
 
       {open ? (
-        <div
-          id="transaction-filter-panel"
-          className="ml-auto grid w-full max-w-[72rem] min-w-0 gap-x-3 gap-y-3 pt-1 sm:grid-cols-2 xl:grid-cols-4"
-        >
-          <FilterField label="Type" htmlFor="transaction-filter-type">
-            <FilterSelect
-              id="transaction-filter-type"
-              value={activeType}
-              options={TYPE_OPTIONS}
-              onValueChange={(value) => updateParams({ type: value })}
-            />
-          </FilterField>
+        <>
+          <button
+            type="button"
+            aria-label="Close transaction filters"
+            onClick={() => setOpen(false)}
+            className="fixed inset-0 z-[70] bg-background/60 backdrop-blur-[2px] animate-in fade-in duration-150 motion-reduce:animate-none sm:hidden"
+          />
 
-          <FilterField label="From date" htmlFor="transaction-filter-from">
-            <input
-              id="transaction-filter-from"
-              type="date"
-              value={activeFrom}
-              onChange={(event) => updateParams({ from: event.target.value })}
-              className={FILTER_CONTROL_CLASS}
-            />
-          </FilterField>
-
-          <FilterField label="To date" htmlFor="transaction-filter-to">
-            <input
-              id="transaction-filter-to"
-              type="date"
-              value={activeTo}
-              onChange={(event) => updateParams({ to: event.target.value })}
-              className={FILTER_CONTROL_CLASS}
-            />
-          </FilterField>
-
-          <FilterField label="Category" htmlFor="transaction-filter-category">
-            <FilterSelect
-              id="transaction-filter-category"
-              value={activeCategory}
-              options={categoryOptions}
-              onValueChange={(value) => updateParams({ category: value })}
-              disabled={categories.length === 0}
-            />
-          </FilterField>
-
-          <FilterField label="Account" htmlFor="transaction-filter-account">
-            <FilterSelect
-              id="transaction-filter-account"
-              value={activeAccount}
-              options={accountOptions}
-              onValueChange={(value) => updateParams({ account: value })}
-              disabled={accounts.length === 0}
-            />
-          </FilterField>
-
-          <FilterField label="Sort" htmlFor="transaction-filter-sort">
-            <FilterSelect
-              id="transaction-filter-sort"
-              value={activeSort}
-              options={SORT_OPTIONS}
-              onValueChange={(value) => updateParams({ sort: value })}
-            />
-          </FilterField>
-
-          <FilterField label="Source" htmlFor="transaction-filter-source">
-            <input
-              id="transaction-filter-source"
-              value={source}
-              onChange={(event) => setSource(event.target.value)}
-              placeholder="Ride, salary..."
-              className={`${FILTER_CONTROL_CLASS} placeholder:text-text-secondary`}
-            />
-          </FilterField>
-
-          <FilterField label="Person" htmlFor="transaction-filter-person">
-            <input
-              id="transaction-filter-person"
-              value={person}
-              onChange={(event) => setPerson(event.target.value)}
-              placeholder="Person name"
-              className={`${FILTER_CONTROL_CLASS} placeholder:text-text-secondary`}
-            />
-          </FilterField>
-
-          <FilterField label="Item" htmlFor="transaction-filter-item">
-            <input
-              id="transaction-filter-item"
-              value={item}
-              onChange={(event) => setItem(event.target.value)}
-              placeholder="Item name"
-              className={`${FILTER_CONTROL_CLASS} placeholder:text-text-secondary`}
-            />
-          </FilterField>
-
-          <FilterField label="Min amount" htmlFor="transaction-filter-min">
-            <input
-              id="transaction-filter-min"
-              type="number"
-              min="0"
-              value={activeMin}
-              onChange={(event) => updateParams({ min: event.target.value })}
-              placeholder="0"
-              className={`${FILTER_CONTROL_CLASS} placeholder:text-text-secondary`}
-            />
-          </FilterField>
-
-          <FilterField label="Max amount" htmlFor="transaction-filter-max">
-            <input
-              id="transaction-filter-max"
-              type="number"
-              min="0"
-              value={activeMax}
-              onChange={(event) => updateParams({ max: event.target.value })}
-              placeholder="10000"
-              className={`${FILTER_CONTROL_CLASS} placeholder:text-text-secondary`}
-            />
-          </FilterField>
-
-          {activeControlCount > 0 ? (
-            <div className="flex items-end sm:col-span-2 xl:col-span-4 xl:justify-end">
-              <button
-                onClick={clearFilters}
-                className="finance-focus min-h-10 rounded-full bg-transparent px-3.5 py-2 text-xs font-semibold text-text-secondary transition-colors hover:bg-hover hover:text-text-primary"
-                type="button"
+          <section
+            id="transaction-filter-panel"
+            role="dialog"
+            aria-labelledby="transaction-filter-title"
+            className="fixed inset-x-2 bottom-2 z-[80] flex max-h-[calc(100dvh-1rem)] min-w-0 flex-col overflow-hidden rounded-[1.75rem] bg-surface-elevated shadow-premium animate-in fade-in zoom-in-95 duration-200 motion-reduce:animate-none sm:absolute sm:inset-x-auto sm:bottom-auto sm:right-0 sm:top-[3.25rem] sm:w-[min(44rem,calc(100vw-3rem))] sm:max-h-[calc(100vh-7rem)]"
+          >
+            <div className="flex shrink-0 items-center justify-between gap-3 px-4 pb-2 pt-4 sm:px-5 sm:pt-5">
+              <h3
+                id="transaction-filter-title"
+                className="text-sm font-semibold text-text-primary sm:text-base"
               >
-                Clear all
+                Filters
+              </h3>
+              <button
+                type="button"
+                aria-label="Close transaction filters"
+                onClick={() => setOpen(false)}
+                className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-transparent text-text-secondary transition-colors hover:bg-hover hover:text-text-primary focus:outline-none focus-visible:outline-none focus-visible:ring-0"
+              >
+                <X size={18} strokeWidth={2.1} aria-hidden="true" />
               </button>
             </div>
-          ) : null}
-        </div>
+
+            <div className="grid min-w-0 flex-1 grid-cols-1 gap-3 overflow-y-auto px-4 py-2 sm:grid-cols-2 sm:gap-3.5 sm:px-5">
+              <FilterField label="Type" htmlFor="transaction-filter-type">
+                <FilterSelect
+                  id="transaction-filter-type"
+                  value={activeType}
+                  options={TYPE_OPTIONS}
+                  onValueChange={(value) => updateParams({ type: value })}
+                />
+              </FilterField>
+
+              {accounts.length > 0 ? (
+                <FilterField
+                  label="Account"
+                  htmlFor="transaction-filter-account"
+                >
+                  <FilterSelect
+                    id="transaction-filter-account"
+                    value={activeAccount}
+                    options={accountOptions}
+                    onValueChange={(value) => updateParams({ account: value })}
+                  />
+                </FilterField>
+              ) : null}
+
+              {categories.length > 0 ? (
+                <FilterField
+                  label="Category"
+                  htmlFor="transaction-filter-category"
+                >
+                  <FilterSelect
+                    id="transaction-filter-category"
+                    value={activeCategory}
+                    options={categoryOptions}
+                    onValueChange={(value) => updateParams({ category: value })}
+                  />
+                </FilterField>
+              ) : null}
+
+              <FilterField label="Sort" htmlFor="transaction-filter-sort">
+                <FilterSelect
+                  id="transaction-filter-sort"
+                  value={activeSort}
+                  options={SORT_OPTIONS}
+                  onValueChange={(value) => updateParams({ sort: value })}
+                />
+              </FilterField>
+
+              <FilterField label="From date" htmlFor="transaction-filter-from">
+                <input
+                  id="transaction-filter-from"
+                  type="date"
+                  value={activeFrom}
+                  onChange={(event) =>
+                    updateParams({ from: event.target.value })
+                  }
+                  className={FILTER_CONTROL_CLASS}
+                />
+              </FilterField>
+
+              <FilterField label="To date" htmlFor="transaction-filter-to">
+                <input
+                  id="transaction-filter-to"
+                  type="date"
+                  value={activeTo}
+                  onChange={(event) =>
+                    updateParams({ to: event.target.value })
+                  }
+                  className={FILTER_CONTROL_CLASS}
+                />
+              </FilterField>
+            </div>
+
+            <div className="flex shrink-0 items-center justify-between gap-3 px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-3 sm:px-5 sm:pb-5">
+              {activeControlCount > 0 ? (
+                <button
+                  onClick={clearFilters}
+                  className="min-h-11 rounded-full bg-transparent px-3.5 py-2 text-sm font-semibold text-text-secondary transition-colors hover:bg-hover hover:text-text-primary focus:outline-none focus-visible:outline-none focus-visible:ring-0"
+                  type="button"
+                >
+                  Clear all
+                </button>
+              ) : (
+                <span aria-hidden="true" />
+              )}
+
+              <button
+                onClick={() => setOpen(false)}
+                className="min-h-11 rounded-full border-0 bg-brand/10 px-5 py-2 text-sm font-semibold text-brand shadow-none outline-none transition-[background-color,transform] hover:bg-brand/20 active:scale-[0.98] focus:outline-none focus-visible:outline-none focus-visible:ring-0"
+                type="button"
+              >
+                Done
+              </button>
+            </div>
+          </section>
+        </>
       ) : null}
     </div>
   );
@@ -432,13 +442,11 @@ function FilterSelect({
   value,
   options,
   onValueChange,
-  disabled,
 }: {
   id: string;
   value: string;
   options: TransactionFilterOption[];
   onValueChange: (value: string) => void;
-  disabled?: boolean;
 }) {
   const selectedOption = options.find((option) => option.value === value);
 
@@ -448,11 +456,10 @@ function FilterSelect({
       onValueChange={(nextValue) => {
         if (typeof nextValue === "string") onValueChange(nextValue);
       }}
-      disabled={disabled}
     >
       <SelectTrigger
         id={id}
-        className={`${FILTER_CONTROL_CLASS} gap-2 pr-3 text-left [&>svg]:ml-auto [&>svg]:text-text-muted`}
+        className={`${FILTER_CONTROL_CLASS} gap-2 !pr-3 text-left [&>svg]:ml-auto [&>svg]:text-text-muted`}
       >
         <span className="min-w-0 flex-1 truncate text-left">
           {selectedOption?.label ?? options[0]?.label ?? ""}
@@ -462,7 +469,7 @@ function FilterSelect({
         align="start"
         sideOffset={6}
         alignItemWithTrigger={false}
-        className="z-[90] max-h-[min(18rem,var(--available-height))] max-w-[calc(100vw_-_1.5rem)] rounded-2xl border-0 bg-surface-elevated p-1.5 shadow-premium"
+        className="z-[100] max-h-[min(18rem,var(--available-height))] max-w-[calc(100vw_-_1.5rem)] rounded-2xl border-0 bg-surface-elevated p-1.5 shadow-premium"
       >
         {options.map((option) => (
           <SelectItem
@@ -488,10 +495,10 @@ function FilterField({
   children: ReactNode;
 }) {
   return (
-    <div className="min-w-0 space-y-1.5">
+    <div className="min-w-0 space-y-2">
       <label
         htmlFor={htmlFor}
-        className="block px-0.5 text-[11px] font-medium leading-none text-text-muted"
+        className="block px-0.5 text-xs font-medium leading-none text-text-muted"
       >
         {label}
       </label>
