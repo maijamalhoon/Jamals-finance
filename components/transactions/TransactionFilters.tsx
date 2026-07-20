@@ -73,6 +73,12 @@ const SORT_OPTIONS: SortOption[] = [
 
 const VIEWPORT_MARGIN = 12;
 const MENU_GAP = 8;
+const MOBILE_BREAKPOINT = 640;
+const MOBILE_FILTER_WIDTH = 252;
+const MOBILE_SORT_WIDTH = 228;
+const MOBILE_FILTER_HEIGHT_RATIO = 0.52;
+const MOBILE_SORT_HEIGHT_RATIO = 0.44;
+
 const HIDDEN_MENU_STYLE: FloatingMenuStyle = {
   top: 0,
   left: 0,
@@ -194,7 +200,14 @@ export default function TransactionFilters(_props: {
     const viewportHeight =
       visualViewport?.height ?? document.documentElement.clientHeight;
     const triggerRect = trigger.getBoundingClientRect();
-    const preferredWidth = openMenu === "filter" ? 304 : 288;
+    const isMobileViewport = viewportWidth < MOBILE_BREAKPOINT;
+    const preferredWidth = isMobileViewport
+      ? openMenu === "filter"
+        ? MOBILE_FILTER_WIDTH
+        : MOBILE_SORT_WIDTH
+      : openMenu === "filter"
+        ? 304
+        : 288;
     const width = Math.max(
       0,
       Math.min(preferredWidth, viewportWidth - VIEWPORT_MARGIN * 2),
@@ -217,15 +230,24 @@ export default function TransactionFilters(_props: {
       0,
       triggerRect.top - MENU_GAP - VIEWPORT_MARGIN,
     );
-    // Measure at the final width. The menu starts hidden with a zero-sized style
-    // so it never flashes in the wrong place while opening.
+
+    // Measure at the final width so wrapping never changes the computed height.
     menu.style.width = `${Math.round(width)}px`;
     menu.style.maxHeight = "none";
     const naturalHeight = menu.scrollHeight;
     const openAbove =
       naturalHeight > availableBelow && availableAbove > availableBelow;
     const availableHeight = openAbove ? availableAbove : availableBelow;
-    const maxHeight = Math.max(1, Math.floor(availableHeight));
+    const mobileHeightCap = Math.floor(
+      viewportHeight *
+        (openMenu === "filter"
+          ? MOBILE_FILTER_HEIGHT_RATIO
+          : MOBILE_SORT_HEIGHT_RATIO),
+    );
+    const allowedHeight = isMobileViewport
+      ? Math.min(availableHeight, mobileHeightCap)
+      : availableHeight;
+    const maxHeight = Math.max(1, Math.floor(allowedHeight));
     const renderedHeight = Math.min(naturalHeight, maxHeight);
     const preferredTop = openAbove
       ? triggerRect.top - MENU_GAP - renderedHeight
@@ -404,7 +426,7 @@ export default function TransactionFilters(_props: {
           >
             {openMenu === "filter" ? (
               <>
-                <p className="px-4 pb-1 pt-1 text-[10px] font-black uppercase tracking-[0.16em] text-text-muted">
+                <p className="jf-transaction-menu-section-title px-4 pb-1 pt-1 text-[10px] font-black uppercase tracking-[0.16em] text-text-muted">
                   Type
                 </p>
                 {TYPE_OPTIONS.map((option) => {
@@ -445,7 +467,7 @@ export default function TransactionFilters(_props: {
                   role="separator"
                 />
 
-                <p className="px-4 pb-1 pt-1 text-[10px] font-black uppercase tracking-[0.16em] text-text-muted">
+                <p className="jf-transaction-menu-section-title px-4 pb-1 pt-1 text-[10px] font-black uppercase tracking-[0.16em] text-text-muted">
                   Period
                 </p>
                 {PERIOD_OPTIONS.map((option) => {
@@ -478,7 +500,7 @@ export default function TransactionFilters(_props: {
               </>
             ) : (
               <>
-                <p className="px-4 pb-1 pt-1 text-[10px] font-black uppercase tracking-[0.16em] text-text-muted">
+                <p className="jf-transaction-menu-section-title px-4 pb-1 pt-1 text-[10px] font-black uppercase tracking-[0.16em] text-text-muted">
                   Sort by
                 </p>
                 {SORT_OPTIONS.map((option) => {
@@ -541,15 +563,38 @@ export default function TransactionFilters(_props: {
           gap: 0 !important;
         }
 
-        @media (max-height: 720px) {
+        @media (max-width: 639px) {
           .jf-transaction-floating-menu {
+            border-radius: 1rem !important;
             padding-top: 0.25rem !important;
             padding-bottom: 0.25rem !important;
+            scrollbar-gutter: auto !important;
+            -webkit-overflow-scrolling: touch;
+          }
+
+          .jf-transaction-menu-section-title {
+            padding-left: 0.875rem !important;
+            padding-right: 0.875rem !important;
           }
 
           .jf-transaction-menu-item {
-            padding-top: 0.4rem !important;
-            padding-bottom: 0.4rem !important;
+            min-height: 2.25rem !important;
+            padding: 0.4rem 0.875rem !important;
+            gap: 0.625rem !important;
+            font-size: 0.8125rem !important;
+          }
+        }
+
+        @media (max-height: 720px) {
+          .jf-transaction-floating-menu {
+            padding-top: 0.2rem !important;
+            padding-bottom: 0.2rem !important;
+          }
+
+          .jf-transaction-menu-item {
+            min-height: 2.125rem !important;
+            padding-top: 0.32rem !important;
+            padding-bottom: 0.32rem !important;
           }
         }
       `}</style>
