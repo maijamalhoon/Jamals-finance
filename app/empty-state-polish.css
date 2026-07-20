@@ -48,10 +48,14 @@
   background: transparent !important;
 }
 
-/* Keep empty table/section states compact while preserving the parent surface. */
+/* Keep empty table/section states compact while preserving one parent surface. */
 .finance-panel > [data-empty-state],
 .finance-reference-card [data-empty-state] {
   width: 100%;
+}
+
+.finance-panel:has(> [data-empty-state]) {
+  min-height: clamp(10rem, 22vw, 13rem) !important;
 }
 
 @media (max-width: 639.98px) {
@@ -71,6 +75,10 @@
 
   [data-dashboard-shell] :where(.dashboard-chart-empty) {
     min-height: 7.5rem;
+  }
+
+  .finance-panel:has(> [data-empty-state]) {
+    min-height: 9rem !important;
   }
 }
 
