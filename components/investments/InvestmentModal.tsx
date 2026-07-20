@@ -20,6 +20,7 @@ type CryptoAssetRow = {
   aliases: string[] | null;
   logo_url: string;
   rank: number;
+  binance_symbol: string | null;
 };
 
 let cryptoCatalogRequest: Promise<CryptoCatalogAsset[] | null> | null = null;
@@ -31,7 +32,7 @@ function loadCryptoCatalogOnce() {
     const supabase = createClient();
     const { data, error } = await supabase
       .from("crypto_assets")
-      .select("id, name, symbol, aliases, logo_url, rank")
+      .select("id, name, symbol, aliases, logo_url, rank, binance_symbol")
       .eq("is_active", true)
       .order("rank", { ascending: true });
 
@@ -48,6 +49,7 @@ function loadCryptoCatalogOnce() {
         : [],
       logoUrl: asset.logo_url,
       rank: asset.rank,
+      binanceSymbol: asset.binance_symbol,
     }));
   })();
 
