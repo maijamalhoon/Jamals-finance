@@ -207,14 +207,21 @@ export default function MotionProvider({ children }: { children: ReactNode }) {
     let activeMode = getStoredAnimationMode();
 
     const synchronizeMode = (nextMode: AnimationMode) => {
+      const previousMode = activeMode;
       const mode = applyAnimationMode(nextMode, {
         persist: false,
         broadcast: false,
       });
+
       activeMode = mode;
       setAnimationMode(mode);
-      tuneDocumentAnimations(mode);
-      tuneSvgAnimations(document, mode);
+
+      // The default mode must remain zero-overhead. A full document scan is only
+      // needed when entering an accelerated mode or restoring from one.
+      if (mode !== "standard" || previousMode !== "standard") {
+        tuneDocumentAnimations(mode);
+        tuneSvgAnimations(document, mode);
+      }
     };
 
     const handlePreferenceChange = (event: Event) => {
@@ -228,18 +235,32 @@ export default function MotionProvider({ children }: { children: ReactNode }) {
     };
 
     const handleAnimationStart = (event: Event) => {
+      if (activeMode === "standard") return;
+
       const target = event.target;
       if (!(target instanceof Element)) return;
       queueMicrotask(() => tuneDocumentAnimations(activeMode, target));
     };
 
     const observer = new MutationObserver((mutations) => {
+      if (activeMode === "standard") return;
+
+      const addedElements: Element[] = [];
+
       mutations.forEach((mutation) => {
         mutation.addedNodes.forEach((node) => {
           if (!(node instanceof Element)) return;
+          addedElements.push(node);
           tuneSvgAnimations(node, activeMode);
-          queueMicrotask(() => tuneDocumentAnimations(activeMode, node));
         });
+      });
+
+      if (addedElements.length === 0) return;
+
+      queueMicrotask(() => {
+        addedElements.forEach((element) =>
+          tuneDocumentAnimations(activeMode, element),
+        );
       });
     });
 
