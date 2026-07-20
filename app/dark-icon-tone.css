@@ -57,3 +57,123 @@ html body textarea::placeholder {
   color: transparent !important;
   opacity: 0 !important;
 }
+
+/*
+ * Create Category follows the approved finance-form language while retaining
+ * its live, automatically assigned category preview and all existing logic.
+ */
+.finance-modal-content:has(#settings-category-name) {
+  --finance-modal-max-width: 32rem;
+}
+
+.finance-modal-content:has(#settings-category-name)
+  .finance-modal-header
+  .finance-icon-container,
+.finance-modal-content:has(#settings-category-name)
+  .finance-modal-header
+  [data-slot="dialog-description"] {
+  display: none !important;
+}
+
+.finance-modal-content:has(#settings-category-name)
+  .finance-modal-header
+  > div {
+  gap: 0 !important;
+}
+
+.finance-modal-content:has(#settings-category-name)
+  form:has(#settings-category-name) {
+  display: grid !important;
+  gap: var(--finance-field-gap, 0.75rem) !important;
+}
+
+.finance-modal-content:has(#settings-category-name)
+  form:has(#settings-category-name)
+  > * {
+  margin-block: 0 !important;
+}
+
+/* Keep the automatic visual preview, but remove the extra nested-card feel. */
+.finance-modal-content:has(#settings-category-name)
+  form:has(#settings-category-name)
+  > div:first-child:not([data-slot="finance-form-field"]) {
+  min-height: 0 !important;
+  padding: 0.1rem 0.15rem 0.25rem !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.finance-modal-content:has(#settings-category-name)
+  form:has(#settings-category-name)
+  > div:first-child
+  p:first-child {
+  font-size: 0.875rem !important;
+  line-height: 1.2rem !important;
+}
+
+.finance-modal-content:has(#settings-category-name)
+  form:has(#settings-category-name)
+  > div:first-child
+  p:last-child {
+  margin-top: 0.1rem !important;
+  font-size: 0.7rem !important;
+  line-height: 1rem !important;
+}
+
+/* Income/Expense remains a semantic two-way selector, now sized like a field. */
+.finance-modal-content:has(#settings-category-name) [role="radiogroup"] {
+  box-sizing: border-box !important;
+  width: 100% !important;
+  height: var(--finance-control-height) !important;
+  min-height: var(--finance-control-height) !important;
+  padding: 0.25rem !important;
+  border: 0 !important;
+  border-radius: 0.9rem !important;
+  background: var(--surface-inset) !important;
+  box-shadow: none !important;
+}
+
+.finance-modal-content:has(#settings-category-name) [role="radio"] {
+  height: 100% !important;
+  min-height: 0 !important;
+  border-radius: 0.7rem !important;
+  box-shadow: none !important;
+}
+
+/* Match the single primary action used by the other finalized forms. */
+.finance-modal-content:has(#settings-category-name)
+  form:has(#settings-category-name)
+  > button[type="submit"] {
+  width: 100% !important;
+  height: var(--finance-action-height) !important;
+  min-height: var(--finance-action-height) !important;
+  max-height: var(--finance-action-height) !important;
+  margin-top: 0.15rem !important;
+  border: 0 !important;
+  border-radius: 0.9rem !important;
+  box-shadow: none !important;
+  color: var(--status-foreground) !important;
+  font-size: 0.95rem !important;
+  font-weight: 700 !important;
+}
+
+.finance-modal-content:has(#settings-category-name)
+  form:has([role="radio"]:first-child[aria-checked="true"])
+  > button[type="submit"] {
+  background: var(--success) !important;
+}
+
+.finance-modal-content:has(#settings-category-name)
+  form:has([role="radio"]:nth-child(2)[aria-checked="true"])
+  > button[type="submit"] {
+  background: var(--danger) !important;
+}
+
+.finance-modal-content:has(#settings-category-name)
+  form:has(#settings-category-name)
+  > button[type="submit"]
+  > svg:not(.animate-spin) {
+  display: none !important;
+}
