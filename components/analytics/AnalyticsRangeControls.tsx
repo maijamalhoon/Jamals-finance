@@ -25,6 +25,7 @@ import {
   type AnalyticsRangeSelection,
 } from "@/lib/analytics/calculations";
 
+// Keep the heading control intentionally compact: week, month, year, and custom.
 const PERIODS: Array<{
   label: string;
   ariaLabel: string;
