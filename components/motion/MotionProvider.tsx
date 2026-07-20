@@ -56,12 +56,22 @@ function stripNativeIconTitles(root: ParentNode) {
 }
 
 function tuneAnimation(animation: Animation, mode: AnimationMode) {
-  try {
-    if (mode === "none") {
-      animation.finish();
-      return;
-    }
+  if (mode === "none") {
+    try {
+      const timing = animation.effect?.getComputedTiming();
+      if (timing?.iterations === Number.POSITIVE_INFINITY) {
+        animation.cancel();
+        return;
+      }
 
+      animation.finish();
+    } catch {
+      animation.cancel();
+    }
+    return;
+  }
+
+  try {
     animation.updatePlaybackRate(getAnimationPlaybackRate(mode));
   } catch {}
 }
