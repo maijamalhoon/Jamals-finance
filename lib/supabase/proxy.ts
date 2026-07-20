@@ -25,7 +25,10 @@ const PUBLIC_ASSET_ROUTES = [
   "/twitter-image",
 ];
 const PUBLIC_ASSET_PREFIXES = ["/icons/"];
-const PUBLIC_API_ROUTES = ["/api/exchange-rate"];
+const PUBLIC_API_ROUTES = [
+  "/api/exchange-rate",
+  "/api/market/crypto-prices",
+];
 const BLOCKED_PRODUCTION_API_ROUTES = ["/api/sentry-example-api"];
 const CACHE_HEADER_NAMES = ["cache-control", "expires", "pragma", "vary"];
 
