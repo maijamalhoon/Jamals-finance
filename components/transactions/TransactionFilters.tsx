@@ -11,7 +11,7 @@ import {
 } from "react";
 import { createPortal } from "react-dom";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { ArrowUpDown, Check, Filter, Search, X } from "lucide-react";
+import { ArrowUpDown, ChevronRight, Filter, Search, X } from "lucide-react";
 
 import { BackgroundRefreshStatus } from "@/components/loading/LoadingPrimitives";
 import { FEATURE_COLOR_CSS } from "@/lib/theme-colors";
@@ -115,7 +115,7 @@ function getPeriodRange(period: Exclude<PeriodValue, "all">) {
 
 function selectedClass(selected: boolean) {
   return selected
-    ? "bg-brand/15 text-brand shadow-[inset_2px_0_0_var(--brand)]"
+    ? "jf-transaction-menu-item-selected font-semibold text-text-primary"
     : "text-text-primary hover:bg-hover";
 }
 
@@ -405,6 +405,15 @@ export default function TransactionFilters(_props: {
   const iconButtonClass =
     "jf-transaction-icon-control finance-focus grid !size-11 !min-h-0 shrink-0 place-items-center !gap-0 rounded-xl !border-0 !bg-transparent !p-0 !shadow-none transition-[color,transform,opacity] duration-200 hover:-translate-y-px hover:text-brand active:translate-y-0";
 
+  const activeChevron = (
+    <ChevronRight
+      size={18}
+      strokeWidth={2.8}
+      className="jf-transaction-active-chevron shrink-0 text-text-primary"
+      aria-hidden="true"
+    />
+  );
+
   const floatingMenu =
     openMenu && typeof document !== "undefined"
       ? createPortal(
@@ -450,14 +459,7 @@ export default function TransactionFilters(_props: {
                       <span className="min-w-0 flex-1 truncate">
                         {option.label}
                       </span>
-                      {selected ? (
-                        <Check
-                          size={16}
-                          strokeWidth={2.2}
-                          className="shrink-0"
-                          aria-hidden="true"
-                        />
-                      ) : null}
+                      {selected ? activeChevron : null}
                     </button>
                   );
                 })}
@@ -486,14 +488,7 @@ export default function TransactionFilters(_props: {
                       <span className="min-w-0 flex-1 truncate">
                         {option.label}
                       </span>
-                      {selected ? (
-                        <Check
-                          size={16}
-                          strokeWidth={2.2}
-                          className="shrink-0"
-                          aria-hidden="true"
-                        />
-                      ) : null}
+                      {selected ? activeChevron : null}
                     </button>
                   );
                 })}
@@ -519,14 +514,7 @@ export default function TransactionFilters(_props: {
                       <span className="min-w-0 flex-1 truncate">
                         {option.label}
                       </span>
-                      {selected ? (
-                        <Check
-                          size={16}
-                          strokeWidth={2.2}
-                          className="shrink-0"
-                          aria-hidden="true"
-                        />
-                      ) : null}
+                      {selected ? activeChevron : null}
                     </button>
                   );
                 })}
@@ -563,6 +551,53 @@ export default function TransactionFilters(_props: {
           gap: 0 !important;
         }
 
+        .jf-transaction-menu-item {
+          transform: scale(1);
+          transform-origin: center;
+          transition:
+            transform 155ms cubic-bezier(0.22, 1, 0.36, 1),
+            color 160ms ease,
+            background-color 160ms ease,
+            font-weight 160ms ease !important;
+        }
+
+        .jf-transaction-menu-item:active {
+          transform: scale(1.025);
+        }
+
+        .jf-transaction-menu-item-selected,
+        .jf-transaction-menu-item-selected:hover,
+        .jf-transaction-menu-item-selected:focus-visible {
+          background: transparent !important;
+          box-shadow: none !important;
+          color: var(--text-primary) !important;
+          transform: scale(1.012);
+          animation: jf-transaction-option-selected-pop 190ms cubic-bezier(0.22, 1, 0.36, 1);
+        }
+
+        .jf-transaction-menu-item-selected:active {
+          transform: scale(1.025);
+        }
+
+        .jf-transaction-active-chevron {
+          color: var(--text-primary) !important;
+          transform: scale(1.08);
+          transform-origin: center;
+          animation: jf-transaction-chevron-selected-pop 210ms cubic-bezier(0.22, 1, 0.36, 1);
+        }
+
+        @keyframes jf-transaction-option-selected-pop {
+          0% { transform: scale(0.985); }
+          68% { transform: scale(1.02); }
+          100% { transform: scale(1.012); }
+        }
+
+        @keyframes jf-transaction-chevron-selected-pop {
+          0% { transform: scale(0.78); opacity: 0.45; }
+          72% { transform: scale(1.14); opacity: 1; }
+          100% { transform: scale(1.08); opacity: 1; }
+        }
+
         @media (max-width: 639px) {
           .jf-transaction-floating-menu {
             border-radius: 1rem !important;
@@ -595,6 +630,15 @@ export default function TransactionFilters(_props: {
             min-height: 2.125rem !important;
             padding-top: 0.32rem !important;
             padding-bottom: 0.32rem !important;
+          }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+          .jf-transaction-menu-item,
+          .jf-transaction-menu-item-selected,
+          .jf-transaction-active-chevron {
+            animation: none !important;
+            transition-duration: 1ms !important;
           }
         }
       `}</style>
