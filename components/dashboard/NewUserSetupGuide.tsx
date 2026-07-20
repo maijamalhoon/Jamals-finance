@@ -63,7 +63,7 @@ function SetupActionButton({
     <button
       type="button"
       onClick={onClick}
-      className={`finance-focus min-h-10 whitespace-nowrap px-3 text-xs font-black ${toneClass}`}
+      className={`finance-focus inline-flex min-h-11 w-full items-center justify-center gap-2 whitespace-nowrap px-4 text-xs font-black sm:w-auto ${toneClass}`}
     >
       {children}
       <ArrowRight aria-hidden="true" className="h-3.5 w-3.5" />
@@ -84,7 +84,7 @@ function SetupActionLink({
     <Link
       href={href}
       aria-label={ariaLabel}
-      className="finance-focus inline-flex min-h-10 items-center justify-center gap-2 whitespace-nowrap rounded-[var(--oneui-button-radius)] bg-surface-secondary px-3 text-xs font-black text-text-primary transition-all hover:bg-hover"
+      className="finance-focus inline-flex min-h-11 w-full items-center justify-center gap-2 whitespace-nowrap rounded-[var(--oneui-button-radius)] bg-primary-soft px-4 text-xs font-black text-primary transition-[background-color,color,transform] hover:bg-hover sm:w-auto"
     >
       {children}
       <ArrowRight aria-hidden="true" className="h-3.5 w-3.5" />
@@ -95,14 +95,14 @@ function SetupActionLink({
 function SetupRow({ step, featured = false }: { step: SetupStep; featured?: boolean }) {
   return (
     <li
-      className={`flex min-w-0 flex-col gap-3 rounded-[var(--oneui-tile-radius)] px-3 py-3 sm:flex-row sm:items-center sm:justify-between ${
-        featured ? "bg-primary-soft" : "bg-surface-secondary"
+      className={`flex min-w-0 flex-col gap-3 rounded-[var(--oneui-tile-radius)] px-3.5 py-3.5 sm:flex-row sm:items-center sm:justify-between sm:px-4 ${
+        featured ? "bg-primary-soft" : "bg-card"
       }`}
     >
       <div className="flex min-w-0 items-start gap-3">
         <span
-          className={`mt-0.5 grid h-9 w-9 shrink-0 place-items-center rounded-full ${
-            featured ? "bg-primary-soft text-primary" : "bg-card text-text-secondary"
+          className={`mt-0.5 grid h-9 w-9 shrink-0 place-items-center rounded-[var(--oneui-button-radius)] ${
+            featured ? "bg-card text-primary" : "bg-surface-secondary text-text-secondary"
           }`}
         >
           {step.icon}
@@ -121,7 +121,7 @@ function SetupRow({ step, featured = false }: { step: SetupStep; featured?: bool
         </div>
       </div>
 
-      <div className="flex shrink-0 justify-start sm:justify-end">{step.action}</div>
+      <div className="flex w-full shrink-0 justify-start sm:w-auto sm:justify-end">{step.action}</div>
     </li>
   );
 }
@@ -274,7 +274,7 @@ export default function NewUserSetupGuide({
       optional: true,
       icon: <Target aria-hidden="true" className="h-4.5 w-4.5" />,
       action: (
-        <div className="flex flex-wrap gap-2">
+        <div className="flex w-full flex-wrap gap-2 sm:w-auto">
           <SetupActionLink href="/dashboard/goals">Add goal</SetupActionLink>
           <SetupActionLink href="/dashboard/investments">Add investment</SetupActionLink>
         </div>
@@ -316,11 +316,11 @@ export default function NewUserSetupGuide({
     <>
       <section
         aria-labelledby="new-user-setup-title"
-        className="finance-panel overflow-hidden px-4 py-3.5 sm:px-5 sm:py-4"
+        className="overflow-hidden rounded-[var(--radius-card)] bg-card px-4 py-4 shadow-sm dark:shadow-none sm:px-5"
       >
         <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-center">
           <div className="flex min-w-0 flex-1 items-center gap-3">
-            <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-primary-soft text-primary">
+            <span className="grid h-10 w-10 shrink-0 place-items-center rounded-[var(--oneui-button-radius)] bg-primary-soft text-primary">
               {nextStep?.icon ?? <CheckCircle2 aria-hidden="true" className="h-4.5 w-4.5" />}
             </span>
 
@@ -329,9 +329,11 @@ export default function NewUserSetupGuide({
                 <h2 id="new-user-setup-title" className="text-sm font-black text-text-primary">
                   Setup progress
                 </h2>
-                <span className="text-xs font-black text-primary">{progress}%</span>
+                <span className="rounded-full bg-primary-soft px-2 py-0.5 text-[11px] font-black text-primary">
+                  {progress}%
+                </span>
               </div>
-              <p className="mt-0.5 truncate text-xs text-text-secondary sm:whitespace-normal">
+              <p className="mt-0.5 text-xs leading-5 text-text-secondary">
                 {nextStep ? `Next: ${nextStep.title}` : "Your essential setup is complete."}
               </p>
             </div>
@@ -342,7 +344,7 @@ export default function NewUserSetupGuide({
               type="button"
               aria-expanded={expanded}
               onClick={() => setExpanded((current) => !current)}
-              className="finance-focus inline-flex min-h-10 flex-1 items-center justify-center gap-2 rounded-[var(--oneui-button-radius)] bg-primary px-3 text-xs font-black text-primary-foreground transition-all hover:bg-primary-hover sm:flex-none"
+              className="finance-focus primary-action inline-flex min-h-11 flex-1 items-center justify-center gap-2 px-4 text-xs font-black sm:flex-none"
             >
               {expanded ? "Hide steps" : "Continue setup"}
               {expanded ? (
@@ -355,7 +357,7 @@ export default function NewUserSetupGuide({
               type="button"
               aria-label="Dismiss setup guide"
               onClick={dismissGuide}
-              className="finance-focus grid h-10 w-10 shrink-0 place-items-center rounded-full text-text-secondary transition-all hover:bg-hover hover:text-text-primary"
+              className="finance-focus grid h-11 w-11 shrink-0 place-items-center rounded-[var(--oneui-button-radius)] bg-surface-secondary text-text-secondary transition-[background-color,color,transform] hover:bg-hover hover:text-text-primary"
             >
               <X aria-hidden="true" className="h-4 w-4" />
             </button>
@@ -377,17 +379,15 @@ export default function NewUserSetupGuide({
         </div>
 
         {expanded ? (
-          <div className="mt-4 border-t border-border/60 pt-4">
+          <div className="mt-4 rounded-[var(--oneui-tile-radius)] bg-surface-secondary p-3 sm:p-4">
             <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-              <div>
-                <p className="text-xs font-black uppercase tracking-[0.12em] text-text-muted">
-                  Recommended next steps
-                </p>
-                <p className="mt-1 text-xs leading-5 text-text-secondary">
+              <div className="min-w-0">
+                <p className="text-sm font-black text-text-primary">Recommended next steps</p>
+                <p className="mt-0.5 text-xs leading-5 text-text-secondary">
                   Complete one task at a time. Progress updates from your saved records.
                 </p>
               </div>
-              <span className="text-xs font-black text-text-secondary">
+              <span className="rounded-full bg-card px-2.5 py-1 text-[11px] font-black text-text-secondary">
                 {completedMainSteps}/{mainSteps.length} complete
               </span>
             </div>
