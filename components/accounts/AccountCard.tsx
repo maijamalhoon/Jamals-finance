@@ -166,21 +166,21 @@ export default function AccountCard({ account }: AccountCardProps) {
             </p>
           </div>
 
-          <div className="min-w-0 space-y-2 text-right">
-            <div className="min-w-0 rounded-xl bg-success-soft px-2.5 py-2">
-              <p className="text-[9px] font-bold uppercase tracking-[0.12em] text-success">
+          <div className="min-w-0 space-y-2">
+            <div className="min-w-0 rounded-xl bg-[color-mix(in_srgb,var(--success),transparent_82%)] px-2.5 py-2">
+              <p className="text-left text-[9px] font-bold uppercase tracking-[0.12em] text-success">
                 Total in
               </p>
-              <p className="finance-amount mt-0.5 break-words text-[11px] font-black leading-4 text-success [overflow-wrap:anywhere]">
+              <p className="finance-amount mt-1 break-words text-center text-[11px] font-normal leading-4 text-success [overflow-wrap:anywhere]">
                 {formatCurrency(Number(account.inflow ?? 0))}
               </p>
             </div>
 
-            <div className="min-w-0 rounded-xl bg-danger-soft px-2.5 py-2">
-              <p className="text-[9px] font-bold uppercase tracking-[0.12em] text-danger">
+            <div className="min-w-0 rounded-xl bg-[color-mix(in_srgb,var(--danger),transparent_82%)] px-2.5 py-2">
+              <p className="text-left text-[9px] font-bold uppercase tracking-[0.12em] text-danger">
                 Total out
               </p>
-              <p className="finance-amount mt-0.5 break-words text-[11px] font-black leading-4 text-danger [overflow-wrap:anywhere]">
+              <p className="finance-amount mt-1 break-words text-center text-[11px] font-normal leading-4 text-danger [overflow-wrap:anywhere]">
                 {formatCurrency(Number(account.outflow ?? 0))}
               </p>
             </div>
