@@ -102,48 +102,32 @@ const INTERACTION_LOCK_SCRIPT = `
 })();
 `;
 
-const NATIVE_ICON_TOOLTIP_CLEANUP_SCRIPT = `
+const NATIVE_TOOLTIP_CLEANUP_SCRIPT = `
 (() => {
   try {
-    const marker = "__jfNativeIconTooltipCleanupInstalled";
+    const marker = "__jfNativeTooltipCleanupInstalled";
     if (window[marker]) return;
     window[marker] = true;
 
-    const interactiveSelector =
-      "button, a, [role='button'], [role='menuitem'], [role='tab']";
-    const knownIconSelector =
-      "svg.lucide, svg[class*='lucide-'], [data-icon], img[data-icon]";
-
-    const isIconTooltipTarget = (element) => {
-      if (!(element instanceof Element)) return false;
-
-      if (element.matches("svg, img")) {
-        return (
-          element.matches(knownIconSelector) ||
-          Boolean(element.closest(interactiveSelector))
-        );
-      }
-
-      if (element.matches(interactiveSelector)) {
-        return Boolean(element.querySelector("svg, img, [data-icon]"));
-      }
-
-      return Boolean(element.querySelector(knownIconSelector));
-    };
+    const accessibleSelector =
+      "button, a, input, select, textarea, summary, [role], img, svg";
 
     const cleanTitleAttribute = (element) => {
-      if (!(element instanceof Element) || !isIconTooltipTarget(element)) return;
+      if (!(element instanceof Element) || !element.hasAttribute("title")) {
+        return;
+      }
 
-      const title = element.getAttribute("title")?.trim();
-      if (!title) return;
-
+      const label = element.getAttribute("title")?.trim();
       const hasAccessibleLabel =
         element.hasAttribute("aria-label") ||
         element.hasAttribute("aria-labelledby");
-      const hasVisibleText = Boolean(element.textContent?.trim());
 
-      if (!hasAccessibleLabel && !hasVisibleText) {
-        element.setAttribute("aria-label", title);
+      if (
+        label &&
+        !hasAccessibleLabel &&
+        element.matches(accessibleSelector)
+      ) {
+        element.setAttribute("aria-label", label);
       }
 
       element.removeAttribute("title");
@@ -155,25 +139,15 @@ const NATIVE_ICON_TOOLTIP_CLEANUP_SCRIPT = `
       const svg = titleNode.parentElement;
       if (!(svg instanceof SVGElement)) return;
 
-      const control = svg.closest(interactiveSelector);
-      const isKnownIcon = svg.matches(knownIconSelector);
-      if (!control && !isKnownIcon) return;
-
       const label = titleNode.textContent?.trim();
+      const hasAccessibleLabel =
+        svg.hasAttribute("aria-label") ||
+        svg.hasAttribute("aria-labelledby");
 
-      if (label && control) {
-        const hasAccessibleLabel =
-          control.hasAttribute("aria-label") ||
-          control.hasAttribute("aria-labelledby");
-        const controlText = control.textContent?.trim();
-
-        if (!hasAccessibleLabel && controlText === label) {
-          control.setAttribute("aria-label", label);
-        }
-      } else if (
+      if (
         label &&
-        !svg.hasAttribute("aria-label") &&
-        !svg.hasAttribute("aria-labelledby")
+        svg.getAttribute("aria-hidden") !== "true" &&
+        !hasAccessibleLabel
       ) {
         svg.setAttribute("aria-label", label);
       }
@@ -184,17 +158,13 @@ const NATIVE_ICON_TOOLTIP_CLEANUP_SCRIPT = `
     const cleanWithin = (root) => {
       if (!(root instanceof Element || root instanceof Document)) return;
 
-      if (root instanceof Element && root.matches("svg > title")) {
-        cleanSvgTitle(root);
-      }
-
-      root.querySelectorAll("svg > title").forEach(cleanSvgTitle);
-
-      if (root instanceof Element && root.hasAttribute("title")) {
+      if (root instanceof Element) {
         cleanTitleAttribute(root);
+        if (root.matches("svg > title")) cleanSvgTitle(root);
       }
 
       root.querySelectorAll("[title]").forEach(cleanTitleAttribute);
+      root.querySelectorAll("svg > title").forEach(cleanSvgTitle);
     };
 
     const runCleanup = () => cleanWithin(document);
@@ -213,11 +183,7 @@ const NATIVE_ICON_TOOLTIP_CLEANUP_SCRIPT = `
         }
 
         mutation.addedNodes.forEach((node) => {
-          if (!(node instanceof Element)) return;
-
-          cleanWithin(node);
-          const titledAncestor = node.parentElement?.closest("[title]");
-          if (titledAncestor) cleanTitleAttribute(titledAncestor);
+          if (node instanceof Element) cleanWithin(node);
         });
       }
     });
@@ -331,7 +297,7 @@ export default function RootLayout({
         />
         <script
           dangerouslySetInnerHTML={{
-            __html: NATIVE_ICON_TOOLTIP_CLEANUP_SCRIPT,
+            __html: NATIVE_TOOLTIP_CLEANUP_SCRIPT,
           }}
         />
       </head>
