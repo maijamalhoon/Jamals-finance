@@ -84,7 +84,7 @@
   [data-mobile-navigation-drawer] nav section h2 {
     color: #8da0bf !important;
     font-family: var(--font-sans) !important;
-    font-size: 0.625rem !important;
+    font-size: 0.6875rem !important;
     font-weight: 760 !important;
     line-height: 1rem !important;
     letter-spacing: 0.16em !important;
@@ -114,7 +114,7 @@
     box-shadow: none !important;
     color: #263651 !important;
     font-family: var(--font-sans) !important;
-    font-size: 0.875rem !important;
+    font-size: 0.95rem !important;
     font-weight: 650 !important;
     line-height: 1.15 !important;
     letter-spacing: -0.012em !important;
@@ -178,8 +178,8 @@
   }
 
   [data-mobile-navigation-drawer] nav a > span:first-child > svg.lucide {
-    width: 1.15rem !important;
-    height: 1.15rem !important;
+    width: 1.28rem !important;
+    height: 1.28rem !important;
     fill: none !important;
     stroke-width: 2.25 !important;
     stroke-linecap: round;
@@ -216,12 +216,12 @@
   [data-mobile-navigation-drawer] nav a {
     min-height: 2.9rem !important;
     padding-inline: 0.82rem !important;
-    font-size: 0.925rem !important;
+    font-size: 1rem !important;
   }
 
   [data-mobile-navigation-drawer] nav a > span:first-child > svg.lucide {
-    width: 1.2rem !important;
-    height: 1.2rem !important;
+    width: 1.34rem !important;
+    height: 1.34rem !important;
   }
 }
 
@@ -243,7 +243,7 @@
   [data-mobile-navigation-drawer] nav a {
     min-height: 2.5rem !important;
     padding-block: 0.38rem !important;
-    font-size: 0.825rem !important;
+    font-size: 0.9rem !important;
   }
 }
 
