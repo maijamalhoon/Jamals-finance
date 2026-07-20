@@ -1,7 +1,7 @@
 /*
  * Final size tuning for the compact "accent bar + page label" headings.
- * Transactions are intentionally excluded from the shared heading sizing and
- * receive only a tightly scoped mobile collision fix below.
+ * Transactions stay isolated from the shared heading system and receive only
+ * tightly scoped size and mobile collision rules below.
  */
 
 [data-jf-page] .jf-unified-page-heading {
@@ -40,13 +40,22 @@
   grid-row: 1 !important;
   min-width: 0 !important;
   max-width: 100% !important;
+  min-height: clamp(2.3rem, 3.3vw, 2.8rem) !important;
+  gap: clamp(0.62rem, 1.05vw, 0.8rem) !important;
   overflow: hidden !important;
+}
+
+.transactions-page-type-icons > div > :first-child::before {
+  width: clamp(0.27rem, 0.4vw, 0.38rem) !important;
+  height: clamp(1.5rem, 2.3vw, 2.05rem) !important;
 }
 
 .transactions-page-type-icons > div > :first-child .page-title {
   overflow: hidden !important;
   text-overflow: ellipsis !important;
   white-space: nowrap !important;
+  font-size: clamp(1.15rem, 0.9rem + 0.65vw, 1.65rem) !important;
+  line-height: 1.14 !important;
 }
 
 .transactions-page-type-icons > div > :nth-child(2) {
@@ -75,6 +84,15 @@
     column-gap: 0.375rem !important;
   }
 
+  .transactions-page-type-icons > div > :first-child {
+    min-height: 2.65rem !important;
+  }
+
+  .transactions-page-type-icons > div > :first-child .page-title {
+    font-size: 1.15rem !important;
+    line-height: 1.35rem !important;
+  }
+
   .transactions-page-type-icons > div > :nth-child(2) {
     max-width: calc(100vw - 1.5rem) !important;
   }
@@ -98,5 +116,11 @@
     width: 100% !important;
     max-width: 100% !important;
     justify-self: stretch !important;
+  }
+}
+
+@media (max-width: 360px) {
+  .transactions-page-type-icons > div > :first-child .page-title {
+    font-size: 1.08rem !important;
   }
 }
