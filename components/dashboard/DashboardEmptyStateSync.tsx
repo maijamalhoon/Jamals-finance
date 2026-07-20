@@ -1,6 +1,7 @@
 "use client";
 
-import { useLayoutEffect, useRef } from "react";
+import { useLayoutEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 
 import AddExpenseButton from "@/components/expenses/AddExpenseButton";
 import AddGoalButton from "@/components/goals/AddGoalButton";
@@ -83,9 +84,16 @@ function getEmptyCopyElements(emptyState: HTMLElement) {
 }
 
 export default function DashboardEmptyStateSync() {
+  const [mounted, setMounted] = useState(false);
   const launchersRef = useRef<HTMLDivElement>(null);
 
   useLayoutEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useLayoutEffect(() => {
+    if (!mounted) return;
+
     const launcherButtons = launchersRef.current?.querySelectorAll<HTMLButtonElement>(
       "[data-dashboard-empty-launcher] > button",
     );
@@ -174,9 +182,11 @@ export default function DashboardEmptyStateSync() {
       observer.disconnect();
       window.cancelAnimationFrame(frame);
     };
-  }, []);
+  }, [mounted]);
 
-  return (
+  if (!mounted) return null;
+
+  return createPortal(
     <>
       <style>{`
         [data-dashboard-empty-launcher] > button {
@@ -208,6 +218,7 @@ export default function DashboardEmptyStateSync() {
           <AddGoalButton label="Create a goal" showIcon={false} />
         </div>
       </div>
-    </>
+    </>,
+    document.body,
   );
 }
