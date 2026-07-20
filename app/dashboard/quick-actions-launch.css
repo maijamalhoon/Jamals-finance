@@ -3,21 +3,7 @@
 @media (max-width: 639px) {
   [data-dashboard-scroll]
     .dashboard-overview
-    .dashboard-balance-hero {
-    display: flex;
-    width: 100%;
-    min-height: calc(100vh - 10rem);
-    min-height: max(13rem, calc(100dvh - 10rem));
-    align-items: center;
-    justify-content: center;
-    box-sizing: border-box;
-  }
-
-  [data-dashboard-scroll]
-    .dashboard-overview
     .dashboard-balance-layout {
-    width: 100%;
-    margin-inline: auto;
     gap: clamp(1.35rem, 5vw, 1.8rem) !important;
   }
 
