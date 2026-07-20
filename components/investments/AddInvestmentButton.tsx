@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { BriefcaseBusiness } from "lucide-react";
+import PageHeadingActionPortal from "@/components/layout/PageHeadingActionPortal";
 import InvestmentModal from "./InvestmentModal";
 
 interface AddInvestmentButtonProps {
@@ -19,14 +20,16 @@ export default function AddInvestmentButton({
 
   return (
     <>
-      <button
-        type="button"
-        onClick={() => setOpen(true)}
-        className="investment-action w-full sm:w-auto"
-      >
-        {showIcon ? <BriefcaseBusiness size={16} /> : null}
-        {label}
-      </button>
+      <PageHeadingActionPortal page="investments">
+        <button
+          type="button"
+          onClick={() => setOpen(true)}
+          className="investment-action w-full sm:w-auto"
+        >
+          {showIcon ? <BriefcaseBusiness size={16} /> : null}
+          {label}
+        </button>
+      </PageHeadingActionPortal>
 
       <InvestmentModal
         open={open}
