@@ -181,10 +181,17 @@ export default function GlobalScrollToTop() {
             className="grid place-items-center"
           >
             <ArrowUp
+              key="extra-heavy-scroll-arrow"
               size={36}
-              strokeWidth={12}
+              strokeWidth={16}
               strokeLinecap="round"
               strokeLinejoin="round"
+              className="overflow-visible"
+              style={{
+                strokeWidth: 16,
+                filter:
+                  "drop-shadow(1.4px 0 0 currentColor) drop-shadow(-1.4px 0 0 currentColor) drop-shadow(0 1.4px 0 currentColor) drop-shadow(0 -1.4px 0 currentColor)",
+              }}
             />
           </motion.span>
         </motion.button>
