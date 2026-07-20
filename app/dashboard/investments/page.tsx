@@ -2,7 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import AddInvestmentButton from "@/components/investments/AddInvestmentButton";
 import InvestmentOverview from "@/components/investments/InvestmentOverview";
 import EmptyState from "@/components/ui/empty-state";
-import { AlertTriangle, BarChart2, Sparkles, TrendingUp } from "lucide-react";
+import { AlertTriangle, BarChart2 } from "lucide-react";
 import {
   aggregateInvestmentHoldings,
   getAggregatedPortfolioTotals,
@@ -54,26 +54,7 @@ export default async function InvestmentsPage() {
 
   return (
     <div className="space-y-5">
-      <div className="page-heading finance-surface-glass overflow-hidden">
-        <div className="flex min-w-0 gap-3">
-          <span
-            className="finance-icon-container mt-0.5"
-            data-size="lg"
-            data-tone="investment"
-          >
-            <TrendingUp size={20} />
-          </span>
-          <div className="min-w-0">
-            <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-active">
-              <Sparkles size={14} />
-              Investments
-            </div>
-            <h2 className="page-title mt-2">Investments</h2>
-            <p className="page-subtitle break-words">
-              Track live crypto, manual assets, portfolio value, and profit/loss.
-            </p>
-          </div>
-        </div>
+      <div className="flex justify-end">
         <AddInvestmentButton />
       </div>
 
