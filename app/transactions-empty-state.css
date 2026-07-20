@@ -1,0 +1,32 @@
+/*
+ * Transactions page no-data presentation.
+ * The existing title, modal action, loaded list, filters and backend logic stay unchanged.
+ */
+
+:where(div):has(> div > h2.page-title):has(#transaction-page-search):has(
+    [data-empty-state-has-action="true"]
+  )
+  > div:has(#transaction-page-search) {
+  display: none !important;
+}
+
+:where(div):has(> div > h2.page-title):has(#transaction-page-search):has(
+    [data-empty-state-has-action="true"]
+  )
+  > .finance-panel:has(> [data-empty-state-has-action="true"]) {
+  padding: 0.75rem 0 1.5rem !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  outline: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+@media (max-width: 639.98px) {
+  :where(div):has(> div > h2.page-title):has(#transaction-page-search):has(
+      [data-empty-state-has-action="true"]
+    )
+    > .finance-panel:has(> [data-empty-state-has-action="true"]) {
+    padding-block: 0.75rem 1.25rem !important;
+  }
+}
