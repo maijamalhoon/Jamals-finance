@@ -222,7 +222,14 @@ export default function MobileHeaderSearchEnhancer() {
 
       const handleOpenPointerDown = (event: PointerEvent) => {
         if (!event.isPrimary || event.button !== 0 || isSearchOpen()) return;
+
+        // Stop the search button from taking focus after the trusted touch.
+        // Open React state manually while the input keeps the cursor/keyboard.
+        event.preventDefault();
         primeAndFocusSearch();
+        queueMicrotask(() => {
+          if (!isSearchOpen()) openButton.click();
+        });
       };
 
       const handleOpenClick = () => {
