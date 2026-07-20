@@ -204,6 +204,15 @@
   }
 }
 
+/* Touch-opened sheets auto-focus the first navigation link. Keep that
+ * programmatic focus from looking like a second active route. */
+@media (max-width: 1023px) and (hover: none) and (pointer: coarse) {
+  [data-mobile-navigation-drawer] nav a:focus-visible:not([aria-current="page"]) {
+    outline: none !important;
+    box-shadow: none !important;
+  }
+}
+
 @media (min-width: 640px) and (max-width: 1023px) {
   [data-mobile-navigation-drawer] {
     width: min(62vw, 23rem) !important;
