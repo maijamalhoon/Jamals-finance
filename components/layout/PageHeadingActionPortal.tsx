@@ -41,7 +41,25 @@ export default function PageHeadingActionPortal({
     const markerParent = markerRef.current?.parentElement ?? null;
     if (!force && !isAuthoredTopActionWrapper(markerParent)) return;
 
-    setTarget(document.getElementById(`jf-${page}-heading-actions`));
+    const headingTarget = document.getElementById(`jf-${page}-heading-actions`);
+    if (!headingTarget) return;
+
+    const sourceContainer = force
+      ? ((markerParent?.closest(".page-heading") as HTMLElement | null) ??
+        markerParent)
+      : markerParent;
+
+    if (sourceContainer) {
+      sourceContainer.dataset.jfHeadingActionSource = page;
+    }
+
+    setTarget(headingTarget);
+
+    return () => {
+      if (sourceContainer?.dataset.jfHeadingActionSource === page) {
+        delete sourceContainer.dataset.jfHeadingActionSource;
+      }
+    };
   }, [force, page, pathname]);
 
   if (target) {
