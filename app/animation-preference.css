@@ -1,7 +1,7 @@
 /* Global animation preference overrides.
  * Standard keeps the current experience unchanged.
  * Fast is accelerated at runtime by MotionProvider.
- * None resolves every CSS animation and transition immediately.
+ * None resolves every CSS, SVG and view transition immediately.
  */
 
 html[data-animation-mode="none"] {
@@ -11,12 +11,21 @@ html[data-animation-mode="none"] {
 html[data-animation-mode="none"] *,
 html[data-animation-mode="none"] *::before,
 html[data-animation-mode="none"] *::after {
+  animation: none !important;
   animation-delay: 0s !important;
   animation-duration: 0s !important;
   animation-iteration-count: 1 !important;
+  transition: none !important;
   transition-delay: 0s !important;
   transition-duration: 0s !important;
   scroll-behavior: auto !important;
+}
+
+html[data-animation-mode="none"] svg animate,
+html[data-animation-mode="none"] svg animateMotion,
+html[data-animation-mode="none"] svg animateTransform,
+html[data-animation-mode="none"] svg set {
+  display: none !important;
 }
 
 html[data-animation-mode="none"]::view-transition-old(root),
