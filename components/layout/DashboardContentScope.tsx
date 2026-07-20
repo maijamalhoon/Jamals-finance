@@ -3,7 +3,7 @@
 import { usePathname } from "next/navigation";
 import { useEffect, useState, type CSSProperties, type ReactNode } from "react";
 
-import NoAnimationPerformanceMode from "@/components/performance/NoAnimationPerformanceMode";
+import AnimationPerformanceMode from "@/components/performance/NoAnimationPerformanceMode";
 import { getDocumentAnimationMode } from "@/lib/animation-preference";
 
 const CONTENT_TYPOGRAPHY_ROUTES = [
@@ -141,7 +141,9 @@ export default function DashboardContentScope({
     : undefined;
 
   useEffect(() => {
-    if (getDocumentAnimationMode() === "none") {
+    const animationMode = getDocumentAnimationMode();
+
+    if (animationMode === "none") {
       setInitialDocumentReady(true);
       return;
     }
@@ -149,6 +151,19 @@ export default function DashboardContentScope({
     let cancelled = false;
     let firstFrame = 0;
     let secondFrame = 0;
+
+    if (animationMode === "fast") {
+      // Fast mode preserves the authored entrance motion, but does not wait for
+      // full font and window load completion before the route becomes visible.
+      firstFrame = window.requestAnimationFrame(() => {
+        if (!cancelled) setInitialDocumentReady(true);
+      });
+
+      return () => {
+        cancelled = true;
+        window.cancelAnimationFrame(firstFrame);
+      };
+    }
 
     const revealAfterFinalLayout = async () => {
       try {
@@ -192,7 +207,7 @@ export default function DashboardContentScope({
         gateInitialReveal ? (initialDocumentReady ? "ready" : "pending") : undefined
       }
     >
-      <NoAnimationPerformanceMode />
+      <AnimationPerformanceMode />
       {isTransactionsPage ? (
         children
       ) : pageHeading ? (
