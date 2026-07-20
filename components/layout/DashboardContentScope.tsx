@@ -80,6 +80,17 @@ const PAGE_HEADING_META = {
 
 type PageHeadingMeta = (typeof PAGE_HEADING_META)[keyof typeof PAGE_HEADING_META];
 
+const PAGE_HEADING_ACTION_KEYS = new Set<string>([
+  "accounts",
+  "income",
+  "expenses",
+  "goals",
+  "payables",
+  "investments",
+  "analytics",
+  "reports",
+]);
+
 function matchesRouteGroup(
   pathname: string | null,
   routes: readonly string[],
@@ -188,9 +199,9 @@ export default function DashboardContentScope({
             >
               {pageHeading.label}
             </h1>
-            {pageHeading.key === "analytics" ? (
+            {PAGE_HEADING_ACTION_KEYS.has(pageHeading.key) ? (
               <div
-                id="jf-analytics-heading-actions"
+                id={`jf-${pageHeading.key}-heading-actions`}
                 className="jf-unified-page-actions"
               />
             ) : null}
