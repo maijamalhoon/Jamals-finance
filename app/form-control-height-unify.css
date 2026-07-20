@@ -1,0 +1,33 @@
+/*
+ * Global form-control height authority.
+ * Keeps every single-line input, select, picker and segmented option compact
+ * and identical without changing textarea sizing, submit buttons, data or logic.
+ */
+
+:root {
+  --jf-global-form-control-height: 2.5rem;
+}
+
+:is(form, [data-slot="dialog-content"], .finance-modal-content)
+  :is(
+    input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]):not([type="file"]),
+    select,
+    [data-slot="input"],
+    [data-slot="select-trigger"],
+    [role="combobox"],
+    [role="listbox"][aria-roledescription="scroll picker"],
+    button[aria-haspopup="listbox"],
+    button[aria-haspopup="dialog"][aria-controls$="-calendar"],
+    button[role="radio"],
+    .finance-account-select
+  ) {
+  box-sizing: border-box !important;
+  height: var(--jf-global-form-control-height) !important;
+  min-height: var(--jf-global-form-control-height) !important;
+  max-height: var(--jf-global-form-control-height) !important;
+}
+
+/* Portal-rendered select choices keep the same compact rhythm. */
+[data-slot="select-content"] [data-slot="select-item"] {
+  min-height: var(--jf-global-form-control-height) !important;
+}
