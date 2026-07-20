@@ -133,28 +133,26 @@ export default function DashboardContentScope({
         isRemainingTypeIconPage ? "true" : undefined
       }
       data-transactions-type-icons={isTransactionsPage ? "true" : undefined}
-      data-jf-page={pageHeading?.key}
+      data-jf-page={isTransactionsPage ? undefined : pageHeading?.key}
     >
-      {pageHeading ? (
-        isTransactionsPage ? (
-          <div className="jf-unified-page-body">{children}</div>
-        ) : (
-          <>
-            <header
-              className="jf-unified-page-heading"
-              aria-labelledby={`jf-${pageHeading.key}-page-title`}
+      {isTransactionsPage ? (
+        children
+      ) : pageHeading ? (
+        <>
+          <header
+            className="jf-unified-page-heading"
+            aria-labelledby={`jf-${pageHeading.key}-page-title`}
+          >
+            <span className="jf-unified-page-accent" aria-hidden="true" />
+            <h1
+              id={`jf-${pageHeading.key}-page-title`}
+              className="jf-unified-page-title"
             >
-              <span className="jf-unified-page-accent" aria-hidden="true" />
-              <h1
-                id={`jf-${pageHeading.key}-page-title`}
-                className="jf-unified-page-title"
-              >
-                {pageHeading.label}
-              </h1>
-            </header>
-            <div className="jf-unified-page-body">{children}</div>
-          </>
-        )
+              {pageHeading.label}
+            </h1>
+          </header>
+          <div className="jf-unified-page-body">{children}</div>
+        </>
       ) : (
         children
       )}
