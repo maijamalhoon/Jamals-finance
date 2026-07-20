@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Download } from "lucide-react";
 import { toast } from "sonner";
+import PageHeadingActionPortal from "@/components/layout/PageHeadingActionPortal";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/client";
 import { getAppDateKey } from "@/lib/dates";
@@ -127,16 +128,18 @@ export default function ExportButton({
   }
 
   return (
-    <Button
-      type="button"
-      onClick={handleExport}
-      loading={loading}
-      loadingLabel="Exporting…"
-      variant="outline"
-      className="finance-control"
-    >
-      <Download size={15} />
-      Export CSV
-    </Button>
+    <PageHeadingActionPortal page="reports" force>
+      <Button
+        type="button"
+        onClick={handleExport}
+        loading={loading}
+        loadingLabel="Exporting…"
+        variant="outline"
+        className="finance-control"
+      >
+        <Download size={15} />
+        Export CSV
+      </Button>
+    </PageHeadingActionPortal>
   );
 }
