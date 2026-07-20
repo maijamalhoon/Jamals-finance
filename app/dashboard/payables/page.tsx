@@ -199,12 +199,13 @@ export default async function PayablesPage({
         <div className="finance-panel px-5">
           <EmptyState
             icon={HandCoins}
-            title="No payable records found"
+            title={allPayables.length ? "No payables found" : "No payables yet"}
             description={
               allPayables.length ?
                 "Try a different person, item, reason, or status filter."
-              : "Add the first person or item you need to return and track every repayment."
+              : "Add your first payable to see repayment progress here."
             }
+            action={allPayables.length ? undefined : <AddPayableButton />}
           />
         </div>
       ) : (
