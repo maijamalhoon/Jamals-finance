@@ -48,6 +48,15 @@
   text-wrap: balance;
 }
 
+[data-jf-page] .jf-unified-page-actions {
+  display: flex;
+  min-width: 0;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: flex-end;
+  margin-left: auto;
+}
+
 /* Remove the old decorative header blocks and their embedded action buttons. */
 [data-jf-page="accounts"] .jf-unified-page-body > div > .page-heading:first-child,
 [data-jf-page="income"] .jf-unified-page-body > div > .page-heading:first-child,
