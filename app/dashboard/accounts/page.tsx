@@ -81,7 +81,7 @@ export default async function AccountsPage() {
           />
         </div>
       ) : !safeAccounts.length ? (
-        <div className="finance-panel px-5">
+        <div className="py-3 sm:py-6">
           <EmptyState
             icon={Landmark}
             title="No accounts yet"
