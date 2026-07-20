@@ -181,12 +181,12 @@ export default function GlobalScrollToTop() {
             className="grid place-items-center"
           >
             <ArrowUp
-              key="scroll-arrow-weight-8"
+              key="scroll-arrow-weight-5-5"
               size={36}
-              strokeWidth={8}
+              strokeWidth={5.5}
               strokeLinecap="round"
               strokeLinejoin="round"
-              style={{ strokeWidth: 8 }}
+              style={{ strokeWidth: 5.5 }}
             />
           </motion.span>
         </motion.button>
