@@ -6,8 +6,13 @@ import FinancePickerKeyboardGuard from "@/components/forms/FinancePickerKeyboard
 
 const BODY_CONTACT_ATTRIBUTE = "data-mobile-scroll-contact";
 const BODY_TOP_ATTRIBUTE = "data-mobile-dashboard-top";
+const BODY_REVEAL_ATTRIBUTE = "data-mobile-scroll-reveal";
 const TOP_THRESHOLD = 1;
-const RELEASE_REVEAL_DELAY = 700;
+const SCROLL_DIRECTION_THRESHOLD = 1;
+const RELEASE_REVEAL_DELAY = 1_500;
+const REVEAL_VISIBLE_DURATION = 2_000;
+
+type ScrollDirection = "up" | "down" | null;
 
 function isSearchExpanded() {
   return Boolean(
@@ -60,13 +65,30 @@ export default function MobileScrollContactGuard() {
     let activePointerId: number | null = null;
     let pointerStartedInsideScroll = false;
     let didScrollDuringContact = false;
+    let touchReleasePending = false;
     let syncingTopState = false;
-    let releaseTimer: number | null = null;
+    let lastScrollTop = Math.max(0, scrollContainer.scrollTop);
+    let lastScrollDirection: ScrollDirection = null;
+    let revealDelayTimer: number | null = null;
+    let revealHideTimer: number | null = null;
+    let wheelIdleTimer: number | null = null;
 
-    const clearReleaseTimer = () => {
-      if (releaseTimer === null) return;
-      window.clearTimeout(releaseTimer);
-      releaseTimer = null;
+    const clearRevealDelayTimer = () => {
+      if (revealDelayTimer === null) return;
+      window.clearTimeout(revealDelayTimer);
+      revealDelayTimer = null;
+    };
+
+    const clearRevealHideTimer = () => {
+      if (revealHideTimer === null) return;
+      window.clearTimeout(revealHideTimer);
+      revealHideTimer = null;
+    };
+
+    const clearWheelIdleTimer = () => {
+      if (wheelIdleTimer === null) return;
+      window.clearTimeout(wheelIdleTimer);
+      wheelIdleTimer = null;
     };
 
     const setContactState = (active: boolean) => {
@@ -76,6 +98,15 @@ export default function MobileScrollContactGuard() {
       }
 
       document.body.removeAttribute(BODY_CONTACT_ATTRIBUTE);
+    };
+
+    const setRevealState = (active: boolean) => {
+      if (active) {
+        document.body.setAttribute(BODY_REVEAL_ATTRIBUTE, "true");
+        return;
+      }
+
+      document.body.removeAttribute(BODY_REVEAL_ATTRIBUTE);
     };
 
     const syncTopState = () => {
@@ -101,11 +132,53 @@ export default function MobileScrollContactGuard() {
       });
     };
 
-    const releaseContactAfterDelay = () => {
-      clearReleaseTimer();
-      releaseTimer = window.setTimeout(() => {
-        releaseTimer = null;
+    const beginTimedReveal = () => {
+      clearRevealDelayTimer();
+      clearRevealHideTimer();
+      touchReleasePending = false;
+      setContactState(false);
+
+      if (lastScrollDirection !== "up" || isSearchExpanded()) {
+        setRevealState(false);
+        syncTopState();
+        return;
+      }
+
+      setRevealState(true);
+      syncTopState();
+      revealHideTimer = window.setTimeout(() => {
+        revealHideTimer = null;
+        setRevealState(false);
+        syncTopState();
+      }, REVEAL_VISIBLE_DURATION);
+    };
+
+    const scheduleTouchReleaseReveal = () => {
+      clearRevealDelayTimer();
+      clearRevealHideTimer();
+      clearWheelIdleTimer();
+      setRevealState(false);
+      setContactState(true);
+      touchReleasePending = true;
+
+      revealDelayTimer = window.setTimeout(() => {
+        revealDelayTimer = null;
+        beginTimedReveal();
+      }, RELEASE_REVEAL_DELAY);
+    };
+
+    const scheduleWheelReveal = () => {
+      clearWheelIdleTimer();
+      wheelIdleTimer = window.setTimeout(() => {
+        wheelIdleTimer = null;
+
+        if (lastScrollDirection === "up") {
+          beginTimedReveal();
+          return;
+        }
+
         setContactState(false);
+        setRevealState(false);
         syncTopState();
       }, RELEASE_REVEAL_DELAY);
     };
@@ -121,20 +194,47 @@ export default function MobileScrollContactGuard() {
       const target = event.target;
       if (!(target instanceof Node) || !scrollContainer.contains(target)) return;
 
-      clearReleaseTimer();
+      clearRevealDelayTimer();
+      clearRevealHideTimer();
+      clearWheelIdleTimer();
+      setRevealState(false);
+      touchReleasePending = false;
       activePointerId = event.pointerId;
       pointerStartedInsideScroll = true;
-      didScrollDuringContact = document.body.hasAttribute(
-        BODY_CONTACT_ATTRIBUTE,
-      );
+      didScrollDuringContact = false;
     };
 
     const handleScroll = () => {
-      if (activePointerId !== null && pointerStartedInsideScroll) {
-        didScrollDuringContact = true;
-        setContactState(true);
+      const nextScrollTop = Math.max(0, scrollContainer.scrollTop);
+      const scrollDelta = nextScrollTop - lastScrollTop;
+
+      if (Math.abs(scrollDelta) >= SCROLL_DIRECTION_THRESHOLD) {
+        lastScrollDirection = scrollDelta < 0 ? "up" : "down";
+        lastScrollTop = nextScrollTop;
       }
 
+      if (activePointerId !== null && pointerStartedInsideScroll) {
+        clearRevealDelayTimer();
+        clearRevealHideTimer();
+        clearWheelIdleTimer();
+        setRevealState(false);
+        didScrollDuringContact = true;
+        setContactState(true);
+        syncTopState();
+        return;
+      }
+
+      if (touchReleasePending) {
+        setContactState(true);
+        syncTopState();
+        return;
+      }
+
+      clearRevealDelayTimer();
+      clearRevealHideTimer();
+      setRevealState(false);
+      setContactState(true);
+      scheduleWheelReveal();
       syncTopState();
     };
 
@@ -144,10 +244,15 @@ export default function MobileScrollContactGuard() {
       activePointerId = null;
       pointerStartedInsideScroll = false;
 
-      if (didScrollDuringContact) {
-        releaseContactAfterDelay();
+      if (didScrollDuringContact && lastScrollDirection === "up") {
+        scheduleTouchReleaseReveal();
       } else {
+        clearRevealDelayTimer();
+        clearRevealHideTimer();
+        clearWheelIdleTimer();
+        touchReleasePending = false;
         setContactState(false);
+        setRevealState(false);
         syncTopState();
       }
 
@@ -155,11 +260,15 @@ export default function MobileScrollContactGuard() {
     };
 
     const resetContact = () => {
-      clearReleaseTimer();
+      clearRevealDelayTimer();
+      clearRevealHideTimer();
+      clearWheelIdleTimer();
       activePointerId = null;
       pointerStartedInsideScroll = false;
       didScrollDuringContact = false;
+      touchReleasePending = false;
       setContactState(false);
+      setRevealState(false);
       syncTopState();
     };
 
@@ -193,7 +302,9 @@ export default function MobileScrollContactGuard() {
 
     return () => {
       observer.disconnect();
-      clearReleaseTimer();
+      clearRevealDelayTimer();
+      clearRevealHideTimer();
+      clearWheelIdleTimer();
       scrollContainer.removeEventListener("pointerdown", handlePointerDown);
       scrollContainer.removeEventListener("scroll", handleScroll);
       document.removeEventListener("pointerup", releasePointer, true);
@@ -203,7 +314,9 @@ export default function MobileScrollContactGuard() {
       activePointerId = null;
       pointerStartedInsideScroll = false;
       didScrollDuringContact = false;
+      touchReleasePending = false;
       document.body.removeAttribute(BODY_CONTACT_ATTRIBUTE);
+      document.body.removeAttribute(BODY_REVEAL_ATTRIBUTE);
       document.body.removeAttribute(BODY_TOP_ATTRIBUTE);
     };
   }, []);
