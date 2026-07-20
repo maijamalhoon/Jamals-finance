@@ -1,0 +1,25 @@
+/* Global animation preference overrides.
+ * Standard keeps the current experience unchanged.
+ * Fast is accelerated at runtime by MotionProvider.
+ * None resolves every CSS animation and transition immediately.
+ */
+
+html[data-animation-mode="none"] {
+  scroll-behavior: auto !important;
+}
+
+html[data-animation-mode="none"] *,
+html[data-animation-mode="none"] *::before,
+html[data-animation-mode="none"] *::after {
+  animation-delay: 0s !important;
+  animation-duration: 0s !important;
+  animation-iteration-count: 1 !important;
+  transition-delay: 0s !important;
+  transition-duration: 0s !important;
+  scroll-behavior: auto !important;
+}
+
+html[data-animation-mode="none"]::view-transition-old(root),
+html[data-animation-mode="none"]::view-transition-new(root) {
+  animation: none !important;
+}
