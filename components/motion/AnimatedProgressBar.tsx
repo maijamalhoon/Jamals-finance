@@ -1,6 +1,10 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import {
+  getDocumentAnimationMode,
+  scaleAnimationMilliseconds,
+} from "@/lib/animation-preference";
 
 export default function AnimatedProgressBar({
   value,
@@ -21,16 +25,30 @@ export default function AnimatedProgressBar({
   }, [value]);
 
   useEffect(() => {
-    setReady(false);
+    const animationMode = getDocumentAnimationMode();
 
+    if (animationMode === "none") {
+      setReady(true);
+      return;
+    }
+
+    setReady(false);
+    let timeoutId = 0;
     const frame = window.requestAnimationFrame(() => {
-      window.setTimeout(() => {
-        setReady(true);
-      }, delay * 1000);
+      timeoutId = window.setTimeout(
+        () => setReady(true),
+        scaleAnimationMilliseconds(delay * 1000, animationMode),
+      );
     });
 
-    return () => window.cancelAnimationFrame(frame);
+    return () => {
+      window.cancelAnimationFrame(frame);
+      window.clearTimeout(timeoutId);
+    };
   }, [safeValue, delay]);
+
+  const animationMode = getDocumentAnimationMode();
+  const transitionDuration = scaleAnimationMilliseconds(1100, animationMode);
 
   return (
     <div
@@ -46,8 +64,10 @@ export default function AnimatedProgressBar({
           minWidth: ready && safeValue > 0 ? "8px" : "0px",
           backgroundColor: accent,
           transition:
-            "width 1100ms cubic-bezier(0.16, 1, 0.3, 1), min-width 1100ms cubic-bezier(0.16, 1, 0.3, 1)",
-          willChange: "width",
+            transitionDuration === 0
+              ? "none"
+              : `width ${transitionDuration}ms cubic-bezier(0.16, 1, 0.3, 1), min-width ${transitionDuration}ms cubic-bezier(0.16, 1, 0.3, 1)`,
+          willChange: animationMode === "none" ? "auto" : "width",
         }}
       />
     </div>
