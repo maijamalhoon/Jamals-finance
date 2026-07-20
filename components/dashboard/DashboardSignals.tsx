@@ -2,6 +2,10 @@
 
 import { motion } from "framer-motion";
 import { Activity, CalendarCheck, Flame } from "lucide-react";
+import {
+  motionEase,
+} from "@/components/motion/animation-config";
+import { scaleAnimationSeconds } from "@/lib/animation-preference";
 
 function clamp(value: number, min = 0, max = 100) {
   return Math.min(max, Math.max(min, value));
@@ -12,13 +16,13 @@ function Sparkline({ values }: { values: number[] }) {
   const height = 58;
   const max = Math.max(...values, 1);
   const points =
-    values.length > 1 ?
-      values.map((value, index) => {
-        const x = (index / (values.length - 1)) * width;
-        const y = height - (value / max) * (height - 8) - 4;
-        return [x, y] as const;
-      })
-    : [[0, height - 4] as const, [width, height - 4] as const];
+    values.length > 1
+      ? values.map((value, index) => {
+          const x = (index / (values.length - 1)) * width;
+          const y = height - (value / max) * (height - 8) - 4;
+          return [x, y] as const;
+        })
+      : [[0, height - 4] as const, [width, height - 4] as const];
 
   const path = points
     .map(([x, y], index) => {
@@ -44,14 +48,20 @@ function Sparkline({ values }: { values: number[] }) {
         fill="url(#dailySpendSpark)"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ duration: 0.18, ease: [0.16, 1, 0.3, 1] }}
+        transition={{
+          duration: scaleAnimationSeconds(0.18),
+          ease: motionEase,
+        }}
       />
       <motion.path
         d={path}
         fill="none"
         initial={{ pathLength: 0, opacity: 0.65 }}
         animate={{ pathLength: 1, opacity: 1 }}
-        transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+        transition={{
+          duration: scaleAnimationSeconds(0.2),
+          ease: motionEase,
+        }}
         stroke="var(--payables)"
         strokeLinecap="round"
         strokeLinejoin="round"
@@ -88,7 +98,10 @@ function Donut({ value }: { value: number }) {
           strokeDasharray={circumference}
           initial={{ strokeDashoffset: circumference }}
           animate={{ strokeDashoffset: offset }}
-          transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+          transition={{
+            duration: scaleAnimationSeconds(0.2),
+            ease: motionEase,
+          }}
           strokeLinecap="round"
           strokeWidth="12"
         />
@@ -175,14 +188,14 @@ export default function DashboardSignals({
                 initial={{ opacity: 0, scale: 0.84 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{
-                  duration: 0.16,
-                  delay: Math.min(index * 0.006, 0.12),
-                  ease: [0.16, 1, 0.3, 1],
+                  duration: scaleAnimationSeconds(0.16),
+                  delay: scaleAnimationSeconds(Math.min(index * 0.006, 0.12)),
+                  ease: motionEase,
                 }}
                 className={`aspect-square rounded-[9px] ${
-                  active ?
-                    "bg-transfer shadow-[var(--shadow-xs)]"
-                  : "bg-surface-tinted"
+                  active
+                    ? "bg-transfer shadow-[var(--shadow-xs)]"
+                    : "bg-surface-tinted"
                 }`}
               />
             );
