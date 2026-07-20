@@ -20,6 +20,7 @@ import "./settings-label-icon-simplify.css";
 import "./settings-responsive-color-balance.css";
 import "./settings-card-border-reset.css";
 import "./settings-row-hover-unify.css";
+import "./settings-animation-control.css";
 
 export const dynamic = "force-dynamic";
 
