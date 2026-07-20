@@ -1,0 +1,127 @@
+/* Landing surface unification.
+   Uses the floating header surface as the single background source for every
+   content-bearing card/row. Layout, data, interactions and motion stay intact. */
+
+.jf-node4-landing {
+  --jf-landing-card-surface: color-mix(in srgb, var(--jf-surface-solid) 80%, transparent);
+}
+
+/* Main content surfaces */
+.jf-node4-landing :is(
+  .jf-landing-header,
+  .jf-dashboard-preview,
+  .jf-preview-balance,
+  .jf-preview-metrics > div,
+  .jf-chart-panel,
+  .jf-activity-panel,
+  .jf-activity-list > div,
+  .jf-value-rail,
+  .jf-feature,
+  .jf-insight-visual,
+  .jf-workflow-section,
+  .jf-step-icon,
+  .jf-privacy-item,
+  .jf-final-cta,
+  .jf-landing-footer > div
+) {
+  background: var(--jf-landing-card-surface);
+}
+
+/* Keep the highlighted balance panel readable after removing its gradient. */
+.jf-node4-landing .jf-preview-balance {
+  color: var(--jf-ink);
+  box-shadow: var(--jf-shadow-soft);
+}
+
+.jf-node4-landing .jf-preview-balance p {
+  color: var(--jf-muted);
+  opacity: 1;
+}
+
+.jf-node4-landing .jf-preview-balance > div:first-child > span {
+  color: var(--jf-blue);
+  background: var(--jf-blue-soft);
+}
+
+.jf-node4-landing .jf-balance-orbit {
+  color: var(--jf-blue);
+  background: var(--jf-blue-soft);
+  box-shadow: none;
+}
+
+/* Mobile footer navigation rows are cards as well. */
+@media (max-width: 639px) {
+  .jf-node4-landing .jf-footer-nav > div {
+    background: var(--jf-landing-card-surface);
+  }
+}
+
+/* Preserve hover motion while keeping the approved shared surface color. */
+.jf-node4-landing :is(
+  .jf-feature:hover,
+  .jf-privacy-item:hover,
+  .jf-activity-list > div:hover
+) {
+  background: var(--jf-landing-card-surface);
+}
+
+/* Compact only the empty space between card/row groups. */
+.jf-node4-landing .jf-preview-metrics,
+.jf-node4-landing .jf-preview-grid {
+  margin-top: 0.5rem;
+  gap: 0.5rem;
+}
+
+.jf-node4-landing .jf-activity-list {
+  margin-top: 0.5rem;
+  gap: 0.35rem;
+}
+
+.jf-node4-landing .jf-feature-list {
+  gap: 0.55rem;
+}
+
+.jf-node4-landing .jf-privacy-list {
+  gap: 0.25rem;
+}
+
+.jf-node4-landing .jf-workflow-list {
+  gap: clamp(0.9rem, 2.2vw, 1.75rem);
+}
+
+.jf-node4-landing .jf-landing-footer > div {
+  gap: clamp(1rem, 2vw, 1.6rem) clamp(1.5rem, 4vw, 3.5rem);
+}
+
+.jf-node4-landing .jf-footer-nav {
+  gap: clamp(1rem, 3vw, 2.5rem);
+}
+
+@media (max-width: 639px) {
+  .jf-node4-landing .jf-preview-metrics,
+  .jf-node4-landing .jf-preview-grid {
+    margin-top: 0.38rem;
+    gap: 0.38rem;
+  }
+
+  .jf-node4-landing .jf-activity-list {
+    margin-top: 0.38rem;
+    gap: 0.28rem;
+  }
+
+  .jf-node4-landing .jf-feature-list {
+    gap: 0.45rem;
+  }
+
+  .jf-node4-landing .jf-workflow-list {
+    gap: 0.75rem;
+  }
+
+  .jf-node4-landing .jf-landing-footer > div {
+    gap: 1rem;
+  }
+
+  .jf-node4-landing .jf-footer-nav {
+    gap: 0.5rem;
+  }
+}
