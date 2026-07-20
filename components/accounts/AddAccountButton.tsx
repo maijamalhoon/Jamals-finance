@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Plus } from "lucide-react";
+import PageHeadingActionPortal from "@/components/layout/PageHeadingActionPortal";
 import AccountModal from "./AccountModal";
 
 interface AddAccountButtonProps {
@@ -19,14 +20,16 @@ export default function AddAccountButton({
 
   return (
     <>
-      <button
-        type="button"
-        onClick={() => setOpen(true)}
-        className="primary-action"
-      >
-        {showIcon ? <Plus size={16} /> : null}
-        {label}
-      </button>
+      <PageHeadingActionPortal page="accounts">
+        <button
+          type="button"
+          onClick={() => setOpen(true)}
+          className="primary-action"
+        >
+          {showIcon ? <Plus size={16} /> : null}
+          {label}
+        </button>
+      </PageHeadingActionPortal>
 
       <AccountModal
         open={open}
