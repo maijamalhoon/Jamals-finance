@@ -134,7 +134,13 @@ export default async function GoalsPage() {
             icon={Target}
             title="No goals yet"
             description="Create your first goal to see savings progress and deadlines here."
-            action={<AddGoalButton accounts={accountList} />}
+            action={
+              <AddGoalButton
+                accounts={accountList}
+                label="Create a goal"
+                showIcon={false}
+              />
+            }
           />
         </div>
       ) : (
