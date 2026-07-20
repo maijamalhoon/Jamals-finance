@@ -20,6 +20,7 @@ type SearchParams = {
   search?: string;
   from?: string;
   to?: string;
+  period?: string;
   source?: string;
   category?: string;
   account?: string;
@@ -31,13 +32,16 @@ type SearchParams = {
   limit?: string;
 };
 
-type TransactionSort = "newest" | "oldest" | "highest" | "lowest";
+type TransactionSort = "newest" | "oldest" | "highest" | "lowest" | "name";
 type TransactionListRow = ComponentProps<
   typeof ViewportTransactionList
 >["transactions"][number];
 
 function cleanSort(value?: string): TransactionSort {
-  return value === "oldest" || value === "highest" || value === "lowest"
+  return value === "oldest" ||
+    value === "highest" ||
+    value === "lowest" ||
+    value === "name"
     ? value
     : "newest";
 }
@@ -45,6 +49,46 @@ function cleanSort(value?: string): TransactionSort {
 function transactionTime(value: unknown) {
   const parsed = new Date(String(value ?? "")).getTime();
   return Number.isNaN(parsed) ? 0 : parsed;
+}
+
+function transactionName(transaction: TransactionListRow) {
+  const type = String(transaction?.type ?? "").toLowerCase();
+  const parentName = transaction?.categories?.parent?.name?.trim();
+  const categoryName = transaction?.categories?.name?.trim();
+
+  if (type === "transfer") {
+    return (
+      transaction?.accounts?.name?.trim() ||
+      transaction?.note?.trim() ||
+      "Transfer"
+    );
+  }
+
+  if (type === "goal") {
+    return transaction?.item_name?.trim() || "Goal contribution";
+  }
+
+  if (type === "investment") {
+    return transaction?.item_name?.trim() || categoryName || "Investment";
+  }
+
+  if (type === "refund") {
+    return categoryName || transaction?.note?.trim() || "Expense refund";
+  }
+
+  if (parentName && categoryName) return `${parentName} / ${categoryName}`;
+  if (categoryName) return categoryName;
+  if (type === "income") return transaction?.source_name?.trim() || "Income";
+  if (type === "expense") return "Expense";
+
+  return (
+    transaction?.item_name?.trim() ||
+    transaction?.source_name?.trim() ||
+    transaction?.person_name?.trim() ||
+    transaction?.note?.trim() ||
+    transaction?.accounts?.name?.trim() ||
+    "Transaction"
+  );
 }
 
 function cleanLimit(value?: string) {
@@ -81,6 +125,7 @@ export default async function TransactionsPage({
   const search = resolvedSearchParams.search;
   const from = resolvedSearchParams.from;
   const to = resolvedSearchParams.to;
+  const period = resolvedSearchParams.period;
   const source = resolvedSearchParams.source;
   const category = resolvedSearchParams.category;
   const account = resolvedSearchParams.account;
@@ -260,29 +305,38 @@ export default async function TransactionsPage({
         return sort === "highest" ? amountDifference : -amountDifference;
       }
 
+      if (sort === "name") {
+        const nameDifference = transactionName(left).localeCompare(
+          transactionName(right),
+          "en",
+          { sensitivity: "base", numeric: true },
+        );
+        if (nameDifference !== 0) return nameDifference;
+      }
+
       const dateDifference =
         transactionTime(right.date) - transactionTime(left.date);
       if (dateDifference !== 0) {
-        return sort === "newest" ? dateDifference : -dateDifference;
+        return sort === "oldest" ? -dateDifference : dateDifference;
       }
 
       const createdDifference =
         transactionTime(right.created_at) - transactionTime(left.created_at);
       if (createdDifference !== 0) {
-        return sort === "newest" ? createdDifference : -createdDifference;
+        return sort === "oldest" ? -createdDifference : createdDifference;
       }
 
       const activityDifference =
         transactionTime(right.updated_at ?? right.created_at) -
         transactionTime(left.updated_at ?? left.created_at);
       if (activityDifference !== 0) {
-        return sort === "newest" ? activityDifference : -activityDifference;
+        return sort === "oldest" ? -activityDifference : activityDifference;
       }
 
       const idDifference = String(right.id ?? "").localeCompare(
         String(left.id ?? ""),
       );
-      return sort === "newest" ? idDifference : -idDifference;
+      return sort === "oldest" ? -idDifference : idDifference;
     });
 
   const baseParams = new URLSearchParams();
@@ -291,6 +345,7 @@ export default async function TransactionsPage({
   addParam(baseParams, "search", search);
   addParam(baseParams, "from", from);
   addParam(baseParams, "to", to);
+  addParam(baseParams, "period", period);
   addParam(baseParams, "source", source);
   addParam(baseParams, "category", category);
   addParam(baseParams, "account", account);
@@ -349,6 +404,7 @@ export default async function TransactionsPage({
             baseQuery={baseParams.toString()}
             stepLimit={STEP_LIMIT}
             maxLimit={MAX_LIMIT}
+            groupByMonth={sort === "newest" || sort === "oldest"}
           />
         )}
       </div>
