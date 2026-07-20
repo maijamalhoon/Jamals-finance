@@ -32,7 +32,11 @@ function getDashboardHref(target: EventTarget | null) {
   }
 }
 
-export default function NoAnimationPerformanceMode() {
+function isPerformanceAnimationMode(mode: AnimationMode) {
+  return mode === "fast" || mode === "none";
+}
+
+export default function AnimationPerformanceMode() {
   const pathname = usePathname();
   const router = useRouter();
   const insideDashboard = pathname.startsWith("/dashboard");
@@ -44,17 +48,25 @@ export default function NoAnimationPerformanceMode() {
     let idleHandle: number | null = null;
     let timeoutHandle: ReturnType<typeof globalThis.setTimeout> | null = null;
 
-    const isNoAnimationMode = () => getDocumentAnimationMode() === "none";
+    const getActiveMode = () => getDocumentAnimationMode();
 
     const prefetchRoute = (href: string) => {
-      if (!isNoAnimationMode() || prefetchedRoutes.has(href)) return;
+      if (
+        !isPerformanceAnimationMode(getActiveMode()) ||
+        prefetchedRoutes.has(href)
+      ) {
+        return;
+      }
 
       prefetchedRoutes.add(href);
       router.prefetch(href);
     };
 
     const cancelScheduledWork = () => {
-      if (idleHandle !== null && "cancelIdleCallback" in window) {
+      if (
+        idleHandle !== null &&
+        typeof window.cancelIdleCallback === "function"
+      ) {
         window.cancelIdleCallback(idleHandle);
       }
       if (timeoutHandle !== null) globalThis.clearTimeout(timeoutHandle);
@@ -63,24 +75,33 @@ export default function NoAnimationPerformanceMode() {
       timeoutHandle = null;
     };
 
-    const warmNoAnimationExperience = () => {
+    const warmPerformanceExperience = () => {
       cancelScheduledWork();
-      if (!isNoAnimationMode()) return;
 
-      // Form chunks are warmed immediately so the first tap can open a form
-      // without waiting for a lazy bundle download.
+      const mode = getActiveMode();
+      if (!isPerformanceAnimationMode(mode)) return;
+
+      // Warm every dashboard form chunk immediately. Both accelerated modes
+      // keep the first form tap from waiting on a lazy bundle download.
       void preloadDashboardModals();
 
       const prefetchAllRoutes = () => {
         DASHBOARD_ROUTES.forEach(prefetchRoute);
       };
 
-      if ("requestIdleCallback" in window) {
+      if (mode === "none") {
+        timeoutHandle = globalThis.setTimeout(prefetchAllRoutes, 0);
+        return;
+      }
+
+      // Fast mode keeps its visible motion, while route data/chunks are warmed
+      // as soon as the main thread has a small opening.
+      if (typeof window.requestIdleCallback === "function") {
         idleHandle = window.requestIdleCallback(prefetchAllRoutes, {
-          timeout: 350,
+          timeout: 160,
         });
       } else {
-        timeoutHandle = globalThis.setTimeout(prefetchAllRoutes, 0);
+        timeoutHandle = globalThis.setTimeout(prefetchAllRoutes, 40);
       }
     };
 
@@ -91,11 +112,11 @@ export default function NoAnimationPerformanceMode() {
 
     const handleAnimationModeChange = (event: Event) => {
       const nextMode = (event as CustomEvent<AnimationMode>).detail;
-      if (nextMode === "none") warmNoAnimationExperience();
+      if (isPerformanceAnimationMode(nextMode)) warmPerformanceExperience();
       else cancelScheduledWork();
     };
 
-    warmNoAnimationExperience();
+    warmPerformanceExperience();
 
     document.addEventListener("pointerover", handleNavigationIntent, true);
     document.addEventListener("focusin", handleNavigationIntent, true);
