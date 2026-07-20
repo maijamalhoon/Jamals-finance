@@ -172,9 +172,21 @@ type ChartMotionSpreadProps = {
   animationEasing: "ease-out";
 };
 
-export const chartMotion = {
-  animationBegin: 0,
-  animationDuration: motionDurations.chart,
-  animationEasing: "ease-out" as const,
-  isAnimationActive: animationScale > 0,
-} as ChartMotionSpreadProps;
+function createChartMotion(): ChartMotionSpreadProps {
+  const motion: ChartMotionSpreadProps = {
+    animationBegin: 0,
+    animationDuration: motionDurations.chart,
+    animationEasing: "ease-out",
+  };
+
+  Object.defineProperty(motion, "isAnimationActive", {
+    value: animationScale > 0,
+    enumerable: true,
+    configurable: false,
+    writable: false,
+  });
+
+  return motion;
+}
+
+export const chartMotion = createChartMotion();
