@@ -253,7 +253,14 @@ export default function TransactionSearchAutoClose() {
 
     const handleOpenPointerDown = (event: PointerEvent) => {
       if (!event.isPrimary || event.button !== 0 || isSearchOpen()) return;
+
+      // Prevent the button's native focus from replacing the input focus after
+      // the trusted tap. Open React state manually so no second tap is needed.
+      event.preventDefault();
       primeAndFocusSearch();
+      queueMicrotask(() => {
+        if (!isSearchOpen()) openButton.click();
+      });
     };
 
     const handleOpenClick = () => {
