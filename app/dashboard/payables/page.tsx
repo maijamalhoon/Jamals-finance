@@ -6,7 +6,6 @@ import Money from "@/components/currency/Money";
 import EmptyState from "@/components/ui/empty-state";
 import { getPayableStatus } from "@/lib/finance-options";
 import {
-  Banknote,
   CheckCircle2,
   Clock3,
   HandCoins,
@@ -123,22 +122,7 @@ export default async function PayablesPage({
 
   return (
     <div className="space-y-5 pb-8">
-      <div className="page-heading finance-surface-glass overflow-hidden">
-        <div className="flex min-w-0 gap-3">
-          <span className="finance-icon-container mt-0.5" data-size="lg" data-tone="warning">
-            <HandCoins size={20} />
-          </span>
-          <div className="min-w-0">
-            <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-warning">
-              <Banknote size={14} />
-              Money Tools
-            </div>
-            <h2 className="page-title mt-2">Payables</h2>
-            <p className="page-subtitle">
-              Track borrowed money, items, return deadlines, and repayment history.
-            </p>
-          </div>
-        </div>
+      <div className="flex justify-end">
         <AddPayableButton />
       </div>
 
