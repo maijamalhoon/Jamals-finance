@@ -110,10 +110,10 @@
 }
 
 .jf-page-heading-action > button svg {
-  width: 1.2rem !important;
-  height: 1.2rem !important;
-  flex: 0 0 1.2rem;
-  stroke-width: 2.6 !important;
+  width: 1.375rem !important;
+  height: 1.375rem !important;
+  flex: 0 0 1.375rem;
+  stroke-width: 3 !important;
 }
 
 .jf-page-heading-action > button:not([data-loading="true"]) svg {
