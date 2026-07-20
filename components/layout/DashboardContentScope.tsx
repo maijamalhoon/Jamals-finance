@@ -188,6 +188,12 @@ export default function DashboardContentScope({
             >
               {pageHeading.label}
             </h1>
+            {pageHeading.key === "analytics" ? (
+              <div
+                id="jf-analytics-heading-actions"
+                className="jf-unified-page-actions"
+              />
+            ) : null}
           </header>
           <div className="jf-unified-page-body">{children}</div>
         </>
