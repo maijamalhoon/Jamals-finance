@@ -1,0 +1,81 @@
+/*
+ * Empty-state presentation layer.
+ * This file intentionally changes presentation only: no data, state,
+ * animation timing, API, or interaction logic is modified here.
+ */
+
+[data-empty-state] {
+  box-sizing: border-box;
+  overflow-wrap: anywhere;
+}
+
+[data-empty-state] > span:first-child {
+  color: color-mix(in srgb, var(--active), var(--text-secondary) 18%);
+}
+
+/* Dashboard charts previously created a second bordered card inside each card. */
+.dashboard-chart-empty {
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  padding-inline: clamp(0.25rem, 1.2vw, 0.75rem) !important;
+}
+
+.dashboard-chart-empty > div:not([data-empty-state]) {
+  width: 100%;
+  max-width: 26rem;
+  margin-inline: auto;
+}
+
+.dashboard-chart-empty-icon {
+  width: 2rem !important;
+  height: 2rem !important;
+  margin-bottom: 0.5rem !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  color: color-mix(in srgb, var(--active), var(--text-secondary) 18%) !important;
+}
+
+[data-dashboard-shell] :where(.dashboard-chart-empty) {
+  min-height: clamp(8.5rem, 15vw, 10.5rem);
+  box-shadow: none !important;
+}
+
+.dashboard-overview .dashboard-chart-empty {
+  background: transparent !important;
+}
+
+/* Keep empty table/section states compact while preserving the parent surface. */
+.finance-panel > [data-empty-state],
+.finance-reference-card [data-empty-state] {
+  width: 100%;
+}
+
+@media (max-width: 639.98px) {
+  [data-empty-state] {
+    padding-inline: 0.75rem;
+  }
+
+  [data-empty-state][data-empty-state-size="default"] {
+    min-height: 9.5rem;
+    padding-block: 1.75rem;
+  }
+
+  [data-empty-state][data-empty-state-size="compact"] {
+    min-height: 6.75rem;
+    padding-block: 1.125rem;
+  }
+
+  [data-dashboard-shell] :where(.dashboard-chart-empty) {
+    min-height: 7.5rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-empty-state] a {
+    transition: none !important;
+  }
+}
