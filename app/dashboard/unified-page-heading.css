@@ -4,6 +4,19 @@
  * place; only the duplicated decorative header presentation is removed.
  */
 
+/*
+ * On a hard refresh Next.js can stream this layout before the async route body.
+ * Keep the shared label hidden until its page body has an actual element, so
+ * the label and page arrive together in their final position without a jump.
+ */
+@supports selector(:has(*)) {
+  .jf-dashboard-content-frame[data-jf-page]:not(
+      :has(> .jf-unified-page-body > *)
+    ) {
+    visibility: hidden;
+  }
+}
+
 [data-jf-page] .jf-unified-page-heading {
   display: flex;
   min-width: 0;
