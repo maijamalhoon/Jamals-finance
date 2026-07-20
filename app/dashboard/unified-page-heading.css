@@ -109,6 +109,10 @@
   content: none !important;
 }
 
+.jf-page-heading-action > button svg {
+  stroke-width: 2.6;
+}
+
 .jf-page-heading-action > button:not([data-loading="true"]) svg {
   transform-origin: center;
   animation: jf-page-heading-action-attention 4.8s ease-in-out infinite;
