@@ -12,6 +12,7 @@ import {
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Filter, Search, X } from "lucide-react";
 import { BackgroundRefreshStatus } from "@/components/loading/LoadingPrimitives";
+import DatePicker from "@/components/ui/date-picker";
 import {
   Select,
   SelectContent,
@@ -44,6 +45,9 @@ const SORT_OPTIONS: TransactionFilterOption[] = [
 
 const FILTER_CONTROL_CLASS =
   "!h-12 !min-h-12 w-full rounded-2xl !border-0 bg-surface-soft !px-4 !text-sm font-semibold text-text-primary shadow-none !outline-none !ring-0 transition-[background-color,color] hover:bg-hover focus:bg-surface-inset focus:!outline-none focus:!ring-0 focus-visible:!outline-none focus-visible:!ring-0 disabled:cursor-not-allowed disabled:opacity-50";
+
+const FILTER_DATE_PICKER_CLASS =
+  "[&_.field-input]:!h-12 [&_.field-input]:!min-h-12 [&_.field-input]:!rounded-2xl [&_.field-input]:!border-0 [&_.field-input]:!bg-surface-soft [&_.field-input]:!pl-4 [&_.field-input]:!pr-11 [&_.field-input]:!text-sm [&_.field-input]:!font-semibold [&_.field-input]:!text-text-primary [&_.field-input]:!shadow-none [&_.field-input]:!outline-none [&_.field-input]:!ring-0 [&_.field-input:hover]:!bg-hover [&_.field-input:focus]:!bg-surface-inset [&_.field-input:focus]:!outline-none [&_.field-input:focus]:!ring-0 [&_.field-input:focus-visible]:!outline-none [&_.field-input:focus-visible]:!ring-0";
 
 export default function TransactionFilters({
   categories = [],
@@ -311,14 +315,14 @@ export default function TransactionFilters({
             type="button"
             aria-label="Close transaction filters"
             onClick={() => setOpen(false)}
-            className="fixed inset-0 z-[70] bg-background/60 backdrop-blur-[2px] animate-in fade-in duration-150 motion-reduce:animate-none sm:hidden"
+            className="fixed inset-0 z-[70] border-0 bg-background/60 outline-none backdrop-blur-[2px] animate-in fade-in duration-150 motion-reduce:animate-none sm:hidden"
           />
 
           <section
             id="transaction-filter-panel"
             role="dialog"
             aria-labelledby="transaction-filter-title"
-            className="fixed inset-x-2 bottom-2 z-[80] flex max-h-[calc(100dvh-1rem)] min-w-0 flex-col overflow-hidden rounded-[1.75rem] bg-surface-elevated shadow-premium animate-in fade-in zoom-in-95 duration-200 motion-reduce:animate-none sm:absolute sm:inset-x-auto sm:bottom-auto sm:right-0 sm:top-[3.25rem] sm:w-[min(44rem,calc(100vw-3rem))] sm:max-h-[calc(100vh-7rem)]"
+            className="fixed inset-x-2 bottom-2 z-[80] flex h-[calc(100dvh-1rem)] max-h-[46rem] min-w-0 flex-col overflow-hidden rounded-[1.75rem] !border-0 bg-surface-elevated !shadow-none !outline-none !ring-0 animate-in fade-in zoom-in-95 duration-200 motion-reduce:animate-none sm:absolute sm:inset-x-auto sm:bottom-auto sm:right-0 sm:top-[3.25rem] sm:h-auto sm:max-h-[calc(100vh-7rem)] sm:w-[min(44rem,calc(100vw-3rem))] sm:rounded-[1.5rem]"
           >
             <div className="flex shrink-0 items-center justify-between gap-3 px-4 pb-2 pt-4 sm:px-5 sm:pt-5">
               <h3
@@ -331,13 +335,13 @@ export default function TransactionFilters({
                 type="button"
                 aria-label="Close transaction filters"
                 onClick={() => setOpen(false)}
-                className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-transparent text-text-secondary transition-colors hover:bg-hover hover:text-text-primary focus:outline-none focus-visible:outline-none focus-visible:ring-0"
+                className="grid h-10 w-10 shrink-0 place-items-center rounded-full border-0 bg-transparent text-text-secondary shadow-none outline-none ring-0 transition-colors hover:bg-hover hover:text-text-primary focus:outline-none focus-visible:outline-none focus-visible:ring-0"
               >
                 <X size={18} strokeWidth={2.1} aria-hidden="true" />
               </button>
             </div>
 
-            <div className="grid min-w-0 flex-1 grid-cols-1 gap-3 overflow-y-auto px-4 py-2 sm:grid-cols-2 sm:gap-3.5 sm:px-5">
+            <div className="grid min-h-0 min-w-0 flex-1 grid-cols-1 content-start gap-3 overflow-y-auto overscroll-contain px-4 py-2 sm:max-h-[calc(100vh-15rem)] sm:flex-none sm:grid-cols-2 sm:gap-3.5 sm:px-5">
               <FilterField label="Type" htmlFor="transaction-filter-type">
                 <FilterSelect
                   id="transaction-filter-type"
@@ -385,26 +389,26 @@ export default function TransactionFilters({
               </FilterField>
 
               <FilterField label="From date" htmlFor="transaction-filter-from">
-                <input
+                <DatePicker
                   id="transaction-filter-from"
-                  type="date"
                   value={activeFrom}
-                  onChange={(event) =>
-                    updateParams({ from: event.target.value })
-                  }
-                  className={FILTER_CONTROL_CLASS}
+                  onChange={(value) => updateParams({ from: value })}
+                  placeholder="DD/MM/YYYY"
+                  ariaLabel="From date"
+                  scrollPicker={false}
+                  className={FILTER_DATE_PICKER_CLASS}
                 />
               </FilterField>
 
               <FilterField label="To date" htmlFor="transaction-filter-to">
-                <input
+                <DatePicker
                   id="transaction-filter-to"
-                  type="date"
                   value={activeTo}
-                  onChange={(event) =>
-                    updateParams({ to: event.target.value })
-                  }
-                  className={FILTER_CONTROL_CLASS}
+                  onChange={(value) => updateParams({ to: value })}
+                  placeholder="DD/MM/YYYY"
+                  ariaLabel="To date"
+                  scrollPicker={false}
+                  className={FILTER_DATE_PICKER_CLASS}
                 />
               </FilterField>
             </div>
@@ -413,7 +417,7 @@ export default function TransactionFilters({
               {activeControlCount > 0 ? (
                 <button
                   onClick={clearFilters}
-                  className="min-h-11 rounded-full bg-transparent px-3.5 py-2 text-sm font-semibold text-text-secondary transition-colors hover:bg-hover hover:text-text-primary focus:outline-none focus-visible:outline-none focus-visible:ring-0"
+                  className="min-h-11 rounded-full border-0 bg-transparent px-3.5 py-2 text-sm font-semibold text-text-secondary shadow-none outline-none ring-0 transition-colors hover:bg-hover hover:text-text-primary focus:outline-none focus-visible:outline-none focus-visible:ring-0"
                   type="button"
                 >
                   Clear all
@@ -424,7 +428,7 @@ export default function TransactionFilters({
 
               <button
                 onClick={() => setOpen(false)}
-                className="min-h-11 rounded-full border-0 bg-brand/10 px-5 py-2 text-sm font-semibold text-brand shadow-none outline-none transition-[background-color,transform] hover:bg-brand/20 active:scale-[0.98] focus:outline-none focus-visible:outline-none focus-visible:ring-0"
+                className="min-h-11 rounded-full border-0 bg-brand/10 px-5 py-2 text-sm font-semibold text-brand shadow-none outline-none ring-0 transition-[background-color,transform] hover:bg-brand/20 active:scale-[0.98] focus:outline-none focus-visible:outline-none focus-visible:ring-0"
                 type="button"
               >
                 Done
