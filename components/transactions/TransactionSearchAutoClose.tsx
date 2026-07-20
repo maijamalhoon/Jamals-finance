@@ -21,6 +21,26 @@ export default function TransactionSearchAutoClose() {
 
     if (!input || !searchControl || !openButton || !closeButton) return;
 
+    const navigationEntries = window.performance.getEntriesByType(
+      "navigation",
+    ) as PerformanceNavigationTiming[];
+    const legacyNavigationType = (
+      window.performance as Performance & { navigation?: { type?: number } }
+    ).navigation?.type;
+    const pageWasReloaded =
+      navigationEntries[0]?.type === "reload" || legacyNavigationType === 1;
+
+    if (pageWasReloaded) {
+      const url = new URL(window.location.href);
+
+      if (url.searchParams.has("search")) {
+        url.searchParams.delete("search");
+        url.searchParams.delete("limit");
+        window.location.replace(`${url.pathname}${url.search}${url.hash}`);
+        return;
+      }
+    }
+
     // Keep only the app's custom close control. React can restore the JSX
     // search type during re-renders, so enforce text whenever that happens.
     const removeNativeClearControl = () => {
