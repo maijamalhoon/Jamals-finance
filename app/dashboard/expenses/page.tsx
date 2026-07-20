@@ -90,11 +90,7 @@ export default async function ExpensesPage({
 
   return (
     <div data-expenses-page className="space-y-5">
-      <div className="page-heading finance-surface-glass expenses-page-heading">
-        <div className="min-w-0">
-          <h2 className="page-title">Expenses</h2>
-          <p className="page-subtitle">{expenses.length} total entries</p>
-        </div>
+      <div className="flex justify-end">
         <AddExpenseButton />
       </div>
 
