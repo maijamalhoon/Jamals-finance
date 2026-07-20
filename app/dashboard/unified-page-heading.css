@@ -57,6 +57,97 @@
   margin-left: auto;
 }
 
+/*
+ * These rules style only content explicitly portaled into the heading action
+ * slot. No page wrapper, first child, card, grid or content flow is selected.
+ */
+.jf-page-heading-action {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.jf-page-heading-action > button {
+  display: inline-flex !important;
+  width: 2.75rem !important;
+  height: 2.75rem !important;
+  min-width: 2.75rem !important;
+  min-height: 2.75rem !important;
+  max-width: 2.75rem !important;
+  max-height: 2.75rem !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: visible !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  outline: 0 !important;
+  background: transparent !important;
+  background-image: none !important;
+  box-shadow: none !important;
+  color: var(--jf-page-accent, var(--brand)) !important;
+  font-size: 0 !important;
+  line-height: 0 !important;
+  letter-spacing: 0 !important;
+  opacity: 0.92;
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  transition: opacity var(--motion-duration-fast) ease, filter var(--motion-duration-fast) ease !important;
+}
+
+.jf-page-heading-action > button > span {
+  gap: 0 !important;
+}
+
+.jf-page-heading-action > button::before,
+.jf-page-heading-action > button::after {
+  display: none !important;
+  content: none !important;
+}
+
+.jf-page-heading-action > button:not([data-loading="true"]) svg {
+  transform-origin: center;
+  animation: jf-page-heading-action-attention 4.8s ease-in-out infinite;
+}
+
+.jf-page-heading-action > button:is(:hover, :focus-visible) {
+  opacity: 1;
+  filter: saturate(1.08);
+}
+
+@keyframes jf-page-heading-action-attention {
+  0%,
+  68%,
+  100% {
+    transform: translateY(0) scale(1);
+    opacity: 0.9;
+  }
+
+  75% {
+    transform: translateY(-1px) scale(1.08);
+    opacity: 1;
+  }
+
+  82% {
+    transform: translateY(0) scale(0.985);
+    opacity: 0.96;
+  }
+
+  89% {
+    transform: translateY(-0.5px) scale(1.04);
+    opacity: 1;
+  }
+
+  95% {
+    transform: translateY(0) scale(1);
+    opacity: 0.92;
+  }
+}
+
 /* Remove the old decorative header blocks and their embedded action buttons. */
 [data-jf-page="accounts"] .jf-unified-page-body > div > .page-heading:first-child,
 [data-jf-page="income"] .jf-unified-page-body > div > .page-heading:first-child,
@@ -154,5 +245,9 @@
 @media (prefers-reduced-motion: reduce) {
   [data-jf-page] .jf-unified-page-accent {
     box-shadow: none;
+  }
+
+  .jf-page-heading-action > button svg {
+    animation: none !important;
   }
 }
