@@ -11,6 +11,15 @@ type NavigatorWithVirtualKeyboard = Navigator & {
   };
 };
 
+type PrimedInputStyles = {
+  width: string;
+  flex: string;
+  opacity: string;
+  pointerEvents: string;
+  tabIndex: number;
+  ariaHidden: string | null;
+};
+
 export default function MobileHeaderSearchEnhancer() {
   useEffect(() => {
     let boundCleanup: (() => void) | null = null;
@@ -41,8 +50,12 @@ export default function MobileHeaderSearchEnhancer() {
         .virtualKeyboard;
 
       let closeTimer: number | null = null;
-      let verificationFrame: number | null = null;
+      let focusFrame: number | null = null;
+      let focusTimer: number | null = null;
+      let releaseFrame: number | null = null;
+      let primedStyles: PrimedInputStyles | null = null;
       let focusSequence = 0;
+      let closing = false;
 
       const isSearchOpen = () => input.getAttribute("aria-hidden") === "false";
 
@@ -68,11 +81,17 @@ export default function MobileHeaderSearchEnhancer() {
         }
       };
 
-      const cancelFocusVerification = () => {
+      const cancelFocusWork = () => {
         focusSequence += 1;
-        if (verificationFrame !== null) {
-          window.cancelAnimationFrame(verificationFrame);
-          verificationFrame = null;
+
+        if (focusFrame !== null) {
+          window.cancelAnimationFrame(focusFrame);
+          focusFrame = null;
+        }
+
+        if (focusTimer !== null) {
+          window.clearTimeout(focusTimer);
+          focusTimer = null;
         }
       };
 
@@ -80,19 +99,79 @@ export default function MobileHeaderSearchEnhancer() {
         const sequence = ++focusSequence;
 
         queueMicrotask(() => {
-          if (sequence !== focusSequence || !isSearchOpen()) return;
-          focusSearchInput();
+          if (sequence !== focusSequence || !isSearchOpen() || closing) return;
+          focusSearchInput(false);
 
-          verificationFrame = window.requestAnimationFrame(() => {
-            verificationFrame = null;
-            if (sequence !== focusSequence || !isSearchOpen()) return;
-            focusSearchInput();
+          focusFrame = window.requestAnimationFrame(() => {
+            focusFrame = null;
+            if (sequence !== focusSequence || !isSearchOpen() || closing) return;
+            focusSearchInput(false);
+
+            focusTimer = window.setTimeout(() => {
+              focusTimer = null;
+              if (sequence !== focusSequence || !isSearchOpen() || closing) {
+                return;
+              }
+              focusSearchInput(false);
+            }, 90);
           });
         });
       };
 
+      const cancelAutoClose = () => {
+        if (closeTimer === null) return;
+        window.clearTimeout(closeTimer);
+        closeTimer = null;
+      };
+
+      const restorePrimedStyles = () => {
+        if (!primedStyles) return;
+
+        input.style.width = primedStyles.width;
+        input.style.flex = primedStyles.flex;
+        input.style.opacity = primedStyles.opacity;
+        input.style.pointerEvents = primedStyles.pointerEvents;
+
+        if (isSearchOpen()) {
+          input.tabIndex = 0;
+          input.setAttribute("aria-hidden", "false");
+        } else {
+          input.tabIndex = primedStyles.tabIndex;
+          if (primedStyles.ariaHidden === null) {
+            input.removeAttribute("aria-hidden");
+          } else {
+            input.setAttribute("aria-hidden", primedStyles.ariaHidden);
+          }
+        }
+
+        primedStyles = null;
+      };
+
+      const primeAndFocusSearch = () => {
+        if (!primedStyles) {
+          primedStyles = {
+            width: input.style.width,
+            flex: input.style.flex,
+            opacity: input.style.opacity,
+            pointerEvents: input.style.pointerEvents,
+            tabIndex: input.tabIndex,
+            ariaHidden: input.getAttribute("aria-hidden"),
+          };
+        }
+
+        closing = false;
+        input.style.width = "1px";
+        input.style.flex = "0 0 1px";
+        input.style.opacity = "0.01";
+        input.style.pointerEvents = "auto";
+        input.tabIndex = 0;
+        input.setAttribute("aria-hidden", "false");
+        focusSearchInput(true);
+      };
+
       const dismissKeyboard = () => {
-        cancelFocusVerification();
+        closing = true;
+        cancelFocusWork();
         input.blur();
 
         try {
@@ -100,12 +179,6 @@ export default function MobileHeaderSearchEnhancer() {
         } catch {
           // Blur remains the cross-browser fallback.
         }
-      };
-
-      const cancelAutoClose = () => {
-        if (closeTimer === null) return;
-        window.clearTimeout(closeTimer);
-        closeTimer = null;
       };
 
       const scheduleAutoClose = () => {
@@ -127,24 +200,34 @@ export default function MobileHeaderSearchEnhancer() {
         searchForm.dataset.mobileSearchOpen = open ? "true" : "false";
 
         if (open) {
-          verifyFocusAfterOpen();
-          scheduleAutoClose();
+          closing = false;
+
+          if (releaseFrame !== null) window.cancelAnimationFrame(releaseFrame);
+          releaseFrame = window.requestAnimationFrame(() => {
+            releaseFrame = null;
+            restorePrimedStyles();
+            verifyFocusAfterOpen();
+            scheduleAutoClose();
+          });
           return;
         }
 
         cancelAutoClose();
         dismissKeyboard();
+        restorePrimedStyles();
       };
 
-      const handleOpen = () => {
-        // MobileNav commits the open state synchronously inside the same click.
-        // Verify focus after React finishes that render so the caret cannot be lost.
+      const handleOpenPointerDown = (event: PointerEvent) => {
+        if (!event.isPrimary || event.button !== 0 || isSearchOpen()) return;
+        primeAndFocusSearch();
+      };
+
+      const handleOpenClick = () => {
+        closing = false;
         verifyFocusAfterOpen();
       };
 
       const handleInput = () => {
-        placeCaret();
-
         if (input.value.trim()) {
           cancelAutoClose();
           return;
@@ -153,13 +236,41 @@ export default function MobileHeaderSearchEnhancer() {
         scheduleAutoClose();
       };
 
-      const handleClose = () => {
+      const handleInputBlur = () => {
+        if (!isSearchOpen() || closing) return;
+
+        queueMicrotask(() => {
+          if (!isSearchOpen() || closing || document.activeElement === input) {
+            return;
+          }
+          focusSearchInput(false);
+          verifyFocusAfterOpen();
+        });
+      };
+
+      const handleClosePointerDown = () => {
+        closing = true;
+        cancelFocusWork();
+      };
+
+      const handleCloseClick = () => {
         cancelAutoClose();
         dismissKeyboard();
       };
 
       const handleKeyDown = (event: KeyboardEvent) => {
-        if (event.key === "Escape") dismissKeyboard();
+        if (event.key !== "Escape") return;
+        dismissKeyboard();
+      };
+
+      const handleDocumentPointerDown = (event: PointerEvent) => {
+        if (!isSearchOpen()) return;
+        if (event.target instanceof Node && searchForm.contains(event.target)) {
+          return;
+        }
+
+        closing = true;
+        cancelFocusWork();
       };
 
       const stateObserver = new MutationObserver(syncOpenState);
@@ -168,20 +279,30 @@ export default function MobileHeaderSearchEnhancer() {
         attributeFilter: ["aria-hidden"],
       });
 
-      openButton.addEventListener("click", handleOpen);
+      openButton.addEventListener("pointerdown", handleOpenPointerDown);
+      openButton.addEventListener("click", handleOpenClick);
       input.addEventListener("input", handleInput);
+      input.addEventListener("blur", handleInputBlur);
       input.addEventListener("keydown", handleKeyDown);
-      closeButton.addEventListener("click", handleClose);
+      closeButton.addEventListener("pointerdown", handleClosePointerDown);
+      closeButton.addEventListener("click", handleCloseClick);
+      document.addEventListener("pointerdown", handleDocumentPointerDown, true);
       syncOpenState();
 
       boundCleanup = () => {
         cancelAutoClose();
         dismissKeyboard();
+        restorePrimedStyles();
+        if (releaseFrame !== null) window.cancelAnimationFrame(releaseFrame);
         stateObserver.disconnect();
-        openButton.removeEventListener("click", handleOpen);
+        openButton.removeEventListener("pointerdown", handleOpenPointerDown);
+        openButton.removeEventListener("click", handleOpenClick);
         input.removeEventListener("input", handleInput);
+        input.removeEventListener("blur", handleInputBlur);
         input.removeEventListener("keydown", handleKeyDown);
-        closeButton.removeEventListener("click", handleClose);
+        closeButton.removeEventListener("pointerdown", handleClosePointerDown);
+        closeButton.removeEventListener("click", handleCloseClick);
+        document.removeEventListener("pointerdown", handleDocumentPointerDown, true);
         delete searchForm.dataset.mobileSearchEnhanced;
         delete searchForm.dataset.mobileSearchOpen;
       };
