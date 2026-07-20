@@ -119,7 +119,7 @@ export function CashFlowCharts({ data }: { data: CashFlowPoint[] }) {
                 <XAxis dataKey="label" tick={{ fill: "var(--text-tertiary)", fontSize: 10 }} tickLine={false} axisLine={false} interval="preserveStartEnd" />
                 <YAxis domain={[(minimum: number) => Math.min(minimum, 0), (maximum: number) => Math.max(maximum, 0)]} tick={{ fill: "var(--text-tertiary)", fontSize: 10 }} tickLine={false} axisLine={false} width={54} tickFormatter={(value) => formatCurrency(Number(value), { compact: true })} />
                 <Tooltip
-                  cursor={{ fill: "var(--hover)" }}
+                  cursor={false}
                   contentStyle={{ background: "var(--chart-tooltip)", border: "1px solid var(--border)", borderRadius: 12, color: "var(--text-primary)" }}
                   formatter={(value, name) => [formatCurrency(Number(value ?? 0)), name === "income" ? "Income" : "Expenses"]}
                 />
