@@ -12,6 +12,7 @@ export function createClient() {
     throw new Error("Supabase browser configuration is unavailable.")
   }
 
+  // Authenticated browser sessions rely on database RLS for ledger visibility.
   return createBrowserClient(
     supabaseUrl,
     supabaseAnonKey,
