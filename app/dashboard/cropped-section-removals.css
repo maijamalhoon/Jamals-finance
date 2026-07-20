@@ -131,3 +131,26 @@
   visibility: visible;
   opacity: 1;
 }
+
+/*
+ * Reports fallback: data-print-report is unique to the reports page. This keeps
+ * the approved removal working even when an outer route scope is absent or
+ * changes, while preserving the Export CSV control in normal document flow.
+ */
+div[data-print-report] > .page-heading:first-child {
+  display: flex !important;
+  width: 100% !important;
+  min-height: 0 !important;
+  align-items: center !important;
+  justify-content: flex-end !important;
+  overflow: visible !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+div[data-print-report] > .page-heading:first-child > :first-child {
+  display: none !important;
+}
