@@ -41,19 +41,25 @@ export default function MobileHeaderSearchEnhancer() {
         .virtualKeyboard;
 
       let closeTimer: number | null = null;
-      let openFrame: number | null = null;
+      let verificationFrame: number | null = null;
+      let focusSequence = 0;
 
       const isSearchOpen = () => input.getAttribute("aria-hidden") === "false";
 
-      const focusSearchInput = () => {
-        input.focus({ preventScroll: true });
-
+      const placeCaret = () => {
         try {
           const caretPosition = input.value.length;
           input.setSelectionRange(caretPosition, caretPosition);
         } catch {
           // Selection APIs can be unavailable on a few older mobile engines.
         }
+      };
+
+      const focusSearchInput = (showKeyboard = true) => {
+        input.focus({ preventScroll: true });
+        placeCaret();
+
+        if (!showKeyboard) return;
 
         try {
           virtualKeyboard?.show?.();
@@ -62,7 +68,31 @@ export default function MobileHeaderSearchEnhancer() {
         }
       };
 
+      const cancelFocusVerification = () => {
+        focusSequence += 1;
+        if (verificationFrame !== null) {
+          window.cancelAnimationFrame(verificationFrame);
+          verificationFrame = null;
+        }
+      };
+
+      const verifyFocusAfterOpen = () => {
+        const sequence = ++focusSequence;
+
+        queueMicrotask(() => {
+          if (sequence !== focusSequence || !isSearchOpen()) return;
+          focusSearchInput();
+
+          verificationFrame = window.requestAnimationFrame(() => {
+            verificationFrame = null;
+            if (sequence !== focusSequence || !isSearchOpen()) return;
+            focusSearchInput();
+          });
+        });
+      };
+
       const dismissKeyboard = () => {
+        cancelFocusVerification();
         input.blur();
 
         try {
@@ -97,7 +127,7 @@ export default function MobileHeaderSearchEnhancer() {
         searchForm.dataset.mobileSearchOpen = open ? "true" : "false";
 
         if (open) {
-          focusSearchInput();
+          verifyFocusAfterOpen();
           scheduleAutoClose();
           return;
         }
@@ -107,21 +137,14 @@ export default function MobileHeaderSearchEnhancer() {
       };
 
       const handleOpen = () => {
-        // This native listener runs inside the original tap. The component also
-        // commits its open state synchronously, so the cursor and keyboard start
-        // without requiring a second tap inside the field.
-        focusSearchInput();
-
-        if (openFrame !== null) window.cancelAnimationFrame(openFrame);
-        openFrame = window.requestAnimationFrame(() => {
-          openFrame = null;
-          syncOpenState();
-
-          if (isSearchOpen()) focusSearchInput();
-        });
+        // MobileNav commits the open state synchronously inside the same click.
+        // Verify focus after React finishes that render so the caret cannot be lost.
+        verifyFocusAfterOpen();
       };
 
       const handleInput = () => {
+        placeCaret();
+
         if (input.value.trim()) {
           cancelAutoClose();
           return;
@@ -154,7 +177,6 @@ export default function MobileHeaderSearchEnhancer() {
       boundCleanup = () => {
         cancelAutoClose();
         dismissKeyboard();
-        if (openFrame !== null) window.cancelAnimationFrame(openFrame);
         stateObserver.disconnect();
         openButton.removeEventListener("click", handleOpen);
         input.removeEventListener("input", handleInput);
