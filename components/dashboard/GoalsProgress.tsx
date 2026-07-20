@@ -5,6 +5,7 @@ import { CheckCircle2, Target } from "lucide-react";
 
 import DashboardCardViewLink from "@/components/dashboard/DashboardCardViewLink";
 import { useCurrency } from "@/components/currency/CurrencyProvider";
+import AddGoalButton from "@/components/goals/AddGoalButton";
 import {
   getDistinctGoalPresentationAssignments,
   getGoalPresentation,
@@ -161,12 +162,16 @@ export default function GoalsProgress({
       <div className="dashboard-chart-empty min-h-[210px] flex-1">
         <EmptyState
           compact
-          icon={CheckCircle2}
           title={status === "unavailable" ? "Goals unavailable" : "No goals yet"}
           description={
             status === "unavailable"
               ? "Refresh when your connection is stable."
-              : "Create goals to monitor savings progress from the dashboard."
+              : "Create a goal to track your savings progress here."
+          }
+          action={
+            status === "unavailable" ? undefined : (
+              <AddGoalButton label="Create a goal" showIcon={false} />
+            )
           }
         />
       </div>
