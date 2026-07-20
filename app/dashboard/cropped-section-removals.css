@@ -131,3 +131,56 @@
   visibility: visible;
   opacity: 1;
 }
+
+/*
+ * Retained top actions share one compact footprint on every viewport.
+ * Route scoping keeps ordinary buttons, cards, modals, and dashboard actions unchanged.
+ */
+[data-jf-page="accounts"] .jf-unified-page-body > div > div:first-child,
+[data-jf-page="investments"] .jf-unified-page-body > div > div:first-child,
+[data-jf-page="payables"] .jf-unified-page-body > div > div:first-child,
+[data-jf-page="goals"] .jf-unified-page-body > div > div:first-child,
+[data-jf-page="income"] .jf-unified-page-body > div > div:first-child,
+[data-jf-page="expenses"] .jf-unified-page-body > div[data-expenses-page] > div:first-child,
+[data-jf-page="reports"] .jf-unified-page-body > div[data-print-report] > .page-heading:first-child {
+  display: flex !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  align-items: center !important;
+  justify-content: flex-end !important;
+}
+
+[data-jf-page="accounts"] .jf-unified-page-body > div > div:first-child > button,
+[data-jf-page="investments"] .jf-unified-page-body > div > div:first-child > button,
+[data-jf-page="payables"] .jf-unified-page-body > div > div:first-child > button,
+[data-jf-page="goals"] .jf-unified-page-body > div > div:first-child > button,
+[data-jf-page="income"] .jf-unified-page-body > div > div:first-child > button,
+[data-jf-page="expenses"] .jf-unified-page-body > div[data-expenses-page] > div:first-child > button,
+[data-jf-page="reports"] .jf-unified-page-body > div[data-print-report] > .page-heading:first-child > :last-child > button {
+  box-sizing: border-box !important;
+  width: 11.5rem !important;
+  min-width: 11.5rem !important;
+  max-width: 11.5rem !important;
+  height: 2.75rem !important;
+  min-height: 2.75rem !important;
+  max-height: 2.75rem !important;
+  flex: 0 0 11.5rem !important;
+  justify-content: center !important;
+  padding-inline: 1rem !important;
+  white-space: nowrap !important;
+}
+
+@media (max-width: 220px) {
+  [data-jf-page="accounts"] .jf-unified-page-body > div > div:first-child > button,
+  [data-jf-page="investments"] .jf-unified-page-body > div > div:first-child > button,
+  [data-jf-page="payables"] .jf-unified-page-body > div > div:first-child > button,
+  [data-jf-page="goals"] .jf-unified-page-body > div > div:first-child > button,
+  [data-jf-page="income"] .jf-unified-page-body > div > div:first-child > button,
+  [data-jf-page="expenses"] .jf-unified-page-body > div[data-expenses-page] > div:first-child > button,
+  [data-jf-page="reports"] .jf-unified-page-body > div[data-print-report] > .page-heading:first-child > :last-child > button {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    flex-basis: 100% !important;
+  }
+}
