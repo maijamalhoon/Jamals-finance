@@ -101,6 +101,13 @@ const FINANCE_FORM_RUNTIME_STYLE = `
   pointer-events: none !important;
   caret-color: transparent !important;
 }
+
+/* All finalized finance forms use labels only; placeholder copy stays hidden. */
+.finance-modal-content input::placeholder,
+.finance-modal-content textarea::placeholder {
+  color: transparent !important;
+  opacity: 0 !important;
+}
 `;
 
 function isEditableElement(element: Element | null): element is HTMLElement {
