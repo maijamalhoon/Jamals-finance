@@ -3,6 +3,22 @@
 import { useEffect } from "react";
 
 const AUTO_CLOSE_DELAY_MS = 6000;
+const RESETTABLE_TRANSACTION_PARAMS = [
+  "search",
+  "type",
+  "from",
+  "to",
+  "period",
+  "source",
+  "category",
+  "account",
+  "person",
+  "item",
+  "min",
+  "max",
+  "sort",
+  "limit",
+] as const;
 
 type NavigatorWithVirtualKeyboard = Navigator & {
   virtualKeyboard?: {
@@ -39,10 +55,14 @@ export default function TransactionSearchAutoClose() {
 
     if (pageWasReloaded) {
       const url = new URL(window.location.href);
+      const hadResettableParams = RESETTABLE_TRANSACTION_PARAMS.some((param) =>
+        url.searchParams.has(param),
+      );
 
-      if (url.searchParams.has("search")) {
-        url.searchParams.delete("search");
-        url.searchParams.delete("limit");
+      if (hadResettableParams) {
+        RESETTABLE_TRANSACTION_PARAMS.forEach((param) => {
+          url.searchParams.delete(param);
+        });
         window.location.replace(`${url.pathname}${url.search}${url.hash}`);
         return;
       }
