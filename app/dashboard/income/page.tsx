@@ -114,7 +114,9 @@ export default async function IncomePage({
             icon={Landmark}
             title="No income yet"
             description="Record your first income to see account totals here."
-            action={<AddIncomeButton />}
+            action={
+              <AddIncomeButton label="Add income" showIcon={false} />
+            }
           />
         ) : (
           <div className="grid gap-2 md:grid-cols-2 xl:grid-cols-4">
@@ -209,7 +211,9 @@ export default async function IncomePage({
             icon={TrendingUp}
             title="No income yet"
             description="Record your first income to see it here."
-            action={<AddIncomeButton />}
+            action={
+              <AddIncomeButton label="Add income" showIcon={false} />
+            }
           />
         ) : (
           <>
