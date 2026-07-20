@@ -81,6 +81,8 @@ import "./cropped-section-removals.css";
 import "./finance-modal-divider-cleanup.css";
 // Transactions must stay visible and full-width even if an older shared layout rule conflicts.
 import "./transactions-emergency-restore.css";
+// Slightly larger accent-bar page labels stay consistent across every primary route.
+import "./page-heading-size-tuning.css";
 
 export const dynamic = "force-dynamic";
 
