@@ -1,9 +1,10 @@
 "use client";
 
 import { type CSSProperties, useEffect, useMemo, useState } from "react";
-import { ArrowLeftRight, ReceiptText } from "lucide-react";
+import { ReceiptText } from "lucide-react";
 
 import DashboardCardViewLink from "@/components/dashboard/DashboardCardViewLink";
+import AddIncomeButton from "@/components/income/AddIncomeButton";
 import { useCurrency } from "@/components/currency/CurrencyProvider";
 import CountedAmount from "@/components/motion/CountedAmount";
 import EmptyState from "@/components/ui/empty-state";
@@ -134,7 +135,6 @@ export default function RecentTransactions({
       const rows = await loadTransactions(supabase, {
         includeDeleted: false,
       });
-
       if (cancelled) return;
 
       setLatestTransactions(
@@ -184,7 +184,6 @@ export default function RecentTransactions({
         <div className="dashboard-chart-empty mt-4 min-h-[210px] flex-1">
           <EmptyState
             compact
-            icon={ArrowLeftRight}
             title={
               status === "unavailable"
                 ? "Recent activity unavailable"
@@ -193,7 +192,15 @@ export default function RecentTransactions({
             description={
               status === "unavailable"
                 ? "Refresh when your connection is stable."
-                : "Record account activity to see it here."
+                : "Your recent account activity will appear here."
+            }
+            action={
+              status === "unavailable" ? undefined : (
+                <AddIncomeButton
+                  label="Add a transaction"
+                  showIcon={false}
+                />
+              )
             }
           />
         </div>
