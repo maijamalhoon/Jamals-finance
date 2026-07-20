@@ -65,11 +65,7 @@ export default async function IncomePage({
 
   return (
     <div className="space-y-5">
-      <div className="page-heading finance-surface-glass">
-        <div className="min-w-0">
-          <h2 className="page-title">Income</h2>
-          <p className="page-subtitle">{income.length} total entries</p>
-        </div>
+      <div className="flex justify-end">
         <AddIncomeButton />
       </div>
 
