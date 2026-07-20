@@ -15,7 +15,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { createPortal } from "react-dom";
+import { createPortal, flushSync } from "react-dom";
 
 import JamalMenu from "@/components/layout/JamalMenu";
 import {
@@ -72,7 +72,7 @@ const INTERACTIVE_TAP_SELECTOR = [
   '[role="listbox"]',
   '[role="option"]',
   '[role="dialog"]',
-  "[aria-haspopup]",
+  '[aria-haspopup]',
   '[contenteditable="true"]',
   '[data-slot$="-trigger"]',
   '[data-slot="dialog-content"]',
@@ -147,7 +147,17 @@ export default function MobileNav({ notificationSlot }: MobileNavProps) {
     }, AUTO_HIDE_DELAY);
   }, [clearHideTimer]);
 
+  const focusSearchInput = useCallback(() => {
+    const input = searchInputRef.current;
+    if (!input) return;
+
+    input.focus({ preventScroll: true });
+    const caretPosition = input.value.length;
+    input.setSelectionRange(caretPosition, caretPosition);
+  }, []);
+
   const closeSearch = useCallback(() => {
+    searchInputRef.current?.blur();
     setSearchOpen(false);
     setSearchQuery("");
   }, []);
@@ -158,8 +168,14 @@ export default function MobileNav({ notificationSlot }: MobileNavProps) {
     );
     clearHideTimer();
     setControlsVisible(true);
-    setSearchOpen(true);
-  }, [clearHideTimer]);
+
+    // Commit the expanded input during the original tap, then focus it while
+    // mobile browsers still consider the action user-initiated.
+    flushSync(() => {
+      setSearchOpen(true);
+    });
+    focusSearchInput();
+  }, [clearHideTimer, focusSearchInput]);
 
   const interactionOpen = open || portalOpen || searchOpen;
 
@@ -217,12 +233,10 @@ export default function MobileNav({ notificationSlot }: MobileNavProps) {
   useEffect(() => {
     if (!searchOpen) return;
 
-    const frame = window.requestAnimationFrame(() => {
-      searchInputRef.current?.focus();
-    });
+    const frame = window.requestAnimationFrame(focusSearchInput);
 
     return () => window.cancelAnimationFrame(frame);
-  }, [searchOpen]);
+  }, [focusSearchInput, searchOpen]);
 
   useEffect(() => {
     if (!searchOpen) return;
@@ -386,7 +400,7 @@ export default function MobileNav({ notificationSlot }: MobileNavProps) {
     const trimmedQuery = searchQuery.trim();
 
     if (!trimmedQuery) {
-      searchInputRef.current?.focus();
+      focusSearchInput();
       return;
     }
 
