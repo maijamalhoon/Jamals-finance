@@ -15,7 +15,7 @@
 }
 
 [data-jf-page] .jf-unified-page-title {
-  font-size: clamp(1.1rem, 0.86rem + 0.62vw, 1.6rem);
+  font-size: clamp(1.2rem, 0.96rem + 0.62vw, 1.7rem);
   line-height: 1.12;
 }
 
@@ -54,7 +54,7 @@
   overflow: hidden !important;
   text-overflow: ellipsis !important;
   white-space: nowrap !important;
-  font-size: clamp(1.15rem, 0.9rem + 0.65vw, 1.65rem) !important;
+  font-size: clamp(1.25rem, 1rem + 0.65vw, 1.75rem) !important;
   line-height: 1.14 !important;
 }
 
@@ -149,7 +149,7 @@
   }
 
   .transactions-page-type-icons > div > :first-child .page-title {
-    font-size: 1.15rem !important;
+    font-size: 1.25rem !important;
     line-height: 1.35rem !important;
   }
 
@@ -214,6 +214,6 @@
 
 @media (max-width: 360px) {
   .transactions-page-type-icons > div > :first-child .page-title {
-    font-size: 1.08rem !important;
+    font-size: 1.18rem !important;
   }
 }
