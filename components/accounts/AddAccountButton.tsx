@@ -23,11 +23,12 @@ export default function AddAccountButton({
       <PageHeadingActionPortal page="accounts">
         <button
           type="button"
+          aria-label={label}
           onClick={() => setOpen(true)}
           className="primary-action"
         >
           {showIcon ? <Plus size={16} /> : null}
-          {label}
+          <span className="sr-only">{label}</span>
         </button>
       </PageHeadingActionPortal>
 
