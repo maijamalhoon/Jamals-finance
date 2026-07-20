@@ -5,7 +5,17 @@ import { useRouter } from "next/navigation";
 import { Target } from "lucide-react";
 import GoalModal, { type GoalAccount } from "./GoalModal";
 
-export default function AddGoalButton({ accounts }: { accounts: GoalAccount[] }) {
+interface AddGoalButtonProps {
+  accounts?: GoalAccount[];
+  label?: string;
+  showIcon?: boolean;
+}
+
+export default function AddGoalButton({
+  accounts,
+  label = "New Goal",
+  showIcon = true,
+}: AddGoalButtonProps = {}) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
 
@@ -16,8 +26,8 @@ export default function AddGoalButton({ accounts }: { accounts: GoalAccount[] })
         onClick={() => setOpen(true)}
         className="primary-action"
       >
-        <Target size={16} />
-        New Goal
+        {showIcon ? <Target size={16} /> : null}
+        {label}
       </button>
 
       <GoalModal
