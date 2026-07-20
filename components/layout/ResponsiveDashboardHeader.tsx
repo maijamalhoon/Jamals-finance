@@ -4,6 +4,7 @@ import dynamic from "next/dynamic";
 import { useEffect, useState, type ReactNode } from "react";
 
 import HeaderSearchAutoClose from "@/components/layout/HeaderSearchAutoClose";
+import MobileHeaderSearchEnhancer from "@/components/layout/MobileHeaderSearchEnhancer";
 
 const DesktopHeader = dynamic(() => import("@/components/layout/Header"), {
   ssr: false,
@@ -69,5 +70,10 @@ export default function ResponsiveDashboardHeader({
     );
   }
 
-  return <CompactHeader notificationSlot={notificationSlot} />;
+  return (
+    <>
+      <CompactHeader notificationSlot={notificationSlot} />
+      <MobileHeaderSearchEnhancer />
+    </>
+  );
 }
