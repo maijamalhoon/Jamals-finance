@@ -1,4 +1,5 @@
 import { Skeleton } from "@/components/ui/skeleton";
+import { getServerAnimationMode } from "@/lib/animation-preference-server";
 
 const RANGE_CONTROLS = ["today", "week", "month", "six-month", "year", "custom"];
 const KPI_CARDS = ["income", "expenses", "savings", "rate"];
@@ -16,7 +17,23 @@ function PanelHeading({ width = "w-44" }: { width?: string }) {
   );
 }
 
-export default function AnalyticsLoading() {
+export default async function AnalyticsLoading() {
+  const animationMode = await getServerAnimationMode();
+
+  if (animationMode === "none") {
+    return (
+      <div
+        role="status"
+        aria-busy="true"
+        aria-label="Loading analytics"
+        data-no-animation-route-loading="true"
+        className="min-h-8 pb-4"
+      >
+        <span className="text-xs font-semibold text-text-secondary">Loading</span>
+      </div>
+    );
+  }
+
   return (
     <div role="status" aria-busy="true" aria-label="Loading analytics" className="min-w-0 pb-8">
       <span className="sr-only">Loading analytics</span>
