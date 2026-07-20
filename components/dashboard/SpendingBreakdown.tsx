@@ -1,10 +1,11 @@
 "use client";
 
 import type { CSSProperties } from "react";
-import { BarChart3, PieChart as PieChartIcon } from "lucide-react";
+import { BarChart3 } from "lucide-react";
 import { Cell, Pie, PieChart, Tooltip } from "recharts";
 
 import DashboardCardViewLink from "@/components/dashboard/DashboardCardViewLink";
+import AddExpenseButton from "@/components/expenses/AddExpenseButton";
 import { useCurrency } from "@/components/currency/CurrencyProvider";
 import CountedAmount from "@/components/motion/CountedAmount";
 import { useDashboardAnimationReady } from "@/components/motion/useDashboardAnimationReady";
@@ -94,7 +95,6 @@ export default function SpendingBreakdown({
         <div className="dashboard-chart-empty mt-4 flex-1">
           <EmptyState
             compact
-            icon={PieChartIcon}
             title={
               status === "unavailable"
                 ? "Spending unavailable"
@@ -103,7 +103,12 @@ export default function SpendingBreakdown({
             description={
               status === "unavailable"
                 ? "Refresh when your connection is stable."
-                : "Expense categories will appear here once you add spending."
+                : "Add an expense to see your spending categories here."
+            }
+            action={
+              status === "unavailable" ? undefined : (
+                <AddExpenseButton label="Add an expense" showIcon={false} />
+              )
             }
           />
         </div>
