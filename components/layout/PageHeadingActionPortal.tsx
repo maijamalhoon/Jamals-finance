@@ -48,9 +48,11 @@ export default function PageHeadingActionPortal({
       ? ((markerParent?.closest(".page-heading") as HTMLElement | null) ??
         markerParent)
       : markerParent;
+    const sourceWasHidden = sourceContainer?.hidden ?? false;
 
     if (sourceContainer) {
       sourceContainer.dataset.jfHeadingActionSource = page;
+      sourceContainer.hidden = true;
     }
 
     setTarget(headingTarget);
@@ -58,6 +60,7 @@ export default function PageHeadingActionPortal({
     return () => {
       if (sourceContainer?.dataset.jfHeadingActionSource === page) {
         delete sourceContainer.dataset.jfHeadingActionSource;
+        sourceContainer.hidden = sourceWasHidden;
       }
     };
   }, [force, page, pathname]);
