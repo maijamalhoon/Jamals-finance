@@ -3,7 +3,7 @@ import type { ReactNode } from "react";
 import type { LucideIcon } from "lucide-react";
 
 interface EmptyStateProps {
-  icon: LucideIcon;
+  icon?: LucideIcon;
   title: string;
   description: string;
   compact?: boolean;
@@ -35,6 +35,7 @@ export default function EmptyState({
       data-empty-state
       data-empty-state-size={compact ? "compact" : "default"}
       data-empty-state-has-action={renderedAction ? "true" : "false"}
+      data-empty-state-has-icon={Icon ? "true" : "false"}
       className={`motion-empty mx-auto flex w-full max-w-[38rem] min-w-0 flex-col items-center justify-center px-4 text-center ${
         compact
           ? "min-h-[116px] py-5 sm:min-h-[128px] sm:py-6"
@@ -42,9 +43,11 @@ export default function EmptyState({
       } ${className}`}
     >
       <div data-empty-state-content className="flex w-full min-w-0 flex-col items-center">
-        <span data-empty-state-icon aria-hidden="true">
-          <Icon strokeWidth={2.15} />
-        </span>
+        {Icon ? (
+          <span data-empty-state-icon aria-hidden="true">
+            <Icon strokeWidth={2.15} />
+          </span>
+        ) : null}
 
         <p data-empty-state-title>{title}</p>
         <p data-empty-state-description>{description}</p>
