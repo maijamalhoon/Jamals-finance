@@ -90,3 +90,100 @@
     margin-left: 0 !important;
   }
 }
+
+/*
+ * Keep Appearance, Preferences, Profile and Categories content cards at one
+ * shared responsive height. Only the layout boxes are adjusted; all inner
+ * content, active states, handlers and animations remain unchanged.
+ */
+.settings-page-polish .settings-reference-grid {
+  --settings-primary-card-height: clamp(11rem, 22vw, 11.5rem);
+}
+
+.settings-page-polish
+  .settings-reference-grid
+  > .settings-reference-appearance {
+  display: flex !important;
+  min-width: 0 !important;
+  flex-direction: column !important;
+}
+
+.settings-page-polish
+  .settings-reference-grid
+  > .settings-reference-appearance
+  > .settings-reference-section {
+  display: flex !important;
+  min-width: 0 !important;
+  flex-direction: column !important;
+}
+
+.settings-page-polish
+  .settings-reference-grid
+  > .settings-reference-appearance
+  > .settings-reference-section
+  > .settings-reference-appearance-control,
+.settings-page-polish
+  .settings-reference-grid
+  > .settings-reference-appearance
+  > .settings-reference-animation-control {
+  height: calc((var(--settings-primary-card-height) - 0.5rem) / 2) !important;
+  min-height: 0 !important;
+}
+
+.settings-page-polish
+  .settings-reference-grid
+  > .settings-reference-appearance
+  > .settings-reference-animation-control {
+  margin-top: 0.5rem !important;
+}
+
+.settings-page-polish
+  .settings-reference-grid
+  > .settings-reference-appearance
+  .settings-reference-theme-option {
+  min-height: 0 !important;
+}
+
+.settings-page-polish
+  .settings-reference-preferences-wrapper
+  .finance-panel,
+.settings-page-polish
+  .settings-reference-profile-security
+  .settings-reference-group,
+.settings-page-polish
+  .settings-reference-categories-wrapper
+  .finance-panel {
+  display: flex !important;
+  height: var(--settings-primary-card-height) !important;
+  min-height: var(--settings-primary-card-height) !important;
+  flex-direction: column !important;
+}
+
+.settings-page-polish
+  .settings-reference-preferences-wrapper
+  .finance-panel
+  > button,
+.settings-page-polish
+  .settings-reference-categories-wrapper
+  .finance-panel
+  > button,
+.settings-page-polish
+  .settings-reference-profile-security
+  .settings-reference-group
+  > .settings-reference-row {
+  min-height: 0 !important;
+  flex: 1 1 0 !important;
+}
+
+.settings-page-polish
+  .settings-reference-preferences-wrapper
+  .settings-preferences-divider,
+.settings-page-polish
+  .settings-reference-categories-wrapper
+  .finance-panel
+  > div[class*="h-px"],
+.settings-page-polish
+  .settings-reference-profile-security
+  .settings-reference-divider {
+  flex: 0 0 1px !important;
+}
