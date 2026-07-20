@@ -71,11 +71,9 @@ export default async function InvestmentsPage() {
           <EmptyState
             icon={BarChart2}
             title="No investments yet"
-            description="Add crypto or manual assets to start tracking portfolio performance."
+            description="Add your first investment to see portfolio performance here."
+            action={<AddInvestmentButton />}
           />
-          <div className="-mt-8 flex justify-center pb-6 sm:-mt-9">
-            <AddInvestmentButton />
-          </div>
         </div>
       ) : (
         <InvestmentOverview
