@@ -184,8 +184,25 @@ export function SpendingDistributionChart({ data }: { data: CategoryBreakdownIte
         <ChartFrame>
           {({ width, height }) => (
             <PieChart width={width} height={height}>
-              <Pie data={data} dataKey="amount" nameKey="name" innerRadius="52%" outerRadius="78%" paddingAngle={2} isAnimationActive={false}>
-                {data.map((item) => <Cell key={item.id} fill={item.color} />)}
+              <Pie
+                data={data}
+                dataKey="amount"
+                nameKey="name"
+                innerRadius="52%"
+                outerRadius="78%"
+                paddingAngle={2}
+                stroke="none"
+                strokeWidth={0}
+                isAnimationActive={false}
+              >
+                {data.map((item) => (
+                  <Cell
+                    key={item.id}
+                    fill={item.color}
+                    stroke="none"
+                    strokeWidth={0}
+                  />
+                ))}
               </Pie>
               <Tooltip
                 cursor={false}
