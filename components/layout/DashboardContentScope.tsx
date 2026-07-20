@@ -3,6 +3,9 @@
 import { usePathname } from "next/navigation";
 import { useEffect, useState, type CSSProperties, type ReactNode } from "react";
 
+import NoAnimationPerformanceMode from "@/components/performance/NoAnimationPerformanceMode";
+import { getDocumentAnimationMode } from "@/lib/animation-preference";
+
 const CONTENT_TYPOGRAPHY_ROUTES = [
   "/dashboard/income",
   "/dashboard/expenses",
@@ -138,6 +141,11 @@ export default function DashboardContentScope({
     : undefined;
 
   useEffect(() => {
+    if (getDocumentAnimationMode() === "none") {
+      setInitialDocumentReady(true);
+      return;
+    }
+
     let cancelled = false;
     let firstFrame = 0;
     let secondFrame = 0;
@@ -184,6 +192,7 @@ export default function DashboardContentScope({
         gateInitialReveal ? (initialDocumentReady ? "ready" : "pending") : undefined
       }
     >
+      <NoAnimationPerformanceMode />
       {isTransactionsPage ? (
         children
       ) : pageHeading ? (
