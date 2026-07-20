@@ -5,7 +5,15 @@ import { useRouter } from "next/navigation";
 import { TrendingUp } from "lucide-react";
 import TransactionModal from "@/components/dashboard/TransactionModal";
 
-export default function AddIncomeButton() {
+interface AddIncomeButtonProps {
+  label?: string;
+  showIcon?: boolean;
+}
+
+export default function AddIncomeButton({
+  label = "Add Income",
+  showIcon = true,
+}: AddIncomeButtonProps = {}) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
 
@@ -16,8 +24,8 @@ export default function AddIncomeButton() {
         onClick={() => setOpen(true)}
         className="success-action"
       >
-        <TrendingUp size={16} />
-        Add Income
+        {showIcon ? <TrendingUp size={16} /> : null}
+        {label}
       </button>
 
       <TransactionModal
