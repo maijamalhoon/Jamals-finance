@@ -112,8 +112,9 @@ export default async function IncomePage({
           <EmptyState
             compact
             icon={Landmark}
-            title="No account income yet"
-            description="Income totals by account will appear after your first earning is recorded."
+            title="No income yet"
+            description="Record your first income to see account totals here."
+            action={<AddIncomeButton />}
           />
         ) : (
           <div className="grid gap-2 md:grid-cols-2 xl:grid-cols-4">
@@ -206,8 +207,9 @@ export default async function IncomePage({
         {income.length === 0 ? (
           <EmptyState
             icon={TrendingUp}
-            title="No income records yet"
-            description="Add your first earning to start seeing source breakdowns and income trends."
+            title="No income yet"
+            description="Record your first income to see it here."
+            action={<AddIncomeButton />}
           />
         ) : (
           <>
