@@ -24,6 +24,25 @@
     clip-path: inset(0 0 0 100% round 0.875rem);
   }
 
+  body[data-mobile-dashboard-top="true"]:not(
+      :has(#mobile-inline-transaction-search[aria-hidden="false"])
+    )
+    [data-mobile-control-cluster] {
+    opacity: 1 !important;
+    filter: opacity(1) !important;
+    clip-path: inset(0 0 0 0 round 0.875rem) !important;
+    transform: none !important;
+    pointer-events: auto !important;
+  }
+
+  body[data-mobile-dashboard-top="true"]:not(
+      :has(#mobile-inline-transaction-search[aria-hidden="false"])
+    )
+    form[data-mobile-control-cluster][role="search"] {
+    left: 4.25rem !important;
+    width: 2.75rem !important;
+  }
+
   @media (prefers-reduced-motion: reduce) {
     [data-mobile-control-cluster] {
       transition-duration: 1ms !important;
