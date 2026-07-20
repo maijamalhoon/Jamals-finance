@@ -1,7 +1,8 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { CalendarRange, LoaderCircle } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { createPortal } from "react-dom";
+import { CalendarRange } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import DatePicker from "@/components/ui/date-picker";
@@ -24,12 +25,14 @@ import {
   type AnalyticsRangeSelection,
 } from "@/lib/analytics/calculations";
 
-const PERIODS: Array<{ label: string; value: Exclude<AnalyticsPeriod, "custom"> }> = [
-  { label: "Today", value: "today" },
-  { label: "Week", value: "week" },
-  { label: "Month", value: "month" },
-  { label: "6M", value: "sixMonth" },
-  { label: "Year", value: "year" },
+const PERIODS: Array<{
+  label: string;
+  ariaLabel: string;
+  value: Exclude<AnalyticsPeriod, "custom" | "today" | "sixMonth">;
+}> = [
+  { label: "W", ariaLabel: "Week", value: "week" },
+  { label: "M", ariaLabel: "Month", value: "month" },
+  { label: "Y", ariaLabel: "Year", value: "year" },
 ];
 
 interface AnalyticsRangeControlsProps {
@@ -47,10 +50,15 @@ export default function AnalyticsRangeControls({
   onPresetChange,
   onCustomChange,
 }: AnalyticsRangeControlsProps) {
+  const [headingActions, setHeadingActions] = useState<HTMLElement | null>(null);
   const [open, setOpen] = useState(false);
   const [start, setStart] = useState(selection.period === "custom" ? selection.current.start : "");
   const [end, setEnd] = useState(selection.period === "custom" ? selection.current.end : "");
   const validation = useMemo(() => validateCustomRange(start, end, now), [end, now, start]);
+
+  useEffect(() => {
+    setHeadingActions(document.getElementById("jf-analytics-heading-actions"));
+  }, []);
 
   function handleOpenChange(nextOpen: boolean) {
     setOpen(nextOpen);
@@ -66,11 +74,12 @@ export default function AnalyticsRangeControls({
     setOpen(false);
   }
 
-  return (
-    <div className="min-w-0 space-y-3">
+  const compactControls = (
+    <>
       <div
+        aria-busy={pending}
         aria-label="Analytics date range"
-        className="grid min-w-0 grid-cols-3 gap-1 rounded-[var(--radius-control)] border border-border bg-card p-1 sm:flex sm:w-fit sm:flex-wrap"
+        className="inline-flex h-9 shrink-0 items-center gap-0.5 rounded-[13px] border-0 bg-surface-primary p-1 shadow-sm sm:h-10 sm:rounded-[14px]"
         role="group"
       >
         {PERIODS.map((item) => {
@@ -79,10 +88,11 @@ export default function AnalyticsRangeControls({
             <button
               key={item.value}
               type="button"
+              aria-label={item.ariaLabel}
               aria-pressed={active}
               disabled={pending}
               onClick={() => onPresetChange(item.value)}
-              className="finance-focus min-h-11 min-w-0 rounded-[calc(var(--radius-control)-4px)] px-3 text-xs font-semibold text-text-secondary transition-colors hover:bg-hover hover:text-text-primary disabled:cursor-wait disabled:opacity-65 aria-pressed:bg-active aria-pressed:text-background sm:min-w-[4.5rem]"
+              className="finance-focus grid size-7 shrink-0 place-items-center rounded-[9px] border-0 bg-transparent text-[11px] font-bold text-text-secondary transition-[background-color,color,transform] duration-150 hover:bg-hover hover:text-text-primary active:scale-95 disabled:cursor-wait disabled:opacity-55 aria-pressed:bg-active aria-pressed:text-background sm:size-8 sm:rounded-[10px] sm:text-xs"
             >
               {item.label}
             </button>
@@ -91,24 +101,24 @@ export default function AnalyticsRangeControls({
 
         <button
           type="button"
+          aria-label="Custom date range"
           aria-pressed={selection.period === "custom"}
           disabled={pending}
           onClick={() => handleOpenChange(true)}
-          className="finance-focus col-span-1 inline-flex min-h-11 min-w-0 items-center justify-center gap-2 rounded-[calc(var(--radius-control)-4px)] px-3 text-xs font-semibold text-text-secondary transition-colors hover:bg-hover hover:text-text-primary disabled:cursor-wait disabled:opacity-65 aria-pressed:bg-active aria-pressed:text-background sm:min-w-[5.75rem]"
+          className="finance-focus grid size-7 shrink-0 place-items-center rounded-[9px] border-0 bg-transparent text-text-secondary transition-[background-color,color,transform] duration-150 hover:bg-hover hover:text-text-primary active:scale-95 disabled:cursor-wait disabled:opacity-55 aria-pressed:bg-active aria-pressed:text-background sm:size-8 sm:rounded-[10px]"
         >
-          <CalendarRange aria-hidden="true" className="size-4" />
-          Custom
+          <CalendarRange aria-hidden="true" className="size-3.5 sm:size-4" />
         </button>
       </div>
+      <span aria-live="polite" className="sr-only" role="status">
+        {pending ? "Updating analytics range" : ""}
+      </span>
+    </>
+  );
 
-      <div aria-live="polite" className="min-h-5 text-xs text-text-tertiary" role="status">
-        {pending ? (
-          <span className="inline-flex items-center gap-2">
-            <LoaderCircle aria-hidden="true" className="size-3.5 animate-spin motion-reduce:animate-none" />
-            Updating analytics range…
-          </span>
-        ) : null}
-      </div>
+  return (
+    <>
+      {headingActions ? createPortal(compactControls, headingActions) : null}
 
       <Dialog open={open} onOpenChange={handleOpenChange}>
         <DialogContent className={`${financeModalContentClass} sm:[--finance-modal-max-width:32rem]`}>
@@ -126,14 +136,14 @@ export default function AnalyticsRangeControls({
                 htmlFor="analytics-range-start"
                 hint={!start ? "Required" : undefined}
               >
-              <DatePicker
-                id="analytics-range-start"
-                value={start}
-                onChange={setStart}
-                ariaLabel="Custom range start date"
-                ariaDescribedBy="analytics-range-help"
-                maxDate={now}
-              />
+                <DatePicker
+                  id="analytics-range-start"
+                  value={start}
+                  onChange={setStart}
+                  ariaLabel="Custom range start date"
+                  ariaDescribedBy="analytics-range-help"
+                  maxDate={now}
+                />
               </FinanceFormField>
 
               <FinanceFormField
@@ -141,14 +151,14 @@ export default function AnalyticsRangeControls({
                 htmlFor="analytics-range-end"
                 hint={!end ? "Required" : undefined}
               >
-              <DatePicker
-                id="analytics-range-end"
-                value={end}
-                onChange={setEnd}
-                ariaLabel="Custom range end date"
-                ariaDescribedBy="analytics-range-help"
-                maxDate={now}
-              />
+                <DatePicker
+                  id="analytics-range-end"
+                  value={end}
+                  onChange={setEnd}
+                  ariaLabel="Custom range end date"
+                  ariaDescribedBy="analytics-range-help"
+                  maxDate={now}
+                />
               </FinanceFormField>
             </div>
 
@@ -183,6 +193,6 @@ export default function AnalyticsRangeControls({
           </FinanceModalFooter>
         </DialogContent>
       </Dialog>
-    </div>
+    </>
   );
 }
