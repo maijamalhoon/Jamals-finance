@@ -11,6 +11,10 @@ import { Search, X } from "lucide-react";
 import { toast } from "sonner";
 
 import AccountSelect from "@/components/accounts/AccountSelect";
+import {
+  useBinanceSearchPrices,
+  useBinanceSelectedPrice,
+} from "@/components/investments/useBinanceLivePrices";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import DatePicker from "@/components/ui/date-picker";
@@ -24,7 +28,7 @@ import {
   financePrimaryButtonClass,
 } from "@/components/ui/finance-modal";
 import { Input } from "@/components/ui/input";
-import { BASE_CURRENCY, formatMoney } from "@/lib/currency";
+import { BASE_CURRENCY } from "@/lib/currency";
 import { getAppDateKey } from "@/lib/dates";
 import {
   searchCryptoCatalog,
@@ -80,6 +84,45 @@ function getAssetInitials(name: string, symbol?: string | null) {
   if (words.length === 0) return "IN";
   if (words.length === 1) return words[0].slice(0, 2).toUpperCase();
   return `${words[0][0] ?? ""}${words[1][0] ?? ""}`.toUpperCase();
+}
+
+function formatUsdPrice(value: number) {
+  const absolute = Math.abs(value);
+  const maximumFractionDigits =
+    absolute >= 1000 ? 2 : absolute >= 1 ? 6 : absolute >= 0.01 ? 8 : 12;
+
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+    minimumFractionDigits: absolute >= 1000 ? 2 : 0,
+    maximumFractionDigits,
+  }).format(value);
+}
+
+function formatInputPrice(value: number, currency: CurrencyCode) {
+  if (!Number.isFinite(value) || value <= 0) return "";
+
+  const decimals =
+    currency === "PKR"
+      ? 2
+      : value >= 1000
+        ? 2
+        : value >= 1
+          ? 8
+          : 12;
+
+  return value.toFixed(decimals).replace(/\.?0+$/, "");
+}
+
+function getChangeColor(change: number | null) {
+  if (change === null || change === 0) return "var(--text-secondary)";
+  return change > 0 ? "var(--income)" : "var(--expense)";
+}
+
+function formatChange(change: number | null) {
+  if (change === null) return "—";
+  const prefix = change > 0 ? "+" : "";
+  return `${prefix}${change.toFixed(2)}%`;
 }
 
 function CurrencyToggle({
@@ -202,6 +245,7 @@ export default function InvestmentModalLocal({
   const [priceUpdatedAt, setPriceUpdatedAt] = useState<string | null>(null);
   const [priceChange24h, setPriceChange24h] = useState<number | null>(null);
   const [isLivePriced, setIsLivePriced] = useState(false);
+  const [usdPkrRate, setUsdPkrRate] = useState<number | null>(null);
   const [accountId, setAccountId] = useState("");
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [loadingOptions, setLoadingOptions] = useState(false);
@@ -228,17 +272,23 @@ export default function InvestmentModalLocal({
     searchFocused &&
     cleanQuery.length >= 1 &&
     (!selectedAsset || isTypingAfterSelection);
+
+  const searchPrices = useBinanceSearchPrices(results, showSearchDropdown);
+  const selectedLivePrice = useBinanceSelectedPrice(
+    selectedAsset,
+    open && !isEditing && !manualMode,
+  );
+  const livePriceUsd =
+    selectedLivePrice.status === "live" ? selectedLivePrice.priceUsd : null;
   const marketPricedSelected =
-    isLivePriced &&
-    (priceSource === "coingecko" || priceSource === "alpha_vantage") &&
-    Boolean(assetId) &&
-    !manualMode;
+    livePriceUsd !== null && Boolean(assetId) && !manualMode;
+
   const displayedCurrentPrice = marketPricedSelected
     ? currentPriceCurrency === "USD"
-      ? currentPriceOriginal === null
-        ? ""
-        : String(currentPriceOriginal)
-      : currentPrice
+      ? formatInputPrice(livePriceUsd, "USD")
+      : usdPkrRate
+        ? formatInputPrice(livePriceUsd * usdPkrRate, "PKR")
+        : ""
     : currentPrice;
 
   useEffect(() => {
@@ -281,6 +331,7 @@ export default function InvestmentModalLocal({
       setPriceUpdatedAt(investment.price_updated_at ?? null);
       setPriceChange24h(investment.price_change_24h ?? null);
       setIsLivePriced(Boolean(investment.is_live_priced));
+      setUsdPkrRate(null);
       setAccountId("");
       setManualMode(!investment.is_live_priced);
       setQuery("");
@@ -302,6 +353,7 @@ export default function InvestmentModalLocal({
       setPriceUpdatedAt(null);
       setPriceChange24h(null);
       setIsLivePriced(false);
+      setUsdPkrRate(null);
       setAccountId("");
       setManualMode(false);
       setQuery("");
@@ -390,6 +442,53 @@ export default function InvestmentModalLocal({
     return () => document.removeEventListener("pointerdown", handlePointerDown);
   }, [isEditing, manualMode, open]);
 
+  useEffect(() => {
+    if (!selectedAsset || manualMode || isEditing) {
+      setUsdPkrRate(null);
+      return;
+    }
+
+    let cancelled = false;
+
+    void getUsdPkrRateForSave()
+      .then((rate) => {
+        if (!cancelled) setUsdPkrRate(rate);
+      })
+      .catch(() => {
+        if (!cancelled) setUsdPkrRate(null);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [isEditing, manualMode, selectedAsset]);
+
+  useEffect(() => {
+    if (!selectedAsset) return;
+
+    if (
+      selectedLivePrice.status === "live" &&
+      selectedLivePrice.priceUsd !== null
+    ) {
+      setPriceSource("binance");
+      setPriceUpdatedAt(
+        new Date(selectedLivePrice.updatedAt ?? Date.now()).toISOString(),
+      );
+      setPriceChange24h(selectedLivePrice.change24h);
+      setIsLivePriced(true);
+      setCurrentPriceOriginal(selectedLivePrice.priceUsd);
+      return;
+    }
+
+    if (selectedLivePrice.status === "unavailable") {
+      setPriceSource("catalog");
+      setPriceUpdatedAt(null);
+      setPriceChange24h(null);
+      setIsLivePriced(false);
+      setCurrentPriceOriginal(null);
+    }
+  }, [selectedAsset, selectedLivePrice]);
+
   async function getUsdPkrRateForSave() {
     const response = await fetch("/api/exchange-rate");
     const data = (await response.json()) as { rate?: number };
@@ -416,6 +515,7 @@ export default function InvestmentModalLocal({
     setIsLivePriced(false);
     setCurrentPriceOriginal(null);
     setCurrentPriceCurrency("PKR");
+    setUsdPkrRate(null);
     setSelectedAsset(null);
   }
 
@@ -442,7 +542,7 @@ export default function InvestmentModalLocal({
     setPriceChange24h(null);
     setIsLivePriced(false);
     setCurrentPriceOriginal(null);
-    setCurrentPriceCurrency("PKR");
+    setCurrentPriceCurrency("USD");
     setCurrentPrice("");
     setPurchaseCurrency("PKR");
     setQuery(asset.name);
@@ -503,14 +603,16 @@ export default function InvestmentModalLocal({
 
     const needsUsdConversion =
       purchaseCurrency === "USD" ||
+      marketPricedSelected ||
       (!marketPricedSelected &&
         parsedCurrentPrice !== null &&
         currentPriceCurrency === "USD");
 
-    let usdPkrRate = 1;
-    if (needsUsdConversion) {
+    let resolvedUsdPkrRate = usdPkrRate ?? 1;
+    if (needsUsdConversion && usdPkrRate === null) {
       try {
-        usdPkrRate = await getUsdPkrRateForSave();
+        resolvedUsdPkrRate = await getUsdPkrRateForSave();
+        setUsdPkrRate(resolvedUsdPkrRate);
       } catch (rateError) {
         setLoading(false);
         setError(
@@ -524,7 +626,7 @@ export default function InvestmentModalLocal({
 
     const purchasePricePkr =
       purchaseCurrency === "USD"
-        ? parsedPurchasePrice * usdPkrRate
+        ? parsedPurchasePrice * resolvedUsdPkrRate
         : parsedPurchasePrice;
 
     if (!Number.isFinite(purchasePricePkr) || purchasePricePkr <= 0) {
@@ -537,14 +639,14 @@ export default function InvestmentModalLocal({
     let currentOriginalPrice: number | null = parsedPurchasePrice;
     let savedCurrentCurrency: CurrencyCode = purchaseCurrency;
 
-    if (marketPricedSelected) {
-      currentPricePkr = Number(currentPrice);
-      currentOriginalPrice = currentPriceOriginal;
+    if (marketPricedSelected && livePriceUsd !== null) {
+      currentPricePkr = livePriceUsd * resolvedUsdPkrRate;
+      currentOriginalPrice = livePriceUsd;
       savedCurrentCurrency = currentPriceCurrency;
     } else if (parsedCurrentPrice !== null) {
       currentPricePkr =
         currentPriceCurrency === "USD"
-          ? parsedCurrentPrice * usdPkrRate
+          ? parsedCurrentPrice * resolvedUsdPkrRate
           : parsedCurrentPrice;
       currentOriginalPrice = parsedCurrentPrice;
       savedCurrentCurrency = currentPriceCurrency;
@@ -573,11 +675,17 @@ export default function InvestmentModalLocal({
         p_asset_id: assetId,
         p_symbol: symbol,
         p_image_url: imageUrl,
-        p_price_source: priceSource,
+        p_price_source: marketPricedSelected ? "binance" : priceSource,
         p_price_currency: BASE_CURRENCY,
-        p_price_updated_at: priceUpdatedAt,
-        p_price_change_24h: priceChange24h,
-        p_is_live_priced: isLivePriced,
+        p_price_updated_at: marketPricedSelected
+          ? new Date(
+              selectedLivePrice.updatedAt ?? Date.now(),
+            ).toISOString()
+          : priceUpdatedAt,
+        p_price_change_24h: marketPricedSelected
+          ? selectedLivePrice.change24h
+          : priceChange24h,
+        p_is_live_priced: marketPricedSelected ? true : isLivePriced,
         p_account_id: accountId,
       },
     );
@@ -709,6 +817,7 @@ export default function InvestmentModalLocal({
                     <div className="max-h-72 overflow-y-auto pr-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                       {results.map((asset, index) => {
                         const active = index === activeResultIndex;
+                        const live = searchPrices[asset.id];
 
                         return (
                           <button
@@ -733,11 +842,20 @@ export default function InvestmentModalLocal({
                               </span>
                             </span>
                             <span className="flex-shrink-0 text-right">
-                              <span className="block text-[11px] font-semibold text-text-secondary">
-                                Price unavailable
+                              <span className="block text-[11px] font-semibold tabular-nums text-text-primary">
+                                {live?.status === "live" && live.priceUsd !== null
+                                  ? formatUsdPrice(live.priceUsd)
+                                  : live?.status === "connecting"
+                                    ? "Connecting…"
+                                    : "Price unavailable"}
                               </span>
-                              <span className="mt-0.5 block text-[10px] font-medium text-text-secondary/75">
-                                —
+                              <span
+                                className="mt-0.5 block text-[10px] font-semibold tabular-nums"
+                                style={{
+                                  color: getChangeColor(live?.change24h ?? null),
+                                }}
+                              >
+                                {formatChange(live?.change24h ?? null)}
                               </span>
                             </span>
                           </button>
@@ -827,9 +945,7 @@ export default function InvestmentModalLocal({
                 <CurrencyToggle
                   value={currentPriceCurrency}
                   onChange={setCurrentPriceCurrency}
-                  disableUsd={
-                    marketPricedSelected && currentPriceOriginal === null
-                  }
+                  disableUsd={false}
                 />
               </div>
               <Input
@@ -844,9 +960,32 @@ export default function InvestmentModalLocal({
                   setCurrentPrice(event.target.value);
                 }}
                 readOnly={marketPricedSelected}
-                placeholder="Leave blank to match buying price"
-                className="font-semibold tabular-nums read-only:bg-surface-secondary read-only:text-text-secondary"
+                placeholder={
+                  selectedLivePrice.status === "connecting"
+                    ? "Connecting to live market…"
+                    : "Leave blank to match buying price"
+                }
+                className="font-semibold tabular-nums read-only:bg-surface-secondary read-only:text-text-primary"
               />
+              {selectedAsset ? (
+                <div className="mt-1.5 flex items-center justify-between gap-2 text-[10px] font-medium">
+                  <span className="text-text-secondary">
+                    {selectedLivePrice.status === "live"
+                      ? "Live last trade · Binance"
+                      : selectedLivePrice.status === "connecting"
+                        ? "Connecting to Binance…"
+                        : "Live price unavailable · manual entry enabled"}
+                  </span>
+                  {selectedLivePrice.status === "live" ? (
+                    <span
+                      className="font-semibold tabular-nums"
+                      style={{ color: getChangeColor(selectedLivePrice.change24h) }}
+                    >
+                      {formatChange(selectedLivePrice.change24h)}
+                    </span>
+                  ) : null}
+                </div>
+              ) : null}
             </div>
           </div>
 
