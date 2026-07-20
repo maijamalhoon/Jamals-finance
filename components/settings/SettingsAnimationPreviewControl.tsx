@@ -60,7 +60,7 @@ export default function SettingsAnimationPreviewControl() {
 
   return (
     <div
-      className="settings-reference-appearance-control settings-reference-animation-control"
+      className="settings-reference-appearance-control settings-reference-animation-control mt-2"
       role="radiogroup"
       aria-label="Animation preference preview"
     >
