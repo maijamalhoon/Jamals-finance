@@ -11,21 +11,42 @@ type AccountTotals = {
   outflow: number;
 };
 
+function getAccountTotals(
+  totals: Map<string, AccountTotals>,
+  accountId: string,
+) {
+  const current = totals.get(accountId) ?? {
+    inflow: 0,
+    outflow: 0,
+  };
+
+  totals.set(accountId, current);
+  return current;
+}
+
 export default async function AccountsPage() {
   const supabase = await createClient();
 
   const [
     { data: accounts, error: accountsError },
     { data: transactions, error: transactionsError },
+    { data: transfers, error: transfersError },
   ] = await Promise.all([
     supabase
       .from("accounts")
       .select("*")
       .order("created_at", { ascending: true }),
     supabase.from("transactions").select("account_id, type, amount"),
+    supabase
+      .from("account_transfers")
+      .select("from_account_id, to_account_id, amount"),
   ]);
 
-  const pageErrors = [accountsError, transactionsError].filter(Boolean);
+  const pageErrors = [
+    accountsError,
+    transactionsError,
+    transfersError,
+  ].filter(Boolean);
 
   if (pageErrors.length > 0) {
     console.error(
@@ -47,20 +68,28 @@ export default async function AccountsPage() {
   (transactions ?? []).forEach((transaction) => {
     if (!transaction.account_id) return;
 
-    const current = accountTotals.get(transaction.account_id) ?? {
-      inflow: 0,
-      outflow: 0,
-    };
+    const current = getAccountTotals(accountTotals, transaction.account_id);
+    const amount = Number(transaction.amount ?? 0);
 
-    if (transaction.type === "income") {
-      current.inflow += Number(transaction.amount ?? 0);
+    if (transaction.type === "income" || transaction.type === "refund") {
+      current.inflow += amount;
     }
 
-    if (transaction.type === "expense") {
-      current.outflow += Number(transaction.amount ?? 0);
+    if (transaction.type === "expense" || transaction.type === "investment") {
+      current.outflow += amount;
+    }
+  });
+
+  (transfers ?? []).forEach((transfer) => {
+    const amount = Number(transfer.amount ?? 0);
+
+    if (transfer.to_account_id) {
+      getAccountTotals(accountTotals, transfer.to_account_id).inflow += amount;
     }
 
-    accountTotals.set(transaction.account_id, current);
+    if (transfer.from_account_id) {
+      getAccountTotals(accountTotals, transfer.from_account_id).outflow += amount;
+    }
   });
 
   const accountGridClass =
