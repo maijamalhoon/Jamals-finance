@@ -1,6 +1,11 @@
 "use client";
 
 import { useEffect } from "react";
+import {
+  ANIMATION_MODE_CHANGE_EVENT,
+  ANIMATION_STORAGE_KEY,
+  getDocumentAnimationMode,
+} from "@/lib/animation-preference";
 
 const REVEAL_SELECTORS = [
   ".jf-reveal:not(.jf-insights-copy):not(.jf-footer-nav)",
@@ -106,11 +111,14 @@ export default function LandingScrollReveal() {
       revealItems.forEach((element) => reveal(element, "down"));
     };
 
+    const motionDisabled = () =>
+      reducedMotionQuery.matches || getDocumentAnimationMode() === "none";
+
     const setupObservers = () => {
       revealObserver?.disconnect();
       resetObserver?.disconnect();
 
-      if (reducedMotionQuery.matches || !("IntersectionObserver" in window)) {
+      if (motionDisabled() || !("IntersectionObserver" in window)) {
         revealEverything();
         return;
       }
@@ -125,7 +133,6 @@ export default function LandingScrollReveal() {
         if (isFarOutsideViewport) conceal(element);
       });
 
-      // Reveal inside the visible viewport so the complete motion stays noticeable.
       revealObserver = new IntersectionObserver(
         (entries) => {
           entries.forEach((entry) => {
@@ -139,7 +146,6 @@ export default function LandingScrollReveal() {
         },
       );
 
-      // Reset farther outside the viewport to avoid flicker near screen edges.
       resetObserver = new IntersectionObserver(
         (entries) => {
           entries.forEach((entry) => {
@@ -188,7 +194,9 @@ export default function LandingScrollReveal() {
       setupObservers();
     };
 
-    const onReducedMotionChange = () => {
+    const onMotionPreferenceChange = () => setupObservers();
+    const onStorage = (event: StorageEvent) => {
+      if (event.key !== null && event.key !== ANIMATION_STORAGE_KEY) return;
       setupObservers();
     };
 
@@ -196,14 +204,21 @@ export default function LandingScrollReveal() {
     setupObservers();
     window.addEventListener("scroll", onScroll, { passive: true });
     window.addEventListener("resize", onResize, { passive: true });
-    reducedMotionQuery.addEventListener("change", onReducedMotionChange);
+    window.addEventListener(ANIMATION_MODE_CHANGE_EVENT, onMotionPreferenceChange);
+    window.addEventListener("storage", onStorage);
+    reducedMotionQuery.addEventListener("change", onMotionPreferenceChange);
 
     return () => {
       revealObserver?.disconnect();
       resetObserver?.disconnect();
       window.removeEventListener("scroll", onScroll);
       window.removeEventListener("resize", onResize);
-      reducedMotionQuery.removeEventListener("change", onReducedMotionChange);
+      window.removeEventListener(
+        ANIMATION_MODE_CHANGE_EVENT,
+        onMotionPreferenceChange,
+      );
+      window.removeEventListener("storage", onStorage);
+      reducedMotionQuery.removeEventListener("change", onMotionPreferenceChange);
       if (frame) window.cancelAnimationFrame(frame);
 
       revealItems.forEach((element) => {
