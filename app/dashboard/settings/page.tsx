@@ -22,6 +22,7 @@ import "./settings-card-border-reset.css";
 import "./settings-row-hover-unify.css";
 import "./settings-animation-control.css";
 import "./settings-layout-alignment.css";
+import "./settings-profile-security-modal-polish.css";
 
 export const dynamic = "force-dynamic";
 
