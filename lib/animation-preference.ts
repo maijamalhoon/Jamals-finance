@@ -1,4 +1,5 @@
 export const ANIMATION_STORAGE_KEY = "jamal-animation-mode";
+export const ANIMATION_COOKIE_KEY = ANIMATION_STORAGE_KEY;
 export const ANIMATION_MODE_CHANGE_EVENT = "jamal-animation-mode-change";
 
 export type AnimationMode = "standard" | "fast" | "none";
@@ -9,6 +10,7 @@ const VALID_ANIMATION_MODES = new Set<AnimationMode>([
   "none",
 ]);
 
+const ANIMATION_COOKIE_MAX_AGE = 31_536_000;
 let scrollGuardInstalled = false;
 
 export function normalizeAnimationMode(value: unknown): AnimationMode {
@@ -65,6 +67,13 @@ export function scaleAnimationMilliseconds(
   return Math.round(milliseconds * getAnimationDurationScale(mode));
 }
 
+function syncAnimationCookie(mode: AnimationMode) {
+  if (typeof document === "undefined") return;
+
+  const secure = window.location.protocol === "https:" ? "; Secure" : "";
+  document.cookie = `${ANIMATION_COOKIE_KEY}=${encodeURIComponent(mode)}; Path=/; Max-Age=${ANIMATION_COOKIE_MAX_AGE}; SameSite=Lax${secure}`;
+}
+
 function installScrollBehaviorGuard() {
   if (scrollGuardInstalled || typeof window === "undefined") return;
   scrollGuardInstalled = true;
@@ -105,6 +114,7 @@ export function applyAnimationMode(
   if (options.persist !== false && typeof window !== "undefined") {
     try {
       window.localStorage.setItem(ANIMATION_STORAGE_KEY, mode);
+      syncAnimationCookie(mode);
     } catch {}
   }
 
@@ -128,6 +138,8 @@ export const ANIMATION_BOOTSTRAP_SCRIPT = `
     const root = document.documentElement;
     root.dataset.animationMode = mode;
     root.dataset.scrollBehavior = mode === "none" ? "auto" : "smooth";
+    const secure = window.location.protocol === "https:" ? "; Secure" : "";
+    document.cookie = key + "=" + encodeURIComponent(mode) + "; Path=/; Max-Age=${ANIMATION_COOKIE_MAX_AGE}; SameSite=Lax" + secure;
   } catch {
     document.documentElement.dataset.animationMode = "standard";
   }
