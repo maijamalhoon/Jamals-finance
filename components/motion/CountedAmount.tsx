@@ -6,6 +6,10 @@ import {
   useRef,
   type MutableRefObject,
 } from "react";
+import {
+  getAnimationDurationScale,
+  getDocumentAnimationMode,
+} from "@/lib/animation-preference";
 
 function splitAmount(amount: string) {
   const cleanAmount = String(amount ?? "").trim();
@@ -63,14 +67,22 @@ function getAnimationProgress(progress: number, profile: AnimationProfile) {
 }
 
 function getAnimationDuration(duration: number, profile: AnimationProfile) {
+  const preferenceScale = getAnimationDurationScale();
+  if (preferenceScale === 0) return 0;
+
   if (profile === "dashboard") {
-    return Math.min(
-      DASHBOARD_MAX_DURATION_MS,
-      Math.max(duration * 1000 * DASHBOARD_DURATION_SCALE, DASHBOARD_MIN_DURATION_MS),
+    return (
+      Math.min(
+        DASHBOARD_MAX_DURATION_MS,
+        Math.max(duration * 1000 * DASHBOARD_DURATION_SCALE, DASHBOARD_MIN_DURATION_MS),
+      ) * preferenceScale
     );
   }
 
-  return Math.max(duration * 1000 * COUNT_DURATION_SCALE, MIN_COUNT_DURATION_MS);
+  return (
+    Math.max(duration * 1000 * COUNT_DURATION_SCALE, MIN_COUNT_DURATION_MS) *
+    preferenceScale
+  );
 }
 
 function renderSharedFrame(time: number) {
@@ -155,14 +167,20 @@ export default function CountedAmount({
       return;
     }
 
-    const reduceMotion = window.matchMedia(
-      "(prefers-reduced-motion: reduce)",
-    ).matches;
+    const animationMode = getDocumentAnimationMode();
+    const reduceMotion =
+      animationMode === "none" ||
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const compactViewport = window.matchMedia("(max-width: 1023px)").matches;
+    const animationDurationMs = getAnimationDuration(
+      duration,
+      element.closest(".dashboard-overview") ? "dashboard" : "default",
+    );
     const shouldAnimate =
       !reduceMotion &&
       (animateOnCompact || !compactViewport) &&
-      duration > 0;
+      duration > 0 &&
+      animationDurationMs > 0;
 
     stopSharedAnimation(element);
 
@@ -205,8 +223,10 @@ export default function CountedAmount({
       element,
       from: fromValue,
       to: parsedAmount.value,
-      startedAt: performance.now() + Math.max(0, delay) * 1000,
-      durationMs: getAnimationDuration(duration, profile),
+      startedAt:
+        performance.now() +
+        Math.max(0, delay) * 1000 * getAnimationDurationScale(),
+      durationMs: animationDurationMs,
       finalText: amount,
       formatValue,
       valueRef: currentValueRef,
