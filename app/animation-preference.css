@@ -32,3 +32,30 @@ html[data-animation-mode="none"]::view-transition-old(root),
 html[data-animation-mode="none"]::view-transition-new(root) {
   animation: none !important;
 }
+
+/* No-animation mode never waits for the normal font/RAF reveal gate. */
+html[data-animation-mode="none"]
+  .jf-dashboard-content-frame[data-jf-initial-reveal="pending"] {
+  visibility: visible !important;
+}
+
+/* Replace large animated route skeletons with one tiny static status line.
+ * This avoids shimmer, stagger work and expensive skeleton painting while data
+ * is being streamed. Actual network/server time remains truthful.
+ */
+html[data-animation-mode="none"]
+  [data-loading-region="true"]
+  > div[aria-hidden="true"] {
+  display: none !important;
+}
+
+html[data-animation-mode="none"] [data-loading-region="true"]::after {
+  content: "Loading";
+  display: flex;
+  min-height: 2rem;
+  align-items: center;
+  color: var(--text-secondary);
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1;
+}
