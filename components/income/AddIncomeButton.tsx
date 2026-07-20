@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { TrendingUp } from "lucide-react";
 import TransactionModal from "@/components/dashboard/TransactionModal";
+import PageHeadingActionPortal from "@/components/layout/PageHeadingActionPortal";
 
 interface AddIncomeButtonProps {
   label?: string;
@@ -19,14 +20,16 @@ export default function AddIncomeButton({
 
   return (
     <>
-      <button
-        type="button"
-        onClick={() => setOpen(true)}
-        className="success-action"
-      >
-        {showIcon ? <TrendingUp size={16} /> : null}
-        {label}
-      </button>
+      <PageHeadingActionPortal page="income">
+        <button
+          type="button"
+          onClick={() => setOpen(true)}
+          className="success-action"
+        >
+          {showIcon ? <TrendingUp size={16} /> : null}
+          {label}
+        </button>
+      </PageHeadingActionPortal>
 
       <TransactionModal
         open={open}
