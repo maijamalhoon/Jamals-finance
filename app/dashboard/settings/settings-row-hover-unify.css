@@ -1,0 +1,46 @@
+/*
+ * Settings interaction parity.
+ * Profile, Data and Log Out now use the same soft hover language as
+ * Preferences and Categories without changing any handlers or layout.
+ */
+
+.settings-page-polish .settings-reference-profile-security .settings-reference-row-button,
+.settings-page-polish .settings-reference-data .settings-reference-row-button,
+.settings-page-polish .settings-reference-logout {
+  transition:
+    background-color 180ms cubic-bezier(0.22, 1, 0.36, 1),
+    color 180ms ease,
+    transform 220ms cubic-bezier(0.22, 1, 0.36, 1) !important;
+}
+
+.settings-page-polish .settings-reference-profile-security .settings-reference-row-button:focus-visible,
+.settings-page-polish .settings-reference-data .settings-reference-row-button:focus-visible {
+  background: var(--hover) !important;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .settings-page-polish .settings-reference-profile-security .settings-reference-row-button:hover,
+  .settings-page-polish .settings-reference-data .settings-reference-row-button:hover {
+    background: var(--hover) !important;
+    transform: translateY(-1px);
+  }
+
+  .settings-page-polish .settings-reference-logout:hover {
+    background: color-mix(in srgb, var(--danger), transparent 86%) !important;
+    transform: translateY(-1px);
+  }
+}
+
+.settings-page-polish .settings-reference-profile-security .settings-reference-row-button:active,
+.settings-page-polish .settings-reference-data .settings-reference-row-button:active,
+.settings-page-polish .settings-reference-logout:active {
+  transform: scale(0.99);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .settings-page-polish .settings-reference-profile-security .settings-reference-row-button,
+  .settings-page-polish .settings-reference-data .settings-reference-row-button,
+  .settings-page-polish .settings-reference-logout {
+    transition-duration: 1ms !important;
+  }
+}
