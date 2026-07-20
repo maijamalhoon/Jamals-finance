@@ -81,6 +81,7 @@ export default function MotionProvider({ children }: { children: ReactNode }) {
       transition={{ duration: motionDurations.base, ease: motionEase }}
     >
       {children}
+      {/* Route-wide overlay handles both document and dashboard scroll containers. */}
       <GlobalScrollToTop />
     </MotionConfig>
   );
