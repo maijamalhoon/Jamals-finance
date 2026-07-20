@@ -197,12 +197,12 @@ export default function IncomeExpenseChart({
 
         <div
           aria-label="Cash-flow range"
-          className="flex shrink-0 items-center gap-0.5 rounded-[11px] bg-surface-secondary/85 p-1 ring-1 ring-inset ring-border/60 sm:rounded-[12px]"
+          className="flex shrink-0 items-center gap-0.5 rounded-[11px] bg-surface-secondary/85 p-1 sm:rounded-[12px]"
           role="group"
         >
           {([
-            ["7d", "7D"],
-            ["30d", "30D"],
+            ["7d", "W"],
+            ["30d", "M"],
           ] as const).map(([value, label]) => (
             <button
               key={value}
