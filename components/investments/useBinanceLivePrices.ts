@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import type { CryptoCatalogAsset } from "@/lib/market/crypto-catalog";
 
@@ -17,22 +17,29 @@ export type BinancePriceSnapshot = {
   status: BinancePriceStatus;
 };
 
-type CombinedStreamMessage = {
-  stream?: string;
-  data?: {
-    e?: string;
-    E?: number;
-    T?: number;
-    s?: string;
-    p?: string;
-    c?: string;
-    P?: string;
-  };
+type CentralPriceResponse = {
+  generatedAt?: unknown;
+  stale?: unknown;
+  prices?: Record<
+    string,
+    {
+      priceUsd?: unknown;
+      change24h?: unknown;
+      updatedAt?: unknown;
+    }
+  >;
 };
 
-const BINANCE_STREAM_BASE =
-  "wss://stream.binance.com:9443/stream?streams=";
-const RECONNECT_DELAYS = [1000, 2000, 4000, 8000, 15000] as const;
+type CentralPriceStore = {
+  status: BinancePriceStatus;
+  prices: Record<string, BinancePriceSnapshot>;
+  lastSuccessAt: number | null;
+};
+
+const CENTRAL_PRICE_ENDPOINT = "/api/market/crypto-prices";
+const LIVE_POLL_INTERVAL_MS = 1_000;
+const MAX_RETRY_INTERVAL_MS = 30_000;
+const REQUEST_TIMEOUT_MS = 8_000;
 
 const EMPTY_SNAPSHOT: BinancePriceSnapshot = {
   priceUsd: null,
@@ -41,29 +48,32 @@ const EMPTY_SNAPSHOT: BinancePriceSnapshot = {
   status: "idle",
 };
 
+const INITIAL_STORE: CentralPriceStore = {
+  status: "idle",
+  prices: {},
+  lastSuccessAt: null,
+};
+
+let centralStore = INITIAL_STORE;
+let subscribers = new Set<() => void>();
+let pollTimer: number | null = null;
+let requestController: AbortController | null = null;
+let failureCount = 0;
+let visibilityListenerAttached = false;
+
 function toFiniteNumber(value: unknown) {
   const parsed = Number(value);
-  return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
+  return Number.isFinite(parsed) ? parsed : null;
 }
 
-function toFiniteChange(value: unknown) {
+function toPositiveFiniteNumber(value: unknown) {
   const parsed = Number(value);
-  return Number.isFinite(parsed) ? parsed : null;
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
 }
 
 function normalizePair(value: string | null | undefined) {
   const pair = (value ?? "").trim().toUpperCase();
   return /^[A-Z0-9]{5,24}$/.test(pair) ? pair : null;
-}
-
-function createStreamUrl(streams: string[]) {
-  return `${BINANCE_STREAM_BASE}${streams.join("/")}`;
-}
-
-function getReconnectDelay(attempt: number) {
-  return RECONNECT_DELAYS[
-    Math.min(attempt, RECONNECT_DELAYS.length - 1)
-  ];
 }
 
 function getFixedSnapshot(asset: CryptoCatalogAsset) {
@@ -77,261 +87,219 @@ function getFixedSnapshot(asset: CryptoCatalogAsset) {
   };
 }
 
+function publishCentralStore(next: CentralPriceStore) {
+  centralStore = next;
+  subscribers.forEach((listener) => listener());
+}
+
+function clearPollTimer() {
+  if (pollTimer === null) return;
+  window.clearTimeout(pollTimer);
+  pollTimer = null;
+}
+
+function getRetryDelay() {
+  return Math.min(
+    LIVE_POLL_INTERVAL_MS * 2 ** Math.max(0, failureCount - 1),
+    MAX_RETRY_INTERVAL_MS,
+  );
+}
+
+function scheduleNextPoll(delay: number) {
+  clearPollTimer();
+  if (subscribers.size === 0) return;
+  pollTimer = window.setTimeout(runCentralPricePoll, delay);
+}
+
+function parseCentralPrices(payload: CentralPriceResponse) {
+  const next: Record<string, BinancePriceSnapshot> = {};
+
+  for (const [rawPair, row] of Object.entries(payload.prices ?? {})) {
+    const pair = normalizePair(rawPair);
+    const priceUsd = toPositiveFiniteNumber(row?.priceUsd);
+    if (!pair || priceUsd === null) continue;
+
+    next[pair] = {
+      priceUsd,
+      change24h: toFiniteNumber(row?.change24h),
+      updatedAt:
+        toPositiveFiniteNumber(row?.updatedAt) ??
+        toPositiveFiniteNumber(payload.generatedAt) ??
+        Date.now(),
+      status: "live",
+    };
+  }
+
+  return next;
+}
+
+async function runCentralPricePoll() {
+  if (subscribers.size === 0) return;
+
+  if (document.visibilityState === "hidden") {
+    scheduleNextPoll(5_000);
+    return;
+  }
+
+  if (Object.keys(centralStore.prices).length === 0) {
+    publishCentralStore({ ...centralStore, status: "connecting" });
+  }
+
+  requestController?.abort();
+  requestController = new AbortController();
+  const timeout = window.setTimeout(
+    () => requestController?.abort(),
+    REQUEST_TIMEOUT_MS,
+  );
+
+  try {
+    const response = await fetch(CENTRAL_PRICE_ENDPOINT, {
+      cache: "no-store",
+      headers: { Accept: "application/json" },
+      signal: requestController.signal,
+    });
+    const payload = (await response.json()) as CentralPriceResponse;
+
+    if (!response.ok) {
+      throw new Error(`Central price request failed (${response.status}).`);
+    }
+
+    const prices = parseCentralPrices(payload);
+    if (Object.keys(prices).length === 0) {
+      throw new Error("Central price response did not include usable prices.");
+    }
+
+    failureCount = 0;
+    publishCentralStore({
+      status: "live",
+      prices,
+      lastSuccessAt:
+        toPositiveFiniteNumber(payload.generatedAt) ?? Date.now(),
+    });
+    scheduleNextPoll(LIVE_POLL_INTERVAL_MS);
+  } catch {
+    failureCount += 1;
+    publishCentralStore({
+      ...centralStore,
+      status:
+        Object.keys(centralStore.prices).length > 0
+          ? "connecting"
+          : "unavailable",
+    });
+    scheduleNextPoll(getRetryDelay());
+  } finally {
+    window.clearTimeout(timeout);
+    requestController = null;
+  }
+}
+
+function handleVisibilityChange() {
+  if (document.visibilityState !== "visible" || subscribers.size === 0) return;
+  scheduleNextPoll(0);
+}
+
+function subscribeToCentralPrices(listener: () => void) {
+  subscribers.add(listener);
+
+  if (!visibilityListenerAttached) {
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    visibilityListenerAttached = true;
+  }
+
+  if (subscribers.size === 1) {
+    scheduleNextPoll(0);
+  }
+
+  return () => {
+    subscribers.delete(listener);
+    if (subscribers.size > 0) return;
+
+    clearPollTimer();
+    requestController?.abort();
+    requestController = null;
+    failureCount = 0;
+
+    if (visibilityListenerAttached) {
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      visibilityListenerAttached = false;
+    }
+  };
+}
+
+function useCentralPrices(enabled: boolean) {
+  const [snapshot, setSnapshot] = useState(centralStore);
+
+  useEffect(() => {
+    if (!enabled) {
+      setSnapshot(INITIAL_STORE);
+      return;
+    }
+
+    setSnapshot(centralStore);
+    return subscribeToCentralPrices(() => setSnapshot(centralStore));
+  }, [enabled]);
+
+  return snapshot;
+}
+
+function getMissingStatus(store: CentralPriceStore, enabled: boolean) {
+  if (!enabled) return "idle" as const;
+  return store.status === "unavailable"
+    ? ("unavailable" as const)
+    : ("connecting" as const);
+}
+
 export function useBinanceSearchPrices(
   assets: readonly CryptoCatalogAsset[],
   enabled: boolean,
 ) {
-  const [prices, setPrices] = useState<Record<string, BinancePriceSnapshot>>({});
+  const store = useCentralPrices(enabled && assets.length > 0);
 
-  const subscription = useMemo(() => {
-    const pairToAssetIds = new Map<string, string[]>();
-    const fixedPrices: Record<string, BinancePriceSnapshot> = {};
+  return useMemo(() => {
+    const prices: Record<string, BinancePriceSnapshot> = {};
 
     for (const asset of assets) {
       const fixed = getFixedSnapshot(asset);
       if (fixed) {
-        fixedPrices[asset.id] = fixed;
+        prices[asset.id] = fixed;
         continue;
       }
 
       const pair = normalizePair(asset.binanceSymbol);
-      if (!pair) continue;
-
-      const assetIds = pairToAssetIds.get(pair) ?? [];
-      assetIds.push(asset.id);
-      pairToAssetIds.set(pair, assetIds);
+      const live = pair ? store.prices[pair] : undefined;
+      prices[asset.id] =
+        live ?? {
+          ...EMPTY_SNAPSHOT,
+          status: pair
+            ? getMissingStatus(store, enabled)
+            : "unavailable",
+        };
     }
 
-    return {
-      pairToAssetIds,
-      fixedPrices,
-      streams: Array.from(pairToAssetIds.keys()).map(
-        (pair) => `${pair.toLowerCase()}@ticker`,
-      ),
-    };
-  }, [assets]);
-
-  useEffect(() => {
-    setPrices(subscription.fixedPrices);
-    if (!enabled || subscription.streams.length === 0) return;
-
-    let disposed = false;
-    let socket: WebSocket | null = null;
-    let reconnectTimer: ReturnType<typeof setTimeout> | null = null;
-    let reconnectAttempt = 0;
-
-    function connect() {
-      if (disposed) return;
-
-      socket = new WebSocket(createStreamUrl(subscription.streams));
-
-      socket.onopen = () => {
-        reconnectAttempt = 0;
-      };
-
-      socket.onmessage = (event) => {
-        let message: CombinedStreamMessage;
-        try {
-          message = JSON.parse(String(event.data)) as CombinedStreamMessage;
-        } catch {
-          return;
-        }
-
-        const data = message.data;
-        const pair = normalizePair(data?.s);
-        const priceUsd = toFiniteNumber(data?.c);
-        if (!pair || priceUsd === null) return;
-
-        const assetIds = subscription.pairToAssetIds.get(pair);
-        if (!assetIds?.length) return;
-
-        const change24h = toFiniteChange(data?.P);
-        const updatedAt = Number(data?.E) || Date.now();
-
-        setPrices((current) => {
-          const next = { ...current };
-          for (const assetId of assetIds) {
-            next[assetId] = {
-              priceUsd,
-              change24h,
-              updatedAt,
-              status: "live",
-            };
-          }
-          return next;
-        });
-      };
-
-      socket.onerror = () => {
-        socket?.close();
-      };
-
-      socket.onclose = () => {
-        if (disposed) return;
-        const delay = getReconnectDelay(reconnectAttempt);
-        reconnectAttempt += 1;
-        reconnectTimer = setTimeout(connect, delay);
-      };
-    }
-
-    connect();
-
-    return () => {
-      disposed = true;
-      if (reconnectTimer) clearTimeout(reconnectTimer);
-      if (socket && socket.readyState < WebSocket.CLOSING) socket.close();
-    };
-  }, [enabled, subscription]);
-
-  return prices;
+    return prices;
+  }, [assets, enabled, store]);
 }
 
 export function useBinanceSelectedPrice(
   asset: CryptoCatalogAsset | null,
   enabled: boolean,
 ) {
-  const [snapshot, setSnapshot] =
-    useState<BinancePriceSnapshot>(EMPTY_SNAPSHOT);
-  const pendingRef = useRef<BinancePriceSnapshot>(EMPTY_SNAPSHOT);
-  const frameRef = useRef<number | null>(null);
+  const store = useCentralPrices(enabled && Boolean(asset));
 
-  const assetKey = asset
-    ? `${asset.id}:${asset.binanceSymbol ?? ""}:${asset.symbol}`
-    : "";
-
-  useEffect(() => {
-    if (!enabled || !asset) {
-      pendingRef.current = EMPTY_SNAPSHOT;
-      setSnapshot(EMPTY_SNAPSHOT);
-      return;
-    }
+  return useMemo(() => {
+    if (!enabled || !asset) return EMPTY_SNAPSHOT;
 
     const fixed = getFixedSnapshot(asset);
-    if (fixed) {
-      pendingRef.current = fixed;
-      setSnapshot(fixed);
-      return;
-    }
+    if (fixed) return fixed;
 
     const pair = normalizePair(asset.binanceSymbol);
-    if (!pair) {
-      const unavailable: BinancePriceSnapshot = {
+    if (!pair) return { ...EMPTY_SNAPSHOT, status: "unavailable" };
+
+    return (
+      store.prices[pair] ?? {
         ...EMPTY_SNAPSHOT,
-        status: "unavailable",
-      };
-      pendingRef.current = unavailable;
-      setSnapshot(unavailable);
-      return;
-    }
-    const streamPair = pair;
-
-    let disposed = false;
-    let socket: WebSocket | null = null;
-    let reconnectTimer: ReturnType<typeof setTimeout> | null = null;
-    let reconnectAttempt = 0;
-
-    const connecting: BinancePriceSnapshot = {
-      ...EMPTY_SNAPSHOT,
-      status: "connecting",
-    };
-    pendingRef.current = connecting;
-    setSnapshot(connecting);
-
-    function flushOnNextFrame() {
-      if (frameRef.current !== null) return;
-      frameRef.current = window.requestAnimationFrame(() => {
-        frameRef.current = null;
-        setSnapshot(pendingRef.current);
-      });
-    }
-
-    function connect() {
-      if (disposed) return;
-
-      const lowerPair = streamPair.toLowerCase();
-      socket = new WebSocket(
-        createStreamUrl([
-          `${lowerPair}@trade`,
-          `${lowerPair}@ticker`,
-        ]),
-      );
-
-      socket.onopen = () => {
-        reconnectAttempt = 0;
-      };
-
-      socket.onmessage = (event) => {
-        let message: CombinedStreamMessage;
-        try {
-          message = JSON.parse(String(event.data)) as CombinedStreamMessage;
-        } catch {
-          return;
-        }
-
-        const data = message.data;
-        if (!data) return;
-
-        if (data.e === "trade") {
-          const priceUsd = toFiniteNumber(data.p);
-          if (priceUsd === null) return;
-
-          pendingRef.current = {
-            priceUsd,
-            change24h: pendingRef.current.change24h,
-            updatedAt: Number(data.T) || Number(data.E) || Date.now(),
-            status: "live",
-          };
-          flushOnNextFrame();
-          return;
-        }
-
-        if (data.e === "24hrTicker") {
-          const priceUsd =
-            toFiniteNumber(data.c) ?? pendingRef.current.priceUsd;
-          if (priceUsd === null) return;
-
-          pendingRef.current = {
-            priceUsd,
-            change24h: toFiniteChange(data.P),
-            updatedAt: Number(data.E) || Date.now(),
-            status: "live",
-          };
-          flushOnNextFrame();
-        }
-      };
-
-      socket.onerror = () => {
-        socket?.close();
-      };
-
-      socket.onclose = () => {
-        if (disposed) return;
-
-        pendingRef.current = {
-          ...pendingRef.current,
-          status:
-            pendingRef.current.priceUsd === null ? "unavailable" : "connecting",
-        };
-        flushOnNextFrame();
-
-        const delay = getReconnectDelay(reconnectAttempt);
-        reconnectAttempt += 1;
-        reconnectTimer = setTimeout(connect, delay);
-      };
-    }
-
-    connect();
-
-    return () => {
-      disposed = true;
-      if (reconnectTimer) clearTimeout(reconnectTimer);
-      if (frameRef.current !== null) {
-        window.cancelAnimationFrame(frameRef.current);
-        frameRef.current = null;
+        status: getMissingStatus(store, enabled),
       }
-      if (socket && socket.readyState < WebSocket.CLOSING) socket.close();
-    };
-  }, [asset, assetKey, enabled]);
-
-  return snapshot;
+    );
+  }, [asset, enabled, store]);
 }
