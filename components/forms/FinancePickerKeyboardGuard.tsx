@@ -11,7 +11,7 @@ const FINANCE_PICKER_SELECTOR = [
   '[aria-haspopup="dialog"][aria-controls$="-calendar"]',
 ].join(",");
 
-const FINANCE_DARK_MODE_SURFACE_STYLE = `
+const FINANCE_FORM_RUNTIME_STYLE = `
 .dark [data-slot="dialog-content"].finance-modal-content,
 .dark [role="dialog"].finance-modal-content {
   --card: #1b2a40;
@@ -44,6 +44,34 @@ const FINANCE_DARK_MODE_SURFACE_STYLE = `
 .dark .finance-modal-content [role="listbox"].field-input {
   background: var(--surface-inset) !important;
   box-shadow: none !important;
+}
+
+/* Edit Investment: keep the saved asset visible without an editable field. */
+.finance-modal-content
+  [data-slot="finance-form-field"]:has(> #investment-name):not(:has(> button))
+  > .field-label {
+  display: none !important;
+}
+
+.finance-modal-content
+  [data-slot="finance-form-field"]:has(> #investment-name):not(:has(> button))
+  > #investment-name {
+  display: block !important;
+  width: 100% !important;
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  color: var(--text-primary) !important;
+  font-size: 1.05rem !important;
+  font-weight: 700 !important;
+  line-height: 1.4 !important;
+  pointer-events: none !important;
+  caret-color: transparent !important;
 }
 `;
 
@@ -130,7 +158,7 @@ export default function FinancePickerKeyboardGuard() {
   return (
     <>
       <span aria-hidden="true" className={styles.guard} />
-      <style>{FINANCE_DARK_MODE_SURFACE_STYLE}</style>
+      <style>{FINANCE_FORM_RUNTIME_STYLE}</style>
     </>
   );
 }
