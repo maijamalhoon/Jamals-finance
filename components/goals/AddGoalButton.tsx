@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Target } from "lucide-react";
+import PageHeadingActionPortal from "@/components/layout/PageHeadingActionPortal";
 import GoalModal, { type GoalAccount } from "./GoalModal";
 
 interface AddGoalButtonProps {
@@ -21,14 +22,16 @@ export default function AddGoalButton({
 
   return (
     <>
-      <button
-        type="button"
-        onClick={() => setOpen(true)}
-        className="primary-action"
-      >
-        {showIcon ? <Target size={16} /> : null}
-        {label}
-      </button>
+      <PageHeadingActionPortal page="goals">
+        <button
+          type="button"
+          onClick={() => setOpen(true)}
+          className="primary-action"
+        >
+          {showIcon ? <Target size={16} /> : null}
+          {label}
+        </button>
+      </PageHeadingActionPortal>
 
       <GoalModal
         accounts={accounts}
