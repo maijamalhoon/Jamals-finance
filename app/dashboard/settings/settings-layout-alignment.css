@@ -65,8 +65,11 @@
   }
 
   .settings-page-polish .settings-reference-data {
+    display: grid !important;
     grid-column: 1 / -1 !important;
     grid-row: 3 !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    justify-items: stretch !important;
   }
 
   .settings-page-polish .settings-reference-grid > .settings-reference-appearance,
@@ -82,7 +85,8 @@
   .settings-page-polish .settings-reference-data .settings-reference-logout {
     width: min(100%, 28rem) !important;
     max-width: 28rem !important;
-    margin-right: auto !important;
-    margin-left: auto !important;
+    justify-self: center !important;
+    margin-right: 0 !important;
+    margin-left: 0 !important;
   }
 }
