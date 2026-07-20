@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
-import { ArrowBigUp } from "lucide-react";
+import { ArrowUp } from "lucide-react";
 
 type ScrollTarget = Window | HTMLElement;
 
@@ -122,7 +122,7 @@ export default function GlobalScrollToTop() {
           aria-label="Scroll to top"
           disabled={launching}
           onClick={handleScrollToTop}
-          initial={false}
+          initial={{ opacity: 1, y: 0, scale: 1 }}
           animate={
             launching
               ? shouldReduceMotion
@@ -133,15 +133,7 @@ export default function GlobalScrollToTop() {
                     scale: [1, 1.08, 0.68],
                     filter: ["blur(0px)", "blur(0px)", "blur(2px)"],
                   }
-              : shouldReduceMotion
-                ? { opacity: 1, y: 0, scale: 1, rotate: 0 }
-                : {
-                    opacity: 1,
-                    y: [0, -4, 0],
-                    scale: [1, 1.055, 1],
-                    rotate: [0, -1.5, 1.5, 0],
-                    filter: "blur(0px)",
-                  }
+              : { opacity: 1, y: 0, scale: 1, filter: "blur(0px)" }
           }
           exit={{
             opacity: 0,
@@ -158,25 +150,41 @@ export default function GlobalScrollToTop() {
                   times: shouldReduceMotion ? undefined : [0, 0.18, 1],
                   ease: motionEase,
                 }
-              : shouldReduceMotion
-                ? { duration: 0.16, ease: motionEase }
-                : {
-                    duration: 1.8,
-                    repeat: Number.POSITIVE_INFINITY,
-                    ease: "easeInOut",
-                  }
+              : { duration: 0.18, ease: motionEase }
           }
           whileHover={launching ? undefined : { y: -7, scale: 1.07 }}
           whileTap={launching ? undefined : { scale: 0.92 }}
           className={`fixed right-3 z-[70] grid size-11 appearance-none place-items-center border-0 !bg-transparent p-0 text-slate-700 !shadow-none outline-none transition-colors duration-200 [-webkit-tap-highlight-color:transparent] hover:!bg-transparent hover:text-slate-800 focus:!bg-transparent focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-active active:!bg-transparent disabled:pointer-events-none sm:right-5 lg:right-8 dark:!bg-transparent dark:text-slate-100 dark:hover:text-white ${positionClass}`}
         >
-          <ArrowBigUp
-            size={35}
-            strokeWidth={2.8}
-            strokeLinecap="round"
-            strokeLinejoin="round"
+          <motion.span
             aria-hidden="true"
-          />
+            animate={
+              launching || shouldReduceMotion
+                ? { y: 0, scale: 1, rotate: 0 }
+                : {
+                    y: [0, -8, 0],
+                    scale: [1, 1.14, 1],
+                    rotate: [0, -2, 2, 0],
+                  }
+            }
+            transition={
+              launching || shouldReduceMotion
+                ? { duration: 0.16 }
+                : {
+                    duration: 1.35,
+                    repeat: Number.POSITIVE_INFINITY,
+                    ease: "easeInOut",
+                  }
+            }
+            className="grid place-items-center"
+          >
+            <ArrowUp
+              size={34}
+              strokeWidth={5.25}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </motion.span>
         </motion.button>
       ) : null}
     </AnimatePresence>
