@@ -588,7 +588,7 @@ export default function OnboardingPage() {
 
                 <fieldset className="auth-field">
                   <legend className="auth-field-label">Account type</legend>
-                  <div className="grid grid-cols-2 gap-2" role="group" aria-label="Account type">
+                  <div className="flex gap-2" role="group" aria-label="Account type">
                     {[
                       { value: "savings", label: "Savings" },
                       { value: "current", label: "Current" },
@@ -601,7 +601,7 @@ export default function OnboardingPage() {
                           aria-pressed={selected}
                           disabled={savingAccount}
                           onClick={() => setAccountKind(option.value)}
-                          className={`finance-focus min-h-12 rounded-[13px] px-3 text-sm font-semibold transition-colors ${
+                          className={`finance-focus min-h-12 flex-1 rounded-[13px] px-3 text-sm font-semibold transition-colors ${
                             selected
                               ? "bg-primary-soft text-primary ring-1 ring-primary/30"
                               : "bg-surface-secondary text-text-secondary hover:bg-hover hover:text-text-primary"
