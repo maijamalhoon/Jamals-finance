@@ -1,5 +1,5 @@
-import DashboardRouteLoading from "@/components/loading/DashboardRouteLoading";
+import AnimationAwareDashboardRouteLoading from "@/components/loading/AnimationAwareDashboardRouteLoading";
 
 export default function DashboardLoading() {
-  return <DashboardRouteLoading variant="dashboard" />;
+  return <AnimationAwareDashboardRouteLoading variant="dashboard" />;
 }
