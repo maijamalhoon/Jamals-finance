@@ -27,6 +27,16 @@ type NavigatorWithVirtualKeyboard = Navigator & {
   };
 };
 
+type PrimedSearchStyles = {
+  controlWidth: string;
+  inputWidth: string;
+  inputFlex: string;
+  inputOpacity: string;
+  inputPointerEvents: string;
+  inputTabIndex: number;
+  inputAriaHidden: string | null;
+};
+
 export default function TransactionSearchAutoClose() {
   useEffect(() => {
     const input = document.getElementById(
@@ -75,10 +85,12 @@ export default function TransactionSearchAutoClose() {
     input.enterKeyHint = "search";
 
     let closeTimer: number | null = null;
-    let openFrame: number | null = null;
-    let verificationFrame: number | null = null;
-    let primeFrame: number | null = null;
+    let focusFrame: number | null = null;
+    let focusTimer: number | null = null;
+    let releaseFrame: number | null = null;
+    let primedStyles: PrimedSearchStyles | null = null;
     let focusSequence = 0;
+    let closing = false;
 
     const isSearchOpen = () => searchControl.dataset.open === "true";
 
@@ -104,11 +116,17 @@ export default function TransactionSearchAutoClose() {
       }
     };
 
-    const cancelFocusVerification = () => {
+    const cancelFocusWork = () => {
       focusSequence += 1;
-      if (verificationFrame !== null) {
-        window.cancelAnimationFrame(verificationFrame);
-        verificationFrame = null;
+
+      if (focusFrame !== null) {
+        window.cancelAnimationFrame(focusFrame);
+        focusFrame = null;
+      }
+
+      if (focusTimer !== null) {
+        window.clearTimeout(focusTimer);
+        focusTimer = null;
       }
     };
 
@@ -116,19 +134,81 @@ export default function TransactionSearchAutoClose() {
       const sequence = ++focusSequence;
 
       queueMicrotask(() => {
-        if (sequence !== focusSequence || !isSearchOpen()) return;
-        focusSearchInput();
+        if (sequence !== focusSequence || !isSearchOpen() || closing) return;
+        focusSearchInput(false);
 
-        verificationFrame = window.requestAnimationFrame(() => {
-          verificationFrame = null;
-          if (sequence !== focusSequence || !isSearchOpen()) return;
-          focusSearchInput();
+        focusFrame = window.requestAnimationFrame(() => {
+          focusFrame = null;
+          if (sequence !== focusSequence || !isSearchOpen() || closing) return;
+          focusSearchInput(false);
+
+          focusTimer = window.setTimeout(() => {
+            focusTimer = null;
+            if (sequence !== focusSequence || !isSearchOpen() || closing) return;
+            focusSearchInput(false);
+          }, 90);
         });
       });
     };
 
+    const cancelAutoClose = () => {
+      if (closeTimer === null) return;
+      window.clearTimeout(closeTimer);
+      closeTimer = null;
+    };
+
+    const restorePrimedStyles = () => {
+      if (!primedStyles) return;
+
+      searchControl.style.width = primedStyles.controlWidth;
+      input.style.width = primedStyles.inputWidth;
+      input.style.flex = primedStyles.inputFlex;
+      input.style.opacity = primedStyles.inputOpacity;
+      input.style.pointerEvents = primedStyles.inputPointerEvents;
+
+      if (isSearchOpen()) {
+        input.tabIndex = 0;
+        input.setAttribute("aria-hidden", "false");
+      } else {
+        input.tabIndex = primedStyles.inputTabIndex;
+        if (primedStyles.inputAriaHidden === null) {
+          input.removeAttribute("aria-hidden");
+        } else {
+          input.setAttribute("aria-hidden", primedStyles.inputAriaHidden);
+        }
+      }
+
+      primedStyles = null;
+    };
+
+    const primeAndFocusSearch = () => {
+      if (!primedStyles) {
+        primedStyles = {
+          controlWidth: searchControl.style.width,
+          inputWidth: input.style.width,
+          inputFlex: input.style.flex,
+          inputOpacity: input.style.opacity,
+          inputPointerEvents: input.style.pointerEvents,
+          inputTabIndex: input.tabIndex,
+          inputAriaHidden: input.getAttribute("aria-hidden"),
+        };
+      }
+
+      closing = false;
+      searchControl.style.width = "min(26.25rem, calc(100vw - 2rem))";
+      input.style.width = "auto";
+      input.style.flex = "1 1 auto";
+      input.style.opacity = "1";
+      input.style.pointerEvents = "auto";
+      input.tabIndex = 0;
+      input.setAttribute("aria-hidden", "false");
+
+      focusSearchInput(true);
+    };
+
     const dismissKeyboard = () => {
-      cancelFocusVerification();
+      closing = true;
+      cancelFocusWork();
       input.blur();
 
       try {
@@ -136,61 +216,6 @@ export default function TransactionSearchAutoClose() {
       } catch {
         // Blur remains the cross-browser fallback.
       }
-    };
-
-    const cancelAutoClose = () => {
-      if (closeTimer !== null) {
-        window.clearTimeout(closeTimer);
-        closeTimer = null;
-      }
-    };
-
-    const restorePrimedStyles = (
-      controlWidth: string,
-      inputWidth: string,
-      inputFlex: string,
-      inputOpacity: string,
-      inputPointerEvents: string,
-    ) => {
-      searchControl.style.width = controlWidth;
-      input.style.width = inputWidth;
-      input.style.flex = inputFlex;
-      input.style.opacity = inputOpacity;
-      input.style.pointerEvents = inputPointerEvents;
-
-      if (!isSearchOpen()) input.tabIndex = -1;
-    };
-
-    const primeAndFocusSearch = () => {
-      if (primeFrame !== null) window.cancelAnimationFrame(primeFrame);
-
-      const controlWidth = searchControl.style.width;
-      const inputWidth = input.style.width;
-      const inputFlex = input.style.flex;
-      const inputOpacity = input.style.opacity;
-      const inputPointerEvents = input.style.pointerEvents;
-
-      // Make the input focusable during the original user gesture. React then
-      // opens the authored search UI and the verification pass keeps the caret.
-      searchControl.style.width = "min(26.25rem, calc(100vw - 2rem))";
-      input.style.width = "auto";
-      input.style.flex = "1 1 auto";
-      input.style.opacity = "1";
-      input.style.pointerEvents = "auto";
-      input.tabIndex = 0;
-
-      focusSearchInput();
-
-      primeFrame = window.requestAnimationFrame(() => {
-        primeFrame = null;
-        restorePrimedStyles(
-          controlWidth,
-          inputWidth,
-          inputFlex,
-          inputOpacity,
-          inputPointerEvents,
-        );
-      });
     };
 
     const scheduleAutoClose = () => {
@@ -209,37 +234,34 @@ export default function TransactionSearchAutoClose() {
 
     const syncOpenState = () => {
       if (isSearchOpen()) {
-        verifyFocusAfterOpen();
-        scheduleAutoClose();
+        closing = false;
+
+        if (releaseFrame !== null) window.cancelAnimationFrame(releaseFrame);
+        releaseFrame = window.requestAnimationFrame(() => {
+          releaseFrame = null;
+          restorePrimedStyles();
+          verifyFocusAfterOpen();
+          scheduleAutoClose();
+        });
         return;
       }
 
       cancelAutoClose();
       dismissKeyboard();
+      restorePrimedStyles();
     };
 
-    const openStateObserver = new MutationObserver(syncOpenState);
-    openStateObserver.observe(searchControl, {
-      attributes: true,
-      attributeFilter: ["data-open"],
-    });
-
-    const handleOpen = () => {
+    const handleOpenPointerDown = (event: PointerEvent) => {
+      if (!event.isPrimary || event.button !== 0 || isSearchOpen()) return;
       primeAndFocusSearch();
-      verifyFocusAfterOpen();
+    };
 
-      if (openFrame !== null) window.cancelAnimationFrame(openFrame);
-      openFrame = window.requestAnimationFrame(() => {
-        openFrame = null;
-        if (!isSearchOpen()) return;
-        focusSearchInput();
-        scheduleAutoClose();
-      });
+    const handleOpenClick = () => {
+      closing = false;
+      verifyFocusAfterOpen();
     };
 
     const handleInput = () => {
-      placeCaret();
-
       if (input.value.trim()) {
         cancelAutoClose();
         return;
@@ -248,31 +270,71 @@ export default function TransactionSearchAutoClose() {
       scheduleAutoClose();
     };
 
-    const handleClose = () => {
+    const handleInputBlur = () => {
+      if (!isSearchOpen() || closing) return;
+
+      queueMicrotask(() => {
+        if (!isSearchOpen() || closing || document.activeElement === input) return;
+        focusSearchInput(false);
+        verifyFocusAfterOpen();
+      });
+    };
+
+    const handleClosePointerDown = () => {
+      closing = true;
+      cancelFocusWork();
+    };
+
+    const handleCloseClick = () => {
       cancelAutoClose();
       dismissKeyboard();
     };
 
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") dismissKeyboard();
+      if (event.key !== "Escape") return;
+      dismissKeyboard();
     };
 
-    openButton.addEventListener("click", handleOpen);
+    const handleDocumentPointerDown = (event: PointerEvent) => {
+      if (!isSearchOpen()) return;
+      if (event.target instanceof Node && searchControl.contains(event.target)) {
+        return;
+      }
+
+      closing = true;
+      cancelFocusWork();
+    };
+
+    const openStateObserver = new MutationObserver(syncOpenState);
+    openStateObserver.observe(searchControl, {
+      attributes: true,
+      attributeFilter: ["data-open"],
+    });
+
+    openButton.addEventListener("pointerdown", handleOpenPointerDown);
+    openButton.addEventListener("click", handleOpenClick);
     input.addEventListener("input", handleInput);
+    input.addEventListener("blur", handleInputBlur);
     input.addEventListener("keydown", handleKeyDown);
-    closeButton.addEventListener("click", handleClose);
+    closeButton.addEventListener("pointerdown", handleClosePointerDown);
+    closeButton.addEventListener("click", handleCloseClick);
+    document.addEventListener("pointerdown", handleDocumentPointerDown, true);
     syncOpenState();
 
     return () => {
       cancelAutoClose();
       dismissKeyboard();
+      restorePrimedStyles();
       openStateObserver.disconnect();
-      if (openFrame !== null) window.cancelAnimationFrame(openFrame);
-      if (primeFrame !== null) window.cancelAnimationFrame(primeFrame);
-      openButton.removeEventListener("click", handleOpen);
+      if (releaseFrame !== null) window.cancelAnimationFrame(releaseFrame);
+      openButton.removeEventListener("pointerdown", handleOpenPointerDown);
+      openButton.removeEventListener("click", handleOpenClick);
       input.removeEventListener("input", handleInput);
+      input.removeEventListener("blur", handleInputBlur);
       input.removeEventListener("keydown", handleKeyDown);
-      closeButton.removeEventListener("click", handleClose);
+      closeButton.removeEventListener("pointerdown", handleClosePointerDown);
+      closeButton.removeEventListener("click", handleCloseClick);
+      document.removeEventListener("pointerdown", handleDocumentPointerDown, true);
     };
   }, []);
 
@@ -281,6 +343,7 @@ export default function TransactionSearchAutoClose() {
       #transaction-page-search {
         appearance: textfield;
         -webkit-appearance: textfield;
+        caret-color: var(--brand);
       }
 
       #transaction-page-search::-webkit-search-decoration,
