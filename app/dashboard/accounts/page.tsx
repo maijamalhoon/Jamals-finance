@@ -82,7 +82,8 @@ export default async function AccountsPage() {
           <EmptyState
             icon={Landmark}
             title="No accounts yet"
-            description="Add your cash, bank, or wallet accounts to start tracking balances."
+            description="Add your first account to see balances and activity here."
+            action={<AddAccountButton />}
           />
         </div>
       ) : (
