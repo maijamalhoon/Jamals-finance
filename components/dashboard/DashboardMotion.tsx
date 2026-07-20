@@ -1,5 +1,7 @@
 import type { ReactNode } from "react";
 
+import DashboardEmptyStateSync from "@/components/dashboard/DashboardEmptyStateSync";
+
 const dashboardOverviewStyles = `
   @media (min-width: 1280px) {
     .dashboard-overview-layout {
@@ -332,6 +334,7 @@ export function DashboardMotion({
   return (
     <>
       {overviewLayout ? <style>{dashboardOverviewStyles}</style> : null}
+      {overviewLayout ? <DashboardEmptyStateSync /> : null}
       <div className={joinClassNames("jf-dashboard-motion", resolvedClassName)}>
         {children}
       </div>
