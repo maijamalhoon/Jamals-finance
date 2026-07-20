@@ -264,7 +264,13 @@ export default function MotionProvider({ children }: { children: ReactNode }) {
 
   return (
     <MotionConfig
-      reducedMotion={animationMode === "none" ? "always" : "user"}
+      reducedMotion={
+        animationMode === "none"
+          ? "always"
+          : animationMode === "fast"
+            ? "never"
+            : "user"
+      }
       transition={{
         duration: scaleAnimationSeconds(0.22, animationMode),
         ease: motionEase,
