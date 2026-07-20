@@ -67,7 +67,7 @@ export default async function InvestmentsPage() {
           />
         </div>
       ) : list.length === 0 ? (
-        <div className="finance-panel px-5">
+        <div className="py-3 sm:py-6">
           <EmptyState
             icon={BarChart2}
             title="No investments yet"
