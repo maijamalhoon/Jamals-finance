@@ -6,11 +6,31 @@
  * approved top blocks, and does not alter data fetching, calculations or state.
  */
 
-/* Reports: remove the duplicate report summary/export hero only. */
+/* Reports: remove the duplicate summary content but keep CSV export available. */
 [data-jf-page="reports"]
   .jf-unified-page-body
   > div[data-print-report]
-  > .page-heading:first-child,
+  > .page-heading:first-child {
+  display: flex !important;
+  min-height: 0 !important;
+  align-items: center !important;
+  justify-content: flex-end !important;
+  overflow: visible !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+[data-jf-page="reports"]
+  .jf-unified-page-body
+  > div[data-print-report]
+  > .page-heading:first-child
+  > :first-child {
+  display: none !important;
+}
+
 /* AI Insights: remove the duplicate internal page title only. */
 [data-jf-page="ai-insights"]
   .jf-unified-page-body
@@ -57,12 +77,7 @@
   overflow: hidden !important;
 }
 
-/* Collapse every leftover space-y/grid gap after the removed first block. */
-[data-jf-page="reports"]
-  .jf-unified-page-body
-  > div[data-print-report]
-  > .page-heading:first-child
-  + *,
+/* Collapse every leftover space-y/grid gap after a fully removed first block. */
 [data-jf-page="ai-insights"]
   .jf-unified-page-body
   > div
