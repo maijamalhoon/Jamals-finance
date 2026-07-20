@@ -15,19 +15,43 @@ export const loadInvestmentModal = () =>
 export const loadPayableModal = () =>
   import("@/components/payables/PayableModal");
 
-let dashboardModalPreload: Promise<void> | null = null;
+export type DashboardModalKey =
+  | "transaction"
+  | "transfer"
+  | "account"
+  | "goal"
+  | "investment"
+  | "payable";
 
-export function preloadDashboardModals() {
-  if (!dashboardModalPreload) {
-    dashboardModalPreload = Promise.allSettled([
-      loadTransferModal(),
-      loadAccountModal(),
-      loadTransactionModal(),
-      loadGoalModal(),
-      loadInvestmentModal(),
-      loadPayableModal(),
-    ]).then(() => undefined);
-  }
+const MODAL_LOADERS: Record<DashboardModalKey, () => Promise<unknown>> = {
+  transaction: loadTransactionModal,
+  transfer: loadTransferModal,
+  account: loadAccountModal,
+  goal: loadGoalModal,
+  investment: loadInvestmentModal,
+  payable: loadPayableModal,
+};
 
-  return dashboardModalPreload;
+const modalPreloads = new Map<DashboardModalKey, Promise<unknown>>();
+
+export function preloadDashboardModal(key: DashboardModalKey) {
+  const cached = modalPreloads.get(key);
+  if (cached) return cached;
+
+  const preload = MODAL_LOADERS[key]().catch((error) => {
+    // Allow a later user intent to retry a transient chunk/network failure.
+    modalPreloads.delete(key);
+    throw error;
+  });
+
+  modalPreloads.set(key, preload);
+  return preload;
+}
+
+export async function preloadDashboardModals(
+  keys: readonly DashboardModalKey[] = Object.keys(
+    MODAL_LOADERS,
+  ) as DashboardModalKey[],
+) {
+  await Promise.allSettled(keys.map((key) => preloadDashboardModal(key)));
 }
