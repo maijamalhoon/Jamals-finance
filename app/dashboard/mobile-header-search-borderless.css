@@ -31,3 +31,106 @@
     --tw-ring-shadow: 0 0 #0000 !important;
   }
 }
+
+/* Keep only the authored Lucide close icon in all transaction search fields. */
+#mobile-inline-transaction-search::-webkit-search-cancel-button,
+#desktop-inline-transaction-search::-webkit-search-cancel-button,
+#transaction-page-search::-webkit-search-cancel-button {
+  display: none !important;
+  appearance: none !important;
+  -webkit-appearance: none !important;
+}
+
+html body [data-dashboard-shell]
+  .jf-desktop-header
+  form[role="search"]
+  > button[aria-label="Close transaction search"],
+html body [data-dashboard-shell]
+  form[data-mobile-control-cluster][role="search"]
+  > button[aria-label="Close transaction search"],
+html body [data-dashboard-shell]
+  #transaction-filter-controls
+  .jf-transaction-search
+  > button[aria-label="Clear and close search"],
+html body [data-dashboard-shell]
+  #transaction-filter-controls
+  .jf-transaction-search
+  > button[aria-label="Close search"] {
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+html body [data-dashboard-shell]
+  .jf-desktop-header
+  form[role="search"]
+  > button[aria-label="Close transaction search"]:hover,
+html body [data-dashboard-shell]
+  .jf-desktop-header
+  form[role="search"]
+  > button[aria-label="Close transaction search"]:focus-visible,
+html body [data-dashboard-shell]
+  .jf-desktop-header
+  form[role="search"]
+  > button[aria-label="Close transaction search"]:active,
+html body [data-dashboard-shell]
+  form[data-mobile-control-cluster][role="search"]
+  > button[aria-label="Close transaction search"]:hover,
+html body [data-dashboard-shell]
+  form[data-mobile-control-cluster][role="search"]
+  > button[aria-label="Close transaction search"]:focus-visible,
+html body [data-dashboard-shell]
+  form[data-mobile-control-cluster][role="search"]
+  > button[aria-label="Close transaction search"]:active,
+html body [data-dashboard-shell]
+  #transaction-filter-controls
+  .jf-transaction-search
+  > button[aria-label="Clear and close search"]:hover,
+html body [data-dashboard-shell]
+  #transaction-filter-controls
+  .jf-transaction-search
+  > button[aria-label="Clear and close search"]:focus-visible,
+html body [data-dashboard-shell]
+  #transaction-filter-controls
+  .jf-transaction-search
+  > button[aria-label="Clear and close search"]:active,
+html body [data-dashboard-shell]
+  #transaction-filter-controls
+  .jf-transaction-search
+  > button[aria-label="Close search"]:hover,
+html body [data-dashboard-shell]
+  #transaction-filter-controls
+  .jf-transaction-search
+  > button[aria-label="Close search"]:focus-visible,
+html body [data-dashboard-shell]
+  #transaction-filter-controls
+  .jf-transaction-search
+  > button[aria-label="Close search"]:active {
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+html body [data-dashboard-shell]
+  .jf-desktop-header
+  form[role="search"]
+  > button[aria-label="Close transaction search"]
+  > svg,
+html body [data-dashboard-shell]
+  form[data-mobile-control-cluster][role="search"]
+  > button[aria-label="Close transaction search"]
+  > svg,
+html body [data-dashboard-shell]
+  #transaction-filter-controls
+  .jf-transaction-search
+  > button[aria-label="Clear and close search"]
+  > svg,
+html body [data-dashboard-shell]
+  #transaction-filter-controls
+  .jf-transaction-search
+  > button[aria-label="Close search"]
+  > svg {
+  width: 1.125rem !important;
+  height: 1.125rem !important;
+  stroke-width: 3 !important;
+}
