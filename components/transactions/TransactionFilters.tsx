@@ -217,6 +217,10 @@ export default function TransactionFilters(_props: {
       0,
       triggerRect.top - MENU_GAP - VIEWPORT_MARGIN,
     );
+    // Measure at the final width. The menu starts hidden with a zero-sized style
+    // so it never flashes in the wrong place while opening.
+    menu.style.width = `${Math.round(width)}px`;
+    menu.style.maxHeight = "none";
     const naturalHeight = menu.scrollHeight;
     const openAbove =
       naturalHeight > availableBelow && availableAbove > availableBelow;
@@ -513,24 +517,25 @@ export default function TransactionFilters(_props: {
 
   return (
     <div
+      id="transaction-filter-controls"
       ref={controlsRef}
       className="relative mb-5 min-w-0 space-y-2.5"
       aria-busy={pending || undefined}
     >
       <style>{`
-        .jf-transaction-search[data-open="false"],
-        .jf-transaction-search[data-open="false"]:hover,
-        .jf-transaction-search[data-open="false"] > button:first-of-type,
-        .jf-transaction-search[data-open="false"] > button:first-of-type:hover,
-        .jf-transaction-icon-control,
-        .jf-transaction-icon-control:hover,
-        .jf-transaction-icon-control:focus-visible {
+        #transaction-filter-controls .jf-transaction-search[data-open="false"],
+        #transaction-filter-controls .jf-transaction-search[data-open="false"]:hover,
+        #transaction-filter-controls .jf-transaction-search[data-open="false"] > button:first-of-type,
+        #transaction-filter-controls .jf-transaction-search[data-open="false"] > button:first-of-type:hover,
+        #transaction-filter-controls .jf-transaction-icon-control,
+        #transaction-filter-controls .jf-transaction-icon-control:hover,
+        #transaction-filter-controls .jf-transaction-icon-control:focus-visible {
           background: transparent !important;
           border-color: transparent !important;
           box-shadow: none !important;
         }
 
-        .jf-transaction-icon-control {
+        #transaction-filter-controls .jf-transaction-icon-control {
           min-height: 0 !important;
           padding: 0 !important;
           gap: 0 !important;
