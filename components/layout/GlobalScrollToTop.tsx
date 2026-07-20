@@ -4,6 +4,12 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { ArrowUp } from "lucide-react";
+import {
+  getAnimationDurationScale,
+  getDocumentAnimationMode,
+  scaleAnimationMilliseconds,
+  scaleAnimationSeconds,
+} from "@/lib/animation-preference";
 
 type ScrollTarget = Window | HTMLElement;
 
@@ -32,6 +38,9 @@ function resolveScrollTarget(): ScrollTarget {
 export default function GlobalScrollToTop() {
   const pathname = usePathname();
   const shouldReduceMotion = useReducedMotion();
+  const animationMode = getDocumentAnimationMode();
+  const motionDisabled = shouldReduceMotion || animationMode === "none";
+  const durationScale = getAnimationDurationScale(animationMode);
   const launchTimeoutRef = useRef<number | null>(null);
   const launchingRef = useRef(false);
   const scrollTargetRef = useRef<ScrollTarget | null>(null);
@@ -89,12 +98,21 @@ export default function GlobalScrollToTop() {
     if (launchingRef.current) return;
 
     const target = scrollTargetRef.current ?? resolveScrollTarget();
+
+    if (motionDisabled) {
+      target.scrollTo({ top: 0, behavior: "auto" });
+      setVisible(false);
+      setLaunching(false);
+      launchingRef.current = false;
+      return;
+    }
+
     launchingRef.current = true;
     setLaunching(true);
 
     target.scrollTo({
       top: 0,
-      behavior: shouldReduceMotion ? "auto" : "smooth",
+      behavior: "smooth",
     });
 
     launchTimeoutRef.current = window.setTimeout(
@@ -104,9 +122,9 @@ export default function GlobalScrollToTop() {
         launchingRef.current = false;
         launchTimeoutRef.current = null;
       },
-      shouldReduceMotion ? 140 : ROCKET_LAUNCH_DURATION_MS,
+      scaleAnimationMilliseconds(ROCKET_LAUNCH_DURATION_MS, animationMode),
     );
-  }, [shouldReduceMotion]);
+  }, [animationMode, motionDisabled]);
 
   const avoidsTransactionActions = pathname === "/dashboard/transactions";
   const positionClass = avoidsTransactionActions
@@ -125,7 +143,7 @@ export default function GlobalScrollToTop() {
           initial={{ opacity: 1, y: 0, scale: 1 }}
           animate={
             launching
-              ? shouldReduceMotion
+              ? motionDisabled
                 ? { opacity: 0 }
                 : {
                     opacity: [1, 1, 0],
@@ -137,29 +155,42 @@ export default function GlobalScrollToTop() {
           }
           exit={{
             opacity: 0,
-            y: -14,
-            scale: 0.82,
-            transition: { duration: 0.18, ease: motionEase },
+            y: motionDisabled ? 0 : -14,
+            scale: motionDisabled ? 1 : 0.82,
+            transition: {
+              duration: scaleAnimationSeconds(0.18, animationMode),
+              ease: motionEase,
+            },
           }}
           transition={
             launching
               ? {
-                  duration: shouldReduceMotion
-                    ? 0.14
-                    : ROCKET_LAUNCH_DURATION_MS / 1000,
-                  times: shouldReduceMotion ? undefined : [0, 0.18, 1],
+                  duration: motionDisabled
+                    ? 0
+                    : scaleAnimationSeconds(
+                        ROCKET_LAUNCH_DURATION_MS / 1000,
+                        animationMode,
+                      ),
+                  times: motionDisabled ? undefined : [0, 0.18, 1],
                   ease: motionEase,
                 }
-              : { duration: 0.18, ease: motionEase }
+              : {
+                  duration: scaleAnimationSeconds(0.18, animationMode),
+                  ease: motionEase,
+                }
           }
-          whileHover={launching ? undefined : { y: -7, scale: 1.07 }}
-          whileTap={launching ? undefined : { scale: 0.92 }}
+          whileHover={
+            launching || motionDisabled ? undefined : { y: -7, scale: 1.07 }
+          }
+          whileTap={
+            launching || motionDisabled ? undefined : { scale: 0.92 }
+          }
           className={`fixed right-3 z-[70] grid size-11 appearance-none place-items-center border-0 !bg-transparent p-0 text-slate-700 !shadow-none outline-none transition-colors duration-200 [-webkit-tap-highlight-color:transparent] hover:!bg-transparent hover:text-slate-800 focus:!bg-transparent focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-active active:!bg-transparent disabled:pointer-events-none sm:right-5 lg:right-8 dark:!bg-transparent dark:text-slate-100 dark:hover:text-white ${positionClass}`}
         >
           <motion.span
             aria-hidden="true"
             animate={
-              launching || shouldReduceMotion
+              launching || motionDisabled
                 ? { y: 0, scale: 1, rotate: 0 }
                 : {
                     y: [0, -12, 0, 0],
@@ -168,13 +199,13 @@ export default function GlobalScrollToTop() {
                   }
             }
             transition={
-              launching || shouldReduceMotion
-                ? { duration: 0.16 }
+              launching || motionDisabled
+                ? { duration: 0 }
                 : {
-                    duration: 1.25,
+                    duration: 1.25 * durationScale,
                     times: [0, 0.24, 0.48, 1],
                     repeat: Number.POSITIVE_INFINITY,
-                    repeatDelay: 0.45,
+                    repeatDelay: 0.45 * durationScale,
                     ease: "easeInOut",
                   }
             }
