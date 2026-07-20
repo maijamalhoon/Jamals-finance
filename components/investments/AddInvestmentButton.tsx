@@ -23,11 +23,12 @@ export default function AddInvestmentButton({
       <PageHeadingActionPortal page="investments">
         <button
           type="button"
+          aria-label={label}
           onClick={() => setOpen(true)}
           className="investment-action w-full sm:w-auto"
         >
           {showIcon ? <BriefcaseBusiness size={16} /> : null}
-          {label}
+          <span className="sr-only">{label}</span>
         </button>
       </PageHeadingActionPortal>
 
