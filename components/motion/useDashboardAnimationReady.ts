@@ -1,10 +1,17 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import {
+  getAnimationDurationScale,
+  getDocumentAnimationMode,
+  type AnimationMode,
+} from "@/lib/animation-preference";
 
 export function useDashboardAnimationReady() {
   const [ready, setReady] = useState(false);
   const [reduceMotion, setReduceMotion] = useState(false);
+  const [animationMode, setAnimationMode] =
+    useState<AnimationMode>("standard");
 
   useEffect(() => {
     const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -18,7 +25,9 @@ export function useDashboardAnimationReady() {
 
     const prepareAnimation = () => {
       cancelFrames();
-      const shouldReduceMotion = mediaQuery.matches;
+      const mode = getDocumentAnimationMode();
+      const shouldReduceMotion = mediaQuery.matches || mode === "none";
+      setAnimationMode(mode);
       setReduceMotion(shouldReduceMotion);
 
       if (shouldReduceMotion) {
@@ -44,5 +53,7 @@ export function useDashboardAnimationReady() {
   return {
     ready,
     reduceMotion,
+    animationMode,
+    durationScale: getAnimationDurationScale(animationMode),
   };
 }
