@@ -14,6 +14,7 @@ import type {
   ReactNode,
 } from "react";
 
+import { getAnimationDurationScale } from "@/lib/animation-preference";
 import { cn } from "@/lib/utils";
 
 import styles from "./TouchWheelPicker.module.css";
@@ -143,7 +144,11 @@ export default function TouchWheelPicker({
       const reducedMotion =
         typeof window !== "undefined" &&
         window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-      const duration = reducedMotion ? 0 : requestedDuration;
+      const durationScale = getAnimationDurationScale();
+      const duration =
+        reducedMotion || durationScale === 0
+          ? 0
+          : Math.round(requestedDuration * durationScale);
 
       positionRef.current = nextIndex;
       if (duration === 0) {
