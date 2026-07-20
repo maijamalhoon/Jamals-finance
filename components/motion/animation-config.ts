@@ -1,16 +1,25 @@
 import type { Variants } from "framer-motion";
+import {
+  getAnimationDurationScale,
+  scaleAnimationMilliseconds,
+  scaleAnimationSeconds,
+} from "@/lib/animation-preference";
 
 export const motionEase = [0.16, 1, 0.3, 1] as const;
 
+const animationScale = getAnimationDurationScale();
+const seconds = (value: number) => scaleAnimationSeconds(value);
+const milliseconds = (value: number) => scaleAnimationMilliseconds(value);
+
 export const motionDurations = {
-  instant: 0.09,
-  fast: 0.16,
-  base: 0.22,
-  page: 0.28,
-  slow: 0.32,
-  deliberate: 0.42,
-  skeleton: 1.4,
-  chart: 850,
+  instant: seconds(0.09),
+  fast: seconds(0.16),
+  base: seconds(0.22),
+  page: seconds(0.28),
+  slow: seconds(0.32),
+  deliberate: seconds(0.42),
+  skeleton: seconds(1.4),
+  chart: milliseconds(850),
 } as const;
 
 export const viewportReveal = {
@@ -30,8 +39,8 @@ export const pageVariants: Variants = {
     transition: {
       duration: motionDurations.page,
       ease: motionEase,
-      staggerChildren: 0.035,
-      delayChildren: 0.02,
+      staggerChildren: seconds(0.035),
+      delayChildren: seconds(0.02),
     },
   },
   exit: {
@@ -114,8 +123,8 @@ export const drawerVariants: Variants = {
 export const listContainerVariants: Variants = {
   animate: {
     transition: {
-      staggerChildren: 0.035,
-      delayChildren: 0.03,
+      staggerChildren: seconds(0.035),
+      delayChildren: seconds(0.03),
     },
   },
 };
@@ -161,4 +170,5 @@ export const chartMotion = {
   animationBegin: 0,
   animationDuration: motionDurations.chart,
   animationEasing: "ease-out" as const,
+  isAnimationActive: animationScale > 0,
 };
