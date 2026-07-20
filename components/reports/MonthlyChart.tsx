@@ -103,7 +103,7 @@ export default function MonthlyChart({ data, title = "Cash-flow overview" }: Pro
                   formatCurrency(Number(value), { compact: true })
                 }
               />
-              <Tooltip content={<CustomTooltip />} />
+              <Tooltip cursor={false} content={<CustomTooltip />} />
               <Bar
                 dataKey="income"
                 name="Income"
