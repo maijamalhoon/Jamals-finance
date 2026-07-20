@@ -115,7 +115,7 @@ function getPeriodRange(period: Exclude<PeriodValue, "all">) {
 
 function selectedClass(selected: boolean) {
   return selected
-    ? "jf-transaction-menu-item-selected font-semibold text-text-primary"
+    ? "jf-transaction-menu-item-selected font-extrabold text-text-primary"
     : "text-text-primary hover:bg-hover";
 }
 
@@ -408,7 +408,7 @@ export default function TransactionFilters(_props: {
   const activeChevron = (
     <ChevronRight
       size={18}
-      strokeWidth={3.6}
+      strokeWidth={4.4}
       className="jf-transaction-active-chevron shrink-0 text-text-primary"
       aria-hidden="true"
     />
@@ -571,6 +571,7 @@ export default function TransactionFilters(_props: {
           background: transparent !important;
           box-shadow: none !important;
           color: var(--text-primary) !important;
+          font-weight: 800 !important;
           transform: scale(1.012);
           animation: jf-transaction-option-selected-pop 190ms cubic-bezier(0.22, 1, 0.36, 1);
         }
@@ -581,6 +582,7 @@ export default function TransactionFilters(_props: {
 
         .jf-transaction-active-chevron {
           color: var(--text-primary) !important;
+          stroke-width: 4.4 !important;
           transform: scale(1.08);
           transform-origin: center;
           animation: jf-transaction-chevron-selected-pop 210ms cubic-bezier(0.22, 1, 0.36, 1);
