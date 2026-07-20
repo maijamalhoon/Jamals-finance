@@ -110,3 +110,56 @@
     transform: none !important;
   }
 }
+
+/* Compact header controls stay icon-only; their spacing, motion and logic are unchanged. */
+@media (max-width: 1023px) {
+  html body [data-mobile-control-cluster] [data-slot="sheet-trigger"],
+  html body [data-mobile-control-cluster] [data-notification-trigger],
+  html body [data-mobile-control-cluster] [data-profile-trigger],
+  html body [data-mobile-control-cluster] [data-slot="sheet-trigger"]:hover,
+  html body [data-mobile-control-cluster] [data-slot="sheet-trigger"]:focus-visible,
+  html body [data-mobile-control-cluster] [data-slot="sheet-trigger"]:active,
+  html body [data-mobile-control-cluster] [data-notification-trigger]:hover,
+  html body [data-mobile-control-cluster] [data-notification-trigger]:focus-visible,
+  html body [data-mobile-control-cluster] [data-notification-trigger]:active,
+  html body [data-mobile-control-cluster] [data-notification-trigger][aria-expanded="true"],
+  html body [data-mobile-control-cluster] [data-profile-trigger]:hover,
+  html body [data-mobile-control-cluster] [data-profile-trigger]:focus-visible,
+  html body [data-mobile-control-cluster] [data-profile-trigger]:active,
+  html body [data-mobile-control-cluster] [data-profile-trigger][data-popup-open] {
+    border-color: transparent !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    filter: none !important;
+    -webkit-filter: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+
+  html body
+    form[data-mobile-control-cluster][role="search"]:has(
+      > button:first-child[aria-expanded="false"]
+    ) {
+    border-color: transparent !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+
+  html body
+    form[data-mobile-control-cluster][role="search"]
+    > button:first-child[aria-expanded="false"],
+  html body
+    form[data-mobile-control-cluster][role="search"]
+    > button:first-child[aria-expanded="false"]:hover,
+  html body
+    form[data-mobile-control-cluster][role="search"]
+    > button:first-child[aria-expanded="false"]:focus-visible,
+  html body
+    form[data-mobile-control-cluster][role="search"]
+    > button:first-child[aria-expanded="false"]:active {
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+}
