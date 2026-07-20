@@ -23,11 +23,12 @@ export default function AddExpenseButton({
       <PageHeadingActionPortal page="expenses">
         <button
           type="button"
+          aria-label={label}
           onClick={() => setOpen(true)}
           className="danger-action"
         >
           {showIcon ? <TrendingDown size={16} /> : null}
-          {label}
+          <span className="sr-only">{label}</span>
         </button>
       </PageHeadingActionPortal>
 
