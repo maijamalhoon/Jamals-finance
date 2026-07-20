@@ -53,7 +53,7 @@ export default function SettingsExperienceV2(props: SettingsExperienceV2Props) {
       />
 
       <div className="settings-reference-grid">
-        <div className="settings-reference-appearance settings-reference-appearance-slot">
+        <div className="settings-reference-appearance">
           <SettingsAppearanceSection />
           <SettingsAnimationPreviewControl />
         </div>
