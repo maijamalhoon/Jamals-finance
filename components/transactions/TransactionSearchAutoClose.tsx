@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 
-const AUTO_CLOSE_DELAY_MS = 1500;
+const AUTO_CLOSE_DELAY_MS = 3000;
 
 export default function TransactionSearchAutoClose() {
   useEffect(() => {
