@@ -1,7 +1,7 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 
 type PageHeadingActionKey =
@@ -33,7 +33,7 @@ export default function PageHeadingActionPortal({
   const markerRef = useRef<HTMLSpanElement>(null);
   const [target, setTarget] = useState<HTMLElement | null>(null);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     setTarget(null);
 
     if (pathname !== `/dashboard/${page}`) return;
@@ -77,7 +77,13 @@ export default function PageHeadingActionPortal({
   return (
     <>
       <span ref={markerRef} hidden aria-hidden="true" />
-      {children}
+      <div
+        className="jf-page-heading-action"
+        data-jf-page-action={page}
+        data-jf-page-action-fallback="true"
+      >
+        {children}
+      </div>
     </>
   );
 }
