@@ -4,6 +4,13 @@ import { useEffect } from "react";
 
 const AUTO_CLOSE_DELAY_MS = 6000;
 
+type NavigatorWithVirtualKeyboard = Navigator & {
+  virtualKeyboard?: {
+    show?: () => void;
+    hide?: () => void;
+  };
+};
+
 export default function MobileHeaderSearchEnhancer() {
   useEffect(() => {
     let boundCleanup: (() => void) | null = null;
@@ -27,30 +34,48 @@ export default function MobileHeaderSearchEnhancer() {
       if (searchForm.dataset.mobileSearchEnhanced === "true") return true;
 
       searchForm.dataset.mobileSearchEnhanced = "true";
+      input.inputMode = "search";
+      input.enterKeyHint = "search";
+
+      const virtualKeyboard = (navigator as NavigatorWithVirtualKeyboard)
+        .virtualKeyboard;
 
       let closeTimer: number | null = null;
       let openFrame: number | null = null;
 
       const isSearchOpen = () => input.getAttribute("aria-hidden") === "false";
 
+      const focusSearchInput = () => {
+        input.focus({ preventScroll: true });
+
+        try {
+          const caretPosition = input.value.length;
+          input.setSelectionRange(caretPosition, caretPosition);
+        } catch {
+          // Selection APIs can be unavailable on a few older mobile engines.
+        }
+
+        try {
+          virtualKeyboard?.show?.();
+        } catch {
+          // Native focus remains the fallback when the API is unavailable.
+        }
+      };
+
       const dismissKeyboard = () => {
-        if (document.activeElement === input) input.blur();
+        input.blur();
+
+        try {
+          virtualKeyboard?.hide?.();
+        } catch {
+          // Blur remains the cross-browser fallback.
+        }
       };
 
       const cancelAutoClose = () => {
         if (closeTimer === null) return;
         window.clearTimeout(closeTimer);
         closeTimer = null;
-      };
-
-      const syncOpenState = () => {
-        const open = isSearchOpen();
-        searchForm.dataset.mobileSearchOpen = open ? "true" : "false";
-
-        if (!open) {
-          cancelAutoClose();
-          dismissKeyboard();
-        }
       };
 
       const scheduleAutoClose = () => {
@@ -67,12 +92,32 @@ export default function MobileHeaderSearchEnhancer() {
         }, AUTO_CLOSE_DELAY_MS);
       };
 
+      const syncOpenState = () => {
+        const open = isSearchOpen();
+        searchForm.dataset.mobileSearchOpen = open ? "true" : "false";
+
+        if (open) {
+          focusSearchInput();
+          scheduleAutoClose();
+          return;
+        }
+
+        cancelAutoClose();
+        dismissKeyboard();
+      };
+
       const handleOpen = () => {
+        // This native listener runs inside the original tap. The component also
+        // commits its open state synchronously, so the cursor and keyboard start
+        // without requiring a second tap inside the field.
+        focusSearchInput();
+
         if (openFrame !== null) window.cancelAnimationFrame(openFrame);
         openFrame = window.requestAnimationFrame(() => {
           openFrame = null;
           syncOpenState();
-          scheduleAutoClose();
+
+          if (isSearchOpen()) focusSearchInput();
         });
       };
 
@@ -88,7 +133,10 @@ export default function MobileHeaderSearchEnhancer() {
       const handleClose = () => {
         cancelAutoClose();
         dismissKeyboard();
-        syncOpenState();
+      };
+
+      const handleKeyDown = (event: KeyboardEvent) => {
+        if (event.key === "Escape") dismissKeyboard();
       };
 
       const stateObserver = new MutationObserver(syncOpenState);
@@ -99,6 +147,7 @@ export default function MobileHeaderSearchEnhancer() {
 
       openButton.addEventListener("click", handleOpen);
       input.addEventListener("input", handleInput);
+      input.addEventListener("keydown", handleKeyDown);
       closeButton.addEventListener("click", handleClose);
       syncOpenState();
 
@@ -109,6 +158,7 @@ export default function MobileHeaderSearchEnhancer() {
         stateObserver.disconnect();
         openButton.removeEventListener("click", handleOpen);
         input.removeEventListener("input", handleInput);
+        input.removeEventListener("keydown", handleKeyDown);
         closeButton.removeEventListener("click", handleClose);
         delete searchForm.dataset.mobileSearchEnhanced;
         delete searchForm.dataset.mobileSearchOpen;
@@ -139,16 +189,14 @@ export default function MobileHeaderSearchEnhancer() {
           border: 0 !important;
           border-radius: clamp(1.1rem, 2.5vw, 1.45rem) !important;
           background: var(--card) !important;
-          box-shadow: inset 0 0 0 1px
-            color-mix(in srgb, var(--border), transparent 55%) !important;
+          box-shadow: none !important;
           backdrop-filter: blur(18px) saturate(110%) !important;
         }
 
         .dark
           form[data-mobile-control-cluster][role="search"][data-mobile-search-enhanced="true"][data-mobile-search-open="true"] {
           background: var(--card) !important;
-          box-shadow: inset 0 0 0 1px
-            color-mix(in srgb, var(--border), transparent 48%) !important;
+          box-shadow: none !important;
         }
 
         form[data-mobile-control-cluster][role="search"][data-mobile-search-enhanced="true"][data-mobile-search-open="true"]
