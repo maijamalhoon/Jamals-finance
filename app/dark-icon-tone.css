@@ -46,3 +46,14 @@ html.dark
   ) {
   stroke: currentColor !important;
 }
+
+/*
+ * Global typing-field placeholder cleanup.
+ * Search bars, text inputs and textareas keep their labels/icons and entered
+ * values, while placeholder copy stays hidden across the full application.
+ */
+html body input::placeholder,
+html body textarea::placeholder {
+  color: transparent !important;
+  opacity: 0 !important;
+}
