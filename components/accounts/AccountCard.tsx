@@ -79,7 +79,7 @@ export default function AccountCard({ account }: AccountCardProps) {
   return (
     <>
       <article
-        className="account-card-shell finance-panel-interactive group relative flex h-full w-full min-w-0 flex-col overflow-hidden rounded-[var(--oneui-card-radius)] border p-4 sm:max-w-[272px]"
+        className="account-card-shell finance-panel-interactive group relative flex h-full w-full min-w-0 flex-col overflow-hidden rounded-[var(--oneui-card-radius)] border p-4"
         style={getCardVars(accent)}
       >
         <div
