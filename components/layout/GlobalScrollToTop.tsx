@@ -182,7 +182,7 @@ export default function GlobalScrollToTop() {
           >
             <ArrowUp
               size={36}
-              strokeWidth={9}
+              strokeWidth={12}
               strokeLinecap="round"
               strokeLinejoin="round"
             />
