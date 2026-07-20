@@ -1,13 +1,16 @@
 "use client";
 
 import type { KeyboardEvent, ReactNode } from "react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { FastForward, Play, Square } from "lucide-react";
-
-type AnimationPreviewMode = "standard" | "fast" | "none";
+import {
+  applyAnimationMode,
+  getStoredAnimationMode,
+  type AnimationMode,
+} from "@/lib/animation-preference";
 
 const ANIMATION_PREVIEW_OPTIONS: Array<{
-  value: AnimationPreviewMode;
+  value: AnimationMode;
   label: string;
   icon: ReactNode;
 }> = [
@@ -30,7 +33,22 @@ const ANIMATION_PREVIEW_OPTIONS: Array<{
 
 export default function SettingsAnimationPreviewControl() {
   const [selectedMode, setSelectedMode] =
-    useState<AnimationPreviewMode>("standard");
+    useState<AnimationMode>("standard");
+
+  useEffect(() => {
+    setSelectedMode(getStoredAnimationMode());
+  }, []);
+
+  function chooseAnimationMode(nextMode: AnimationMode) {
+    if (nextMode === selectedMode) return;
+
+    setSelectedMode(nextMode);
+    applyAnimationMode(nextMode);
+
+    // Reload once so every module-level chart, digit and Framer Motion duration
+    // starts with the same preference. The selection persists across all pages.
+    window.location.reload();
+  }
 
   function handleKeyDown(
     event: KeyboardEvent<HTMLButtonElement>,
@@ -52,17 +70,14 @@ export default function SettingsAnimationPreviewControl() {
     if (nextIndex === null) return;
 
     event.preventDefault();
-    setSelectedMode(ANIMATION_PREVIEW_OPTIONS[nextIndex].value);
-    event.currentTarget.parentElement
-      ?.querySelectorAll<HTMLButtonElement>('[role="radio"]')
-      [nextIndex]?.focus();
+    chooseAnimationMode(ANIMATION_PREVIEW_OPTIONS[nextIndex].value);
   }
 
   return (
     <div
       className="settings-reference-appearance-control settings-reference-animation-control mt-2"
       role="radiogroup"
-      aria-label="Animation preference preview"
+      aria-label="Animation preference"
     >
       {ANIMATION_PREVIEW_OPTIONS.map((option, index) => {
         const active = selectedMode === option.value;
@@ -75,7 +90,7 @@ export default function SettingsAnimationPreviewControl() {
             aria-label={option.label}
             aria-checked={active}
             tabIndex={active ? 0 : -1}
-            onClick={() => setSelectedMode(option.value)}
+            onClick={() => chooseAnimationMode(option.value)}
             onKeyDown={(event) => handleKeyDown(event, index)}
             className={`finance-focus settings-reference-theme-option ${
               active ? "is-active" : ""
