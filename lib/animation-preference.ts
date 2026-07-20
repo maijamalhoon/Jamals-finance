@@ -40,14 +40,14 @@ export function getAnimationDurationScale(
   mode: AnimationMode = getDocumentAnimationMode(),
 ) {
   if (mode === "none") return 0;
-  if (mode === "fast") return 0.82;
+  if (mode === "fast") return 0.9;
   return 1;
 }
 
 export function getAnimationPlaybackRate(
   mode: AnimationMode = getDocumentAnimationMode(),
 ) {
-  if (mode === "fast") return 1.18;
+  if (mode === "fast") return 1.1;
   return 1;
 }
 
