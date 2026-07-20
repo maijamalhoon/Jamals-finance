@@ -13,6 +13,7 @@ import NotificationCenter, {
 import ResponsiveDashboardHeader from "@/components/layout/ResponsiveDashboardHeader";
 import DashboardScrollRestoration from "@/components/motion/DashboardScrollRestoration";
 import TransactionReceiptViewportFit from "@/components/transactions/TransactionReceiptViewportFit";
+import DateFormatDisplaySync from "@/components/ui/DateFormatDisplaySync";
 import {
   BASE_CURRENCY,
   CURRENCY_STORAGE_KEY,
@@ -169,6 +170,7 @@ export default async function DashboardLayout({
           <DashboardScrollRestoration />
           <MobileScrollContactGuard />
           <TransactionReceiptViewportFit />
+          <DateFormatDisplaySync />
 
           <main
             data-dashboard-scroll
