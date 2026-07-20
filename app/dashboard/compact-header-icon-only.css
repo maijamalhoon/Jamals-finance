@@ -1,25 +1,42 @@
 /*
  * Final compact-header surface override.
- * Removes only the closed button badges; icons, spacing, motion and logic stay unchanged.
+ * Removes only the compact control badges; icons, spacing, motion and logic stay unchanged.
  */
 @media (max-width: 1023px) {
-  html body [data-mobile-control-cluster] [data-slot="sheet-trigger"],
-  html body [data-mobile-control-cluster] [data-notification-trigger],
-  html body [data-mobile-control-cluster] [data-profile-trigger],
-  html body [data-mobile-control-cluster] [data-slot="sheet-trigger"]:hover,
-  html body [data-mobile-control-cluster] [data-slot="sheet-trigger"]:focus-visible,
-  html body [data-mobile-control-cluster] [data-slot="sheet-trigger"]:active,
-  html body [data-mobile-control-cluster] [data-notification-trigger]:hover,
-  html body [data-mobile-control-cluster] [data-notification-trigger]:focus-visible,
-  html body [data-mobile-control-cluster] [data-notification-trigger]:active,
-  html body [data-mobile-control-cluster] [data-notification-trigger][aria-expanded="true"],
-  html body [data-mobile-control-cluster] [data-profile-trigger]:hover,
-  html body [data-mobile-control-cluster] [data-profile-trigger]:focus-visible,
-  html body [data-mobile-control-cluster] [data-profile-trigger]:active,
-  html body [data-mobile-control-cluster] [data-profile-trigger][data-popup-open] {
+  /*
+   * The compact header has several older !important surface rules. Target every
+   * non-search control button through the dashboard shell with deliberately
+   * stronger specificity so menu, notification and profile remain icon-only in
+   * normal, hover, focus, active and open states.
+   */
+  html body
+    [data-dashboard-shell][data-dashboard-shell]
+    div[data-mobile-control-cluster][data-mobile-control-cluster]:not(form)
+    button,
+  html body
+    [data-dashboard-shell][data-dashboard-shell]
+    div[data-mobile-control-cluster][data-mobile-control-cluster]:not(form)
+    button:hover,
+  html body
+    [data-dashboard-shell][data-dashboard-shell]
+    div[data-mobile-control-cluster][data-mobile-control-cluster]:not(form)
+    button:focus-visible,
+  html body
+    [data-dashboard-shell][data-dashboard-shell]
+    div[data-mobile-control-cluster][data-mobile-control-cluster]:not(form)
+    button:active,
+  html body
+    [data-dashboard-shell][data-dashboard-shell]
+    div[data-mobile-control-cluster][data-mobile-control-cluster]:not(form)
+    button[aria-expanded="true"],
+  html body
+    [data-dashboard-shell][data-dashboard-shell]
+    div[data-mobile-control-cluster][data-mobile-control-cluster]:not(form)
+    button[data-popup-open] {
     border: 0 !important;
     border-color: transparent !important;
-    background: transparent !important;
+    outline: 0 !important;
+    background: none !important;
     background-color: transparent !important;
     background-image: none !important;
     box-shadow: none !important;
@@ -29,21 +46,26 @@
     -webkit-backdrop-filter: none !important;
   }
 
+  /* Search stays icon-only only while closed; its expanded input remains intact. */
   html body
-    form[data-mobile-control-cluster][role="search"]:has(
+    [data-dashboard-shell][data-dashboard-shell]
+    form[data-mobile-control-cluster][data-mobile-control-cluster][role="search"]:has(
       > button:first-child[aria-expanded="false"]
     ),
   html body
-    form[data-mobile-control-cluster][role="search"]:has(
+    [data-dashboard-shell][data-dashboard-shell]
+    form[data-mobile-control-cluster][data-mobile-control-cluster][role="search"]:has(
       > button:first-child[aria-expanded="false"]
     ):hover,
   html body
-    form[data-mobile-control-cluster][role="search"]:has(
+    [data-dashboard-shell][data-dashboard-shell]
+    form[data-mobile-control-cluster][data-mobile-control-cluster][role="search"]:has(
       > button:first-child[aria-expanded="false"]
     ):focus-within {
     border: 0 !important;
     border-color: transparent !important;
-    background: transparent !important;
+    outline: 0 !important;
+    background: none !important;
     background-color: transparent !important;
     background-image: none !important;
     box-shadow: none !important;
@@ -54,18 +76,22 @@
   }
 
   html body
-    form[data-mobile-control-cluster][role="search"]
+    [data-dashboard-shell][data-dashboard-shell]
+    form[data-mobile-control-cluster][data-mobile-control-cluster][role="search"]
     > button:first-child[aria-expanded="false"],
   html body
-    form[data-mobile-control-cluster][role="search"]
+    [data-dashboard-shell][data-dashboard-shell]
+    form[data-mobile-control-cluster][data-mobile-control-cluster][role="search"]
     > button:first-child[aria-expanded="false"]:hover,
   html body
-    form[data-mobile-control-cluster][role="search"]
+    [data-dashboard-shell][data-dashboard-shell]
+    form[data-mobile-control-cluster][data-mobile-control-cluster][role="search"]
     > button:first-child[aria-expanded="false"]:focus-visible,
   html body
-    form[data-mobile-control-cluster][role="search"]
+    [data-dashboard-shell][data-dashboard-shell]
+    form[data-mobile-control-cluster][data-mobile-control-cluster][role="search"]
     > button:first-child[aria-expanded="false"]:active {
-    background: transparent !important;
+    background: none !important;
     background-color: transparent !important;
     background-image: none !important;
     box-shadow: none !important;
