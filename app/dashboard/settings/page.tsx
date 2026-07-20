@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import SettingsExperienceV2 from "@/components/settings/SettingsExperienceV2";
+import SettingsModalRuntimeEnhancer from "@/components/settings/SettingsModalRuntimeEnhancer";
 import type { PersistentSettingsCategory } from "@/components/settings/CategoryManagementExperience";
 
 import "./settings-polish.css";
@@ -128,6 +129,7 @@ export default async function SettingsPage() {
 
   return (
     <div className="settings-page-polish">
+      <SettingsModalRuntimeEnhancer />
       <SettingsExperienceV2
         email={user.email ?? ""}
         userId={user.id}
