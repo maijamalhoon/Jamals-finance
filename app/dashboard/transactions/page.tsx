@@ -4,6 +4,7 @@ import { ArrowLeftRight } from "lucide-react";
 import AddIncomeButton from "@/components/income/AddIncomeButton";
 import { createClient } from "@/lib/supabase/server";
 import TransactionFilters from "@/components/transactions/TransactionFilters";
+import TransactionSearchAutoClose from "@/components/transactions/TransactionSearchAutoClose";
 import ViewportTransactionList from "@/components/transactions/ViewportTransactionList";
 import EmptyState from "@/components/ui/empty-state";
 import { getTransactionIconMeta } from "@/lib/transaction-icons";
@@ -371,10 +372,13 @@ export default async function TransactionsPage({
 
       <div className={styles.filtersShell}>
         <Suspense fallback={<div className="h-10 sm:mb-5 sm:h-12" />}>
-          <TransactionFilters
-            categories={categoryOptions}
-            accounts={accountOptions}
-          />
+          <>
+            <TransactionFilters
+              categories={categoryOptions}
+              accounts={accountOptions}
+            />
+            <TransactionSearchAutoClose />
+          </>
         </Suspense>
       </div>
 
