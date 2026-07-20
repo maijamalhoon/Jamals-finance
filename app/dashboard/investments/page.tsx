@@ -72,7 +72,12 @@ export default async function InvestmentsPage() {
             icon={BarChart2}
             title="No investments yet"
             description="Add your first investment to see portfolio performance here."
-            action={<AddInvestmentButton />}
+            action={
+              <AddInvestmentButton
+                label="Add an investment"
+                showIcon={false}
+              />
+            }
           />
         </div>
       ) : (
