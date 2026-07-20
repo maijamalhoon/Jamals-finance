@@ -408,7 +408,7 @@ export default function TransactionFilters(_props: {
   const activeChevron = (
     <ChevronRight
       size={18}
-      strokeWidth={2.8}
+      strokeWidth={3.6}
       className="jf-transaction-active-chevron shrink-0 text-text-primary"
       aria-hidden="true"
     />
