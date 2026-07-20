@@ -71,32 +71,64 @@ export default function TransactionSearchAutoClose() {
     const virtualKeyboard = (navigator as NavigatorWithVirtualKeyboard)
       .virtualKeyboard;
 
-    // Keep only the app's custom close control. React can restore the JSX
-    // search type during re-renders, so enforce text whenever that happens.
-    const removeNativeClearControl = () => {
-      if (input.type !== "text") input.type = "text";
-      input.inputMode = "search";
-      input.enterKeyHint = "search";
-    };
+    input.inputMode = "search";
+    input.enterKeyHint = "search";
 
-    const focusSearchInput = () => {
-      input.focus({ preventScroll: true });
+    let closeTimer: number | null = null;
+    let openFrame: number | null = null;
+    let verificationFrame: number | null = null;
+    let primeFrame: number | null = null;
+    let focusSequence = 0;
 
+    const isSearchOpen = () => searchControl.dataset.open === "true";
+
+    const placeCaret = () => {
       try {
         const caretPosition = input.value.length;
         input.setSelectionRange(caretPosition, caretPosition);
       } catch {
         // Selection APIs can be unavailable on a few older mobile engines.
       }
+    };
+
+    const focusSearchInput = (showKeyboard = true) => {
+      input.focus({ preventScroll: true });
+      placeCaret();
+
+      if (!showKeyboard) return;
 
       try {
         virtualKeyboard?.show?.();
       } catch {
-        // Native focus remains the fallback when the Virtual Keyboard API is absent.
+        // Native focus remains the fallback when the API is unavailable.
       }
     };
 
+    const cancelFocusVerification = () => {
+      focusSequence += 1;
+      if (verificationFrame !== null) {
+        window.cancelAnimationFrame(verificationFrame);
+        verificationFrame = null;
+      }
+    };
+
+    const verifyFocusAfterOpen = () => {
+      const sequence = ++focusSequence;
+
+      queueMicrotask(() => {
+        if (sequence !== focusSequence || !isSearchOpen()) return;
+        focusSearchInput();
+
+        verificationFrame = window.requestAnimationFrame(() => {
+          verificationFrame = null;
+          if (sequence !== focusSequence || !isSearchOpen()) return;
+          focusSearchInput();
+        });
+      });
+    };
+
     const dismissKeyboard = () => {
+      cancelFocusVerification();
       input.blur();
 
       try {
@@ -105,18 +137,6 @@ export default function TransactionSearchAutoClose() {
         // Blur remains the cross-browser fallback.
       }
     };
-
-    removeNativeClearControl();
-
-    const typeObserver = new MutationObserver(removeNativeClearControl);
-    typeObserver.observe(input, {
-      attributes: true,
-      attributeFilter: ["type"],
-    });
-
-    let closeTimer: number | null = null;
-    let openFrame: number | null = null;
-    let primeFrame: number | null = null;
 
     const cancelAutoClose = () => {
       if (closeTimer !== null) {
@@ -138,7 +158,7 @@ export default function TransactionSearchAutoClose() {
       input.style.opacity = inputOpacity;
       input.style.pointerEvents = inputPointerEvents;
 
-      if (searchControl.dataset.open !== "true") input.tabIndex = -1;
+      if (!isSearchOpen()) input.tabIndex = -1;
     };
 
     const primeAndFocusSearch = () => {
@@ -150,9 +170,8 @@ export default function TransactionSearchAutoClose() {
       const inputOpacity = input.style.opacity;
       const inputPointerEvents = input.style.pointerEvents;
 
-      // React opens the bar immediately after this native click listener. These
-      // temporary inline values make the input visibly focusable during the
-      // original user gesture, which reliably opens mobile keyboards.
+      // Make the input focusable during the original user gesture. React then
+      // opens the authored search UI and the verification pass keeps the caret.
       searchControl.style.width = "min(26.25rem, calc(100vw - 2rem))";
       input.style.width = "auto";
       input.style.flex = "1 1 auto";
@@ -176,15 +195,12 @@ export default function TransactionSearchAutoClose() {
 
     const scheduleAutoClose = () => {
       cancelAutoClose();
-      if (searchControl.dataset.open !== "true" || input.value.trim()) return;
+      if (!isSearchOpen() || input.value.trim()) return;
 
       closeTimer = window.setTimeout(() => {
         closeTimer = null;
 
-        if (
-          searchControl.dataset.open === "true" &&
-          !input.value.trim()
-        ) {
+        if (isSearchOpen() && !input.value.trim()) {
           dismissKeyboard();
           closeButton.click();
         }
@@ -192,9 +208,8 @@ export default function TransactionSearchAutoClose() {
     };
 
     const syncOpenState = () => {
-      if (searchControl.dataset.open === "true") {
-        removeNativeClearControl();
-        focusSearchInput();
+      if (isSearchOpen()) {
+        verifyFocusAfterOpen();
         scheduleAutoClose();
         return;
       }
@@ -210,20 +225,20 @@ export default function TransactionSearchAutoClose() {
     });
 
     const handleOpen = () => {
-      removeNativeClearControl();
       primeAndFocusSearch();
+      verifyFocusAfterOpen();
 
       if (openFrame !== null) window.cancelAnimationFrame(openFrame);
       openFrame = window.requestAnimationFrame(() => {
         openFrame = null;
-        removeNativeClearControl();
+        if (!isSearchOpen()) return;
         focusSearchInput();
         scheduleAutoClose();
       });
     };
 
     const handleInput = () => {
-      window.requestAnimationFrame(removeNativeClearControl);
+      placeCaret();
 
       if (input.value.trim()) {
         cancelAutoClose();
@@ -251,7 +266,6 @@ export default function TransactionSearchAutoClose() {
     return () => {
       cancelAutoClose();
       dismissKeyboard();
-      typeObserver.disconnect();
       openStateObserver.disconnect();
       if (openFrame !== null) window.cancelAnimationFrame(openFrame);
       if (primeFrame !== null) window.cancelAnimationFrame(primeFrame);
@@ -262,5 +276,20 @@ export default function TransactionSearchAutoClose() {
     };
   }, []);
 
-  return null;
+  return (
+    <style jsx global>{`
+      #transaction-page-search {
+        appearance: textfield;
+        -webkit-appearance: textfield;
+      }
+
+      #transaction-page-search::-webkit-search-decoration,
+      #transaction-page-search::-webkit-search-cancel-button,
+      #transaction-page-search::-webkit-search-results-button,
+      #transaction-page-search::-webkit-search-results-decoration {
+        display: none;
+        -webkit-appearance: none;
+      }
+    `}</style>
+  );
 }
