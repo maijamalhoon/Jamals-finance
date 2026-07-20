@@ -9,6 +9,8 @@ const VALID_ANIMATION_MODES = new Set<AnimationMode>([
   "none",
 ]);
 
+let scrollGuardInstalled = false;
+
 export function normalizeAnimationMode(value: unknown): AnimationMode {
   return typeof value === "string" &&
     VALID_ANIMATION_MODES.has(value as AnimationMode)
@@ -38,14 +40,14 @@ export function getAnimationDurationScale(
   mode: AnimationMode = getDocumentAnimationMode(),
 ) {
   if (mode === "none") return 0;
-  if (mode === "fast") return 0.68;
+  if (mode === "fast") return 0.82;
   return 1;
 }
 
 export function getAnimationPlaybackRate(
   mode: AnimationMode = getDocumentAnimationMode(),
 ) {
-  if (mode === "fast") return 1.45;
+  if (mode === "fast") return 1.18;
   return 1;
 }
 
@@ -63,6 +65,30 @@ export function scaleAnimationMilliseconds(
   return Math.round(milliseconds * getAnimationDurationScale(mode));
 }
 
+function installScrollBehaviorGuard() {
+  if (scrollGuardInstalled || typeof window === "undefined") return;
+  scrollGuardInstalled = true;
+
+  const nativeScrollTo = window.scrollTo.bind(window);
+
+  window.scrollTo = ((
+    optionsOrX?: ScrollToOptions | number,
+    y?: number,
+  ) => {
+    if (typeof optionsOrX === "number") {
+      nativeScrollTo(optionsOrX, y ?? 0);
+      return;
+    }
+
+    const options = optionsOrX ?? {};
+    nativeScrollTo(
+      getDocumentAnimationMode() === "none"
+        ? { ...options, behavior: "auto" }
+        : options,
+    );
+  }) as typeof window.scrollTo;
+}
+
 export function applyAnimationMode(
   nextMode: AnimationMode,
   options: { persist?: boolean; broadcast?: boolean } = {},
@@ -73,6 +99,8 @@ export function applyAnimationMode(
   const root = document.documentElement;
   root.dataset.animationMode = mode;
   root.dataset.scrollBehavior = mode === "none" ? "auto" : "smooth";
+
+  installScrollBehaviorGuard();
 
   if (options.persist !== false && typeof window !== "undefined") {
     try {
