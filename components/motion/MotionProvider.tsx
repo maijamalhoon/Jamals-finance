@@ -76,11 +76,15 @@ function tuneAnimation(animation: Animation, mode: AnimationMode) {
   } catch {}
 }
 
-function tuneDocumentAnimations(mode: AnimationMode, target?: Element) {
+function tuneDocumentAnimations(
+  mode: AnimationMode,
+  target?: Element,
+  subtree = false,
+) {
   if (typeof document === "undefined" || !("getAnimations" in document)) return;
 
   const animations = target
-    ? target.getAnimations({ subtree: false })
+    ? target.getAnimations({ subtree })
     : document.getAnimations();
 
   animations.forEach((animation) => tuneAnimation(animation, mode));
@@ -205,6 +209,84 @@ export default function MotionProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     let activeMode = getStoredAnimationMode();
+    let runtimeObserver: MutationObserver | null = null;
+    let runtimeListenersAttached = false;
+    let pendingFrame: number | null = null;
+    let restoreFrame: number | null = null;
+    const pendingRoots = new Set<Element>();
+
+    const flushPendingRoots = () => {
+      pendingFrame = null;
+      const roots = Array.from(pendingRoots);
+      pendingRoots.clear();
+
+      roots.forEach((root) => {
+        if (root.isConnected) {
+          tuneDocumentAnimations(activeMode, root, true);
+        }
+      });
+    };
+
+    const scheduleRootTuning = (root: Element) => {
+      if (activeMode === "standard") return;
+
+      // Run once immediately for already-created animations and once on the next
+      // frame for libraries that create Web Animations after DOM insertion.
+      tuneDocumentAnimations(activeMode, root, true);
+      pendingRoots.add(root);
+
+      if (pendingFrame === null) {
+        pendingFrame = window.requestAnimationFrame(flushPendingRoots);
+      }
+    };
+
+    const handleAnimationStart = (event: Event) => {
+      const target = event.target;
+      if (!(target instanceof Element)) return;
+      queueMicrotask(() => tuneDocumentAnimations(activeMode, target));
+    };
+
+    const attachRuntimeTuning = () => {
+      if (runtimeObserver) return;
+
+      runtimeObserver = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+          mutation.addedNodes.forEach((node) => {
+            if (!(node instanceof Element)) return;
+            tuneSvgAnimations(node, activeMode);
+            scheduleRootTuning(node);
+          });
+        });
+      });
+
+      runtimeObserver.observe(document.documentElement, {
+        subtree: true,
+        childList: true,
+      });
+
+      if (!runtimeListenersAttached) {
+        runtimeListenersAttached = true;
+        document.addEventListener("animationstart", handleAnimationStart, true);
+        document.addEventListener("transitionrun", handleAnimationStart, true);
+      }
+    };
+
+    const detachRuntimeTuning = () => {
+      runtimeObserver?.disconnect();
+      runtimeObserver = null;
+      pendingRoots.clear();
+
+      if (pendingFrame !== null) {
+        window.cancelAnimationFrame(pendingFrame);
+        pendingFrame = null;
+      }
+
+      if (runtimeListenersAttached) {
+        runtimeListenersAttached = false;
+        document.removeEventListener("animationstart", handleAnimationStart, true);
+        document.removeEventListener("transitionrun", handleAnimationStart, true);
+      }
+    };
 
     const synchronizeMode = (nextMode: AnimationMode) => {
       const previousMode = activeMode;
@@ -216,11 +298,30 @@ export default function MotionProvider({ children }: { children: ReactNode }) {
       activeMode = mode;
       setAnimationMode(mode);
 
-      // The default mode must remain zero-overhead. A full document scan is only
-      // needed when entering an accelerated mode or restoring from one.
+      if (restoreFrame !== null) {
+        window.cancelAnimationFrame(restoreFrame);
+        restoreFrame = null;
+      }
+
+      // A full scan is only needed when entering an accelerated mode or restoring
+      // animations after one. Standard-to-standard stays zero-overhead.
       if (mode !== "standard" || previousMode !== "standard") {
         tuneDocumentAnimations(mode);
         tuneSvgAnimations(document, mode);
+      }
+
+      if (mode === "standard") detachRuntimeTuning();
+      else attachRuntimeTuning();
+
+      // CSS and motion libraries can recreate animation objects after the root
+      // data attribute changes. One bounded follow-up scan prevents stale speed
+      // or a stopped SVG when leaving no-animation mode.
+      if (previousMode !== mode && previousMode === "none") {
+        restoreFrame = window.requestAnimationFrame(() => {
+          restoreFrame = null;
+          tuneDocumentAnimations(mode);
+          tuneSvgAnimations(document, mode);
+        });
       }
     };
 
@@ -234,52 +335,15 @@ export default function MotionProvider({ children }: { children: ReactNode }) {
       synchronizeMode(getStoredAnimationMode());
     };
 
-    const handleAnimationStart = (event: Event) => {
-      if (activeMode === "standard") return;
-
-      const target = event.target;
-      if (!(target instanceof Element)) return;
-      queueMicrotask(() => tuneDocumentAnimations(activeMode, target));
-    };
-
-    const observer = new MutationObserver((mutations) => {
-      if (activeMode === "standard") return;
-
-      const addedElements: Element[] = [];
-
-      mutations.forEach((mutation) => {
-        mutation.addedNodes.forEach((node) => {
-          if (!(node instanceof Element)) return;
-          addedElements.push(node);
-          tuneSvgAnimations(node, activeMode);
-        });
-      });
-
-      if (addedElements.length === 0) return;
-
-      queueMicrotask(() => {
-        addedElements.forEach((element) =>
-          tuneDocumentAnimations(activeMode, element),
-        );
-      });
-    });
-
     synchronizeMode(activeMode);
-    observer.observe(document.documentElement, {
-      subtree: true,
-      childList: true,
-    });
     window.addEventListener(ANIMATION_MODE_CHANGE_EVENT, handlePreferenceChange);
     window.addEventListener("storage", handleStorage);
-    document.addEventListener("animationstart", handleAnimationStart, true);
-    document.addEventListener("transitionrun", handleAnimationStart, true);
 
     return () => {
-      observer.disconnect();
+      detachRuntimeTuning();
+      if (restoreFrame !== null) window.cancelAnimationFrame(restoreFrame);
       window.removeEventListener(ANIMATION_MODE_CHANGE_EVENT, handlePreferenceChange);
       window.removeEventListener("storage", handleStorage);
-      document.removeEventListener("animationstart", handleAnimationStart, true);
-      document.removeEventListener("transitionrun", handleAnimationStart, true);
     };
   }, []);
 
