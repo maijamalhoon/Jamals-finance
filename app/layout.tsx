@@ -20,11 +20,13 @@ import "./auth-adornment-alignment-fix.css";
 import "./landing-math-symbols.css";
 // Final dark-mode-only icon tone lift; light mode and semantic hues stay intact.
 import "./dark-icon-tone.css";
+import "./animation-preference.css";
 import { Toaster } from "sonner";
 import DesktopOverscrollBounce from "@/components/motion/DesktopOverscrollBounce";
 import MotionProvider from "@/components/motion/MotionProvider";
 import GlobalConfirmDialog from "@/components/ui/global-confirm-dialog";
 import { CURRENCY_STORAGE_KEY } from "@/lib/currency";
+import { ANIMATION_BOOTSTRAP_SCRIPT } from "@/lib/animation-preference";
 import ChartTooltipAutoDismiss from "@/components/charts/ChartTooltipAutoDismiss";
 import PWARegister from "./pwa-register";
 import {
@@ -283,6 +285,11 @@ export default function RootLayout({
         <script
           dangerouslySetInnerHTML={{
             __html: THEME_BOOTSTRAP_SCRIPT,
+          }}
+        />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: ANIMATION_BOOTSTRAP_SCRIPT,
           }}
         />
         <script
