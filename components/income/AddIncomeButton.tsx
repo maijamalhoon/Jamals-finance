@@ -23,11 +23,12 @@ export default function AddIncomeButton({
       <PageHeadingActionPortal page="income">
         <button
           type="button"
+          aria-label={label}
           onClick={() => setOpen(true)}
           className="success-action"
         >
           {showIcon ? <TrendingUp size={16} /> : null}
-          {label}
+          <span className="sr-only">{label}</span>
         </button>
       </PageHeadingActionPortal>
 
