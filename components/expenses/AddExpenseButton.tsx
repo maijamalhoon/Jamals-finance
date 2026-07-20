@@ -5,7 +5,15 @@ import { useRouter } from "next/navigation";
 import { TrendingDown } from "lucide-react";
 import TransactionModal from "@/components/dashboard/TransactionModal";
 
-export default function AddExpenseButton() {
+interface AddExpenseButtonProps {
+  label?: string;
+  showIcon?: boolean;
+}
+
+export default function AddExpenseButton({
+  label = "Add Expense",
+  showIcon = true,
+}: AddExpenseButtonProps = {}) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
 
@@ -16,8 +24,8 @@ export default function AddExpenseButton() {
         onClick={() => setOpen(true)}
         className="danger-action"
       >
-        <TrendingDown size={16} />
-        Add Expense
+        {showIcon ? <TrendingDown size={16} /> : null}
+        {label}
       </button>
 
       <TransactionModal
