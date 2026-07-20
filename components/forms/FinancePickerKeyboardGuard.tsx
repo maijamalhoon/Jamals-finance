@@ -73,6 +73,34 @@ const FINANCE_FORM_RUNTIME_STYLE = `
   pointer-events: none !important;
   caret-color: transparent !important;
 }
+
+/* Edit Goal: show the saved goal name as smaller, non-editable text only. */
+.finance-modal-content
+  [data-slot="finance-form-field"]:has(> #goal-name[data-finance-locked-name="true"])
+  > .field-label {
+  display: none !important;
+}
+
+.finance-modal-content
+  [data-slot="finance-form-field"]:has(> #goal-name[data-finance-locked-name="true"])
+  > #goal-name {
+  display: block !important;
+  width: 100% !important;
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  color: var(--text-primary) !important;
+  font-size: 0.875rem !important;
+  font-weight: 650 !important;
+  line-height: 1.25rem !important;
+  pointer-events: none !important;
+  caret-color: transparent !important;
+}
 `;
 
 function isEditableElement(element: Element | null): element is HTMLElement {
@@ -124,6 +152,38 @@ export default function FinancePickerKeyboardGuard() {
       });
     };
 
+    const syncLockedGoalNames = () => {
+      document
+        .querySelectorAll<HTMLElement>(".finance-modal-content")
+        .forEach((modal) => {
+          const title = modal
+            .querySelector<HTMLElement>('[data-slot="dialog-title"]')
+            ?.textContent?.trim();
+          const goalName = modal.querySelector<HTMLInputElement>("#goal-name");
+          if (!goalName) return;
+
+          if (title === "Edit Goal") {
+            goalName.readOnly = true;
+            goalName.tabIndex = -1;
+            goalName.setAttribute("aria-readonly", "true");
+            goalName.dataset.financeLockedName = "true";
+            return;
+          }
+
+          if (goalName.dataset.financeLockedName === "true") {
+            goalName.readOnly = false;
+            goalName.removeAttribute("tabindex");
+            goalName.removeAttribute("aria-readonly");
+            delete goalName.dataset.financeLockedName;
+          }
+        });
+    };
+
+    const syncFinanceControls = () => {
+      syncDateInputs();
+      syncLockedGoalNames();
+    };
+
     const handlePointerDown = (event: PointerEvent) => {
       const target = event.target;
       if (!(target instanceof Element)) return;
@@ -131,16 +191,16 @@ export default function FinancePickerKeyboardGuard() {
       dismissSoftKeyboard();
     };
 
-    syncDateInputs();
+    syncFinanceControls();
 
-    const observer = new MutationObserver(syncDateInputs);
+    const observer = new MutationObserver(syncFinanceControls);
     observer.observe(document.body, { childList: true, subtree: true });
-    coarsePointer.addEventListener("change", syncDateInputs);
+    coarsePointer.addEventListener("change", syncFinanceControls);
     document.addEventListener("pointerdown", handlePointerDown, true);
 
     return () => {
       observer.disconnect();
-      coarsePointer.removeEventListener("change", syncDateInputs);
+      coarsePointer.removeEventListener("change", syncFinanceControls);
       document.removeEventListener("pointerdown", handlePointerDown, true);
 
       document
@@ -151,6 +211,17 @@ export default function FinancePickerKeyboardGuard() {
           input.readOnly = false;
           input.setAttribute("inputmode", "numeric");
           delete input.dataset.financeDateReadonly;
+        });
+
+      document
+        .querySelectorAll<HTMLInputElement>(
+          'input[data-finance-locked-name="true"]',
+        )
+        .forEach((input) => {
+          input.readOnly = false;
+          input.removeAttribute("tabindex");
+          input.removeAttribute("aria-readonly");
+          delete input.dataset.financeLockedName;
         });
     };
   }, []);
