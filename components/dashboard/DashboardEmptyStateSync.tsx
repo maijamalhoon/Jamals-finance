@@ -9,8 +9,16 @@ import AddIncomeButton from "@/components/income/AddIncomeButton";
 import AddInvestmentButton from "@/components/investments/AddInvestmentButton";
 
 type LauncherKind = "income" | "expense" | "investment" | "goal";
+type EmptyCardKind =
+  | "cash-flow"
+  | "investments"
+  | "spending-breakdown"
+  | "spend-record"
+  | "goals"
+  | "transactions";
 
 type EmptyStateConfig = {
+  kind: EmptyCardKind;
   cardLabel: string;
   title: string;
   description: string;
@@ -20,34 +28,42 @@ type EmptyStateConfig = {
 
 const EMPTY_STATE_CONFIGS: EmptyStateConfig[] = [
   {
+    kind: "cash-flow",
     cardLabel: "income vs expenses",
-    title: "No cash flow yet",
-    description: "Add your first income to see cash flow here.",
-    actionLabel: "Add income",
+    title: "No transactions yet",
+    description:
+      "Add your first transaction to see income and expense trends here.",
+    actionLabel: "Add a transaction",
     launcher: "income",
   },
   {
+    kind: "investments",
     cardLabel: "investments",
     title: "No investments yet",
-    description: "Add your first investment to see portfolio allocation here.",
+    description:
+      "Add your first investment to see portfolio allocation here.",
     actionLabel: "Add an investment",
     launcher: "investment",
   },
   {
+    kind: "spending-breakdown",
     cardLabel: "spending breakdown",
     title: "No expenses yet",
-    description: "Add your first expense to see spending categories here.",
+    description:
+      "Add your first expense to see spending categories here.",
     actionLabel: "Add an expense",
     launcher: "expense",
   },
   {
+    kind: "spend-record",
     cardLabel: "spend record",
-    title: "No spending yet",
-    description: "Add your first expense to see your spending record here.",
+    title: "No expenses yet",
+    description: "Add your first expense to see spending trends here.",
     actionLabel: "Add an expense",
     launcher: "expense",
   },
   {
+    kind: "goals",
     cardLabel: "goals progress",
     title: "No goals yet",
     description: "Create your first goal to see savings progress here.",
@@ -55,9 +71,11 @@ const EMPTY_STATE_CONFIGS: EmptyStateConfig[] = [
     launcher: "goal",
   },
   {
+    kind: "transactions",
     cardLabel: "recent transactions",
     title: "No transactions yet",
-    description: "Add your first transaction to see account activity here.",
+    description:
+      "Add your first transaction to see recent account activity here.",
     actionLabel: "Add a transaction",
     launcher: "income",
   },
@@ -94,9 +112,10 @@ export default function DashboardEmptyStateSync() {
   useLayoutEffect(() => {
     if (!mounted) return;
 
-    const launcherButtons = launchersRef.current?.querySelectorAll<HTMLButtonElement>(
-      "[data-dashboard-empty-launcher] > button",
-    );
+    const launcherButtons =
+      launchersRef.current?.querySelectorAll<HTMLButtonElement>(
+        "[data-dashboard-empty-launcher] > button",
+      );
 
     launcherButtons?.forEach((button) => {
       button.tabIndex = -1;
@@ -116,6 +135,8 @@ export default function DashboardEmptyStateSync() {
       if (!overview) return;
 
       overview.querySelectorAll<HTMLElement>("section").forEach((section) => {
+        delete section.dataset.dashboardEmptyCard;
+
         const headingText = getCardHeadingText(section);
         const config = EMPTY_STATE_CONFIGS.find((item) =>
           headingText.includes(item.cardLabel),
@@ -131,15 +152,23 @@ export default function DashboardEmptyStateSync() {
         const currentTitle = title?.textContent?.trim().toLowerCase() ?? "";
         if (!title || !description || currentTitle.includes("unavailable")) return;
 
+        section.dataset.dashboardEmptyCard = config.kind;
+
         if (title.textContent !== config.title) title.textContent = config.title;
         if (description.textContent !== config.description) {
           description.textContent = config.description;
         }
 
+        const reusableEmptyState = emptyState.querySelector<HTMLElement>(
+          "[data-empty-state]",
+        );
+        reusableEmptyState?.setAttribute("data-empty-state-has-action", "true");
+
         let actionContainer = emptyState.querySelector<HTMLElement>(
           "[data-empty-state-action]",
         );
-        let actionButton = actionContainer?.querySelector<HTMLButtonElement>("button");
+        let actionButton =
+          actionContainer?.querySelector<HTMLButtonElement>("button");
 
         if (!actionContainer) {
           actionContainer = document.createElement("div");
@@ -154,8 +183,14 @@ export default function DashboardEmptyStateSync() {
         if (!actionButton) {
           actionButton = document.createElement("button");
           actionButton.type = "button";
-          actionButton.setAttribute("data-dashboard-empty-action", config.launcher);
-          actionButton.addEventListener("click", () => openLauncher(config.launcher));
+          actionButton.className = "finance-focus";
+          actionButton.setAttribute(
+            "data-dashboard-empty-action",
+            config.launcher,
+          );
+          actionButton.addEventListener("click", () =>
+            openLauncher(config.launcher),
+          );
           actionContainer.appendChild(actionButton);
         }
 
@@ -202,6 +237,30 @@ export default function DashboardEmptyStateSync() {
           border: 0 !important;
           opacity: 0 !important;
           pointer-events: none !important;
+        }
+
+        .dashboard-overview
+          section[data-dashboard-empty-card="cash-flow"]
+          [aria-label="Cash-flow range"],
+        .dashboard-overview
+          section[data-dashboard-empty-card="investments"]
+          .dashboard-card-view-link {
+          display: none !important;
+        }
+
+        .dashboard-overview
+          section[data-dashboard-empty-card="spend-record"]
+          .pt-1 {
+          display: none !important;
+        }
+
+        .dashboard-overview
+          section[data-dashboard-empty-card="spend-record"]
+          .dashboard-chart-empty {
+          height: auto !important;
+          min-height: 0 !important;
+          flex: 1 1 auto !important;
+          margin-top: 0 !important;
         }
       `}</style>
       <div ref={launchersRef} data-dashboard-empty-launchers>
