@@ -4,6 +4,13 @@ import { useEffect } from "react";
 
 const AUTO_CLOSE_DELAY_MS = 6000;
 
+type NavigatorWithVirtualKeyboard = Navigator & {
+  virtualKeyboard?: {
+    show?: () => void;
+    hide?: () => void;
+  };
+};
+
 export default function TransactionSearchAutoClose() {
   useEffect(() => {
     const input = document.getElementById(
@@ -41,20 +48,42 @@ export default function TransactionSearchAutoClose() {
       }
     }
 
+    const virtualKeyboard = (navigator as NavigatorWithVirtualKeyboard)
+      .virtualKeyboard;
+
     // Keep only the app's custom close control. React can restore the JSX
     // search type during re-renders, so enforce text whenever that happens.
     const removeNativeClearControl = () => {
       if (input.type !== "text") input.type = "text";
+      input.inputMode = "search";
+      input.enterKeyHint = "search";
     };
 
     const focusSearchInput = () => {
       input.focus({ preventScroll: true });
-      const caretPosition = input.value.length;
-      input.setSelectionRange(caretPosition, caretPosition);
+
+      try {
+        const caretPosition = input.value.length;
+        input.setSelectionRange(caretPosition, caretPosition);
+      } catch {
+        // Selection APIs can be unavailable on a few older mobile engines.
+      }
+
+      try {
+        virtualKeyboard?.show?.();
+      } catch {
+        // Native focus remains the fallback when the Virtual Keyboard API is absent.
+      }
     };
 
     const dismissKeyboard = () => {
-      if (document.activeElement === input) input.blur();
+      input.blur();
+
+      try {
+        virtualKeyboard?.hide?.();
+      } catch {
+        // Blur remains the cross-browser fallback.
+      }
     };
 
     removeNativeClearControl();
@@ -65,16 +94,9 @@ export default function TransactionSearchAutoClose() {
       attributeFilter: ["type"],
     });
 
-    const openStateObserver = new MutationObserver(() => {
-      if (searchControl.dataset.open !== "true") dismissKeyboard();
-    });
-    openStateObserver.observe(searchControl, {
-      attributes: true,
-      attributeFilter: ["data-open"],
-    });
-
     let closeTimer: number | null = null;
     let openFrame: number | null = null;
+    let primeFrame: number | null = null;
 
     const cancelAutoClose = () => {
       if (closeTimer !== null) {
@@ -83,9 +105,58 @@ export default function TransactionSearchAutoClose() {
       }
     };
 
+    const restorePrimedStyles = (
+      controlWidth: string,
+      inputWidth: string,
+      inputFlex: string,
+      inputOpacity: string,
+      inputPointerEvents: string,
+    ) => {
+      searchControl.style.width = controlWidth;
+      input.style.width = inputWidth;
+      input.style.flex = inputFlex;
+      input.style.opacity = inputOpacity;
+      input.style.pointerEvents = inputPointerEvents;
+
+      if (searchControl.dataset.open !== "true") input.tabIndex = -1;
+    };
+
+    const primeAndFocusSearch = () => {
+      if (primeFrame !== null) window.cancelAnimationFrame(primeFrame);
+
+      const controlWidth = searchControl.style.width;
+      const inputWidth = input.style.width;
+      const inputFlex = input.style.flex;
+      const inputOpacity = input.style.opacity;
+      const inputPointerEvents = input.style.pointerEvents;
+
+      // React opens the bar immediately after this native click listener. These
+      // temporary inline values make the input visibly focusable during the
+      // original user gesture, which reliably opens mobile keyboards.
+      searchControl.style.width = "min(26.25rem, calc(100vw - 2rem))";
+      input.style.width = "auto";
+      input.style.flex = "1 1 auto";
+      input.style.opacity = "1";
+      input.style.pointerEvents = "auto";
+      input.tabIndex = 0;
+
+      focusSearchInput();
+
+      primeFrame = window.requestAnimationFrame(() => {
+        primeFrame = null;
+        restorePrimedStyles(
+          controlWidth,
+          inputWidth,
+          inputFlex,
+          inputOpacity,
+          inputPointerEvents,
+        );
+      });
+    };
+
     const scheduleAutoClose = () => {
       cancelAutoClose();
-      if (input.value.trim()) return;
+      if (searchControl.dataset.open !== "true" || input.value.trim()) return;
 
       closeTimer = window.setTimeout(() => {
         closeTimer = null;
@@ -100,10 +171,27 @@ export default function TransactionSearchAutoClose() {
       }, AUTO_CLOSE_DELAY_MS);
     };
 
+    const syncOpenState = () => {
+      if (searchControl.dataset.open === "true") {
+        removeNativeClearControl();
+        focusSearchInput();
+        scheduleAutoClose();
+        return;
+      }
+
+      cancelAutoClose();
+      dismissKeyboard();
+    };
+
+    const openStateObserver = new MutationObserver(syncOpenState);
+    openStateObserver.observe(searchControl, {
+      attributes: true,
+      attributeFilter: ["data-open"],
+    });
+
     const handleOpen = () => {
-      // Focus during the original tap so mobile browsers open their keyboard.
       removeNativeClearControl();
-      focusSearchInput();
+      primeAndFocusSearch();
 
       if (openFrame !== null) window.cancelAnimationFrame(openFrame);
       openFrame = window.requestAnimationFrame(() => {
@@ -122,7 +210,7 @@ export default function TransactionSearchAutoClose() {
         return;
       }
 
-      if (searchControl.dataset.open === "true") scheduleAutoClose();
+      scheduleAutoClose();
     };
 
     const handleClose = () => {
@@ -138,6 +226,7 @@ export default function TransactionSearchAutoClose() {
     input.addEventListener("input", handleInput);
     input.addEventListener("keydown", handleKeyDown);
     closeButton.addEventListener("click", handleClose);
+    syncOpenState();
 
     return () => {
       cancelAutoClose();
@@ -145,6 +234,7 @@ export default function TransactionSearchAutoClose() {
       typeObserver.disconnect();
       openStateObserver.disconnect();
       if (openFrame !== null) window.cancelAnimationFrame(openFrame);
+      if (primeFrame !== null) window.cancelAnimationFrame(primeFrame);
       openButton.removeEventListener("click", handleOpen);
       input.removeEventListener("input", handleInput);
       input.removeEventListener("keydown", handleKeyDown);
