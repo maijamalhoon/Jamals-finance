@@ -1,0 +1,78 @@
+/*
+ * Final size tuning for the compact "accent bar + page label" headings.
+ * Scope is limited to primary dashboard route labels; page content, controls,
+ * data rendering and responsive structure remain unchanged.
+ */
+
+[data-jf-page] .jf-unified-page-heading {
+  min-height: clamp(2.2rem, 3.2vw, 2.75rem);
+  gap: clamp(0.62rem, 1.05vw, 0.8rem);
+}
+
+[data-jf-page] .jf-unified-page-accent {
+  width: clamp(0.27rem, 0.4vw, 0.38rem);
+  height: clamp(1.5rem, 2.3vw, 2.05rem);
+}
+
+[data-jf-page] .jf-unified-page-title {
+  font-size: clamp(1.1rem, 0.86rem + 0.62vw, 1.6rem);
+  line-height: 1.12;
+}
+
+/* Transactions uses its original page heading inside an emergency-safe layout. */
+[data-jf-page="transactions"]
+  .jf-unified-page-body
+  > div
+  > :first-child {
+  min-height: clamp(2.2rem, 3.2vw, 2.75rem) !important;
+  gap: clamp(0.62rem, 1.05vw, 0.8rem) !important;
+}
+
+[data-jf-page="transactions"]
+  .jf-unified-page-body
+  > div
+  > :first-child::before {
+  width: clamp(0.27rem, 0.4vw, 0.38rem) !important;
+  height: clamp(1.5rem, 2.3vw, 2.05rem) !important;
+}
+
+[data-jf-page="transactions"]
+  .jf-unified-page-body
+  > div
+  > :first-child
+  .page-title {
+  font-size: clamp(1.1rem, 0.86rem + 0.62vw, 1.6rem) !important;
+  line-height: 1.12 !important;
+}
+
+@media (max-width: 639px) {
+  [data-jf-page] .jf-unified-page-heading {
+    min-height: 2.1rem;
+  }
+
+  [data-jf-page="transactions"]
+    .jf-unified-page-body
+    > div
+    > :first-child {
+    min-height: 2.6rem !important;
+  }
+
+  [data-jf-page="transactions"]
+    .jf-unified-page-body
+    > div
+    > :first-child
+    .page-title {
+    font-size: 1.1rem !important;
+    line-height: 1.3rem !important;
+  }
+}
+
+@media (max-width: 360px) {
+  [data-jf-page="transactions"]
+    .jf-unified-page-body
+    > div
+    > :first-child
+    .page-title {
+    font-size: 1.02rem !important;
+  }
+}
