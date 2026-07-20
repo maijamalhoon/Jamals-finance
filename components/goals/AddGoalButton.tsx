@@ -25,11 +25,12 @@ export default function AddGoalButton({
       <PageHeadingActionPortal page="goals">
         <button
           type="button"
+          aria-label={label}
           onClick={() => setOpen(true)}
           className="primary-action"
         >
           {showIcon ? <Target size={16} /> : null}
-          {label}
+          <span className="sr-only">{label}</span>
         </button>
       </PageHeadingActionPortal>
 
