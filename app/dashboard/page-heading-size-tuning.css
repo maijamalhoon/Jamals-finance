@@ -189,7 +189,10 @@
     width: 100% !important;
     max-width: 100% !important;
     flex: 1 1 100% !important;
+    border: 0 !important;
+    outline: 0 !important;
     background: var(--background) !important;
+    box-shadow: none !important;
   }
 
   .transactions-page-type-icons
