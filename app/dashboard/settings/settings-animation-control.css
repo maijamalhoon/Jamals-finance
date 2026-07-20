@@ -8,7 +8,7 @@
   .settings-reference-animation-control
   .settings-reference-theme-option:nth-child(1)
   .settings-reference-theme-icon {
-  color: #3b82f6 !important;
+  color: #14b8a6 !important;
 }
 
 .settings-page-polish
@@ -29,8 +29,8 @@
 .settings-page-polish
   .settings-reference-animation-control
   .settings-reference-theme-option:nth-child(1).is-active {
-  background: color-mix(in srgb, #3b82f6 12%, var(--card)) !important;
-  box-shadow: 0 5px 14px rgb(59 130 246 / 0.1) !important;
+  background: color-mix(in srgb, #14b8a6 13%, var(--card)) !important;
+  box-shadow: 0 5px 14px rgb(20 184 166 / 0.09) !important;
 }
 
 .settings-page-polish
@@ -51,7 +51,7 @@
   .settings-page-polish
   .settings-reference-animation-control
   .settings-reference-theme-option:nth-child(1).is-active {
-  background: color-mix(in srgb, #3b82f6 18%, var(--card)) !important;
+  background: color-mix(in srgb, #14b8a6 18%, var(--card)) !important;
   box-shadow: 0 7px 18px rgb(0 0 0 / 0.2) !important;
 }
 
