@@ -21,6 +21,8 @@ import "./landing-math-symbols.css";
 // Final dark-mode-only icon tone lift; light mode and semantic hues stay intact.
 import "./dark-icon-tone.css";
 import "./animation-preference.css";
+// Final global authority for equal, compact single-line form controls.
+import "./form-control-height-unify.css";
 import { Toaster } from "sonner";
 import DesktopOverscrollBounce from "@/components/motion/DesktopOverscrollBounce";
 import MotionProvider from "@/components/motion/MotionProvider";
