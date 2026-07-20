@@ -5,6 +5,49 @@ import { useEffect } from "react";
 import FinancePickerKeyboardGuard from "@/components/forms/FinancePickerKeyboardGuard";
 
 const BODY_CONTACT_ATTRIBUTE = "data-mobile-scroll-contact";
+const BODY_TOP_ATTRIBUTE = "data-mobile-dashboard-top";
+const TOP_THRESHOLD = 1;
+
+function isSearchExpanded() {
+  return Boolean(
+    document.querySelector(
+      '#mobile-inline-transaction-search[aria-hidden="false"]',
+    ),
+  );
+}
+
+function getMobileControlClusters() {
+  return Array.from(
+    document.querySelectorAll<HTMLElement>("[data-mobile-control-cluster]"),
+  );
+}
+
+function restoreClusterAccessibility() {
+  getMobileControlClusters().forEach((cluster) => {
+    const inlineOpacity = Number.parseFloat(cluster.style.opacity);
+    const hidden = Number.isFinite(inlineOpacity)
+      ? inlineOpacity < 0.5
+      : cluster.getAttribute("aria-hidden") === "true";
+
+    if (hidden) {
+      cluster.setAttribute("aria-hidden", "true");
+      cluster.setAttribute("inert", "");
+      return;
+    }
+
+    cluster.setAttribute("aria-hidden", "false");
+    cluster.removeAttribute("inert");
+  });
+}
+
+function keepTopClustersInteractive() {
+  getMobileControlClusters().forEach((cluster) => {
+    if (cluster.getAttribute("aria-hidden") !== "false") {
+      cluster.setAttribute("aria-hidden", "false");
+    }
+    if (cluster.hasAttribute("inert")) cluster.removeAttribute("inert");
+  });
+}
 
 export default function MobileScrollContactGuard() {
   useEffect(() => {
@@ -15,6 +58,7 @@ export default function MobileScrollContactGuard() {
 
     let activePointerId: number | null = null;
     let pointerStartedInsideScroll = false;
+    let syncingTopState = false;
 
     const setContactState = (active: boolean) => {
       if (active) {
@@ -23,6 +67,29 @@ export default function MobileScrollContactGuard() {
       }
 
       document.body.removeAttribute(BODY_CONTACT_ATTRIBUTE);
+    };
+
+    const syncTopState = () => {
+      if (syncingTopState) return;
+      syncingTopState = true;
+
+      const atTop = scrollContainer.scrollTop <= TOP_THRESHOLD;
+      const searchExpanded = isSearchExpanded();
+
+      if (atTop) {
+        document.body.setAttribute(BODY_TOP_ATTRIBUTE, "true");
+        setContactState(false);
+
+        if (!searchExpanded) keepTopClustersInteractive();
+        else restoreClusterAccessibility();
+      } else {
+        document.body.removeAttribute(BODY_TOP_ATTRIBUTE);
+        restoreClusterAccessibility();
+      }
+
+      window.requestAnimationFrame(() => {
+        syncingTopState = false;
+      });
     };
 
     const handlePointerDown = (event: PointerEvent) => {
@@ -41,6 +108,13 @@ export default function MobileScrollContactGuard() {
     };
 
     const handleScroll = () => {
+      syncTopState();
+
+      if (scrollContainer.scrollTop <= TOP_THRESHOLD) {
+        setContactState(false);
+        return;
+      }
+
       if (activePointerId === null || !pointerStartedInsideScroll) return;
       setContactState(true);
     };
@@ -51,13 +125,28 @@ export default function MobileScrollContactGuard() {
       activePointerId = null;
       pointerStartedInsideScroll = false;
       setContactState(false);
+      syncTopState();
     };
 
     const resetContact = () => {
       activePointerId = null;
       pointerStartedInsideScroll = false;
       setContactState(false);
+      syncTopState();
     };
+
+    const observer = new MutationObserver(() => {
+      syncTopState();
+    });
+
+    observer.observe(document.body, {
+      attributes: true,
+      attributeFilter: ["aria-hidden", "inert"],
+      childList: true,
+      subtree: true,
+    });
+
+    syncTopState();
 
     scrollContainer.addEventListener("pointerdown", handlePointerDown, {
       passive: true,
@@ -72,13 +161,17 @@ export default function MobileScrollContactGuard() {
       passive: true,
     });
     window.addEventListener("blur", resetContact);
+    window.addEventListener("resize", syncTopState);
 
     return () => {
+      observer.disconnect();
       scrollContainer.removeEventListener("pointerdown", handlePointerDown);
       scrollContainer.removeEventListener("scroll", handleScroll);
       document.removeEventListener("pointerup", releasePointer, true);
       document.removeEventListener("pointercancel", releasePointer, true);
       window.removeEventListener("blur", resetContact);
+      window.removeEventListener("resize", syncTopState);
+      document.body.removeAttribute(BODY_TOP_ATTRIBUTE);
       resetContact();
     };
   }, []);
