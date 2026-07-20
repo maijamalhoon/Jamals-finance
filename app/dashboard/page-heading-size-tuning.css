@@ -78,6 +78,63 @@
   min-width: 0 !important;
 }
 
+/*
+ * Tablet and desktop keep a permanently reserved label column. Expanding the
+ * search stays inside the controls column, while filter and sort remain visible.
+ * Nothing in the second row is re-positioned when search opens.
+ */
+@media (min-width: 640px) {
+  .transactions-page-type-icons > div {
+    grid-template-columns: minmax(10rem, 1fr) auto !important;
+    column-gap: clamp(0.75rem, 2vw, 1.5rem) !important;
+  }
+
+  .transactions-page-type-icons > div > :first-child,
+  .transactions-page-type-icons > div > :first-child .page-title {
+    overflow: visible !important;
+    text-overflow: clip !important;
+  }
+
+  .transactions-page-type-icons > div > :nth-child(2) {
+    max-width: calc(100vw - 12rem) !important;
+  }
+
+  .transactions-page-type-icons
+    > div
+    > :nth-child(2)
+    [role="search"]:has(#transaction-page-search[aria-hidden="false"]) {
+    width: clamp(14rem, 30vw, 24rem) !important;
+    max-width: clamp(14rem, 30vw, 24rem) !important;
+    flex: 0 1 auto !important;
+  }
+
+  .transactions-page-type-icons
+    > div
+    > :nth-child(2)
+    [role="search"]:has(#transaction-page-search[aria-hidden="false"])
+    + div {
+    width: auto !important;
+    overflow: visible !important;
+    opacity: 1 !important;
+    pointer-events: auto !important;
+    transform: none !important;
+  }
+
+  .transactions-page-type-icons > div > :nth-child(3) {
+    align-self: start !important;
+  }
+}
+
+@media (min-width: 1280px) {
+  .transactions-page-type-icons
+    > div
+    > :nth-child(2)
+    [role="search"]:has(#transaction-page-search[aria-hidden="false"]) {
+    width: clamp(20rem, 25vw, 26.25rem) !important;
+    max-width: clamp(20rem, 25vw, 26.25rem) !important;
+  }
+}
+
 @media (max-width: 639px) {
   [data-jf-page] .jf-unified-page-heading {
     min-height: 2.1rem;
