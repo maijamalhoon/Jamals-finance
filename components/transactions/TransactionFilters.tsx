@@ -32,6 +32,7 @@ type SortOption = {
   label: string;
 };
 
+// Keep labels and colours aligned with the semantic transaction types.
 const TYPE_OPTIONS: TypeOption[] = [
   { value: "all", label: "All types", color: FEATURE_COLOR_CSS.muted },
   { value: "income", label: "Income", color: FEATURE_COLOR_CSS.income },
