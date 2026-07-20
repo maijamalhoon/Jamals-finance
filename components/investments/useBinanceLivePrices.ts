@@ -223,6 +223,7 @@ export function useBinanceSelectedPrice(
       setSnapshot(unavailable);
       return;
     }
+    const streamPair = pair;
 
     let disposed = false;
     let socket: WebSocket | null = null;
@@ -247,7 +248,7 @@ export function useBinanceSelectedPrice(
     function connect() {
       if (disposed) return;
 
-      const lowerPair = pair.toLowerCase();
+      const lowerPair = streamPair.toLowerCase();
       socket = new WebSocket(
         createStreamUrl([
           `${lowerPair}@trade`,
