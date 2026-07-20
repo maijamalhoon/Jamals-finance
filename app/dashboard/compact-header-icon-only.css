@@ -136,3 +136,50 @@
     -webkit-backdrop-filter: none !important;
   }
 }
+
+/* Tailwind utility declarations use !important on this wrapper. Important
+ * declarations inside the earlier base layer outrank utility-layer important
+ * declarations, so the bell remains truly icon-only in every interaction state.
+ */
+@layer base {
+  @media (max-width: 1023px) {
+    html body [data-dashboard-shell] [data-mobile-control-cluster]
+      button[data-notification-trigger],
+    html body [data-dashboard-shell] [data-mobile-control-cluster]
+      button[data-notification-trigger]:hover,
+    html body [data-dashboard-shell] [data-mobile-control-cluster]
+      button[data-notification-trigger]:focus-visible,
+    html body [data-dashboard-shell] [data-mobile-control-cluster]
+      button[data-notification-trigger]:active,
+    html body [data-dashboard-shell] [data-mobile-control-cluster]
+      button[data-notification-trigger][aria-expanded="true"] {
+      -webkit-appearance: none !important;
+      appearance: none !important;
+      border: 0 !important;
+      outline: 0 !important;
+      background: transparent !important;
+      background-color: transparent !important;
+      background-image: none !important;
+      box-shadow: none !important;
+      filter: none !important;
+      -webkit-filter: none !important;
+      backdrop-filter: none !important;
+      -webkit-backdrop-filter: none !important;
+    }
+
+    html body [data-dashboard-shell] [data-mobile-control-cluster]
+      > div:has(button[data-notification-trigger]),
+    html body [data-dashboard-shell] [data-mobile-control-cluster]
+      > div:has(button[data-notification-trigger]) > div {
+      border: 0 !important;
+      background: transparent !important;
+      background-color: transparent !important;
+      background-image: none !important;
+      box-shadow: none !important;
+      filter: none !important;
+      -webkit-filter: none !important;
+      backdrop-filter: none !important;
+      -webkit-backdrop-filter: none !important;
+    }
+  }
+}
