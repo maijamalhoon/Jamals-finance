@@ -38,13 +38,8 @@ const runtimeCss = `
   pointer-events: none;
 }
 
-.settings-profile-details-hard::before {
-  background: var(--investment) !important;
-}
-
-.settings-account-security-hard::before {
-  background: var(--info) !important;
-}
+.settings-profile-details-hard::before { background: var(--investment) !important; }
+.settings-account-security-hard::before { background: var(--info) !important; }
 
 .settings-profile-details-hard .finance-modal-header,
 .settings-account-security-hard .finance-modal-header {
@@ -75,13 +70,8 @@ const runtimeCss = `
   box-shadow: none !important;
 }
 
-.settings-profile-details-hard .finance-modal-body {
-  flex: 0 1 auto !important;
-}
-
-.settings-profile-details-hard .settings-email-field > p {
-  display: none !important;
-}
+.settings-profile-details-hard .finance-modal-body { flex: 0 1 auto !important; }
+.settings-profile-details-hard .settings-email-field > p { display: none !important; }
 
 .settings-profile-details-hard .finance-modal-body > button[type="submit"] {
   width: 100% !important;
@@ -164,13 +154,8 @@ const runtimeCss = `
   -webkit-user-select: none !important;
 }
 
-.settings-force-wheel > [data-slot="select-value"] {
-  opacity: 0 !important;
-}
-
-.settings-force-wheel > svg {
-  opacity: 0.55 !important;
-}
+.settings-force-wheel > [data-slot="select-value"] { opacity: 0 !important; }
+.settings-force-wheel > svg { opacity: 0.55 !important; }
 
 .settings-wheel-overlay {
   position: absolute;
@@ -197,10 +182,7 @@ const runtimeCss = `
 }
 `;
 
-type WheelDefinition = {
-  id: string;
-  options: readonly string[];
-};
+type WheelDefinition = { id: string; options: readonly string[] };
 
 const wheelDefinitions: WheelDefinition[] = [
   { id: "settings-currency-select", options: ["PKR", "USD"] },
@@ -217,22 +199,19 @@ function visibleText(element: HTMLElement) {
   return (value?.textContent ?? element.textContent ?? "").trim();
 }
 
-function findOptionIndex(options: readonly string[], current: string) {
+function optionIndex(options: readonly string[], current: string) {
   const exact = options.findIndex((option) => option === current);
-  if (exact >= 0) return exact;
-  return options.findIndex((option) => current.includes(option));
+  return exact >= 0 ? exact : options.findIndex((option) => current.includes(option));
 }
 
-function chooseSelectOption(trigger: HTMLElement, label: string) {
+function chooseOption(trigger: HTMLElement, label: string) {
   trigger.click();
-
   window.requestAnimationFrame(() => {
     window.setTimeout(() => {
-      const items = Array.from(
+      const item = Array.from(
         document.querySelectorAll<HTMLElement>('[data-slot="select-item"]'),
-      );
-      const target = items.find((item) => item.textContent?.trim() === label);
-      target?.click();
+      ).find((candidate) => candidate.textContent?.trim() === label);
+      item?.click();
     }, 0);
   });
 }
@@ -261,7 +240,8 @@ function installWheel(trigger: HTMLElement, options: readonly string[]) {
   let wheelLocked = false;
 
   const refresh = () => {
-    overlay.textContent = visibleText(trigger);
+    const nextText = visibleText(trigger);
+    if (overlay.textContent !== nextText) overlay.textContent = nextText;
   };
 
   const observer = new MutationObserver(refresh);
@@ -270,17 +250,14 @@ function installWheel(trigger: HTMLElement, options: readonly string[]) {
 
   const moveSelection = (direction: number) => {
     const current = visibleText(trigger);
-    const currentIndex = Math.max(0, findOptionIndex(options, current));
-    const nextIndex = Math.min(
-      options.length - 1,
-      Math.max(0, currentIndex + direction),
-    );
+    const currentIndex = Math.max(0, optionIndex(options, current));
+    const nextIndex = Math.min(options.length - 1, Math.max(0, currentIndex + direction));
     if (nextIndex === currentIndex) return;
     overlay.textContent = options[nextIndex];
-    chooseSelectOption(trigger, options[nextIndex]);
+    chooseOption(trigger, options[nextIndex]);
   };
 
-  const handlePointerDown = (event: PointerEvent) => {
+  const pointerDown = (event: PointerEvent) => {
     if (event.button !== 0 || !event.isPrimary) return;
     event.preventDefault();
     pointerId = event.pointerId;
@@ -291,7 +268,7 @@ function installWheel(trigger: HTMLElement, options: readonly string[]) {
     trigger.setPointerCapture(event.pointerId);
   };
 
-  const handlePointerMove = (event: PointerEvent) => {
+  const pointerMove = (event: PointerEvent) => {
     if (pointerId !== event.pointerId) return;
     event.preventDefault();
     currentY = event.clientY;
@@ -301,11 +278,9 @@ function installWheel(trigger: HTMLElement, options: readonly string[]) {
     overlay.style.opacity = String(1 - Math.min(0.45, Math.abs(delta) / 55));
   };
 
-  const finishPointer = (event: PointerEvent, cancelled = false) => {
+  const finishPointer = (event: PointerEvent, cancelled: boolean) => {
     if (pointerId !== event.pointerId) return;
-    if (trigger.hasPointerCapture(event.pointerId)) {
-      trigger.releasePointerCapture(event.pointerId);
-    }
+    if (trigger.hasPointerCapture(event.pointerId)) trigger.releasePointerCapture(event.pointerId);
     pointerId = null;
     delete trigger.dataset.wheelDragging;
     overlay.style.transform = "translate3d(0, 0, 0)";
@@ -314,13 +289,14 @@ function installWheel(trigger: HTMLElement, options: readonly string[]) {
     const delta = currentY - startY;
     if (!cancelled && moved && Math.abs(delta) >= 10) {
       moveSelection(delta < 0 ? 1 : -1);
-      return;
+    } else if (!cancelled && !moved) {
+      trigger.click();
     }
-
-    if (!cancelled && !moved) trigger.click();
   };
 
-  const handleWheel = (event: WheelEvent) => {
+  const pointerUp = (event: PointerEvent) => finishPointer(event, false);
+  const pointerCancel = (event: PointerEvent) => finishPointer(event, true);
+  const wheel = (event: WheelEvent) => {
     if (Math.abs(event.deltaY) < 2 || wheelLocked) return;
     event.preventDefault();
     wheelLocked = true;
@@ -330,18 +306,19 @@ function installWheel(trigger: HTMLElement, options: readonly string[]) {
     }, 180);
   };
 
-  trigger.addEventListener("pointerdown", handlePointerDown);
-  trigger.addEventListener("pointermove", handlePointerMove);
-  trigger.addEventListener("pointerup", finishPointer);
-  trigger.addEventListener("pointercancel", (event) => finishPointer(event, true));
-  trigger.addEventListener("wheel", handleWheel, { passive: false });
+  trigger.addEventListener("pointerdown", pointerDown);
+  trigger.addEventListener("pointermove", pointerMove);
+  trigger.addEventListener("pointerup", pointerUp);
+  trigger.addEventListener("pointercancel", pointerCancel);
+  trigger.addEventListener("wheel", wheel, { passive: false });
 
   wheelCleanup.set(trigger, () => {
     observer.disconnect();
-    trigger.removeEventListener("pointerdown", handlePointerDown);
-    trigger.removeEventListener("pointermove", handlePointerMove);
-    trigger.removeEventListener("pointerup", finishPointer);
-    trigger.removeEventListener("wheel", handleWheel);
+    trigger.removeEventListener("pointerdown", pointerDown);
+    trigger.removeEventListener("pointermove", pointerMove);
+    trigger.removeEventListener("pointerup", pointerUp);
+    trigger.removeEventListener("pointercancel", pointerCancel);
+    trigger.removeEventListener("wheel", wheel);
     trigger.classList.remove("settings-force-wheel");
     overlay.remove();
   });
@@ -358,15 +335,12 @@ function enhanceDialogs() {
           ?.closest('[data-slot="finance-form-field"]')
           ?.classList.add("settings-email-field");
       }
-
       if (dialog.querySelector(".settings-security-panel")) {
         dialog.classList.add("settings-account-security-hard");
       }
-
       if (dialog.querySelector("#settings-currency-select")) {
         dialog.classList.add("settings-currency-hard");
       }
-
       if (dialog.querySelector("#settings-date-format-select")) {
         dialog.classList.add("settings-date-format-hard");
       }
