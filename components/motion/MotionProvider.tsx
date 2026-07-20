@@ -1,9 +1,18 @@
 "use client";
 
 import { MotionConfig } from "framer-motion";
-import { useEffect, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import GlobalScrollToTop from "@/components/layout/GlobalScrollToTop";
-import { motionDurations, motionEase } from "@/components/motion/animation-config";
+import { motionEase } from "@/components/motion/animation-config";
+import {
+  ANIMATION_MODE_CHANGE_EVENT,
+  applyAnimationMode,
+  getAnimationPlaybackRate,
+  getDocumentAnimationMode,
+  getStoredAnimationMode,
+  scaleAnimationSeconds,
+  type AnimationMode,
+} from "@/lib/animation-preference";
 
 function hasDirectText(element: HTMLElement) {
   return Array.from(element.childNodes).some(
@@ -44,7 +53,32 @@ function stripNativeIconTitles(root: ParentNode) {
   });
 }
 
+function tuneAnimation(animation: Animation, mode: AnimationMode) {
+  try {
+    if (mode === "none") {
+      animation.finish();
+      return;
+    }
+
+    animation.updatePlaybackRate(getAnimationPlaybackRate(mode));
+  } catch {}
+}
+
+function tuneDocumentAnimations(mode: AnimationMode, target?: Element) {
+  if (typeof document === "undefined" || !("getAnimations" in document)) return;
+
+  const animations = target
+    ? target.getAnimations({ subtree: false })
+    : document.getAnimations();
+
+  animations.forEach((animation) => tuneAnimation(animation, mode));
+}
+
 export default function MotionProvider({ children }: { children: ReactNode }) {
+  const [animationMode, setAnimationMode] = useState<AnimationMode>(() =>
+    getDocumentAnimationMode(),
+  );
+
   useEffect(() => {
     stripNativeIconTitles(document);
 
@@ -75,10 +109,53 @@ export default function MotionProvider({ children }: { children: ReactNode }) {
     return () => observer.disconnect();
   }, []);
 
+  useEffect(() => {
+    const synchronizeMode = (nextMode: AnimationMode) => {
+      const mode = applyAnimationMode(nextMode, {
+        persist: false,
+        broadcast: false,
+      });
+      setAnimationMode(mode);
+      tuneDocumentAnimations(mode);
+    };
+
+    const handlePreferenceChange = (event: Event) => {
+      const nextMode = (event as CustomEvent<AnimationMode>).detail;
+      synchronizeMode(nextMode ?? getStoredAnimationMode());
+    };
+
+    const handleStorage = (event: StorageEvent) => {
+      if (event.key !== null && event.key !== "jamal-animation-mode") return;
+      synchronizeMode(getStoredAnimationMode());
+    };
+
+    const handleAnimationStart = (event: Event) => {
+      const target = event.target;
+      if (!(target instanceof Element)) return;
+      queueMicrotask(() => tuneDocumentAnimations(getDocumentAnimationMode(), target));
+    };
+
+    synchronizeMode(getStoredAnimationMode());
+    window.addEventListener(ANIMATION_MODE_CHANGE_EVENT, handlePreferenceChange);
+    window.addEventListener("storage", handleStorage);
+    document.addEventListener("animationstart", handleAnimationStart, true);
+    document.addEventListener("transitionrun", handleAnimationStart, true);
+
+    return () => {
+      window.removeEventListener(ANIMATION_MODE_CHANGE_EVENT, handlePreferenceChange);
+      window.removeEventListener("storage", handleStorage);
+      document.removeEventListener("animationstart", handleAnimationStart, true);
+      document.removeEventListener("transitionrun", handleAnimationStart, true);
+    };
+  }, []);
+
   return (
     <MotionConfig
-      reducedMotion="user"
-      transition={{ duration: motionDurations.base, ease: motionEase }}
+      reducedMotion={animationMode === "none" ? "always" : "user"}
+      transition={{
+        duration: scaleAnimationSeconds(0.22, animationMode),
+        ease: motionEase,
+      }}
     >
       {children}
       {/* Route-wide overlay handles both document and dashboard scroll containers. */}
