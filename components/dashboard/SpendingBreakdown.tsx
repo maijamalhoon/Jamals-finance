@@ -59,7 +59,7 @@ export default function SpendingBreakdown({
   status?: DashboardAvailability;
   periodLabel?: string;
 }) {
-  const { reduceMotion } = useDashboardAnimationReady();
+  const { reduceMotion, durationScale } = useDashboardAnimationReady();
   const { formatCurrency } = useCurrency();
   const safeTotal = Number.isFinite(total) ? Math.max(total, 0) : 0;
   const donutTotalLabel = formatCurrency(
@@ -183,7 +183,7 @@ export default function SpendingBreakdown({
                     paddingAngle={2}
                     isAnimationActive={!reduceMotion}
                     animationBegin={0}
-                    animationDuration={700}
+                    animationDuration={Math.round(700 * durationScale)}
                     animationEasing="ease-out"
                     stroke="var(--card)"
                     strokeWidth={3}
