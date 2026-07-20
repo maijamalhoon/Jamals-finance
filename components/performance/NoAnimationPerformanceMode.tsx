@@ -35,8 +35,9 @@ type NetworkInformationLike = {
   downlink?: number;
 };
 
-type NavigatorWithConnection = Navigator & {
+type NavigatorWithPerformanceHints = Navigator & {
   connection?: NetworkInformationLike;
+  deviceMemory?: number;
 };
 
 const MODAL_INTENT_MATCHERS: Array<{
@@ -89,18 +90,31 @@ function isPerformanceAnimationMode(mode: AnimationMode) {
 }
 
 function getBackgroundWarmupPolicy(mode: AnimationMode) {
-  const connection = (navigator as NavigatorWithConnection).connection;
+  const runtimeNavigator = navigator as NavigatorWithPerformanceHints;
+  const connection = runtimeNavigator.connection;
   const effectiveType = connection?.effectiveType ?? "unknown";
-  const constrained =
+  const downlink = connection?.downlink;
+  const lowCapacityDevice =
+    (runtimeNavigator.deviceMemory !== undefined &&
+      runtimeNavigator.deviceMemory <= 2) ||
+    (runtimeNavigator.hardwareConcurrency > 0 &&
+      runtimeNavigator.hardwareConcurrency <= 2);
+  const constrainedNetwork =
+    runtimeNavigator.onLine === false ||
     connection?.saveData === true ||
     effectiveType === "slow-2g" ||
-    effectiveType === "2g";
-  const moderate = effectiveType === "3g";
+    effectiveType === "2g" ||
+    (downlink !== undefined && downlink < 1.5);
+  const moderateNetwork =
+    effectiveType === "3g" ||
+    (downlink !== undefined && downlink >= 1.5 && downlink < 4);
 
   return {
-    allowed: !constrained,
+    // Intent-based preloading still works on constrained devices; only automatic
+    // background work is disabled to protect memory, battery and user data.
+    allowed: !constrainedNetwork && !lowCapacityDevice,
     routeLimit:
-      mode === "none" ? (moderate ? 2 : 5) : moderate ? 1 : 3,
+      mode === "none" ? (moderateNetwork ? 2 : 5) : moderateNetwork ? 1 : 3,
     modalKeys:
       mode === "none"
         ? (["transaction", "transfer", "account"] as const)
@@ -118,6 +132,7 @@ export default function AnimationPerformanceMode() {
 
     let idleHandle: number | null = null;
     let timeoutHandle: ReturnType<typeof globalThis.setTimeout> | null = null;
+    let lastPointerIntentTarget: Element | null = null;
 
     const getActiveMode = () => getDocumentAnimationMode();
 
@@ -202,10 +217,20 @@ export default function AnimationPerformanceMode() {
     };
 
     const handleUserIntent = (event: Event) => {
-      const href = getDashboardHref(event.target);
+      const target = event.target instanceof Element ? event.target : null;
+
+      if (event.type === "pointerover") {
+        const interactiveTarget = target?.closest(
+          "a[href], button[aria-label], [role='button'][aria-label]",
+        );
+        if (interactiveTarget === lastPointerIntentTarget) return;
+        lastPointerIntentTarget = interactiveTarget;
+      }
+
+      const href = getDashboardHref(target);
       if (href) prefetchRoute(href);
 
-      const modalKey = getModalIntent(event.target);
+      const modalKey = getModalIntent(target);
       if (modalKey) preloadModal(modalKey);
     };
 
