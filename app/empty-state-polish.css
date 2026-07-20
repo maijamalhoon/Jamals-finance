@@ -78,6 +78,7 @@
   padding: 0.42rem 0.3rem !important;
   background: transparent !important;
   color: var(--primary) !important;
+  cursor: pointer !important;
   font-family: var(--font-sans) !important;
   font-size: 0.72rem !important;
   font-weight: 760 !important;
