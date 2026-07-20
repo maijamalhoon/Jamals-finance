@@ -57,7 +57,8 @@ export default function MobileHeaderSearchEnhancer() {
       let focusSequence = 0;
       let closing = false;
 
-      const isSearchOpen = () => input.getAttribute("aria-hidden") === "false";
+      const isSearchOpen = () =>
+        openButton.getAttribute("aria-expanded") === "true";
 
       const placeCaret = () => {
         try {
@@ -134,7 +135,9 @@ export default function MobileHeaderSearchEnhancer() {
 
         if (isSearchOpen()) {
           input.tabIndex = 0;
-          input.setAttribute("aria-hidden", "false");
+          if (input.getAttribute("aria-hidden") !== "false") {
+            input.setAttribute("aria-hidden", "false");
+          }
         } else {
           input.tabIndex = primedStyles.tabIndex;
           if (primedStyles.ariaHidden === null) {
@@ -274,9 +277,9 @@ export default function MobileHeaderSearchEnhancer() {
       };
 
       const stateObserver = new MutationObserver(syncOpenState);
-      stateObserver.observe(input, {
+      stateObserver.observe(openButton, {
         attributes: true,
-        attributeFilter: ["aria-hidden"],
+        attributeFilter: ["aria-expanded"],
       });
 
       openButton.addEventListener("pointerdown", handleOpenPointerDown);
