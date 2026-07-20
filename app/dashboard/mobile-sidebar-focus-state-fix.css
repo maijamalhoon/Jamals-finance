@@ -1,0 +1,18 @@
+/*
+ * Mobile/tablet drawer: only the route carrying aria-current may use the
+ * rounded selected treatment. Base UI can leave the first link focused when
+ * the sheet opens; neutralize that focus paint without changing route logic.
+ */
+@media (max-width: 1023px) {
+  [data-mobile-navigation-drawer]
+    nav
+    a:not([aria-current="page"]):focus,
+  [data-mobile-navigation-drawer]
+    nav
+    a:not([aria-current="page"]):focus-visible {
+    border-color: transparent !important;
+    outline: none !important;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+}
