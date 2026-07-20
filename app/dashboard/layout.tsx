@@ -81,6 +81,8 @@ import "./cropped-section-removals.css";
 import "./finance-modal-divider-cleanup.css";
 // Slightly larger accent-bar labels apply only to routes using the shared heading system.
 import "./page-heading-size-tuning.css";
+// Compact header button badges stay removed after every earlier header override.
+import "./compact-header-icon-only.css";
 
 export const dynamic = "force-dynamic";
 
