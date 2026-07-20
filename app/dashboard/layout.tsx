@@ -79,9 +79,7 @@ import "./non-dashboard-card-borderless.css";
 import "./cropped-section-removals.css";
 // Final finance modal rule: no horizontal divider lines in any form header or footer.
 import "./finance-modal-divider-cleanup.css";
-// Transactions must stay visible and full-width even if an older shared layout rule conflicts.
-import "./transactions-emergency-restore.css";
-// Slightly larger accent-bar page labels stay consistent across every primary route.
+// Slightly larger accent-bar labels apply only to routes using the shared heading system.
 import "./page-heading-size-tuning.css";
 
 export const dynamic = "force-dynamic";
