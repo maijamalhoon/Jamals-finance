@@ -111,15 +111,13 @@ export default function AnalyticsClient({
   return (
     <div className="min-h-full min-w-0 text-text-primary">
       <div className="space-y-4 sm:space-y-5">
-        <div className="flex min-w-0 justify-end">
-          <AnalyticsRangeControls
-            selection={selection}
-            now={now}
-            pending={pending}
-            onPresetChange={changePreset}
-            onCustomChange={changeCustom}
-          />
-        </div>
+        <AnalyticsRangeControls
+          selection={selection}
+          now={now}
+          pending={pending}
+          onPresetChange={changePreset}
+          onCustomChange={changeCustom}
+        />
 
         {!online ? (
           <InlineNotice tone="warning" role="status" className="flex items-start gap-2">
