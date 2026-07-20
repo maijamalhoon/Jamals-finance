@@ -3,9 +3,11 @@
 import {
   useCallback,
   useEffect,
+  useLayoutEffect,
   useRef,
   useState,
   useTransition,
+  type CSSProperties,
 } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { ArrowUpDown, Check, Filter, Search, X } from "lucide-react";
@@ -32,7 +34,11 @@ type SortOption = {
   label: string;
 };
 
-// Keep labels and colours aligned with the semantic transaction types.
+type FloatingMenuStyle = Pick<
+  CSSProperties,
+  "top" | "left" | "width" | "maxHeight"
+>;
+
 const TYPE_OPTIONS: TypeOption[] = [
   { value: "all", label: "All types", color: FEATURE_COLOR_CSS.muted },
   { value: "income", label: "Income", color: FEATURE_COLOR_CSS.income },
@@ -63,6 +69,11 @@ const SORT_OPTIONS: SortOption[] = [
   { value: "lowest", label: "Lowest amount" },
   { value: "name", label: "Name (A–Z)" },
 ];
+
+const VIEWPORT_MARGIN = 12;
+const MENU_GAP = 8;
+const MIN_MENU_HEIGHT = 96;
+const FLIP_THRESHOLD = 220;
 
 function formatDateValue(date: Date) {
   const year = date.getFullYear();
@@ -105,9 +116,12 @@ export default function TransactionFilters(_props: {
   const searchParams = useSearchParams();
   const controlsRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
+  const filterButtonRef = useRef<HTMLButtonElement>(null);
+  const sortButtonRef = useRef<HTMLButtonElement>(null);
   const [pending, startNavigation] = useTransition();
   const [searchOpen, setSearchOpen] = useState(false);
   const [openMenu, setOpenMenu] = useState<OpenMenu>(null);
+  const [menuStyle, setMenuStyle] = useState<FloatingMenuStyle>({});
   const [search, setSearch] = useState(searchParams.get("search") || "");
 
   const activeType = searchParams.get("type") || "all";
@@ -157,6 +171,56 @@ export default function TransactionFilters(_props: {
     },
     [navigate],
   );
+
+  const positionOpenMenu = useCallback(() => {
+    if (!openMenu) return;
+
+    const trigger =
+      openMenu === "filter" ? filterButtonRef.current : sortButtonRef.current;
+    if (!trigger) return;
+
+    const viewport = window.visualViewport;
+    const viewportWidth = viewport?.width ?? document.documentElement.clientWidth;
+    const viewportHeight = viewport?.height ?? window.innerHeight;
+    const viewportLeft = viewport?.offsetLeft ?? 0;
+    const viewportTop = viewport?.offsetTop ?? 0;
+    const triggerRect = trigger.getBoundingClientRect();
+    const preferredWidth = openMenu === "filter" ? 304 : 288;
+    const width = Math.max(
+      220,
+      Math.min(preferredWidth, viewportWidth - VIEWPORT_MARGIN * 2),
+    );
+    const minLeft = viewportLeft + VIEWPORT_MARGIN;
+    const maxLeft = viewportLeft + viewportWidth - width - VIEWPORT_MARGIN;
+    const left = Math.min(
+      Math.max(triggerRect.right - width, minLeft),
+      Math.max(minLeft, maxLeft),
+    );
+    const belowTop = triggerRect.bottom + MENU_GAP;
+    const availableBelow =
+      viewportTop + viewportHeight - belowTop - VIEWPORT_MARGIN;
+    const availableAbove =
+      triggerRect.top - viewportTop - MENU_GAP - VIEWPORT_MARGIN;
+    const openAbove =
+      availableBelow < FLIP_THRESHOLD && availableAbove > availableBelow;
+    const maxHeight = Math.max(
+      MIN_MENU_HEIGHT,
+      Math.floor(openAbove ? availableAbove : availableBelow),
+    );
+    const top = openAbove
+      ? Math.max(
+          viewportTop + VIEWPORT_MARGIN,
+          triggerRect.top - MENU_GAP - maxHeight,
+        )
+      : belowTop;
+
+    setMenuStyle({
+      top: Math.round(top),
+      left: Math.round(left),
+      width: Math.round(width),
+      maxHeight,
+    });
+  }, [openMenu]);
 
   useEffect(() => {
     setSearch(searchParams.get("search") || "");
@@ -208,6 +272,32 @@ export default function TransactionFilters(_props: {
     };
   }, [openMenu]);
 
+  useLayoutEffect(() => {
+    if (!openMenu) return;
+
+    let frame = window.requestAnimationFrame(positionOpenMenu);
+    const schedulePosition = () => {
+      window.cancelAnimationFrame(frame);
+      frame = window.requestAnimationFrame(positionOpenMenu);
+    };
+    const viewport = window.visualViewport;
+
+    window.addEventListener("resize", schedulePosition);
+    window.addEventListener("orientationchange", schedulePosition);
+    window.addEventListener("scroll", schedulePosition, true);
+    viewport?.addEventListener("resize", schedulePosition);
+    viewport?.addEventListener("scroll", schedulePosition);
+
+    return () => {
+      window.cancelAnimationFrame(frame);
+      window.removeEventListener("resize", schedulePosition);
+      window.removeEventListener("orientationchange", schedulePosition);
+      window.removeEventListener("scroll", schedulePosition, true);
+      viewport?.removeEventListener("resize", schedulePosition);
+      viewport?.removeEventListener("scroll", schedulePosition);
+    };
+  }, [openMenu, positionOpenMenu]);
+
   function closeSearch(clearValue = false) {
     if (clearValue) setSearch("");
     setSearchOpen(false);
@@ -248,6 +338,8 @@ export default function TransactionFilters(_props: {
 
   const filterActive = openMenu === "filter" || hasActiveFilter;
   const sortActive = openMenu === "sort" || hasActiveSort;
+  const iconButtonClass =
+    "finance-focus grid !size-11 !min-h-0 shrink-0 place-items-center !gap-0 rounded-xl !bg-transparent !p-0 !shadow-none transition-[color,transform,opacity] duration-200 hover:-translate-y-px hover:text-brand active:translate-y-0";
 
   return (
     <div
@@ -255,7 +347,7 @@ export default function TransactionFilters(_props: {
       className="relative mb-5 min-w-0 space-y-2.5"
       aria-busy={pending || undefined}
     >
-      <div className="relative flex min-w-0 items-center justify-end gap-2">
+      <div className="relative flex min-w-0 items-center justify-end gap-1.5">
         <div
           role="search"
           aria-label="Search transactions"
@@ -326,176 +418,174 @@ export default function TransactionFilters(_props: {
         </div>
 
         <div
-          className={`flex shrink-0 items-center gap-2 overflow-visible transition-[width,opacity,transform] duration-200 ${
+          className={`flex shrink-0 items-center gap-1 overflow-visible transition-[width,opacity,transform] duration-200 ${
             searchOpen
               ? "pointer-events-none w-0 -translate-x-1 overflow-hidden opacity-0"
               : "w-auto translate-x-0 opacity-100"
           }`}
           aria-hidden={searchOpen || undefined}
         >
-          <div className="relative">
-            <button
-              type="button"
-              aria-label="Filter transactions"
-              aria-expanded={openMenu === "filter"}
-              aria-controls="transaction-filter-panel"
-              tabIndex={searchOpen ? -1 : undefined}
-              onClick={() =>
-                setOpenMenu((current) =>
-                  current === "filter" ? null : "filter",
-                )
-              }
-              className={`finance-focus inline-flex h-11 items-center justify-center gap-2 rounded-xl px-3.5 text-sm font-bold shadow-sm transition-[background-color,color,box-shadow,transform] duration-200 hover:-translate-y-px active:translate-y-0 ${
-                filterActive
-                  ? "bg-brand text-white shadow-md"
-                  : "bg-surface-inset text-text-primary hover:bg-hover"
-              }`}
-            >
-              <Filter size={17} strokeWidth={2.1} aria-hidden="true" />
-              <span>Filter</span>
-            </button>
+          <button
+            ref={filterButtonRef}
+            type="button"
+            aria-label="Filter transactions"
+            aria-expanded={openMenu === "filter"}
+            aria-controls="transaction-filter-panel"
+            tabIndex={searchOpen ? -1 : undefined}
+            onClick={() =>
+              setOpenMenu((current) =>
+                current === "filter" ? null : "filter",
+              )
+            }
+            className={`${iconButtonClass} ${
+              filterActive ? "text-brand" : "text-text-secondary"
+            }`}
+          >
+            <Filter
+              size={20}
+              strokeWidth={2.1}
+              className="!size-5"
+              aria-hidden="true"
+            />
+          </button>
 
-            {openMenu === "filter" ? (
-              <div
-                id="transaction-filter-panel"
-                role="menu"
-                aria-label="Filter transactions"
-                className="absolute right-[-5.4rem] top-[calc(100%+0.55rem)] z-[80] w-[min(19rem,calc(100vw-1.5rem))] max-h-[min(34rem,calc(100vh-7rem))] overflow-y-auto overscroll-contain rounded-2xl bg-surface py-2 shadow-[0_18px_50px_rgba(0,0,0,0.22)] sm:right-0"
-              >
-                <p className="px-4 pb-1 pt-1 text-[10px] font-black uppercase tracking-[0.16em] text-text-muted">
-                  Type
-                </p>
-                {TYPE_OPTIONS.map((option) => {
-                  const selected = activeType === option.value;
-                  return (
-                    <button
-                      key={option.value}
-                      type="button"
-                      role="menuitemradio"
-                      aria-checked={selected}
-                      onClick={() => selectType(option.value)}
-                      className={`finance-focus relative flex w-full items-center gap-3 px-4 py-2.5 text-left text-sm font-medium transition-colors ${selectedClass(
-                        selected,
-                      )}`}
-                    >
-                      <span
-                        className="size-2 shrink-0 rounded-full"
-                        style={{ backgroundColor: option.color }}
-                        aria-hidden="true"
-                      />
-                      <span className="min-w-0 flex-1 truncate">
-                        {option.label}
-                      </span>
-                      {selected ? (
-                        <Check
-                          size={16}
-                          strokeWidth={2.2}
-                          className="shrink-0"
-                          aria-hidden="true"
-                        />
-                      ) : null}
-                    </button>
-                  );
-                })}
-
-                <div className="mx-4 my-2 h-px bg-border/60" role="separator" />
-
-                <p className="px-4 pb-1 pt-1 text-[10px] font-black uppercase tracking-[0.16em] text-text-muted">
-                  Period
-                </p>
-                {PERIOD_OPTIONS.map((option) => {
-                  const selected = activePeriod === option.value;
-                  return (
-                    <button
-                      key={option.value}
-                      type="button"
-                      role="menuitemradio"
-                      aria-checked={selected}
-                      onClick={() => selectPeriod(option.value)}
-                      className={`finance-focus relative flex w-full items-center gap-3 px-4 py-2.5 text-left text-sm font-medium transition-colors ${selectedClass(
-                        selected,
-                      )}`}
-                    >
-                      <span className="min-w-0 flex-1 truncate">
-                        {option.label}
-                      </span>
-                      {selected ? (
-                        <Check
-                          size={16}
-                          strokeWidth={2.2}
-                          className="shrink-0"
-                          aria-hidden="true"
-                        />
-                      ) : null}
-                    </button>
-                  );
-                })}
-              </div>
-            ) : null}
-          </div>
-
-          <div className="relative">
-            <button
-              type="button"
-              aria-label="Sort transactions"
-              aria-expanded={openMenu === "sort"}
-              aria-controls="transaction-sort-panel"
-              tabIndex={searchOpen ? -1 : undefined}
-              onClick={() =>
-                setOpenMenu((current) => (current === "sort" ? null : "sort"))
-              }
-              className={`finance-focus inline-flex h-11 items-center justify-center gap-2 rounded-xl px-3.5 text-sm font-bold shadow-sm transition-[background-color,color,box-shadow,transform] duration-200 hover:-translate-y-px active:translate-y-0 ${
-                sortActive
-                  ? "bg-brand text-white shadow-md"
-                  : "bg-surface-inset text-text-primary hover:bg-hover"
-              }`}
-            >
-              <ArrowUpDown size={17} strokeWidth={2.1} aria-hidden="true" />
-              <span>Sort</span>
-            </button>
-
-            {openMenu === "sort" ? (
-              <div
-                id="transaction-sort-panel"
-                role="menu"
-                aria-label="Sort transactions"
-                className="absolute right-0 top-[calc(100%+0.55rem)] z-[80] w-[min(18rem,calc(100vw-1.5rem))] overflow-hidden rounded-2xl bg-surface py-2 shadow-[0_18px_50px_rgba(0,0,0,0.22)]"
-              >
-                <p className="px-4 pb-1 pt-1 text-[10px] font-black uppercase tracking-[0.16em] text-text-muted">
-                  Sort by
-                </p>
-                {SORT_OPTIONS.map((option) => {
-                  const selected = activeSort === option.value;
-                  return (
-                    <button
-                      key={option.value}
-                      type="button"
-                      role="menuitemradio"
-                      aria-checked={selected}
-                      onClick={() => selectSort(option.value)}
-                      className={`finance-focus relative flex w-full items-center gap-3 px-4 py-3 text-left text-sm font-medium transition-colors ${selectedClass(
-                        selected,
-                      )}`}
-                    >
-                      <span className="min-w-0 flex-1 truncate">
-                        {option.label}
-                      </span>
-                      {selected ? (
-                        <Check
-                          size={16}
-                          strokeWidth={2.2}
-                          className="shrink-0"
-                          aria-hidden="true"
-                        />
-                      ) : null}
-                    </button>
-                  );
-                })}
-              </div>
-            ) : null}
-          </div>
+          <button
+            ref={sortButtonRef}
+            type="button"
+            aria-label="Sort transactions"
+            aria-expanded={openMenu === "sort"}
+            aria-controls="transaction-sort-panel"
+            tabIndex={searchOpen ? -1 : undefined}
+            onClick={() =>
+              setOpenMenu((current) => (current === "sort" ? null : "sort"))
+            }
+            className={`${iconButtonClass} ${
+              sortActive ? "text-brand" : "text-text-secondary"
+            }`}
+          >
+            <ArrowUpDown
+              size={20}
+              strokeWidth={2.1}
+              className="!size-5"
+              aria-hidden="true"
+            />
+          </button>
         </div>
       </div>
+
+      {openMenu === "filter" ? (
+        <div
+          id="transaction-filter-panel"
+          role="menu"
+          aria-label="Filter transactions"
+          style={menuStyle}
+          className="fixed z-[100] overflow-y-auto overscroll-contain rounded-2xl bg-surface py-2 shadow-[0_18px_50px_rgba(0,0,0,0.22)] [scrollbar-gutter:stable]"
+        >
+          <p className="px-4 pb-1 pt-1 text-[10px] font-black uppercase tracking-[0.16em] text-text-muted">
+            Type
+          </p>
+          {TYPE_OPTIONS.map((option) => {
+            const selected = activeType === option.value;
+            return (
+              <button
+                key={option.value}
+                type="button"
+                role="menuitemradio"
+                aria-checked={selected}
+                onClick={() => selectType(option.value)}
+                className={`finance-focus relative flex w-full items-center gap-3 px-4 py-2.5 text-left text-sm font-medium transition-colors ${selectedClass(
+                  selected,
+                )}`}
+              >
+                <span
+                  className="size-2 shrink-0 rounded-full"
+                  style={{ backgroundColor: option.color }}
+                  aria-hidden="true"
+                />
+                <span className="min-w-0 flex-1 truncate">{option.label}</span>
+                {selected ? (
+                  <Check
+                    size={16}
+                    strokeWidth={2.2}
+                    className="shrink-0"
+                    aria-hidden="true"
+                  />
+                ) : null}
+              </button>
+            );
+          })}
+
+          <div className="mx-4 my-2 h-px bg-border/60" role="separator" />
+
+          <p className="px-4 pb-1 pt-1 text-[10px] font-black uppercase tracking-[0.16em] text-text-muted">
+            Period
+          </p>
+          {PERIOD_OPTIONS.map((option) => {
+            const selected = activePeriod === option.value;
+            return (
+              <button
+                key={option.value}
+                type="button"
+                role="menuitemradio"
+                aria-checked={selected}
+                onClick={() => selectPeriod(option.value)}
+                className={`finance-focus relative flex w-full items-center gap-3 px-4 py-2.5 text-left text-sm font-medium transition-colors ${selectedClass(
+                  selected,
+                )}`}
+              >
+                <span className="min-w-0 flex-1 truncate">{option.label}</span>
+                {selected ? (
+                  <Check
+                    size={16}
+                    strokeWidth={2.2}
+                    className="shrink-0"
+                    aria-hidden="true"
+                  />
+                ) : null}
+              </button>
+            );
+          })}
+        </div>
+      ) : null}
+
+      {openMenu === "sort" ? (
+        <div
+          id="transaction-sort-panel"
+          role="menu"
+          aria-label="Sort transactions"
+          style={menuStyle}
+          className="fixed z-[100] overflow-y-auto overscroll-contain rounded-2xl bg-surface py-2 shadow-[0_18px_50px_rgba(0,0,0,0.22)] [scrollbar-gutter:stable]"
+        >
+          <p className="px-4 pb-1 pt-1 text-[10px] font-black uppercase tracking-[0.16em] text-text-muted">
+            Sort by
+          </p>
+          {SORT_OPTIONS.map((option) => {
+            const selected = activeSort === option.value;
+            return (
+              <button
+                key={option.value}
+                type="button"
+                role="menuitemradio"
+                aria-checked={selected}
+                onClick={() => selectSort(option.value)}
+                className={`finance-focus relative flex w-full items-center gap-3 px-4 py-3 text-left text-sm font-medium transition-colors ${selectedClass(
+                  selected,
+                )}`}
+              >
+                <span className="min-w-0 flex-1 truncate">{option.label}</span>
+                {selected ? (
+                  <Check
+                    size={16}
+                    strokeWidth={2.2}
+                    className="shrink-0"
+                    aria-hidden="true"
+                  />
+                ) : null}
+              </button>
+            );
+          })}
+        </div>
+      ) : null}
 
       <div aria-live="polite">
         <BackgroundRefreshStatus
