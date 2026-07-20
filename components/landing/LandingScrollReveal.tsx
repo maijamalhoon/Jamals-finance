@@ -168,6 +168,15 @@ export default function LandingScrollReveal() {
     const updateScrollState = () => {
       frame = 0;
       const nextScrollY = window.scrollY;
+
+      if (motionDisabled()) {
+        scrollDirection = "down";
+        lastScrollY = nextScrollY;
+        root.dataset.landingScrollDirection = "down";
+        root.style.setProperty("--landing-scroll-progress", "0");
+        return;
+      }
+
       const delta = nextScrollY - lastScrollY;
 
       if (Math.abs(delta) > 2) {
@@ -185,19 +194,22 @@ export default function LandingScrollReveal() {
     };
 
     const onScroll = () => {
-      if (frame) return;
+      if (motionDisabled() || frame) return;
       frame = window.requestAnimationFrame(updateScrollState);
     };
 
     const onResize = () => {
-      onScroll();
+      updateScrollState();
       setupObservers();
     };
 
-    const onMotionPreferenceChange = () => setupObservers();
+    const onMotionPreferenceChange = () => {
+      updateScrollState();
+      setupObservers();
+    };
     const onStorage = (event: StorageEvent) => {
       if (event.key !== null && event.key !== ANIMATION_STORAGE_KEY) return;
-      setupObservers();
+      onMotionPreferenceChange();
     };
 
     updateScrollState();
