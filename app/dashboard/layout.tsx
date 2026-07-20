@@ -83,6 +83,8 @@ import "./finance-modal-divider-cleanup.css";
 import "./page-heading-size-tuning.css";
 // Compact header button badges stay removed after every earlier header override.
 import "./compact-header-icon-only.css";
+// Finger-release timing and icon-only compact surfaces are the final mobile authority.
+import "./mobile-control-reveal-polish.css";
 
 export const dynamic = "force-dynamic";
 
