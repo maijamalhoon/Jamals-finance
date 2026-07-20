@@ -1,7 +1,7 @@
 /*
  * Final size tuning for the compact "accent bar + page label" headings.
- * Transactions are intentionally excluded and own their complete layout inside
- * transactions.module.css so shared route styling can never move its content.
+ * Transactions are intentionally excluded from the shared heading sizing and
+ * receive only a tightly scoped mobile collision fix below.
  */
 
 [data-jf-page] .jf-unified-page-heading {
@@ -19,8 +19,84 @@
   line-height: 1.12;
 }
 
+/*
+ * Transactions owns its component layout, but the compact controls need an
+ * explicit column on narrow screens. This prevents the closed search/filter
+ * controls from sitting on top of the page label.
+ */
+.transactions-page-type-icons > div {
+  display: grid !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  grid-template-columns: minmax(0, 1fr) auto !important;
+  grid-template-rows: auto auto !important;
+  align-items: center !important;
+  column-gap: clamp(0.5rem, 1.25vw, 0.9rem) !important;
+  row-gap: clamp(0.7rem, 1.2vw, 1rem) !important;
+}
+
+.transactions-page-type-icons > div > :first-child {
+  grid-column: 1 !important;
+  grid-row: 1 !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  overflow: hidden !important;
+}
+
+.transactions-page-type-icons > div > :first-child .page-title {
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
+
+.transactions-page-type-icons > div > :nth-child(2) {
+  grid-column: 2 !important;
+  grid-row: 1 !important;
+  width: auto !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  justify-self: end !important;
+  margin: 0 !important;
+}
+
+.transactions-page-type-icons > div > :nth-child(3) {
+  grid-column: 1 / -1 !important;
+  grid-row: 2 !important;
+  width: 100% !important;
+  min-width: 0 !important;
+}
+
 @media (max-width: 639px) {
   [data-jf-page] .jf-unified-page-heading {
     min-height: 2.1rem;
+  }
+
+  .transactions-page-type-icons > div {
+    column-gap: 0.375rem !important;
+  }
+
+  .transactions-page-type-icons > div > :nth-child(2) {
+    max-width: calc(100vw - 1.5rem) !important;
+  }
+
+  /* Expanded search gets the complete top row instead of colliding with text. */
+  .transactions-page-type-icons
+    > div:has(#transaction-page-search[aria-hidden="false"]) {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  .transactions-page-type-icons
+    > div:has(#transaction-page-search[aria-hidden="false"])
+    > :first-child {
+    display: none !important;
+  }
+
+  .transactions-page-type-icons
+    > div:has(#transaction-page-search[aria-hidden="false"])
+    > :nth-child(2) {
+    grid-column: 1 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    justify-self: stretch !important;
   }
 }
