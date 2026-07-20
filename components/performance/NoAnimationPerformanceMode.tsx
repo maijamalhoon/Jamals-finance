@@ -42,7 +42,7 @@ export default function NoAnimationPerformanceMode() {
 
     const prefetchedRoutes = new Set<string>();
     let idleHandle: number | null = null;
-    let timeoutHandle: number | null = null;
+    let timeoutHandle: ReturnType<typeof globalThis.setTimeout> | null = null;
 
     const isNoAnimationMode = () => getDocumentAnimationMode() === "none";
 
