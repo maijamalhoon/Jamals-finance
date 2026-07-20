@@ -1,8 +1,17 @@
 /* Global animation preference overrides.
  * Standard keeps the current experience unchanged.
- * Fast is accelerated at runtime by MotionProvider.
+ * Fast keeps every effect while shortening motion and loading presentation.
  * None resolves every CSS, SVG and view transition immediately.
  */
+
+html[data-animation-mode="fast"] {
+  --motion-duration-instant: 48ms;
+  --motion-duration-fast: 82ms;
+  --motion-duration-base: 118ms;
+  --motion-duration-slow: 168ms;
+  --motion-duration-deliberate: 220ms;
+  --motion-duration-skeleton: 560ms;
+}
 
 html[data-animation-mode="none"] {
   scroll-behavior: auto !important;
@@ -31,6 +40,54 @@ html[data-animation-mode="none"] svg set {
 html[data-animation-mode="none"]::view-transition-old(root),
 html[data-animation-mode="none"]::view-transition-new(root) {
   animation: none !important;
+}
+
+/* Fast mode uses one tiny animated indicator instead of painting a complete
+ * route-sized skeleton tree. The animation remains visible and intentionally
+ * quick, while the real route streams independently.
+ */
+html[data-animation-mode="fast"] [data-fast-animation-route-loading="true"] {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+}
+
+html[data-animation-mode="fast"] .jf-fast-route-loader {
+  display: inline-flex;
+  height: 1rem;
+  align-items: center;
+  gap: 0.2rem;
+}
+
+html[data-animation-mode="fast"] .jf-fast-route-loader > span {
+  width: 0.28rem;
+  height: 0.28rem;
+  border-radius: 999px;
+  background: var(--active);
+  transform: translateY(0) scale(0.78);
+  opacity: 0.42;
+  animation: jf-fast-route-loader-pulse 520ms var(--motion-ease) infinite both;
+}
+
+html[data-animation-mode="fast"] .jf-fast-route-loader > span:nth-child(2) {
+  animation-delay: 55ms;
+}
+
+html[data-animation-mode="fast"] .jf-fast-route-loader > span:nth-child(3) {
+  animation-delay: 110ms;
+}
+
+@keyframes jf-fast-route-loader-pulse {
+  0%,
+  100% {
+    transform: translateY(0) scale(0.78);
+    opacity: 0.42;
+  }
+
+  45% {
+    transform: translateY(-0.16rem) scale(1);
+    opacity: 1;
+  }
 }
 
 /* No-animation mode never waits for the normal font/RAF reveal gate. */
