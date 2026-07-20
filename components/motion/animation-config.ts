@@ -166,9 +166,15 @@ export const pressableMotion = {
   },
 } as const;
 
+type ChartMotionSpreadProps = {
+  animationBegin: number;
+  animationDuration: number;
+  animationEasing: "ease-out";
+};
+
 export const chartMotion = {
   animationBegin: 0,
   animationDuration: motionDurations.chart,
   animationEasing: "ease-out" as const,
   isAnimationActive: animationScale > 0,
-};
+} as ChartMotionSpreadProps;
