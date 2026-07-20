@@ -33,6 +33,10 @@ export default function MobileHeaderSearchEnhancer() {
 
       const isSearchOpen = () => input.getAttribute("aria-hidden") === "false";
 
+      const dismissKeyboard = () => {
+        if (document.activeElement === input) input.blur();
+      };
+
       const cancelAutoClose = () => {
         if (closeTimer === null) return;
         window.clearTimeout(closeTimer);
@@ -42,7 +46,11 @@ export default function MobileHeaderSearchEnhancer() {
       const syncOpenState = () => {
         const open = isSearchOpen();
         searchForm.dataset.mobileSearchOpen = open ? "true" : "false";
-        if (!open) cancelAutoClose();
+
+        if (!open) {
+          cancelAutoClose();
+          dismissKeyboard();
+        }
       };
 
       const scheduleAutoClose = () => {
@@ -51,7 +59,11 @@ export default function MobileHeaderSearchEnhancer() {
 
         closeTimer = window.setTimeout(() => {
           closeTimer = null;
-          if (isSearchOpen() && !input.value.trim()) closeButton.click();
+
+          if (isSearchOpen() && !input.value.trim()) {
+            dismissKeyboard();
+            closeButton.click();
+          }
         }, AUTO_CLOSE_DELAY_MS);
       };
 
@@ -75,6 +87,7 @@ export default function MobileHeaderSearchEnhancer() {
 
       const handleClose = () => {
         cancelAutoClose();
+        dismissKeyboard();
         syncOpenState();
       };
 
@@ -91,6 +104,7 @@ export default function MobileHeaderSearchEnhancer() {
 
       boundCleanup = () => {
         cancelAutoClose();
+        dismissKeyboard();
         if (openFrame !== null) window.cancelAnimationFrame(openFrame);
         stateObserver.disconnect();
         openButton.removeEventListener("click", handleOpen);
