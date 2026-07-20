@@ -121,7 +121,7 @@ export default async function GoalsPage() {
       ) : null}
 
       {goalsError ? (
-        <div className="finance-panel min-h-[280px] px-5">
+        <div className="finance-panel min-h-[220px] px-4 sm:px-5">
           <EmptyState
             icon={AlertTriangle}
             title="Could not load goals"
@@ -129,7 +129,7 @@ export default async function GoalsPage() {
           />
         </div>
       ) : list.length === 0 ? (
-        <div className="finance-panel min-h-[280px] px-5">
+        <div className="py-3 sm:py-6">
           <EmptyState
             icon={Target}
             title="No goals yet"
