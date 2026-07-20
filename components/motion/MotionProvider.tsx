@@ -6,7 +6,9 @@ import GlobalScrollToTop from "@/components/layout/GlobalScrollToTop";
 import { motionEase } from "@/components/motion/animation-config";
 import {
   ANIMATION_MODE_CHANGE_EVENT,
+  ANIMATION_STORAGE_KEY,
   applyAnimationMode,
+  getAnimationDurationScale,
   getAnimationPlaybackRate,
   getDocumentAnimationMode,
   getStoredAnimationMode,
@@ -74,6 +76,88 @@ function tuneDocumentAnimations(mode: AnimationMode, target?: Element) {
   animations.forEach((animation) => tuneAnimation(animation, mode));
 }
 
+function scaleSvgClockValue(value: string | null, scale: number) {
+  if (!value) return value;
+
+  const match = /^(-?\d*\.?\d+)(ms|s)$/.exec(value.trim());
+  if (!match) return value;
+
+  const numericValue = Number(match[1]);
+  if (!Number.isFinite(numericValue)) return value;
+
+  return `${Math.max(0, numericValue * scale)}${match[2]}`;
+}
+
+function tuneSvgAnimationElement(
+  element: SVGElement & {
+    beginElement?: () => void;
+    endElement?: () => void;
+  },
+  mode: AnimationMode,
+) {
+  const originalDurationKey = "jfOriginalDuration";
+  const originalBeginKey = "jfOriginalBegin";
+  const originalRepeatKey = "jfOriginalRepeat";
+
+  if (!(originalDurationKey in element.dataset)) {
+    element.dataset[originalDurationKey] = element.getAttribute("dur") ?? "";
+  }
+  if (!(originalBeginKey in element.dataset)) {
+    element.dataset[originalBeginKey] = element.getAttribute("begin") ?? "";
+  }
+  if (!(originalRepeatKey in element.dataset)) {
+    element.dataset[originalRepeatKey] = element.getAttribute("repeatCount") ?? "";
+  }
+
+  const originalDuration = element.dataset[originalDurationKey] || null;
+  const originalBegin = element.dataset[originalBeginKey] || null;
+  const originalRepeat = element.dataset[originalRepeatKey] || null;
+
+  if (mode === "none") {
+    element.setAttribute("dur", "0s");
+    element.setAttribute("begin", "0s");
+    element.setAttribute("repeatCount", "1");
+    try {
+      element.endElement?.();
+    } catch {}
+    return;
+  }
+
+  const scale = getAnimationDurationScale(mode);
+  const duration = scaleSvgClockValue(originalDuration, scale);
+  const begin = scaleSvgClockValue(originalBegin, scale);
+
+  if (duration) element.setAttribute("dur", duration);
+  else element.removeAttribute("dur");
+
+  if (begin) element.setAttribute("begin", begin);
+  else element.removeAttribute("begin");
+
+  if (originalRepeat) element.setAttribute("repeatCount", originalRepeat);
+  else element.removeAttribute("repeatCount");
+}
+
+function tuneSvgAnimations(root: ParentNode, mode: AnimationMode) {
+  const selector = "animate, animateTransform, animateMotion";
+  const elements = Array.from(
+    root.querySelectorAll<SVGElement>(selector),
+  );
+
+  if (root instanceof SVGElement && root.matches(selector)) {
+    elements.unshift(root);
+  }
+
+  elements.forEach((element) =>
+    tuneSvgAnimationElement(
+      element as SVGElement & {
+        beginElement?: () => void;
+        endElement?: () => void;
+      },
+      mode,
+    ),
+  );
+}
+
 export default function MotionProvider({ children }: { children: ReactNode }) {
   const [animationMode, setAnimationMode] = useState<AnimationMode>(() =>
     getDocumentAnimationMode(),
@@ -110,13 +194,17 @@ export default function MotionProvider({ children }: { children: ReactNode }) {
   }, []);
 
   useEffect(() => {
+    let activeMode = getStoredAnimationMode();
+
     const synchronizeMode = (nextMode: AnimationMode) => {
       const mode = applyAnimationMode(nextMode, {
         persist: false,
         broadcast: false,
       });
+      activeMode = mode;
       setAnimationMode(mode);
       tuneDocumentAnimations(mode);
+      tuneSvgAnimations(document, mode);
     };
 
     const handlePreferenceChange = (event: Event) => {
@@ -125,23 +213,38 @@ export default function MotionProvider({ children }: { children: ReactNode }) {
     };
 
     const handleStorage = (event: StorageEvent) => {
-      if (event.key !== null && event.key !== "jamal-animation-mode") return;
+      if (event.key !== null && event.key !== ANIMATION_STORAGE_KEY) return;
       synchronizeMode(getStoredAnimationMode());
     };
 
     const handleAnimationStart = (event: Event) => {
       const target = event.target;
       if (!(target instanceof Element)) return;
-      queueMicrotask(() => tuneDocumentAnimations(getDocumentAnimationMode(), target));
+      queueMicrotask(() => tuneDocumentAnimations(activeMode, target));
     };
 
-    synchronizeMode(getStoredAnimationMode());
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        mutation.addedNodes.forEach((node) => {
+          if (!(node instanceof Element)) return;
+          tuneSvgAnimations(node, activeMode);
+          queueMicrotask(() => tuneDocumentAnimations(activeMode, node));
+        });
+      });
+    });
+
+    synchronizeMode(activeMode);
+    observer.observe(document.documentElement, {
+      subtree: true,
+      childList: true,
+    });
     window.addEventListener(ANIMATION_MODE_CHANGE_EVENT, handlePreferenceChange);
     window.addEventListener("storage", handleStorage);
     document.addEventListener("animationstart", handleAnimationStart, true);
     document.addEventListener("transitionrun", handleAnimationStart, true);
 
     return () => {
+      observer.disconnect();
       window.removeEventListener(ANIMATION_MODE_CHANGE_EVENT, handlePreferenceChange);
       window.removeEventListener("storage", handleStorage);
       document.removeEventListener("animationstart", handleAnimationStart, true);
