@@ -35,9 +35,7 @@ export default async function PayablesPage({
   const [{ data: rawPayables }, { data: accounts }] = await Promise.all([
     supabase
       .from("liabilities")
-      .select(
-        "*, liability_payments(*, accounts(name, type))",
-      )
+      .select("*, liability_payments(*, accounts(name, type))")
       .order("due_date", { ascending: true, nullsFirst: false })
       .order("created_at", { ascending: false }),
     supabase
@@ -126,107 +124,133 @@ export default async function PayablesPage({
         <AddPayableButton />
       </div>
 
-      <div
-        data-mobile-summary-grid
-        className="grid grid-cols-2 gap-3 md:grid-cols-3"
-      >
-        {statCards.map(({ label, value, icon: Icon, tone, valueClassName }) => (
-          <div
-            key={label}
-            className="summary-card finance-hover-lift min-h-[118px] min-w-0 last:col-span-2 md:last:col-span-1"
-          >
-            <div className="flex min-w-0 items-start justify-between gap-3">
-              <div className="min-w-0">
-                <p className="text-xs font-semibold text-text-secondary">{label}</p>
-                <p className={`mt-2 break-words text-xl font-bold [overflow-wrap:anywhere] ${valueClassName}`}>
-                  <Money amount={value} counted />
-                </p>
-              </div>
-              <span className="finance-icon-container" data-size="sm" data-tone={tone}>
-                <Icon size={16} />
-              </span>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      <div className="finance-panel p-3 sm:p-4">
-        <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
-          <nav
-            aria-label="Filter payables by status"
-            className="grid grid-cols-2 gap-1 rounded-[18px] border border-border bg-surface-secondary p-1 min-[420px]:grid-cols-3 sm:grid-cols-5"
-          >
-            {STATUS_TABS.map((tab) => {
-              const active = status === tab.value || (!status && tab.value === "all");
-              const count =
-                tab.value === "all" ? allPayables.length : totals.counts[tab.value] ?? 0;
-              return (
-                <Link
-                  key={tab.value}
-                  href={paramsFor(tab.value)}
-                  aria-current={active ? "page" : undefined}
-                  className={`finance-focus flex min-h-11 min-w-0 items-center justify-center rounded-[14px] px-2 py-2 text-center text-xs font-semibold leading-4 transition-all ${
-                    active ?
-                      "bg-card text-text-primary shadow-[var(--shadow-xs)]"
-                    : "text-text-secondary hover:bg-hover hover:text-text-primary"
-                  }`}
-                >
-                  {tab.label} <span className="opacity-70">({count})</span>
-                </Link>
-              );
-            })}
-          </nav>
-
-          <form className="finance-control finance-search-control flex min-h-11 w-full min-w-0 items-center gap-2 px-3 xl:w-96">
-            {status !== "all" && <input type="hidden" name="status" value={status} />}
-            <Search size={15} className="shrink-0 text-text-secondary" />
-            <label htmlFor="payables-search" className="sr-only">
-              Search payables
-            </label>
-            <input
-              id="payables-search"
-              type="search"
-              name="search"
-              defaultValue={search}
-              placeholder="Search person, item, reason, or notes..."
-              className="min-w-0 flex-1 bg-transparent text-sm text-text-primary outline-none placeholder:text-text-secondary"
-            />
-          </form>
-        </div>
-      </div>
-
-      {payables.length === 0 ? (
-        <div className="finance-panel px-5">
+      {allPayables.length === 0 ? (
+        <div className="py-3 sm:py-6">
           <EmptyState
             icon={HandCoins}
-            title={allPayables.length ? "No payables found" : "No payables yet"}
-            description={
-              allPayables.length ?
-                "Try a different person, item, reason, or status filter."
-              : "Add your first payable to see repayment progress here."
-            }
-            action={allPayables.length ? undefined : <AddPayableButton />}
+            title="No payables yet"
+            description="Add your first payable to see repayment progress here."
+            action={<AddPayableButton />}
           />
         </div>
       ) : (
-        <div className="space-y-4">
-          {payables.map((payable) => {
-            const displayStatus = getPayableStatus(payable);
-            return (
-              <div key={payable.id} className="relative">
+        <>
+          <div
+            data-mobile-summary-grid
+            className="grid grid-cols-2 gap-3 md:grid-cols-3"
+          >
+            {statCards.map(
+              ({ label, value, icon: Icon, tone, valueClassName }) => (
                 <div
-                  className={`pointer-events-none absolute left-3 top-3 h-2 w-2 rounded-full ${
-                    displayStatus === "overdue" ? "bg-danger"
-                    : displayStatus === "completed" ? "bg-success"
-                    : displayStatus === "partial" ? "bg-info"
-                    : "bg-warning"
-                  }`}
+                  key={label}
+                  className="summary-card finance-hover-lift min-h-[118px] min-w-0 last:col-span-2 md:last:col-span-1"
+                >
+                  <div className="flex min-w-0 items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className="text-xs font-semibold text-text-secondary">
+                        {label}
+                      </p>
+                      <p
+                        className={`mt-2 break-words text-xl font-bold [overflow-wrap:anywhere] ${valueClassName}`}
+                      >
+                        <Money amount={value} counted />
+                      </p>
+                    </div>
+                    <span
+                      className="finance-icon-container"
+                      data-size="sm"
+                      data-tone={tone}
+                    >
+                      <Icon size={16} />
+                    </span>
+                  </div>
+                </div>
+              ),
+            )}
+          </div>
+
+          <div className="finance-panel p-3 sm:p-4">
+            <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
+              <nav
+                aria-label="Filter payables by status"
+                className="grid grid-cols-2 gap-1 rounded-[18px] border border-border bg-surface-secondary p-1 min-[420px]:grid-cols-3 sm:grid-cols-5"
+              >
+                {STATUS_TABS.map((tab) => {
+                  const active =
+                    status === tab.value || (!status && tab.value === "all");
+                  const count =
+                    tab.value === "all"
+                      ? allPayables.length
+                      : totals.counts[tab.value] ?? 0;
+                  return (
+                    <Link
+                      key={tab.value}
+                      href={paramsFor(tab.value)}
+                      aria-current={active ? "page" : undefined}
+                      className={`finance-focus flex min-h-11 min-w-0 items-center justify-center rounded-[14px] px-2 py-2 text-center text-xs font-semibold leading-4 transition-all ${
+                        active
+                          ? "bg-card text-text-primary shadow-[var(--shadow-xs)]"
+                          : "text-text-secondary hover:bg-hover hover:text-text-primary"
+                      }`}
+                    >
+                      {tab.label} <span className="opacity-70">({count})</span>
+                    </Link>
+                  );
+                })}
+              </nav>
+
+              <form className="finance-control finance-search-control flex min-h-11 w-full min-w-0 items-center gap-2 px-3 xl:w-96">
+                {status !== "all" && (
+                  <input type="hidden" name="status" value={status} />
+                )}
+                <Search size={15} className="shrink-0 text-text-secondary" />
+                <label htmlFor="payables-search" className="sr-only">
+                  Search payables
+                </label>
+                <input
+                  id="payables-search"
+                  type="search"
+                  name="search"
+                  defaultValue={search}
+                  placeholder="Search person, item, reason, or notes..."
+                  className="min-w-0 flex-1 bg-transparent text-sm text-text-primary outline-none placeholder:text-text-secondary"
                 />
-                <PayableCard payable={payable} accounts={accounts ?? []} />
-              </div>
-            );
-          })}
-        </div>
+              </form>
+            </div>
+          </div>
+
+          {payables.length === 0 ? (
+            <div className="finance-panel px-5">
+              <EmptyState
+                icon={HandCoins}
+                title="No payables found"
+                description="Try a different person, item, reason, or status filter."
+              />
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {payables.map((payable) => {
+                const displayStatus = getPayableStatus(payable);
+                return (
+                  <div key={payable.id} className="relative">
+                    <div
+                      className={`pointer-events-none absolute left-3 top-3 h-2 w-2 rounded-full ${
+                        displayStatus === "overdue"
+                          ? "bg-danger"
+                          : displayStatus === "completed"
+                            ? "bg-success"
+                            : displayStatus === "partial"
+                              ? "bg-info"
+                              : "bg-warning"
+                      }`}
+                    />
+                    <PayableCard payable={payable} accounts={accounts ?? []} />
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </>
       )}
     </div>
   );
