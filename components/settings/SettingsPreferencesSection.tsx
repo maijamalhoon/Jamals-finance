@@ -29,11 +29,19 @@ import {
   FinanceModalHeader,
   financeModalContentClass,
 } from "@/components/ui/finance-modal";
+import TouchWheelPicker, {
+  useTouchWheelPickerMode,
+} from "@/components/ui/touch-wheel-picker";
 import {
   useCurrency,
   type Currency,
 } from "@/components/currency/CurrencyProvider";
 import { createClient } from "@/lib/supabase/client";
+
+const CURRENCY_OPTIONS = [
+  { value: "PKR", label: "PKR" },
+  { value: "USD", label: "USD" },
+] as const;
 
 const DATE_FORMAT_OPTIONS = [
   { value: "MMM d, yyyy", label: "Jun 22, 2026" },
@@ -155,6 +163,7 @@ export default function SettingsPreferencesSection({
 }: SettingsPreferencesSectionProps) {
   const supabase = createClient();
   const { currency, rateLabel, setCurrency } = useCurrency();
+  const touchWheelPickerMode = useTouchWheelPickerMode();
   const [dateFormat, setDateFormat] = useState<DateFormat>("MMM d, yyyy");
   const [currencyOpen, setCurrencyOpen] = useState(false);
   const [dateOpen, setDateOpen] = useState(false);
@@ -310,23 +319,49 @@ export default function SettingsPreferencesSection({
                 htmlFor="settings-currency-select"
                 hint={rateLabel}
               >
-                <Select
-                  value={draftCurrency}
-                  onValueChange={(value) => setDraftCurrency(value as Currency)}
-                  disabled={savingCurrency}
-                >
-                  <SelectTrigger
+                {touchWheelPickerMode ? (
+                  <TouchWheelPicker
                     id="settings-currency-select"
-                    aria-label="Currency"
-                    className="w-full"
+                    value={draftCurrency}
+                    options={CURRENCY_OPTIONS.map((option) => ({
+                      value: option.value,
+                      ariaLabel: option.label,
+                      content: (
+                        <span className="block truncate font-semibold text-text-primary">
+                          {option.label}
+                        </span>
+                      ),
+                    }))}
+                    onValueChange={(value) =>
+                      setDraftCurrency(value as Currency)
+                    }
+                    ariaLabel="Currency"
+                    disabled={savingCurrency}
+                    className="field-input w-full p-0"
+                    itemClassName="px-4"
+                  />
+                ) : (
+                  <Select
+                    value={draftCurrency}
+                    onValueChange={(value) => setDraftCurrency(value as Currency)}
+                    disabled={savingCurrency}
                   >
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent align="start" sideOffset={8} className="z-[90] p-1.5">
-                    <SelectItem value="PKR">PKR</SelectItem>
-                    <SelectItem value="USD">USD</SelectItem>
-                  </SelectContent>
-                </Select>
+                    <SelectTrigger
+                      id="settings-currency-select"
+                      aria-label="Currency"
+                      className="w-full"
+                    >
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent align="start" sideOffset={8} className="z-[90] p-1.5">
+                      {CURRENCY_OPTIONS.map((option) => (
+                        <SelectItem key={option.value} value={option.value}>
+                          {option.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
               </FinanceFormField>
             </FinanceModalBody>
             <FinanceModalFooter>
@@ -365,27 +400,49 @@ export default function SettingsPreferencesSection({
                 label="Date format"
                 htmlFor="settings-date-format-select"
               >
-                <Select
-                  value={draftDateFormat}
-                  onValueChange={(value) =>
-                    setDraftDateFormat(value as DateFormat)
-                  }
-                >
-                  <SelectTrigger
+                {touchWheelPickerMode ? (
+                  <TouchWheelPicker
                     id="settings-date-format-select"
-                    aria-label="Date format"
-                    className="w-full"
+                    value={draftDateFormat}
+                    options={DATE_FORMAT_OPTIONS.map((option) => ({
+                      value: option.value,
+                      ariaLabel: option.label,
+                      content: (
+                        <span className="block truncate font-semibold text-text-primary">
+                          {option.label}
+                        </span>
+                      ),
+                    }))}
+                    onValueChange={(value) =>
+                      setDraftDateFormat(value as DateFormat)
+                    }
+                    ariaLabel="Date format"
+                    className="field-input w-full p-0"
+                    itemClassName="px-4"
+                  />
+                ) : (
+                  <Select
+                    value={draftDateFormat}
+                    onValueChange={(value) =>
+                      setDraftDateFormat(value as DateFormat)
+                    }
                   >
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent align="start" sideOffset={8} className="z-[90] p-1.5">
-                    {DATE_FORMAT_OPTIONS.map((option) => (
-                      <SelectItem key={option.value} value={option.value}>
-                        {option.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                    <SelectTrigger
+                      id="settings-date-format-select"
+                      aria-label="Date format"
+                      className="w-full"
+                    >
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent align="start" sideOffset={8} className="z-[90] p-1.5">
+                      {DATE_FORMAT_OPTIONS.map((option) => (
+                        <SelectItem key={option.value} value={option.value}>
+                          {option.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
               </FinanceFormField>
             </FinanceModalBody>
             <FinanceModalFooter>
