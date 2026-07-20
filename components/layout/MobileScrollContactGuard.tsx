@@ -7,6 +7,7 @@ import FinancePickerKeyboardGuard from "@/components/forms/FinancePickerKeyboard
 const BODY_CONTACT_ATTRIBUTE = "data-mobile-scroll-contact";
 const BODY_TOP_ATTRIBUTE = "data-mobile-dashboard-top";
 const TOP_THRESHOLD = 1;
+const RELEASE_REVEAL_DELAY = 700;
 
 function isSearchExpanded() {
   return Boolean(
@@ -58,7 +59,15 @@ export default function MobileScrollContactGuard() {
 
     let activePointerId: number | null = null;
     let pointerStartedInsideScroll = false;
+    let didScrollDuringContact = false;
     let syncingTopState = false;
+    let releaseTimer: number | null = null;
+
+    const clearReleaseTimer = () => {
+      if (releaseTimer === null) return;
+      window.clearTimeout(releaseTimer);
+      releaseTimer = null;
+    };
 
     const setContactState = (active: boolean) => {
       if (active) {
@@ -75,12 +84,12 @@ export default function MobileScrollContactGuard() {
 
       const atTop = scrollContainer.scrollTop <= TOP_THRESHOLD;
       const searchExpanded = isSearchExpanded();
+      const contactActive = document.body.hasAttribute(BODY_CONTACT_ATTRIBUTE);
 
       if (atTop) {
         document.body.setAttribute(BODY_TOP_ATTRIBUTE, "true");
-        setContactState(false);
 
-        if (!searchExpanded) keepTopClustersInteractive();
+        if (!searchExpanded && !contactActive) keepTopClustersInteractive();
         else restoreClusterAccessibility();
       } else {
         document.body.removeAttribute(BODY_TOP_ATTRIBUTE);
@@ -90,6 +99,15 @@ export default function MobileScrollContactGuard() {
       window.requestAnimationFrame(() => {
         syncingTopState = false;
       });
+    };
+
+    const releaseContactAfterDelay = () => {
+      clearReleaseTimer();
+      releaseTimer = window.setTimeout(() => {
+        releaseTimer = null;
+        setContactState(false);
+        syncTopState();
+      }, RELEASE_REVEAL_DELAY);
     };
 
     const handlePointerDown = (event: PointerEvent) => {
@@ -103,20 +121,21 @@ export default function MobileScrollContactGuard() {
       const target = event.target;
       if (!(target instanceof Node) || !scrollContainer.contains(target)) return;
 
+      clearReleaseTimer();
       activePointerId = event.pointerId;
       pointerStartedInsideScroll = true;
+      didScrollDuringContact = document.body.hasAttribute(
+        BODY_CONTACT_ATTRIBUTE,
+      );
     };
 
     const handleScroll = () => {
-      syncTopState();
-
-      if (scrollContainer.scrollTop <= TOP_THRESHOLD) {
-        setContactState(false);
-        return;
+      if (activePointerId !== null && pointerStartedInsideScroll) {
+        didScrollDuringContact = true;
+        setContactState(true);
       }
 
-      if (activePointerId === null || !pointerStartedInsideScroll) return;
-      setContactState(true);
+      syncTopState();
     };
 
     const releasePointer = (event: PointerEvent) => {
@@ -124,13 +143,22 @@ export default function MobileScrollContactGuard() {
 
       activePointerId = null;
       pointerStartedInsideScroll = false;
-      setContactState(false);
-      syncTopState();
+
+      if (didScrollDuringContact) {
+        releaseContactAfterDelay();
+      } else {
+        setContactState(false);
+        syncTopState();
+      }
+
+      didScrollDuringContact = false;
     };
 
     const resetContact = () => {
+      clearReleaseTimer();
       activePointerId = null;
       pointerStartedInsideScroll = false;
+      didScrollDuringContact = false;
       setContactState(false);
       syncTopState();
     };
@@ -165,6 +193,7 @@ export default function MobileScrollContactGuard() {
 
     return () => {
       observer.disconnect();
+      clearReleaseTimer();
       scrollContainer.removeEventListener("pointerdown", handlePointerDown);
       scrollContainer.removeEventListener("scroll", handleScroll);
       document.removeEventListener("pointerup", releasePointer, true);
@@ -173,6 +202,7 @@ export default function MobileScrollContactGuard() {
       window.removeEventListener("resize", syncTopState);
       activePointerId = null;
       pointerStartedInsideScroll = false;
+      didScrollDuringContact = false;
       document.body.removeAttribute(BODY_CONTACT_ATTRIBUTE);
       document.body.removeAttribute(BODY_TOP_ATTRIBUTE);
     };
