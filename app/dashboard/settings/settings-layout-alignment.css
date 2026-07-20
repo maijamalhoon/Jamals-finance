@@ -1,0 +1,87 @@
+/*
+ * Settings layout alignment only.
+ * Keeps existing content, handlers, state, theme and animation behaviour unchanged.
+ */
+
+/* Appearance controls always consume the full available section width, including mobile. */
+.settings-page-polish .settings-reference-grid > .settings-reference-appearance,
+.settings-page-polish
+  .settings-reference-grid
+  > .settings-reference-appearance
+  > .settings-reference-section,
+.settings-page-polish .settings-reference-appearance-control {
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: none !important;
+}
+
+.settings-page-polish .settings-reference-appearance-control {
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+}
+
+.settings-page-polish .settings-reference-theme-option,
+.settings-page-polish .settings-reference-theme-icon {
+  min-width: 0 !important;
+}
+
+.settings-page-polish .settings-reference-theme-icon {
+  flex-shrink: 0 !important;
+}
+
+/* Tablet, desktop and large-screen structure. Mobile stacking remains untouched. */
+@media (min-width: 48rem) {
+  .settings-page-polish .settings-profile-customization {
+    width: 100% !important;
+    max-width: none !important;
+    margin-right: auto !important;
+    margin-left: auto !important;
+  }
+
+  .settings-page-polish .settings-reference-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    grid-template-areas: none !important;
+    align-items: start !important;
+  }
+
+  .settings-page-polish .settings-reference-grid > .settings-reference-appearance {
+    grid-column: 1 !important;
+    grid-row: 1 !important;
+  }
+
+  .settings-page-polish .settings-reference-preferences-wrapper {
+    grid-column: 2 !important;
+    grid-row: 1 !important;
+  }
+
+  .settings-page-polish .settings-reference-profile-security {
+    grid-column: 1 !important;
+    grid-row: 2 !important;
+  }
+
+  .settings-page-polish .settings-reference-categories-wrapper {
+    grid-column: 2 !important;
+    grid-row: 2 !important;
+  }
+
+  .settings-page-polish .settings-reference-data {
+    grid-column: 1 / -1 !important;
+    grid-row: 3 !important;
+  }
+
+  .settings-page-polish .settings-reference-grid > .settings-reference-appearance,
+  .settings-page-polish .settings-reference-preferences-wrapper,
+  .settings-page-polish .settings-reference-profile-security,
+  .settings-page-polish .settings-reference-categories-wrapper,
+  .settings-page-polish .settings-reference-data {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: none !important;
+  }
+
+  .settings-page-polish .settings-reference-data .settings-reference-logout {
+    width: min(100%, 28rem) !important;
+    max-width: 28rem !important;
+    margin-right: auto !important;
+    margin-left: auto !important;
+  }
+}
