@@ -97,110 +97,108 @@ export default function AccountCard({ account }: AccountCardProps) {
   return (
     <>
       <article
-        className="account-card-shell finance-panel-interactive group relative flex min-h-[320px] min-w-0 flex-col overflow-hidden rounded-[var(--oneui-card-radius)] border p-5"
+        className="account-card-shell finance-panel-interactive group relative flex h-full min-w-0 flex-col overflow-hidden rounded-[var(--oneui-card-radius)] border p-4"
         style={getCardVars(accent)}
       >
         <div
           aria-hidden="true"
-          className="account-card-glow pointer-events-none absolute -right-12 -top-14 h-36 w-36 rounded-full blur-3xl"
+          className="account-card-glow pointer-events-none absolute -right-12 -top-14 h-32 w-32 rounded-full blur-3xl"
         />
 
         <div
           aria-hidden="true"
-          className="account-card-line pointer-events-none absolute inset-x-6 top-0 h-px"
+          className="account-card-line pointer-events-none absolute inset-x-5 top-0 h-px"
         />
 
-        <div className="relative flex items-start justify-between gap-3">
+        <div className="absolute right-3 top-3 z-10 flex gap-1 opacity-100 transition-opacity sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100">
+          {!archived ? (
+            <button
+              type="button"
+              onClick={() => setEditOpen(true)}
+              className="icon-button"
+              aria-label="Edit account"
+            >
+              <Pencil size={13} />
+            </button>
+          ) : null}
+
+          <button
+            type="button"
+            onClick={handleStatusChange}
+            disabled={changingStatus}
+            aria-busy={changingStatus || undefined}
+            className="icon-button"
+            aria-label={archived ? "Restore account" : "Archive account"}
+            title={archived ? "Restore account" : "Archive account"}
+          >
+            {archived ? (
+              <ArchiveRestore size={13} aria-hidden="true" />
+            ) : (
+              <Archive size={13} aria-hidden="true" />
+            )}
+          </button>
+        </div>
+
+        <div className="relative flex min-w-0 items-center gap-3 pr-16">
           <AccountIdentityIcon
             key={identityRenderKey}
             name={account.name}
             iconKey={account.icon_key}
             type={account.type}
-            size="lg"
+            size="md"
           />
 
-          <div className="flex gap-1 opacity-100 transition-opacity sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100">
-            {!archived ? (
-              <button
-                type="button"
-                onClick={() => setEditOpen(true)}
-                className="icon-button"
-                aria-label="Edit account"
-              >
-                <Pencil size={13} />
-              </button>
-            ) : null}
-
-            <button
-              type="button"
-              onClick={handleStatusChange}
-              disabled={changingStatus}
-              aria-busy={changingStatus || undefined}
-              className="icon-button"
-              aria-label={archived ? "Restore account" : "Archive account"}
-              title={archived ? "Restore account" : "Archive account"}
-            >
-              {archived ? (
-                <ArchiveRestore size={13} aria-hidden="true" />
-              ) : (
-                <Archive size={13} aria-hidden="true" />
-              )}
-            </button>
-          </div>
-        </div>
-
-        <div className="relative mt-5 min-w-0">
-          <p className="line-clamp-2 break-words text-[15px] font-bold leading-6 text-text-primary">
+          <p className="line-clamp-2 min-w-0 break-words text-sm font-bold leading-5 text-text-primary">
             {account.name}
           </p>
-
-          <div className="mt-2 flex flex-wrap items-center gap-2">
-            {archived ? (
-              <span className="inline-flex rounded-full border border-warning/30 bg-warning/10 px-2.5 py-1 text-[11px] font-bold text-warning">
-                Archived
-              </span>
-            ) : null}
-            <span className="account-accent-pill inline-flex rounded-full border px-2.5 py-1 text-[11px] font-bold">
-              {getAccountKindLabel(account.account_kind)}
-            </span>
-
-            <span className="inline-flex min-w-0 max-w-full rounded-full border border-border bg-surface-secondary px-2.5 py-1 text-[11px] font-semibold text-text-secondary">
-              <span className="truncate">
-                {maskAccountNumber(account.account_number)}
-              </span>
-            </span>
-          </div>
         </div>
 
-        <div className="finance-panel-soft relative mt-5 min-w-0 p-4">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-text-secondary">
+        <div className="relative mt-3 flex flex-wrap items-center gap-1.5">
+          {archived ? (
+            <span className="inline-flex rounded-full border border-warning/30 bg-warning/10 px-2 py-0.5 text-[10px] font-bold text-warning">
+              Archived
+            </span>
+          ) : null}
+          <span className="account-accent-pill inline-flex rounded-full border px-2 py-0.5 text-[10px] font-bold">
+            {getAccountKindLabel(account.account_kind)}
+          </span>
+
+          <span className="inline-flex min-w-0 max-w-full rounded-full border border-border bg-surface-secondary px-2 py-0.5 text-[10px] font-semibold text-text-secondary">
+            <span className="truncate">
+              {maskAccountNumber(account.account_number)}
+            </span>
+          </span>
+        </div>
+
+        <div className="finance-panel-soft relative mt-3 min-w-0 p-3">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.13em] text-text-secondary">
             Balance
           </p>
 
-          <p className="finance-amount mt-1 break-words text-2xl font-black tracking-normal text-text-primary [overflow-wrap:anywhere]">
+          <p className="finance-amount mt-1 break-words text-xl font-black tracking-normal text-text-primary [overflow-wrap:anywhere]">
             {formatCurrency(Number(account.balance ?? 0))}
           </p>
         </div>
 
-        <div className="relative mt-4 grid grid-cols-2 gap-2.5">
-          <div className="finance-panel-soft min-w-0 border-success/30 bg-success/10 p-3">
-            <div className="mb-2 flex items-center gap-1.5 text-[11px] font-semibold text-text-secondary">
-              <ArrowDownLeft size={13} className="text-success" />
+        <div className="relative mt-2.5 grid grid-cols-2 gap-2">
+          <div className="finance-panel-soft min-w-0 border-success/30 bg-success/10 p-2.5">
+            <div className="mb-1.5 flex items-center gap-1.5 text-[10px] font-semibold text-text-secondary">
+              <ArrowDownLeft size={12} className="text-success" />
               Income In
             </div>
 
-            <p className="finance-amount break-words text-sm font-black text-success [overflow-wrap:anywhere]">
+            <p className="finance-amount break-words text-[13px] font-black text-success [overflow-wrap:anywhere]">
               {formatCurrency(Number(account.inflow ?? 0))}
             </p>
           </div>
 
-          <div className="finance-panel-soft min-w-0 border-danger/30 bg-danger/10 p-3">
-            <div className="mb-2 flex items-center gap-1.5 text-[11px] font-semibold text-text-secondary">
-              <ArrowUpRight size={13} className="text-danger" />
+          <div className="finance-panel-soft min-w-0 border-danger/30 bg-danger/10 p-2.5">
+            <div className="mb-1.5 flex items-center gap-1.5 text-[10px] font-semibold text-text-secondary">
+              <ArrowUpRight size={12} className="text-danger" />
               Expense Out
             </div>
 
-            <p className="finance-amount break-words text-sm font-black text-danger [overflow-wrap:anywhere]">
+            <p className="finance-amount break-words text-[13px] font-black text-danger [overflow-wrap:anywhere]">
               {formatCurrency(Number(account.outflow ?? 0))}
             </p>
           </div>
@@ -208,9 +206,9 @@ export default function AccountCard({ account }: AccountCardProps) {
 
         <Link
           href={`/dashboard/accounts/${account.id}`}
-          className="finance-focus relative mt-3 inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-border bg-surface-secondary px-3 text-xs font-bold text-text-primary hover:bg-hover"
+          className="finance-focus relative mt-2.5 inline-flex min-h-10 items-center justify-center gap-2 rounded-xl border border-border bg-surface-secondary px-3 text-[11px] font-bold text-text-primary hover:bg-hover"
         >
-          <ScrollText size={14} aria-hidden="true" />
+          <ScrollText size={13} aria-hidden="true" />
           View history
         </Link>
       </article>
