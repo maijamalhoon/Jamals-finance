@@ -88,7 +88,7 @@
   display: none;
 }
 
-/* Match the compact header search: icon first, then a clean borderless field. */
+/* Match the header search motion: spring-like width, delayed input reveal and soft controls. */
 .filtersShell :global([role="search"]:has(#transaction-page-search)) {
   position: relative;
   isolation: isolate;
@@ -100,7 +100,13 @@
   box-shadow: none !important;
   outline: 0 !important;
   transform: translateZ(0);
-  will-change: width;
+  will-change: width, transform;
+  transition:
+    width 320ms cubic-bezier(0.22, 1, 0.36, 1),
+    background-color 180ms ease,
+    border-color 180ms ease,
+    box-shadow 180ms ease,
+    transform 320ms cubic-bezier(0.22, 1, 0.36, 1) !important;
 }
 
 .filtersShell :global([role="search"]:has(#transaction-page-search))::after {
@@ -148,11 +154,16 @@
   :global([role="search"]:has(#transaction-page-search) > button:first-of-type) {
   border-radius: 0.875rem !important;
   background: transparent !important;
+  transition:
+    color 180ms ease,
+    background-color 180ms ease,
+    transform 240ms cubic-bezier(0.22, 1, 0.36, 1) !important;
 }
 
 .filtersShell
   :global([role="search"]:has(#transaction-page-search[aria-hidden="true"]) > button:first-of-type:hover) {
   background: var(--hover) !important;
+  transform: translateY(-1px);
 }
 
 .filtersShell
@@ -179,6 +190,19 @@
   --tw-ring-offset-width: 0px !important;
   --tw-ring-offset-shadow: 0 0 #0000 !important;
   --tw-ring-shadow: 0 0 #0000 !important;
+  transition:
+    width 260ms cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 150ms ease,
+    transform 280ms cubic-bezier(0.22, 1, 0.36, 1) !important;
+}
+
+.filtersShell :global(#transaction-page-search[aria-hidden="true"]) {
+  transform: translateX(0.75rem);
+}
+
+.filtersShell :global(#transaction-page-search[aria-hidden="false"]) {
+  transform: translateX(0);
+  transition-delay: 55ms !important;
 }
 
 .filtersShell :global(#transaction-page-search::-webkit-search-decoration),
@@ -193,6 +217,11 @@
   margin-right: 0 !important;
   border-radius: 0.75rem !important;
   background: transparent !important;
+  transition:
+    opacity 150ms ease,
+    transform 240ms cubic-bezier(0.22, 1, 0.36, 1),
+    color 180ms ease,
+    background-color 180ms ease !important;
 }
 
 .filtersShell
@@ -305,7 +334,10 @@
 @media (prefers-reduced-motion: reduce) {
   .heading,
   .filtersShell :global([role="search"]:has(#transaction-page-search)),
-  .filtersShell :global([role="search"]:has(#transaction-page-search))::after {
+  .filtersShell :global([role="search"]:has(#transaction-page-search))::after,
+  .filtersShell :global(#transaction-page-search),
+  .filtersShell :global([role="search"]:has(#transaction-page-search) > button) {
     transition-duration: 1ms !important;
+    transition-delay: 0ms !important;
   }
 }
