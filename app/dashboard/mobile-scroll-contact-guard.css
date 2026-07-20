@@ -25,8 +25,8 @@
   }
 
   body[data-mobile-dashboard-top="true"]:not(
-      :has(#mobile-inline-transaction-search[aria-hidden="false"])
-    )
+      [data-mobile-scroll-contact="true"]
+    ):not(:has(#mobile-inline-transaction-search[aria-hidden="false"]))
     [data-mobile-control-cluster] {
     opacity: 1 !important;
     filter: opacity(1) !important;
@@ -36,8 +36,8 @@
   }
 
   body[data-mobile-dashboard-top="true"]:not(
-      :has(#mobile-inline-transaction-search[aria-hidden="false"])
-    )
+      [data-mobile-scroll-contact="true"]
+    ):not(:has(#mobile-inline-transaction-search[aria-hidden="false"]))
     form[data-mobile-control-cluster][role="search"] {
     left: 4.25rem !important;
     width: 2.75rem !important;
