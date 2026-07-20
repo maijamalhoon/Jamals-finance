@@ -88,6 +88,8 @@ import "./compact-header-icon-only.css";
 import "./mobile-control-reveal-polish.css";
 // Expanded mobile/tablet header search has no underline, border, outline, or focus ring.
 import "./mobile-header-search-borderless.css";
+// Prevent the drawer's programmatically focused first link from looking active.
+import "./mobile-sidebar-focus-state-fix.css";
 
 export const dynamic = "force-dynamic";
 
