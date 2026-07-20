@@ -9,6 +9,7 @@ import {
   useTransition,
   type CSSProperties,
 } from "react";
+import { createPortal } from "react-dom";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { ArrowUpDown, Check, Filter, Search, X } from "lucide-react";
 
@@ -36,7 +37,7 @@ type SortOption = {
 
 type FloatingMenuStyle = Pick<
   CSSProperties,
-  "top" | "left" | "width" | "maxHeight"
+  "top" | "left" | "width" | "maxHeight" | "visibility"
 >;
 
 const TYPE_OPTIONS: TypeOption[] = [
@@ -72,8 +73,13 @@ const SORT_OPTIONS: SortOption[] = [
 
 const VIEWPORT_MARGIN = 12;
 const MENU_GAP = 8;
-const MIN_MENU_HEIGHT = 96;
-const FLIP_THRESHOLD = 220;
+const HIDDEN_MENU_STYLE: FloatingMenuStyle = {
+  top: 0,
+  left: 0,
+  width: 0,
+  maxHeight: 0,
+  visibility: "hidden",
+};
 
 function formatDateValue(date: Date) {
   const year = date.getFullYear();
@@ -118,10 +124,12 @@ export default function TransactionFilters(_props: {
   const searchInputRef = useRef<HTMLInputElement>(null);
   const filterButtonRef = useRef<HTMLButtonElement>(null);
   const sortButtonRef = useRef<HTMLButtonElement>(null);
+  const floatingMenuRef = useRef<HTMLDivElement>(null);
   const [pending, startNavigation] = useTransition();
   const [searchOpen, setSearchOpen] = useState(false);
   const [openMenu, setOpenMenu] = useState<OpenMenu>(null);
-  const [menuStyle, setMenuStyle] = useState<FloatingMenuStyle>({});
+  const [menuStyle, setMenuStyle] =
+    useState<FloatingMenuStyle>(HIDDEN_MENU_STYLE);
   const [search, setSearch] = useState(searchParams.get("search") || "");
 
   const activeType = searchParams.get("type") || "all";
@@ -177,48 +185,62 @@ export default function TransactionFilters(_props: {
 
     const trigger =
       openMenu === "filter" ? filterButtonRef.current : sortButtonRef.current;
-    if (!trigger) return;
+    const menu = floatingMenuRef.current;
+    if (!trigger || !menu) return;
 
-    const viewport = window.visualViewport;
-    const viewportWidth = viewport?.width ?? document.documentElement.clientWidth;
-    const viewportHeight = viewport?.height ?? window.innerHeight;
-    const viewportLeft = viewport?.offsetLeft ?? 0;
-    const viewportTop = viewport?.offsetTop ?? 0;
+    const visualViewport = window.visualViewport;
+    const viewportWidth =
+      visualViewport?.width ?? document.documentElement.clientWidth;
+    const viewportHeight =
+      visualViewport?.height ?? document.documentElement.clientHeight;
     const triggerRect = trigger.getBoundingClientRect();
     const preferredWidth = openMenu === "filter" ? 304 : 288;
     const width = Math.max(
-      220,
+      0,
       Math.min(preferredWidth, viewportWidth - VIEWPORT_MARGIN * 2),
     );
-    const minLeft = viewportLeft + VIEWPORT_MARGIN;
-    const maxLeft = viewportLeft + viewportWidth - width - VIEWPORT_MARGIN;
+    const minLeft = VIEWPORT_MARGIN;
+    const maxLeft = Math.max(
+      minLeft,
+      viewportWidth - width - VIEWPORT_MARGIN,
+    );
     const left = Math.min(
       Math.max(triggerRect.right - width, minLeft),
-      Math.max(minLeft, maxLeft),
+      maxLeft,
     );
-    const belowTop = triggerRect.bottom + MENU_GAP;
-    const availableBelow =
-      viewportTop + viewportHeight - belowTop - VIEWPORT_MARGIN;
-    const availableAbove =
-      triggerRect.top - viewportTop - MENU_GAP - VIEWPORT_MARGIN;
+
+    const availableBelow = Math.max(
+      0,
+      viewportHeight - triggerRect.bottom - MENU_GAP - VIEWPORT_MARGIN,
+    );
+    const availableAbove = Math.max(
+      0,
+      triggerRect.top - MENU_GAP - VIEWPORT_MARGIN,
+    );
+    const naturalHeight = menu.scrollHeight;
     const openAbove =
-      availableBelow < FLIP_THRESHOLD && availableAbove > availableBelow;
-    const maxHeight = Math.max(
-      MIN_MENU_HEIGHT,
-      Math.floor(openAbove ? availableAbove : availableBelow),
+      naturalHeight > availableBelow && availableAbove > availableBelow;
+    const availableHeight = openAbove ? availableAbove : availableBelow;
+    const maxHeight = Math.max(1, Math.floor(availableHeight));
+    const renderedHeight = Math.min(naturalHeight, maxHeight);
+    const preferredTop = openAbove
+      ? triggerRect.top - MENU_GAP - renderedHeight
+      : triggerRect.bottom + MENU_GAP;
+    const maxTop = Math.max(
+      VIEWPORT_MARGIN,
+      viewportHeight - renderedHeight - VIEWPORT_MARGIN,
     );
-    const top = openAbove
-      ? Math.max(
-          viewportTop + VIEWPORT_MARGIN,
-          triggerRect.top - MENU_GAP - maxHeight,
-        )
-      : belowTop;
+    const top = Math.min(
+      Math.max(preferredTop, VIEWPORT_MARGIN),
+      maxTop,
+    );
 
     setMenuStyle({
       top: Math.round(top),
       left: Math.round(left),
       width: Math.round(width),
-      maxHeight,
+      maxHeight: Math.round(maxHeight),
+      visibility: "visible",
     });
   }, [openMenu]);
 
@@ -251,23 +273,21 @@ export default function TransactionFilters(_props: {
     if (!openMenu) return;
 
     function handlePointerDown(event: PointerEvent) {
-      if (
-        event.target instanceof Node &&
-        !controlsRef.current?.contains(event.target)
-      ) {
-        setOpenMenu(null);
-      }
+      if (!(event.target instanceof Node)) return;
+      if (controlsRef.current?.contains(event.target)) return;
+      if (floatingMenuRef.current?.contains(event.target)) return;
+      setOpenMenu(null);
     }
 
     function handleKeyDown(event: KeyboardEvent) {
       if (event.key === "Escape") setOpenMenu(null);
     }
 
-    document.addEventListener("pointerdown", handlePointerDown);
+    document.addEventListener("pointerdown", handlePointerDown, true);
     document.addEventListener("keydown", handleKeyDown);
 
     return () => {
-      document.removeEventListener("pointerdown", handlePointerDown);
+      document.removeEventListener("pointerdown", handlePointerDown, true);
       document.removeEventListener("keydown", handleKeyDown);
     };
   }, [openMenu]);
@@ -275,32 +295,50 @@ export default function TransactionFilters(_props: {
   useLayoutEffect(() => {
     if (!openMenu) return;
 
-    let frame = window.requestAnimationFrame(positionOpenMenu);
+    positionOpenMenu();
+
+    let frame = 0;
     const schedulePosition = () => {
       window.cancelAnimationFrame(frame);
       frame = window.requestAnimationFrame(positionOpenMenu);
     };
-    const viewport = window.visualViewport;
+    const visualViewport = window.visualViewport;
+    const resizeObserver =
+      typeof ResizeObserver === "undefined"
+        ? null
+        : new ResizeObserver(schedulePosition);
+    const trigger =
+      openMenu === "filter" ? filterButtonRef.current : sortButtonRef.current;
+
+    if (trigger) resizeObserver?.observe(trigger);
+    if (floatingMenuRef.current) resizeObserver?.observe(floatingMenuRef.current);
 
     window.addEventListener("resize", schedulePosition);
     window.addEventListener("orientationchange", schedulePosition);
     window.addEventListener("scroll", schedulePosition, true);
-    viewport?.addEventListener("resize", schedulePosition);
-    viewport?.addEventListener("scroll", schedulePosition);
+    visualViewport?.addEventListener("resize", schedulePosition);
+    visualViewport?.addEventListener("scroll", schedulePosition);
 
     return () => {
       window.cancelAnimationFrame(frame);
+      resizeObserver?.disconnect();
       window.removeEventListener("resize", schedulePosition);
       window.removeEventListener("orientationchange", schedulePosition);
       window.removeEventListener("scroll", schedulePosition, true);
-      viewport?.removeEventListener("resize", schedulePosition);
-      viewport?.removeEventListener("scroll", schedulePosition);
+      visualViewport?.removeEventListener("resize", schedulePosition);
+      visualViewport?.removeEventListener("scroll", schedulePosition);
     };
   }, [openMenu, positionOpenMenu]);
 
   function closeSearch(clearValue = false) {
     if (clearValue) setSearch("");
     setSearchOpen(false);
+  }
+
+  function toggleMenu(menu: Exclude<OpenMenu, null>) {
+    setSearchOpen(false);
+    setMenuStyle(HIDDEN_MENU_STYLE);
+    setOpenMenu((current) => (current === menu ? null : menu));
   }
 
   function selectType(value: string) {
@@ -339,7 +377,139 @@ export default function TransactionFilters(_props: {
   const filterActive = openMenu === "filter" || hasActiveFilter;
   const sortActive = openMenu === "sort" || hasActiveSort;
   const iconButtonClass =
-    "finance-focus grid !size-11 !min-h-0 shrink-0 place-items-center !gap-0 rounded-xl !bg-transparent !p-0 !shadow-none transition-[color,transform,opacity] duration-200 hover:-translate-y-px hover:text-brand active:translate-y-0";
+    "jf-transaction-icon-control finance-focus grid !size-11 !min-h-0 shrink-0 place-items-center !gap-0 rounded-xl !border-0 !bg-transparent !p-0 !shadow-none transition-[color,transform,opacity] duration-200 hover:-translate-y-px hover:text-brand active:translate-y-0";
+
+  const floatingMenu =
+    openMenu && typeof document !== "undefined"
+      ? createPortal(
+          <div
+            ref={floatingMenuRef}
+            id={
+              openMenu === "filter"
+                ? "transaction-filter-panel"
+                : "transaction-sort-panel"
+            }
+            role="menu"
+            aria-label={
+              openMenu === "filter"
+                ? "Filter transactions"
+                : "Sort transactions"
+            }
+            style={menuStyle}
+            className="jf-transaction-floating-menu fixed z-[2147483000] overflow-y-auto overscroll-contain rounded-2xl bg-surface py-1.5 shadow-[0_18px_50px_rgba(0,0,0,0.24)] [scrollbar-gutter:stable] touch-pan-y"
+          >
+            {openMenu === "filter" ? (
+              <>
+                <p className="px-4 pb-1 pt-1 text-[10px] font-black uppercase tracking-[0.16em] text-text-muted">
+                  Type
+                </p>
+                {TYPE_OPTIONS.map((option) => {
+                  const selected = activeType === option.value;
+                  return (
+                    <button
+                      key={option.value}
+                      type="button"
+                      role="menuitemradio"
+                      aria-checked={selected}
+                      onClick={() => selectType(option.value)}
+                      className={`jf-transaction-menu-item finance-focus relative flex w-full items-center gap-3 px-4 py-2 text-left text-sm font-medium transition-colors ${selectedClass(
+                        selected,
+                      )}`}
+                    >
+                      <span
+                        className="size-2 shrink-0 rounded-full"
+                        style={{ backgroundColor: option.color }}
+                        aria-hidden="true"
+                      />
+                      <span className="min-w-0 flex-1 truncate">
+                        {option.label}
+                      </span>
+                      {selected ? (
+                        <Check
+                          size={16}
+                          strokeWidth={2.2}
+                          className="shrink-0"
+                          aria-hidden="true"
+                        />
+                      ) : null}
+                    </button>
+                  );
+                })}
+
+                <div
+                  className="mx-4 my-1.5 h-px bg-border/60"
+                  role="separator"
+                />
+
+                <p className="px-4 pb-1 pt-1 text-[10px] font-black uppercase tracking-[0.16em] text-text-muted">
+                  Period
+                </p>
+                {PERIOD_OPTIONS.map((option) => {
+                  const selected = activePeriod === option.value;
+                  return (
+                    <button
+                      key={option.value}
+                      type="button"
+                      role="menuitemradio"
+                      aria-checked={selected}
+                      onClick={() => selectPeriod(option.value)}
+                      className={`jf-transaction-menu-item finance-focus relative flex w-full items-center gap-3 px-4 py-2 text-left text-sm font-medium transition-colors ${selectedClass(
+                        selected,
+                      )}`}
+                    >
+                      <span className="min-w-0 flex-1 truncate">
+                        {option.label}
+                      </span>
+                      {selected ? (
+                        <Check
+                          size={16}
+                          strokeWidth={2.2}
+                          className="shrink-0"
+                          aria-hidden="true"
+                        />
+                      ) : null}
+                    </button>
+                  );
+                })}
+              </>
+            ) : (
+              <>
+                <p className="px-4 pb-1 pt-1 text-[10px] font-black uppercase tracking-[0.16em] text-text-muted">
+                  Sort by
+                </p>
+                {SORT_OPTIONS.map((option) => {
+                  const selected = activeSort === option.value;
+                  return (
+                    <button
+                      key={option.value}
+                      type="button"
+                      role="menuitemradio"
+                      aria-checked={selected}
+                      onClick={() => selectSort(option.value)}
+                      className={`jf-transaction-menu-item finance-focus relative flex w-full items-center gap-3 px-4 py-2.5 text-left text-sm font-medium transition-colors ${selectedClass(
+                        selected,
+                      )}`}
+                    >
+                      <span className="min-w-0 flex-1 truncate">
+                        {option.label}
+                      </span>
+                      {selected ? (
+                        <Check
+                          size={16}
+                          strokeWidth={2.2}
+                          className="shrink-0"
+                          aria-hidden="true"
+                        />
+                      ) : null}
+                    </button>
+                  );
+                })}
+              </>
+            )}
+          </div>,
+          document.body,
+        )
+      : null;
 
   return (
     <div
@@ -347,16 +517,47 @@ export default function TransactionFilters(_props: {
       className="relative mb-5 min-w-0 space-y-2.5"
       aria-busy={pending || undefined}
     >
+      <style>{`
+        .jf-transaction-search[data-open="false"],
+        .jf-transaction-search[data-open="false"]:hover,
+        .jf-transaction-search[data-open="false"] > button:first-of-type,
+        .jf-transaction-search[data-open="false"] > button:first-of-type:hover,
+        .jf-transaction-icon-control,
+        .jf-transaction-icon-control:hover,
+        .jf-transaction-icon-control:focus-visible {
+          background: transparent !important;
+          border-color: transparent !important;
+          box-shadow: none !important;
+        }
+
+        .jf-transaction-icon-control {
+          min-height: 0 !important;
+          padding: 0 !important;
+          gap: 0 !important;
+        }
+
+        @media (max-height: 720px) {
+          .jf-transaction-floating-menu {
+            padding-top: 0.25rem !important;
+            padding-bottom: 0.25rem !important;
+          }
+
+          .jf-transaction-menu-item {
+            padding-top: 0.4rem !important;
+            padding-bottom: 0.4rem !important;
+          }
+        }
+      `}</style>
+
       <div className="relative flex min-w-0 items-center justify-end gap-1.5">
         <div
           role="search"
           aria-label="Search transactions"
-          className={`finance-focus flex h-11 shrink-0 items-center overflow-hidden rounded-full border transition-[width,background-color,border-color,box-shadow] duration-300 ease-out ${
+          data-open={searchOpen ? "true" : "false"}
+          className={`jf-transaction-search finance-focus flex h-11 shrink-0 items-center overflow-hidden rounded-full border transition-[width,background-color,border-color,box-shadow] duration-300 ease-out ${
             searchOpen
               ? "w-[min(26.25rem,calc(100vw-2rem))] border-border bg-surface-inset shadow-none"
-              : search
-                ? "w-11 border-transparent bg-brand/10"
-                : "w-11 border-transparent bg-transparent hover:bg-hover"
+              : "w-11 border-transparent bg-transparent"
           }`}
         >
           <button
@@ -369,11 +570,16 @@ export default function TransactionFilters(_props: {
               setOpenMenu(null);
               setSearchOpen(true);
             }}
-            className={`finance-focus grid h-11 w-11 shrink-0 place-items-center rounded-full transition-colors hover:text-text-primary ${
+            className={`finance-focus grid !size-11 !min-h-0 shrink-0 place-items-center !border-0 !bg-transparent !p-0 !shadow-none transition-[color,transform] duration-200 hover:-translate-y-px hover:text-brand active:translate-y-0 ${
               search ? "text-brand" : "text-text-secondary"
             }`}
           >
-            <Search size={20} strokeWidth={2.1} aria-hidden="true" />
+            <Search
+              size={20}
+              strokeWidth={2.1}
+              className="!size-5"
+              aria-hidden="true"
+            />
           </button>
 
           <label htmlFor="transaction-page-search" className="sr-only">
@@ -432,11 +638,7 @@ export default function TransactionFilters(_props: {
             aria-expanded={openMenu === "filter"}
             aria-controls="transaction-filter-panel"
             tabIndex={searchOpen ? -1 : undefined}
-            onClick={() =>
-              setOpenMenu((current) =>
-                current === "filter" ? null : "filter",
-              )
-            }
+            onClick={() => toggleMenu("filter")}
             className={`${iconButtonClass} ${
               filterActive ? "text-brand" : "text-text-secondary"
             }`}
@@ -456,9 +658,7 @@ export default function TransactionFilters(_props: {
             aria-expanded={openMenu === "sort"}
             aria-controls="transaction-sort-panel"
             tabIndex={searchOpen ? -1 : undefined}
-            onClick={() =>
-              setOpenMenu((current) => (current === "sort" ? null : "sort"))
-            }
+            onClick={() => toggleMenu("sort")}
             className={`${iconButtonClass} ${
               sortActive ? "text-brand" : "text-text-secondary"
             }`}
@@ -473,119 +673,7 @@ export default function TransactionFilters(_props: {
         </div>
       </div>
 
-      {openMenu === "filter" ? (
-        <div
-          id="transaction-filter-panel"
-          role="menu"
-          aria-label="Filter transactions"
-          style={menuStyle}
-          className="fixed z-[100] overflow-y-auto overscroll-contain rounded-2xl bg-surface py-2 shadow-[0_18px_50px_rgba(0,0,0,0.22)] [scrollbar-gutter:stable]"
-        >
-          <p className="px-4 pb-1 pt-1 text-[10px] font-black uppercase tracking-[0.16em] text-text-muted">
-            Type
-          </p>
-          {TYPE_OPTIONS.map((option) => {
-            const selected = activeType === option.value;
-            return (
-              <button
-                key={option.value}
-                type="button"
-                role="menuitemradio"
-                aria-checked={selected}
-                onClick={() => selectType(option.value)}
-                className={`finance-focus relative flex w-full items-center gap-3 px-4 py-2.5 text-left text-sm font-medium transition-colors ${selectedClass(
-                  selected,
-                )}`}
-              >
-                <span
-                  className="size-2 shrink-0 rounded-full"
-                  style={{ backgroundColor: option.color }}
-                  aria-hidden="true"
-                />
-                <span className="min-w-0 flex-1 truncate">{option.label}</span>
-                {selected ? (
-                  <Check
-                    size={16}
-                    strokeWidth={2.2}
-                    className="shrink-0"
-                    aria-hidden="true"
-                  />
-                ) : null}
-              </button>
-            );
-          })}
-
-          <div className="mx-4 my-2 h-px bg-border/60" role="separator" />
-
-          <p className="px-4 pb-1 pt-1 text-[10px] font-black uppercase tracking-[0.16em] text-text-muted">
-            Period
-          </p>
-          {PERIOD_OPTIONS.map((option) => {
-            const selected = activePeriod === option.value;
-            return (
-              <button
-                key={option.value}
-                type="button"
-                role="menuitemradio"
-                aria-checked={selected}
-                onClick={() => selectPeriod(option.value)}
-                className={`finance-focus relative flex w-full items-center gap-3 px-4 py-2.5 text-left text-sm font-medium transition-colors ${selectedClass(
-                  selected,
-                )}`}
-              >
-                <span className="min-w-0 flex-1 truncate">{option.label}</span>
-                {selected ? (
-                  <Check
-                    size={16}
-                    strokeWidth={2.2}
-                    className="shrink-0"
-                    aria-hidden="true"
-                  />
-                ) : null}
-              </button>
-            );
-          })}
-        </div>
-      ) : null}
-
-      {openMenu === "sort" ? (
-        <div
-          id="transaction-sort-panel"
-          role="menu"
-          aria-label="Sort transactions"
-          style={menuStyle}
-          className="fixed z-[100] overflow-y-auto overscroll-contain rounded-2xl bg-surface py-2 shadow-[0_18px_50px_rgba(0,0,0,0.22)] [scrollbar-gutter:stable]"
-        >
-          <p className="px-4 pb-1 pt-1 text-[10px] font-black uppercase tracking-[0.16em] text-text-muted">
-            Sort by
-          </p>
-          {SORT_OPTIONS.map((option) => {
-            const selected = activeSort === option.value;
-            return (
-              <button
-                key={option.value}
-                type="button"
-                role="menuitemradio"
-                aria-checked={selected}
-                onClick={() => selectSort(option.value)}
-                className={`finance-focus relative flex w-full items-center gap-3 px-4 py-3 text-left text-sm font-medium transition-colors ${selectedClass(
-                  selected,
-                )}`}
-              >
-                <span className="min-w-0 flex-1 truncate">{option.label}</span>
-                {selected ? (
-                  <Check
-                    size={16}
-                    strokeWidth={2.2}
-                    className="shrink-0"
-                    aria-hidden="true"
-                  />
-                ) : null}
-              </button>
-            );
-          })}
-        </div>
-      ) : null}
+      {floatingMenu}
 
       <div aria-live="polite">
         <BackgroundRefreshStatus
