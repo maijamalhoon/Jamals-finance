@@ -79,7 +79,7 @@ export default function AccountCard({ account }: AccountCardProps) {
   return (
     <>
       <article
-        className="account-card-shell finance-panel-interactive group relative flex h-full w-full min-w-0 flex-col overflow-hidden rounded-[var(--oneui-card-radius)] border p-4"
+        className="account-card-shell finance-panel-interactive group relative flex h-full w-full min-w-0 flex-col overflow-hidden rounded-[var(--oneui-card-radius)] border p-4 dark:[background:linear-gradient(135deg,color-mix(in_srgb,var(--surface-elevated)_92%,var(--account-accent,var(--active))_8%),var(--surface-elevated))]"
         style={getCardVars(accent)}
       >
         <div
@@ -135,7 +135,7 @@ export default function AccountCard({ account }: AccountCardProps) {
           </p>
         </div>
 
-        <div className="finance-panel-soft relative mt-4 min-w-0 p-3">
+        <div className="relative mt-4 min-w-0 p-3">
           <p className="text-[10px] font-semibold uppercase tracking-[0.13em] text-text-secondary">
             Balance
           </p>
