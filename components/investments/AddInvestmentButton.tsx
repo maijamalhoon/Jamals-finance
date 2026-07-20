@@ -5,7 +5,15 @@ import { useRouter } from "next/navigation";
 import { BriefcaseBusiness } from "lucide-react";
 import InvestmentModal from "./InvestmentModal";
 
-export default function AddInvestmentButton() {
+interface AddInvestmentButtonProps {
+  label?: string;
+  showIcon?: boolean;
+}
+
+export default function AddInvestmentButton({
+  label = "Add Investment",
+  showIcon = true,
+}: AddInvestmentButtonProps = {}) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
 
@@ -16,8 +24,8 @@ export default function AddInvestmentButton() {
         onClick={() => setOpen(true)}
         className="investment-action w-full sm:w-auto"
       >
-        <BriefcaseBusiness size={16} />
-        Add Investment
+        {showIcon ? <BriefcaseBusiness size={16} /> : null}
+        {label}
       </button>
 
       <InvestmentModal
