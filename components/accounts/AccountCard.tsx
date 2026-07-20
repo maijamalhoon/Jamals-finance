@@ -4,10 +4,10 @@ import { type CSSProperties, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
+  Archive,
   ArchiveRestore,
-  ArchiveX,
-  History,
-  SquarePen,
+  Clock3,
+  PencilLine,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -100,7 +100,12 @@ export default function AccountCard({ account }: AccountCardProps) {
               className="icon-button"
               aria-label="Edit account"
             >
-              <SquarePen size={17} strokeWidth={2.4} aria-hidden="true" />
+              <PencilLine
+                size={18}
+                strokeWidth={2.5}
+                absoluteStrokeWidth
+                aria-hidden="true"
+              />
             </button>
           ) : null}
 
@@ -115,12 +120,18 @@ export default function AccountCard({ account }: AccountCardProps) {
           >
             {archived ? (
               <ArchiveRestore
-                size={17}
-                strokeWidth={2.4}
+                size={18}
+                strokeWidth={2.5}
+                absoluteStrokeWidth
                 aria-hidden="true"
               />
             ) : (
-              <ArchiveX size={17} strokeWidth={2.4} aria-hidden="true" />
+              <Archive
+                size={18}
+                strokeWidth={2.5}
+                absoluteStrokeWidth
+                aria-hidden="true"
+              />
             )}
           </button>
         </div>
@@ -153,7 +164,12 @@ export default function AccountCard({ account }: AccountCardProps) {
           href={`/dashboard/accounts/${account.id}`}
           className="finance-focus relative mt-3 inline-flex min-h-10 items-center justify-center gap-2 rounded-xl border border-border bg-surface-secondary px-3 text-[11px] font-bold text-text-primary hover:bg-hover"
         >
-          <History size={17} strokeWidth={2.4} aria-hidden="true" />
+          <Clock3
+            size={18}
+            strokeWidth={2.5}
+            absoluteStrokeWidth
+            aria-hidden="true"
+          />
           View history
         </Link>
       </article>
