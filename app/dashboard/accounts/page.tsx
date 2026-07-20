@@ -86,7 +86,9 @@ export default async function AccountsPage() {
             icon={Landmark}
             title="No accounts yet"
             description="Add your first account to see balances and activity here."
-            action={<AddAccountButton />}
+            action={
+              <AddAccountButton label="Add an account" showIcon={false} />
+            }
           />
         </div>
       ) : (
