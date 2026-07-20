@@ -20,6 +20,7 @@ export default function ExportButton({
 }) {
   const supabase = createClient();
   const [loading, setLoading] = useState(false);
+  const label = "Download Report";
 
   async function handleExport() {
     if (loading) return;
@@ -131,6 +132,7 @@ export default function ExportButton({
     <PageHeadingActionPortal page="reports" force>
       <Button
         type="button"
+        aria-label={label}
         onClick={handleExport}
         loading={loading}
         loadingLabel="Exporting…"
@@ -138,7 +140,7 @@ export default function ExportButton({
         className="finance-control"
       >
         <Download size={15} />
-        Export CSV
+        <span className="sr-only">{label}</span>
       </Button>
     </PageHeadingActionPortal>
   );
