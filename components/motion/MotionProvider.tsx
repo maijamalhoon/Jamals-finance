@@ -2,6 +2,7 @@
 
 import { MotionConfig } from "framer-motion";
 import { useEffect, type ReactNode } from "react";
+import GlobalScrollToTop from "@/components/layout/GlobalScrollToTop";
 import { motionDurations, motionEase } from "@/components/motion/animation-config";
 
 function hasDirectText(element: HTMLElement) {
@@ -80,6 +81,7 @@ export default function MotionProvider({ children }: { children: ReactNode }) {
       transition={{ duration: motionDurations.base, ease: motionEase }}
     >
       {children}
+      <GlobalScrollToTop />
     </MotionConfig>
   );
 }
