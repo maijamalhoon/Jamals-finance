@@ -42,14 +42,16 @@ export function getAnimationDurationScale(
   mode: AnimationMode = getDocumentAnimationMode(),
 ) {
   if (mode === "none") return 0;
-  if (mode === "fast") return 0.9;
+  // Fast mode keeps every animation, but resolves authored durations in a
+  // noticeably quicker and still readable time window.
+  if (mode === "fast") return 0.58;
   return 1;
 }
 
 export function getAnimationPlaybackRate(
   mode: AnimationMode = getDocumentAnimationMode(),
 ) {
-  if (mode === "fast") return 1.1;
+  if (mode === "fast") return 1.7;
   return 1;
 }
 
