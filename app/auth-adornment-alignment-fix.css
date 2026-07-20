@@ -148,6 +148,12 @@
   flex: 0 0 auto;
 }
 
+/* Authentication forms use their visible labels only; placeholder copy is hidden. */
+.jf-auth-root .auth-input::placeholder {
+  color: transparent !important;
+  opacity: 0 !important;
+}
+
 @media (max-width: 759px) {
   .jf-auth-root .auth-field-control {
     --auth-leading-inset: 15px;
