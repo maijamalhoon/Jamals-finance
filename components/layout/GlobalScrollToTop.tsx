@@ -167,11 +167,11 @@ export default function GlobalScrollToTop() {
           }
           whileHover={launching ? undefined : { y: -9, scale: 1.08 }}
           whileTap={launching ? undefined : { scale: 0.9 }}
-          className={`fixed right-3 z-[70] grid size-11 place-items-center border-0 !bg-transparent p-0 text-foreground/80 !shadow-none outline-none transition-colors duration-200 hover:!bg-transparent hover:text-active focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-active disabled:pointer-events-none sm:right-5 lg:right-8 ${positionClass}`}
+          className={`fixed right-3 z-[70] grid size-11 place-items-center border-0 !bg-transparent p-0 text-slate-700 !shadow-none outline-none transition-colors duration-200 hover:!bg-transparent hover:text-slate-800 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-active disabled:pointer-events-none sm:right-5 lg:right-8 dark:text-slate-100 dark:hover:text-white ${positionClass}`}
         >
           <ArrowUp
-            size={30}
-            strokeWidth={3.15}
+            size={32}
+            strokeWidth={4.25}
             strokeLinecap="round"
             strokeLinejoin="round"
             aria-hidden="true"
