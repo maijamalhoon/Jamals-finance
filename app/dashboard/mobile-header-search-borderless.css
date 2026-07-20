@@ -1,0 +1,33 @@
+/* Mobile/tablet header search stays fully borderless while expanded. */
+@media (max-width: 1023px) {
+  html body
+    [data-dashboard-shell][data-dashboard-shell]
+    form[data-mobile-control-cluster][data-mobile-control-cluster][role="search"]::after {
+    display: none !important;
+    content: none !important;
+    opacity: 0 !important;
+  }
+
+  html body
+    [data-dashboard-shell][data-dashboard-shell]
+    form[data-mobile-control-cluster][data-mobile-control-cluster][role="search"],
+  html body
+    [data-dashboard-shell][data-dashboard-shell]
+    form[data-mobile-control-cluster][data-mobile-control-cluster][role="search"]:focus-within,
+  html body
+    [data-dashboard-shell][data-dashboard-shell]
+    form[data-mobile-control-cluster][data-mobile-control-cluster][role="search"] input,
+  html body
+    [data-dashboard-shell][data-dashboard-shell]
+    form[data-mobile-control-cluster][data-mobile-control-cluster][role="search"] input:focus,
+  html body
+    [data-dashboard-shell][data-dashboard-shell]
+    form[data-mobile-control-cluster][data-mobile-control-cluster][role="search"] input:focus-visible {
+    border: 0 !important;
+    outline: 0 !important;
+    box-shadow: none !important;
+    --tw-ring-offset-width: 0px !important;
+    --tw-ring-offset-shadow: 0 0 #0000 !important;
+    --tw-ring-shadow: 0 0 #0000 !important;
+  }
+}
