@@ -1,0 +1,39 @@
+/*
+ * Dark-mode-only finance form surface balance.
+ * Keep every approved form's geometry, fields, actions, data and motion intact;
+ * remove only the layered/raised visual separation between modal sections.
+ */
+
+.dark [data-slot="dialog-content"].finance-modal-content,
+.dark [role="dialog"].finance-modal-content {
+  --card: #1b2a40;
+  --surface-primary: #1b2a40;
+  --surface-elevated: #1b2a40;
+  --popover: #1b2a40;
+  --surface-secondary: #213149;
+  --surface-inset: #213149;
+  --surface-soft: #22334b;
+  --input: #213149;
+
+  background: var(--card) !important;
+  box-shadow: 0 12px 28px rgb(0 0 0 / 0.24) !important;
+}
+
+.dark [data-slot="dialog-content"].finance-modal-content > .finance-modal-header,
+.dark [data-slot="dialog-content"].finance-modal-content > .finance-modal-body,
+.dark [data-slot="dialog-content"].finance-modal-content > .finance-modal-footer,
+.dark [role="dialog"].finance-modal-content > .finance-modal-header,
+.dark [role="dialog"].finance-modal-content > .finance-modal-body,
+.dark [role="dialog"].finance-modal-content > .finance-modal-footer {
+  background: var(--card) !important;
+  box-shadow: none !important;
+}
+
+.dark .finance-modal-content .field-input,
+.dark .finance-modal-content [data-slot="select-trigger"],
+.dark .finance-modal-content select.finance-control,
+.dark .finance-modal-content textarea.field-input,
+.dark .finance-modal-content [role="listbox"].field-input {
+  background: var(--surface-inset) !important;
+  box-shadow: none !important;
+}
