@@ -103,6 +103,17 @@ function isValidSnapshot(value: unknown): value is ExchangeRateSnapshot {
   );
 }
 
+function isUsableSnapshot(value: unknown): value is ExchangeRateSnapshot {
+  if (!isValidSnapshot(value)) return false;
+
+  const updatedAt = Date.parse(value.updatedAt);
+  return (
+    Number.isFinite(updatedAt) &&
+    updatedAt > 0 &&
+    !value.source.startsWith("Built-in emergency")
+  );
+}
+
 function readCachedSnapshot() {
   if (typeof window === "undefined") return null;
 
@@ -111,14 +122,14 @@ function readCachedSnapshot() {
     if (!raw) return null;
 
     const parsed = JSON.parse(raw) as unknown;
-    return isValidSnapshot(parsed) ? parsed : null;
+    return isUsableSnapshot(parsed) ? parsed : null;
   } catch {
     return null;
   }
 }
 
 function persistRateSnapshot(snapshot: ExchangeRateSnapshot) {
-  if (typeof window === "undefined" || !isValidSnapshot(snapshot)) return;
+  if (typeof window === "undefined" || !isUsableSnapshot(snapshot)) return;
 
   window.localStorage.setItem(
     EXCHANGE_RATE_STORAGE_KEY,
@@ -152,6 +163,7 @@ export function CurrencyProvider({
     createEmergencySnapshot,
   );
   const [ratesReady, setRatesReady] = useState(false);
+  const [ratesChecked, setRatesChecked] = useState(false);
 
   useEffect(() => {
     if (hasStoredPreference) {
@@ -176,6 +188,7 @@ export function CurrencyProvider({
     if (cached) {
       setSnapshot({ ...cached, live: false, stale: true });
       setRatesReady(true);
+      setRatesChecked(true);
     }
 
     fetch("/api/exchange-rate")
@@ -186,13 +199,16 @@ export function CurrencyProvider({
       .then((data) => {
         if (cancelled || !isValidSnapshot(data)) return;
 
+        const usable = isUsableSnapshot(data);
         setSnapshot(data);
-        setRatesReady(true);
-        persistRateSnapshot(data);
+        setRatesReady(usable);
+        setRatesChecked(true);
+        if (usable) persistRateSnapshot(data);
       })
       .catch(() => {
         if (cancelled) return;
-        setRatesReady(true);
+        setRatesChecked(true);
+        setRatesReady(Boolean(cached));
       });
 
     return () => {
@@ -224,9 +240,10 @@ export function CurrencyProvider({
       if (event.key === EXCHANGE_RATE_STORAGE_KEY && event.newValue) {
         try {
           const next = JSON.parse(event.newValue) as unknown;
-          if (isValidSnapshot(next)) {
+          if (isUsableSnapshot(next)) {
             setSnapshot(next);
             setRatesReady(true);
+            setRatesChecked(true);
           }
         } catch {
           // Ignore malformed cross-tab values.
@@ -236,9 +253,10 @@ export function CurrencyProvider({
 
     function handleRateChange(event: Event) {
       const next = (event as CustomEvent<unknown>).detail;
-      if (isValidSnapshot(next)) {
+      if (isUsableSnapshot(next)) {
         setSnapshot(next);
         setRatesReady(true);
+        setRatesChecked(true);
       }
     }
 
@@ -325,7 +343,9 @@ export function CurrencyProvider({
         fromCurrency: "USD",
         rates: snapshot.rates,
       })}`
-    : "Exchange rates are loading";
+    : ratesChecked
+      ? "Exchange rates are unavailable; converted values and saves are paused"
+      : "Exchange rates are loading";
 
   const value = useMemo<CurrencyContextValue>(
     () => ({
