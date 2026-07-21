@@ -66,6 +66,8 @@ export const FALLBACK_CURRENCY_RATES: CurrencyRates = {
 };
 export const FALLBACK_USD_PKR_RATE = FALLBACK_CURRENCY_RATES.PKR;
 
+let runtimeCurrencyRates: CurrencyRates | null = null;
+
 const CURRENCY_META: Record<
   SupportedCurrency,
   {
@@ -164,16 +166,38 @@ export function isValidCurrencyRates(
   );
 }
 
+export function setRuntimeCurrencyRates(rates: CurrencyRates | null) {
+  runtimeCurrencyRates = isValidCurrencyRates(rates) ? { ...rates } : null;
+}
+
+export function getRuntimeCurrencyRates() {
+  return runtimeCurrencyRates ? { ...runtimeCurrencyRates } : null;
+}
+
 export function normalizeUsdToPkrRate(rate: number | null | undefined) {
   return isValidExchangeRate(rate) ? rate : FALLBACK_USD_PKR_RATE;
 }
 
 function resolveRates(
   ratesOrUsdToPkr: CurrencyRates | number | null | undefined,
+  fromCurrency: SupportedCurrency,
+  toCurrency: SupportedCurrency,
 ): CurrencyRates | null {
   if (isValidCurrencyRates(ratesOrUsdToPkr)) return ratesOrUsdToPkr;
 
   if (isValidExchangeRate(ratesOrUsdToPkr)) {
+    if (runtimeCurrencyRates) {
+      return {
+        ...runtimeCurrencyRates,
+        PKR: ratesOrUsdToPkr,
+      };
+    }
+
+    const isLegacyUsdPkrPair =
+      (fromCurrency === "USD" || fromCurrency === "PKR") &&
+      (toCurrency === "USD" || toCurrency === "PKR");
+    if (!isLegacyUsdPkrPair) return null;
+
     return {
       ...FALLBACK_CURRENCY_RATES,
       PKR: ratesOrUsdToPkr,
@@ -196,7 +220,7 @@ export function convertMoney(
   if (!Number.isFinite(amount)) return Number.NaN;
   if (fromCurrency === toCurrency) return amount;
 
-  const rates = resolveRates(ratesOrUsdToPkr);
+  const rates = resolveRates(ratesOrUsdToPkr, fromCurrency, toCurrency);
   if (!rates) return Number.NaN;
 
   const fromRate = rates[fromCurrency];
@@ -247,7 +271,8 @@ export function formatMoney(
 ) {
   if (!Number.isFinite(amount)) return "—";
 
-  const rateInput = rates ?? usdToPkrRate ?? FALLBACK_CURRENCY_RATES;
+  const rateInput =
+    rates ?? usdToPkrRate ?? runtimeCurrencyRates ?? FALLBACK_CURRENCY_RATES;
   const converted = convertMoney(
     absolute ? Math.abs(amount) : amount,
     fromCurrency,
