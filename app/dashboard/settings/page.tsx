@@ -24,6 +24,7 @@ import "./settings-row-hover-unify.css";
 import "./settings-animation-control.css";
 import "./settings-layout-alignment.css";
 import "./settings-profile-security-modal-polish.css";
+import "./settings-card-surface-unify.css";
 
 export const dynamic = "force-dynamic";
 
@@ -105,7 +106,7 @@ export default async function SettingsPage() {
   >((usage, transaction) => {
     const categoryId =
       typeof transaction.category_id === "string" ?
-        transaction.category_id
+      transaction.category_id
       : null;
 
     if (!categoryId) return usage;
