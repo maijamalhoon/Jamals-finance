@@ -3,6 +3,7 @@ import { join, resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 
 const root = resolve(process.cwd());
+const applicationSourceDirectories = ["app", "components", "lib", "public"];
 
 function read(path: string) {
   return readFileSync(join(root, path), "utf8");
@@ -82,7 +83,7 @@ describe("security hardening contracts", () => {
   });
 
   it("does not place administrative Supabase secrets in application source", () => {
-    const source = ["app", "components", "lib", "public"]
+    const source = applicationSourceDirectories
       .flatMap(collectSourceFiles)
       .map((path) => readFileSync(path, "utf8"))
       .join("\n");
