@@ -45,7 +45,7 @@ export default async function InvestmentsPage() {
   return (
     <div className="space-y-5">
       <div className="flex justify-end">
-        <AddInvestmentButton />
+        <AddInvestmentButton investments={list} />
       </div>
 
       {investmentsError ? (
