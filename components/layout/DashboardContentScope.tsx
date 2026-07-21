@@ -149,47 +149,15 @@ export default function DashboardContentScope({
     }
 
     let cancelled = false;
-    let firstFrame = 0;
-    let secondFrame = 0;
+    const revealFrame = window.requestAnimationFrame(() => {
+      if (!cancelled) setInitialDocumentReady(true);
+    });
 
-    if (animationMode === "fast") {
-      // Fast mode preserves the authored entrance motion, but does not wait for
-      // full font and window load completion before the route becomes visible.
-      firstFrame = window.requestAnimationFrame(() => {
-        if (!cancelled) setInitialDocumentReady(true);
-      });
-
-      return () => {
-        cancelled = true;
-        window.cancelAnimationFrame(firstFrame);
-      };
-    }
-
-    const revealAfterFinalLayout = async () => {
-      try {
-        await document.fonts?.ready;
-      } catch {
-        // Font readiness should never prevent the page from becoming visible.
-      }
-
-      firstFrame = window.requestAnimationFrame(() => {
-        secondFrame = window.requestAnimationFrame(() => {
-          if (!cancelled) setInitialDocumentReady(true);
-        });
-      });
-    };
-
-    if (document.readyState === "complete") {
-      void revealAfterFinalLayout();
-    } else {
-      window.addEventListener("load", revealAfterFinalLayout, { once: true });
-    }
-
+    // Standard and fast both reveal on the first composited frame. Fonts and
+    // non-critical assets may continue settling without blocking page content.
     return () => {
       cancelled = true;
-      window.removeEventListener("load", revealAfterFinalLayout);
-      window.cancelAnimationFrame(firstFrame);
-      window.cancelAnimationFrame(secondFrame);
+      window.cancelAnimationFrame(revealFrame);
     };
   }, []);
 
