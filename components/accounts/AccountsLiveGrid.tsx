@@ -71,7 +71,7 @@ export default function AccountsLiveGrid({
     [liveInvestments],
   );
   const accountGridClass =
-    "grid w-full auto-rows-fr grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4 2xl:grid-cols-5";
+    "grid w-full auto-rows-fr grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4";
 
   return (
     <div className="space-y-6">
