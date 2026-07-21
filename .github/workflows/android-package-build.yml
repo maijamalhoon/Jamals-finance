@@ -16,6 +16,11 @@ jobs:
     timeout-minutes: 20
 
     steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
       - name: Create package request
         run: |
           cat > package-options.json <<'JSON'
@@ -143,3 +148,23 @@ jobs:
             --title "Temporary unsigned Android build" \
             --notes "Temporary unsigned APK/AAB package generated for local signing." \
             --prerelease
+
+      - name: Report build completion
+        env:
+          JOB_ID: ${{ steps.enqueue.outputs.job_id }}
+        run: |
+          mkdir -p android-twa/build-output
+          cat > android-twa/build-output/unsigned-build.json <<JSON
+          {
+            "status": "completed",
+            "jobId": "${JOB_ID}",
+            "downloadUrl": "https://github.com/${GITHUB_REPOSITORY}/releases/download/android-build-v1.0.0-unsigned/jamals-finance-android-unsigned.zip",
+            "sourceCommit": "${GITHUB_SHA}"
+          }
+          JSON
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add android-twa/build-output/unsigned-build.json
+          git commit -m "chore(android): record unsigned package build" || exit 0
+          git pull --rebase origin main
+          git push origin HEAD:main
