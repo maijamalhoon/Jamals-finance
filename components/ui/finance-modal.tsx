@@ -10,8 +10,10 @@ import {
 import { useOptionalCurrency } from "@/components/currency/CurrencyProvider";
 import {
   BASE_CURRENCY,
-  FALLBACK_USD_PKR_RATE,
+  FALLBACK_CURRENCY_RATES,
   convertMoney,
+  type CurrencyRates,
+  type SupportedCurrency,
 } from "@/lib/currency";
 import { cn } from "@/lib/utils";
 
@@ -144,8 +146,8 @@ function toEditableCurrencyValue(value: number) {
 
 function convertCurrencyConstraint(
   value: string | number | undefined,
-  currency: "PKR" | "USD",
-  rate: number,
+  currency: SupportedCurrency,
+  rates: CurrencyRates,
 ) {
   if (value === undefined || value === "" || currency === BASE_CURRENCY) {
     return value;
@@ -155,18 +157,18 @@ function convertCurrencyConstraint(
   if (!Number.isFinite(numericValue)) return value;
 
   return toEditableCurrencyValue(
-    convertMoney(numericValue, BASE_CURRENCY, currency, rate),
+    convertMoney(numericValue, BASE_CURRENCY, currency, rates),
   );
 }
 
 function CurrencyAwareInput({
   child,
   currency,
-  rate,
+  rates,
 }: {
   child: React.ReactElement<CurrencyInputProps>;
-  currency: "PKR" | "USD";
-  rate: number;
+  currency: SupportedCurrency;
+  rates: CurrencyRates;
 }) {
   const sourceValue = Array.isArray(child.props.value)
     ? child.props.value[0]
@@ -179,9 +181,9 @@ function CurrencyAwareInput({
     if (!Number.isFinite(numericValue)) return baseValue;
 
     return toEditableCurrencyValue(
-      convertMoney(numericValue, BASE_CURRENCY, currency, rate),
+      convertMoney(numericValue, BASE_CURRENCY, currency, rates),
     );
-  }, [baseValue, currency, rate]);
+  }, [baseValue, currency, rates]);
   const [editing, setEditing] = useState(false);
   const [draftValue, setDraftValue] = useState(displayValue);
 
@@ -199,8 +201,8 @@ function CurrencyAwareInput({
 
   return React.cloneElement(child, {
     value: editing ? draftValue : displayValue,
-    min: convertCurrencyConstraint(child.props.min, currency, rate),
-    max: convertCurrencyConstraint(child.props.max, currency, rate),
+    min: convertCurrencyConstraint(child.props.min, currency, rates),
+    max: convertCurrencyConstraint(child.props.max, currency, rates),
     onFocus: (event: React.FocusEvent<HTMLInputElement>) => {
       setDraftValue(displayValue);
       setEditing(true);
@@ -215,7 +217,7 @@ function CurrencyAwareInput({
         const numericValue = Number(nextDisplayValue);
         if (Number.isFinite(numericValue)) {
           nextBaseValue = toEditableCurrencyValue(
-            convertMoney(numericValue, currency, BASE_CURRENCY, rate),
+            convertMoney(numericValue, currency, BASE_CURRENCY, rates),
           );
         }
       }
@@ -347,14 +349,14 @@ export function FinanceFormField({
 }) {
   const currencyContext = useOptionalCurrency();
   const currency = currencyContext?.currency ?? BASE_CURRENCY;
-  const rate = currencyContext?.rate ?? FALLBACK_USD_PKR_RATE;
+  const rates = currencyContext?.rates ?? FALLBACK_CURRENCY_RATES;
   const isCurrencyAmountField =
     typeof label === "string" && label.includes(`(${BASE_CURRENCY})`);
   const resolvedLabel =
     isCurrencyAmountField ? label.replace(BASE_CURRENCY, currency) : label;
   const resolvedChildren =
     isCurrencyAmountField && React.isValidElement<CurrencyInputProps>(children) ? (
-      <CurrencyAwareInput child={children} currency={currency} rate={rate} />
+      <CurrencyAwareInput child={children} currency={currency} rates={rates} />
     ) : (
       children
     );
