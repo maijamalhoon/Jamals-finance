@@ -1,0 +1,43 @@
+name: Android Release Cleanup
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - ".github/workflows/android-release-cleanup.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Delete temporary unsigned build release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release delete android-build-v1.0.0-unsigned --repo "$GITHUB_REPOSITORY" --yes --cleanup-tag || true
+
+      - name: Report cleanup completion
+        run: |
+          mkdir -p android-twa/build-output
+          cat > android-twa/build-output/release-cleanup.json <<JSON
+          {
+            "status": "completed",
+            "runId": "${GITHUB_RUN_ID}",
+            "sourceCommit": "${GITHUB_SHA}"
+          }
+          JSON
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add android-twa/build-output/release-cleanup.json
+          git commit -m "chore(android): record temporary release cleanup" || exit 0
+          git pull --rebase origin main
+          git push origin HEAD:main
