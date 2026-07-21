@@ -9,6 +9,8 @@ export type InvestmentWithdrawal = {
 };
 
 function toFiniteNumber(value: unknown) {
+  if (typeof value === "string" && value.trim() === "") return null;
+
   const parsed = Number(value);
   return Number.isFinite(parsed) ? parsed : null;
 }
