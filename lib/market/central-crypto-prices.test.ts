@@ -74,6 +74,13 @@ describe("central crypto price helpers", () => {
     expect(routeSource).toContain("stale-while-revalidate=5");
   });
 
+  it("loads active pairs from Supabase with a safe local fallback", () => {
+    expect(routeSource).toContain("/rest/v1/crypto_assets");
+    expect(routeSource).toContain('is_active: "eq.true"');
+    expect(routeSource).toContain('binance_symbol: "not.is.null"');
+    expect(routeSource).toContain("return CENTRAL_CRYPTO_PAIRS");
+  });
+
   it("keeps one canonical cache key and rejects query-string cache busting", () => {
     expect(routeSource).toContain("url.search.length > 0");
     expect(routeSource).toContain("Query parameters are not supported.");
