@@ -45,6 +45,8 @@ type Account = {
 };
 
 function parseFinite(value: string | number | null | undefined) {
+  if (typeof value === "string" && value.trim() === "") return null;
+
   const parsed = Number(value);
   return Number.isFinite(parsed) ? parsed : null;
 }
