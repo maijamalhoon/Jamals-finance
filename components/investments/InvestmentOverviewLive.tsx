@@ -26,13 +26,23 @@ export default function InvestmentOverviewLive({
   );
 
   return (
-    <InvestmentOverviewClean
-      investments={liveInvestments}
-      groupedHoldings={groupedHoldings}
-      totalInvested={totals.totalInvested}
-      totalValue={totals.totalValue}
-      totalPnL={totals.totalPnL}
-      totalPnLPct={totals.totalPnLPct}
-    />
+    <div className="investment-overview-live">
+      <InvestmentOverviewClean
+        investments={liveInvestments}
+        groupedHoldings={groupedHoldings}
+        totalInvested={totals.totalInvested}
+        totalValue={totals.totalValue}
+        totalPnL={totals.totalPnL}
+        totalPnLPct={totals.totalPnLPct}
+      />
+
+      <style jsx global>{`
+        .investment-overview-live
+          .recharts-wrapper:has(.recharts-pie)
+          > .recharts-tooltip-wrapper {
+          display: none !important;
+        }
+      `}</style>
+    </div>
   );
 }
