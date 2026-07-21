@@ -4,6 +4,7 @@ import {
   SUPPORTED_CURRENCIES,
   isValidCurrencyRates,
   isValidExchangeRate,
+  setRuntimeCurrencyRates,
   type CurrencyRates,
   type ExchangeRateSnapshot,
   type SupportedCurrency,
@@ -59,6 +60,12 @@ function parseRates(
 function isSnapshotFresh(updatedAt: string) {
   const updated = new Date(updatedAt).getTime();
   return Number.isFinite(updated) && Date.now() - updated <= MAX_FRESH_AGE_MS;
+}
+
+function registerUsableSnapshot(snapshot: ExchangeRateSnapshot) {
+  lastGoodSnapshot = snapshot;
+  setRuntimeCurrencyRates(snapshot.rates);
+  return snapshot;
 }
 
 async function fetchExchangeRateApiSnapshot(): Promise<ExchangeRateSnapshot | null> {
@@ -153,14 +160,17 @@ async function fetchFrankfurterSnapshot(): Promise<ExchangeRateSnapshot | null> 
 
 function getFallbackSnapshot(): ExchangeRateSnapshot {
   if (lastGoodSnapshot) {
-    return {
+    const snapshot = {
       ...lastGoodSnapshot,
       live: false,
       stale: true,
       source: `${lastGoodSnapshot.source} · last successful snapshot`,
     };
+    setRuntimeCurrencyRates(snapshot.rates);
+    return snapshot;
   }
 
+  setRuntimeCurrencyRates(null);
   return {
     base: "USD",
     rates: FALLBACK_CURRENCY_RATES,
@@ -179,8 +189,7 @@ export async function getExchangeRateSnapshot(): Promise<ExchangeRateSnapshot> {
     try {
       const snapshot = await provider();
       if (snapshot && isValidCurrencyRates(snapshot.rates)) {
-        lastGoodSnapshot = snapshot;
-        return snapshot;
+        return registerUsableSnapshot(snapshot);
       }
     } catch {
       // Try the next provider. A validated last-good snapshot remains available.
