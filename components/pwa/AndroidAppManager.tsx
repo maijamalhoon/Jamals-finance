@@ -5,49 +5,15 @@ import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
-type AndroidRelease = {
-  version: string;
-  versionCode: number;
-  apkUrl: string;
-  releaseUrl: string;
-  sha256: string;
-  fileSizeBytes: number;
-  minimumAndroid: string;
-  publishedAt: string;
-};
+import {
+  ANDROID_RELEASE_FALLBACK,
+  compareVersions,
+  type AndroidRelease,
+} from "@/lib/app-release";
 
 const CURRENT_WRAPPER_VERSION = "1.0.1";
 const INSTALLED_VERSION_KEY = "jamals-finance-android-installed-version";
 const DISMISSED_VERSION_KEY = "jamals-finance-android-prompt-dismissed-version";
-
-const FALLBACK_RELEASE: AndroidRelease = {
-  version: "1.0.1",
-  versionCode: 2,
-  apkUrl:
-    "https://github.com/maijamalhoon/Jamals-finance/releases/download/v1.0.1/jamals-finance-v1.0.1.apk",
-  releaseUrl:
-    "https://github.com/maijamalhoon/Jamals-finance/releases/tag/v1.0.1",
-  sha256: "80da1813b6d787ba37b58f9d76395f6d6eb036e84c8518934ec8b219cc0fd8f3",
-  fileSizeBytes: 1084893,
-  minimumAndroid: "Android 6",
-  publishedAt: "2026-07-21",
-};
-
-function compareVersions(left: string, right: string) {
-  const leftParts = left.split(".").map((part) => Number(part) || 0);
-  const rightParts = right.split(".").map((part) => Number(part) || 0);
-  const length = Math.max(leftParts.length, rightParts.length);
-
-  for (let index = 0; index < length; index += 1) {
-    const leftPart = leftParts[index] ?? 0;
-    const rightPart = rightParts[index] ?? 0;
-
-    if (leftPart > rightPart) return 1;
-    if (leftPart < rightPart) return -1;
-  }
-
-  return 0;
-}
 
 function isAndroidDevice() {
   return /Android/i.test(window.navigator.userAgent);
@@ -82,7 +48,9 @@ function formatFileSize(bytes: number) {
 
 export default function AndroidAppManager() {
   const pathname = usePathname();
-  const [release, setRelease] = useState<AndroidRelease>(FALLBACK_RELEASE);
+  const [release, setRelease] = useState<AndroidRelease>(
+    ANDROID_RELEASE_FALLBACK,
+  );
   const [showPrompt, setShowPrompt] = useState(false);
   const downloadButtonRef = useRef<HTMLAnchorElement>(null);
   const updateToastVersionRef = useRef<string | null>(null);
@@ -92,7 +60,7 @@ export default function AndroidAppManager() {
 
     const loadRelease = async () => {
       try {
-        const response = await fetch("/android-release.json", {
+        const response = await fetch("/api/app-release/android", {
           cache: "no-store",
           headers: { Accept: "application/json" },
         });
@@ -109,7 +77,7 @@ export default function AndroidAppManager() {
           setRelease(nextRelease);
         }
       } catch {
-        // The embedded fallback keeps downloads available during a transient fetch error.
+        // The embedded fallback keeps the official current APK available.
       }
     };
 
@@ -156,15 +124,18 @@ export default function AndroidAppManager() {
   }, [pathname, release.version]);
 
   useEffect(() => {
+    if (!isAndroidDevice() || !isStandaloneExperience()) return;
+
     const installedVersion = window.localStorage.getItem(INSTALLED_VERSION_KEY);
     if (!installedVersion) return;
     if (compareVersions(release.version, installedVersion) <= 0) return;
     if (updateToastVersionRef.current === release.version) return;
 
     updateToastVersionRef.current = release.version;
-    toast.info(`Android update ${release.version} is ready.`, {
-      description: "Install the latest official Jamal's Finance APK.",
-      duration: 15_000,
+    toast.info(`Mobile app update ${release.version} is ready.`, {
+      description:
+        "Tap Update, then approve Android's install confirmation. Your data stays safe.",
+      duration: 20_000,
       action: {
         label: "Update",
         onClick: () => window.location.assign(release.apkUrl),
@@ -193,7 +164,7 @@ export default function AndroidAppManager() {
     };
   }, [release.version, showPrompt]);
 
-  const continueOnWebsite = () => {
+  const continueOnBrowser = () => {
     window.localStorage.setItem(DISMISSED_VERSION_KEY, release.version);
     setShowPrompt(false);
   };
@@ -222,7 +193,7 @@ export default function AndroidAppManager() {
 
           <div className="min-w-0 flex-1">
             <p className="text-xs font-bold uppercase tracking-[0.12em] text-info">
-              Android app
+              Mobile app
             </p>
             <h2
               className="mt-1 text-xl font-bold tracking-tight text-text-primary"
@@ -234,16 +205,20 @@ export default function AndroidAppManager() {
               className="mt-2 text-sm leading-6 text-text-secondary"
               id="android-app-description"
             >
-              Use the same secure account and finance data with faster home-screen
-              access.
+              Install the official Android app or continue using the same secure
+              finance workspace in your browser.
             </p>
           </div>
         </div>
 
         <div className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs font-medium text-text-secondary">
-          <span>Version {release.version}</span>
-          <span aria-hidden="true">•</span>
-          <span>{formatFileSize(release.fileSizeBytes)}</span>
+          <span>Latest version {release.version}</span>
+          {formatFileSize(release.fileSizeBytes) ? (
+            <>
+              <span aria-hidden="true">•</span>
+              <span>{formatFileSize(release.fileSizeBytes)}</span>
+            </>
+          ) : null}
           <span aria-hidden="true">•</span>
           <span>{release.minimumAndroid}+</span>
         </div>
@@ -256,21 +231,21 @@ export default function AndroidAppManager() {
             ref={downloadButtonRef}
           >
             <Download aria-hidden="true" size={18} />
-            Download Android App
+            Download for Mobile
           </a>
 
           <button
             className="finance-focus flex min-h-12 w-full items-center justify-center gap-2 rounded-2xl bg-black/5 px-4 text-sm font-semibold text-text-primary transition-colors hover:bg-black/8 dark:bg-white/8 dark:hover:bg-white/12"
-            onClick={continueOnWebsite}
+            onClick={continueOnBrowser}
             type="button"
           >
             <Globe2 aria-hidden="true" size={18} />
-            Continue on Website
+            Continue on Browser
           </button>
         </div>
 
         <p className="mt-4 text-center text-[11px] leading-5 text-text-secondary">
-          Official APK from the Jamal&apos;s Finance GitHub release.
+          The download button always resolves the latest published official APK.
         </p>
       </section>
     </div>
