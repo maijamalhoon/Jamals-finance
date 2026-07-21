@@ -150,13 +150,17 @@ describe("animation preference contracts", () => {
 
   it("keeps accelerated-mode tuning detached from standard", () => {
     expect(motionProviderSource).toContain(
-      'if (mode === "standard") detachRuntimeTuning();',
+      'if (activeMode !== "fast") return;',
     );
     expect(motionProviderSource).toContain(
-      'if (activeMode === "standard") return;',
+      'if (mode === "fast") attachRuntimeTuning();',
     );
+    expect(motionProviderSource).toContain("else detachRuntimeTuning();");
     expect(motionProviderSource).toContain(
       "target.getAnimations({ subtree })",
+    );
+    expect(motionProviderSource).toContain(
+      'previousMode === "none" || mode === "none"',
     );
     expect(acceleratedPerformanceSource).toContain(
       'if (activeMode === "fast")',
@@ -242,9 +246,7 @@ describe("animation preference contracts", () => {
   });
 
   it("mounts accelerated performance globally without changing UI", () => {
-    expect(pwaRuntimeSource).toContain(
-      "AcceleratedMotionPerformance",
-    );
+    expect(pwaRuntimeSource).toContain("AcceleratedMotionPerformance");
     expect(pwaRuntimeSource).toContain(
       "return <AcceleratedMotionPerformance />;",
     );
