@@ -15,11 +15,13 @@ type GitHubRelease = {
   tag_name: string;
   html_url: string;
   published_at: string | null;
+  draft: boolean;
+  prerelease: boolean;
   assets: GitHubReleaseAsset[];
 };
 
-const LATEST_RELEASE_API =
-  "https://api.github.com/repos/maijamalhoon/Jamals-finance/releases/latest";
+const RELEASES_API =
+  "https://api.github.com/repos/maijamalhoon/Jamals-finance/releases?per_page=20";
 
 function normalizeVersion(tagName: string) {
   return tagName.trim().replace(/^v/i, "");
@@ -58,7 +60,7 @@ function responseFor(release: AndroidRelease, source: "github" | "fallback") {
 
 export async function GET() {
   try {
-    const response = await fetch(LATEST_RELEASE_API, {
+    const response = await fetch(RELEASES_API, {
       headers: {
         Accept: "application/vnd.github+json",
         "User-Agent": "Jamals-Finance-App-Release-Resolver",
@@ -71,9 +73,19 @@ export async function GET() {
       return responseFor(ANDROID_RELEASE_FALLBACK, "fallback");
     }
 
-    const latest = (await response.json()) as GitHubRelease;
-    const version = normalizeVersion(latest.tag_name);
-    const apk = pickApkAsset(latest, version);
+    const releases = (await response.json()) as GitHubRelease[];
+    const selected = releases.find((release) => {
+      if (release.draft || release.prerelease) return false;
+      const version = normalizeVersion(release.tag_name);
+      return Boolean(version && pickApkAsset(release, version));
+    });
+
+    if (!selected) {
+      return responseFor(ANDROID_RELEASE_FALLBACK, "fallback");
+    }
+
+    const version = normalizeVersion(selected.tag_name);
+    const apk = pickApkAsset(selected, version);
 
     if (!version || !apk?.browser_download_url) {
       return responseFor(ANDROID_RELEASE_FALLBACK, "fallback");
@@ -88,14 +100,14 @@ export async function GET() {
         ? ANDROID_RELEASE_FALLBACK.versionCode
         : 0,
       apkUrl: apk.browser_download_url,
-      releaseUrl: latest.html_url,
+      releaseUrl: selected.html_url,
       sha256: isKnownFallbackVersion
         ? ANDROID_RELEASE_FALLBACK.sha256
         : "",
       fileSizeBytes: apk.size,
       minimumAndroid: ANDROID_RELEASE_FALLBACK.minimumAndroid,
       publishedAt:
-        latest.published_at?.slice(0, 10) ??
+        selected.published_at?.slice(0, 10) ??
         ANDROID_RELEASE_FALLBACK.publishedAt,
     };
 
