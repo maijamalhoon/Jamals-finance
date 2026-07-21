@@ -14,7 +14,7 @@
     "url": "https://github.com/maijamalhoon/Jamals-finance/issues"
   },
   "engines": {
-    "node": ">=20.9.0"
+    "node": "24.x"
   },
   "scripts": {
     "dev": "next dev",
@@ -67,4 +67,3 @@
     "vitest": "^4.1.10"
   }
 }
-
