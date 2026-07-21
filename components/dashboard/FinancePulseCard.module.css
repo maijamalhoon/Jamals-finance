@@ -1,10 +1,15 @@
 .grid {
+  align-items: stretch;
+  grid-auto-rows: 1fr;
   grid-template-columns: minmax(0, 1fr) !important;
 }
 
 .tile {
+  position: relative;
   display: flex;
+  height: 100%;
   min-width: 0;
+  overflow: hidden;
   flex-direction: column;
   background: var(--surface-primary) !important;
   box-shadow: var(--surface-highlight), 0 6px 19px rgb(23 35 58 / 0.05) !important;
@@ -12,6 +17,26 @@
     transform var(--motion-duration-fast) var(--motion-ease),
     border-color var(--motion-duration-fast) ease,
     box-shadow var(--motion-duration-fast) ease;
+}
+
+/* A compositor-friendly accent layer gives every dashboard pulse card a
+   subtle breathing blink without changing layout or repainting shadows. */
+.tile::after {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(
+    circle at 88% 8%,
+    color-mix(in srgb, var(--pulse-accent), transparent 77%) 0,
+    transparent 48%
+  );
+  content: "";
+  opacity: 0.04;
+  pointer-events: none;
+  transform: scale(0.99);
+  transform-origin: top right;
+  animation: pulse-card-soft-blink 4.4s ease-in-out infinite;
+  will-change: transform, opacity;
 }
 
 :global(.dark) .tile {
@@ -69,6 +94,18 @@
   will-change: transform, opacity;
 }
 
+.tile:nth-child(2)::after {
+  animation-delay: -1.1s;
+}
+
+.tile:nth-child(3)::after {
+  animation-delay: -2.2s;
+}
+
+.tile:nth-child(4)::after {
+  animation-delay: -3.3s;
+}
+
 .tile:nth-child(2) .dot,
 .tile:nth-child(2) .dot::after {
   animation-delay: -0.35s;
@@ -108,6 +145,19 @@
   line-height: 0.95rem;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
+}
+
+@keyframes pulse-card-soft-blink {
+  0%,
+  100% {
+    opacity: 0.04;
+    transform: scale(0.99);
+  }
+
+  50% {
+    opacity: 0.17;
+    transform: scale(1.025);
+  }
 }
 
 @keyframes pulse-dot-core {
@@ -186,6 +236,13 @@
 @media (prefers-reduced-motion: reduce) {
   .tile {
     transition: none;
+  }
+
+  .tile::after {
+    animation: none;
+    opacity: 0.06;
+    transform: none;
+    will-change: auto;
   }
 
   .tile:hover {
