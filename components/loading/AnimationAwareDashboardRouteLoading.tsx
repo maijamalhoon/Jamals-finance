@@ -69,5 +69,22 @@ export default async function AnimationAwareDashboardRouteLoading({
     );
   }
 
+  if (animationMode === "standard") {
+    return (
+      <div
+        role="status"
+        aria-busy="true"
+        aria-label={label}
+        data-standard-animation-route-loading="true"
+        className={getLoadingClassName(variant)}
+      >
+        <span className="jf-standard-route-loader" aria-hidden="true">
+          <span />
+        </span>
+        <span className="sr-only">{label}</span>
+      </div>
+    );
+  }
+
   return <DashboardRouteLoading variant={variant} />;
 }
