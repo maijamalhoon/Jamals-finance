@@ -132,14 +132,42 @@ const GLOBAL_FORM_AUDIT_STYLE = `
   display: none !important;
 }
 
-/* Final finance actions already keep their semantic per-form color. This layer
- * only guarantees one responsive footprint even if an older module adds h-* or
- * min-h-* utilities later in the cascade. */
-.finance-modal-content button[data-jf-form-action="true"] {
+/* Every marked form action keeps its authored semantic color and click logic,
+ * while sharing one height, curve, iconless presentation and short label. */
+:is(.finance-modal-content, [data-slot="dialog-content"])
+  button[data-jf-form-action="true"] {
+  box-sizing: border-box !important;
   height: var(--jf-global-final-action-height) !important;
   min-height: var(--jf-global-final-action-height) !important;
   max-height: var(--jf-global-final-action-height) !important;
   border-radius: var(--jf-global-final-action-radius) !important;
+  gap: 0 !important;
+  font-size: 0 !important;
+  line-height: 1 !important;
+}
+
+:is(.finance-modal-content, [data-slot="dialog-content"])
+  button[data-jf-form-action="true"] > * {
+  display: none !important;
+}
+
+:is(.finance-modal-content, [data-slot="dialog-content"])
+  button[data-jf-form-action="true"] svg {
+  display: none !important;
+}
+
+:is(.finance-modal-content, [data-slot="dialog-content"])
+  button[data-jf-form-action="true"]::after {
+  content: attr(data-jf-form-action-label);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: inherit;
+  font-size: clamp(0.82rem, 1.6vw, 0.9rem);
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
 }
 `;
 
