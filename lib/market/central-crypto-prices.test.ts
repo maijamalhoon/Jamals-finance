@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 
 import {
@@ -5,6 +6,22 @@ import {
   chunkCryptoPairs,
   parseBinanceTickerPayload,
 } from "./central-crypto-prices";
+
+const routeSource = readFileSync(
+  new URL("../../app/api/market/crypto-prices/route.ts", import.meta.url),
+  "utf8",
+);
+const clientSource = readFileSync(
+  new URL(
+    "../../components/investments/useBinanceLivePrices.ts",
+    import.meta.url,
+  ),
+  "utf8",
+);
+const proxySource = readFileSync(
+  new URL("../supabase/proxy.ts", import.meta.url),
+  "utf8",
+);
 
 describe("central crypto price helpers", () => {
   it("keeps catalog pairs unique and normalized", () => {
@@ -47,5 +64,29 @@ describe("central crypto price helpers", () => {
         updatedAt: 1_700_000_000_000,
       },
     });
+  });
+
+  it("keeps the public endpoint behind the central CDN cache", () => {
+    expect(proxySource).toContain('"/api/market/crypto-prices"');
+    expect(routeSource).toContain('"CDN-Cache-Control"');
+    expect(routeSource).toContain('"Vercel-CDN-Cache-Control"');
+    expect(routeSource).toContain("s-maxage=1");
+    expect(routeSource).toContain("stale-while-revalidate=5");
+  });
+
+  it("backs off upstream failures and keeps a bounded stale snapshot", () => {
+    expect(routeSource).toContain("upstreamBlockedUntil");
+    expect(routeSource).toContain("MAX_WARM_STALE_MS");
+    expect(routeSource).toContain('response.status === 418');
+    expect(routeSource).toContain('response.status === 429');
+  });
+
+  it("keeps browsers on one shared poller instead of direct Binance sockets", () => {
+    expect(clientSource).toContain(
+      'const CENTRAL_PRICE_ENDPOINT = "/api/market/crypto-prices"',
+    );
+    expect(clientSource).toContain("let centralStore");
+    expect(clientSource).toContain("let subscribers");
+    expect(clientSource).not.toContain("wss://stream.binance.com");
   });
 });
