@@ -45,7 +45,7 @@ function getInitialStandardMotionTier(): StandardMotionTier {
   const downlink = connection?.downlink;
   const memory = runtimeNavigator.deviceMemory;
   const cores = runtimeNavigator.hardwareConcurrency;
-  const slowDisplay = window.matchMedia?.("(update: slow)").matches === true;
+  const slowDisplay = window.matchMedia("(update: slow)").matches;
 
   if (
     connection?.saveData === true ||
@@ -118,8 +118,8 @@ export default function StandardMotionPerformance() {
     let tier: StandardMotionTier = "full";
     let idleHandle: number | null = null;
     let fallbackHandle: ReturnType<typeof globalThis.setTimeout> | null = null;
+    let samplingStartHandle: ReturnType<typeof globalThis.setTimeout> | null = null;
     let sampleFrame = 0;
-    let sampledFrames = 0;
     let previousFrameTime = 0;
     let longTaskCount = 0;
     let longTaskWindowStartedAt = performance.now();
@@ -128,13 +128,14 @@ export default function StandardMotionPerformance() {
     let longTaskObserver: PerformanceObserver | null = null;
     let intersectionObserver: IntersectionObserver | null = null;
 
+    const frameDurations: number[] = [];
     const elementAnimations = new Map<Element, Set<Animation>>();
     const animationTargets = new Map<Animation, Element>();
     const pausedAnimations = new Set<Animation>();
     const elementVisibility = new WeakMap<Element, boolean>();
     const trackedSvgs = new Set<PausableSvg>();
     const svgVisibility = new WeakMap<PausableSvg, boolean>();
-    const pendingMutationRoots = new Set<Element>();
+    const pendingSvgRoots = new Set<Element>();
 
     const shouldRunElementMotion = (element: Element) => {
       if (document.visibilityState !== "visible") return false;
@@ -241,26 +242,26 @@ export default function StandardMotionPerformance() {
       updateSvg(svg);
     };
 
-    const scanRoot = (scanRoot: ParentNode = document) => {
+    const scanSvgRoot = (scanRoot: ParentNode) => {
       if (!active) return;
 
-      if (scanRoot === document && "getAnimations" in document) {
-        document.getAnimations().forEach(trackAnimation);
-      } else if (scanRoot instanceof Element && "getAnimations" in scanRoot) {
-        scanRoot.getAnimations({ subtree: true }).forEach(trackAnimation);
-      }
-
       if (scanRoot instanceof SVGSVGElement) trackSvg(scanRoot);
-      scanRoot
-        .querySelectorAll<SVGSVGElement>(`svg:has(${CONTINUOUS_SVG_SELECTOR})`)
-        .forEach((svg) => trackSvg(svg));
+      scanRoot.querySelectorAll<SVGSVGElement>("svg").forEach(trackSvg);
+    };
+
+    const scanInitialMotion = () => {
+      if (!active) return;
+      if ("getAnimations" in document) {
+        document.getAnimations().forEach(trackAnimation);
+      }
+      scanSvgRoot(document);
     };
 
     const scheduleInitialScan = () => {
       const scan = () => {
         idleHandle = null;
         fallbackHandle = null;
-        scanRoot(document);
+        scanInitialMotion();
       };
 
       if (typeof window.requestIdleCallback === "function") {
@@ -297,22 +298,34 @@ export default function StandardMotionPerformance() {
       if (nextTier !== tier) applyTier(nextTier);
     };
 
+    const finishFrameSampling = () => {
+      if (frameDurations.length === 0) return;
+      const ordered = [...frameDurations].sort((a, b) => a - b);
+      const median = ordered[Math.floor(ordered.length / 2)] ?? 0;
+
+      if (median > 24) applyTier("lite");
+      else if (median > 18.5 && tier === "full") applyTier("balanced");
+    };
+
     const sampleFrameRate = (time: number) => {
-      if (!active || sampledFrames >= 24) return;
+      if (!active) return;
 
       if (previousFrameTime > 0) {
-        const frameDuration = time - previousFrameTime;
-        if (frameDuration > 24) downgradeForRuntimePressure();
-        else if (frameDuration > 19 && tier === "full") applyTier("balanced");
+        frameDurations.push(time - previousFrameTime);
+      }
+      previousFrameTime = time;
+
+      if (frameDurations.length >= 24) {
+        sampleFrame = 0;
+        finishFrameSampling();
+        return;
       }
 
-      previousFrameTime = time;
-      sampledFrames += 1;
       sampleFrame = window.requestAnimationFrame(sampleFrameRate);
     };
 
     const startRuntimeSampling = () => {
-      sampledFrames = 0;
+      frameDurations.length = 0;
       previousFrameTime = 0;
       sampleFrame = window.requestAnimationFrame(sampleFrameRate);
 
@@ -347,7 +360,18 @@ export default function StandardMotionPerformance() {
       }
     };
 
+    const scheduleRuntimeSampling = () => {
+      samplingStartHandle = globalThis.setTimeout(() => {
+        samplingStartHandle = null;
+        if (active) startRuntimeSampling();
+      }, 900);
+    };
+
     const stopRuntimeSampling = () => {
+      if (samplingStartHandle !== null) {
+        globalThis.clearTimeout(samplingStartHandle);
+        samplingStartHandle = null;
+      }
       if (sampleFrame) window.cancelAnimationFrame(sampleFrame);
       sampleFrame = 0;
       longTaskObserver?.disconnect();
@@ -369,11 +393,11 @@ export default function StandardMotionPerformance() {
       updateAllMotion();
     };
 
-    const flushMutationRoots = () => {
+    const flushSvgRoots = () => {
       mutationFrame = 0;
-      const roots = Array.from(pendingMutationRoots);
-      pendingMutationRoots.clear();
-      roots.forEach(scanRoot);
+      const roots = Array.from(pendingSvgRoots);
+      pendingSvgRoots.clear();
+      roots.forEach(scanSvgRoot);
     };
 
     const attachStandardRuntime = () => {
@@ -383,36 +407,45 @@ export default function StandardMotionPerformance() {
       root.dataset.pageVisibility = document.visibilityState;
       applyTier(getInitialStandardMotionTier());
 
-      intersectionObserver = new IntersectionObserver(
-        (entries) => {
-          entries.forEach((entry) => {
-            const target = entry.target;
-            const visible = entry.isIntersecting || entry.intersectionRatio > 0;
+      if (typeof IntersectionObserver !== "undefined") {
+        intersectionObserver = new IntersectionObserver(
+          (entries) => {
+            entries.forEach((entry) => {
+              const target = entry.target;
+              const visible =
+                entry.isIntersecting || entry.intersectionRatio > 0;
 
-            if (target instanceof SVGSVGElement && trackedSvgs.has(target)) {
-              svgVisibility.set(target, visible);
-              updateSvg(target);
-            }
+              if (target instanceof SVGSVGElement && trackedSvgs.has(target)) {
+                svgVisibility.set(target, visible);
+                updateSvg(target);
+              }
 
-            if (elementAnimations.has(target)) {
-              elementVisibility.set(target, visible);
-              updateElementAnimations(target);
-            }
-          });
-        },
-        { rootMargin: "96px" },
-      );
+              if (elementAnimations.has(target)) {
+                elementVisibility.set(target, visible);
+                updateElementAnimations(target);
+              }
+            });
+          },
+          { rootMargin: "96px" },
+        );
+      }
 
       mutationObserver = new MutationObserver((mutations) => {
         mutations.forEach((mutation) => {
           mutation.addedNodes.forEach((node) => {
             if (!(node instanceof Element)) return;
-            pendingMutationRoots.add(node);
+            if (
+              node instanceof SVGSVGElement ||
+              node.matches(CONTINUOUS_SVG_SELECTOR) ||
+              node.querySelector(CONTINUOUS_SVG_SELECTOR)
+            ) {
+              pendingSvgRoots.add(node);
+            }
           });
         });
 
-        if (pendingMutationRoots.size > 0 && mutationFrame === 0) {
-          mutationFrame = window.requestAnimationFrame(flushMutationRoots);
+        if (pendingSvgRoots.size > 0 && mutationFrame === 0) {
+          mutationFrame = window.requestAnimationFrame(flushSvgRoots);
         }
       });
       mutationObserver.observe(document.documentElement, {
@@ -423,7 +456,7 @@ export default function StandardMotionPerformance() {
       document.addEventListener("animationstart", handleAnimationStart, true);
       document.addEventListener("visibilitychange", handleVisibilityChange);
       scheduleInitialScan();
-      startRuntimeSampling();
+      scheduleRuntimeSampling();
     };
 
     const detachStandardRuntime = () => {
@@ -437,7 +470,7 @@ export default function StandardMotionPerformance() {
       intersectionObserver = null;
       if (mutationFrame) window.cancelAnimationFrame(mutationFrame);
       mutationFrame = 0;
-      pendingMutationRoots.clear();
+      pendingSvgRoots.clear();
       document.removeEventListener("animationstart", handleAnimationStart, true);
       document.removeEventListener("visibilitychange", handleVisibilityChange);
 
