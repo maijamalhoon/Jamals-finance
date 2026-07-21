@@ -3,13 +3,25 @@
 import { useState } from "react";
 import { Download } from "lucide-react";
 import { toast } from "sonner";
+import { useCurrency } from "@/components/currency/CurrencyProvider";
 import PageHeadingActionPortal from "@/components/layout/PageHeadingActionPortal";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/client";
 import { getAppDateKey } from "@/lib/dates";
-import { BASE_CURRENCY } from "@/lib/currency";
+import {
+  BASE_CURRENCY,
+  convertMoney,
+  getCurrencyFractionDigits,
+} from "@/lib/currency";
 import { serializeCsv } from "@/lib/csv";
 import { downloadBlob } from "@/lib/client-download";
+
+function roundForCurrency(value: number, fractionDigits: number) {
+  if (!Number.isFinite(value)) return null;
+  const factor = 10 ** fractionDigits;
+  const rounded = Math.round((value + Number.EPSILON) * factor) / factor;
+  return Object.is(rounded, -0) ? 0 : rounded;
+}
 
 export default function ExportButton({
   from,
@@ -19,11 +31,16 @@ export default function ExportButton({
   to?: string;
 }) {
   const supabase = createClient();
+  const { currency, rates, ratesReady } = useCurrency();
   const [loading, setLoading] = useState(false);
   const label = "Download Report";
 
   async function handleExport() {
     if (loading) return;
+    if (currency !== BASE_CURRENCY && !ratesReady) {
+      toast.error("Exchange rates are unavailable. The report was not exported.");
+      return;
+    }
     setLoading(true);
 
     try {
@@ -76,7 +93,7 @@ export default function ExportButton({
           type: transaction.type,
           category: relationName(transaction.categories),
           account: relationName(transaction.accounts),
-          amount: transaction.amount,
+          amount: Number(transaction.amount),
           note: transaction.note || "",
           reference: transaction.reference || "",
         })),
@@ -87,7 +104,7 @@ export default function ExportButton({
           type: "transfer",
           category: "Transfer",
           account: `${relationName(transfer.from_account) || "From account"} -> ${relationName(transfer.to_account) || "To account"}`,
-          amount: transfer.amount,
+          amount: Number(transfer.amount),
           note: transfer.note || "",
           reference: transfer.reference || "",
         })),
@@ -101,17 +118,30 @@ export default function ExportButton({
         return createdOrder !== 0 ? createdOrder : right.id.localeCompare(left.id);
       });
 
+      const fractionDigits = getCurrencyFractionDigits(currency);
       const rows = [
-        ["Date", "Type", "Category", "Account", `Amount (${BASE_CURRENCY})`, "Reference", "Note"],
-        ...activity.map((entry) => [
-          entry.date,
-          entry.type,
-          entry.category,
-          entry.account,
-          entry.amount,
-          entry.reference,
-          entry.note,
-        ]),
+        ["Date", "Type", "Category", "Account", `Amount (${currency})`, "Currency", "Reference", "Note"],
+        ...activity.map((entry) => {
+          const converted = convertMoney(
+            entry.amount,
+            BASE_CURRENCY,
+            currency,
+            rates,
+          );
+          const rounded = roundForCurrency(converted, fractionDigits);
+          if (rounded === null) throw new Error("Invalid converted export value");
+
+          return [
+            entry.date,
+            entry.type,
+            entry.category,
+            entry.account,
+            rounded,
+            currency,
+            entry.reference,
+            entry.note,
+          ];
+        }),
       ];
 
       const csv = serializeCsv(rows);
@@ -119,7 +149,7 @@ export default function ExportButton({
         type: "text/csv;charset=utf-8",
       });
       const rangeSuffix = from && to ? `${from}-to-${to}` : getAppDateKey();
-      downloadBlob(blob, `jamals-finance-${rangeSuffix}.csv`);
+      downloadBlob(blob, `jamals-finance-${currency}-${rangeSuffix}.csv`);
       toast.success("Export downloaded");
     } catch {
       toast.error("Could not export transactions. Please try again.");
@@ -136,6 +166,7 @@ export default function ExportButton({
         onClick={handleExport}
         loading={loading}
         loadingLabel="Exporting…"
+        disabled={loading || (currency !== BASE_CURRENCY && !ratesReady)}
         variant="outline"
         className="finance-control"
       >
