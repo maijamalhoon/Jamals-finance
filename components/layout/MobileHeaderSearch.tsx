@@ -13,7 +13,14 @@ import {
 } from "react";
 import { createPortal, flushSync } from "react-dom";
 
+import {
+  ANIMATION_MODE_CHANGE_EVENT,
+  getDocumentAnimationMode,
+  type AnimationMode,
+} from "@/lib/animation-preference";
+
 const SEARCH_EASE = [0.16, 1, 0.3, 1] as const;
+const STANDARD_SEARCH_EASE = [0.22, 1, 0.36, 1] as const;
 const AUTO_CLOSE_DELAY_MS = 6_000;
 
 type MobileHeaderSearchProps = {
@@ -36,6 +43,9 @@ export default function MobileHeaderSearch({
   const [query, setQuery] = useState("");
   const [viewportWidth, setViewportWidth] = useState(390);
   const [backdropReady, setBackdropReady] = useState(false);
+  const [animationMode, setAnimationMode] = useState<AnimationMode>(() =>
+    getDocumentAnimationMode(),
+  );
 
   const cancelBackdropFrame = useCallback(() => {
     if (backdropFrameRef.current === null) return;
@@ -144,8 +154,27 @@ export default function MobileHeaderSearch({
     const updateViewportWidth = () => setViewportWidth(window.innerWidth);
 
     updateViewportWidth();
-    window.addEventListener("resize", updateViewportWidth);
+    window.addEventListener("resize", updateViewportWidth, { passive: true });
     return () => window.removeEventListener("resize", updateViewportWidth);
+  }, []);
+
+  useEffect(() => {
+    const handleAnimationModeChange = (event: Event) => {
+      const nextMode =
+        (event as CustomEvent<AnimationMode>).detail ??
+        getDocumentAnimationMode();
+      setAnimationMode(nextMode);
+    };
+
+    window.addEventListener(
+      ANIMATION_MODE_CHANGE_EVENT,
+      handleAnimationModeChange,
+    );
+    return () =>
+      window.removeEventListener(
+        ANIMATION_MODE_CHANGE_EVENT,
+        handleAnimationModeChange,
+      );
   }, []);
 
   useEffect(() => {
@@ -196,16 +225,51 @@ export default function MobileHeaderSearch({
     closeSearch();
   };
 
+  const standardMode = animationMode === "standard";
   const searchTransition = reduceMotion
     ? { duration: 0.01 }
-    : { duration: 0.42, ease: SEARCH_EASE };
+    : standardMode
+      ? { duration: 0.24, ease: STANDARD_SEARCH_EASE }
+      : { duration: 0.42, ease: SEARCH_EASE };
   const glassTransition = reduceMotion
     ? { duration: 0.01 }
-    : { duration: 0.22, ease: SEARCH_EASE };
+    : standardMode
+      ? { duration: 0.16, ease: STANDARD_SEARCH_EASE }
+      : { duration: 0.22, ease: SEARCH_EASE };
 
   const expandedWidth = Math.max(44, Math.min(544, viewportWidth - 32));
   const expandedLeft = Math.max(16, (viewportWidth - expandedWidth) / 2);
-  const searchMotion = open
+  const collapsedRightInset = Math.max(0, expandedWidth - 44);
+  const collapsedClipPath = `inset(0px ${collapsedRightInset}px 0px 0px round 14px)`;
+
+  const standardSearchMotion = open
+    ? {
+        left: expandedLeft,
+        x: 0,
+        width: expandedWidth,
+        clipPath: "inset(0px 0px 0px 0px round 14px)",
+        opacity: 1,
+        scale: 1,
+      }
+    : controlsVisible
+      ? {
+          left: expandedLeft,
+          x: 68 - expandedLeft,
+          width: expandedWidth,
+          clipPath: collapsedClipPath,
+          opacity: 1,
+          scale: 1,
+        }
+      : {
+          left: expandedLeft,
+          x: -64 - expandedLeft,
+          width: expandedWidth,
+          clipPath: collapsedClipPath,
+          opacity: 0,
+          scale: 0.96,
+        };
+
+  const authoredSearchMotion = open
     ? {
         left: expandedLeft,
         x: 0,
@@ -228,6 +292,10 @@ export default function MobileHeaderSearch({
           opacity: 0,
           scale: 0.96,
         };
+
+  const searchMotion = standardMode
+    ? standardSearchMotion
+    : authoredSearchMotion;
 
   return (
     <>
@@ -264,7 +332,11 @@ export default function MobileHeaderSearch({
         initial={false}
         animate={searchMotion}
         transition={searchTransition}
-        className={`fixed top-[max(1rem,env(safe-area-inset-top))] z-[80] flex h-11 items-center overflow-hidden rounded-[14px] border bg-card/96 shadow-[0_8px_20px_rgb(15_23_42_/_0.1)] backdrop-blur-xl will-change-[left,width,transform,opacity] print:hidden lg:hidden dark:bg-surface-elevated/96 dark:shadow-[0_10px_24px_rgb(0_0_0_/_0.28)] ${
+        className={`fixed top-[max(1rem,env(safe-area-inset-top))] z-[80] flex h-11 items-center overflow-hidden rounded-[14px] border bg-card/96 shadow-[0_8px_20px_rgb(15_23_42_/_0.1)] backdrop-blur-xl print:hidden lg:hidden dark:bg-surface-elevated/96 dark:shadow-[0_10px_24px_rgb(0_0_0_/_0.28)] ${
+          standardMode
+            ? "will-change-[transform,clip-path,opacity]"
+            : "will-change-[left,width,transform,opacity]"
+        } ${
           open ? "border-brand/25" : "border-border dark:border-border-strong/70"
         } ${controlsVisible || open ? "" : "pointer-events-none"}`}
       >
