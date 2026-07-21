@@ -1,0 +1,83 @@
+.dot {
+  position: relative;
+  z-index: 1;
+  width: clamp(0.66rem, calc(0.63rem + 0.08vw), 0.72rem);
+  height: clamp(0.66rem, calc(0.63rem + 0.08vw), 0.72rem);
+  flex: 0 0 auto;
+  border-radius: 999px;
+  isolation: isolate;
+  transform-origin: center;
+  animation: spending-dot-core 2.35s ease-in-out infinite;
+  animation-delay: var(--spending-dot-delay, 0s);
+  will-change: transform, opacity;
+}
+
+.dot::after {
+  position: absolute;
+  z-index: -1;
+  inset: -0.34rem;
+  border-radius: inherit;
+  background: color-mix(
+    in srgb,
+    var(--spending-dot-accent),
+    transparent 68%
+  );
+  content: "";
+  opacity: 0;
+  transform: scale(0.42);
+  transform-origin: center;
+  animation: spending-dot-ring 2.35s ease-out infinite;
+  animation-delay: var(--spending-dot-delay, 0s);
+  will-change: transform, opacity;
+}
+
+@keyframes spending-dot-core {
+  0%,
+  100% {
+    opacity: 0.58;
+    transform: scale(0.88);
+  }
+
+  48% {
+    opacity: 1;
+    transform: scale(1.18);
+  }
+}
+
+@keyframes spending-dot-ring {
+  0%,
+  12% {
+    opacity: 0;
+    transform: scale(0.42);
+  }
+
+  48% {
+    opacity: 0.58;
+    transform: scale(0.88);
+  }
+
+  82%,
+  100% {
+    opacity: 0;
+    transform: scale(1.48);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dot,
+  .dot::after {
+    animation: none;
+  }
+
+  .dot {
+    opacity: 1;
+    transform: none;
+    will-change: auto;
+  }
+
+  .dot::after {
+    opacity: 0;
+    transform: none;
+    will-change: auto;
+  }
+}
