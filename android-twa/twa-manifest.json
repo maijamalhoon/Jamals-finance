@@ -1,0 +1,42 @@
+{
+  "packageId": "com.jamalsfinance.app",
+  "host": "jamals-finance-sable.vercel.app",
+  "name": "Jamal's Finance",
+  "launcherName": "Jamal's Finance",
+  "display": "standalone",
+  "themeColor": "#2956C8",
+  "themeColorDark": "#2956C8",
+  "navigationColor": "#F3F6FA",
+  "navigationColorDark": "#0B1220",
+  "navigationDividerColor": "#F3F6FA",
+  "navigationDividerColorDark": "#0B1220",
+  "backgroundColor": "#F3F6FA",
+  "enableNotifications": false,
+  "enableSiteSettingsShortcut": true,
+  "startUrl": "/?source=twa",
+  "iconUrl": "https://jamals-finance-sable.vercel.app/icons/icon-512.png",
+  "maskableIconUrl": "https://jamals-finance-sable.vercel.app/icons/icon-maskable-512.png",
+  "splashScreenFadeOutDuration": 300,
+  "generatorApp": "bubblewrap-cli",
+  "webManifestUrl": "https://jamals-finance-sable.vercel.app/manifest.webmanifest",
+  "fallbackType": "customtabs",
+  "orientation": "portrait-primary",
+  "appVersion": "1.0.0",
+  "appVersionCode": 1,
+  "minSdkVersion": 23,
+  "isChromeOSOnly": false,
+  "isMetaQuest": false,
+  "signingKey": {
+    "path": "./jamals-finance-upload-key.p12",
+    "alias": "jamals-finance"
+  },
+  "fingerprints": [
+    {
+      "name": "Jamal's Finance upload key",
+      "value": "2F:7F:D9:B0:1F:59:F7:FB:A0:93:3F:55:AA:F2:AF:FB:8A:B2:72:1E:B3:97:02:17:B8:5F:66:8E:9A:CD:AE:40"
+    }
+  ],
+  "additionalTrustedOrigins": [],
+  "shortcuts": [],
+  "retainedBundles": []
+}
