@@ -6,6 +6,7 @@ import {
   AlertTriangle,
   ArrowLeft,
   ArrowRight,
+  Building2,
   CheckCircle2,
   KeyRound,
   Landmark,
@@ -33,9 +34,16 @@ import {
 import { getUserMutationError } from "@/lib/user-errors";
 
 type LoadState = "checking" | "ready" | "temporarily_unavailable";
+type WorkspaceChoice = "undecided" | "personal" | "business";
 type OnboardingStep = 1 | 2 | 3;
 type ProfileField = "fullName" | "age";
 type AccountField = "accountName" | "openingBalance";
+
+type WorkspacePreference = {
+  default_workspace: "personal" | "business";
+  active_business_id: string | null;
+  onboarding_choice: WorkspaceChoice;
+};
 
 const ONBOARDING_STEP_KEY_PREFIX = "jamal-onboarding-step";
 
@@ -68,6 +76,8 @@ export default function OnboardingPage() {
   const openingBalanceRef = useRef<HTMLInputElement>(null);
   const saveInFlight = useRef(false);
 
+  const [workspaceChoice, setWorkspaceChoice] =
+    useState<WorkspaceChoice>("undecided");
   const [step, setStep] = useState<OnboardingStep>(1);
   const [userId, setUserId] = useState("");
   const [email, setEmail] = useState("");
@@ -80,6 +90,7 @@ export default function OnboardingPage() {
   const [hasAccount, setHasAccount] = useState(false);
   const [loadState, setLoadState] = useState<LoadState>("checking");
   const [retryCount, setRetryCount] = useState(0);
+  const [savingChoice, setSavingChoice] = useState(false);
   const [savingProfile, setSavingProfile] = useState(false);
   const [savingAccount, setSavingAccount] = useState(false);
   const [completing, setCompleting] = useState(false);
@@ -151,25 +162,62 @@ export default function OnboardingPage() {
       setProvider((user.app_metadata?.provider as string) ?? "email");
 
       try {
-        const [profileResult, accountResult] = await Promise.all([
+        const [profileResult, accountResult, preferenceResult] = await Promise.all([
           supabase
             .from("profiles")
             .select("full_name, age, onboarding_completed")
             .eq("id", user.id)
             .maybeSingle(),
           supabase.from("accounts").select("id").eq("user_id", user.id).limit(1),
+          supabase
+            .from("business_workspace_preferences")
+            .select("default_workspace, active_business_id, onboarding_choice")
+            .eq("user_id", user.id)
+            .maybeSingle(),
         ]);
 
         if (cancelled) return;
 
-        if (profileResult.error) {
-          setLoadError("We could not load your profile right now. Please try again.");
+        if (profileResult.error || preferenceResult.error) {
+          setLoadError("We could not load your workspace setup right now. Please try again.");
           setLoadState("temporarily_unavailable");
           return;
         }
 
         const profile = profileResult.data;
+        const preference = preferenceResult.data as WorkspacePreference | null;
+
         if (profile?.onboarding_completed) {
+          if (!preference || preference.onboarding_choice === "undecided") {
+            await supabase.from("business_workspace_preferences").upsert({
+              user_id: user.id,
+              default_workspace: "personal",
+              active_business_id: null,
+              onboarding_choice: "personal",
+              updated_at: new Date().toISOString(),
+            });
+            router.replace(destination);
+            return;
+          }
+
+          if (preference.default_workspace === "business") {
+            if (preference.active_business_id) {
+              const businessResult = await supabase
+                .from("businesses")
+                .select("slug")
+                .eq("id", preference.active_business_id)
+                .maybeSingle();
+
+              if (businessResult.data?.slug) {
+                router.replace(`/business/${businessResult.data.slug}`);
+                return;
+              }
+            }
+
+            router.replace("/business");
+            return;
+          }
+
           router.replace(destination);
           return;
         }
@@ -179,12 +227,14 @@ export default function OnboardingPage() {
           setAge(String(profile.age));
         }
 
+        const selectedChoice = preference?.onboarding_choice ?? "undecided";
+        setWorkspaceChoice(selectedChoice);
         setHasAccount(!accountResult.error && Boolean(accountResult.data?.length));
-        setStep(getSavedStep(user.id));
+        setStep(selectedChoice === "personal" ? getSavedStep(user.id) : 1);
         setLoadState("ready");
       } catch {
         if (cancelled) return;
-        setLoadError("We could not load your profile right now. Please try again.");
+        setLoadError("We could not load your workspace setup right now. Please try again.");
         setLoadState("temporarily_unavailable");
       }
     }
@@ -194,6 +244,37 @@ export default function OnboardingPage() {
       cancelled = true;
     };
   }, [retryCount, router, supabase]);
+
+  async function chooseWorkspace(choice: Exclude<WorkspaceChoice, "undecided">) {
+    if (!userId || savingChoice || saveInFlight.current) return;
+
+    saveInFlight.current = true;
+    setSavingChoice(true);
+    setFormError("");
+
+    try {
+      const { error } = await supabase.from("business_workspace_preferences").upsert({
+        user_id: userId,
+        default_workspace: choice,
+        active_business_id: null,
+        onboarding_choice: choice,
+        updated_at: new Date().toISOString(),
+      });
+
+      if (error) {
+        setFormError("Your workspace choice could not be saved. Please try again.");
+        return;
+      }
+
+      setWorkspaceChoice(choice);
+      setStep(1);
+    } catch {
+      setFormError("Your workspace choice could not be saved. Check your connection and try again.");
+    } finally {
+      saveInFlight.current = false;
+      setSavingChoice(false);
+    }
+  }
 
   function moveToStep(nextStep: OnboardingStep) {
     setFormError("");
@@ -259,6 +340,8 @@ export default function OnboardingPage() {
     saveInFlight.current = true;
     setSavingProfile(true);
 
+    const businessFlow = workspaceChoice === "business";
+
     try {
       const { error: saveError } = await supabase.from("profiles").upsert({
         id: userId,
@@ -266,12 +349,23 @@ export default function OnboardingPage() {
         full_name: fullName.trim(),
         age: numericAge,
         provider,
-        onboarding_completed: false,
+        onboarding_completed: businessFlow,
         updated_at: new Date().toISOString(),
       });
 
       if (saveError) {
         setFormError("We could not save your profile. Please try again.");
+        return;
+      }
+
+      if (businessFlow) {
+        try {
+          window.localStorage.removeItem(`${ONBOARDING_STEP_KEY_PREFIX}:${userId}`);
+        } catch {
+          // The database remains authoritative when browser storage is unavailable.
+        }
+        router.replace("/business?setup=1");
+        router.refresh();
         return;
       }
 
@@ -347,17 +441,26 @@ export default function OnboardingPage() {
     const numericAge = Number(age);
 
     try {
-      const { error: saveError } = await supabase.from("profiles").upsert({
-        id: userId,
-        email,
-        full_name: fullName.trim(),
-        age: numericAge,
-        provider,
-        onboarding_completed: true,
-        updated_at: new Date().toISOString(),
-      });
+      const [profileResult, preferenceResult] = await Promise.all([
+        supabase.from("profiles").upsert({
+          id: userId,
+          email,
+          full_name: fullName.trim(),
+          age: numericAge,
+          provider,
+          onboarding_completed: true,
+          updated_at: new Date().toISOString(),
+        }),
+        supabase.from("business_workspace_preferences").upsert({
+          user_id: userId,
+          default_workspace: "personal",
+          active_business_id: null,
+          onboarding_choice: "personal",
+          updated_at: new Date().toISOString(),
+        }),
+      ]);
 
-      if (saveError) {
+      if (profileResult.error || preferenceResult.error) {
         setFormError("We could not complete setup. Your progress is still saved.");
         return;
       }
@@ -421,53 +524,130 @@ export default function OnboardingPage() {
     );
   }
 
+  if (workspaceChoice === "undecided") {
+    return (
+      <AuthShell
+        eyebrow="Choose workspace"
+        progress="One account · two workspaces"
+        title="How will you use Jamal’s Finance?"
+        description="Choose your starting workspace. Personal and business records remain completely separate."
+        icon={ShieldCheck}
+      >
+        <div className="mx-auto w-full max-w-[42rem]">
+          <div className="grid gap-3 sm:grid-cols-2">
+            <button
+              type="button"
+              disabled={savingChoice}
+              onClick={() => void chooseWorkspace("personal")}
+              className="finance-focus group min-h-48 rounded-[var(--radius-card)] bg-surface-secondary p-5 text-left transition-[background-color,transform] hover:-translate-y-0.5 hover:bg-primary-soft disabled:pointer-events-none disabled:opacity-60 sm:p-6"
+            >
+              <span className="grid size-12 place-items-center rounded-[var(--radius-button)] bg-primary-soft text-primary">
+                <WalletCards className="size-6" aria-hidden="true" />
+              </span>
+              <span className="mt-5 block text-lg font-black text-text-primary">
+                Personal finance
+              </span>
+              <span className="mt-2 block text-sm leading-6 text-text-secondary">
+                Accounts, income, expenses, goals, investments, payables, and personal reports.
+              </span>
+              <span className="mt-5 inline-flex items-center gap-2 text-sm font-black text-primary">
+                Start personal setup <ArrowRight className="size-4" aria-hidden="true" />
+              </span>
+            </button>
+
+            <button
+              type="button"
+              disabled={savingChoice}
+              onClick={() => void chooseWorkspace("business")}
+              className="finance-focus group min-h-48 rounded-[var(--radius-card)] bg-surface-secondary p-5 text-left transition-[background-color,transform] hover:-translate-y-0.5 hover:bg-primary-soft disabled:pointer-events-none disabled:opacity-60 sm:p-6"
+            >
+              <span className="grid size-12 place-items-center rounded-[var(--radius-button)] bg-primary-soft text-primary">
+                <Building2 className="size-6" aria-hidden="true" />
+              </span>
+              <span className="mt-5 block text-lg font-black text-text-primary">
+                Business management
+              </span>
+              <span className="mt-2 block text-sm leading-6 text-text-secondary">
+                Tenant-isolated ERP, CRM, accounting, invoices, inventory, team roles, and reports.
+              </span>
+              <span className="mt-5 inline-flex items-center gap-2 text-sm font-black text-primary">
+                Start business setup <ArrowRight className="size-4" aria-hidden="true" />
+              </span>
+            </button>
+          </div>
+
+          <div className="auth-feedback-slot mt-3">
+            {formError ? <AuthFeedback tone="danger">{formError}</AuthFeedback> : null}
+          </div>
+
+          <div className="mt-5 flex items-start justify-center gap-2 text-center text-xs leading-5 text-text-tertiary">
+            <ShieldCheck className="mt-0.5 size-3.5 shrink-0 text-primary" aria-hidden="true" />
+            <span>You can use both workspaces and switch between them later.</span>
+          </div>
+        </div>
+      </AuthShell>
+    );
+  }
+
   const providerLabel =
     provider === "google"
       ? "Google"
       : provider === "email"
         ? "Email and password"
         : "Connected account";
+  const businessFlow = workspaceChoice === "business";
 
-  const shellCopy = {
-    1: {
-      eyebrow: "Welcome",
-      title: "Let’s set up your workspace",
-      description: "Add the essentials now. You can change every detail later from Settings.",
-      icon: UserRound,
-    },
-    2: {
-      eyebrow: "First account",
-      title: hasAccount ? "Your account is ready" : "Add your first account",
-      description: hasAccount
-        ? "We found an existing account, so your balances already have a reliable starting point."
-        : "This gives income, expenses, and transfers an accurate balance context.",
-      icon: Landmark,
-    },
-    3: {
-      eyebrow: "Ready",
-      title: "You’re ready to start",
-      description: "Your workspace is prepared for accurate transactions, balances, and reports.",
-      icon: ShieldCheck,
-    },
-  }[step];
+  const shellCopy = businessFlow
+    ? {
+        eyebrow: "Business setup",
+        title: "Set up your account identity",
+        description:
+          "Next, add your company name and nature of business so the correct ERP modules can be prepared.",
+        icon: Building2,
+      }
+    : {
+        1: {
+          eyebrow: "Welcome",
+          title: "Let’s set up your personal workspace",
+          description: "Add the essentials now. You can change every detail later from Settings.",
+          icon: UserRound,
+        },
+        2: {
+          eyebrow: "First account",
+          title: hasAccount ? "Your account is ready" : "Add your first account",
+          description: hasAccount
+            ? "We found an existing account, so your balances already have a reliable starting point."
+            : "This gives income, expenses, and transfers an accurate balance context.",
+          icon: Landmark,
+        },
+        3: {
+          eyebrow: "Ready",
+          title: "You’re ready to start",
+          description: "Your workspace is prepared for accurate transactions, balances, and reports.",
+          icon: ShieldCheck,
+        },
+      }[step];
+
+  const progressTotal = businessFlow ? 2 : 3;
+  const progressStep = businessFlow ? 1 : step;
 
   return (
     <AuthShell
       eyebrow={shellCopy.eyebrow}
-      progress={`Step ${step} of 3`}
+      progress={`Step ${progressStep} of ${progressTotal}`}
       title={shellCopy.title}
       description={shellCopy.description}
       icon={shellCopy.icon}
     >
       <div className="mx-auto w-full max-w-[38rem]">
         <div
-          className="mb-5 grid grid-cols-3 gap-2"
-          aria-label={`Onboarding progress: step ${step} of 3`}
+          className={`mb-5 grid gap-2 ${businessFlow ? "grid-cols-2" : "grid-cols-3"}`}
+          aria-label={`Onboarding progress: step ${progressStep} of ${progressTotal}`}
         >
-          {[1, 2, 3].map((item) => (
+          {Array.from({ length: progressTotal }, (_, index) => index + 1).map((item) => (
             <span
               key={item}
-              className={`h-1.5 rounded-full ${item <= step ? "bg-primary" : "bg-surface-secondary"}`}
+              className={`h-1.5 rounded-full ${item <= progressStep ? "bg-primary" : "bg-surface-secondary"}`}
               aria-hidden="true"
             />
           ))}
@@ -475,6 +655,20 @@ export default function OnboardingPage() {
 
         {step === 1 ? (
           <>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="-ml-2 mb-3 w-fit"
+              onClick={() => {
+                setFormError("");
+                setWorkspaceChoice("undecided");
+              }}
+              disabled={savingProfile}
+            >
+              <ArrowLeft className="h-4 w-4" /> Change workspace
+            </Button>
+
             <dl className="auth-identity-summary" aria-label="Signed-in identity">
               <div>
                 <dt>
@@ -541,13 +735,14 @@ export default function OnboardingPage() {
                 loadingLabel="Saving profile…"
                 disabled={savingProfile}
               >
-                Continue <ArrowRight className="h-4 w-4" />
+                {businessFlow ? "Continue to company setup" : "Continue"}{" "}
+                <ArrowRight className="h-4 w-4" />
               </AuthSubmitAction>
             </form>
           </>
         ) : null}
 
-        {step === 2 ? (
+        {!businessFlow && step === 2 ? (
           <form onSubmit={handleAccountSubmit} noValidate aria-busy={savingAccount}>
             <Button
               type="button"
@@ -661,7 +856,7 @@ export default function OnboardingPage() {
           </form>
         ) : null}
 
-        {step === 3 ? (
+        {!businessFlow && step === 3 ? (
           <div>
             <Button
               type="button"
@@ -727,7 +922,11 @@ export default function OnboardingPage() {
 
         <div className="mt-5 flex items-start justify-center gap-2 text-center text-xs leading-5 text-text-tertiary">
           <ShieldCheck className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary" aria-hidden="true" />
-          <span>Progress is saved to this signed-in account and completes only on the final step.</span>
+          <span>
+            {businessFlow
+              ? "Your company will receive its own isolated data, roles, currency, and accounting ledger."
+              : "Progress is saved to this signed-in account and completes only on the final step."}
+          </span>
         </div>
       </div>
     </AuthShell>
