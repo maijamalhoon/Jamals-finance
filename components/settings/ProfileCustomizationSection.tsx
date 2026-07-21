@@ -26,6 +26,7 @@ import {
 import { validateProfileName } from "@/lib/settings/security";
 import { createClient } from "@/lib/supabase/client";
 
+const AVATAR_BUCKET = "avatars";
 const MAX_AVATAR_BYTES = 3 * 1024 * 1024;
 const AVATAR_EXTENSIONS: Record<string, string> = {
   "image/jpeg": "jpg",
@@ -55,6 +56,10 @@ function getFallbackName(displayName: string, email: string) {
 
 function formatStat(value: number | null) {
   return value === null ? "—" : new Intl.NumberFormat("en-PK").format(value);
+}
+
+function getPrivateAvatarUrl(path: string) {
+  return `/api/profile/avatar?path=${encodeURIComponent(path)}&v=${Date.now()}`;
 }
 
 export default function ProfileCustomizationSection({
@@ -161,14 +166,15 @@ export default function ProfileCustomizationSection({
     setSaving(true);
     const name = validation.value;
     let nextAvatarUrl = currentAvatarUrl;
+    let nextAvatarPath: string | null = null;
 
     if (selectedFile) {
       const extension = AVATAR_EXTENSIONS[selectedFile.type];
       const avatarPath = `${userId}/profile.${extension}`;
       const { error: uploadError } = await supabase.storage
-        .from("avatars")
+        .from(AVATAR_BUCKET)
         .upload(avatarPath, selectedFile, {
-          cacheControl: "3600",
+          cacheControl: "0",
           contentType: selectedFile.type,
           upsert: true,
         });
@@ -179,8 +185,8 @@ export default function ProfileCustomizationSection({
         return;
       }
 
-      const { data } = supabase.storage.from("avatars").getPublicUrl(avatarPath);
-      nextAvatarUrl = `${data.publicUrl}?v=${Date.now()}`;
+      nextAvatarPath = avatarPath;
+      nextAvatarUrl = getPrivateAvatarUrl(avatarPath);
     }
 
     const nextMetadata: Record<string, string> = {
@@ -188,6 +194,7 @@ export default function ProfileCustomizationSection({
       name,
     };
     if (nextAvatarUrl) nextMetadata.avatar_url = nextAvatarUrl;
+    if (nextAvatarPath) nextMetadata.avatar_path = nextAvatarPath;
 
     const { error } = await supabase.auth.updateUser({ data: nextMetadata });
     setSaving(false);
@@ -202,6 +209,7 @@ export default function ProfileCustomizationSection({
     setOpen(false);
     setSelectedFile(null);
     setPreviewUrl(null);
+    if (fileInputRef.current) fileInputRef.current.value = "";
     window.dispatchEvent(
       new CustomEvent("jamal-profile-updated", {
         detail: { displayName: name, avatarUrl: nextAvatarUrl },
