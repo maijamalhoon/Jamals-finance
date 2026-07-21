@@ -1,26 +1,37 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
+import { motion } from "framer-motion";
 import {
   ArrowDownRight,
   ArrowUpRight,
   Banknote,
   Building2,
+  ChevronDown,
   Coins,
+  History,
   LucideIcon,
   Package,
   Pencil,
   Trash2,
   TrendingUp,
 } from "lucide-react";
-import { createClient } from "@/lib/supabase/client";
-import { useCurrency } from "@/components/currency/CurrencyProvider";
-import { BASE_CURRENCY, formatMoney } from "@/lib/currency";
-import InvestmentModal, { ExistingInvestment } from "./InvestmentModal";
 import { toast } from "sonner";
-import { getUserMutationError } from "@/lib/user-errors";
+
+import { useCurrency } from "@/components/currency/CurrencyProvider";
+import {
+  motionDurations,
+  motionEase,
+} from "@/components/motion/animation-config";
+import {
+  isSupportedCurrency,
+  type SupportedCurrency,
+} from "@/lib/currency";
 import { calculateInvestmentPosition } from "@/lib/investments/calculations";
+import { createClient } from "@/lib/supabase/client";
+import { getUserMutationError } from "@/lib/user-errors";
+import InvestmentModal, { ExistingInvestment } from "./InvestmentModal";
 
 const CONFIG: Record<
   string,
@@ -58,45 +69,9 @@ const CONFIG: Record<
   },
 };
 
-function formatUpdatedAt(value: string | null | undefined) {
-  if (!value) return "Manual price";
-
-  const date = new Date(value);
-
-  if (Number.isNaN(date.getTime())) return "Manual price";
-
-  return `Updated ${date.toLocaleString("en-PK", {
-    dateStyle: "medium",
-    timeStyle: "short",
-  })}`;
-}
-
-function formatPriceChange(
-  value: number | null | undefined,
-  source: string | null | undefined,
-) {
-  if (typeof value !== "number" || !Number.isFinite(value)) return null;
-
-  return `${value >= 0 ? "+" : ""}${value.toFixed(2)}%${
-    source === "coingecko" || source === "binance" ? " 24h" : ""
-  }`;
-}
-
 function toFiniteNumber(value: number | string | null | undefined) {
   const parsed = Number(value);
   return Number.isFinite(parsed) ? parsed : null;
-}
-
-function formatUsd(value: number | string | null | undefined) {
-  const parsed = toFiniteNumber(value);
-
-  if (parsed === null) return null;
-
-  return formatMoney(parsed, {
-    currency: "USD",
-    fromCurrency: "USD",
-    maximumFractionDigits: parsed >= 1 ? 2 : 6,
-  });
 }
 
 function formatQuantity(value: number) {
@@ -107,9 +82,7 @@ function formatQuantity(value: number) {
 
 function formatPurchaseDate(value: string | null | undefined) {
   if (!value) return "No date";
-
   const date = new Date(value);
-
   if (Number.isNaN(date.getTime())) return value;
 
   return date.toLocaleDateString("en-PK", {
@@ -117,6 +90,84 @@ function formatPurchaseDate(value: string | null | undefined) {
     month: "short",
     year: "numeric",
   });
+}
+
+function formatUpdatedAt(value: string | null | undefined) {
+  if (!value) return "Manual price";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "Manual price";
+
+  return `Updated ${date.toLocaleString("en-PK", {
+    dateStyle: "medium",
+    timeStyle: "short",
+  })}`;
+}
+
+function AssetIdentity({
+  inv,
+  icon: Icon,
+  iconClass,
+  iconBackground,
+}: {
+  inv: ExistingInvestment;
+  icon: LucideIcon;
+  iconClass: string;
+  iconBackground: string;
+}) {
+  const [imageFailed, setImageFailed] = useState(false);
+
+  if (inv.image_url && !imageFailed) {
+    return (
+      // eslint-disable-next-line @next/next/no-img-element
+      <img
+        src={inv.image_url}
+        alt=""
+        loading="lazy"
+        decoding="async"
+        onError={() => setImageFailed(true)}
+        className="h-12 w-12 shrink-0 rounded-full bg-surface-secondary object-contain p-1.5 sm:h-14 sm:w-14"
+      />
+    );
+  }
+
+  return (
+    <span
+      className={`grid h-12 w-12 shrink-0 place-items-center rounded-[18px] sm:h-14 sm:w-14 ${iconBackground}`}
+    >
+      <Icon
+        size={21}
+        strokeWidth={2.1}
+        className={iconClass}
+        aria-hidden="true"
+      />
+    </span>
+  );
+}
+
+function MiniValue({
+  label,
+  value,
+  helper,
+}: {
+  label: string;
+  value: string;
+  helper?: string;
+}) {
+  return (
+    <div className="min-w-0">
+      <p className="text-[10px] font-bold uppercase tracking-[0.1em] text-text-secondary">
+        {label}
+      </p>
+      <p className="mt-1 break-words text-sm font-bold tabular-nums text-text-primary [overflow-wrap:anywhere] sm:text-base">
+        {value}
+      </p>
+      {helper ? (
+        <p className="mt-0.5 truncate text-[10px] text-text-secondary">
+          {helper}
+        </p>
+      ) : null}
+    </div>
+  );
 }
 
 export default function InvestmentCard({
@@ -127,22 +178,49 @@ export default function InvestmentCard({
   lots?: ExistingInvestment[];
 }) {
   const router = useRouter();
-  const supabase = createClient();
+  const supabase = useMemo(() => createClient(), []);
   const { formatCurrency } = useCurrency();
 
   const [editingInvestment, setEditingInvestment] =
     useState<ExistingInvestment | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [historyOpen, setHistoryOpen] = useState(false);
 
   const cfg = CONFIG[inv.type] || CONFIG.other;
   const Icon = cfg.icon;
-  const isGrouped = Number(inv.item_count ?? 1) > 1;
-  const quoteLabel =
-    inv.price_source === "alpha_vantage"
-      ? "Latest quote"
-      : inv.is_live_priced
-        ? "Live"
-        : null;
+  const purchaseLots = useMemo(
+    () =>
+      (lots?.length ? [...lots] : [inv]).sort((left, right) => {
+        const leftDate = Date.parse(left.purchased_at || "") || 0;
+        const rightDate = Date.parse(right.purchased_at || "") || 0;
+        return rightDate - leftDate;
+      }),
+    [inv, lots],
+  );
+  const isGrouped = purchaseLots.length > 1;
+  const position = calculateInvestmentPosition(
+    inv.quantity,
+    inv.purchase_price,
+    inv.current_price,
+  );
+  const qty = position?.quantity ?? 0;
+  const buyPrice = position?.purchasePrice ?? 0;
+  const currentPrice = position?.currentPrice ?? 0;
+  const totalInvested = position?.totalInvested ?? 0;
+  const currentValue = position?.currentValue ?? 0;
+  const pnl = position?.totalPnL ?? 0;
+  const pnlPct = position?.totalPnLPct ?? 0;
+  const isProfit = pnl >= 0;
+  const progressRatio =
+    totalInvested > 0
+      ? Math.max(0, Math.min(1.35, currentValue / totalInvested))
+      : 0;
+  const progressWidth = Math.min(100, Math.max(3, progressRatio * 74));
+  const change24h =
+    typeof inv.price_change_24h === "number" &&
+    Number.isFinite(inv.price_change_24h)
+      ? inv.price_change_24h
+      : null;
   const priceSourceText =
     inv.price_source === "alpha_vantage"
       ? "Latest quote via Alpha Vantage"
@@ -151,37 +229,6 @@ export default function InvestmentCard({
         : inv.price_source === "binance"
           ? "Live via Binance"
           : "Manual asset";
-
-  const position = calculateInvestmentPosition(
-    inv.quantity,
-    inv.purchase_price,
-    inv.current_price,
-  );
-  const qty = position?.quantity ?? 0;
-  const buyPrice = position?.purchasePrice ?? 0;
-  const curPrice = position?.currentPrice ?? 0;
-  const originalBuyPrice = toFiniteNumber(inv.purchase_price_original);
-  const purchaseCurrency = inv.purchase_currency === "USD" ? "USD" : "PKR";
-  const liveUsdPrice =
-    inv.current_price_currency === "USD"
-      ? formatUsd(inv.current_price_original)
-      : null;
-  const currentUsdValue =
-    inv.current_price_currency === "USD" &&
-    toFiniteNumber(inv.current_price_original) !== null
-      ? formatUsd((toFiniteNumber(inv.current_price_original) ?? 0) * qty)
-      : null;
-  const purchaseSecondary =
-    purchaseCurrency === "USD" && originalBuyPrice !== null
-      ? `Original ${formatUsd(originalBuyPrice)}`
-      : `${BASE_CURRENCY} cost basis`;
-  const currentValue = position?.currentValue ?? 0;
-  const pnl = position?.totalPnL ?? 0;
-  const pnlPct = position?.totalPnLPct ?? 0;
-  const isProfit = pnl >= 0;
-  const change24h = formatPriceChange(inv.price_change_24h, inv.price_source);
-  const purchaseLots = lots?.length ? lots : [inv];
-  const singleLot = purchaseLots[0] ?? inv;
 
   async function handleDelete(target: ExistingInvestment) {
     if (!confirm(`Delete "${target.name}"? This cannot be undone.`)) return;
@@ -196,7 +243,10 @@ export default function InvestmentCard({
 
     if (error) {
       toast.error(
-        getUserMutationError(error, "Investment could not be deleted. Try again."),
+        getUserMutationError(
+          error,
+          "Investment could not be deleted. Try again.",
+        ),
       );
       return;
     }
@@ -204,210 +254,303 @@ export default function InvestmentCard({
     router.refresh();
   }
 
+  function originalLotPrice(lot: ExistingInvestment) {
+    const original = toFiniteNumber(lot.purchase_price_original);
+    const currency = isSupportedCurrency(lot.purchase_currency)
+      ? lot.purchase_currency
+      : null;
+
+    if (original === null || !currency) return null;
+
+    return formatCurrency(original, {
+      currency,
+      fromCurrency: currency,
+      maximumFractionDigits: currency === "JPY" ? 0 : original < 1 ? 8 : 2,
+    });
+  }
+
+  function lotSummary(lot: ExistingInvestment) {
+    const lotPosition = calculateInvestmentPosition(
+      lot.quantity,
+      lot.purchase_price,
+      lot.current_price,
+    );
+
+    return {
+      quantity: lotPosition?.quantity ?? 0,
+      buyPrice: lotPosition?.purchasePrice ?? 0,
+      invested: lotPosition?.totalInvested ?? 0,
+      currentValue: lotPosition?.currentValue ?? 0,
+      pnl: lotPosition?.totalPnL ?? 0,
+      pnlPct: lotPosition?.totalPnLPct ?? 0,
+      originalPrice: originalLotPrice(lot),
+      originalCurrency: isSupportedCurrency(lot.purchase_currency)
+        ? (lot.purchase_currency as SupportedCurrency)
+        : null,
+    };
+  }
+
   return (
     <>
-      <article className="finance-reference-card finance-hover-lift group relative flex h-full min-h-[342px] min-w-0 flex-col p-5">
-        {!isGrouped ? (
-          <div className="absolute right-4 top-4 flex gap-1 opacity-100 transition-opacity sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100">
-            <button
-              type="button"
-              onClick={() => setEditingInvestment(singleLot)}
-              className="icon-button h-8 w-8"
-              aria-label="Edit investment"
-            >
-              <Pencil size={12} />
-            </button>
-            <button
-              type="button"
-              onClick={() => handleDelete(inv)}
-              disabled={deletingId === inv.id}
-              className="icon-button h-8 w-8 hover:border-danger/30 hover:bg-danger/10 hover:text-danger"
-              aria-label="Delete investment"
-            >
-              <Trash2 size={12} />
-            </button>
-          </div>
-        ) : null}
-
-        <div className="flex min-w-0 items-start gap-3 pr-16">
-          <div
-            className={`flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-[16px] ${cfg.bg}`}
-          >
-            <Icon
-              size={18}
-              strokeWidth={2.2}
-              className={cfg.color}
-              aria-hidden="true"
-            />
-          </div>
-
-          <div className="min-w-0 flex-1">
-            <p className="truncate text-sm font-semibold text-text-primary">
-              {inv.name}
-            </p>
-            <div className="mt-1 flex min-w-0 flex-wrap items-center gap-1.5">
-              <span className={`truncate text-xs font-bold uppercase ${cfg.color}`}>
-                {inv.symbol ? inv.symbol.toUpperCase() : cfg.label}
-              </span>
-              {quoteLabel ? (
-                <span className="rounded-full border border-success/25 bg-success/10 px-2 py-0.5 text-[10px] font-bold uppercase text-success">
-                  {quoteLabel}
-                </span>
-              ) : null}
-              {isGrouped ? (
-                <span className="rounded-full border border-border bg-surface-secondary px-2 py-0.5 text-[10px] font-bold uppercase text-text-secondary">
-                  {inv.item_count} buys
-                </span>
-              ) : null}
+      <motion.article
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: motionDurations.base, ease: motionEase }}
+        className="finance-reference-card group min-w-0 overflow-hidden"
+      >
+        <div className="p-4 sm:p-5">
+          <div className="flex min-w-0 items-start justify-between gap-3">
+            <div className="flex min-w-0 items-center gap-3">
+              <AssetIdentity
+                inv={inv}
+                icon={Icon}
+                iconClass={cfg.color}
+                iconBackground={cfg.bg}
+              />
+              <div className="min-w-0">
+                <div className="flex min-w-0 flex-wrap items-center gap-2">
+                  <h3 className="truncate text-base font-semibold text-text-primary sm:text-lg">
+                    {inv.name}
+                  </h3>
+                  {inv.is_live_priced ? (
+                    <span className="rounded-full bg-success/10 px-2 py-0.5 text-[9px] font-black uppercase tracking-[0.08em] text-success">
+                      Live
+                    </span>
+                  ) : null}
+                </div>
+                <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px] text-text-secondary">
+                  <span className={`font-bold uppercase ${cfg.color}`}>
+                    {inv.symbol?.toUpperCase() || cfg.label}
+                  </span>
+                  <span>·</span>
+                  <span>
+                    {purchaseLots.length} buy
+                    {purchaseLots.length === 1 ? "" : "s"}
+                  </span>
+                  <span>·</span>
+                  <span>Qty {formatQuantity(qty)}</span>
+                </div>
+              </div>
             </div>
-          </div>
-        </div>
 
-        <div className="mt-4 flex flex-wrap items-center gap-2">
-          <span
-            className={`rounded-full px-2.5 py-1 text-[11px] font-semibold ${cfg.bg} ${cfg.color}`}
-          >
-            {cfg.label}
-          </span>
-          {change24h ? (
-            <span
-              className={`rounded-full border px-2.5 py-1 text-[11px] font-bold ${
-                Number(inv.price_change_24h ?? 0) >= 0
-                  ? "border-success/25 bg-success/10 text-success"
-                  : "border-danger/25 bg-danger/10 text-danger"
-              }`}
-            >
-              {change24h}
-            </span>
-          ) : null}
-        </div>
-
-        <div className="mt-5 min-w-0">
-          <p className="text-xs font-medium text-text-secondary">Current Value</p>
-          <p className="mt-1 break-words text-2xl font-bold tracking-normal text-text-primary [overflow-wrap:anywhere]">
-            {formatCurrency(currentValue)}
-          </p>
-          {currentUsdValue ? (
-            <p className="mt-1 text-xs text-text-secondary">{currentUsdValue}</p>
-          ) : null}
-        </div>
-
-        <div
-          className={`mt-4 flex min-w-0 items-center justify-between gap-3 rounded-[16px] border px-3 py-2.5 ${
-            isProfit
-              ? "border-success/25 bg-success/10 text-success"
-              : "border-danger/25 bg-danger/10 text-danger"
-          }`}
-        >
-          <span className="flex items-center gap-1.5 text-xs font-semibold">
-            {isProfit ? <ArrowUpRight size={14} /> : <ArrowDownRight size={14} />}
-            P/L
-          </span>
-          <span className="min-w-0 truncate text-right text-sm font-bold">
-            {isProfit ? "+" : "-"}
-            {formatCurrency(Math.abs(pnl))} ({Math.abs(pnlPct).toFixed(1)}%)
-          </span>
-        </div>
-
-        <div className="mt-4 grid gap-2 sm:grid-cols-2">
-          <div className="finance-panel-soft min-w-0 p-3">
-            <p className="text-[11px] text-text-secondary">Buy Price</p>
-            <p className="mt-1 break-words text-sm font-bold text-text-primary [overflow-wrap:anywhere]">
-              {formatCurrency(buyPrice)}
-            </p>
-            <p className="mt-1 break-words text-[10px] text-text-secondary [overflow-wrap:anywhere]">
-              {purchaseSecondary}
-            </p>
-          </div>
-          <div className="finance-panel-soft min-w-0 p-3">
-            <p className="text-[11px] text-text-secondary">
-              {inv.price_source === "alpha_vantage"
-                ? "Latest Quote"
-                : inv.is_live_priced
-                  ? "Live Price"
-                  : "Current Price"}
-            </p>
-            <p className="mt-1 break-words text-sm font-bold text-text-primary [overflow-wrap:anywhere]">
-              {formatCurrency(curPrice)}
-            </p>
-            {liveUsdPrice ? (
-              <p className="mt-1 break-words text-[10px] text-text-secondary [overflow-wrap:anywhere]">
-                {liveUsdPrice}
-              </p>
+            {change24h !== null ? (
+              <span
+                className={`inline-flex shrink-0 items-center gap-1 rounded-full px-2.5 py-1 text-[10px] font-bold ${
+                  change24h >= 0
+                    ? "bg-success/10 text-success"
+                    : "bg-danger/10 text-danger"
+                }`}
+              >
+                {change24h >= 0 ? (
+                  <ArrowUpRight size={12} />
+                ) : (
+                  <ArrowDownRight size={12} />
+                )}
+                {change24h >= 0 ? "+" : ""}
+                {change24h.toFixed(2)}% 24h
+              </span>
             ) : null}
           </div>
+
+          <div className="mt-5 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+            <div className="min-w-0">
+              <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-text-secondary">
+                Current value
+              </p>
+              <p className="mt-1 break-words text-2xl font-bold tabular-nums tracking-tight text-text-primary [overflow-wrap:anywhere] sm:text-3xl">
+                {formatCurrency(currentValue)}
+              </p>
+            </div>
+            <div className="min-w-0 sm:text-right">
+              <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-text-secondary">
+                Total profit / loss
+              </p>
+              <p
+                className={`mt-1 inline-flex items-center gap-1 text-base font-bold tabular-nums sm:justify-end sm:text-lg ${
+                  isProfit ? "text-success" : "text-danger"
+                }`}
+              >
+                {isProfit ? (
+                  <ArrowUpRight size={17} />
+                ) : (
+                  <ArrowDownRight size={17} />
+                )}
+                {isProfit ? "+" : "-"}
+                {formatCurrency(Math.abs(pnl))}
+                <span className="text-xs font-semibold">
+                  ({Math.abs(pnlPct).toFixed(1)}%)
+                </span>
+              </p>
+            </div>
+          </div>
+
+          <div className="mt-4">
+            <div className="relative h-2 overflow-hidden rounded-full bg-surface-secondary">
+              <div
+                className="absolute inset-y-0 left-0 rounded-full bg-text-secondary/30"
+                style={{ width: "74%" }}
+              />
+              <div
+                className={`absolute inset-y-0 left-0 rounded-full ${
+                  isProfit ? "bg-success" : "bg-danger"
+                }`}
+                style={{ width: `${progressWidth}%` }}
+              />
+              <span className="absolute inset-y-[-2px] left-[74%] w-px bg-text-primary/45" />
+            </div>
+            <div className="mt-2 flex items-center justify-between gap-3 text-[10px] font-medium text-text-secondary">
+              <span>Current position</span>
+              <span>Cost basis marker</span>
+            </div>
+          </div>
+
+          <div className="mt-5 grid grid-cols-2 gap-x-4 gap-y-4 border-t border-border/70 pt-4 sm:grid-cols-4">
+            <MiniValue
+              label="Invested"
+              value={formatCurrency(totalInvested)}
+              helper="Combined cost"
+            />
+            <MiniValue
+              label="Avg buy"
+              value={formatCurrency(buyPrice)}
+              helper="Weighted price"
+            />
+            <MiniValue
+              label={inv.is_live_priced ? "Live price" : "Current price"}
+              value={formatCurrency(currentPrice)}
+              helper={inv.is_live_priced ? priceSourceText : "Manual price"}
+            />
+            <MiniValue
+              label="Position"
+              value={`${formatQuantity(qty)} ${
+                inv.symbol?.toUpperCase() || "units"
+              }`}
+              helper={
+                isGrouped
+                  ? `${purchaseLots.length} separate buys`
+                  : formatPurchaseDate(purchaseLots[0]?.purchased_at)
+              }
+            />
+          </div>
         </div>
 
-        {isGrouped && purchaseLots.length > 0 ? (
-          <div className="mt-4 border-t border-border pt-4">
-            <div className="mb-2 flex items-center justify-between gap-2">
-              <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-text-secondary">
-                Individual buys
-              </p>
-              <span className="text-[11px] font-semibold text-text-secondary">
+        <div className="border-t border-border/70 bg-surface-secondary/35">
+          <button
+            type="button"
+            onClick={() => setHistoryOpen((open) => !open)}
+            aria-expanded={historyOpen}
+            className="finance-focus flex min-h-12 w-full items-center justify-between gap-3 px-4 text-left transition-colors hover:bg-hover/70 sm:px-5"
+          >
+            <span className="flex min-w-0 items-center gap-2">
+              <History size={15} className="shrink-0 text-active" />
+              <span className="truncate text-xs font-semibold text-text-primary">
+                Purchase history and options
+              </span>
+              <span className="rounded-full bg-surface-primary px-2 py-0.5 text-[10px] font-bold text-text-secondary">
                 {purchaseLots.length}
               </span>
-            </div>
-            <div className="space-y-2">
-              {purchaseLots.map((lot) => {
-                const lotQuantity = Number(lot.quantity);
-                const lotBuyPrice = Number(lot.purchase_price);
-                const lotTotal =
-                  Number.isFinite(lotQuantity) && Number.isFinite(lotBuyPrice)
-                    ? lotQuantity * lotBuyPrice
-                    : 0;
+            </span>
+            <ChevronDown
+              size={16}
+              className={`shrink-0 text-text-secondary transition-transform duration-200 ${
+                historyOpen ? "rotate-180" : ""
+              }`}
+            />
+          </button>
+
+          {historyOpen ? (
+            <motion.div
+              initial={{ opacity: 0, y: -4 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: motionDurations.fast, ease: motionEase }}
+              className="space-y-2.5 border-t border-border/70 p-3 sm:p-4"
+            >
+              {purchaseLots.map((lot, index) => {
+                const summary = lotSummary(lot);
+                const lotProfit = summary.pnl >= 0;
 
                 return (
                   <div
                     key={lot.id}
-                    className="flex min-w-0 items-center gap-2 rounded-[14px] border border-border bg-surface-secondary px-3 py-2"
+                    className="rounded-[17px] bg-surface-primary p-3.5 sm:p-4"
                   >
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate text-xs font-bold text-text-primary">
-                        {formatPurchaseDate(lot.purchased_at)}
-                      </p>
-                      <p className="mt-0.5 truncate text-[11px] text-text-secondary">
-                        Qty {formatQuantity(lotQuantity)} - {formatCurrency(lotTotal)}
-                      </p>
+                    <div className="flex min-w-0 items-start justify-between gap-3">
+                      <div className="flex min-w-0 items-start gap-3">
+                        <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-surface-secondary text-[10px] font-black text-active">
+                          {purchaseLots.length - index}
+                        </span>
+                        <div className="min-w-0">
+                          <p className="text-xs font-semibold text-text-primary">
+                            Bought {formatPurchaseDate(lot.purchased_at)}
+                          </p>
+                          <p className="mt-1 text-[11px] text-text-secondary">
+                            Qty {formatQuantity(summary.quantity)} ·{" "}
+                            {formatCurrency(summary.invested)} invested
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="flex shrink-0 items-center gap-1">
+                        <button
+                          type="button"
+                          onClick={() => setEditingInvestment(lot)}
+                          className="icon-button h-8 w-8"
+                          aria-label={`Edit ${lot.name} buy`}
+                        >
+                          <Pencil size={12} />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleDelete(lot)}
+                          disabled={deletingId === lot.id}
+                          className="icon-button h-8 w-8 hover:bg-danger/10 hover:text-danger"
+                          aria-label={`Delete ${lot.name} buy`}
+                        >
+                          <Trash2 size={12} />
+                        </button>
+                      </div>
                     </div>
-                    <button
-                      type="button"
-                      onClick={() => setEditingInvestment(lot)}
-                      className="icon-button h-8 w-8"
-                      aria-label={`Edit ${lot.name} buy`}
-                    >
-                      <Pencil size={12} />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleDelete(lot)}
-                      disabled={deletingId === lot.id}
-                      className="icon-button h-8 w-8 hover:border-danger/30 hover:bg-danger/10 hover:text-danger"
-                      aria-label={`Delete ${lot.name} buy`}
-                    >
-                      <Trash2 size={12} />
-                    </button>
+
+                    <div className="mt-3 grid grid-cols-2 gap-3 border-t border-border/60 pt-3 sm:grid-cols-4">
+                      <MiniValue
+                        label="Buy price"
+                        value={formatCurrency(summary.buyPrice)}
+                        helper={
+                          summary.originalPrice && summary.originalCurrency
+                            ? `Original ${summary.originalPrice}`
+                            : undefined
+                        }
+                      />
+                      <MiniValue
+                        label="Current value"
+                        value={formatCurrency(summary.currentValue)}
+                      />
+                      <MiniValue
+                        label="P/L"
+                        value={`${lotProfit ? "+" : "-"}${formatCurrency(
+                          Math.abs(summary.pnl),
+                        )}`}
+                        helper={`${lotProfit ? "+" : "-"}${Math.abs(
+                          summary.pnlPct,
+                        ).toFixed(1)}%`}
+                      />
+                      <MiniValue
+                        label="Source"
+                        value={lot.is_live_priced ? "Live price" : "Manual"}
+                        helper={
+                          lot.is_live_priced
+                            ? formatUpdatedAt(lot.price_updated_at)
+                            : undefined
+                        }
+                      />
+                    </div>
                   </div>
                 );
               })}
-            </div>
-          </div>
-        ) : null}
-
-        <div className="mt-auto flex flex-wrap items-center justify-between gap-2 border-t border-border pt-4 text-[11px] text-text-secondary">
-          <span>
-            Qty{" "}
-            <span className="font-semibold text-text-primary">
-              {formatQuantity(qty)}
-            </span>
-          </span>
-          <span className="truncate">
-            {inv.is_live_priced
-              ? `${priceSourceText} | ${formatUpdatedAt(inv.price_updated_at)}`
-              : "Manual asset"}
-          </span>
+            </motion.div>
+          ) : null}
         </div>
-      </article>
+      </motion.article>
 
       <InvestmentModal
         open={Boolean(editingInvestment)}
