@@ -96,6 +96,8 @@ import "./mobile-control-reveal-polish.css";
 import "./mobile-header-search-borderless.css";
 // Prevent the drawer's programmatically focused first link from looking active.
 import "./mobile-sidebar-focus-state-fix.css";
+// Large dashboard currency values must always fit inside compact mobile widths.
+import "./mobile-amount-fit.css";
 
 export const dynamic = "force-dynamic";
 
