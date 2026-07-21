@@ -273,9 +273,7 @@ export default function JamalMenu({
               <span className="block truncate text-[13px] font-bold leading-4 text-text-primary">
                 {displayName}
               </span>
-              <span className="mt-0.5 block truncate text-[10px] font-medium leading-3.5 text-text-tertiary">
-                {profileSubtitle}
-              </span>
+              <span className="sr-only">{profileSubtitle}</span>
             </span>
           </DropdownMenuLabel>
         </DropdownMenuGroup>
