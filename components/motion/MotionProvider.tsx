@@ -4,6 +4,7 @@ import { MotionConfig } from "framer-motion";
 import { useEffect, useState, type ReactNode } from "react";
 import GlobalScrollToTop from "@/components/layout/GlobalScrollToTop";
 import { motionEase } from "@/components/motion/animation-config";
+import StandardMotionPerformance from "@/components/performance/StandardMotionPerformance";
 import {
   ANIMATION_MODE_CHANGE_EVENT,
   ANIMATION_STORAGE_KEY,
@@ -361,6 +362,7 @@ export default function MotionProvider({ children }: { children: ReactNode }) {
         ease: motionEase,
       }}
     >
+      <StandardMotionPerformance />
       {children}
       {/* Route-wide overlay handles both document and dashboard scroll containers. */}
       <GlobalScrollToTop />
