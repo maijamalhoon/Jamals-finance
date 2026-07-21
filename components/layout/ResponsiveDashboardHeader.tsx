@@ -4,7 +4,6 @@ import dynamic from "next/dynamic";
 import { useEffect, useState, type ReactNode } from "react";
 
 import HeaderSearchAutoClose from "@/components/layout/HeaderSearchAutoClose";
-import MobileHeaderSearchEnhancer from "@/components/layout/MobileHeaderSearchEnhancer";
 
 const DesktopHeader = dynamic(() => import("@/components/layout/Header"), {
   ssr: false,
@@ -16,8 +15,6 @@ const CompactHeader = dynamic(
 );
 
 const DESKTOP_HEADER_SEARCH_TRIGGER_SELECTOR = "[data-header-search-trigger]";
-const MOBILE_HEADER_SEARCH_TRIGGER_SELECTOR =
-  'form[data-mobile-control-cluster][role="search"] button[aria-expanded]';
 
 type HeaderMode = "desktop" | "compact" | null;
 
@@ -63,51 +60,36 @@ function HeaderSearchOpenFallback() {
   return null;
 }
 
-function MobileSearchPointerDownGuard() {
-  useEffect(() => {
-    let boundCleanup: (() => void) | null = null;
-    let mountObserver: MutationObserver | null = null;
+function MobileHeaderSearchStyles() {
+  return (
+    <style jsx global>{`
+      @media (max-width: 1023px) {
+        form[data-mobile-control-cluster][role="search"][aria-label="Search transactions"] {
+          border-radius: clamp(1.1rem, 2.5vw, 1.45rem);
+        }
 
-    const bindTrigger = () => {
-      const trigger = document.querySelector<HTMLButtonElement>(
-        MOBILE_HEADER_SEARCH_TRIGGER_SELECTOR,
-      );
+        form[data-mobile-control-cluster][role="search"][aria-label="Search transactions"]
+          > button:first-child,
+        form[data-mobile-control-cluster][role="search"][aria-label="Search transactions"]
+          > button:last-child {
+          border-radius: 999px !important;
+          background: transparent !important;
+          box-shadow: none !important;
+        }
 
-      if (!trigger) return false;
+        form[data-mobile-control-cluster][role="search"][aria-label="Search transactions"]
+          > button:first-child {
+          color: var(--text-secondary) !important;
+        }
 
-      const handlePointerDown = (event: PointerEvent) => {
-        if (!event.isPrimary || event.button !== 0) return;
-
-        // The mobile search expands and moves. Prevent the legacy pointer-down
-        // enhancer from opening it before pointer-up; the normal click remains
-        // untouched and becomes the single reliable open action.
-        event.stopImmediatePropagation();
-      };
-
-      trigger.addEventListener("pointerdown", handlePointerDown, true);
-      boundCleanup = () => {
-        trigger.removeEventListener("pointerdown", handlePointerDown, true);
-      };
-
-      return true;
-    };
-
-    if (!bindTrigger()) {
-      mountObserver = new MutationObserver(() => {
-        if (!bindTrigger()) return;
-        mountObserver?.disconnect();
-        mountObserver = null;
-      });
-      mountObserver.observe(document.body, { childList: true, subtree: true });
-    }
-
-    return () => {
-      mountObserver?.disconnect();
-      boundCleanup?.();
-    };
-  }, []);
-
-  return null;
+        form[data-mobile-control-cluster][role="search"][aria-label="Search transactions"]
+          input {
+          color: var(--text-primary) !important;
+          caret-color: var(--brand) !important;
+        }
+      }
+    `}</style>
+  );
 }
 
 export default function ResponsiveDashboardHeader({
@@ -162,9 +144,8 @@ export default function ResponsiveDashboardHeader({
 
   return (
     <>
-      <MobileSearchPointerDownGuard />
       <CompactHeader notificationSlot={notificationSlot} />
-      <MobileHeaderSearchEnhancer />
+      <MobileHeaderSearchStyles />
     </>
   );
 }
