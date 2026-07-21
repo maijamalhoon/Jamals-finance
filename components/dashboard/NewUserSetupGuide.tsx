@@ -63,7 +63,7 @@ function SetupActionButton({
     <button
       type="button"
       onClick={onClick}
-      className={`finance-focus inline-flex min-h-11 w-full items-center justify-center gap-2 whitespace-nowrap px-4 text-xs font-black sm:w-auto ${toneClass}`}
+      className={`finance-focus inline-flex min-h-10 w-full items-center justify-center gap-2 whitespace-nowrap px-3.5 text-xs font-black sm:w-auto ${toneClass}`}
     >
       {children}
       <ArrowRight aria-hidden="true" className="h-3.5 w-3.5" />
@@ -84,7 +84,7 @@ function SetupActionLink({
     <Link
       href={href}
       aria-label={ariaLabel}
-      className="finance-focus inline-flex min-h-11 w-full items-center justify-center gap-2 whitespace-nowrap rounded-[var(--oneui-button-radius)] bg-primary-soft px-4 text-xs font-black text-primary transition-[background-color,color,transform] hover:bg-hover sm:w-auto"
+      className="finance-focus inline-flex min-h-10 w-full items-center justify-center gap-2 whitespace-nowrap rounded-[var(--oneui-button-radius)] bg-primary-soft px-3.5 text-xs font-black text-primary transition-[background-color,color,transform] hover:bg-hover sm:w-auto"
     >
       {children}
       <ArrowRight aria-hidden="true" className="h-3.5 w-3.5" />
@@ -95,20 +95,22 @@ function SetupActionLink({
 function SetupRow({ step, featured = false }: { step: SetupStep; featured?: boolean }) {
   return (
     <li
-      className={`min-w-0 rounded-[var(--oneui-tile-radius)] p-3.5 sm:p-4 ${
+      className={`relative min-w-0 overflow-hidden rounded-[var(--oneui-tile-radius)] p-3.5 sm:p-4 ${
         featured ? "bg-primary-soft" : "bg-surface-secondary"
       }`}
     >
-      <div className="flex min-w-0 items-start gap-3">
+      {featured ? <span aria-hidden="true" className="absolute inset-y-3 left-0 w-1 rounded-r-full bg-primary" /> : null}
+
+      <div className="grid min-w-0 gap-3 sm:grid-cols-[auto_minmax(0,1fr)] sm:items-start lg:grid-cols-[auto_minmax(0,1fr)_auto] lg:items-center">
         <span
-          className={`grid h-9 w-9 shrink-0 place-items-center rounded-[var(--oneui-button-radius)] ${
+          className={`grid h-9 w-9 shrink-0 place-items-center rounded-full ${
             featured ? "bg-card text-primary" : "bg-card text-text-secondary"
           }`}
         >
           {step.icon}
         </span>
 
-        <div className="min-w-0 flex-1">
+        <div className="min-w-0">
           <div className="flex min-w-0 flex-wrap items-center gap-2">
             <p className="text-sm font-black leading-5 text-text-primary">{step.title}</p>
             {featured ? (
@@ -119,10 +121,10 @@ function SetupRow({ step, featured = false }: { step: SetupStep; featured?: bool
           </div>
           <p className="mt-0.5 text-xs leading-5 text-text-secondary">{step.detail}</p>
         </div>
-      </div>
 
-      <div className="mt-3 flex w-full justify-start pl-12 sm:justify-end sm:pl-0">
-        {step.action}
+        <div className="min-w-0 sm:col-span-2 sm:pl-12 lg:col-span-1 lg:pl-0 lg:justify-self-end">
+          {step.action}
+        </div>
       </div>
     </li>
   );
@@ -288,6 +290,13 @@ export default function NewUserSetupGuide({
   const visibleSteps = incompleteCoreSteps.slice(0, 3);
   const optionalSteps = steps.filter((step) => step.optional && !step.complete);
   const nextStep = visibleSteps[0] ?? optionalSteps[0] ?? null;
+  const remainingStepCount = incompleteCoreSteps.length;
+  const stepGridClass =
+    visibleSteps.length <= 1
+      ? "grid-cols-1"
+      : visibleSteps.length === 2
+        ? "md:grid-cols-2"
+        : "md:grid-cols-2 xl:grid-cols-3";
 
   if (!earlyUser || !hydrated) {
     return null;
@@ -323,37 +332,36 @@ export default function NewUserSetupGuide({
         aria-labelledby="new-user-setup-title"
         className="overflow-hidden rounded-[var(--radius-card)] bg-card shadow-sm dark:shadow-none"
       >
-        <div className="p-4 sm:p-5 lg:p-6">
-          <div className="grid min-w-0 gap-4 md:grid-cols-[minmax(0,1fr)_auto] md:items-start">
-            <div className="flex min-w-0 items-start gap-3">
-              <span className="grid h-10 w-10 shrink-0 place-items-center rounded-[var(--oneui-button-radius)] bg-primary-soft text-primary sm:h-11 sm:w-11">
-                {nextStep?.icon ?? <CheckCircle2 aria-hidden="true" className="h-4.5 w-4.5" />}
-              </span>
+        <div className="p-4 sm:p-5">
+          <div className="flex min-w-0 items-start gap-3">
+            <span className="mt-0.5 grid h-9 w-9 shrink-0 place-items-center rounded-full bg-primary-soft text-primary sm:h-10 sm:w-10">
+              {nextStep?.icon ?? <CheckCircle2 aria-hidden="true" className="h-4.5 w-4.5" />}
+            </span>
 
-              <div className="min-w-0 flex-1">
-                <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
-                  <h2 id="new-user-setup-title" className="text-sm font-black text-text-primary sm:text-base">
-                    Setup progress
-                  </h2>
-                  <span className="rounded-full bg-primary-soft px-2 py-0.5 text-[11px] font-black text-primary">
-                    {progress}%
-                  </span>
-                </div>
-                <p className="mt-1 max-w-2xl text-xs leading-5 text-text-secondary sm:text-sm">
-                  Finish the essentials to keep balances, reports, and insights accurate.
-                </p>
+            <div className="min-w-0 flex-1">
+              <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
+                <h2 id="new-user-setup-title" className="text-sm font-black text-text-primary sm:text-base">
+                  Setup progress
+                </h2>
+                <span className="rounded-full bg-primary-soft px-2 py-0.5 text-[11px] font-black text-primary">
+                  {completedMainSteps}/{mainSteps.length}
+                </span>
               </div>
+              <p className="mt-1 max-w-2xl text-xs leading-5 text-text-secondary sm:text-sm">
+                Complete the essentials once, then your dashboard stays accurate automatically.
+              </p>
             </div>
 
-            <div className="flex w-full items-center gap-2 md:w-auto md:justify-end">
+            <div className="flex shrink-0 items-center gap-1">
               <button
                 type="button"
                 aria-expanded={expanded}
                 aria-controls="new-user-setup-steps"
                 onClick={() => setExpanded((current) => !current)}
-                className="finance-focus primary-action inline-flex min-h-11 flex-1 items-center justify-center gap-2 px-4 text-xs font-black md:flex-none"
+                className="finance-focus inline-flex min-h-9 items-center justify-center gap-1.5 rounded-[var(--oneui-button-radius)] px-2.5 text-xs font-black text-primary transition-[background-color,color,transform] hover:bg-primary-soft sm:px-3"
               >
-                {expanded ? "Hide steps" : "View steps"}
+                <span className="hidden sm:inline">{expanded ? "Hide steps" : "View steps"}</span>
+                <span className="sm:hidden">{expanded ? "Hide" : "Steps"}</span>
                 {expanded ? (
                   <ChevronUp aria-hidden="true" className="h-3.5 w-3.5" />
                 ) : (
@@ -364,20 +372,14 @@ export default function NewUserSetupGuide({
                 type="button"
                 aria-label="Dismiss setup guide"
                 onClick={dismissGuide}
-                className="finance-focus grid h-11 w-11 shrink-0 place-items-center rounded-[var(--oneui-button-radius)] text-text-secondary transition-[background-color,color,transform] hover:bg-surface-secondary hover:text-text-primary"
+                className="finance-focus grid h-9 w-9 shrink-0 place-items-center rounded-full text-text-muted transition-[background-color,color,transform] hover:bg-surface-secondary hover:text-text-primary"
               >
                 <X aria-hidden="true" className="h-4 w-4" />
               </button>
             </div>
           </div>
 
-          <div className="mt-4">
-            <div className="mb-2 flex items-center justify-between gap-3 text-[11px] font-bold text-text-secondary sm:text-xs">
-              <span>
-                {completedMainSteps} of {mainSteps.length} essential steps complete
-              </span>
-              <span className="shrink-0 text-primary">{progress}%</span>
-            </div>
+          <div className="mt-4 grid min-w-0 gap-2 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center sm:gap-4">
             <div
               className="h-1.5 overflow-hidden rounded-full bg-surface-secondary"
               role="progressbar"
@@ -391,37 +393,37 @@ export default function NewUserSetupGuide({
                 style={{ width: `${progress}%` }}
               />
             </div>
+            <p className="text-[11px] font-bold text-text-muted sm:text-xs">
+              {progress}% complete
+            </p>
           </div>
 
           {!expanded && nextStep ? (
-            <div className="mt-4 grid min-w-0 gap-3 rounded-[var(--oneui-tile-radius)] bg-surface-secondary p-3.5 sm:grid-cols-[auto_minmax(0,1fr)_auto] sm:items-center sm:gap-4 sm:p-4">
-              <span className="grid h-9 w-9 shrink-0 place-items-center rounded-[var(--oneui-button-radius)] bg-card text-primary">
-                {nextStep.icon}
-              </span>
-              <div className="min-w-0">
-                <p className="text-[10px] font-black uppercase tracking-wide text-primary">Next step</p>
-                <p className="mt-0.5 text-sm font-black leading-5 text-text-primary">{nextStep.title}</p>
-                <p className="mt-0.5 text-xs leading-5 text-text-secondary">{nextStep.detail}</p>
+            <div className="mt-4 grid min-w-0 gap-3 rounded-[var(--oneui-tile-radius)] bg-surface-secondary p-3.5 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center sm:gap-4 sm:p-4">
+              <div className="flex min-w-0 items-start gap-3">
+                <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-card text-primary">
+                  {nextStep.icon}
+                </span>
+                <div className="min-w-0">
+                  <p className="text-[10px] font-black uppercase tracking-wide text-primary">Next step</p>
+                  <p className="mt-0.5 text-sm font-black leading-5 text-text-primary">{nextStep.title}</p>
+                  <p className="mt-0.5 text-xs leading-5 text-text-secondary">{nextStep.detail}</p>
+                </div>
               </div>
               <div className="min-w-0 sm:justify-self-end">{nextStep.action}</div>
             </div>
           ) : null}
 
           {expanded ? (
-            <div id="new-user-setup-steps" className="mt-5">
-              <div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between sm:gap-4">
-                <div className="min-w-0">
-                  <p className="text-sm font-black text-text-primary">Recommended next steps</p>
-                  <p className="mt-0.5 text-xs leading-5 text-text-secondary">
-                    Complete one task at a time. Progress updates automatically from saved records.
-                  </p>
-                </div>
+            <div id="new-user-setup-steps" className="mt-4">
+              <div className="mb-3 flex items-center justify-between gap-3">
+                <p className="text-sm font-black text-text-primary">Finish your setup</p>
                 <p className="shrink-0 text-xs font-bold text-text-muted">
-                  {completedMainSteps}/{mainSteps.length} complete
+                  {remainingStepCount} remaining
                 </p>
               </div>
 
-              <ul className="mt-3 grid gap-2.5 md:grid-cols-2 xl:grid-cols-3">
+              <ul className={`grid gap-3 ${stepGridClass}`}>
                 {visibleSteps.map((setupStep, index) => (
                   <SetupRow key={setupStep.id} step={setupStep} featured={index === 0} />
                 ))}
