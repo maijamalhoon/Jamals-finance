@@ -104,6 +104,7 @@ export default function InvestmentCashOutModal({
 
   const [lotId, setLotId] = useState("");
   const [amount, setAmount] = useState("");
+  const [maximumSelected, setMaximumSelected] = useState(false);
   const [accountId, setAccountId] = useState("");
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [loadingOptions, setLoadingOptions] = useState(false);
@@ -120,8 +121,9 @@ export default function InvestmentCashOutModal({
     const nextLotId = lots[0]?.id ?? "";
     setLotId(nextLotId);
     setAmount("");
+    setMaximumSelected(false);
     setError("");
-  }, [lots, open]);
+  }, [displayCurrency, lots, open]);
 
   useEffect(() => {
     if (!open || !selectedLot) return;
@@ -203,6 +205,7 @@ export default function InvestmentCashOutModal({
     Number.isFinite(currentPriceInDisplayCurrency) && currentPriceInDisplayCurrency > 0
       ? currentPriceInDisplayCurrency * availableQuantity
       : 0;
+  const amountTolerance = displayCurrency === "JPY" ? 0.5 : 0.005;
   const parsedAmount = parseFinite(amount);
   const rawQuantity =
     parsedAmount !== null &&
@@ -211,10 +214,10 @@ export default function InvestmentCashOutModal({
       ? parsedAmount / currentPriceInDisplayCurrency
       : null;
   const quantityToWithdraw =
-    rawQuantity !== null &&
-    maximumAmount > 0 &&
-    Math.abs((parsedAmount ?? 0) - maximumAmount) <=
-      Math.max(1e-8, maximumAmount * 1e-9)
+    maximumSelected ||
+    (rawQuantity !== null &&
+      maximumAmount > 0 &&
+      Math.abs((parsedAmount ?? 0) - maximumAmount) <= amountTolerance)
       ? availableQuantity
       : rawQuantity;
   const withdrawalRate = getRate(displayCurrency, BASE_CURRENCY);
@@ -240,7 +243,7 @@ export default function InvestmentCashOutModal({
       parsedAmount === null ||
       parsedAmount <= 0 ||
       maximumAmount <= 0 ||
-      parsedAmount > maximumAmount + Math.max(1e-8, maximumAmount * 1e-9) ||
+      parsedAmount > maximumAmount + amountTolerance ||
       quantityToWithdraw === null ||
       quantityToWithdraw <= 0 ||
       quantityToWithdraw > availableQuantity
@@ -345,6 +348,7 @@ export default function InvestmentCashOutModal({
                 onChange={(event) => {
                   setLotId(event.target.value);
                   setAmount("");
+                  setMaximumSelected(false);
                   setError("");
                 }}
                 className="finance-focus h-11 w-full rounded-[12px] border border-border bg-card px-3 text-sm font-semibold text-text-primary"
@@ -365,9 +369,11 @@ export default function InvestmentCashOutModal({
               </label>
               <button
                 type="button"
-                onClick={() =>
-                  setAmount(formatInputNumber(maximumAmount, displayCurrency))
-                }
+                onClick={() => {
+                  setAmount(formatInputNumber(maximumAmount, displayCurrency));
+                  setMaximumSelected(true);
+                  setError("");
+                }}
                 disabled={maximumAmount <= 0}
                 className="finance-focus min-h-8 text-[11px] font-semibold text-active disabled:opacity-40"
               >
@@ -385,6 +391,7 @@ export default function InvestmentCashOutModal({
                 value={amount}
                 onChange={(event) => {
                   setAmount(event.target.value);
+                  setMaximumSelected(false);
                   setError("");
                 }}
                 placeholder="0"
