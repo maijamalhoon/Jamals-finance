@@ -2,7 +2,7 @@
 
 import { useEffect, useState, type ComponentProps } from "react";
 
-import { loadRuntimeCryptoCatalog } from "@/lib/market/crypto-catalog-client";
+import { loadSearchableCryptoCatalog } from "@/lib/market/crypto-search-catalog-client";
 
 import InvestmentModalLocal from "./InvestmentModalLocal";
 
@@ -16,7 +16,7 @@ export default function InvestmentModal(props: InvestmentModalProps) {
   useEffect(() => {
     let active = true;
 
-    void loadRuntimeCryptoCatalog().then((assets) => {
+    void loadSearchableCryptoCatalog().then((assets) => {
       if (!active || assets.length === 0) return;
       setCatalogVersion(1);
     });
@@ -35,6 +35,19 @@ export default function InvestmentModal(props: InvestmentModalProps) {
         label[for="investment-current-price"]
           + select[aria-label="Currency"] {
           display: none;
+        }
+
+        #investment-crypto-results [role="option"] > span:last-child,
+        #investment-current-price + div {
+          display: none;
+        }
+
+        #investment-current-price::placeholder {
+          color: transparent;
+        }
+
+        #investment-crypto-results [role="option"] {
+          grid-template-columns: auto minmax(0, 1fr);
         }
 
         @media (max-width: 639px) {
