@@ -310,7 +310,6 @@ export function CurrencyProvider({
     [currency, snapshot.rates],
   );
 
-  const selectedRate = snapshot.rates[currency];
   const rateLabel = ratesReady
     ? `${snapshot.live && !snapshot.stale ? "Latest" : "Saved"} rate: 1 USD = ${formatMoney(1, {
         currency,
