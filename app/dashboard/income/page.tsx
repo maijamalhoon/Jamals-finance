@@ -40,7 +40,7 @@ export default async function IncomePage({
 
   if (income.length === 0) {
     return (
-      <div className="space-y-5">
+      <div data-income-page className="space-y-5 pb-8">
         <AddIncomeButton />
         <div className="py-3 sm:py-6">
           <EmptyState
@@ -61,23 +61,25 @@ export default async function IncomePage({
   const summary = buildTransactionPageSummary(income, now, incomeSource);
 
   return (
-    <TransactionTypeOverview
-      tone="income"
-      action={<AddIncomeButton />}
-      thisMonth={summary.thisMonth}
-      thisYear={summary.thisYear}
-      recordMonthAmount={summary.recordMonthAmount}
-      recordMonthLabel={summary.recordMonthLabel}
-      thisMonthEntryCount={summary.thisMonthEntryCount}
-      monthlySeries={summary.monthlySeries}
-      breakdownTitle="Income sources"
-      breakdownLabel="Source"
-      breakdownItems={summary.breakdownItems}
-      accountItems={summary.accountItems}
-      visibleTransactions={visibleIncome}
-      totalTransactions={income.length}
-      pagination={pagination}
-      basePath="/dashboard/income"
-    />
+    <div data-income-page className="pb-8">
+      <TransactionTypeOverview
+        tone="income"
+        action={<AddIncomeButton />}
+        thisMonth={summary.thisMonth}
+        thisYear={summary.thisYear}
+        recordMonthAmount={summary.recordMonthAmount}
+        recordMonthLabel={summary.recordMonthLabel}
+        thisMonthEntryCount={summary.thisMonthEntryCount}
+        monthlySeries={summary.monthlySeries}
+        breakdownTitle="Income sources"
+        breakdownLabel="Source"
+        breakdownItems={summary.breakdownItems}
+        accountItems={summary.accountItems}
+        visibleTransactions={visibleIncome}
+        totalTransactions={income.length}
+        pagination={pagination}
+        basePath="/dashboard/income"
+      />
+    </div>
   );
 }
