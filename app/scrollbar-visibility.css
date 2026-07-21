@@ -1,3 +1,5 @@
+@import "./investment-comparison-bars.css";
+
 /*
  * Keep every page and nested scroll area fully scrollable while hiding
  * native scrollbar chrome across desktop, tablet, and mobile browsers.
