@@ -26,6 +26,16 @@ const motionProviderSource = readFileSync(
   "utf8",
 );
 
+const motionConfigSource = readFileSync(
+  new URL("../components/motion/animation-config.ts", import.meta.url),
+  "utf8",
+);
+
+const dashboardContentSource = readFileSync(
+  new URL("../components/layout/DashboardContentScope.tsx", import.meta.url),
+  "utf8",
+);
+
 const performanceModeSource = readFileSync(
   new URL(
     "../components/performance/NoAnimationPerformanceMode.tsx",
@@ -51,7 +61,7 @@ describe("animation preference contracts", () => {
     expect(normalizeAnimationMode(null)).toBe("standard");
   });
 
-  it("keeps default unchanged, accelerates fast, and resolves none instantly", () => {
+  it("keeps default playback, accelerates fast, and resolves none instantly", () => {
     expect(getAnimationDurationScale("standard")).toBe(1);
     expect(getAnimationPlaybackRate("standard")).toBe(1);
 
@@ -96,6 +106,10 @@ describe("animation preference contracts", () => {
 
   it("keeps the three CSS modes isolated", () => {
     expect(animationCssSource).toContain(
+      'html[data-animation-mode="standard"]',
+    );
+    expect(animationCssSource).toContain("jf-standard-route-loader-slide");
+    expect(animationCssSource).toContain(
       'html[data-animation-mode="fast"] {',
     );
     expect(animationCssSource).toContain("--motion-duration-base: 118ms;");
@@ -121,7 +135,27 @@ describe("animation preference contracts", () => {
     );
   });
 
-  it("bounds preloading and protects constrained devices", () => {
+  it("reveals standard pages without waiting for window load or fonts", () => {
+    expect(dashboardContentSource).toContain("window.requestAnimationFrame");
+    expect(dashboardContentSource).not.toContain("document.fonts?.ready");
+    expect(dashboardContentSource).not.toContain(
+      'window.addEventListener("load"',
+    );
+  });
+
+  it("keeps standard motion smooth while shortening long queues", () => {
+    expect(motionConfigSource).toContain(
+      "standardSeconds(0.24, 0.28)",
+    );
+    expect(motionConfigSource).toContain(
+      "standardSeconds(0.018, 0.035)",
+    );
+    expect(motionConfigSource).toContain(
+      "standardMilliseconds(650, 850)",
+    );
+  });
+
+  it("bounds automatic preloading and keeps standard intent-only", () => {
     expect(performanceModeSource).toContain("connection?.saveData === true");
     expect(performanceModeSource).toContain("runtimeNavigator.deviceMemory");
     expect(performanceModeSource).toContain("routeLimit:");
@@ -130,13 +164,17 @@ describe("animation preference contracts", () => {
     expect(performanceModeSource).toContain(
       'mode === "none" ? (moderateNetwork ? 2 : 5)',
     );
+    expect(performanceModeSource).toContain(
+      "if (!isPerformanceAnimationMode(mode)) return;",
+    );
   });
 
   it("keeps loading behavior distinct for all three modes", () => {
     expect(routeLoadingSource).toContain('animationMode === "none"');
     expect(routeLoadingSource).toContain('animationMode === "fast"');
+    expect(routeLoadingSource).toContain('animationMode === "standard"');
     expect(routeLoadingSource).toContain(
-      "return <DashboardRouteLoading variant={variant} />;",
+      'data-standard-animation-route-loading="true"',
     );
   });
 });
