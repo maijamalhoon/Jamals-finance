@@ -269,6 +269,8 @@ export function CurrencyProvider({
       fromCurrency: SupportedCurrency,
       toCurrency = currency,
     ) => {
+      if (!ratesReady && fromCurrency !== toCurrency) return null;
+
       const converted = convertMoney(
         value,
         fromCurrency,
@@ -277,7 +279,7 @@ export function CurrencyProvider({
       );
       return Number.isFinite(converted) ? converted : null;
     },
-    [currency, snapshot.rates],
+    [currency, ratesReady, snapshot.rates],
   );
 
   const toBaseCurrency = useCallback(
@@ -294,20 +296,27 @@ export function CurrencyProvider({
 
   const getRate = useCallback(
     (fromCurrency: SupportedCurrency, toCurrency = currency) => {
+      if (!ratesReady && fromCurrency !== toCurrency) return null;
+
       const rate = getExchangeRate(fromCurrency, toCurrency, snapshot.rates);
       return Number.isFinite(rate) && rate > 0 ? rate : null;
     },
-    [currency, snapshot.rates],
+    [currency, ratesReady, snapshot.rates],
   );
 
   const formatCurrency = useCallback(
-    (value: number, options?: MoneyFormatOptions) =>
-      formatMoney(value, {
+    (value: number, options?: MoneyFormatOptions) => {
+      const targetCurrency = options?.currency ?? currency;
+      const sourceCurrency = options?.fromCurrency ?? BASE_CURRENCY;
+      if (!ratesReady && sourceCurrency !== targetCurrency) return "—";
+
+      return formatMoney(value, {
         ...options,
-        currency: options?.currency ?? currency,
+        currency: targetCurrency,
         rates: options?.rates ?? snapshot.rates,
-      }),
-    [currency, snapshot.rates],
+      });
+    },
+    [currency, ratesReady, snapshot.rates],
   );
 
   const rateLabel = ratesReady
