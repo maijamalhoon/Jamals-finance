@@ -1,0 +1,14 @@
+# Android signing material — never commit
+*.jks
+*.keystore
+*.p12
+*.pem
+*.key
+
+# Bubblewrap / Gradle build output
+.gradle/
+build/
+app/build/
+app-release-signed.apk
+app-release-bundle.aab
+local.properties
