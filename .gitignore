@@ -46,8 +46,25 @@ pnpm-debug.log*
 *.swp
 *~
 
-# Credentials and certificates
+# Credentials, signing keys and certificates
 *.pem
+*.p12
+*.pfx
+*.jks
+*.keystore
+*.der
+*.cer
+*.crt
+
+# Android packages and local build state
+*.apk
+*.aab
+*.apks
+/android-twa/.gradle/
+/android-twa/.idea/
+/android-twa/local.properties
+/android-twa/build-output/
+/android-twa/**/build/
 
 # Operating system and editor files
 .DS_Store
