@@ -187,13 +187,13 @@ describe("animation preference contracts", () => {
 
   it("keeps standard motion smooth while shortening long queues", () => {
     expect(motionConfigSource).toContain(
-      "standardSeconds(0.24, 0.28)",
+      "standardSeconds(0.21, 0.28)",
     );
     expect(motionConfigSource).toContain(
-      "standardSeconds(0.018, 0.035)",
+      "standardSeconds(0.012, 0.035)",
     );
     expect(motionConfigSource).toContain(
-      "standardMilliseconds(650, 850)",
+      "standardMilliseconds(540, 850)",
     );
   });
 
