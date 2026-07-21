@@ -1,0 +1,63 @@
+name: Currency quality gate
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "lib/currency.ts"
+      - "lib/currency-input.ts"
+      - "lib/exchange-rate.ts"
+      - "lib/supabase/client.ts"
+      - "lib/investments/**"
+      - "components/currency/**"
+      - "components/settings/**"
+      - "components/accounts/**"
+      - "components/dashboard/**"
+      - "components/goals/**"
+      - "components/payables/**"
+      - "components/investments/**"
+      - "components/reports/**"
+      - "app/api/exchange-rate/**"
+      - "app/dashboard/**"
+      - "supabase/migrations/**"
+      - ".github/workflows/currency-quality-gate.yml"
+  pull_request:
+    paths:
+      - "lib/currency.ts"
+      - "lib/currency-input.ts"
+      - "lib/exchange-rate.ts"
+      - "lib/supabase/client.ts"
+      - "lib/investments/**"
+      - "components/currency/**"
+      - "components/settings/**"
+      - "components/accounts/**"
+      - "components/dashboard/**"
+      - "components/goals/**"
+      - "components/payables/**"
+      - "components/investments/**"
+      - "components/reports/**"
+      - "app/api/exchange-rate/**"
+      - "app/dashboard/**"
+      - "supabase/migrations/**"
+      - ".github/workflows/currency-quality-gate.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: currency-quality-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npm run check
+      - run: npm run build
