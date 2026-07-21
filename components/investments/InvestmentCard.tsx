@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import {
   ArrowDownRight,
+  ArrowDownToLine,
   ArrowUpRight,
   Banknote,
   Building2,
@@ -31,6 +32,8 @@ import {
 import { calculateInvestmentPosition } from "@/lib/investments/calculations";
 import { createClient } from "@/lib/supabase/client";
 import { getUserMutationError } from "@/lib/user-errors";
+
+import InvestmentCashOutModal from "./InvestmentCashOutModal";
 import InvestmentModal, { ExistingInvestment } from "./InvestmentModal";
 
 const CONFIG: Record<
@@ -68,7 +71,7 @@ const CONFIG: Record<
     label: "Real Estate",
     icon: Building2,
     color: "text-[var(--investment)]",
-    bg: "bg-surface-secondary",
+    bg: "bg-investment-soft/65",
     accent: "#a78bfa",
   },
   other: {
@@ -217,6 +220,7 @@ export default function InvestmentCard({
     useState<ExistingInvestment | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [historyOpen, setHistoryOpen] = useState(false);
+  const [cashOutOpen, setCashOutOpen] = useState(false);
 
   const cfg = CONFIG[inv.type] || CONFIG.other;
   const Icon = cfg.icon;
@@ -265,8 +269,9 @@ export default function InvestmentCard({
   const cardStyle = {
     "--holding-accent": resolvedAccent,
     background:
-      "linear-gradient(145deg, color-mix(in srgb, var(--holding-accent) 8%, var(--card)) 0%, var(--card) 48%, color-mix(in srgb, var(--holding-accent) 4%, var(--card)) 100%)",
+      "linear-gradient(145deg, color-mix(in srgb, var(--holding-accent) 7%, var(--card)) 0%, var(--card) 52%, color-mix(in srgb, var(--holding-accent) 3%, var(--card)) 100%)",
   } as CSSProperties;
+  const canCashOut = qty > 0 && currentPrice > 0 && currentValue > 0;
 
   async function handleDelete(target: ExistingInvestment) {
     if (!confirm(`Delete "${target.name}"? This cannot be undone.`)) return;
@@ -334,18 +339,9 @@ export default function InvestmentCard({
         initial={{ opacity: 0, y: 7 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: motionDurations.base, ease: motionEase }}
-        className="group relative min-w-0 overflow-hidden rounded-[26px] shadow-[var(--shadow-soft)] transition-transform duration-200 ease-out motion-safe:hover:-translate-y-0.5"
+        className="group min-w-0 overflow-hidden rounded-[26px] transition-transform duration-200 ease-out motion-safe:hover:-translate-y-px"
         style={cardStyle}
       >
-        <span
-          aria-hidden="true"
-          className="pointer-events-none absolute inset-x-7 top-0 h-px"
-          style={{
-            background:
-              "linear-gradient(90deg, transparent, var(--holding-accent), transparent)",
-          }}
-        />
-
         <div className="relative p-4 sm:p-5">
           <div className="flex min-w-0 items-start justify-between gap-3">
             <div className="flex min-w-0 items-center gap-3">
@@ -395,105 +391,86 @@ export default function InvestmentCard({
                   <ArrowDownRight size={12} />
                 )}
                 {change24h >= 0 ? "+" : ""}
-                {change24h.toFixed(2)}%
+                {change24h.toFixed(2)}% 24h
               </span>
             ) : null}
           </div>
 
-          <div className="mt-5 grid gap-3 sm:grid-cols-[minmax(0,1.2fr)_minmax(180px,0.8fr)]">
-            <div className="min-w-0 rounded-[20px] bg-surface-primary/48 px-4 py-4">
+          <div className="mt-5 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+            <div className="min-w-0">
               <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-text-secondary">
                 Current value
               </p>
-              <p className="mt-1.5 break-words text-2xl font-bold tabular-nums tracking-[-0.03em] text-text-primary [overflow-wrap:anywhere] sm:text-3xl">
+              <p className="mt-1 break-words text-2xl font-bold tabular-nums tracking-tight text-text-primary [overflow-wrap:anywhere] sm:text-3xl">
                 {formatCurrency(currentValue)}
               </p>
-              <p className="mt-1 text-[11px] text-text-secondary">
-                {inv.is_live_priced ? priceSourceText : "Manual position value"}
-              </p>
             </div>
-
-            <div
-              className="min-w-0 rounded-[20px] px-4 py-4"
-              style={{
-                background: isProfit
-                  ? "color-mix(in srgb, var(--success) 8%, var(--surface-primary))"
-                  : "color-mix(in srgb, var(--danger) 8%, var(--surface-primary))",
-              }}
-            >
+            <div className="min-w-0 sm:text-right">
               <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-text-secondary">
                 Total profit / loss
               </p>
               <p
-                className={`mt-1.5 flex items-center gap-1 text-lg font-bold tabular-nums sm:text-xl ${
+                className={`mt-1 inline-flex items-center gap-1 text-base font-bold tabular-nums sm:justify-end sm:text-lg ${
                   isProfit ? "text-success" : "text-danger"
                 }`}
               >
                 {isProfit ? (
-                  <ArrowUpRight size={18} />
+                  <ArrowUpRight size={17} />
                 ) : (
-                  <ArrowDownRight size={18} />
+                  <ArrowDownRight size={17} />
                 )}
                 {isProfit ? "+" : "-"}
                 {formatCurrency(Math.abs(pnl))}
-              </p>
-              <p
-                className={`mt-1 text-[11px] font-semibold ${
-                  isProfit ? "text-success" : "text-danger"
-                }`}
-              >
-                {isProfit ? "+" : "-"}
-                {Math.abs(pnlPct).toFixed(2)}% return
+                <span className="text-xs font-semibold">
+                  ({Math.abs(pnlPct).toFixed(1)}%)
+                </span>
               </p>
             </div>
           </div>
 
-          <div className="mt-4 rounded-[20px] bg-surface-primary/36 px-3.5 py-3.5 sm:px-4">
-            <div className="flex items-center justify-between gap-3 text-[10px] font-semibold text-text-secondary">
-              <span>Position value</span>
-              <span>Cost basis</span>
-            </div>
-            <div className="relative mt-2.5 h-2 overflow-hidden rounded-full bg-surface-secondary">
+          <div className="mt-4 rounded-[18px] bg-surface-secondary/38 px-3 py-3">
+            <div className="relative h-2 overflow-hidden rounded-full bg-surface-secondary">
               <div
-                className="absolute inset-y-0 left-0 rounded-full bg-text-secondary/22"
+                className="absolute inset-y-0 left-0 rounded-full bg-text-secondary/24"
                 style={{ width: "74%" }}
               />
               <div
-                className="absolute inset-y-0 left-0 rounded-full transition-[width] duration-300 ease-out"
-                style={{
-                  width: `${progressWidth}%`,
-                  background: `linear-gradient(90deg, var(--holding-accent), ${
-                    isProfit ? "var(--success)" : "var(--danger)"
-                  })`,
-                }}
+                className={`absolute inset-y-0 left-0 rounded-full transition-[width] duration-300 ease-out ${
+                  isProfit ? "bg-success" : "bg-danger"
+                }`}
+                style={{ width: `${progressWidth}%` }}
               />
-              <span className="absolute inset-y-[-2px] left-[74%] w-px bg-text-primary/45" />
+              <span className="absolute inset-y-[-2px] left-[74%] w-px bg-text-primary/38" />
+            </div>
+            <div className="mt-2 flex items-center justify-between gap-3 text-[10px] font-medium text-text-secondary">
+              <span>Current position</span>
+              <span>Cost basis marker</span>
             </div>
           </div>
 
-          <div className="mt-4 grid grid-cols-2 gap-2.5 sm:grid-cols-4">
-            <div className="rounded-[17px] bg-surface-primary/42 px-3 py-3">
+          <div className="mt-5 grid grid-cols-2 gap-2.5 sm:grid-cols-4">
+            <div className="rounded-[17px] bg-surface-secondary/52 p-3">
               <MiniValue
                 label="Invested"
                 value={formatCurrency(totalInvested)}
                 helper="Combined cost"
               />
             </div>
-            <div className="rounded-[17px] bg-surface-primary/42 px-3 py-3">
+            <div className="rounded-[17px] bg-surface-secondary/52 p-3">
               <MiniValue
                 label="Avg buy"
                 value={formatCurrency(buyPrice)}
                 helper="Weighted price"
               />
             </div>
-            <div className="rounded-[17px] bg-surface-primary/42 px-3 py-3">
+            <div className="rounded-[17px] bg-surface-secondary/52 p-3">
               <MiniValue
                 label={inv.is_live_priced ? "Live price" : "Current price"}
                 value={formatCurrency(currentPrice)}
-                helper={inv.is_live_priced ? "Latest market price" : "Manual price"}
+                helper={inv.is_live_priced ? priceSourceText : "Manual price"}
               />
             </div>
-            <div className="rounded-[17px] bg-surface-primary/42 px-3 py-3">
+            <div className="rounded-[17px] bg-surface-secondary/52 p-3">
               <MiniValue
                 label="Position"
                 value={`${formatQuantity(qty)} ${
@@ -509,36 +486,48 @@ export default function InvestmentCard({
           </div>
         </div>
 
-        <div className="bg-surface-secondary/24">
-          <button
-            type="button"
-            onClick={() => setHistoryOpen((open) => !open)}
-            aria-expanded={historyOpen}
-            className="finance-focus flex min-h-12 w-full items-center justify-between gap-3 px-4 text-left transition-colors duration-150 hover:bg-hover/55 sm:px-5"
-          >
-            <span className="flex min-w-0 items-center gap-2">
-              <History size={15} className="shrink-0 text-active" />
-              <span className="truncate text-xs font-semibold text-text-primary">
-                Purchase history and options
+        <div className="bg-surface-secondary/34 px-3 pb-3 pt-2.5 sm:px-4 sm:pb-4">
+          <div className="grid grid-cols-[minmax(0,0.76fr)_minmax(0,1.24fr)] gap-2">
+            <button
+              type="button"
+              onClick={() => setCashOutOpen(true)}
+              disabled={!canCashOut}
+              className="finance-focus flex min-h-11 min-w-0 items-center justify-center gap-2 rounded-[15px] bg-investment-soft/80 px-3 text-xs font-bold text-active transition-[background-color,transform] duration-150 hover:bg-investment-soft active:scale-[0.985] disabled:cursor-not-allowed disabled:opacity-40"
+            >
+              <ArrowDownToLine size={14} />
+              <span className="truncate">Cash Out</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setHistoryOpen((open) => !open)}
+              aria-expanded={historyOpen}
+              className="finance-focus flex min-h-11 min-w-0 items-center justify-between gap-2 rounded-[15px] bg-surface-primary/72 px-3 text-left transition-[background-color,transform] duration-150 hover:bg-surface-primary active:scale-[0.99]"
+            >
+              <span className="flex min-w-0 items-center gap-2">
+                <History size={14} className="shrink-0 text-active" />
+                <span className="truncate text-xs font-semibold text-text-primary">
+                  Purchase history
+                </span>
+                <span className="rounded-full bg-surface-secondary px-2 py-0.5 text-[10px] font-bold text-text-secondary">
+                  {purchaseLots.length}
+                </span>
               </span>
-              <span className="rounded-full bg-surface-primary/70 px-2 py-0.5 text-[10px] font-bold text-text-secondary">
-                {purchaseLots.length}
-              </span>
-            </span>
-            <ChevronDown
-              size={16}
-              className={`shrink-0 text-text-secondary transition-transform duration-200 ${
-                historyOpen ? "rotate-180" : ""
-              }`}
-            />
-          </button>
+              <ChevronDown
+                size={15}
+                className={`shrink-0 text-text-secondary transition-transform duration-200 ${
+                  historyOpen ? "rotate-180" : ""
+                }`}
+              />
+            </button>
+          </div>
 
           {historyOpen ? (
             <motion.div
-              initial={{ opacity: 0, y: -3 }}
+              initial={{ opacity: 0, y: -4 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: motionDurations.fast, ease: motionEase }}
-              className="space-y-2.5 px-3 pb-3 sm:px-4 sm:pb-4"
+              className="mt-2.5 space-y-2.5"
             >
               {purchaseLots.map((lot, index) => {
                 const summary = lotSummary(lot);
@@ -547,14 +536,9 @@ export default function InvestmentCard({
                 return (
                   <div
                     key={lot.id}
-                    className="relative overflow-hidden rounded-[18px] bg-surface-primary/62 p-3.5 sm:p-4"
+                    className="rounded-[18px] bg-surface-primary/82 p-3.5 sm:p-4"
                   >
-                    <span
-                      aria-hidden="true"
-                      className="absolute inset-y-3 left-0 w-0.5 rounded-full"
-                      style={{ backgroundColor: "var(--holding-accent)" }}
-                    />
-                    <div className="flex min-w-0 items-start justify-between gap-3 pl-1">
+                    <div className="flex min-w-0 items-start justify-between gap-3">
                       <div className="flex min-w-0 items-start gap-3">
                         <span
                           className="grid h-8 w-8 shrink-0 place-items-center rounded-full text-[10px] font-black"
@@ -581,7 +565,7 @@ export default function InvestmentCard({
                         <button
                           type="button"
                           onClick={() => setEditingInvestment(lot)}
-                          className="icon-button h-8 w-8"
+                          className="icon-button h-8 w-8 border-0 shadow-none"
                           aria-label={`Edit ${lot.name} buy`}
                         >
                           <Pencil size={12} />
@@ -590,7 +574,7 @@ export default function InvestmentCard({
                           type="button"
                           onClick={() => handleDelete(lot)}
                           disabled={deletingId === lot.id}
-                          className="icon-button h-8 w-8 hover:bg-danger/10 hover:text-danger"
+                          className="icon-button h-8 w-8 border-0 shadow-none hover:bg-danger/10 hover:text-danger"
                           aria-label={`Delete ${lot.name} buy`}
                         >
                           <Trash2 size={12} />
@@ -598,39 +582,47 @@ export default function InvestmentCard({
                       </div>
                     </div>
 
-                    <div className="mt-3 grid grid-cols-2 gap-2.5 pl-1 sm:grid-cols-4">
-                      <MiniValue
-                        label="Buy price"
-                        value={formatCurrency(summary.buyPrice)}
-                        helper={
-                          summary.originalPrice && summary.originalCurrency
-                            ? `Original ${summary.originalPrice}`
-                            : undefined
-                        }
-                      />
-                      <MiniValue
-                        label="Current value"
-                        value={formatCurrency(summary.currentValue)}
-                      />
-                      <MiniValue
-                        label="P/L"
-                        value={`${lotProfit ? "+" : "-"}${formatCurrency(
-                          Math.abs(summary.pnl),
-                        )}`}
-                        helper={`${lotProfit ? "+" : "-"}${Math.abs(
-                          summary.pnlPct,
-                        ).toFixed(1)}%`}
-                        tone={lotProfit ? "profit" : "loss"}
-                      />
-                      <MiniValue
-                        label="Price source"
-                        value={lot.is_live_priced ? "Live" : "Manual"}
-                        helper={
-                          lot.is_live_priced
-                            ? formatUpdatedAt(lot.price_updated_at)
-                            : undefined
-                        }
-                      />
+                    <div className="mt-3 grid grid-cols-2 gap-2.5 sm:grid-cols-4">
+                      <div className="rounded-[14px] bg-surface-secondary/55 p-2.5">
+                        <MiniValue
+                          label="Buy price"
+                          value={formatCurrency(summary.buyPrice)}
+                          helper={
+                            summary.originalPrice && summary.originalCurrency
+                              ? `Original ${summary.originalPrice}`
+                              : undefined
+                          }
+                        />
+                      </div>
+                      <div className="rounded-[14px] bg-surface-secondary/55 p-2.5">
+                        <MiniValue
+                          label="Current value"
+                          value={formatCurrency(summary.currentValue)}
+                        />
+                      </div>
+                      <div className="rounded-[14px] bg-surface-secondary/55 p-2.5">
+                        <MiniValue
+                          label="P/L"
+                          value={`${lotProfit ? "+" : "-"}${formatCurrency(
+                            Math.abs(summary.pnl),
+                          )}`}
+                          helper={`${lotProfit ? "+" : "-"}${Math.abs(
+                            summary.pnlPct,
+                          ).toFixed(1)}%`}
+                          tone={lotProfit ? "profit" : "loss"}
+                        />
+                      </div>
+                      <div className="rounded-[14px] bg-surface-secondary/55 p-2.5">
+                        <MiniValue
+                          label="Source"
+                          value={lot.is_live_priced ? "Live price" : "Manual"}
+                          helper={
+                            lot.is_live_priced
+                              ? formatUpdatedAt(lot.price_updated_at)
+                              : undefined
+                          }
+                        />
+                      </div>
                     </div>
                   </div>
                 );
@@ -646,6 +638,16 @@ export default function InvestmentCard({
         onClose={() => setEditingInvestment(null)}
         onSuccess={() => {
           setEditingInvestment(null);
+          router.refresh();
+        }}
+      />
+
+      <InvestmentCashOutModal
+        open={cashOutOpen}
+        lots={purchaseLots}
+        onClose={() => setCashOutOpen(false)}
+        onSuccess={() => {
+          setCashOutOpen(false);
           router.refresh();
         }}
       />
