@@ -1,4 +1,6 @@
-export type InvestmentCurrency = "PKR" | "USD";
+import type { SupportedCurrency } from "@/lib/currency";
+
+export type InvestmentCurrency = SupportedCurrency;
 
 export type InvestmentWithdrawal = {
   quantity: number;
@@ -15,13 +17,14 @@ function toFiniteNumber(value: unknown) {
   return Number.isFinite(parsed) ? parsed : null;
 }
 
+/** exchangeRate is locked PKR units per one unit of the original currency. */
 export function normalizeInvestmentUnitPrice(
   originalValue: unknown,
   currency: InvestmentCurrency,
   exchangeRate: unknown,
 ) {
   const original = toFiniteNumber(originalValue);
-  const rate = currency === "USD" ? toFiniteNumber(exchangeRate) : 1;
+  const rate = currency === "PKR" ? 1 : toFiniteNumber(exchangeRate);
 
   if (original === null || original < 0 || rate === null || rate <= 0) {
     return null;
