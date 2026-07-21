@@ -17,7 +17,6 @@ import {
   DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
@@ -253,21 +252,16 @@ export default function JamalMenu({
         side={placement}
         sideOffset={8}
         backdropClassName={headerMenu ? "!z-20" : undefined}
-        backdropStyle={
-          headerMenu
-            ? {
-                backgroundColor:
-                  "color-mix(in srgb, var(--overlay), transparent 92%)",
-                backdropFilter: "blur(3px) saturate(105%)",
-                WebkitBackdropFilter: "blur(3px) saturate(105%)",
-              }
-            : undefined
-        }
-        className="font-sans w-[18.5rem] max-w-[calc(100vw-1.5rem)] overflow-hidden rounded-[18px] border border-border/65 bg-surface-elevated/98 p-1.5 shadow-[0_18px_44px_rgb(15_23_42_/_0.16)] backdrop-blur-xl dark:shadow-[0_18px_48px_rgb(0_0_0_/_0.32)]"
+        backdropStyle={{
+          backgroundColor: "transparent",
+          backdropFilter: "none",
+          WebkitBackdropFilter: "none",
+        }}
+        className="font-sans w-[18.5rem] max-w-[calc(100vw-1.5rem)] overflow-hidden rounded-[18px] border-0 bg-surface-elevated p-1.5 shadow-[0_18px_44px_rgb(15_23_42_/_0.16)] ring-0 dark:shadow-[0_18px_48px_rgb(0_0_0_/_0.32)]"
       >
         <DropdownMenuGroup>
           <DropdownMenuLabel className="flex min-w-0 items-center gap-3 px-3 py-3">
-            <Avatar className="size-9 shrink-0">
+            <Avatar className="size-9 shrink-0 after:border-0">
               {avatarUrl ? (
                 <AvatarImage src={avatarUrl} alt={displayName} />
               ) : null}
@@ -286,12 +280,10 @@ export default function JamalMenu({
           </DropdownMenuLabel>
         </DropdownMenuGroup>
 
-        <DropdownMenuSeparator className="mx-2 my-0 bg-divider/70" />
-
         <DropdownMenuGroup className="py-0.5">
           <DropdownMenuItem
             onClick={() => router.push("/dashboard/settings")}
-            className="min-h-[3.45rem] cursor-pointer gap-3 rounded-[13px] px-3 py-2.5 text-text-secondary transition-colors hover:bg-surface-soft/80 focus:bg-surface-soft/80 focus:text-text-primary"
+            className="min-h-11 cursor-pointer gap-3 rounded-[13px] px-3 py-2 text-text-secondary transition-colors hover:bg-surface-soft/80 focus:bg-surface-soft/80 focus:text-text-primary"
           >
             <span className="profile-menu-icon grid size-8 shrink-0 place-items-center text-active">
               <Settings2
@@ -302,23 +294,16 @@ export default function JamalMenu({
                 aria-hidden="true"
               />
             </span>
-            <span className="min-w-0 flex-1">
-              <span className="block text-[12.5px] font-semibold leading-[1.15rem] text-text-primary">
-                Settings
-              </span>
-              <span className="mt-1 block text-[10px] font-medium leading-3.5 text-text-tertiary">
-                Profile, theme and preferences
-              </span>
+            <span className="text-[12.5px] font-semibold leading-[1.15rem] text-text-primary">
+              Settings
             </span>
           </DropdownMenuItem>
         </DropdownMenuGroup>
 
-        <DropdownMenuSeparator className="mx-2 my-0 bg-divider/70" />
-
         <DropdownMenuItem
           variant="destructive"
           onClick={handleSignOut}
-          className="min-h-[3.45rem] cursor-pointer gap-3 rounded-[13px] px-3 py-2.5 transition-colors hover:bg-danger-soft/60 focus:bg-danger-soft/60"
+          className="min-h-11 cursor-pointer gap-3 rounded-[13px] px-3 py-2 transition-colors hover:bg-danger-soft/60 focus:bg-danger-soft/60"
         >
           <span className="profile-menu-icon grid size-8 shrink-0 place-items-center text-danger">
             <LogOut
@@ -329,13 +314,8 @@ export default function JamalMenu({
               aria-hidden="true"
             />
           </span>
-          <span className="min-w-0 flex-1">
-            <span className="block text-[12.5px] font-semibold leading-[1.15rem] text-danger">
-              Sign out
-            </span>
-            <span className="mt-1 block text-[10px] font-medium leading-3.5 text-text-tertiary">
-              End this device session
-            </span>
+          <span className="text-[12.5px] font-semibold leading-[1.15rem] text-danger">
+            Sign out
           </span>
         </DropdownMenuItem>
       </DropdownMenuContent>
