@@ -158,3 +158,13 @@ html[data-animation-mode="none"] [data-loading-region="true"]::after {
   font-weight: 600;
   line-height: 1;
 }
+
+@media (prefers-reduced-motion: reduce) {
+  html[data-animation-mode="standard"] .jf-standard-route-loader > span {
+    width: 100%;
+    animation: none;
+    opacity: 0.55;
+    transform: none;
+    will-change: auto;
+  }
+}
