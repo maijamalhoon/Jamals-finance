@@ -12,6 +12,7 @@ import {
 } from "@/lib/app-release";
 
 const CURRENT_WRAPPER_VERSION = "1.0.1";
+const RELEASE_CHECK_INTERVAL_MS = 5 * 60 * 1000;
 const INSTALLED_VERSION_KEY = "jamals-finance-android-installed-version";
 const DISMISSED_VERSION_KEY = "jamals-finance-android-prompt-dismissed-version";
 
@@ -81,10 +82,25 @@ export default function AndroidAppManager() {
       }
     };
 
+    const onVisibilityChange = () => {
+      if (document.visibilityState === "visible") void loadRelease();
+    };
+
+    const onFocus = () => void loadRelease();
+
     void loadRelease();
+    const interval = window.setInterval(
+      loadRelease,
+      RELEASE_CHECK_INTERVAL_MS,
+    );
+    document.addEventListener("visibilitychange", onVisibilityChange);
+    window.addEventListener("focus", onFocus);
 
     return () => {
       cancelled = true;
+      window.clearInterval(interval);
+      document.removeEventListener("visibilitychange", onVisibilityChange);
+      window.removeEventListener("focus", onFocus);
     };
   }, []);
 
