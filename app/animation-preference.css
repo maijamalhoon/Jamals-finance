@@ -4,6 +4,15 @@
  * None resolves every CSS, SVG and view transition immediately.
  */
 
+html[data-animation-mode="standard"] {
+  --motion-duration-instant: 80ms;
+  --motion-duration-fast: 140ms;
+  --motion-duration-base: 200ms;
+  --motion-duration-slow: 290ms;
+  --motion-duration-deliberate: 360ms;
+  --motion-duration-skeleton: 1000ms;
+}
+
 html[data-animation-mode="fast"] {
   --motion-duration-instant: 48ms;
   --motion-duration-fast: 82ms;
