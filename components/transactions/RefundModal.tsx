@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { RotateCcw } from "lucide-react";
 import { toast } from "sonner";
 
+import { useCurrency } from "@/components/currency/CurrencyProvider";
 import { Button } from "@/components/ui/button";
 import DatePicker from "@/components/ui/date-picker";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
@@ -31,6 +32,11 @@ export interface RefundExpense {
   categoryId: string;
 }
 
+function formatInputValue(value: number | null) {
+  if (value === null || !Number.isFinite(value)) return "";
+  return value.toFixed(8).replace(/\.?0+$/, "");
+}
+
 export default function RefundModal({
   open,
   onClose,
@@ -43,7 +49,15 @@ export default function RefundModal({
   expense: RefundExpense;
 }) {
   const supabase = createClient();
+  const {
+    currency,
+    ratesReady,
+    fromBaseCurrency,
+    getRate,
+    formatCurrency,
+  } = useCurrency();
   const remaining = Math.max(expense.amount - expense.refundedAmount, 0);
+  const remainingDisplay = fromBaseCurrency(remaining);
   const [amount, setAmount] = useState("");
   const [date, setDate] = useState(getAppDateKey());
   const [note, setNote] = useState("");
@@ -53,12 +67,12 @@ export default function RefundModal({
 
   useEffect(() => {
     if (!open) return;
-    setAmount(String(remaining));
+    setAmount(formatInputValue(remainingDisplay));
     setDate(getAppDateKey());
     setNote("");
     setReference("");
     setError("");
-  }, [open, remaining]);
+  }, [currency, open, remainingDisplay]);
 
   async function handleSave() {
     if (loading) return;
@@ -67,7 +81,18 @@ export default function RefundModal({
       setError("Enter a refund amount greater than 0.");
       return;
     }
-    if (parsedAmount > remaining) {
+    if (currency !== BASE_CURRENCY && !ratesReady) {
+      setError("Exchange rates are unavailable. The refund was not recorded.");
+      return;
+    }
+
+    const exchangeRateToPkr = getRate(currency, BASE_CURRENCY);
+    if (exchangeRateToPkr === null) {
+      setError("The exchange rate is invalid. The refund was not recorded.");
+      return;
+    }
+    const canonicalAmount = parsedAmount * exchangeRateToPkr;
+    if (!Number.isFinite(canonicalAmount) || canonicalAmount > remaining + 1e-8) {
       setError("Refunds cannot exceed the amount still available for refund.");
       return;
     }
@@ -92,7 +117,10 @@ export default function RefundModal({
     const { error: saveError } = await supabase.from("transactions").insert({
       user_id: user.id,
       type: "refund",
-      amount: parsedAmount,
+      amount: canonicalAmount,
+      amount_original: parsedAmount,
+      currency,
+      exchange_rate_to_pkr: exchangeRateToPkr,
       account_id: expense.accountId,
       category_id: expense.categoryId,
       date,
@@ -103,7 +131,12 @@ export default function RefundModal({
     setLoading(false);
 
     if (saveError) {
-      setError(getUserMutationError(saveError, "Refund could not be recorded. Try again."));
+      setError(
+        getUserMutationError(
+          saveError,
+          "Refund could not be recorded. Try again.",
+        ),
+      );
       toast.error("Failed to record refund");
       return;
     }
@@ -126,19 +159,22 @@ export default function RefundModal({
           <div className="finance-panel-soft p-3 text-xs leading-5 text-text-secondary">
             A refund restores the account balance and reduces expense totals. It is not counted as income.
           </div>
-          <FinanceFormField label={`Refund Amount (${BASE_CURRENCY})`} htmlFor="refund-amount">
+          <FinanceFormField
+            label={`Refund Amount (${currency})`}
+            htmlFor="refund-amount"
+          >
             <Input
               id="refund-amount"
               type="number"
               min="0.01"
-              max={remaining}
+              max={remainingDisplay ?? undefined}
               step="any"
               value={amount}
               onChange={(event) => setAmount(event.target.value)}
               className="font-semibold"
             />
             <p className="mt-1.5 text-xs text-text-secondary">
-              Available to refund: {remaining.toLocaleString("en-PK")}
+              Available to refund: {formatCurrency(remaining)}
             </p>
           </FinanceFormField>
           <FinanceFormField label="Refund Received Date" htmlFor="refund-date">
@@ -169,7 +205,12 @@ export default function RefundModal({
           {error ? <p className={financeErrorClass}>{error}</p> : null}
         </FinanceModalBody>
         <FinanceModalFooter>
-          <Button type="button" onClick={onClose} disabled={loading} className={financeCancelButtonClass}>
+          <Button
+            type="button"
+            onClick={onClose}
+            disabled={loading}
+            className={financeCancelButtonClass}
+          >
             Cancel
           </Button>
           <Button
@@ -177,7 +218,11 @@ export default function RefundModal({
             onClick={handleSave}
             loading={loading}
             loadingLabel="Saving refund..."
-            disabled={loading || remaining <= 0}
+            disabled={
+              loading ||
+              remaining <= 0 ||
+              (currency !== BASE_CURRENCY && !ratesReady)
+            }
           >
             Save Refund
           </Button>
