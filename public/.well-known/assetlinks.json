@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.jamalsfinance.app",
+      "sha256_cert_fingerprints": [
+        "2F:7F:D9:B0:1F:59:F7:FB:A0:93:3F:55:AA:F2:AF:FB:8A:B2:72:1E:B3:97:02:17:B8:5F:66:8E:9A:CD:AE:40"
+      ]
+    }
+  }
+]
