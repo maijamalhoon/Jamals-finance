@@ -185,7 +185,10 @@ const runtimeCss = `
 type WheelDefinition = { id: string; options: readonly string[] };
 
 const wheelDefinitions: WheelDefinition[] = [
-  { id: "settings-currency-select", options: ["PKR", "USD"] },
+  {
+    id: "settings-currency-select",
+    options: ["PKR", "USD", "INR", "EUR", "GBP", "JPY", "CNY"],
+  },
   {
     id: "settings-date-format-select",
     options: ["Jun 22, 2026", "22 Jun 2026", "2026-06-22"],
@@ -210,7 +213,7 @@ function chooseOption(trigger: HTMLElement, label: string) {
     window.setTimeout(() => {
       const item = Array.from(
         document.querySelectorAll<HTMLElement>('[data-slot="select-item"]'),
-      ).find((candidate) => candidate.textContent?.trim() === label);
+      ).find((candidate) => candidate.textContent?.trim().startsWith(label));
       item?.click();
     }, 0);
   });
