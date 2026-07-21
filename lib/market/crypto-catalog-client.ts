@@ -4,20 +4,9 @@ import {
   CRYPTO_CATALOG,
   type CryptoCatalogAsset,
 } from "@/lib/market/crypto-catalog";
-import { createClient } from "@/lib/supabase/client";
 
-const STORAGE_KEY = "jamals-crypto-market-catalog-v1";
+const STORAGE_KEY = "jamals-crypto-market-catalog-v2";
 const STORAGE_TTL_MS = 6 * 60 * 60 * 1000;
-
-type CryptoAssetRow = {
-  id: string;
-  name: string;
-  symbol: string;
-  aliases: string[] | null;
-  logo_url: string | null;
-  rank: number | null;
-  binance_symbol: string | null;
-};
 
 type CatalogApiResponse = {
   generatedAt?: unknown;
@@ -94,10 +83,7 @@ function readStoredCatalog() {
     const stored = JSON.parse(raw) as Partial<StoredCatalog>;
     const savedAt = Number(stored.savedAt);
 
-    if (
-      !Number.isFinite(savedAt) ||
-      Date.now() - savedAt > STORAGE_TTL_MS
-    ) {
+    if (!Number.isFinite(savedAt) || Date.now() - savedAt > STORAGE_TTL_MS) {
       window.localStorage.removeItem(STORAGE_KEY);
       return [];
     }
@@ -133,54 +119,6 @@ async function fetchMarketCatalog() {
   return normalizeAssets(payload.assets);
 }
 
-async function fetchSupabaseCatalog() {
-  const supabase = createClient();
-  const { data, error } = await supabase
-    .from("crypto_assets")
-    .select("id, name, symbol, aliases, logo_url, rank, binance_symbol")
-    .eq("is_active", true)
-    .order("rank", { ascending: true });
-
-  if (error || !data?.length) return [];
-
-  return (data as CryptoAssetRow[])
-    .map((asset) =>
-      normalizeAsset({
-        id: asset.id,
-        name: asset.name,
-        symbol: asset.symbol,
-        aliases: asset.aliases ?? [],
-        logoUrl: asset.logo_url ?? "",
-        rank: asset.rank ?? Number.MAX_SAFE_INTEGER,
-        binanceSymbol: asset.binance_symbol,
-      }),
-    )
-    .filter((asset): asset is CryptoCatalogAsset => Boolean(asset));
-}
-
-function mergeCatalogs(
-  marketAssets: CryptoCatalogAsset[],
-  knownAssets: CryptoCatalogAsset[],
-) {
-  if (marketAssets.length === 0) return knownAssets;
-
-  const knownById = new Map(
-    knownAssets.map((asset) => [asset.id.toLowerCase(), asset]),
-  );
-
-  return marketAssets.map((asset) => {
-    const known = knownById.get(asset.id.toLowerCase());
-    if (!known) return asset;
-
-    return {
-      ...asset,
-      aliases: Array.from(new Set([...asset.aliases, ...known.aliases])),
-      logoUrl: asset.logoUrl || known.logoUrl,
-      binanceSymbol: asset.binanceSymbol ?? known.binanceSymbol,
-    };
-  });
-}
-
 export function loadRuntimeCryptoCatalog() {
   if (catalogRequest) return catalogRequest;
 
@@ -192,22 +130,17 @@ export function loadRuntimeCryptoCatalog() {
     }
 
     const staticFallback = Array.from(CRYPTO_CATALOG);
-    const [marketResult, supabaseResult] = await Promise.allSettled([
-      fetchMarketCatalog(),
-      fetchSupabaseCatalog(),
-    ]);
-    const marketAssets =
-      marketResult.status === "fulfilled" ? marketResult.value : [];
-    const knownAssets =
-      supabaseResult.status === "fulfilled" && supabaseResult.value.length > 0
-        ? supabaseResult.value
-        : staticFallback;
-    const assets = mergeCatalogs(marketAssets, knownAssets);
-    const resolved = assets.length > 0 ? assets : staticFallback;
 
-    replaceRuntimeCatalog(resolved);
-    storeCatalog(resolved);
-    return resolved;
+    try {
+      const marketAssets = await fetchMarketCatalog();
+      const resolved = marketAssets.length > 0 ? marketAssets : staticFallback;
+      replaceRuntimeCatalog(resolved);
+      storeCatalog(resolved);
+      return resolved;
+    } catch {
+      replaceRuntimeCatalog(staticFallback);
+      return staticFallback;
+    }
   })();
 
   return catalogRequest;
