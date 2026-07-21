@@ -46,6 +46,11 @@ type NewUserPageConfig = {
 
 const SETUP_STORAGE_KEY = "jamals-finance-new-user-setup-dismissed";
 
+// New-user-only presentation is centralized here. A future wording, spacing,
+// typography or action-size change can be made once and will apply everywhere.
+const NEW_USER_ACTION_CLASS =
+  "finance-focus mt-5 inline-flex min-h-10 items-center justify-center bg-transparent px-1 text-sm font-black text-primary transition-[color,transform,opacity] duration-200 hover:opacity-80 active:scale-[0.98] sm:text-base";
+
 const NEW_USER_PAGE_CONFIG: Record<string, NewUserPageConfig> = {
   accounts: {
     label: "Accounts",
@@ -174,11 +179,8 @@ function fallbackConfig(segment: string): NewUserPageConfig {
 function hasPageData(dataKind: DataKind, counts: NewUserExperienceCounts) {
   const transactionActivity = counts.totalTransactions + counts.transfers;
   const financialActivity =
-    transactionActivity +
-    counts.accounts +
-    counts.investments +
-    counts.goals +
-    counts.payables;
+    transactionActivity + counts.investments + counts.goals + counts.payables;
+  const anyActivity = financialActivity + counts.accounts;
 
   if (dataKind === "accounts") return counts.accounts > 0;
   if (dataKind === "income") return counts.incomeTransactions > 0;
@@ -188,7 +190,7 @@ function hasPageData(dataKind: DataKind, counts: NewUserExperienceCounts) {
   if (dataKind === "goals") return counts.goals > 0;
   if (dataKind === "payables") return counts.payables > 0;
   if (dataKind === "financial") return financialActivity > 0;
-  return financialActivity > 0;
+  return anyActivity > 0;
 }
 
 export default function NewUserExperienceGate({
@@ -254,8 +256,8 @@ export default function NewUserExperienceGate({
         <div className="flex min-h-10 items-center gap-3">
           <span
             aria-hidden="true"
-            className="h-7 w-1 shrink-0 rounded-full shadow-[0_0_0.7rem_color-mix(in_srgb,currentColor_20%,transparent)]"
-            style={{ background: pageConfig.accent, color: pageConfig.accent }}
+            className="h-7 w-1 shrink-0 rounded-full"
+            style={{ background: pageConfig.accent }}
           />
           <h1 className="m-0 text-[clamp(1rem,0.8rem+0.55vw,1.45rem)] font-[760] leading-tight tracking-[-0.025em] text-text-primary">
             {pageConfig.label}
@@ -273,7 +275,7 @@ export default function NewUserExperienceGate({
             <button
               type="button"
               onClick={() => setActiveAction(pageConfig.action)}
-              className="finance-focus mt-5 inline-flex min-h-10 items-center justify-center bg-transparent px-1 text-sm font-black text-primary transition-[color,transform,opacity] duration-200 hover:opacity-80 active:scale-[0.98] sm:text-base"
+              className={NEW_USER_ACTION_CLASS}
             >
               {pageConfig.actionLabel}
             </button>
