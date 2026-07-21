@@ -13,6 +13,61 @@ html[data-animation-mode="standard"] {
   --motion-duration-skeleton: 1000ms;
 }
 
+/* Standard motion adapts without changing the visual language. Lower-capacity
+ * devices receive shorter timing windows and fewer continuously running effects
+ * from the matching runtime controller, while capable devices keep full motion.
+ */
+html[data-animation-mode="standard"][data-standard-motion-tier="balanced"] {
+  --motion-duration-instant: 70ms;
+  --motion-duration-fast: 120ms;
+  --motion-duration-base: 175ms;
+  --motion-duration-slow: 245ms;
+  --motion-duration-deliberate: 310ms;
+  --motion-duration-skeleton: 900ms;
+}
+
+html[data-animation-mode="standard"][data-standard-motion-tier="lite"] {
+  --motion-duration-instant: 60ms;
+  --motion-duration-fast: 100ms;
+  --motion-duration-base: 145ms;
+  --motion-duration-slow: 190ms;
+  --motion-duration-deliberate: 240ms;
+  --motion-duration-skeleton: 760ms;
+}
+
+/* Content paints immediately in Standard mode, then settles on the compositor.
+ * The pending state never hides or delays streamed page content.
+ */
+html[data-animation-mode="standard"]
+  .jf-dashboard-content-frame[data-jf-initial-reveal="pending"] {
+  visibility: visible !important;
+  opacity: 0.985;
+  transform: translate3d(0, 2px, 0);
+}
+
+html[data-animation-mode="standard"]
+  .jf-dashboard-content-frame[data-jf-initial-reveal="ready"] {
+  opacity: 1;
+  transform: translate3d(0, 0, 0);
+  transition:
+    opacity var(--motion-duration-fast) var(--motion-ease),
+    transform var(--motion-duration-fast) var(--motion-ease);
+}
+
+html[data-animation-mode="standard"]
+  :where(button, a, [role="button"], [role="link"]) {
+  touch-action: manipulation;
+}
+
+/* Hidden tabs must not spend CPU, memory or battery advancing motion. Browsers
+ * resume these animations naturally when the document becomes visible again.
+ */
+html[data-animation-mode="standard"][data-page-visibility="hidden"] *,
+html[data-animation-mode="standard"][data-page-visibility="hidden"] *::before,
+html[data-animation-mode="standard"][data-page-visibility="hidden"] *::after {
+  animation-play-state: paused !important;
+}
+
 html[data-animation-mode="fast"] {
   --motion-duration-instant: 48ms;
   --motion-duration-fast: 82ms;
@@ -169,6 +224,15 @@ html[data-animation-mode="none"] [data-loading-region="true"]::after {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  html[data-animation-mode="standard"]
+    .jf-dashboard-content-frame[data-jf-initial-reveal="pending"],
+  html[data-animation-mode="standard"]
+    .jf-dashboard-content-frame[data-jf-initial-reveal="ready"] {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+
   html[data-animation-mode="standard"] .jf-standard-route-loader > span {
     width: 100%;
     animation: none;
