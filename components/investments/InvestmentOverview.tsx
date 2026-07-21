@@ -15,6 +15,7 @@ import {
   YAxis,
 } from "recharts";
 import {
+  Activity,
   ArrowDownRight,
   ArrowRight,
   ArrowUpRight,
@@ -22,6 +23,7 @@ import {
   Brain,
   Layers3,
   PieChart,
+  Sparkles,
   TrendingUp,
   WalletCards,
 } from "lucide-react";
@@ -80,7 +82,7 @@ function CompactMetric({
         : "text-text-primary";
 
   return (
-    <div className="min-w-0 rounded-[18px] bg-surface-secondary/70 px-3.5 py-3.5 sm:px-4">
+    <div className="min-w-0 rounded-[18px] bg-surface-primary/58 px-3.5 py-3.5 shadow-[0_1px_0_rgba(255,255,255,0.03)] sm:px-4">
       <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-text-secondary">
         {label}
       </p>
@@ -111,7 +113,7 @@ function ComparisonTooltip({
   const pnl = current - invested;
 
   return (
-    <div className="min-w-[176px] rounded-[14px] border border-border bg-card p-3 text-xs shadow-[var(--shadow-soft)]">
+    <div className="min-w-[178px] rounded-[15px] bg-card/95 p-3 text-xs shadow-[var(--shadow-soft)] backdrop-blur-sm">
       <p className="font-semibold text-text-primary">
         {holding?.name ?? "Holding"}
         {holding?.symbol ? ` · ${holding.symbol}` : ""}
@@ -129,7 +131,7 @@ function ComparisonTooltip({
             {formatCurrency(current)}
           </span>
         </p>
-        <p className="flex items-center justify-between gap-5 border-t border-border/70 pt-1.5">
+        <p className="flex items-center justify-between gap-5 pt-1.5">
           <span className="text-text-secondary">P/L</span>
           <span
             className={`font-bold tabular-nums ${pnl >= 0 ? "text-success" : "text-danger"}`}
@@ -156,7 +158,7 @@ function AllocationTooltip({
   const item = payload[0];
 
   return (
-    <div className="rounded-[14px] border border-border bg-card px-3 py-2.5 text-xs shadow-[var(--shadow-soft)]">
+    <div className="rounded-[15px] bg-card/95 px-3 py-2.5 text-xs shadow-[var(--shadow-soft)] backdrop-blur-sm">
       <p className="font-semibold text-text-primary">
         {item.payload?.name ?? "Holding"}
       </p>
@@ -197,12 +199,13 @@ function PortfolioAnalytics({
         symbol: holding.symbol ?? holding.name.slice(0, 5),
         invested: holding.totalInvested,
         current: holding.currentValue,
+        color: holding.color,
       })),
     [groupedHoldings],
   );
   const allocationRows = useMemo(
     () =>
-      groupedHoldings.slice(0, 6).map((holding) => ({
+      groupedHoldings.slice(0, 7).map((holding) => ({
         key: holding.groupKey,
         name: holding.name,
         symbol: holding.symbol,
@@ -213,30 +216,44 @@ function PortfolioAnalytics({
       })),
     [groupedHoldings, totalValue],
   );
+  const largestHolding = allocationRows[0] ?? null;
 
   return (
-    <section className="grid min-w-0 gap-4 xl:grid-cols-[minmax(0,1.7fr)_minmax(300px,0.8fr)]">
+    <section className="grid min-w-0 gap-4 xl:grid-cols-[minmax(0,1.65fr)_minmax(310px,0.75fr)]">
       <motion.article
-        initial={{ opacity: 0, y: 10 }}
+        initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: motionDurations.page, ease: motionEase }}
-        className="finance-reference-card min-w-0 overflow-hidden p-4 sm:p-5 lg:p-6"
+        className="relative min-w-0 overflow-hidden rounded-[28px] p-4 shadow-[var(--shadow-soft)] sm:p-5 lg:p-6"
+        style={{
+          background:
+            "linear-gradient(145deg, color-mix(in srgb, var(--investment) 10%, var(--card)) 0%, var(--card) 48%, color-mix(in srgb, var(--info) 7%, var(--card)) 100%)",
+        }}
       >
-        <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
+        <span
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-x-8 top-0 h-px"
+          style={{
+            background:
+              "linear-gradient(90deg, transparent, color-mix(in srgb, var(--investment) 72%, white), transparent)",
+          }}
+        />
+
+        <div className="relative flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
           <div className="min-w-0">
-            <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.14em] text-active sm:text-[11px]">
-              <BarChart2 size={14} />
-              Portfolio overview
+            <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.15em] text-active sm:text-[11px]">
+              <Activity size={14} />
+              Portfolio value
             </div>
-            <p className="mt-3 break-words text-3xl font-bold tabular-nums tracking-tight text-text-primary [overflow-wrap:anywhere] sm:text-4xl">
+            <p className="mt-3 break-words text-3xl font-bold tabular-nums tracking-[-0.035em] text-text-primary [overflow-wrap:anywhere] sm:text-4xl lg:text-[2.7rem]">
               {formatCurrency(totalValue)}
             </p>
             <div className="mt-2 flex flex-wrap items-center gap-2">
               <span
                 className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-bold ${
                   isProfit
-                    ? "bg-success/10 text-success"
-                    : "bg-danger/10 text-danger"
+                    ? "bg-success/11 text-success"
+                    : "bg-danger/11 text-danger"
                 }`}
               >
                 {isProfit ? (
@@ -254,30 +271,33 @@ function PortfolioAnalytics({
             </div>
           </div>
 
-          <div className="grid w-full grid-cols-2 gap-2 lg:w-[310px]">
+          <div className="grid w-full grid-cols-2 gap-2 lg:w-[330px]">
             <CompactMetric
               label="Invested"
               value={formatCurrency(totalInvested)}
               helper="Total cost basis"
             />
             <CompactMetric
-              label="Holdings"
+              label="Assets"
               value={String(groupedHoldings.length)}
               helper={
-                groupedHoldings.length === 1 ? "Grouped asset" : "Grouped assets"
+                groupedHoldings.length === 1 ? "Grouped holding" : "Grouped holdings"
               }
             />
           </div>
         </div>
 
-        <div className="mt-6 border-t border-border/70 pt-5">
+        <div className="relative mt-5 rounded-[22px] bg-surface-primary/42 p-3 sm:mt-6 sm:p-4">
           <div className="mb-3 flex flex-wrap items-end justify-between gap-2">
             <div>
-              <h3 className="text-sm font-semibold text-text-primary">
-                Value vs cost basis
-              </h3>
-              <p className="mt-0.5 text-[11px] text-text-secondary">
-                Current value and invested amount for your largest holdings.
+              <div className="flex items-center gap-2">
+                <BarChart2 size={14} className="text-active" />
+                <h3 className="text-sm font-semibold text-text-primary">
+                  Value vs cost
+                </h3>
+              </div>
+              <p className="mt-1 text-[11px] text-text-secondary">
+                Current value compared with the original cost of each holding.
               </p>
             </div>
             <div className="flex items-center gap-3 text-[10px] font-semibold text-text-secondary">
@@ -291,93 +311,60 @@ function PortfolioAnalytics({
           </div>
 
           <ChartFrame
-            className="h-[230px] min-h-[230px] sm:h-[270px] sm:min-h-[270px]"
+            className="h-[245px] min-h-[245px] sm:h-[285px] sm:min-h-[285px]"
             tone="purple"
           >
             {({ width, height }) => {
-              const compact = width < 480;
+              const compact = width < 520;
               const costGradientId = `${gradientPrefix}-cost`;
-              const currentGradientId = `${gradientPrefix}-current`;
 
               return (
                 <BarChart
                   accessibilityLayer
                   data={comparisonRows}
+                  layout="vertical"
                   width={width}
                   height={height}
                   margin={{
-                    top: 12,
-                    right: compact ? 0 : 8,
-                    bottom: compact ? 4 : 0,
-                    left: compact ? 0 : 4,
+                    top: 4,
+                    right: compact ? 2 : 14,
+                    bottom: compact ? 0 : 2,
+                    left: compact ? 0 : 6,
                   }}
                   barGap={compact ? 2 : 4}
-                  barCategoryGap={compact ? "28%" : "34%"}
+                  barCategoryGap={compact ? "30%" : "36%"}
                 >
                   <defs>
                     <linearGradient
                       id={costGradientId}
                       x1="0"
                       y1="0"
-                      x2="0"
-                      y2="1"
+                      x2="1"
+                      y2="0"
                     >
                       <stop
                         offset="0%"
+                        stopColor="var(--text-secondary)"
+                        stopOpacity={0.22}
+                      />
+                      <stop
+                        offset="100%"
                         stopColor="var(--text-secondary)"
                         stopOpacity={0.52}
-                      />
-                      <stop
-                        offset="100%"
-                        stopColor="var(--text-secondary)"
-                        stopOpacity={0.16}
-                      />
-                    </linearGradient>
-                    <linearGradient
-                      id={currentGradientId}
-                      x1="0"
-                      y1="0"
-                      x2="0"
-                      y2="1"
-                    >
-                      <stop
-                        offset="0%"
-                        stopColor="var(--investment)"
-                        stopOpacity={0.96}
-                      />
-                      <stop
-                        offset="100%"
-                        stopColor="var(--investment)"
-                        stopOpacity={0.38}
                       />
                     </linearGradient>
                   </defs>
                   <CartesianGrid
-                    vertical={false}
+                    horizontal={false}
                     stroke="var(--border)"
-                    strokeDasharray="3 5"
-                    strokeOpacity={0.7}
+                    strokeDasharray="3 6"
+                    strokeOpacity={0.55}
                   />
                   <XAxis
-                    dataKey="symbol"
+                    type="number"
                     axisLine={false}
                     tickLine={false}
-                    interval={0}
-                    minTickGap={0}
-                    tick={{
-                      fill: "var(--text-secondary)",
-                      fontSize: compact ? 9 : 10,
-                    }}
-                    tickFormatter={(value: string) =>
-                      value.slice(0, compact ? 4 : 7)
-                    }
-                  />
-                  <YAxis
-                    hide={compact}
-                    axisLine={false}
-                    tickLine={false}
-                    width={58}
-                    tick={{ fill: "var(--text-secondary)", fontSize: 10 }}
+                    tick={{ fill: "var(--text-secondary)", fontSize: 9 }}
                     tickFormatter={(value: number) =>
                       formatCurrency(value, {
                         compact: true,
@@ -385,24 +372,42 @@ function PortfolioAnalytics({
                       })
                     }
                   />
+                  <YAxis
+                    type="category"
+                    dataKey="symbol"
+                    axisLine={false}
+                    tickLine={false}
+                    width={compact ? 42 : 62}
+                    tick={{
+                      fill: "var(--text-secondary)",
+                      fontSize: compact ? 9 : 10,
+                      fontWeight: 700,
+                    }}
+                    tickFormatter={(value: string) =>
+                      value.slice(0, compact ? 4 : 7)
+                    }
+                  />
                   <Tooltip
-                    cursor={{ fill: "var(--hover)", opacity: 0.45 }}
+                    cursor={{ fill: "var(--hover)", opacity: 0.28 }}
                     content={<ComparisonTooltip />}
                   />
                   <Bar
                     dataKey="invested"
                     fill={`url(#${costGradientId})`}
-                    radius={[8, 8, 3, 3]}
-                    maxBarSize={compact ? 18 : 26}
+                    radius={[0, 8, 8, 0]}
+                    maxBarSize={compact ? 11 : 14}
                     {...chartMotion}
                   />
                   <Bar
                     dataKey="current"
-                    fill={`url(#${currentGradientId})`}
-                    radius={[8, 8, 3, 3]}
-                    maxBarSize={compact ? 18 : 26}
+                    radius={[0, 8, 8, 0]}
+                    maxBarSize={compact ? 11 : 14}
                     {...chartMotion}
-                  />
+                  >
+                    {comparisonRows.map((entry) => (
+                      <Cell key={entry.key} fill={entry.color} />
+                    ))}
+                  </Bar>
                 </BarChart>
               );
             }}
@@ -411,18 +416,31 @@ function PortfolioAnalytics({
       </motion.article>
 
       <motion.article
-        initial={{ opacity: 0, y: 10 }}
+        initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{
           duration: motionDurations.page,
-          delay: 0.03,
+          delay: 0.025,
           ease: motionEase,
         }}
-        className="finance-reference-card min-w-0 overflow-hidden p-4 sm:p-5"
+        className="relative min-w-0 overflow-hidden rounded-[28px] p-4 shadow-[var(--shadow-soft)] sm:p-5"
+        style={{
+          background:
+            "linear-gradient(155deg, color-mix(in srgb, var(--info) 8%, var(--card)) 0%, var(--card) 52%, color-mix(in srgb, var(--warning) 6%, var(--card)) 100%)",
+        }}
       >
-        <div className="flex items-start justify-between gap-3">
+        <span
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-x-8 top-0 h-px"
+          style={{
+            background:
+              "linear-gradient(90deg, transparent, color-mix(in srgb, var(--info) 70%, white), transparent)",
+          }}
+        />
+
+        <div className="relative flex items-start justify-between gap-3">
           <div>
-            <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.14em] text-active sm:text-[11px]">
+            <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.15em] text-active sm:text-[11px]">
               <PieChart size={14} />
               Allocation
             </div>
@@ -430,20 +448,19 @@ function PortfolioAnalytics({
               Portfolio mix
             </h3>
             <p className="mt-1 text-xs leading-5 text-text-secondary">
-              One segment per grouped asset, regardless of how many times it was
-              bought.
+              Every asset appears once, even when it has multiple purchases.
             </p>
           </div>
-          <span className="grid h-10 w-10 shrink-0 place-items-center rounded-[15px] bg-surface-secondary text-active">
+          <span className="grid h-10 w-10 shrink-0 place-items-center rounded-[15px] bg-surface-primary/55 text-active">
             <Layers3 size={17} />
           </span>
         </div>
 
-        <div className="relative mt-3">
-          <ChartFrame className="h-[225px] min-h-[225px]" tone="purple">
+        <div className="relative mt-3 rounded-[22px] bg-surface-primary/36 py-2">
+          <ChartFrame className="h-[226px] min-h-[226px]" tone="purple">
             {({ width, height }) => {
               const outerRadius = Math.min(width, height) * 0.39;
-              const innerRadius = outerRadius * 0.66;
+              const innerRadius = outerRadius * 0.69;
 
               return (
                 <RechartsPieChart
@@ -460,7 +477,8 @@ function PortfolioAnalytics({
                     cy="50%"
                     innerRadius={innerRadius}
                     outerRadius={outerRadius}
-                    paddingAngle={allocationRows.length > 1 ? 2 : 0}
+                    paddingAngle={allocationRows.length > 1 ? 2.4 : 0}
+                    cornerRadius={6}
                     stroke="var(--card)"
                     strokeWidth={3}
                     {...chartMotion}
@@ -474,32 +492,46 @@ function PortfolioAnalytics({
             }}
           </ChartFrame>
           <div className="pointer-events-none absolute inset-0 grid place-items-center">
-            <div className="max-w-[130px] text-center">
-              <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-text-secondary">
+            <div className="max-w-[136px] text-center">
+              <p className="text-[9px] font-bold uppercase tracking-[0.13em] text-text-secondary">
                 Current value
               </p>
               <p className="mt-1 break-words text-sm font-bold tabular-nums text-text-primary [overflow-wrap:anywhere]">
                 {formatCurrency(totalValue, { compact: true })}
               </p>
+              {largestHolding ? (
+                <p className="mt-1 truncate text-[10px] text-text-secondary">
+                  Top: {largestHolding.name}
+                </p>
+              ) : null}
             </div>
           </div>
         </div>
 
-        <div className="mt-2 space-y-2.5">
+        <div className="mt-3 space-y-2.5">
           {allocationRows.slice(0, 5).map((item) => (
-            <div key={item.key} className="flex min-w-0 items-center gap-2.5">
-              <span
-                className="h-2.5 w-2.5 shrink-0 rounded-full"
-                style={{ backgroundColor: item.color }}
-              />
-              <div className="min-w-0 flex-1">
-                <p className="truncate text-xs font-semibold text-text-primary">
+            <div key={item.key} className="min-w-0 rounded-[14px] bg-surface-primary/42 px-3 py-2.5">
+              <div className="flex min-w-0 items-center gap-2.5">
+                <span
+                  className="h-2.5 w-2.5 shrink-0 rounded-full"
+                  style={{ backgroundColor: item.color }}
+                />
+                <p className="min-w-0 flex-1 truncate text-xs font-semibold text-text-primary">
                   {item.name}
                 </p>
+                <span className="shrink-0 text-xs font-bold tabular-nums text-text-primary">
+                  {item.percent.toFixed(1)}%
+                </span>
               </div>
-              <span className="shrink-0 text-xs font-bold tabular-nums text-text-primary">
-                {item.percent.toFixed(1)}%
-              </span>
+              <div className="mt-2 h-1 overflow-hidden rounded-full bg-surface-secondary">
+                <div
+                  className="h-full rounded-full"
+                  style={{
+                    width: `${Math.max(3, Math.min(100, item.percent))}%`,
+                    backgroundColor: item.color,
+                  }}
+                />
+              </div>
             </div>
           ))}
         </div>
@@ -572,17 +604,17 @@ function EmbeddedInsightCard({
 
   return (
     <motion.article
-      initial={{ opacity: 0, y: 8 }}
+      initial={{ opacity: 0, y: 6 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{
         duration: motionDurations.base,
-        delay: 0.05,
+        delay: 0.04,
         ease: motionEase,
       }}
-      className="finance-panel flex flex-col gap-3 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-5"
+      className="flex flex-col gap-3 rounded-[22px] bg-surface-secondary/48 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-5"
     >
       <div className="flex min-w-0 items-start gap-3">
-        <span className="grid h-10 w-10 shrink-0 place-items-center rounded-[15px] bg-surface-secondary text-active">
+        <span className="grid h-10 w-10 shrink-0 place-items-center rounded-[15px] bg-surface-primary/60 text-active">
           <Brain size={17} />
         </span>
         <div className="min-w-0">
@@ -591,7 +623,7 @@ function EmbeddedInsightCard({
               AI portfolio note
             </p>
             {!loading && status === "unavailable" ? (
-              <span className="rounded-full bg-surface-secondary px-2 py-1 text-[10px] font-semibold text-text-secondary">
+              <span className="rounded-full bg-surface-primary px-2 py-1 text-[10px] font-semibold text-text-secondary">
                 Unavailable
               </span>
             ) : null}
@@ -600,7 +632,8 @@ function EmbeddedInsightCard({
             {loading ? "Reading your latest portfolio signals..." : message}
           </p>
           {!loading && insight?.title ? (
-            <p className="mt-1 text-xs font-semibold text-active">
+            <p className="mt-1 inline-flex items-center gap-1.5 text-xs font-semibold text-active">
+              <Sparkles size={12} />
               {insight.title}
             </p>
           ) : null}
@@ -608,7 +641,7 @@ function EmbeddedInsightCard({
       </div>
       <Link
         href="/dashboard/ai-insights"
-        className="finance-focus inline-flex min-h-10 shrink-0 items-center justify-center gap-2 rounded-[14px] bg-surface-secondary px-3 text-xs font-semibold text-text-primary transition-colors hover:bg-hover"
+        className="finance-focus inline-flex min-h-10 shrink-0 items-center justify-center gap-2 rounded-[14px] bg-surface-primary/65 px-3 text-xs font-semibold text-text-primary transition-colors hover:bg-hover"
       >
         View insight
         <ArrowRight size={12} />
@@ -642,25 +675,28 @@ export default function InvestmentOverview({
     }, new Map<string, ExistingInvestment[]>());
   }, [investments]);
 
-  const groupedCards: ExistingInvestment[] = groupedHoldings.map((holding) => ({
-    id: holding.id,
-    name: holding.name,
-    type: holding.type,
-    quantity: holding.quantity,
-    purchase_price: holding.purchase_price,
-    current_price: holding.current_price,
-    current_price_original: holding.current_price_original,
-    current_price_currency: holding.current_price_currency,
-    purchased_at: "",
-    asset_id: holding.asset_id,
-    symbol: holding.symbol,
-    image_url: holding.image_url,
-    price_source: holding.price_source,
-    price_currency: "PKR",
-    price_updated_at: holding.price_updated_at,
-    price_change_24h: holding.price_change_24h,
-    is_live_priced: holding.is_live_priced,
-    item_count: holding.itemCount,
+  const groupedCards = groupedHoldings.map((holding) => ({
+    color: holding.color,
+    investment: {
+      id: holding.id,
+      name: holding.name,
+      type: holding.type,
+      quantity: holding.quantity,
+      purchase_price: holding.purchase_price,
+      current_price: holding.current_price,
+      current_price_original: holding.current_price_original,
+      current_price_currency: holding.current_price_currency,
+      purchased_at: "",
+      asset_id: holding.asset_id,
+      symbol: holding.symbol,
+      image_url: holding.image_url,
+      price_source: holding.price_source,
+      price_currency: "PKR",
+      price_updated_at: holding.price_updated_at,
+      price_change_24h: holding.price_change_24h,
+      is_live_priced: holding.is_live_priced,
+      item_count: holding.itemCount,
+    } satisfies ExistingInvestment,
   }));
 
   return (
@@ -685,8 +721,7 @@ export default function InvestmentOverview({
               </h2>
             </div>
             <p className="mt-1 text-sm text-text-secondary">
-              Every asset appears once. Open it to view and manage each separate
-              buy.
+              One clean position per asset, with every separate purchase kept inside.
             </p>
           </div>
           <div className="flex items-center gap-2 text-xs font-semibold text-text-secondary">
@@ -698,11 +733,12 @@ export default function InvestmentOverview({
           </div>
         </div>
 
-        <div className="grid min-w-0 grid-cols-1 gap-4 2xl:grid-cols-2">
-          {groupedCards.map((investment) => (
+        <div className="grid min-w-0 grid-cols-1 gap-4 xl:grid-cols-2">
+          {groupedCards.map(({ investment, color }) => (
             <InvestmentCard
               key={investment.id}
               inv={investment}
+              accentColor={color}
               lots={lotsByGroup.get(getInvestmentGroupKey(investment)) ?? []}
             />
           ))}
