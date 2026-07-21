@@ -132,6 +132,24 @@ const GLOBAL_FORM_AUDIT_STYLE = `
   display: none !important;
 }
 
+/* Password recovery and onboarding use the same auth shell. Their full-width
+ * actions keep the exact authored label, variant and color, but share the same
+ * responsive height/curve and remove decorative arrows/spinners. Provider
+ * branding, back controls, mode tabs and password visibility remain untouched. */
+.auth-step button.w-full:not(.auth-provider-action),
+.jf-auth-card button.w-full:not(.auth-provider-action) {
+  box-sizing: border-box !important;
+  height: var(--jf-global-final-action-height) !important;
+  min-height: var(--jf-global-final-action-height) !important;
+  max-height: var(--jf-global-final-action-height) !important;
+  border-radius: var(--jf-global-final-action-radius) !important;
+}
+
+.auth-step button.w-full:not(.auth-provider-action) svg,
+.jf-auth-card button.w-full:not(.auth-provider-action) svg {
+  display: none !important;
+}
+
 /* Every marked form action keeps its authored semantic color and click logic,
  * while sharing one height, curve, iconless presentation and short label. */
 :is(.finance-modal-content, [data-slot="dialog-content"])
