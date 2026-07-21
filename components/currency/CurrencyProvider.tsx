@@ -13,23 +13,53 @@ import {
   BASE_CURRENCY,
   CURRENCY_CHANGE_EVENT,
   CURRENCY_STORAGE_KEY,
-  FALLBACK_USD_PKR_RATE,
+  EXCHANGE_RATE_CHANGE_EVENT,
+  EXCHANGE_RATE_STORAGE_KEY,
+  FALLBACK_CURRENCY_RATES,
+  convertMoney,
   formatMoney,
   getCurrencyLabel,
   getCurrencySymbol,
   getDefaultCurrencyFromRegion,
+  getExchangeRate,
   isSupportedCurrency,
+  isValidCurrencyRates,
+  type CurrencyRates,
+  type ExchangeRateSnapshot,
   type MoneyFormatOptions,
   type SupportedCurrency,
 } from "@/lib/currency";
 
 type CurrencyContextValue = {
   currency: SupportedCurrency;
+  rates: CurrencyRates;
+  /** Compatibility alias: one USD in PKR. */
   rate: number;
   live: boolean;
+  stale: boolean;
+  ratesReady: boolean;
   rateLabel: string;
+  source: string;
+  updatedAt: string;
   setCurrency: (currency: SupportedCurrency) => void;
   formatCurrency: (value: number, options?: MoneyFormatOptions) => string;
+  convertCurrency: (
+    value: number,
+    fromCurrency: SupportedCurrency,
+    toCurrency?: SupportedCurrency,
+  ) => number | null;
+  toBaseCurrency: (
+    value: number,
+    fromCurrency?: SupportedCurrency,
+  ) => number | null;
+  fromBaseCurrency: (
+    value: number,
+    toCurrency?: SupportedCurrency,
+  ) => number | null;
+  getRate: (
+    fromCurrency: SupportedCurrency,
+    toCurrency?: SupportedCurrency,
+  ) => number | null;
   getCurrencySymbol: (currency?: SupportedCurrency) => string;
   getCurrencyLabel: (currency?: SupportedCurrency) => string;
 };
@@ -46,6 +76,10 @@ const CURRENCY_COOKIE_MAX_AGE = 60 * 60 * 24 * 365;
 export type Currency = SupportedCurrency;
 export type FormatOptions = MoneyFormatOptions;
 
+type ApiSnapshot = Partial<ExchangeRateSnapshot> & {
+  rate?: number;
+};
+
 function persistCurrencyPreference(currency: SupportedCurrency) {
   if (typeof window === "undefined") return;
 
@@ -55,6 +89,58 @@ function persistCurrencyPreference(currency: SupportedCurrency) {
   document.cookie = `${CURRENCY_STORAGE_KEY}=${encodeURIComponent(currency)}; Path=/; Max-Age=${CURRENCY_COOKIE_MAX_AGE}; SameSite=Lax${secure}`;
 }
 
+function isValidSnapshot(value: unknown): value is ExchangeRateSnapshot {
+  if (!value || typeof value !== "object") return false;
+
+  const candidate = value as Partial<ExchangeRateSnapshot>;
+  return (
+    candidate.base === "USD" &&
+    isValidCurrencyRates(candidate.rates) &&
+    typeof candidate.updatedAt === "string" &&
+    typeof candidate.source === "string" &&
+    typeof candidate.live === "boolean" &&
+    typeof candidate.stale === "boolean"
+  );
+}
+
+function readCachedSnapshot() {
+  if (typeof window === "undefined") return null;
+
+  try {
+    const raw = window.localStorage.getItem(EXCHANGE_RATE_STORAGE_KEY);
+    if (!raw) return null;
+
+    const parsed = JSON.parse(raw) as unknown;
+    return isValidSnapshot(parsed) ? parsed : null;
+  } catch {
+    return null;
+  }
+}
+
+function persistRateSnapshot(snapshot: ExchangeRateSnapshot) {
+  if (typeof window === "undefined" || !isValidSnapshot(snapshot)) return;
+
+  window.localStorage.setItem(
+    EXCHANGE_RATE_STORAGE_KEY,
+    JSON.stringify(snapshot),
+  );
+  window.dispatchEvent(
+    new CustomEvent(EXCHANGE_RATE_CHANGE_EVENT, { detail: snapshot }),
+  );
+}
+
+function createEmergencySnapshot(): ExchangeRateSnapshot {
+  return {
+    base: "USD",
+    rates: FALLBACK_CURRENCY_RATES,
+    updatedAt: new Date(0).toISOString(),
+    nextUpdateAt: null,
+    source: "Built-in emergency rates",
+    live: false,
+    stale: true,
+  };
+}
+
 export function CurrencyProvider({
   children,
   initialCurrency = BASE_CURRENCY,
@@ -62,8 +148,10 @@ export function CurrencyProvider({
 }: CurrencyProviderProps) {
   const [currency, setCurrencyState] =
     useState<SupportedCurrency>(initialCurrency);
-  const [rate, setRate] = useState(FALLBACK_USD_PKR_RATE);
-  const [live, setLive] = useState(false);
+  const [snapshot, setSnapshot] = useState<ExchangeRateSnapshot>(
+    createEmergencySnapshot,
+  );
+  const [ratesReady, setRatesReady] = useState(false);
 
   useEffect(() => {
     if (hasStoredPreference) {
@@ -73,8 +161,9 @@ export function CurrencyProvider({
     }
 
     const saved = window.localStorage.getItem(CURRENCY_STORAGE_KEY);
-    const nextCurrency =
-      isSupportedCurrency(saved) ? saved : getDefaultCurrencyFromRegion();
+    const nextCurrency = isSupportedCurrency(saved)
+      ? saved
+      : getDefaultCurrencyFromRegion();
 
     persistCurrencyPreference(nextCurrency);
     setCurrencyState(nextCurrency);
@@ -82,22 +171,28 @@ export function CurrencyProvider({
 
   useEffect(() => {
     let cancelled = false;
+    const cached = readCachedSnapshot();
+
+    if (cached) {
+      setSnapshot({ ...cached, live: false, stale: true });
+      setRatesReady(true);
+    }
 
     fetch("/api/exchange-rate")
-      .then((response) => response.json())
+      .then(async (response) => {
+        if (!response.ok) throw new Error("Exchange rates unavailable");
+        return (await response.json()) as ApiSnapshot;
+      })
       .then((data) => {
-        if (cancelled) return;
+        if (cancelled || !isValidSnapshot(data)) return;
 
-        const nextRate = Number(data.rate);
-
-        if (Number.isFinite(nextRate) && nextRate > 0) {
-          setRate(nextRate);
-        }
-
-        setLive(Boolean(data.live));
+        setSnapshot(data);
+        setRatesReady(true);
+        persistRateSnapshot(data);
       })
       .catch(() => {
-        if (!cancelled) setLive(false);
+        if (cancelled) return;
+        setRatesReady(true);
       });
 
     return () => {
@@ -125,13 +220,35 @@ export function CurrencyProvider({
         persistCurrencyPreference(event.newValue);
         setCurrencyState(event.newValue);
       }
+
+      if (event.key === EXCHANGE_RATE_STORAGE_KEY && event.newValue) {
+        try {
+          const next = JSON.parse(event.newValue) as unknown;
+          if (isValidSnapshot(next)) {
+            setSnapshot(next);
+            setRatesReady(true);
+          }
+        } catch {
+          // Ignore malformed cross-tab values.
+        }
+      }
+    }
+
+    function handleRateChange(event: Event) {
+      const next = (event as CustomEvent<unknown>).detail;
+      if (isValidSnapshot(next)) {
+        setSnapshot(next);
+        setRatesReady(true);
+      }
     }
 
     window.addEventListener(CURRENCY_CHANGE_EVENT, handleCurrencyChange);
+    window.addEventListener(EXCHANGE_RATE_CHANGE_EVENT, handleRateChange);
     window.addEventListener("storage", handleStorage);
 
     return () => {
       window.removeEventListener(CURRENCY_CHANGE_EVENT, handleCurrencyChange);
+      window.removeEventListener(EXCHANGE_RATE_CHANGE_EVENT, handleRateChange);
       window.removeEventListener("storage", handleStorage);
     };
   }, []);
@@ -146,35 +263,96 @@ export function CurrencyProvider({
     );
   }, []);
 
+  const convertCurrency = useCallback(
+    (
+      value: number,
+      fromCurrency: SupportedCurrency,
+      toCurrency = currency,
+    ) => {
+      const converted = convertMoney(
+        value,
+        fromCurrency,
+        toCurrency,
+        snapshot.rates,
+      );
+      return Number.isFinite(converted) ? converted : null;
+    },
+    [currency, snapshot.rates],
+  );
+
+  const toBaseCurrency = useCallback(
+    (value: number, fromCurrency = currency) =>
+      convertCurrency(value, fromCurrency, BASE_CURRENCY),
+    [convertCurrency, currency],
+  );
+
+  const fromBaseCurrency = useCallback(
+    (value: number, toCurrency = currency) =>
+      convertCurrency(value, BASE_CURRENCY, toCurrency),
+    [convertCurrency, currency],
+  );
+
+  const getRate = useCallback(
+    (fromCurrency: SupportedCurrency, toCurrency = currency) => {
+      const rate = getExchangeRate(fromCurrency, toCurrency, snapshot.rates);
+      return Number.isFinite(rate) && rate > 0 ? rate : null;
+    },
+    [currency, snapshot.rates],
+  );
+
   const formatCurrency = useCallback(
     (value: number, options?: MoneyFormatOptions) =>
       formatMoney(value, {
         ...options,
         currency: options?.currency ?? currency,
-        usdToPkrRate: options?.usdToPkrRate ?? rate,
+        rates: options?.rates ?? snapshot.rates,
       }),
-    [currency, rate],
+    [currency, snapshot.rates],
   );
 
-  const rateLabel =
-    live ?
-      `Live rate: 1 USD = ${rate.toFixed(2)} PKR`
-    : `Fallback rate: 1 USD = ${rate.toFixed(2)} PKR`;
+  const selectedRate = snapshot.rates[currency];
+  const rateLabel = ratesReady
+    ? `${snapshot.live && !snapshot.stale ? "Latest" : "Saved"} rate: 1 USD = ${formatMoney(1, {
+        currency,
+        fromCurrency: "USD",
+        rates: snapshot.rates,
+      })}`
+    : "Exchange rates are loading";
 
-  const value = useMemo(
+  const value = useMemo<CurrencyContextValue>(
     () => ({
       currency,
-      rate,
-      live,
+      rates: snapshot.rates,
+      rate: snapshot.rates.PKR,
+      live: snapshot.live,
+      stale: snapshot.stale,
+      ratesReady,
       rateLabel,
+      source: snapshot.source,
+      updatedAt: snapshot.updatedAt,
       setCurrency,
       formatCurrency,
+      convertCurrency,
+      toBaseCurrency,
+      fromBaseCurrency,
+      getRate,
       getCurrencySymbol: (nextCurrency = currency) =>
         getCurrencySymbol(nextCurrency),
       getCurrencyLabel: (nextCurrency = currency) =>
         getCurrencyLabel(nextCurrency),
     }),
-    [currency, formatCurrency, live, rate, rateLabel, setCurrency],
+    [
+      convertCurrency,
+      currency,
+      formatCurrency,
+      fromBaseCurrency,
+      getRate,
+      rateLabel,
+      ratesReady,
+      setCurrency,
+      snapshot,
+      toBaseCurrency,
+    ],
   );
 
   return (
