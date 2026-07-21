@@ -1,14 +1,13 @@
 "use client";
 
-import type { CSSProperties } from "react";
-import { CheckCircle2, Target, TrendingUp, WalletCards } from "lucide-react";
+import { CheckCircle2, Target, WalletCards } from "lucide-react";
 
+import { useCurrency } from "@/components/currency/CurrencyProvider";
 import {
   useAnimatedGoalValue,
   useProgressReveal,
   useReducedMotion,
 } from "./use-animated-goal-value";
-import { useCurrency } from "@/components/currency/CurrencyProvider";
 
 type GoalSummaryStatsProps = {
   totalTarget: number;
@@ -17,6 +16,9 @@ type GoalSummaryStatsProps = {
   totalCount: number;
   overallPct: number;
 };
+
+const RADIUS = 52;
+const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
 
 export default function GoalSummaryStats({
   totalTarget,
@@ -29,95 +31,139 @@ export default function GoalSummaryStats({
   const reduceMotion = useReducedMotion();
   const animatedTarget = useAnimatedGoalValue(totalTarget, 0, 760);
   const animatedSaved = useAnimatedGoalValue(totalSaved, 80, 820);
-  const displayPct = Number.isFinite(overallPct) ? overallPct : 0;
-  const cappedPct = Math.min(Math.max(displayPct, 0), 100);
+  const displayPct = Number.isFinite(overallPct) ? Math.max(overallPct, 0) : 0;
+  const cappedPct = Math.min(displayPct, 100);
   const progressReady = useProgressReveal(reduceMotion, cappedPct);
+  const revealedPct = progressReady ? cappedPct : 0;
+  const remaining = Math.max(totalTarget - totalSaved, 0);
 
-  const progressStyle = {
-    "--progress-accent": "var(--active)",
-    "--progress-duration": reduceMotion ? "0ms" : "820ms",
-    "--progress-scale": progressReady ? cappedPct / 100 : 0,
-  } as CSSProperties;
-
-  const stats = [
+  const metrics = [
     {
-      label: "Total Target",
+      label: "Total target",
       value: formatCurrency(animatedTarget),
+      helper: `${totalCount} ${totalCount === 1 ? "goal" : "goals"}`,
       icon: Target,
-      accent: "var(--active)",
+      tone: "var(--goals, var(--active))",
     },
     {
-      label: "Total Saved",
+      label: "Saved",
       value: formatCurrency(animatedSaved),
+      helper:
+        remaining > 0 ? `${formatCurrency(remaining)} remaining` : "Target covered",
       icon: WalletCards,
-      accent: "var(--success)",
+      tone: "var(--success)",
     },
     {
       label: "Completed",
       value: `${completedCount} / ${totalCount}`,
+      helper:
+        completedCount === totalCount && totalCount > 0
+          ? "All goals reached"
+          : `${Math.max(totalCount - completedCount, 0)} active`,
       icon: CheckCircle2,
-      accent: "var(--success)",
+      tone: "var(--success)",
     },
   ];
 
   return (
-    <div
-      data-mobile-summary-grid
-      className="grid grid-cols-2 gap-3 xl:grid-cols-4"
+    <section
+      data-goals-summary
+      aria-label="Goals progress overview"
+      className="grid min-w-0 gap-5 overflow-hidden rounded-[30px] bg-card p-4 sm:p-5 lg:grid-cols-[minmax(15rem,0.78fr)_minmax(0,1.22fr)] lg:items-center lg:p-6"
     >
-      {stats.map(({ label, value, icon: Icon, accent }) => (
-        <article
-          key={label}
-          className="summary-card flex min-h-[118px] min-w-0 flex-col items-start gap-3 sm:flex-row"
+      <div className="flex min-w-0 items-center gap-4 sm:gap-5">
+        <div
+          className="relative size-28 shrink-0 sm:size-32"
+          role="progressbar"
+          aria-label="Overall goals progress"
+          aria-valuemin={0}
+          aria-valuemax={100}
+          aria-valuenow={Math.round(cappedPct)}
         >
-          <span
-            className="grid h-10 w-10 shrink-0 place-items-center rounded-full border"
-            style={{
-              color: accent,
-              borderColor: `color-mix(in srgb, ${accent}, transparent 76%)`,
-              backgroundColor: `color-mix(in srgb, ${accent}, transparent 92%)`,
-            }}
+          <svg
+            className="size-full -rotate-90"
+            viewBox="0 0 120 120"
+            aria-hidden="true"
           >
-            <Icon size={17} strokeWidth={2.15} />
-          </span>
-          <div className="min-w-0">
-            <p className="text-xs font-medium leading-5 text-text-secondary">
-              {label}
-            </p>
-            <p className="mt-1 break-words text-xl font-semibold leading-tight text-text-primary [overflow-wrap:anywhere]">
-              {value}
-            </p>
+            <circle
+              cx="60"
+              cy="60"
+              r={RADIUS}
+              fill="none"
+              stroke="var(--surface-secondary)"
+              strokeWidth="9"
+            />
+            <circle
+              cx="60"
+              cy="60"
+              r={RADIUS}
+              fill="none"
+              stroke="var(--goals, var(--active))"
+              strokeWidth="9"
+              strokeLinecap="round"
+              strokeDasharray={CIRCUMFERENCE}
+              strokeDashoffset={
+                CIRCUMFERENCE - (revealedPct / 100) * CIRCUMFERENCE
+              }
+              style={{
+                transition: reduceMotion
+                  ? "none"
+                  : "stroke-dashoffset 820ms cubic-bezier(0.22, 1, 0.36, 1)",
+              }}
+            />
+          </svg>
+          <div className="absolute inset-0 grid place-items-center text-center">
+            <div>
+              <p className="text-xl font-black tabular-nums tracking-tight text-text-primary sm:text-2xl">
+                {displayPct.toFixed(1)}%
+              </p>
+              <p className="mt-0.5 text-[9px] font-bold uppercase tracking-[0.12em] text-text-tertiary">
+                Progress
+              </p>
+            </div>
           </div>
-        </article>
-      ))}
+        </div>
 
-      <article className="summary-card flex min-h-[118px] min-w-0 flex-col justify-between">
-        <div className="flex min-w-0 flex-col items-start gap-3 sm:flex-row">
-          <span
-            className="grid h-10 w-10 shrink-0 place-items-center rounded-full border"
-            style={{
-              color: "var(--active)",
-              borderColor:
-                "color-mix(in srgb, var(--active), transparent 76%)",
-              backgroundColor:
-                "color-mix(in srgb, var(--active), transparent 92%)",
-            }}
+        <div className="min-w-0">
+          <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-goals">
+            Goals pulse
+          </p>
+          <h2 className="mt-1.5 text-lg font-bold tracking-tight text-text-primary sm:text-xl">
+            Savings progress
+          </h2>
+          <p className="mt-1.5 max-w-sm text-xs leading-5 text-text-secondary">
+            One clear view of what is saved, what remains, and how many goals are
+            complete.
+          </p>
+        </div>
+      </div>
+
+      <dl className="grid min-w-0 grid-cols-1 gap-2.5 sm:grid-cols-3">
+        {metrics.map(({ label, value, helper, icon: Icon, tone }) => (
+          <div
+            key={label}
+            className="min-w-0 rounded-[20px] bg-surface-primary/45 px-3.5 py-4 sm:px-4"
           >
-            <TrendingUp size={17} strokeWidth={2.15} />
-          </span>
-          <div className="min-w-0">
-            <p className="text-xs font-medium leading-5 text-text-secondary">
-              Overall Progress
-            </p>
-            <p className="mt-1 text-xl font-semibold leading-tight text-active">
-              {displayPct.toFixed(1)}%
+            <div className="flex items-center gap-2">
+              <Icon
+                aria-hidden="true"
+                size={16}
+                strokeWidth={2.35}
+                style={{ color: tone }}
+              />
+              <dt className="text-[10px] font-bold uppercase tracking-[0.1em] text-text-tertiary">
+                {label}
+              </dt>
+            </div>
+            <dd className="mt-2 break-words text-base font-bold tabular-nums text-text-primary [overflow-wrap:anywhere] sm:text-lg">
+              {value}
+            </dd>
+            <p className="mt-1 truncate text-[11px] text-text-secondary">
+              {helper}
             </p>
           </div>
-        </div>
-        <div className="mt-3 dashboard-progress-track" style={progressStyle}>
-          <div className="dashboard-progress-fill" />
-        </div>
-      </article>
-    </div>
+        ))}
+      </dl>
+    </section>
   );
 }
