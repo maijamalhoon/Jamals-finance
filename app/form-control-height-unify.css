@@ -1,12 +1,15 @@
 /*
- * Global form-control, modal-spacing, positioning and motion authority.
- * Every finance form shares one visual shell and animation contract while each
- * feature keeps its own data, validation, API and submit logic.
+ * Global form UI contract.
+ *
+ * Every form field shares one responsive outer footprint while each feature
+ * keeps its own value, content, validation, API, state and submit logic.
+ * Final footer actions are intentionally outside the field-size contract.
  */
 
 :root {
   --jf-global-form-control-height: 2.5rem;
-  --jf-global-date-control-height: 2.25rem;
+  --jf-global-date-control-height: var(--jf-global-form-control-height);
+  --jf-global-multiline-control-height: var(--jf-global-form-control-height);
   --jf-global-final-action-height: 2.5rem;
   --jf-global-final-action-radius: 0.95rem;
   --jf-global-form-edge-gap: 0.875rem;
@@ -72,8 +75,8 @@
 }
 
 /*
- * Desktop positioning is owned globally. Individual forms must not calculate
- * their own screen position; only their width and content height may differ.
+ * Desktop positioning is owned globally. Individual forms may change only
+ * their width and content height, never their screen position.
  */
 @media (min-width: 1024px) {
   [data-slot="dialog-content"].finance-modal-content.finance-modal-content {
@@ -87,11 +90,7 @@
   }
 }
 
-/*
- * Older Settings-only layers applied a second transform on top of Dialog's
- * built-in translate. These higher-specificity selectors collapse every
- * Settings form back onto the same global modal contract on every device.
- */
+/* Collapse older Settings-only positioning onto the shared modal contract. */
 :is(
     [data-slot="dialog-content"].finance-modal-content.finance-modal-content:has(#settings-category-name),
     [data-slot="dialog-content"].finance-modal-content.finance-modal-content:has(#persistent-category-name),
@@ -115,39 +114,166 @@
   transform: none !important;
 }
 
+/* Every labelled field owns the full responsive width of its form column. */
+:is(form, [data-slot="dialog-content"], .finance-modal-content)
+  :is([data-slot="finance-form-field"], .finance-form-field) {
+  box-sizing: border-box !important;
+  inline-size: 100% !important;
+  min-inline-size: 0 !important;
+  max-inline-size: 100% !important;
+}
+
+/*
+ * Generic forms, including authentication, use the same full-width footprint.
+ * The stronger finance-modal selector below defeats old CSS-module heights.
+ */
 :is(form, [data-slot="dialog-content"], .finance-modal-content)
   :is(
+    .field-input,
     input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]):not([type="file"]),
+    textarea,
     select,
     [data-slot="input"],
+    [data-slot="textarea"],
     [data-slot="select-trigger"],
     [role="combobox"],
     [role="listbox"][aria-roledescription="scroll picker"],
+    [role="spinbutton"][aria-haspopup="dialog"],
     button[aria-haspopup="listbox"],
-    button[aria-haspopup="dialog"][aria-controls$="-calendar"],
-    button[role="radio"],
     .finance-account-select
   ) {
   box-sizing: border-box !important;
+  inline-size: 100% !important;
+  width: 100% !important;
+  min-inline-size: 0 !important;
+  max-inline-size: 100% !important;
   height: var(--jf-global-form-control-height) !important;
   min-height: var(--jf-global-form-control-height) !important;
   max-height: var(--jf-global-form-control-height) !important;
 }
 
-/* Every real date field, including the touch scroll wheel, uses one height. */
+[data-slot="dialog-content"].finance-modal-content.finance-modal-content
+  :is(
+    .field-input,
+    input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]):not([type="file"]),
+    textarea,
+    select,
+    [data-slot="input"],
+    [data-slot="textarea"],
+    [data-slot="select-trigger"],
+    [role="combobox"],
+    [role="listbox"][aria-roledescription="scroll picker"],
+    [role="spinbutton"][aria-haspopup="dialog"],
+    button[aria-haspopup="listbox"],
+    .finance-account-select
+  ) {
+  box-sizing: border-box !important;
+  inline-size: 100% !important;
+  width: 100% !important;
+  min-inline-size: 0 !important;
+  max-inline-size: 100% !important;
+  height: var(--jf-global-form-control-height) !important;
+  min-height: var(--jf-global-form-control-height) !important;
+  max-height: var(--jf-global-form-control-height) !important;
+}
+
+/* Notes remain editable and scroll internally without becoming a taller field. */
+:is(form, [data-slot="dialog-content"], .finance-modal-content)
+  :is(textarea, [data-slot="textarea"]) {
+  height: var(--jf-global-multiline-control-height) !important;
+  min-height: var(--jf-global-multiline-control-height) !important;
+  max-height: var(--jf-global-multiline-control-height) !important;
+  resize: none !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  padding-block: 0.5rem !important;
+  line-height: 1.25rem !important;
+}
+
+[data-slot="dialog-content"].finance-modal-content.finance-modal-content
+  :is(textarea, [data-slot="textarea"]) {
+  height: var(--jf-global-multiline-control-height) !important;
+  min-height: var(--jf-global-multiline-control-height) !important;
+  max-height: var(--jf-global-multiline-control-height) !important;
+  padding-block: 0.5rem !important;
+}
+
+/* Date text fields and touch-scroll date fields now use the same field height. */
 :is(form, [data-slot="dialog-content"], .finance-modal-content)
   :is(
     input[aria-haspopup="dialog"][aria-controls$="-calendar"],
     [role="spinbutton"][aria-haspopup="dialog"][aria-controls$="-calendar"]
   ) {
-  box-sizing: border-box !important;
   height: var(--jf-global-date-control-height) !important;
   min-height: var(--jf-global-date-control-height) !important;
   max-height: var(--jf-global-date-control-height) !important;
 }
 
-/* Portal-rendered select choices keep the same compact rhythm. */
+/* Compound account/category wheel content fits inside the shared outer shell. */
+[data-slot="dialog-content"].finance-modal-content.finance-modal-content
+  :is(
+    .finance-account-select,
+    [role="listbox"][aria-roledescription="scroll picker"]
+  ) {
+  overflow: hidden !important;
+  padding-block: 0.25rem !important;
+}
+
+[data-slot="dialog-content"].finance-modal-content.finance-modal-content
+  [role="listbox"][aria-roledescription="scroll picker"]
+  [role="option"] {
+  box-sizing: border-box !important;
+  height: 100% !important;
+  min-height: 100% !important;
+  max-height: 100% !important;
+  padding-block: 0 !important;
+}
+
+/* Segmented choices count as one field, not several full-width buttons. */
+:is(form, [data-slot="dialog-content"], .finance-modal-content)
+  [role="radiogroup"]:has(> button[role="radio"]) {
+  box-sizing: border-box !important;
+  inline-size: 100% !important;
+  width: 100% !important;
+  min-inline-size: 0 !important;
+  height: var(--jf-global-form-control-height) !important;
+  min-height: var(--jf-global-form-control-height) !important;
+  max-height: var(--jf-global-form-control-height) !important;
+}
+
+:is(form, [data-slot="dialog-content"], .finance-modal-content)
+  [role="radiogroup"]:has(> button[role="radio"])
+  > button[role="radio"] {
+  height: 100% !important;
+  min-height: 0 !important;
+  max-height: 100% !important;
+}
+
+/* Income/Expense-style pressed-button groups follow the same outer footprint. */
+[data-slot="dialog-content"].finance-modal-content.finance-modal-content
+  .finance-modal-body
+  > div:has(> button[aria-pressed]) {
+  box-sizing: border-box !important;
+  inline-size: 100% !important;
+  width: 100% !important;
+  min-inline-size: 0 !important;
+  height: var(--jf-global-form-control-height) !important;
+  min-height: var(--jf-global-form-control-height) !important;
+  max-height: var(--jf-global-form-control-height) !important;
+}
+
+[data-slot="dialog-content"].finance-modal-content.finance-modal-content
+  .finance-modal-body
+  > div:has(> button[aria-pressed])
+  > button[aria-pressed] {
+  height: 100% !important;
+  min-height: 0 !important;
+  max-height: 100% !important;
+}
+
+/* Portal-rendered choices keep a compact, consistent row footprint. */
 [data-slot="select-content"] [data-slot="select-item"] {
+  box-sizing: border-box !important;
   min-height: var(--jf-global-form-control-height) !important;
 }
 
@@ -174,7 +300,7 @@
   margin-top: var(--jf-global-form-edge-gap) !important;
 }
 
-/* Only the final primary action at the bottom of a form is compact and equal. */
+/* Final actions keep their existing separate global button contract. */
 .finance-modal-content form > .finance-modal-footer:last-child > button:last-child,
 .finance-modal-content form > .finance-modal-footer:last-child > :last-child button:last-child,
 .finance-modal-content form > .finance-modal-body:last-child > button[type="submit"]:last-child,
