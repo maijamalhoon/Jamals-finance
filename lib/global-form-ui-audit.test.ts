@@ -6,6 +6,7 @@ const read = (path: string) =>
 
 const auditAuthority = read("../components/forms/GlobalFormAuditAuthority.tsx");
 const fieldAuthority = read("../components/forms/GlobalFormFieldAuthority.tsx");
+const actionAuthority = read("../components/forms/GlobalFormActionAuthority.tsx");
 const dashboardActionAuthority = read(
   "../components/forms/FinancePickerKeyboardGuard.tsx",
 );
@@ -17,11 +18,13 @@ const settingsCentering = read(
 );
 
 describe("site-wide form UI audit authority", () => {
-  it("mounts responsive field and audit authorities for every route", () => {
+  it("mounts responsive field, action and audit authorities for every route", () => {
     expect(pwaRegister).toContain("GlobalFormAuditAuthority");
     expect(pwaRegister).toContain("GlobalFormFieldAuthority");
+    expect(pwaRegister).toContain("GlobalFormActionAuthority");
     expect(pwaRegister).toContain("<GlobalFormAuditAuthority />");
     expect(pwaRegister).toContain("<GlobalFormFieldAuthority />");
+    expect(pwaRegister).toContain("<GlobalFormActionAuthority />");
   });
 
   it("uses one device-responsive field and action token", () => {
@@ -56,6 +59,25 @@ describe("site-wide form UI audit authority", () => {
     expect(dashboardActionAuthority).toContain("display: none !important");
     expect(dashboardActionAuthority).toContain("getShortActionLabel");
     expect(dashboardActionAuthority).toContain("data-jf-form-action-label");
+    expect(auditAuthority).toContain('button[data-jf-form-action="true"]::after');
+  });
+
+  it("covers supporting Settings and confirmation actions without touching controls", () => {
+    for (const verb of [
+      "choose",
+      "resend",
+      "enable",
+      "archive",
+      "restore",
+      "retry",
+    ]) {
+      expect(actionAuthority).toContain(verb);
+    }
+    expect(actionAuthority).toContain('[data-slot="dialog-close"]');
+    expect(actionAuthority).toContain('[aria-haspopup]');
+    expect(actionAuthority).toContain('[role="radio"]');
+    expect(actionAuthority).toContain("finance-icon-bubble");
+    expect(actionAuthority).toContain("data-global-confirm-dialog");
   });
 
   it("preserves auth labels and colors while removing only primary action icons", () => {
@@ -67,7 +89,7 @@ describe("site-wide form UI audit authority", () => {
     expect(loginPage).toContain("Create account");
   });
 
-  it("keeps every known Settings dialog in the mobile and tablet centering authority", () => {
+  it("keeps every known Settings dialog centered with its purpose-specific width", () => {
     for (const marker of [
       "#settings-category-name",
       "#persistent-category-name",
@@ -78,6 +100,10 @@ describe("site-wide form UI audit authority", () => {
       ".settings-security-panel",
     ]) {
       expect(settingsCentering).toContain(marker);
+      expect(auditAuthority).toContain(marker);
     }
+    expect(auditAuthority).toContain("46rem");
+    expect(auditAuthority).toContain("36rem");
+    expect(auditAuthority).toContain("32rem");
   });
 });
