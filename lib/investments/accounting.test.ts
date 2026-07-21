@@ -52,7 +52,8 @@ describe("investment accounting", () => {
     expect(calculateInvestmentPrincipalRefund(2, 2_800)).toBe(5_600);
   });
 
-  it("rejects unsafe values", () => {
+  it("rejects blank and unsafe values", () => {
+    expect(normalizeInvestmentUnitPrice("", "PKR", 1)).toBeNull();
     expect(calculateInvestmentPrincipalRefund(0, 100)).toBeNull();
     expect(
       calculateInvestmentWithdrawal({
