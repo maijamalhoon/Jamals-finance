@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  Building2,
   ChevronDown,
   CircleDollarSign,
   LogOut,
@@ -279,6 +280,24 @@ export default function JamalMenu({
         </DropdownMenuGroup>
 
         <DropdownMenuGroup className="py-0.5">
+          <DropdownMenuItem
+            onClick={() => router.push("/business")}
+            className="min-h-11 cursor-pointer gap-3 rounded-[13px] px-3 py-2 text-text-secondary transition-colors hover:bg-surface-soft/80 focus:bg-surface-soft/80 focus:text-text-primary"
+          >
+            <span className="profile-menu-icon grid size-8 shrink-0 place-items-center text-active">
+              <Building2
+                size={18}
+                strokeWidth={MENU_ICON_STROKE_WIDTH}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+              />
+            </span>
+            <span className="text-[12.5px] font-semibold leading-[1.15rem] text-text-primary">
+              Business workspaces
+            </span>
+          </DropdownMenuItem>
+
           <DropdownMenuItem
             onClick={() => router.push("/dashboard/settings")}
             className="min-h-11 cursor-pointer gap-3 rounded-[13px] px-3 py-2 text-text-secondary transition-colors hover:bg-surface-soft/80 focus:bg-surface-soft/80 focus:text-text-primary"
