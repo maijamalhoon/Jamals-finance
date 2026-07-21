@@ -1,0 +1,521 @@
+/*
+ * Final launch polish for exactly these dashboard routes:
+ * Income, Expenses, AI Insights, Payables, Goals, Reports, Analytics, Accounts.
+ * Every selector is rooted to one of those page markers so no other route changes.
+ */
+
+:where(
+  [data-income-page],
+  [data-expenses-page],
+  [data-ai-insights-page],
+  [data-payables-page],
+  [data-goals-page],
+  [data-reports-page],
+  [data-analytics-page],
+  [data-accounts-page]
+) {
+  --jf-final-panel: color-mix(in srgb, var(--card) 96%, var(--background));
+  --jf-final-panel-soft: color-mix(
+    in srgb,
+    var(--surface-primary) 72%,
+    var(--card)
+  );
+  --jf-final-panel-muted: color-mix(
+    in srgb,
+    var(--surface-secondary) 68%,
+    transparent
+  );
+  --jf-final-radius: 1.75rem;
+  --jf-final-radius-sm: 1.25rem;
+  min-width: 0;
+  max-width: 100%;
+  overflow-x: clip;
+}
+
+:where(
+  [data-income-page],
+  [data-expenses-page],
+  [data-ai-insights-page],
+  [data-payables-page],
+  [data-goals-page],
+  [data-reports-page],
+  [data-analytics-page],
+  [data-accounts-page]
+) :is(section, article, div, dl, ol, ul) {
+  min-width: 0;
+}
+
+:where(
+  [data-income-page],
+  [data-expenses-page],
+  [data-ai-insights-page],
+  [data-payables-page],
+  [data-goals-page],
+  [data-reports-page],
+  [data-analytics-page],
+  [data-accounts-page]
+) :is(.finance-panel, .summary-card, .finance-reference-card) {
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+:where(
+  [data-income-page],
+  [data-expenses-page],
+  [data-ai-insights-page],
+  [data-payables-page],
+  [data-goals-page],
+  [data-reports-page],
+  [data-analytics-page],
+  [data-accounts-page]
+) .finance-panel {
+  background: var(--jf-final-panel);
+  border-radius: var(--jf-final-radius);
+}
+
+:where(
+  [data-income-page],
+  [data-expenses-page],
+  [data-ai-insights-page],
+  [data-payables-page],
+  [data-goals-page],
+  [data-reports-page],
+  [data-analytics-page],
+  [data-accounts-page]
+) .finance-panel-soft {
+  border: 0 !important;
+  box-shadow: none !important;
+  background: var(--jf-final-panel-muted);
+  border-radius: var(--jf-final-radius-sm);
+}
+
+:where(
+  [data-income-page],
+  [data-expenses-page],
+  [data-ai-insights-page],
+  [data-payables-page],
+  [data-goals-page],
+  [data-reports-page],
+  [data-analytics-page],
+  [data-accounts-page]
+) [data-page-action-row] {
+  min-height: 2.75rem;
+  align-items: center;
+}
+
+:where(
+  [data-income-page],
+  [data-expenses-page],
+  [data-ai-insights-page],
+  [data-payables-page],
+  [data-goals-page],
+  [data-reports-page],
+  [data-analytics-page],
+  [data-accounts-page]
+) :is(.primary-action, .success-action, .danger-action, .icon-button) {
+  transition-property: transform, background-color, color, opacity;
+  transition-duration: 180ms;
+  transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+:where(
+  [data-income-page],
+  [data-expenses-page],
+  [data-ai-insights-page],
+  [data-payables-page],
+  [data-goals-page],
+  [data-reports-page],
+  [data-analytics-page],
+  [data-accounts-page]
+) :is(.primary-action, .success-action, .danger-action, .icon-button):active {
+  transform: scale(0.97);
+}
+
+/* Income and expense share one visual language while keeping semantic colors. */
+:where([data-income-page], [data-expenses-page]) section {
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+:where([data-income-page], [data-expenses-page]) section[class*="bg-card"] {
+  background: var(--jf-final-panel) !important;
+}
+
+:where([data-income-page], [data-expenses-page]) section section,
+:where([data-income-page], [data-expenses-page]) [class*="bg-surface-primary"] {
+  background: var(--jf-final-panel-soft) !important;
+}
+
+:where([data-income-page], [data-expenses-page]) [data-mobile-summary-grid] {
+  gap: 0.75rem;
+}
+
+:where([data-income-page], [data-expenses-page]) .motion-progress-fill,
+:where([data-income-page], [data-expenses-page]) [style*="transition"] {
+  will-change: auto;
+}
+
+/* Goals: one progress pulse plus clean holding-style goal cards. */
+[data-goals-page] [data-goals-summary] {
+  background:
+    radial-gradient(
+      circle at 10% 18%,
+      color-mix(in srgb, var(--goals, var(--active)) 8%, transparent),
+      transparent 34%
+    ),
+    var(--jf-final-panel);
+}
+
+[data-goals-page] [data-goals-grid] > * {
+  min-width: 0;
+}
+
+[data-goals-page] .finance-reference-card {
+  border: 0 !important;
+  background:
+    linear-gradient(
+      145deg,
+      color-mix(in srgb, var(--goal-accent, var(--active)) 4%, var(--card)),
+      var(--card) 58%
+    ) !important;
+  box-shadow: none !important;
+  transition:
+    transform 200ms cubic-bezier(0.22, 1, 0.36, 1),
+    background-color 200ms ease;
+}
+
+[data-goals-page] .finance-reference-card:hover {
+  transform: translateY(-2px);
+}
+
+[data-goals-page] .finance-reference-card :is(.border-t, .border) {
+  border-color: color-mix(in srgb, var(--goal-accent, var(--active)) 14%, transparent) !important;
+}
+
+[data-goals-page] .finance-reference-card > div:last-of-type,
+[data-goals-page] .finance-reference-card [class*="bg-surface-secondary"] {
+  border: 0 !important;
+}
+
+/* Payables: consolidated repayment pulse, compact controls, clean records. */
+[data-payables-page] [data-payables-pulse] {
+  background:
+    radial-gradient(
+      circle at 10% 18%,
+      color-mix(in srgb, var(--payables, var(--warning)) 8%, transparent),
+      transparent 34%
+    ),
+    var(--jf-final-panel);
+}
+
+[data-payables-page] .payables-progress-ring {
+  transition: stroke-dashoffset 820ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+[data-payables-page] [data-payables-filter] {
+  box-shadow: none;
+}
+
+[data-payables-page] [data-payables-filter] nav {
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+[data-payables-page] [data-payable-item]::before {
+  content: "";
+  position: absolute;
+  inset-block: 1.1rem;
+  inset-inline-start: 0;
+  z-index: 1;
+  width: 3px;
+  border-radius: 999px;
+  background: var(--warning);
+}
+
+[data-payables-page] [data-payable-item][data-status="partial"]::before {
+  background: var(--info);
+}
+
+[data-payables-page] [data-payable-item][data-status="overdue"]::before {
+  background: var(--danger);
+}
+
+[data-payables-page] [data-payable-item][data-status="completed"]::before {
+  background: var(--success);
+}
+
+[data-payables-page] [data-payable-item] > article {
+  border: 0 !important;
+  background: var(--jf-final-panel) !important;
+  box-shadow: none !important;
+  padding-inline-start: clamp(1.15rem, 2vw, 1.5rem) !important;
+  transition: transform 200ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+[data-payables-page] [data-payable-item] > article:hover {
+  transform: translateY(-2px);
+}
+
+[data-payables-page] input[type="search"]::-webkit-search-cancel-button {
+  display: none;
+}
+
+/* AI Insights: four major information groups instead of scattered card noise. */
+[data-ai-insights-page] > div {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(1rem, 2vw, 1.35rem) !important;
+}
+
+[data-ai-insights-page] > div > section,
+[data-ai-insights-page] > div > div {
+  border: 0;
+  border-radius: var(--jf-final-radius);
+  background: var(--jf-final-panel);
+  box-shadow: none;
+  padding: clamp(1rem, 2.2vw, 1.5rem);
+}
+
+[data-ai-insights-page] > div > section[aria-label="Financial overview"],
+[data-ai-insights-page] > div > section[aria-label="Loading financial overview"] {
+  background:
+    radial-gradient(
+      circle at 8% 18%,
+      color-mix(in srgb, var(--active) 8%, transparent),
+      transparent 32%
+    ),
+    var(--jf-final-panel);
+}
+
+[data-ai-insights-page] > div > div > :is(section, aside) {
+  padding: 0;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+}
+
+[data-ai-insights-page] > div > div > aside {
+  border-inline-start: 1px solid color-mix(in srgb, var(--border) 56%, transparent);
+  padding-inline-start: clamp(1rem, 2vw, 1.5rem);
+}
+
+[data-ai-insights-page] button[class*="rounded-full"] {
+  box-shadow: none !important;
+}
+
+[data-ai-insights-page] [role="progressbar"] circle:first-child {
+  stroke: color-mix(in srgb, var(--text-secondary) 15%, transparent);
+}
+
+/* Reports: simple heading, connected summary, consistent chart/list surfaces. */
+[data-reports-page] .page-heading {
+  min-height: auto;
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  padding-inline: 0 !important;
+}
+
+[data-reports-page] [data-report-summary] {
+  border-radius: var(--jf-final-radius);
+  background: var(--jf-final-panel);
+  padding: 0.65rem;
+}
+
+[data-reports-page] [data-report-summary] .summary-card {
+  min-height: 7rem;
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+[data-reports-page] .finance-panel {
+  background: var(--jf-final-panel);
+}
+
+[data-reports-page] .finance-panel-soft {
+  background: var(--jf-final-panel-muted);
+}
+
+[data-reports-page] :is(.recharts-wrapper, .recharts-surface) {
+  max-width: 100%;
+}
+
+/* Analytics: keep existing useful charts, remove visual fragmentation. */
+[data-analytics-page] .finance-panel,
+[data-analytics-page] [class*="rounded-"] {
+  box-shadow: none !important;
+}
+
+[data-analytics-page] #cash-flow > *,
+[data-analytics-page] #spending-analysis > * {
+  border: 0 !important;
+  background: var(--jf-final-panel) !important;
+  box-shadow: none !important;
+}
+
+[data-analytics-page] [data-mobile-summary-grid] {
+  border-radius: var(--jf-final-radius);
+  background: var(--jf-final-panel);
+  padding: 0.65rem;
+}
+
+[data-analytics-page] :is(.recharts-wrapper, .recharts-surface) {
+  max-width: 100%;
+}
+
+/* Accounts: light polish only, preserving the established card identity. */
+[data-accounts-page] .account-card-shell {
+  border: 0 !important;
+  background:
+    linear-gradient(
+      145deg,
+      color-mix(in srgb, var(--account-accent, var(--active)) 4%, var(--card)),
+      var(--card) 62%
+    ) !important;
+  box-shadow: none !important;
+  transition: transform 200ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+[data-accounts-page] .account-card-shell:hover {
+  transform: translateY(-2px);
+}
+
+[data-accounts-page] :is(.account-card-glow, .account-card-line) {
+  display: none !important;
+}
+
+[data-accounts-page] .account-card-shell > div[class*="grid"] {
+  border: 0 !important;
+  border-radius: var(--jf-final-radius-sm);
+  background: var(--jf-final-panel-soft);
+}
+
+[data-accounts-page] .account-card-shell > a {
+  border: 0 !important;
+  background: var(--jf-final-panel-muted) !important;
+  box-shadow: none !important;
+}
+
+/* Only lightweight, composited entrance motion. */
+:where(
+  [data-goals-summary],
+  [data-payables-pulse],
+  [data-report-summary],
+  [data-ai-insights-page] > div > section,
+  [data-ai-insights-page] > div > div,
+  [data-goals-grid] > *,
+  [data-payables-list] > *
+) {
+  animation: jf-final-page-reveal 320ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+[data-goals-grid] > *:nth-child(2),
+[data-payables-list] > *:nth-child(2) {
+  animation-delay: 35ms;
+}
+
+[data-goals-grid] > *:nth-child(3),
+[data-payables-list] > *:nth-child(3) {
+  animation-delay: 70ms;
+}
+
+@keyframes jf-final-page-reveal {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 6px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@media (max-width: 767px) {
+  :where(
+    [data-income-page],
+    [data-expenses-page],
+    [data-ai-insights-page],
+    [data-payables-page],
+    [data-goals-page],
+    [data-reports-page],
+    [data-analytics-page],
+    [data-accounts-page]
+  ) {
+    --jf-final-radius: 1.4rem;
+    --jf-final-radius-sm: 1rem;
+  }
+
+  [data-ai-insights-page] > div > section,
+  [data-ai-insights-page] > div > div {
+    padding: 1rem;
+  }
+
+  [data-ai-insights-page] > div > div > aside {
+    border-inline-start: 0;
+    border-block-start: 1px solid
+      color-mix(in srgb, var(--border) 56%, transparent);
+    padding-block-start: 1rem;
+    padding-inline-start: 0;
+  }
+
+  [data-reports-page] [data-report-summary] {
+    padding: 0.35rem;
+  }
+
+  [data-reports-page] [data-report-summary] .summary-card {
+    min-height: 6.25rem;
+    padding: 0.85rem !important;
+  }
+
+  [data-payables-page] [data-payable-item]::before {
+    inset-block: 0.9rem;
+  }
+}
+
+@media (max-width: 420px) {
+  [data-goals-page] [data-goals-summary],
+  [data-payables-page] [data-payables-pulse] {
+    padding: 0.9rem;
+  }
+
+  [data-goals-page] [data-goals-summary] > div:first-child,
+  [data-payables-page] [data-payables-pulse] > div:first-child {
+    align-items: flex-start;
+    gap: 0.85rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :where(
+    [data-income-page],
+    [data-expenses-page],
+    [data-ai-insights-page],
+    [data-payables-page],
+    [data-goals-page],
+    [data-reports-page],
+    [data-analytics-page],
+    [data-accounts-page]
+  ) *,
+  :where(
+    [data-goals-summary],
+    [data-payables-pulse],
+    [data-report-summary],
+    [data-ai-insights-page] > div > section,
+    [data-ai-insights-page] > div > div,
+    [data-goals-grid] > *,
+    [data-payables-list] > *
+  ) {
+    animation: none !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+@media print {
+  [data-reports-page] :is(.finance-panel, .summary-card, .finance-panel-soft),
+  [data-reports-page] [data-report-summary] {
+    background: #fff !important;
+    box-shadow: none !important;
+  }
+}
