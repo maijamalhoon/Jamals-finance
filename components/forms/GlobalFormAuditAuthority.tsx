@@ -34,6 +34,11 @@ const GLOBAL_FORM_AUDIT_STYLE = `
     bottom: auto !important;
     left: 50vw !important;
     box-sizing: border-box !important;
+    width: calc(100vw - 1rem) !important;
+    max-width: var(
+      --finance-modal-max-width,
+      var(--settings-hard-modal-width, 28rem)
+    ) !important;
     width: min(
       calc(
         100vw - 1rem - env(safe-area-inset-left) -
@@ -46,6 +51,7 @@ const GLOBAL_FORM_AUDIT_STYLE = `
         env(safe-area-inset-right)
     ) !important;
     height: max-content !important;
+    max-height: calc(100vh - 1rem) !important;
     max-height: calc(
       100vh - 1rem - env(safe-area-inset-top) -
         env(safe-area-inset-bottom)
@@ -68,6 +74,8 @@ const GLOBAL_FORM_AUDIT_STYLE = `
       [data-slot="dialog-content"].finance-modal-content:has(#persistent-category-name),
       [data-slot="dialog-content"].finance-modal-content:not(:has(#settings-category-name)):has([role="tablist"])
     ) {
+    width: calc(100vw - 1rem) !important;
+    max-width: 46rem !important;
     width: min(
       calc(
         100vw - 1rem - env(safe-area-inset-left) -
@@ -81,6 +89,8 @@ const GLOBAL_FORM_AUDIT_STYLE = `
       [data-slot="dialog-content"].finance-modal-content:has(.settings-security-panel),
       [data-slot="dialog-content"].finance-modal-content.settings-account-security-hard
     ) {
+    width: calc(100vw - 1rem) !important;
+    max-width: 36rem !important;
     width: min(
       calc(
         100vw - 1rem - env(safe-area-inset-left) -
@@ -99,6 +109,8 @@ const GLOBAL_FORM_AUDIT_STYLE = `
       [data-slot="dialog-content"].finance-modal-content.settings-currency-hard,
       [data-slot="dialog-content"].finance-modal-content.settings-date-format-hard
     ) {
+    width: calc(100vw - 1rem) !important;
+    max-width: 32rem !important;
     width: min(
       calc(
         100vw - 1rem - env(safe-area-inset-left) -
