@@ -4,7 +4,10 @@ export const dynamic = "force-dynamic";
 
 export default function AIInsightsPage() {
   return (
-    <div className="mx-auto w-full max-w-[1600px] min-w-0">
+    <div
+      data-ai-insights-page
+      className="mx-auto w-full max-w-[1600px] min-w-0 pb-8"
+    >
       <InsightsPanel />
     </div>
   );
