@@ -31,6 +31,24 @@ const PUBLIC_API_ROUTES = [
 ];
 const BLOCKED_PRODUCTION_API_ROUTES = ["/api/sentry-example-api"];
 const CACHE_HEADER_NAMES = ["cache-control", "expires", "pragma", "vary"];
+const JSON_PROTECTED_API_PREFIXES = ["/api/ai-insights"];
+const STATE_CHANGING_METHODS = new Set(["POST", "PUT", "PATCH", "DELETE"]);
+const MAX_PROTECTED_JSON_BYTES = 64 * 1024;
+
+const EXPENSIVE_API_LIMITS = [
+  {
+    prefix: "/api/ai-insights/chat",
+    scope: "api:ai-insights:chat",
+    limit: 20,
+    windowSeconds: 60,
+  },
+  {
+    prefix: "/api/ai-insights",
+    scope: "api:ai-insights",
+    limit: 30,
+    windowSeconds: 60,
+  },
+] as const;
 
 function matchesPath(pathname: string, routes: string[]) {
   return routes.some((route) =>
@@ -40,7 +58,7 @@ function matchesPath(pathname: string, routes: string[]) {
   );
 }
 
-function matchesPrefix(pathname: string, prefixes: string[]) {
+function matchesPrefix(pathname: string, prefixes: readonly string[]) {
   return prefixes.some((prefix) => pathname.startsWith(prefix));
 }
 
@@ -88,23 +106,77 @@ function loginRedirect(
   return NextResponse.redirect(url);
 }
 
+function safeApiResponse(
+  status: number,
+  error: string,
+  code: string,
+  retryAfterSeconds?: number,
+) {
+  const response = NextResponse.json(
+    { error, code },
+    {
+      status,
+      headers: {
+        "Cache-Control": "private, no-store, max-age=0",
+        "X-Content-Type-Options": "nosniff",
+      },
+    },
+  );
+
+  if (retryAfterSeconds) {
+    response.headers.set("Retry-After", String(retryAfterSeconds));
+  }
+
+  return response;
+}
+
 function protectedApiResponse(
   status: 401 | 503,
   code: "authentication_required" | "session_expired" | "auth_temporarily_unavailable",
 ) {
-  return NextResponse.json(
-    {
-      error: status === 503 ? "Authentication temporarily unavailable" : "Authentication required",
-      code,
-    },
-    { status },
+  return safeApiResponse(
+    status,
+    status === 503
+      ? "Authentication temporarily unavailable"
+      : "Authentication required",
+    code,
   );
+}
+
+function validateProtectedJsonRequest(request: NextRequest, pathname: string) {
+  if (!STATE_CHANGING_METHODS.has(request.method)) return null;
+  if (!matchesPrefix(pathname, JSON_PROTECTED_API_PREFIXES)) return null;
+
+  const origin = request.headers.get("origin");
+  if (origin && origin !== request.nextUrl.origin) {
+    return safeApiResponse(403, "Request origin is not allowed", "invalid_origin");
+  }
+
+  const fetchSite = request.headers.get("sec-fetch-site");
+  if (fetchSite && fetchSite !== "same-origin" && fetchSite !== "none") {
+    return safeApiResponse(403, "Cross-site request blocked", "cross_site_request_blocked");
+  }
+
+  const contentType = request.headers.get("content-type")?.toLowerCase() ?? "";
+  if (!contentType.startsWith("application/json")) {
+    return safeApiResponse(415, "JSON content is required", "unsupported_media_type");
+  }
+
+  const contentLength = Number(request.headers.get("content-length"));
+  if (Number.isFinite(contentLength) && contentLength > MAX_PROTECTED_JSON_BYTES) {
+    return safeApiResponse(413, "Request is too large", "payload_too_large");
+  }
+
+  return null;
 }
 
 function jsonNotFound() {
   return NextResponse.json(
     { error: "Not found", message: "This endpoint is not available in production." },
-    { status: 404 },
+    {
+      status: 404,
+      headers: { "Cache-Control": "private, no-store, max-age=0" },
+    },
   );
 }
 
@@ -125,6 +197,9 @@ export async function updateSession(request: NextRequest) {
   }
 
   if (isPublicApiRoute || isPublicAssetRoute) return NextResponse.next();
+
+  const invalidProtectedRequest = validateProtectedJsonRequest(request, pathname);
+  if (invalidProtectedRequest) return invalidProtectedRequest;
 
   // PKCE exchanges need their code-verifier cookie intact until the callback or
   // recovery page consumes the one-time authorization code.
@@ -186,6 +261,44 @@ export async function updateSession(request: NextRequest) {
       const url = new URL(destination, request.nextUrl.origin);
       return copySupabaseResponseState(supabaseResponse, NextResponse.redirect(url));
     }
+
+    const rateLimit = EXPENSIVE_API_LIMITS.find(({ prefix }) =>
+      pathname.startsWith(prefix),
+    );
+    if (rateLimit && request.method === "POST") {
+      const { data: allowed, error: rateLimitError } = await supabase.rpc(
+        "consume_api_rate_limit",
+        {
+          p_scope: rateLimit.scope,
+          p_limit: rateLimit.limit,
+          p_window_seconds: rateLimit.windowSeconds,
+        },
+      );
+
+      if (rateLimitError) {
+        return copySupabaseResponseState(
+          supabaseResponse,
+          safeApiResponse(
+            503,
+            "Security control temporarily unavailable",
+            "rate_limit_unavailable",
+          ),
+        );
+      }
+
+      if (allowed !== true) {
+        return copySupabaseResponseState(
+          supabaseResponse,
+          safeApiResponse(
+            429,
+            "Too many requests. Please try again shortly.",
+            "rate_limit_exceeded",
+            rateLimit.windowSeconds,
+          ),
+        );
+      }
+    }
+
     return supabaseResponse;
   }
 
