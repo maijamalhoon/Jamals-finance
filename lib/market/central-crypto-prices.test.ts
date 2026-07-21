@@ -74,6 +74,12 @@ describe("central crypto price helpers", () => {
     expect(routeSource).toContain("stale-while-revalidate=5");
   });
 
+  it("keeps one canonical cache key and rejects query-string cache busting", () => {
+    expect(routeSource).toContain("url.search.length > 0");
+    expect(routeSource).toContain("Query parameters are not supported.");
+    expect(routeSource).toContain('"Cache-Control": "private, no-store, max-age=0"');
+  });
+
   it("backs off upstream failures and keeps a bounded stale snapshot", () => {
     expect(routeSource).toContain("upstreamBlockedUntil");
     expect(routeSource).toContain("MAX_WARM_STALE_MS");
