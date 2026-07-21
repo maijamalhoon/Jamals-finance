@@ -169,6 +169,7 @@ export default function DashboardEmptyStateSync() {
         );
         let actionButton =
           actionContainer?.querySelector<HTMLButtonElement>("button");
+        const hasExistingAction = Boolean(actionButton);
 
         if (!actionContainer) {
           actionContainer = document.createElement("div");
@@ -180,18 +181,24 @@ export default function DashboardEmptyStateSync() {
           content.appendChild(actionContainer);
         }
 
+        actionContainer.setAttribute(
+          "data-dashboard-empty-action-container",
+          config.launcher,
+        );
+
         if (!actionButton) {
           actionButton = document.createElement("button");
           actionButton.type = "button";
-          actionButton.className = "finance-focus";
-          actionButton.setAttribute(
-            "data-dashboard-empty-action",
-            config.launcher,
-          );
+          actionContainer.appendChild(actionButton);
+        }
+
+        actionButton.classList.add("finance-focus");
+        actionButton.setAttribute("data-dashboard-empty-action", config.launcher);
+
+        if (!hasExistingAction) {
           actionButton.addEventListener("click", () =>
             openLauncher(config.launcher),
           );
-          actionContainer.appendChild(actionButton);
         }
 
         if (actionButton.textContent !== config.actionLabel) {
@@ -237,6 +244,44 @@ export default function DashboardEmptyStateSync() {
           border: 0 !important;
           opacity: 0 !important;
           pointer-events: none !important;
+        }
+
+        .dashboard-overview [data-dashboard-empty-action-container] {
+          display: flex !important;
+          width: 100% !important;
+          align-items: center !important;
+          justify-content: center !important;
+          margin-top: 0.72rem !important;
+          visibility: visible !important;
+          opacity: 1 !important;
+        }
+
+        .dashboard-overview [data-dashboard-empty-action] {
+          display: inline-flex !important;
+          width: auto !important;
+          min-width: 0 !important;
+          min-height: 2rem !important;
+          align-items: center !important;
+          justify-content: center !important;
+          padding: 0.38rem 0.28rem !important;
+          border: 0 !important;
+          background: transparent !important;
+          color: var(--primary) !important;
+          font-size: 0.68rem !important;
+          font-weight: 760 !important;
+          line-height: 1.1 !important;
+          text-decoration: none !important;
+          box-shadow: none !important;
+          visibility: visible !important;
+          opacity: 1 !important;
+          pointer-events: auto !important;
+          cursor: pointer !important;
+        }
+
+        .dashboard-overview [data-dashboard-empty-action]:hover {
+          color: var(--primary-hover) !important;
+          text-decoration: underline !important;
+          text-underline-offset: 0.2em;
         }
 
         .dashboard-overview
