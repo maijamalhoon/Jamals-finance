@@ -1,22 +1,23 @@
 "use client";
 
-import { useEffect, useMemo } from "react";
 import Image from "next/image";
+import { useEffect, useMemo } from "react";
 import { BriefcaseBusiness, Layers3, Package } from "lucide-react";
 import { Cell, Pie, PieChart, Tooltip } from "recharts";
 
-import DashboardCardViewLink from "@/components/dashboard/DashboardCardViewLink";
-import ChartFrame from "@/components/ui/chart-frame";
 import { useCurrency } from "@/components/currency/CurrencyProvider";
+import DashboardCardViewLink from "@/components/dashboard/DashboardCardViewLink";
+import { useLiveInvestmentRows } from "@/components/investments/useLiveInvestmentRows";
 import CountedAmount from "@/components/motion/CountedAmount";
 import { useDashboardAnimationReady } from "@/components/motion/useDashboardAnimationReady";
-import { useLiveInvestmentRows } from "@/components/investments/useLiveInvestmentRows";
+import ChartFrame from "@/components/ui/chart-frame";
+import type { DashboardAvailability } from "@/lib/dashboard-financial-semantics";
+import type { MoneyFormatOptions } from "@/lib/currency";
 import {
   aggregateInvestmentHoldings,
   getAssetInitials,
   type AggregatedInvestment,
 } from "@/lib/investments/aggregation";
-import type { DashboardAvailability } from "@/lib/dashboard-financial-semantics";
 
 interface Investment {
   id: string;
@@ -112,7 +113,13 @@ function isCoinGeckoImage(imageUrl: string) {
   }
 }
 
-function AssetLogo({ entry, size = 32 }: { entry: AllocationEntry; size?: number }) {
+function AssetLogo({
+  entry,
+  size = 34,
+}: {
+  entry: AllocationEntry;
+  size?: number;
+}) {
   if (entry.imageUrl && isCoinGeckoImage(entry.imageUrl)) {
     return (
       <Image
@@ -146,7 +153,7 @@ function AssetLogo({ entry, size = 32 }: { entry: AllocationEntry; size?: number
 
   return (
     <span
-      className="grid shrink-0 place-items-center rounded-full text-[10px] font-black text-white shadow-sm"
+      className="grid shrink-0 place-items-center rounded-full text-[10px] font-black text-white"
       style={{ width: size, height: size, backgroundColor: entry.color }}
       aria-label={`${entry.name} asset icon`}
     >
@@ -170,11 +177,11 @@ function AllocationBar({
 
   return (
     <span
-      className="flex h-9 w-full min-w-[76px] items-center"
+      className="flex h-5 w-full min-w-[72px] items-center"
       role="img"
       aria-label={`${label} allocation ${formatAllocation(value)}`}
     >
-      <span className="relative h-[3px] w-full">
+      <span className="relative h-1 w-full overflow-hidden rounded-full bg-surface-secondary/85">
         <span
           className="investment-allocation-bar absolute inset-y-0 left-0 rounded-full"
           style={{
@@ -188,11 +195,120 @@ function AllocationBar({
   );
 }
 
+function HoldingRow({
+  entry,
+  allocation,
+  delayMs,
+  formatCurrency,
+}: {
+  entry: AllocationEntry;
+  allocation: number;
+  delayMs: number;
+  formatCurrency: (amount: number, options?: MoneyFormatOptions) => string;
+}) {
+  return (
+    <div
+      title={`${entry.name}${entry.symbol ? ` (${entry.symbol.toUpperCase()})` : ""}`}
+      className="grid min-w-0 grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-x-3 gap-y-2 rounded-[18px] bg-surface-primary/35 px-3 py-3 transition-[background-color,transform] duration-200 hover:-translate-y-px hover:bg-surface-primary/55 md:grid-cols-[auto_minmax(86px,0.8fr)_minmax(84px,1fr)_auto] md:gap-x-4"
+    >
+      <AssetLogo entry={entry} />
+
+      <div className="min-w-0">
+        <p className="truncate text-xs font-bold text-text-primary lg:text-sm">
+          {entry.name}
+        </p>
+        <p className="mt-0.5 truncate text-[9px] font-bold uppercase tracking-[0.13em] text-text-tertiary lg:text-[10px]">
+          {entry.symbol || "Asset"}
+        </p>
+      </div>
+
+      <div className="col-start-2 col-end-4 min-w-0 md:col-auto">
+        <AllocationBar
+          value={allocation}
+          color={entry.color}
+          label={entry.name}
+          delayMs={delayMs}
+        />
+      </div>
+
+      <div className="shrink-0 text-right">
+        <p className="text-xs font-black tabular-nums text-text-primary lg:text-sm">
+          {formatCurrency(entry.value, { compact: true })}
+        </p>
+        <p
+          className="mt-0.5 text-[10px] font-black tabular-nums lg:text-xs"
+          style={{ color: entry.color }}
+        >
+          {formatAllocation(allocation)}
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function OtherAssetsRow({
+  value,
+  allocation,
+  formatCurrency,
+}: {
+  value: number;
+  allocation: number;
+  formatCurrency: (amount: number, options?: MoneyFormatOptions) => string;
+}) {
+  return (
+    <div
+      title="Other assets"
+      className="grid min-w-0 grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-x-3 gap-y-2 rounded-[18px] bg-surface-primary/35 px-3 py-3 transition-[background-color,transform] duration-200 hover:-translate-y-px hover:bg-surface-primary/55 md:grid-cols-[auto_minmax(86px,0.8fr)_minmax(84px,1fr)_auto] md:gap-x-4"
+    >
+      <span
+        className="grid size-[34px] shrink-0 place-items-center rounded-full"
+        style={{
+          color: OTHER_ASSETS_COLOR,
+          backgroundColor: "rgba(91, 113, 135, 0.13)",
+        }}
+        aria-label="Other assets icon"
+      >
+        <Layers3 size={17} strokeWidth={2.1} />
+      </span>
+
+      <div className="min-w-0">
+        <p className="truncate text-xs font-bold text-text-primary lg:text-sm">
+          Other assets
+        </p>
+        <p className="mt-0.5 text-[9px] font-bold uppercase tracking-[0.13em] text-text-tertiary lg:text-[10px]">
+          Combined
+        </p>
+      </div>
+
+      <div className="col-start-2 col-end-4 min-w-0 md:col-auto">
+        <AllocationBar
+          value={allocation}
+          color={OTHER_ASSETS_COLOR}
+          label="Other assets"
+          delayMs={480}
+        />
+      </div>
+
+      <div className="shrink-0 text-right">
+        <p className="text-xs font-black tabular-nums text-text-primary lg:text-sm">
+          {formatCurrency(value, { compact: true })}
+        </p>
+        <p
+          className="mt-0.5 text-[10px] font-black tabular-nums lg:text-xs"
+          style={{ color: OTHER_ASSETS_COLOR }}
+        >
+          {formatAllocation(allocation)}
+        </p>
+      </div>
+    </div>
+  );
+}
+
 export default function InvestmentOverviewWidget({
   investments,
   totalPnLPct,
   availability,
-  unpricedCount,
+  unpricedCount: _unpricedCount,
 }: {
   investments: Investment[];
   totalPnLPct: number | null;
@@ -231,6 +347,7 @@ export default function InvestmentOverviewWidget({
   const resolvedUnpricedCount = liveInvestments.filter((investment) => {
     const quantity = Number(investment.quantity);
     const currentPrice = Number(investment.current_price);
+
     return (
       Number.isFinite(quantity) &&
       quantity > 0 &&
@@ -242,19 +359,23 @@ export default function InvestmentOverviewWidget({
     0,
   );
   const otherAssetsAllocation =
-    allocationTotalValue > 0 ? (otherAssetsValue / allocationTotalValue) * 100 : 0;
+    allocationTotalValue > 0
+      ? (otherAssetsValue / allocationTotalValue) * 100
+      : 0;
   const isProfit = resolvedTotalPnLPct !== null && resolvedTotalPnLPct > 0;
   const isLoss = resolvedTotalPnLPct !== null && resolvedTotalPnLPct < 0;
-  const pnlColor =
-    isProfit
-      ? "var(--success)"
-      : isLoss
-        ? "var(--danger)"
-        : "var(--text-secondary)";
+  const pnlColor = isProfit
+    ? "var(--success)"
+    : isLoss
+      ? "var(--danger)"
+      : "var(--text-secondary)";
   const pnlLabel =
     resolvedTotalPnLPct === null
       ? "P&L unavailable"
       : `${isProfit ? "+" : ""}${resolvedTotalPnLPct.toFixed(1)}%`;
+  const holdingLabel = `${allocationData.length} ${
+    allocationData.length === 1 ? "asset" : "assets"
+  }`;
   const emptyTitle =
     availability === "unavailable"
       ? "Portfolio unavailable"
@@ -269,12 +390,17 @@ export default function InvestmentOverviewWidget({
         : "Current prices are missing, so value and performance are not shown.";
 
   useEffect(() => {
-    if (!Number.isFinite(allocationTotalValue) || !Number.isFinite(initialTotalValue)) {
+    if (
+      !Number.isFinite(allocationTotalValue) ||
+      !Number.isFinite(initialTotalValue)
+    ) {
       return;
     }
 
     const delta = allocationTotalValue - initialTotalValue;
-    const target = window as Window & { __jamalsLivePortfolioDelta?: number };
+    const target = window as Window & {
+      __jamalsLivePortfolioDelta?: number;
+    };
     target.__jamalsLivePortfolioDelta = delta;
     window.dispatchEvent(
       new CustomEvent(LIVE_PORTFOLIO_EVENT, { detail: { delta } }),
@@ -282,13 +408,28 @@ export default function InvestmentOverviewWidget({
   }, [allocationTotalValue, initialTotalValue]);
 
   return (
-    <section className="finance-reference-card motion-card-entry flex h-full min-w-0 flex-col overflow-hidden p-4 sm:p-5 lg:p-6">
+    <section
+      className="finance-reference-card motion-card-entry flex h-full min-w-0 flex-col overflow-hidden p-4 sm:p-5 lg:p-6"
+      style={{
+        background:
+          "radial-gradient(circle at 22% 42%, color-mix(in srgb, var(--accent, #7c3aed) 4%, transparent), transparent 34%), var(--card)",
+      }}
+    >
       <header className="flex min-w-0 items-start justify-between gap-3">
-        <div className="flex min-w-0 items-center gap-2 text-[10px] font-bold uppercase tracking-[0.16em] text-text-secondary">
+        <div className="flex min-w-0 items-center gap-2.5">
           <span className="dashboard-list-card-kicker-icon !border-transparent !bg-transparent !text-text-secondary !shadow-none">
             <BriefcaseBusiness size={15} strokeWidth={2.3} aria-hidden="true" />
           </span>
-          <span className="truncate">Investments</span>
+          <div className="min-w-0">
+            <p className="truncate text-[10px] font-bold uppercase tracking-[0.16em] text-text-secondary">
+              Investments
+            </p>
+            {allocationData.length > 0 ? (
+              <p className="mt-0.5 text-[10px] font-semibold text-text-tertiary">
+                {holdingLabel}
+              </p>
+            ) : null}
+          </div>
         </div>
 
         <DashboardCardViewLink
@@ -312,10 +453,11 @@ export default function InvestmentOverviewWidget({
           </div>
         </div>
       ) : (
-        <div className="mt-5 grid min-h-0 flex-1 gap-5 md:grid-cols-[minmax(220px,0.86fr)_minmax(280px,1.14fr)] md:items-center">
+        <div className="mt-4 grid min-h-0 flex-1 gap-5 md:grid-cols-[minmax(220px,0.86fr)_minmax(280px,1.14fr)] md:items-center">
           <div className="min-w-0">
             <p className="sr-only">
-              Priced portfolio value {allocationTotalValue}. Performance is {pnlLabel}.
+              Priced portfolio value {allocationTotalValue}. Performance is{" "}
+              {pnlLabel}.
               {resolvedUnpricedCount > 0
                 ? ` ${resolvedUnpricedCount} holdings are excluded because current pricing is unavailable.`
                 : ""}
@@ -345,24 +487,33 @@ export default function InvestmentOverviewWidget({
                     </Pie>
                     <Tooltip
                       cursor={false}
+                      offset={18}
+                      allowEscapeViewBox={{ x: true, y: true }}
+                      wrapperStyle={{
+                        zIndex: 20,
+                        pointerEvents: "none",
+                      }}
                       contentStyle={{
-                        maxWidth: "min(78vw, 280px)",
-                        borderRadius: 14,
-                        borderColor: "var(--border)",
-                        background: "var(--chart-tooltip)",
+                        maxWidth: "min(72vw, 220px)",
+                        border: "none",
+                        borderRadius: 12,
+                        background:
+                          "color-mix(in srgb, var(--chart-tooltip) 94%, transparent)",
                         color: "var(--text-primary)",
-                        boxShadow: "var(--shadow-soft)",
-                        padding: "10px 12px",
+                        boxShadow: "0 10px 30px rgba(0,0,0,0.18)",
+                        padding: "8px 10px",
                       }}
                       itemStyle={{
                         color: "var(--text-primary)",
-                        fontSize: 12,
+                        fontSize: 11,
                         fontWeight: 750,
                         padding: 0,
                       }}
                       labelStyle={{ display: "none" }}
                       formatter={(value, _name, item) => {
-                        const entry = item.payload as AllocationEntry | undefined;
+                        const entry = item.payload as
+                          | AllocationEntry
+                          | undefined;
                         const label =
                           entry?.symbol?.trim().toUpperCase() ||
                           entry?.name ||
@@ -376,16 +527,17 @@ export default function InvestmentOverviewWidget({
               </ChartFrame>
 
               <div className="pointer-events-none absolute inset-0 grid place-items-center text-center">
-                <div className="min-w-0 max-w-[46%] px-2">
-                  <p className="truncate text-2xl font-black leading-none tracking-tight text-text-primary tabular-nums sm:text-3xl">
+                <div className="w-[58%] min-w-0 px-1">
+                  <p className="whitespace-nowrap text-[clamp(1.15rem,5.4vw,1.8rem)] font-black leading-none tracking-[-0.04em] text-text-primary tabular-nums">
                     <CountedAmount
                       amount={formatCurrency(allocationTotalValue, {
                         compact: true,
+                        maximumFractionDigits: 1,
                       })}
                     />
                   </p>
                   <p
-                    className="mt-2 text-sm font-bold leading-none tabular-nums sm:text-base"
+                    className="mt-2 text-sm font-black leading-none tabular-nums sm:text-base"
                     style={{ color: pnlColor }}
                   >
                     {resolvedTotalPnLPct === null ? (
@@ -394,15 +546,35 @@ export default function InvestmentOverviewWidget({
                       <CountedAmount amount={pnlLabel} />
                     )}
                   </p>
-                  <p className="mt-2 text-[10px] font-semibold leading-none tracking-[0.12em] text-text-secondary sm:text-xs">
-                    priced value
+                  <p className="mt-2 text-[9px] font-bold uppercase leading-none tracking-[0.13em] text-text-tertiary sm:text-[10px]">
+                    Portfolio value
                   </p>
                 </div>
               </div>
             </div>
+
+            <div className="mx-auto mt-1 flex max-w-[250px] items-center justify-center gap-4 text-center">
+              <div className="min-w-0">
+                <p className="text-[9px] font-bold uppercase tracking-[0.11em] text-text-tertiary">
+                  Invested
+                </p>
+                <p className="mt-0.5 truncate text-[11px] font-bold tabular-nums text-text-secondary">
+                  {formatCurrency(totalInvested, { compact: true })}
+                </p>
+              </div>
+              <span aria-hidden="true" className="h-6 w-px bg-border/45" />
+              <div className="min-w-0">
+                <p className="text-[9px] font-bold uppercase tracking-[0.11em] text-text-tertiary">
+                  Holdings
+                </p>
+                <p className="mt-0.5 text-[11px] font-bold tabular-nums text-text-secondary">
+                  {allocationData.length}
+                </p>
+              </div>
+            </div>
           </div>
 
-          <div className="min-w-0 space-y-2.5">
+          <div className="min-w-0 space-y-2">
             {visibleInvestments.map((investment, index) => {
               const allocation =
                 allocationTotalValue > 0
@@ -410,107 +582,26 @@ export default function InvestmentOverviewWidget({
                   : 0;
 
               return (
-                <div
+                <HoldingRow
                   key={investment.id}
-                  title={`${investment.name}${investment.symbol ? ` (${investment.symbol.toUpperCase()})` : ""}`}
-                  className="grid min-w-0 grid-cols-[auto_minmax(0,1fr)_minmax(76px,0.9fr)_auto] items-center gap-2.5 px-3 py-2.5 sm:grid-cols-[auto_minmax(110px,1fr)_minmax(110px,1.2fr)_auto] sm:gap-3 sm:px-4 sm:py-3 md:grid-cols-[auto_minmax(110px,1fr)_auto] md:gap-4"
-                >
-                  <AssetLogo entry={investment} size={34} />
-
-                  <div className="min-w-0 md:hidden">
-                    <p className="truncate text-xs font-semibold text-text-primary sm:text-sm">
-                      {investment.name}
-                    </p>
-                    {investment.symbol ? (
-                      <p className="mt-0.5 truncate text-[9px] font-semibold uppercase tracking-[0.12em] text-text-secondary sm:text-[10px]">
-                        {investment.symbol}
-                      </p>
-                    ) : null}
-                  </div>
-
-                  <AllocationBar
-                    value={allocation}
-                    color={investment.color}
-                    label={investment.name}
-                    delayMs={120 + index * 120}
-                  />
-
-                  <span
-                    className="shrink-0 text-xs font-black tabular-nums sm:text-sm md:hidden"
-                    style={{ color: investment.color }}
-                  >
-                    {formatAllocation(allocation)}
-                  </span>
-
-                  <div className="hidden shrink-0 items-baseline justify-end gap-2 text-right md:flex">
-                    <span className="text-xs font-bold text-text-primary tabular-nums lg:text-sm">
-                      {formatCurrency(investment.value, { compact: true })}
-                    </span>
-                    <span
-                      className="text-xs font-black tabular-nums lg:text-sm"
-                      style={{ color: investment.color }}
-                    >
-                      {formatAllocation(allocation)}
-                    </span>
-                  </div>
-                </div>
+                  entry={investment}
+                  allocation={allocation}
+                  delayMs={120 + index * 120}
+                  formatCurrency={formatCurrency}
+                />
               );
             })}
 
             {otherInvestments.length > 0 ? (
-              <div
-                title="Other assets"
-                className="grid min-w-0 grid-cols-[auto_minmax(0,1fr)_minmax(76px,0.9fr)_auto] items-center gap-2.5 px-3 py-2.5 sm:grid-cols-[auto_minmax(110px,1fr)_minmax(110px,1.2fr)_auto] sm:gap-3 sm:px-4 sm:py-3 md:grid-cols-[auto_minmax(110px,1fr)_auto] md:gap-4"
-              >
-                <span
-                  className="grid shrink-0 place-items-center rounded-full"
-                  style={{
-                    width: 34,
-                    height: 34,
-                    color: OTHER_ASSETS_COLOR,
-                    backgroundColor: "rgba(91, 113, 135, 0.13)",
-                  }}
-                  aria-label="Other assets icon"
-                >
-                  <Layers3 size={17} strokeWidth={2.1} />
-                </span>
-
-                <div className="min-w-0 md:hidden">
-                  <p className="truncate text-xs font-semibold text-text-primary sm:text-sm">
-                    Other assets
-                  </p>
-                </div>
-
-                <AllocationBar
-                  value={otherAssetsAllocation}
-                  color={OTHER_ASSETS_COLOR}
-                  label="Other assets"
-                  delayMs={480}
-                />
-
-                <span
-                  className="shrink-0 text-xs font-black tabular-nums sm:text-sm md:hidden"
-                  style={{ color: OTHER_ASSETS_COLOR }}
-                >
-                  {formatAllocation(otherAssetsAllocation)}
-                </span>
-
-                <div className="hidden shrink-0 items-baseline justify-end gap-2 text-right md:flex">
-                  <span className="text-xs font-bold text-text-primary tabular-nums lg:text-sm">
-                    {formatCurrency(otherAssetsValue, { compact: true })}
-                  </span>
-                  <span
-                    className="text-xs font-black tabular-nums lg:text-sm"
-                    style={{ color: OTHER_ASSETS_COLOR }}
-                  >
-                    {formatAllocation(otherAssetsAllocation)}
-                  </span>
-                </div>
-              </div>
+              <OtherAssetsRow
+                value={otherAssetsValue}
+                allocation={otherAssetsAllocation}
+                formatCurrency={formatCurrency}
+              />
             ) : null}
 
             {resolvedUnpricedCount > 0 ? (
-              <p className="px-1 text-[10px] font-semibold leading-4 text-warning">
+              <p className="px-2 pt-1 text-[10px] font-semibold leading-4 text-warning">
                 {resolvedUnpricedCount} unpriced{" "}
                 {resolvedUnpricedCount === 1 ? "holding" : "holdings"} excluded
               </p>
