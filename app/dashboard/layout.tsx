@@ -98,6 +98,8 @@ import "./mobile-header-search-borderless.css";
 import "./mobile-sidebar-focus-state-fix.css";
 // Large dashboard currency values must always fit inside compact mobile widths.
 import "./mobile-amount-fit.css";
+// Final launch design layer is strictly scoped to the requested eight content routes.
+import "./final-eight-pages-polish.css";
 
 export const dynamic = "force-dynamic";
 
