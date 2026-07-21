@@ -3,6 +3,8 @@
 import { useEffect } from "react";
 import { toast } from "sonner";
 
+import AcceleratedMotionPerformance from "@/components/performance/AcceleratedMotionPerformance";
+
 declare global {
   interface Window {
     __jamalsFinancePwaRegistered?: boolean;
@@ -62,7 +64,7 @@ export default function PWARegister() {
 
         navigator.serviceWorker.addEventListener(
           "controllerchange",
-          onControllerChange
+          onControllerChange,
         );
       } catch (error) {
         console.warn("PWA service worker registration failed:", error);
@@ -75,10 +77,10 @@ export default function PWARegister() {
       window.removeEventListener("load", registerServiceWorker);
       navigator.serviceWorker?.removeEventListener(
         "controllerchange",
-        onControllerChange
+        onControllerChange,
       );
     };
   }, []);
 
-  return null;
+  return <AcceleratedMotionPerformance />;
 }
