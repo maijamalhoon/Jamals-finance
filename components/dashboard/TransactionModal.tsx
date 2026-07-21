@@ -15,6 +15,7 @@ import DatePicker from "@/components/ui/date-picker";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import AccountSelect from "@/components/accounts/AccountSelect";
+import { useCurrency } from "@/components/currency/CurrencyProvider";
 import { getAppDateKey } from "@/lib/dates";
 import {
   Select,
@@ -35,7 +36,7 @@ import {
   financeModalContentClass,
 } from "@/components/ui/finance-modal";
 import { toast } from "sonner";
-import { BASE_CURRENCY } from "@/lib/currency";
+import { getEditableMoneyValue } from "@/lib/currency-input";
 import {
   CategoryVisualIcon,
   getCategoryVisual,
@@ -65,6 +66,9 @@ export interface ExistingTransaction {
   id: string;
   type: "income" | "expense";
   amount: number;
+  amount_original?: number | string | null;
+  currency?: string | null;
+  exchange_rate_to_pkr?: number | string | null;
   category_id: string;
   account_id: string;
   date: string;
@@ -88,6 +92,11 @@ interface CategoryOption {
   label: string;
   parentLabel?: string;
   depth: number;
+}
+
+function formatEditableAmount(value: number | null) {
+  if (value === null || !Number.isFinite(value)) return "";
+  return value.toFixed(8).replace(/\.?0+$/, "");
 }
 
 function CategorySummary({
@@ -132,6 +141,7 @@ export default function TransactionModal({
 }: Props) {
   const supabase = useMemo(() => createClient(), []);
   const isEditing = !!transaction;
+  const { currency, rates, ratesReady } = useCurrency();
 
   const [type, setType] = useState<"income" | "expense">(defaultType);
   const [amount, setAmount] = useState("");
@@ -155,8 +165,16 @@ export default function TransactionModal({
     if (!open) return;
     setCategoryOpen(false);
     if (transaction) {
+      const editableAmount = getEditableMoneyValue({
+        amountPkr: transaction.amount,
+        originalAmount: transaction.amount_original,
+        originalCurrency: transaction.currency,
+        displayCurrency: currency,
+        rates,
+      });
+
       setType(transaction.type);
-      setAmount(String(transaction.amount));
+      setAmount(formatEditableAmount(editableAmount));
       setCategoryId(transaction.category_id || "");
       setAccountId(transaction.account_id || "");
       setDate(transaction.date);
@@ -178,7 +196,7 @@ export default function TransactionModal({
       setReference("");
     }
     setError("");
-  }, [open, transaction, defaultType]);
+  }, [currency, defaultType, open, rates, transaction]);
 
   useEffect(() => {
     if (touchPickerMode) setCategoryOpen(false);
@@ -270,6 +288,10 @@ export default function TransactionModal({
     const parsedAmount = Number(amount);
     if (!Number.isFinite(parsedAmount) || parsedAmount <= 0) {
       setError("Enter an amount greater than 0.");
+      return;
+    }
+    if (currency !== "PKR" && !ratesReady) {
+      setError("Exchange rates are unavailable. The transaction was not saved.");
       return;
     }
 
@@ -440,7 +462,7 @@ export default function TransactionModal({
           )}
 
           <FinanceFormField
-            label={`Amount (${BASE_CURRENCY})`}
+            label={`Amount (${currency})`}
             htmlFor="transaction-amount"
             className={styles.amountField}
           >
@@ -449,7 +471,7 @@ export default function TransactionModal({
               type="number"
               inputMode="decimal"
               min="0"
-              step="0.01"
+              step="any"
               value={amount}
               onChange={(event) => setAmount(event.target.value)}
               placeholder="0"
@@ -630,7 +652,11 @@ export default function TransactionModal({
           <Button
             type="button"
             onClick={handleSave}
-            disabled={loading || loadingOptions}
+            disabled={
+              loading ||
+              loadingOptions ||
+              (currency !== "PKR" && !ratesReady)
+            }
             loading={loading}
             loadingLabel="Saving transaction…"
             className={`${styles.submit} ${
