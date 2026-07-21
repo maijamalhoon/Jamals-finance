@@ -1,0 +1,289 @@
+/* Standard/green mode only.
+ * This layer preserves every authored animation while keeping interaction work on
+ * opacity/transform whenever possible. Fast and no-animation modes are untouched.
+ */
+
+html[data-animation-mode="standard"] {
+  --jf-standard-ease-smooth: cubic-bezier(0.22, 1, 0.36, 1);
+  --jf-standard-ease-press: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --jf-standard-popup-in: 170ms;
+  --jf-standard-popup-out: 125ms;
+  --jf-standard-menu-in: 125ms;
+  --jf-standard-menu-out: 95ms;
+  --jf-standard-control-response: 115ms;
+}
+
+/* High-refresh displays can resolve the same visual motion in a slightly tighter
+ * window without dropping frames. Device-pressure tiers remain authoritative. */
+html[data-animation-mode="standard"][data-standard-refresh-tier="high"]:not(
+    [data-standard-motion-tier="lite"]
+  ) {
+  --jf-standard-popup-in: 155ms;
+  --jf-standard-popup-out: 112ms;
+  --jf-standard-menu-in: 112ms;
+  --jf-standard-menu-out: 86ms;
+  --jf-standard-control-response: 102ms;
+}
+
+html[data-animation-mode="standard"][data-standard-motion-tier="balanced"] {
+  --jf-standard-popup-in: 145ms;
+  --jf-standard-popup-out: 108ms;
+  --jf-standard-menu-in: 108ms;
+  --jf-standard-menu-out: 84ms;
+  --jf-standard-control-response: 98ms;
+}
+
+html[data-animation-mode="standard"][data-standard-motion-tier="lite"] {
+  --jf-standard-popup-in: 125ms;
+  --jf-standard-popup-out: 92ms;
+  --jf-standard-menu-in: 92ms;
+  --jf-standard-menu-out: 72ms;
+  --jf-standard-control-response: 84ms;
+}
+
+html[data-animation-mode="standard"]
+  :where(button, a, [role="button"], [role="link"], summary) {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html[data-animation-mode="standard"]
+  :where(button, a, [role="button"], [role="link"], summary):is(
+    :hover,
+    :focus-visible,
+    :active
+  ) {
+  will-change: transform, opacity;
+}
+
+html[data-animation-mode="standard"]
+  :where(button, a, [role="button"], [role="link"], summary)
+  > svg,
+html[data-animation-mode="standard"]
+  :where(button, a, [role="button"], [role="link"], summary)
+  > span
+  > svg {
+  backface-visibility: hidden;
+  transform-origin: center;
+}
+
+/* Keep control feedback short and predictable instead of allowing transition-all
+ * to animate layout-affecting properties for several frames. */
+html[data-animation-mode="standard"]
+  :where(
+    .primary-action,
+    .danger-action,
+    .success-action,
+    .investment-action,
+    .warning-action,
+    .icon-button,
+    .field-input,
+    [data-slot="button"],
+    [data-slot="dialog-close"],
+    [data-slot="dropdown-menu-item"],
+    [data-slot="dropdown-menu-checkbox-item"],
+    [data-slot="dropdown-menu-radio-item"],
+    [data-slot="select-trigger"],
+    [data-slot="select-item"]
+  ) {
+  transition-timing-function: var(--jf-standard-ease-press);
+}
+
+html[data-animation-mode="standard"]
+  :where(
+    .primary-action,
+    .danger-action,
+    .success-action,
+    .investment-action,
+    .warning-action,
+    .icon-button,
+    [data-slot="button"],
+    [data-slot="dialog-close"],
+    [data-slot="dropdown-menu-item"],
+    [data-slot="dropdown-menu-checkbox-item"],
+    [data-slot="dropdown-menu-radio-item"],
+    [data-slot="select-trigger"],
+    [data-slot="select-item"]
+  ) {
+  transition-duration: var(--jf-standard-control-response);
+}
+
+/* Dialogs, sheets, menus and select popups use bounded transform/opacity motion.
+ * The components remain visually identical; only their frame budget is tightened. */
+html[data-animation-mode="standard"]
+  :where(
+    [data-slot="dialog-content"],
+    [data-slot="sheet-content"],
+    [data-slot="popover-content"],
+    [data-slot="command-dialog"]
+  ) {
+  backface-visibility: hidden;
+  transform-style: preserve-3d;
+  animation-timing-function: var(--jf-standard-ease-smooth);
+}
+
+html[data-animation-mode="standard"]
+  :where(
+    [data-slot="dialog-content"],
+    [data-slot="sheet-content"],
+    [data-slot="popover-content"],
+    [data-slot="command-dialog"]
+  )[data-open] {
+  animation-duration: var(--jf-standard-popup-in);
+}
+
+html[data-animation-mode="standard"]
+  :where(
+    [data-slot="dialog-content"],
+    [data-slot="sheet-content"],
+    [data-slot="popover-content"],
+    [data-slot="command-dialog"]
+  )[data-closed] {
+  animation-duration: var(--jf-standard-popup-out);
+}
+
+html[data-animation-mode="standard"]
+  :where(
+    [data-slot="dropdown-menu-content"],
+    [data-slot="dropdown-menu-sub-content"],
+    [data-slot="select-content"],
+    [data-slot="tooltip-content"]
+  ) {
+  backface-visibility: hidden;
+  transform-style: preserve-3d;
+  animation-timing-function: var(--jf-standard-ease-smooth);
+}
+
+html[data-animation-mode="standard"]
+  :where(
+    [data-slot="dropdown-menu-content"],
+    [data-slot="dropdown-menu-sub-content"],
+    [data-slot="select-content"],
+    [data-slot="tooltip-content"]
+  )[data-open] {
+  animation-duration: var(--jf-standard-menu-in);
+}
+
+html[data-animation-mode="standard"]
+  :where(
+    [data-slot="dropdown-menu-content"],
+    [data-slot="dropdown-menu-sub-content"],
+    [data-slot="select-content"],
+    [data-slot="tooltip-content"]
+  )[data-closed] {
+  animation-duration: var(--jf-standard-menu-out);
+}
+
+html[data-animation-mode="standard"]
+  :where([data-slot="dialog-overlay"], [data-slot="sheet-overlay"]) {
+  animation-duration: var(--jf-standard-popup-out);
+  animation-timing-function: var(--jf-standard-ease-smooth);
+  will-change: opacity;
+}
+
+/* Search surfaces retain their appearance while isolating internal layout work. */
+html[data-animation-mode="standard"]
+  form[data-mobile-control-cluster][role="search"] {
+  contain: layout style;
+  backface-visibility: hidden;
+  transform-origin: left center;
+}
+
+html[data-animation-mode="standard"]
+  .jf-desktop-header form[role="search"][aria-label="Search transactions"] {
+  contain: layout style;
+  transition-duration: var(--motion-duration-fast);
+  transition-timing-function: var(--jf-standard-ease-smooth);
+}
+
+html[data-animation-mode="standard"]
+  .jf-desktop-header form[role="search"][aria-label="Search transactions"]:focus-within {
+  will-change: width;
+}
+
+/* Charts and donuts receive their own paint boundary. Recharts can update paths
+ * without invalidating neighboring cards, forms or navigation surfaces. */
+html[data-animation-mode="standard"] [data-chart-tone] {
+  contain: layout paint style;
+  isolation: isolate;
+}
+
+html[data-animation-mode="standard"] [data-chart-tone] .recharts-wrapper {
+  contain: layout paint;
+  isolation: isolate;
+}
+
+html[data-animation-mode="standard"] [data-chart-tone] .recharts-surface,
+html[data-animation-mode="standard"] [data-chart-tone] svg {
+  backface-visibility: hidden;
+  shape-rendering: geometricPrecision;
+}
+
+html[data-animation-mode="standard"] [data-chart-tone] .recharts-layer {
+  transform-origin: center;
+}
+
+/* The route line uses one continuously composited layer with no opacity/layout
+ * work. It never controls when the actual route content is painted. */
+html[data-animation-mode="standard"] .jf-standard-route-loader {
+  contain: strict;
+  transform: translateZ(0);
+}
+
+html[data-animation-mode="standard"] .jf-standard-route-loader > span {
+  width: 36%;
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--active), transparent 34%),
+    var(--active),
+    color-mix(in srgb, var(--active), transparent 34%)
+  );
+  animation-name: jf-standard-route-loader-ultra-glide;
+  animation-duration: 720ms;
+  animation-timing-function: linear;
+  backface-visibility: hidden;
+}
+
+html[data-animation-mode="standard"][data-standard-motion-tier="balanced"]
+  .jf-standard-route-loader
+  > span {
+  animation-duration: 650ms;
+}
+
+html[data-animation-mode="standard"][data-standard-motion-tier="lite"]
+  .jf-standard-route-loader
+  > span {
+  animation-duration: 580ms;
+}
+
+@keyframes jf-standard-route-loader-ultra-glide {
+  from {
+    transform: translate3d(-125%, 0, 0);
+  }
+
+  to {
+    transform: translate3d(385%, 0, 0);
+  }
+}
+
+/* Streamed page content is always paintable. These selectors only provide a
+ * one-frame composited settle and cannot hold content behind a loader. */
+html[data-animation-mode="standard"] .jf-dashboard-content-frame {
+  backface-visibility: hidden;
+  transform-style: preserve-3d;
+}
+
+@media (hover: none), (pointer: coarse) {
+  html[data-animation-mode="standard"]
+    :where(button, a, [role="button"], [role="link"], summary):hover {
+    will-change: auto;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html[data-animation-mode="standard"] .jf-standard-route-loader > span {
+    animation: none;
+    transform: none;
+    width: 100%;
+  }
+}
