@@ -9,6 +9,7 @@ import {
 import {
   getAnimationDurationScale,
   getDocumentAnimationMode,
+  type AnimationMode,
 } from "@/lib/animation-preference";
 
 function splitAmount(amount: string) {
@@ -46,6 +47,7 @@ type RunningAmountAnimation = {
 };
 
 const runningAnimations = new Map<HTMLSpanElement, RunningAmountAnimation>();
+const formatterCache = new Map<number, Intl.NumberFormat>();
 let sharedAnimationFrame: number | null = null;
 
 const COUNT_DURATION_SCALE = 1.4;
@@ -53,6 +55,12 @@ const MIN_COUNT_DURATION_MS = 1450;
 const DASHBOARD_DURATION_SCALE = 0.92;
 const DASHBOARD_MIN_DURATION_MS = 900;
 const DASHBOARD_MAX_DURATION_MS = 1350;
+
+const STANDARD_COUNT_MIN_MS = 560;
+const STANDARD_COUNT_MAX_MS = 880;
+const STANDARD_DASHBOARD_MIN_MS = 480;
+const STANDARD_DASHBOARD_MAX_MS = 760;
+const STANDARD_MAX_DELAY_MS = 110;
 
 function smoothStep(progress: number) {
   return progress * progress * (3 - 2 * progress);
@@ -66,15 +74,49 @@ function getAnimationProgress(progress: number, profile: AnimationProfile) {
   return profile === "dashboard" ? dashboardEase(progress) : smoothStep(progress);
 }
 
-function getAnimationDuration(duration: number, profile: AnimationProfile) {
-  const preferenceScale = getAnimationDurationScale();
+function getFormatter(decimals: number) {
+  const safeDecimals = Math.max(0, Math.min(8, decimals));
+  const cached = formatterCache.get(safeDecimals);
+  if (cached) return cached;
+
+  const formatter = new Intl.NumberFormat("en-US", {
+    minimumFractionDigits: safeDecimals,
+    maximumFractionDigits: safeDecimals,
+  });
+  formatterCache.set(safeDecimals, formatter);
+  return formatter;
+}
+
+function getAnimationDuration(
+  duration: number,
+  profile: AnimationProfile,
+  animationMode: AnimationMode,
+) {
+  const preferenceScale = getAnimationDurationScale(animationMode);
   if (preferenceScale === 0) return 0;
+
+  if (animationMode === "standard") {
+    if (profile === "dashboard") {
+      return Math.min(
+        STANDARD_DASHBOARD_MAX_MS,
+        Math.max(duration * 560, STANDARD_DASHBOARD_MIN_MS),
+      );
+    }
+
+    return Math.min(
+      STANDARD_COUNT_MAX_MS,
+      Math.max(duration * 620, STANDARD_COUNT_MIN_MS),
+    );
+  }
 
   if (profile === "dashboard") {
     return (
       Math.min(
         DASHBOARD_MAX_DURATION_MS,
-        Math.max(duration * 1000 * DASHBOARD_DURATION_SCALE, DASHBOARD_MIN_DURATION_MS),
+        Math.max(
+          duration * 1000 * DASHBOARD_DURATION_SCALE,
+          DASHBOARD_MIN_DURATION_MS,
+        ),
       ) * preferenceScale
     );
   }
@@ -172,13 +214,17 @@ export default function CountedAmount({
       animationMode === "none" ||
       window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const compactViewport = window.matchMedia("(max-width: 1023px)").matches;
+    const profile: AnimationProfile = element.closest(".dashboard-overview")
+      ? "dashboard"
+      : "default";
     const animationDurationMs = getAnimationDuration(
       duration,
-      element.closest(".dashboard-overview") ? "dashboard" : "default",
+      profile,
+      animationMode,
     );
     const shouldAnimate =
       !reduceMotion &&
-      (animateOnCompact || !compactViewport) &&
+      (animationMode === "standard" || animateOnCompact || !compactViewport) &&
       duration > 0 &&
       animationDurationMs > 0;
 
@@ -192,10 +238,7 @@ export default function CountedAmount({
       return;
     }
 
-    const formatter = new Intl.NumberFormat("en-US", {
-      minimumFractionDigits: parsedAmount.decimals,
-      maximumFractionDigits: parsedAmount.decimals,
-    });
+    const formatter = getFormatter(parsedAmount.decimals);
     const precisionFactor = 10 ** parsedAmount.decimals;
     const formatValue = (value: number) => {
       const roundedValue =
@@ -204,9 +247,6 @@ export default function CountedAmount({
       return `${parsedAmount.prefix}${formatter.format(displayValue)}${parsedAmount.suffix}`;
     };
     const fromValue = hasAnimatedRef.current ? currentValueRef.current : 0;
-    const profile: AnimationProfile = element.closest(".dashboard-overview")
-      ? "dashboard"
-      : "default";
 
     hasAnimatedRef.current = true;
     currentValueRef.current = fromValue;
@@ -219,13 +259,17 @@ export default function CountedAmount({
       return;
     }
 
+    const authoredDelayMs = Math.max(0, delay) * 1000;
+    const resolvedDelayMs =
+      animationMode === "standard"
+        ? Math.min(authoredDelayMs, STANDARD_MAX_DELAY_MS)
+        : authoredDelayMs * getAnimationDurationScale(animationMode);
+
     startSharedAnimation({
       element,
       from: fromValue,
       to: parsedAmount.value,
-      startedAt:
-        performance.now() +
-        Math.max(0, delay) * 1000 * getAnimationDurationScale(),
+      startedAt: performance.now() + resolvedDelayMs,
       durationMs: animationDurationMs,
       finalText: amount,
       formatValue,
