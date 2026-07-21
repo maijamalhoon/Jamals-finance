@@ -2,6 +2,21 @@
   display: none;
 }
 
+:global(:root) {
+  --jf-global-final-action-height: clamp(2.5rem, 5.2dvh, 2.75rem);
+  --jf-global-final-action-radius: 1.05rem;
+}
+
+:global(
+  [data-slot="dialog-content"].finance-modal-content.finance-modal-content
+    button[data-jf-form-action="true"][data-jf-form-action="true"]
+) {
+  height: var(--jf-global-final-action-height) !important;
+  min-height: var(--jf-global-final-action-height) !important;
+  max-height: var(--jf-global-final-action-height) !important;
+  border-radius: var(--jf-global-final-action-radius) !important;
+}
+
 /* Desktop account/category menus show four comfortable rows, then scroll. */
 @media (min-width: 1024px) {
   :global([data-slot="select-content"]:has([data-scroll-select-value][class~="min-h-14"])) {
