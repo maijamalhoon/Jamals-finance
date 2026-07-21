@@ -1,0 +1,94 @@
+/*
+ * Final mobile/tablet positioning authority for Settings dialogs.
+ * Presentation only: every dialog keeps its own data, actions and internal logic.
+ */
+
+@media (max-width: 1023px) {
+  :is(
+      [data-slot="dialog-content"].finance-modal-content:has(#settings-category-name),
+      [data-slot="dialog-content"].finance-modal-content:has(#persistent-category-name),
+      [data-slot="dialog-content"].finance-modal-content:has(#settings-currency-select),
+      [data-slot="dialog-content"].finance-modal-content:has(#settings-date-format-select),
+      [data-slot="dialog-content"].finance-modal-content:has(#settings-reference-display-name),
+      [data-slot="dialog-content"].finance-modal-content:has(#custom-profile-name),
+      [data-slot="dialog-content"].finance-modal-content:has(.settings-security-panel),
+      [data-slot="dialog-content"].finance-modal-content:not(:has(#settings-category-name)):has([role="tablist"]),
+      [data-slot="dialog-content"].finance-modal-content.settings-profile-details-hard,
+      [data-slot="dialog-content"].finance-modal-content.settings-account-security-hard,
+      [data-slot="dialog-content"].finance-modal-content.settings-currency-hard,
+      [data-slot="dialog-content"].finance-modal-content.settings-date-format-hard
+    ) {
+    position: fixed !important;
+    top: calc(
+      50svh +
+        (env(safe-area-inset-top) - env(safe-area-inset-bottom)) / 2
+    ) !important;
+    right: auto !important;
+    bottom: auto !important;
+    left: calc(
+      50vw +
+        (env(safe-area-inset-left) - env(safe-area-inset-right)) / 2
+    ) !important;
+    box-sizing: border-box !important;
+    width: min(
+      calc(
+        100vw - 1rem - env(safe-area-inset-left) -
+          env(safe-area-inset-right)
+      ),
+      32rem
+    ) !important;
+    max-width: calc(
+      100vw - 1rem - env(safe-area-inset-left) -
+        env(safe-area-inset-right)
+    ) !important;
+    height: max-content !important;
+    max-height: calc(
+      100svh - 1rem - env(safe-area-inset-top) -
+        env(safe-area-inset-bottom)
+    ) !important;
+    margin: 0 !important;
+    translate: -50% -50% !important;
+    transform: none !important;
+    overflow-x: hidden !important;
+  }
+
+  /* The category manager needs more room on tablets while staying full-width on phones. */
+  :is(
+      [data-slot="dialog-content"].finance-modal-content:has(#persistent-category-name),
+      [data-slot="dialog-content"].finance-modal-content:not(:has(#settings-category-name)):has([role="tablist"])
+    ) {
+    width: min(
+      calc(
+        100vw - 1rem - env(safe-area-inset-left) -
+          env(safe-area-inset-right)
+      ),
+      46rem
+    ) !important;
+  }
+
+  [data-slot="dialog-content"].finance-modal-content:has(.settings-security-panel),
+  [data-slot="dialog-content"].finance-modal-content.settings-account-security-hard {
+    width: min(
+      calc(
+        100vw - 1rem - env(safe-area-inset-left) -
+          env(safe-area-inset-right)
+      ),
+      36rem
+    ) !important;
+  }
+
+  :is(
+      [data-slot="dialog-content"].finance-modal-content:has(#settings-category-name),
+      [data-slot="dialog-content"].finance-modal-content:has(#persistent-category-name),
+      [data-slot="dialog-content"].finance-modal-content:has(#settings-currency-select),
+      [data-slot="dialog-content"].finance-modal-content:has(#settings-date-format-select),
+      [data-slot="dialog-content"].finance-modal-content:has(#settings-reference-display-name),
+      [data-slot="dialog-content"].finance-modal-content:has(#custom-profile-name),
+      [data-slot="dialog-content"].finance-modal-content:has(.settings-security-panel),
+      [data-slot="dialog-content"].finance-modal-content:not(:has(#settings-category-name)):has([role="tablist"])
+    ) :is(form, .finance-modal-body) {
+    min-width: 0 !important;
+    max-width: 100% !important;
+    overflow-x: hidden !important;
+  }
+}
