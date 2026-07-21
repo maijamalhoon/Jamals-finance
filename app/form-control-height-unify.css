@@ -1,7 +1,8 @@
 /*
- * Global form-control height authority.
- * Keeps every single-line input, select, picker and segmented option compact
- * and identical without changing textarea sizing, data, validation or logic.
+ * Global form-control and modal-spacing authority.
+ * Keeps every single-line input, select, picker and segmented option compact,
+ * and keeps the final footer action evenly separated from the last field.
+ * Data, validation and form logic remain unchanged.
  */
 
 :root {
@@ -9,6 +10,13 @@
   --jf-global-date-control-height: 2.25rem;
   --jf-global-final-action-height: 2.5rem;
   --jf-global-final-action-radius: 0.95rem;
+  --jf-global-form-edge-gap: 0.875rem;
+}
+
+@media (min-width: 640px) {
+  :root {
+    --jf-global-form-edge-gap: 1rem;
+  }
 }
 
 :is(form, [data-slot="dialog-content"], .finance-modal-content)
@@ -45,6 +53,29 @@
 /* Portal-rendered select choices keep the same compact rhythm. */
 [data-slot="select-content"] [data-slot="select-item"] {
   min-height: var(--jf-global-form-control-height) !important;
+}
+
+/*
+ * The body contributes no second bottom gap. The footer owns the separation,
+ * matching the body top padding between the modal label and its first field.
+ */
+.finance-modal-content > .finance-modal-body,
+.finance-modal-content > form > .finance-modal-body {
+  padding-bottom: 0 !important;
+}
+
+.finance-modal-content > .finance-modal-footer,
+.finance-modal-content > form > .finance-modal-footer {
+  margin-top: 0 !important;
+  padding-top: var(--jf-global-form-edge-gap) !important;
+}
+
+/* Forms whose final submit action intentionally lives inside the body. */
+.finance-modal-content
+  > form
+  > .finance-modal-body:last-child
+  > button[type="submit"]:last-child {
+  margin-top: var(--jf-global-form-edge-gap) !important;
 }
 
 /* Only the final primary action at the bottom of a form is compact and equal. */
