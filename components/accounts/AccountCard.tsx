@@ -4,10 +4,10 @@ import { type CSSProperties, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
-  Archive,
   ArchiveRestore,
   Clock3,
-  PencilLine,
+  Pencil,
+  Trash2,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -109,7 +109,7 @@ export default function AccountCard({
               className="icon-button"
               aria-label="Edit account"
             >
-              <PencilLine
+              <Pencil
                 size={18}
                 strokeWidth={2.5}
                 absoluteStrokeWidth
@@ -135,7 +135,7 @@ export default function AccountCard({
                 aria-hidden="true"
               />
             ) : (
-              <Archive
+              <Trash2
                 size={18}
                 strokeWidth={2.5}
                 absoluteStrokeWidth
