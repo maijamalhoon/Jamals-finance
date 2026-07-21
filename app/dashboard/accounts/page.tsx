@@ -1,10 +1,10 @@
-import { createClient } from "@/lib/supabase/server";
 import AccountsLiveGrid, {
   type AccountGridAccount,
   type AccountLinkedInvestment,
 } from "@/components/accounts/AccountsLiveGrid";
 import AddAccountButton from "@/components/accounts/AddAccountButton";
 import EmptyState from "@/components/ui/empty-state";
+import { createClient } from "@/lib/supabase/server";
 import { AlertTriangle, Landmark } from "lucide-react";
 
 export const dynamic = "force-dynamic";
@@ -34,6 +34,11 @@ function getAccountTotals(
   return current;
 }
 
+function safePositive(value: unknown) {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : 0;
+}
+
 export default async function AccountsPage() {
   const supabase = await createClient();
 
@@ -49,10 +54,12 @@ export default async function AccountsPage() {
       .order("created_at", { ascending: true }),
     supabase
       .from("transactions")
-      .select("account_id, type, amount, investment_id"),
+      .select("account_id, type, amount, investment_id")
+      .is("deleted_at", null),
     supabase
       .from("account_transfers")
-      .select("from_account_id, to_account_id, amount"),
+      .select("from_account_id, to_account_id, amount")
+      .is("deleted_at", null),
     supabase
       .from("investments")
       .select(
@@ -83,7 +90,8 @@ export default async function AccountsPage() {
     if (!transaction.account_id) return;
 
     const current = getAccountTotals(accountTotals, transaction.account_id);
-    const amount = Number(transaction.amount ?? 0);
+    const amount = safePositive(transaction.amount);
+    if (amount <= 0) return;
 
     if (transaction.type === "income" || transaction.type === "refund") {
       current.inflow += amount;
@@ -94,12 +102,16 @@ export default async function AccountsPage() {
     }
 
     if (transaction.type === "investment" && transaction.investment_id) {
-      investmentAccountIds.set(transaction.investment_id, transaction.account_id);
+      investmentAccountIds.set(
+        transaction.investment_id,
+        transaction.account_id,
+      );
     }
   });
 
   (transfers ?? []).forEach((transfer) => {
-    const amount = Number(transfer.amount ?? 0);
+    const amount = safePositive(transfer.amount);
+    if (amount <= 0) return;
 
     if (transfer.to_account_id) {
       getAccountTotals(accountTotals, transfer.to_account_id).inflow += amount;
@@ -130,8 +142,8 @@ export default async function AccountsPage() {
       })) as AccountLinkedInvestment[]);
 
   return (
-    <div className="space-y-5">
-      <div className="flex justify-end">
+    <div data-accounts-page className="space-y-5 pb-8">
+      <div data-page-action-row className="flex justify-end">
         <AddAccountButton />
       </div>
 
