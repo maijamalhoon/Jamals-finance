@@ -1,13 +1,13 @@
-import { createClient } from "@/lib/supabase/server";
-import GoalCard from "@/components/goals/GoalCard";
 import AddGoalButton from "@/components/goals/AddGoalButton";
+import GoalCard from "@/components/goals/GoalCard";
 import GoalSummaryStats from "@/components/goals/GoalSummaryStats";
 import {
   getDistinctGoalPresentationAssignments,
 } from "@/components/goals/goal-icons";
-import EmptyState from "@/components/ui/empty-state";
-import { AlertTriangle, Target } from "lucide-react";
 import type { ExistingGoal, GoalAccount } from "@/components/goals/GoalModal";
+import EmptyState from "@/components/ui/empty-state";
+import { createClient } from "@/lib/supabase/server";
+import { AlertTriangle, Target } from "lucide-react";
 
 interface GoalContributionRow {
   id: string;
@@ -26,6 +26,11 @@ export const dynamic = "force-dynamic";
 
 function firstRelation<T>(value: T | T[] | null | undefined): T | null {
   return Array.isArray(value) ? (value[0] ?? null) : (value ?? null);
+}
+
+function safePositive(value: unknown) {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : 0;
 }
 
 export default async function GoalsPage() {
@@ -74,7 +79,10 @@ export default async function GoalsPage() {
   }
 
   const list = (goals ?? []).map((goal) => {
-    const raw = goal as unknown as Omit<GoalRow, "linked_account" | "goal_contributions"> & {
+    const raw = goal as unknown as Omit<
+      GoalRow,
+      "linked_account" | "goal_contributions"
+    > & {
       linked_account: GoalAccount | GoalAccount[] | null;
       goal_contributions: Array<
         Omit<GoalContributionRow, "contribution_account"> & {
@@ -94,20 +102,28 @@ export default async function GoalsPage() {
   });
   const accountList = (accounts ?? []) as GoalAccount[];
   const presentations = getDistinctGoalPresentationAssignments(list);
-  const completed = list.filter(
-    (g) => Number(g.current_amount) >= Number(g.target_amount),
+  const completed = list.filter((goal) => {
+    const target = safePositive(goal.target_amount);
+    const current = safePositive(goal.current_amount);
+    return target > 0 && current >= target;
+  });
+  const totalTarget = list.reduce(
+    (sum, goal) => sum + safePositive(goal.target_amount),
+    0,
   );
-  const totalTarget = list.reduce((s, g) => s + Number(g.target_amount), 0);
-  const totalSaved = list.reduce((s, g) => s + Number(g.current_amount), 0);
+  const totalSaved = list.reduce(
+    (sum, goal) => sum + safePositive(goal.current_amount),
+    0,
+  );
   const overallPct = totalTarget > 0 ? (totalSaved / totalTarget) * 100 : 0;
 
   return (
-    <div className="space-y-4 sm:space-y-5">
-      <div className="flex justify-end">
+    <div data-goals-page className="space-y-4 pb-8 sm:space-y-5">
+      <div data-page-action-row className="flex justify-end">
         <AddGoalButton accounts={accountList} />
       </div>
 
-      {list.length > 0 && (
+      {list.length > 0 ? (
         <GoalSummaryStats
           totalTarget={totalTarget}
           totalSaved={totalSaved}
@@ -115,12 +131,23 @@ export default async function GoalsPage() {
           totalCount={list.length}
           overallPct={overallPct}
         />
-      )}
+      ) : null}
 
       {accountsError && !goalsError ? (
-        <div role="status" className="finance-panel-soft flex items-start gap-3 p-4 text-sm text-text-secondary">
-          <AlertTriangle className="mt-0.5 shrink-0 text-warning" size={18} aria-hidden="true" />
-          <p>Goals are available, but linked accounts could not be loaded. Refresh before editing account links.</p>
+        <div
+          role="status"
+          className="finance-panel-soft flex items-start gap-3 p-4 text-sm text-text-secondary"
+        >
+          <AlertTriangle
+            className="mt-0.5 shrink-0 text-warning"
+            size={18}
+            strokeWidth={2.35}
+            aria-hidden="true"
+          />
+          <p>
+            Goals are available, but linked accounts could not be loaded. Refresh
+            before editing account links.
+          </p>
         </div>
       ) : null}
 
@@ -148,7 +175,10 @@ export default async function GoalsPage() {
           />
         </div>
       ) : (
-        <div className="grid auto-rows-fr grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
+        <div
+          data-goals-grid
+          className="grid auto-rows-fr grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 xl:grid-cols-3 2xl:grid-cols-4"
+        >
           {list.map((goal, index) => (
             <GoalCard
               key={goal.id}
