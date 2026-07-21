@@ -159,8 +159,12 @@ export default function AccountCard({
           </p>
         </div>
 
-        <div className="relative mt-4 grid min-w-0 grid-cols-[minmax(0,1fr)_minmax(6.75rem,0.76fr)] items-end gap-3 p-3">
-          <div className="min-w-0">
+        <div className="relative mt-4 grid min-w-0 flex-1 grid-cols-[minmax(0,1fr)_minmax(6.75rem,0.76fr)] items-stretch gap-3 p-3">
+          <div
+            className={`flex min-w-0 flex-col ${
+              investmentValue > 0 ? "justify-start" : "justify-center"
+            }`}
+          >
             <p className="text-[10px] font-semibold uppercase tracking-[0.13em] text-text-secondary">
               Balance
             </p>
@@ -175,7 +179,7 @@ export default function AccountCard({
             ) : null}
           </div>
 
-          <div className="min-w-0 space-y-2">
+          <div className="flex min-w-0 flex-col justify-center gap-2">
             <div className="min-w-0 rounded-xl bg-[color-mix(in_srgb,var(--success),transparent_90%)] px-2.5 py-2">
               <p className="text-left text-[9px] font-bold tracking-[0.12em] text-success">
                 TOTAL IN
