@@ -33,6 +33,11 @@ const MANAGED_FORM_MARKER_SELECTOR = [
   '[role="listbox"][aria-roledescription="scroll picker"]',
 ].join(",");
 
+const MANAGED_GROUP_SELECTOR = [
+  '[role="radiogroup"]',
+  '[role="group"]:has(> button[aria-pressed])',
+].join(",");
+
 const GLOBAL_FIELD_HEIGHT = "var(--jf-global-form-control-height, 3rem)";
 const RUNTIME_FIELD_ATTRIBUTE = "data-jf-global-field-height";
 const RUNTIME_GROUP_ATTRIBUTE = "data-jf-global-field-group";
@@ -121,7 +126,7 @@ function syncAllFormFieldFootprints() {
       .forEach(setExactFieldFootprint);
 
     root
-      .querySelectorAll<HTMLElement>('[role="radiogroup"]')
+      .querySelectorAll<HTMLElement>(MANAGED_GROUP_SELECTOR)
       .forEach(setExactGroupFootprint);
 
     if (root.matches(".finance-modal-content")) {
