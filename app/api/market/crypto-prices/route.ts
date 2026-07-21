@@ -12,9 +12,12 @@ export const maxDuration = 10;
 const BINANCE_MARKET_BASE =
   process.env.BINANCE_MARKET_DATA_BASE_URL?.replace(/\/+$/, "") ||
   "https://data-api.binance.vision";
+const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL?.replace(/\/+$/, "");
+const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 const ACTIVE_PAIR_CACHE_SECONDS = 300;
 const MAX_WARM_STALE_MS = 60_000;
 const UPSTREAM_TIMEOUT_MS = 7_000;
+const VALID_PAIR = /^[A-Z0-9]{5,24}$/;
 
 let warmSnapshot: CentralCryptoPricePayload | null = null;
 let inFlightSnapshot: Promise<CentralCryptoPricePayload> | null = null;
@@ -35,14 +38,66 @@ function getRetryAfterMs(response: Response) {
   return Number.isFinite(seconds) && seconds > 0 ? seconds * 1000 : 5_000;
 }
 
+async function fetchCatalogPairs() {
+  if (!SUPABASE_URL || !SUPABASE_ANON_KEY) return CENTRAL_CRYPTO_PAIRS;
+
+  const query = new URLSearchParams({
+    select: "binance_symbol",
+    is_active: "eq.true",
+    binance_symbol: "not.is.null",
+    order: "rank.asc",
+  });
+
+  try {
+    const response = await fetch(
+      `${SUPABASE_URL}/rest/v1/crypto_assets?${query.toString()}`,
+      {
+        next: { revalidate: ACTIVE_PAIR_CACHE_SECONDS },
+        signal: AbortSignal.timeout(UPSTREAM_TIMEOUT_MS),
+        headers: {
+          Accept: "application/json",
+          apikey: SUPABASE_ANON_KEY,
+          Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+        },
+      },
+    );
+
+    if (!response.ok) {
+      throw new Error(`Crypto catalog request failed (${response.status}).`);
+    }
+
+    const rows = (await response.json()) as Array<{
+      binance_symbol?: unknown;
+    }>;
+    const pairs = Array.from(
+      new Set(
+        rows
+          .map((row) =>
+            String(row.binance_symbol ?? "")
+              .trim()
+              .toUpperCase(),
+          )
+          .filter((pair) => VALID_PAIR.test(pair)),
+      ),
+    );
+
+    return pairs.length > 0 ? pairs : CENTRAL_CRYPTO_PAIRS;
+  } catch (error) {
+    console.warn("[crypto-prices] Catalog pair refresh failed; using fallback", {
+      message: error instanceof Error ? error.message : "Unknown error",
+    });
+    return CENTRAL_CRYPTO_PAIRS;
+  }
+}
+
 async function fetchActivePairs() {
-  const response = await fetch(
-    `${BINANCE_MARKET_BASE}/api/v3/exchangeInfo?symbolStatus=TRADING`,
-    {
+  const [catalogPairs, response] = await Promise.all([
+    fetchCatalogPairs(),
+    fetch(`${BINANCE_MARKET_BASE}/api/v3/exchangeInfo?symbolStatus=TRADING`, {
       next: { revalidate: ACTIVE_PAIR_CACHE_SECONDS },
       signal: AbortSignal.timeout(UPSTREAM_TIMEOUT_MS),
-    },
-  );
+    }),
+  ]);
 
   if (!response.ok) {
     throw new Error(`Binance exchange information failed (${response.status}).`);
@@ -65,7 +120,7 @@ async function fetchActivePairs() {
       .filter(Boolean),
   );
 
-  return CENTRAL_CRYPTO_PAIRS.filter((pair) => activeSymbols.has(pair));
+  return catalogPairs.filter((pair) => activeSymbols.has(pair));
 }
 
 async function fetchTickerBatch(symbols: readonly string[]) {
