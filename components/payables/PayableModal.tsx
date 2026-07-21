@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
 import AccountSelect from "@/components/accounts/AccountSelect";
+import { useCurrency } from "@/components/currency/CurrencyProvider";
 import DatePicker from "@/components/ui/date-picker";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
@@ -18,7 +19,7 @@ import {
   financeModalContentClass,
   financePrimaryButtonClass,
 } from "@/components/ui/finance-modal";
-import { BASE_CURRENCY } from "@/lib/currency";
+import { getEditableMoneyValue } from "@/lib/currency-input";
 import { getAppDateKey } from "@/lib/dates";
 import { getUserMutationError } from "@/lib/user-errors";
 
@@ -38,6 +39,9 @@ export interface ExistingPayable {
   item_name: string | null;
   reason: string;
   original_value: number;
+  original_value_input?: number | string | null;
+  currency?: string | null;
+  exchange_rate_to_pkr?: number | string | null;
   due_date: string | null;
   notes: string | null;
   account_id?: string | null;
@@ -49,10 +53,16 @@ interface Props {
   payable?: ExistingPayable;
 }
 
+function formatInputValue(value: number | null) {
+  if (value === null || !Number.isFinite(value)) return "";
+  return value.toFixed(8).replace(/\.?0+$/, "");
+}
+
 export default function PayableModal({ open, onClose, payable }: Props) {
   const supabase = useMemo(() => createClient(), []);
   const router = useRouter();
   const isEditing = !!payable;
+  const { currency, rates, ratesReady } = useCurrency();
 
   const [personName, setPersonName] = useState("");
   const [itemName, setItemName] = useState("");
@@ -68,15 +78,25 @@ export default function PayableModal({ open, onClose, payable }: Props) {
 
   useEffect(() => {
     if (!open) return;
+    const editablePrincipal = payable
+      ? getEditableMoneyValue({
+          amountPkr: payable.original_value,
+          originalAmount: payable.original_value_input,
+          originalCurrency: payable.currency,
+          displayCurrency: currency,
+          rates,
+        })
+      : null;
+
     setPersonName(payable?.person_name ?? "");
     setItemName(payable?.item_name ?? "");
     setReason(payable?.reason ?? "");
-    setOriginalValue(payable ? String(payable.original_value) : "");
+    setOriginalValue(payable ? formatInputValue(editablePrincipal) : "");
     setAccountId(payable?.account_id ?? "");
     setDueDate(payable?.due_date ?? getAppDateKey());
     setNotes(payable?.notes ?? "");
     setError("");
-  }, [open, payable]);
+  }, [currency, open, payable, rates]);
 
   useEffect(() => {
     if (!open) return;
@@ -134,6 +154,10 @@ export default function PayableModal({ open, onClose, payable }: Props) {
       value <= 0
     ) {
       setError("Amount, name, purpose, and account are required.");
+      return;
+    }
+    if (currency !== "PKR" && !ratesReady) {
+      setError("Exchange rates are unavailable. The payable was not saved.");
       return;
     }
 
@@ -195,7 +219,7 @@ export default function PayableModal({ open, onClose, payable }: Props) {
 
         <FinanceModalBody>
           <FinanceFormField
-            label={`Amount (${BASE_CURRENCY})`}
+            label={`Amount (${currency})`}
             htmlFor="payable-original-value"
           >
             <Input
@@ -261,7 +285,11 @@ export default function PayableModal({ open, onClose, payable }: Props) {
           <Button
             type="button"
             onClick={handleSave}
-            disabled={loading || loadingOptions}
+            disabled={
+              loading ||
+              loadingOptions ||
+              (currency !== "PKR" && !ratesReady)
+            }
             loading={loading}
             loadingLabel="Saving payable…"
             className={financePrimaryButtonClass}
