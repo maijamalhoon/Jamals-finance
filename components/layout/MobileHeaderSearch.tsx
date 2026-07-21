@@ -14,6 +14,7 @@ import {
 import { createPortal, flushSync } from "react-dom";
 
 const SEARCH_EASE = [0.16, 1, 0.3, 1] as const;
+const AUTO_CLOSE_DELAY_MS = 6_000;
 
 type MobileHeaderSearchProps = {
   controlsVisible: boolean;
@@ -31,6 +32,7 @@ export default function MobileHeaderSearch({
   const inputRef = useRef<HTMLInputElement>(null);
   const openingPointerRef = useRef<number | null>(null);
   const backdropFrameRef = useRef<number | null>(null);
+  const autoCloseTimerRef = useRef<number | null>(null);
   const [query, setQuery] = useState("");
   const [viewportWidth, setViewportWidth] = useState(390);
   const [backdropReady, setBackdropReady] = useState(false);
@@ -39,6 +41,12 @@ export default function MobileHeaderSearch({
     if (backdropFrameRef.current === null) return;
     window.cancelAnimationFrame(backdropFrameRef.current);
     backdropFrameRef.current = null;
+  }, []);
+
+  const cancelAutoClose = useCallback(() => {
+    if (autoCloseTimerRef.current === null) return;
+    window.clearTimeout(autoCloseTimerRef.current);
+    autoCloseTimerRef.current = null;
   }, []);
 
   const focusInput = useCallback(() => {
@@ -60,12 +68,23 @@ export default function MobileHeaderSearch({
 
   const closeSearch = useCallback(() => {
     cancelBackdropFrame();
+    cancelAutoClose();
     openingPointerRef.current = null;
     inputRef.current?.blur();
     setBackdropReady(false);
     setQuery("");
     onOpenChange(false);
-  }, [cancelBackdropFrame, onOpenChange]);
+  }, [cancelAutoClose, cancelBackdropFrame, onOpenChange]);
+
+  const scheduleAutoClose = useCallback(() => {
+    cancelAutoClose();
+    if (!open || query.trim()) return;
+
+    autoCloseTimerRef.current = window.setTimeout(() => {
+      autoCloseTimerRef.current = null;
+      if (!inputRef.current?.value.trim()) closeSearch();
+    }, AUTO_CLOSE_DELAY_MS);
+  }, [cancelAutoClose, closeSearch, open, query]);
 
   const openSearch = useCallback(() => {
     if (open) return;
@@ -76,6 +95,7 @@ export default function MobileHeaderSearch({
     setBackdropReady(false);
     flushSync(() => onOpenChange(true));
     focusInput();
+    queueMicrotask(focusInput);
   }, [focusInput, onOpenChange, open]);
 
   const handleOpenPointerDown = (
@@ -131,14 +151,16 @@ export default function MobileHeaderSearch({
   useEffect(() => {
     if (!open) {
       setBackdropReady(false);
+      cancelAutoClose();
       return;
     }
 
     const focusFrame = window.requestAnimationFrame(focusInput);
     if (openingPointerRef.current === null) armBackdrop();
+    scheduleAutoClose();
 
     return () => window.cancelAnimationFrame(focusFrame);
-  }, [armBackdrop, focusInput, open]);
+  }, [armBackdrop, cancelAutoClose, focusInput, open, scheduleAutoClose]);
 
   useEffect(() => {
     if (!open) return;
@@ -152,8 +174,11 @@ export default function MobileHeaderSearch({
   }, [closeSearch, open]);
 
   useEffect(() => {
-    return () => cancelBackdropFrame();
-  }, [cancelBackdropFrame]);
+    return () => {
+      cancelBackdropFrame();
+      cancelAutoClose();
+    };
+  }, [cancelAutoClose, cancelBackdropFrame]);
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -161,6 +186,7 @@ export default function MobileHeaderSearch({
 
     if (!trimmedQuery) {
       focusInput();
+      scheduleAutoClose();
       return;
     }
 
@@ -268,6 +294,7 @@ export default function MobileHeaderSearch({
           tabIndex={open ? 0 : -1}
           aria-hidden={!open}
           value={query}
+          onFocus={scheduleAutoClose}
           onChange={(event) => setQuery(event.target.value)}
           placeholder="Search transactions..."
           className={`min-w-0 flex-1 bg-transparent text-[14px] font-medium text-text-primary outline-none placeholder:text-text-tertiary transition-[opacity] duration-200 ${
