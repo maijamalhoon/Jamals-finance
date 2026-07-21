@@ -4,6 +4,7 @@ import { useEffect } from "react";
 
 const ACTION_PATTERN = /^(add|apply|archive|cancel|cash out|choose|confirm|create|delete|download|enable|export|pay|record|refund|remove|resend|reset|restore|retry|save|send|set|sign out|transfer|update|upload|verify|withdraw)\b/i;
 const LOADING_PATTERN = /^(adding|applying|archiving|cancelling|confirming|creating|deleting|downloading|enabling|exporting|paying|processing|recording|refunding|removing|resending|resetting|restoring|retrying|saving|sending|signing out|transferring|updating|uploading|verifying|withdrawing)\b/i;
+const CONFIRMATION_TITLE_PATTERN = /^(archive|cash out|confirm|delete|refund|remove|restore|sign out|transfer|withdraw)\b/i;
 
 function compactText(value: string) {
   return value.replace(/\s+/g, " ").replace(/\.{3,}/g, "…").trim();
@@ -54,7 +55,7 @@ function isConfirmationDialog(dialog: HTMLElement) {
   const title = compactText(
     dialog.querySelector<HTMLElement>('[data-slot="dialog-title"]')?.textContent ?? "",
   );
-  return /^(delete|remove|sign out|confirm)\b/i.test(title);
+  return CONFIRMATION_TITLE_PATTERN.test(title);
 }
 
 function getActionRoots() {
@@ -114,7 +115,9 @@ function markAction(button: HTMLButtonElement) {
   button.dataset.jfFormAction = "true";
   button.dataset.jfFormActionLabel = shortActionLabel(originalLabel);
 
-  if (!button.hasAttribute("aria-label") && originalLabel) {
+  if (button.dataset.jfGlobalGeneratedActionAria === "true") {
+    button.setAttribute("aria-label", originalLabel);
+  } else if (!button.hasAttribute("aria-label") && originalLabel) {
     button.setAttribute("aria-label", originalLabel);
     button.dataset.jfGlobalGeneratedActionAria = "true";
   }
