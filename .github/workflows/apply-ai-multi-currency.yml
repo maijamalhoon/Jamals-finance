@@ -1,0 +1,40 @@
+name: Apply AI multi-currency patch
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/scripts/patch-ai-multi-currency.mjs"
+      - ".github/workflows/apply-ai-multi-currency.yml"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: apply-ai-multi-currency-main
+  cancel-in-progress: true
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: node .github/scripts/patch-ai-multi-currency.mjs
+      - name: Commit patched routes
+        run: |
+          if git diff --quiet; then
+            echo "No patch changes were required."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add app/api/ai-insights/route.ts app/api/ai-insights/chat/route.ts app/api/ai-insights/exact/route.ts
+          git commit -m "Use centralized rates in AI insights"
+          git push origin HEAD:main
