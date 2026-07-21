@@ -60,7 +60,7 @@ jobs:
           exec > >(tee build.log) 2>&1
           set -euo pipefail
 
-          yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" \
+          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" \
             "platforms;android-36" \
             "build-tools;36.0.0" \
             "platform-tools" >/dev/null
@@ -108,6 +108,15 @@ jobs:
           if-no-files-found: error
           retention-days: 1
 
+      - name: Upload build diagnostics
+        if: steps.build.outcome != 'success'
+        uses: actions/upload-artifact@v4
+        with:
+          name: jamals-finance-android-sdk36-diagnostics
+          path: build.log
+          if-no-files-found: warn
+          retention-days: 1
+
       - name: Report final build status
         if: always()
         env:
@@ -115,13 +124,17 @@ jobs:
         run: |
           set -euo pipefail
           status="failed"
-          if [ "$BUILD_OUTCOME" = "success" ]; then status="completed"; fi
+          artifact="jamals-finance-android-sdk36-diagnostics"
+          if [ "$BUILD_OUTCOME" = "success" ]; then
+            status="completed"
+            artifact="jamals-finance-android-sdk36-unsigned"
+          fi
           mkdir -p android-twa/build-output
           cat > android-twa/build-output/sdk36-build-handoff.json <<JSON
           {
             "status": "${status}",
             "runId": "${GITHUB_RUN_ID}",
-            "artifactName": "jamals-finance-android-sdk36-unsigned",
+            "artifactName": "${artifact}",
             "sourceCommit": "${GITHUB_SHA}"
           }
           JSON
