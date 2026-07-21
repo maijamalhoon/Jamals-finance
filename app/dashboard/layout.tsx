@@ -47,6 +47,8 @@ import "./transaction-modal-viewport.css";
 import "./card-borderless-policy.css";
 // Dashboard overview typography/icons stay isolated from every nested route.
 import "./dashboard-overview-type-icons.css";
+// Keep compact portfolio values inside the dashboard investment donut.
+import "./investment-donut-value-fit.css";
 // Keep route-specific content typography last so it cannot leak into other pages.
 import "./content-typography.css";
 // Accounts and reports are the final untouched content routes in the type/icon audit.
