@@ -1,11 +1,14 @@
 /*
  * Global form-control height authority.
  * Keeps every single-line input, select, picker and segmented option compact
- * and identical without changing textarea sizing, submit buttons, data or logic.
+ * and identical without changing textarea sizing, data, validation or logic.
  */
 
 :root {
   --jf-global-form-control-height: 2.5rem;
+  --jf-global-date-control-height: 2.25rem;
+  --jf-global-final-action-height: 2.5rem;
+  --jf-global-final-action-radius: 0.95rem;
 }
 
 :is(form, [data-slot="dialog-content"], .finance-modal-content)
@@ -27,7 +30,31 @@
   max-height: var(--jf-global-form-control-height) !important;
 }
 
+/* Every real date field, including the touch scroll wheel, uses one height. */
+:is(form, [data-slot="dialog-content"], .finance-modal-content)
+  :is(
+    input[aria-haspopup="dialog"][aria-controls$="-calendar"],
+    [role="spinbutton"][aria-haspopup="dialog"][aria-controls$="-calendar"]
+  ) {
+  box-sizing: border-box !important;
+  height: var(--jf-global-date-control-height) !important;
+  min-height: var(--jf-global-date-control-height) !important;
+  max-height: var(--jf-global-date-control-height) !important;
+}
+
 /* Portal-rendered select choices keep the same compact rhythm. */
 [data-slot="select-content"] [data-slot="select-item"] {
   min-height: var(--jf-global-form-control-height) !important;
+}
+
+/* Only the final primary action at the bottom of a form is compact and equal. */
+.finance-modal-content form > .finance-modal-footer:last-child > button:last-child,
+.finance-modal-content form > .finance-modal-footer:last-child > :last-child button:last-child,
+.finance-modal-content form > .finance-modal-body:last-child > button[type="submit"]:last-child,
+.finance-modal-content form > button[type="submit"]:last-child {
+  box-sizing: border-box !important;
+  height: var(--jf-global-final-action-height) !important;
+  min-height: var(--jf-global-final-action-height) !important;
+  max-height: var(--jf-global-final-action-height) !important;
+  border-radius: var(--jf-global-final-action-radius) !important;
 }
