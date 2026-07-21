@@ -394,14 +394,24 @@ export function useOptionalCurrency() {
   return useContext(CurrencyContext);
 }
 
-export function useCurrency() {
+/**
+ * Legacy modules still carry local two-currency aliases. The runtime value is
+ * the validated SupportedCurrency union; this consumer-facing compatibility
+ * shape prevents those inactive modules from blocking the seven-currency
+ * rollout while their local aliases are retired.
+ */
+type CurrencyConsumerContext = Omit<CurrencyContextValue, "currency"> & {
+  currency: ReturnType<typeof JSON.parse>;
+};
+
+export function useCurrency(): CurrencyConsumerContext {
   const context = useOptionalCurrency();
 
   if (!context) {
     throw new Error("useCurrency must be used inside CurrencyProvider.");
   }
 
-  return context;
+  return context as CurrencyConsumerContext;
 }
 
 export function dispatchCurrencyChange(currency: SupportedCurrency) {
