@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { toast } from "sonner";
 
 import AndroidAppManager from "@/components/pwa/AndroidAppManager";
+import WindowsAppManager from "@/components/pwa/WindowsAppManager";
 import AcceleratedMotionPerformance from "@/components/performance/AcceleratedMotionPerformance";
 
 declare global {
@@ -87,6 +88,7 @@ export default function PWARegister() {
     <>
       <AcceleratedMotionPerformance />
       <AndroidAppManager />
+      <WindowsAppManager />
     </>
   );
 }
