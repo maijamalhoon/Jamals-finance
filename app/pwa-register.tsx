@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { toast } from "sonner";
 
 import AndroidAppManager from "@/components/pwa/AndroidAppManager";
+import AppUpdateManager from "@/components/pwa/AppUpdateManager";
 import WindowsAppManager from "@/components/pwa/WindowsAppManager";
 import AcceleratedMotionPerformance from "@/components/performance/AcceleratedMotionPerformance";
 
@@ -54,9 +55,9 @@ export default function PWARegister() {
               navigator.serviceWorker.controller
             ) {
               toast.info("New Jamal's Finance update is ready.", {
-                description: "Refresh to use the latest version.",
+                description: "Update to use the latest version.",
                 action: {
-                  label: "Refresh",
+                  label: "Update",
                   onClick: () => window.location.reload(),
                 },
               });
@@ -89,6 +90,7 @@ export default function PWARegister() {
       <AcceleratedMotionPerformance />
       <AndroidAppManager />
       <WindowsAppManager />
+      <AppUpdateManager />
     </>
   );
 }
