@@ -24,6 +24,10 @@ interface GoalRow extends ExistingGoal {
 
 export const dynamic = "force-dynamic";
 
+function firstRelation<T>(value: T | T[] | null | undefined): T | null {
+  return Array.isArray(value) ? (value[0] ?? null) : (value ?? null);
+}
+
 export default async function GoalsPage() {
   const supabase = await createClient();
 
@@ -38,13 +42,13 @@ export default async function GoalsPage() {
         deadline,
         icon,
         account_id,
-        linked_account:account_id(id, name, type),
-        goal_contributions(
+        linked_account:accounts!goals_account_owner_fkey(id, name, type),
+        goal_contributions!goal_contributions_goal_owner_fkey(
           id,
           amount,
           contributed_at,
           note,
-          contribution_account:account_id(id, name, type)
+          contribution_account:accounts!goal_contributions_account_owner_fkey(id, name, type)
         )
       `)
       .order("created_at", { ascending: false })
@@ -71,20 +75,20 @@ export default async function GoalsPage() {
 
   const list = (goals ?? []).map((goal) => {
     const raw = goal as unknown as Omit<GoalRow, "linked_account" | "goal_contributions"> & {
-      linked_account: GoalAccount[];
+      linked_account: GoalAccount | GoalAccount[] | null;
       goal_contributions: Array<
         Omit<GoalContributionRow, "contribution_account"> & {
-          contribution_account: GoalAccount[];
+          contribution_account: GoalAccount | GoalAccount[] | null;
         }
       >;
     };
 
     return {
       ...raw,
-      linked_account: raw.linked_account?.[0] ?? null,
+      linked_account: firstRelation(raw.linked_account),
       goal_contributions: (raw.goal_contributions ?? []).map((contribution) => ({
         ...contribution,
-        contribution_account: contribution.contribution_account?.[0] ?? null,
+        contribution_account: firstRelation(contribution.contribution_account),
       })),
     } satisfies GoalRow;
   });
