@@ -1,0 +1,29 @@
+/* Keep compact portfolio amounts inside the dashboard investment donut only. */
+section.finance-reference-card:has(a[href="/dashboard/investments"])
+  .pointer-events-none.absolute.inset-0
+  > div {
+  width: 50%;
+  max-width: 50%;
+  padding-inline: 0;
+}
+
+section.finance-reference-card:has(a[href="/dashboard/investments"])
+  .pointer-events-none.absolute.inset-0
+  > div
+  > p:first-child {
+  max-width: 100%;
+  overflow: hidden;
+  white-space: nowrap;
+  font-size: clamp(0.9rem, 4vw, 1.35rem) !important;
+  letter-spacing: -0.055em !important;
+  text-overflow: clip;
+}
+
+@media (min-width: 768px) {
+  section.finance-reference-card:has(a[href="/dashboard/investments"])
+    .pointer-events-none.absolute.inset-0
+    > div
+    > p:first-child {
+    font-size: clamp(1rem, 1.7vw, 1.4rem) !important;
+  }
+}
