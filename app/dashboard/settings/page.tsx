@@ -26,6 +26,7 @@ import "./settings-layout-alignment.css";
 import "./settings-profile-security-modal-polish.css";
 import "./settings-card-surface-unify.css";
 import "./settings-card-label-only.css";
+import "./settings-mobile-modal-centering.css";
 
 export const dynamic = "force-dynamic";
 
