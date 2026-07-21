@@ -39,8 +39,13 @@ import {
 import { createClient } from "@/lib/supabase/client";
 
 const CURRENCY_OPTIONS = [
-  { value: "PKR", label: "PKR" },
-  { value: "USD", label: "USD" },
+  { value: "PKR", label: "PKR · Pakistani Rupee" },
+  { value: "USD", label: "USD · US Dollar" },
+  { value: "INR", label: "INR · Indian Rupee" },
+  { value: "EUR", label: "EUR · Euro" },
+  { value: "GBP", label: "GBP · British Pound" },
+  { value: "JPY", label: "JPY · Japanese Yen" },
+  { value: "CNY", label: "CNY · Chinese Yuan" },
 ] as const;
 
 const DATE_FORMAT_OPTIONS = [
