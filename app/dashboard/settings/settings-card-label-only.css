@@ -1,0 +1,52 @@
+/*
+ * Settings card copy cleanup.
+ *
+ * Keep the Appearance controls unchanged. Only action-card subtitles are hidden,
+ * while their primary labels stay vertically centered inside each row.
+ */
+
+.settings-page-polish
+  .settings-reference-profile-security
+  .settings-reference-row-description,
+.settings-page-polish
+  .settings-reference-data
+  .settings-reference-row-description,
+.settings-page-polish
+  .settings-reference-preferences-wrapper
+  .finance-panel
+  > button
+  > span.min-w-0.flex-1
+  > span:last-child,
+.settings-page-polish
+  .settings-reference-categories-wrapper
+  .finance-panel
+  > button
+  > span.min-w-0.flex-1
+  > span:last-child {
+  display: none !important;
+}
+
+.settings-page-polish
+  .settings-reference-profile-security
+  .settings-reference-row-copy,
+.settings-page-polish
+  .settings-reference-data
+  .settings-reference-row-copy {
+  align-self: stretch;
+  justify-content: center;
+}
+
+.settings-page-polish
+  .settings-reference-preferences-wrapper
+  .finance-panel
+  > button
+  > span.min-w-0.flex-1,
+.settings-page-polish
+  .settings-reference-categories-wrapper
+  .finance-panel
+  > button
+  > span.min-w-0.flex-1 {
+  display: flex;
+  align-self: stretch;
+  align-items: center;
+}
