@@ -3,6 +3,7 @@
 import { type CSSProperties, useEffect, useState } from "react";
 import { toast } from "sonner";
 
+import { useCurrency } from "@/components/currency/CurrencyProvider";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
@@ -23,7 +24,6 @@ import {
   financeModalContentClass,
   financePrimaryButtonClass,
 } from "@/components/ui/finance-modal";
-import { BASE_CURRENCY } from "@/lib/currency";
 import {
   getAutomaticAccountVisual,
   shouldAttemptAccountLogo,
@@ -71,6 +71,11 @@ function getPersistedAccountIconKey(
   return `lookup:${encodeURIComponent(name)}`;
 }
 
+function formatInputValue(value: number | null) {
+  if (value === null || !Number.isFinite(value)) return "";
+  return value.toFixed(8).replace(/\.?0+$/, "");
+}
+
 export default function AccountModal({
   open,
   onClose,
@@ -79,6 +84,7 @@ export default function AccountModal({
 }: Props) {
   const supabase = createClient();
   const isEditing = Boolean(account);
+  const { currency, ratesReady, fromBaseCurrency } = useCurrency();
 
   const [name, setName] = useState("");
   const [accountNumber, setAccountNumber] = useState("");
@@ -96,7 +102,7 @@ export default function AccountModal({
       setAccountKind(
         account.account_kind === "current" ? "current" : "savings",
       );
-      setBalance(String(account.balance ?? 0));
+      setBalance(formatInputValue(fromBaseCurrency(Number(account.balance ?? 0))));
     } else {
       setName("");
       setAccountNumber("");
@@ -105,7 +111,7 @@ export default function AccountModal({
     }
 
     setError("");
-  }, [account, open]);
+  }, [account, currency, fromBaseCurrency, open, ratesReady]);
 
   async function handleSave() {
     if (loading) return;
@@ -113,6 +119,11 @@ export default function AccountModal({
     const cleanName = name.trim();
     if (!cleanName) {
       setError("Enter an account name.");
+      return;
+    }
+
+    if (!isEditing && currency !== "PKR" && !ratesReady) {
+      setError("Exchange rates are unavailable. The opening balance was not saved.");
       return;
     }
 
@@ -241,8 +252,8 @@ export default function AccountModal({
           <FinanceFormField
             label={
               isEditing
-                ? `Current Balance (${BASE_CURRENCY})`
-                : `Opening Balance (${BASE_CURRENCY})`
+                ? `Current Balance (${currency})`
+                : `Opening Balance (${currency})`
             }
             htmlFor="account-balance"
           >
@@ -265,7 +276,7 @@ export default function AccountModal({
           <Button
             type="button"
             onClick={handleSave}
-            disabled={loading}
+            disabled={loading || (!isEditing && currency !== "PKR" && !ratesReady)}
             loading={loading}
             loadingLabel="Saving account…"
             className={financePrimaryButtonClass}
