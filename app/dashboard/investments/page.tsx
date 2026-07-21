@@ -65,7 +65,7 @@ export default async function InvestmentsPage() {
             action={
               <AddInvestmentButton
                 label="Add an investment"
-                showIcon={false}
+                icon="plus"
               />
             }
           />
