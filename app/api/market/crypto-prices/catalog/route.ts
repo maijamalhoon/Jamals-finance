@@ -1,4 +1,7 @@
-import { CRYPTO_CATALOG } from "@/lib/market/crypto-catalog";
+import {
+  CRYPTO_CATALOG,
+  type CryptoCatalogAsset,
+} from "@/lib/market/crypto-catalog";
 import {
   buildCryptoMarketCatalog,
   MINIMUM_CRYPTO_MARKET_CAP_USD,
@@ -30,14 +33,19 @@ type CatalogSnapshot = {
   source: "coingecko" | "local-fallback";
   stale: boolean;
   minimumMarketCapUsd: number;
-  assets: typeof CRYPTO_CATALOG;
+  assets: readonly CryptoCatalogAsset[];
+};
+
+type ProviderConfig = {
+  baseUrl: string;
+  headers: Record<string, string>;
 };
 
 let warmSnapshot: CatalogSnapshot | null = null;
 let inFlightSnapshot: Promise<CatalogSnapshot> | null = null;
 let providerBlockedUntil = 0;
 
-function providerConfig() {
+function providerConfig(): ProviderConfig {
   const proKey = process.env.COINGECKO_PRO_API_KEY?.trim();
   if (proKey) {
     return {
@@ -140,7 +148,7 @@ async function refreshSnapshot(): Promise<CatalogSnapshot> {
   return snapshot;
 }
 
-async function getSnapshot() {
+async function getSnapshot(): Promise<CatalogSnapshot> {
   if (!inFlightSnapshot) {
     inFlightSnapshot = refreshSnapshot().finally(() => {
       inFlightSnapshot = null;
@@ -163,7 +171,7 @@ async function getSnapshot() {
 
     return {
       generatedAt: Date.now(),
-      source: "local-fallback" as const,
+      source: "local-fallback",
       stale: true,
       minimumMarketCapUsd: MINIMUM_CRYPTO_MARKET_CAP_USD,
       assets: CRYPTO_CATALOG,
