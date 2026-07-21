@@ -61,6 +61,53 @@ const GLOBAL_FORM_AUDIT_STYLE = `
     overflow: hidden !important;
   }
 
+  /* Settings keeps purpose-specific width caps while sharing the same center,
+   * safe area and scroll behavior as every other form. */
+  html body :is(
+      [data-slot="dialog-content"].finance-modal-content:has(#settings-category-name),
+      [data-slot="dialog-content"].finance-modal-content:has(#persistent-category-name),
+      [data-slot="dialog-content"].finance-modal-content:not(:has(#settings-category-name)):has([role="tablist"])
+    ) {
+    width: min(
+      calc(
+        100vw - 1rem - env(safe-area-inset-left) -
+          env(safe-area-inset-right)
+      ),
+      46rem
+    ) !important;
+  }
+
+  html body :is(
+      [data-slot="dialog-content"].finance-modal-content:has(.settings-security-panel),
+      [data-slot="dialog-content"].finance-modal-content.settings-account-security-hard
+    ) {
+    width: min(
+      calc(
+        100vw - 1rem - env(safe-area-inset-left) -
+          env(safe-area-inset-right)
+      ),
+      36rem
+    ) !important;
+  }
+
+  html body :is(
+      [data-slot="dialog-content"].finance-modal-content:has(#settings-currency-select),
+      [data-slot="dialog-content"].finance-modal-content:has(#settings-date-format-select),
+      [data-slot="dialog-content"].finance-modal-content:has(#settings-reference-display-name),
+      [data-slot="dialog-content"].finance-modal-content:has(#custom-profile-name),
+      [data-slot="dialog-content"].finance-modal-content.settings-profile-details-hard,
+      [data-slot="dialog-content"].finance-modal-content.settings-currency-hard,
+      [data-slot="dialog-content"].finance-modal-content.settings-date-format-hard
+    ) {
+    width: min(
+      calc(
+        100vw - 1rem - env(safe-area-inset-left) -
+          env(safe-area-inset-right)
+      ),
+      32rem
+    ) !important;
+  }
+
   html body [data-slot="dialog-content"].finance-modal-content.finance-modal-content.finance-modal-content
     :is(form, .finance-modal-body, .finance-modal-footer),
   html body [role="dialog"].finance-modal-content.finance-modal-content.finance-modal-content
