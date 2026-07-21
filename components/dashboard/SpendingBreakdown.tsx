@@ -14,6 +14,8 @@ import EmptyState from "@/components/ui/empty-state";
 import type { DashboardAvailability } from "@/lib/dashboard-financial-semantics";
 import { CHART_COLOR_PALETTE } from "@/lib/theme-colors";
 
+import styles from "./SpendingBreakdown.module.css";
+
 interface SpendingData {
   id?: string;
   name: string;
@@ -253,8 +255,15 @@ export default function SpendingBreakdown({
             >
               <div className="flex min-w-0 items-center gap-2.5">
                 <span
-                  className="size-2.5 shrink-0 rounded-full"
-                  style={{ backgroundColor: item.accent }}
+                  aria-hidden="true"
+                  className={styles.dot}
+                  style={
+                    {
+                      "--spending-dot-accent": item.accent,
+                      "--spending-dot-delay": `${index * -0.48}s`,
+                      backgroundColor: item.accent,
+                    } as CSSProperties
+                  }
                 />
                 <span className="truncate text-[12px] font-semibold text-text-primary sm:text-[13px] 2xl:text-[12px]">
                   {item.name}
