@@ -1,4 +1,5 @@
-/* Keep compact portfolio amounts inside the dashboard investment donut only. */
+/* Dashboard investment card: keep the amount fitted and make the full card
+   read cleanly on mobile, tablet, and desktop without changing its data or logic. */
 section.finance-reference-card:has(a[href="/dashboard/investments"])
   .pointer-events-none.absolute.inset-0
   > div {
@@ -19,11 +20,216 @@ section.finance-reference-card:has(a[href="/dashboard/investments"])
   text-overflow: clip;
 }
 
+section.finance-reference-card:has(a[href="/dashboard/investments"]) {
+  isolation: isolate;
+}
+
+section.finance-reference-card:has(a[href="/dashboard/investments"]) > header {
+  align-items: center;
+}
+
+section.finance-reference-card:has(a[href="/dashboard/investments"])
+  > header
+  > div:first-child {
+  gap: 0.65rem;
+}
+
+section.finance-reference-card:has(a[href="/dashboard/investments"])
+  > header
+  > div:first-child
+  > span:first-child {
+  display: grid;
+  width: 2.25rem;
+  height: 2.25rem;
+  flex: 0 0 2.25rem;
+  place-items: center;
+  border-radius: 0.8rem;
+  background: color-mix(in srgb, var(--text-secondary) 8%, transparent) !important;
+}
+
+section.finance-reference-card:has(a[href="/dashboard/investments"])
+  > header
+  + div {
+  margin-top: 1rem !important;
+}
+
+section.finance-reference-card:has(a[href="/dashboard/investments"])
+  > header
+  + div
+  > div:first-child
+  > div:nth-of-type(2) {
+  width: min(100%, 16rem);
+  min-height: 3.25rem;
+  padding: 0.55rem 0.8rem;
+  border-radius: 1rem;
+  background: color-mix(in srgb, var(--text-secondary) 5%, transparent);
+}
+
+section.finance-reference-card:has(a[href="/dashboard/investments"])
+  > header
+  + div
+  > div:nth-child(2)
+  > div {
+  background: color-mix(in srgb, var(--text-secondary) 4.5%, transparent) !important;
+}
+
+@media (max-width: 767px) {
+  section.finance-reference-card:has(a[href="/dashboard/investments"]) {
+    height: auto !important;
+    padding: 1rem !important;
+  }
+
+  section.finance-reference-card:has(a[href="/dashboard/investments"])
+    > header
+    + div {
+    min-height: 0 !important;
+    flex: none !important;
+    gap: 0.95rem !important;
+  }
+
+  section.finance-reference-card:has(a[href="/dashboard/investments"])
+    > header
+    + div
+    > div:first-child {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  section.finance-reference-card:has(a[href="/dashboard/investments"])
+    > header
+    + div
+    > div:first-child
+    > div:nth-of-type(1) {
+    width: min(68vw, 14.75rem) !important;
+    max-width: 14.75rem !important;
+  }
+
+  section.finance-reference-card:has(a[href="/dashboard/investments"])
+    > header
+    + div
+    > div:first-child
+    > div:nth-of-type(2) {
+    margin-top: 0.35rem !important;
+  }
+
+  section.finance-reference-card:has(a[href="/dashboard/investments"])
+    > header
+    + div
+    > div:nth-child(2) {
+    min-width: 0;
+  }
+
+  section.finance-reference-card:has(a[href="/dashboard/investments"])
+    > header
+    + div
+    > div:nth-child(2)
+    > *
+    + * {
+    margin-top: 0.55rem !important;
+  }
+
+  section.finance-reference-card:has(a[href="/dashboard/investments"])
+    > header
+    + div
+    > div:nth-child(2)
+    > div {
+    display: grid !important;
+    grid-template-areas:
+      "logo identity value"
+      "logo progress value" !important;
+    grid-template-columns: 2.125rem minmax(0, 1fr) auto !important;
+    column-gap: 0.75rem !important;
+    row-gap: 0.3rem !important;
+    min-height: 4.5rem;
+    padding: 0.72rem 0.78rem !important;
+    border-radius: 1rem !important;
+  }
+
+  section.finance-reference-card:has(a[href="/dashboard/investments"])
+    > header
+    + div
+    > div:nth-child(2)
+    > div
+    > :nth-child(1) {
+    grid-area: logo;
+    align-self: center;
+  }
+
+  section.finance-reference-card:has(a[href="/dashboard/investments"])
+    > header
+    + div
+    > div:nth-child(2)
+    > div
+    > :nth-child(2) {
+    grid-area: identity;
+    align-self: end;
+  }
+
+  section.finance-reference-card:has(a[href="/dashboard/investments"])
+    > header
+    + div
+    > div:nth-child(2)
+    > div
+    > :nth-child(3) {
+    grid-area: progress;
+    grid-column: auto !important;
+    align-self: start;
+  }
+
+  section.finance-reference-card:has(a[href="/dashboard/investments"])
+    > header
+    + div
+    > div:nth-child(2)
+    > div
+    > :nth-child(4) {
+    grid-area: value;
+    align-self: center;
+    padding-left: 0.35rem;
+  }
+
+  section.finance-reference-card:has(a[href="/dashboard/investments"])
+    > header
+    + div
+    > div:nth-child(2)
+    > div
+    > :nth-child(3)
+    > span {
+    height: 0.75rem;
+  }
+
+  section.finance-reference-card:has(a[href="/dashboard/investments"])
+    > header
+    + div
+    > div:nth-child(2)
+    > div
+    > :nth-child(3)
+    > span
+    > span {
+    height: 0.3rem;
+  }
+}
+
 @media (min-width: 768px) {
   section.finance-reference-card:has(a[href="/dashboard/investments"])
     .pointer-events-none.absolute.inset-0
     > div
     > p:first-child {
     font-size: clamp(1rem, 1.7vw, 1.4rem) !important;
+  }
+
+  section.finance-reference-card:has(a[href="/dashboard/investments"])
+    > header
+    + div {
+    column-gap: clamp(1rem, 2vw, 1.5rem) !important;
+  }
+
+  section.finance-reference-card:has(a[href="/dashboard/investments"])
+    > header
+    + div
+    > div:nth-child(2)
+    > div {
+    padding-block: 0.72rem !important;
   }
 }
