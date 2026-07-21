@@ -98,11 +98,13 @@ function normalizeField(
   if (!hasOwn(row, amountField)) return { ok: true, row };
 
   const explicitCurrency = row[metadata.currencyField];
-  const inputCurrency = isSupportedCurrency(
-    typeof explicitCurrency === "string" ? explicitCurrency : null,
-  )
-    ? explicitCurrency
-    : context.currency;
+  const inputCurrency = (
+    isSupportedCurrency(
+      typeof explicitCurrency === "string" ? explicitCurrency : null,
+    )
+      ? explicitCurrency
+      : context.currency
+  ) as SupportedCurrency;
   const originalValue = hasOwn(row, metadata.originalField)
     ? row[metadata.originalField]
     : row[amountField];
