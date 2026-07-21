@@ -41,7 +41,7 @@ export default async function ExpensesPage({
 
   if (expenses.length === 0) {
     return (
-      <div className="space-y-5" data-expenses-page>
+      <div data-expenses-page className="space-y-5 pb-8">
         <AddExpenseButton />
         <div className="py-3 sm:py-6">
           <EmptyState
@@ -66,7 +66,7 @@ export default async function ExpensesPage({
   );
 
   return (
-    <div data-expenses-page>
+    <div data-expenses-page className="pb-8">
       <TransactionTypeOverview
         tone="expense"
         action={<AddExpenseButton />}
