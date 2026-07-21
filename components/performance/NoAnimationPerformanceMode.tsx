@@ -138,13 +138,7 @@ export default function AnimationPerformanceMode() {
     const getActiveMode = () => getDocumentAnimationMode();
 
     const prefetchRoute = (href: string) => {
-      if (
-        !isPerformanceAnimationMode(getActiveMode()) ||
-        href === pathname ||
-        prefetchedDashboardRoutes.has(href)
-      ) {
-        return;
-      }
+      if (href === pathname || prefetchedDashboardRoutes.has(href)) return;
 
       prefetchedDashboardRoutes.add(href);
 
@@ -157,7 +151,6 @@ export default function AnimationPerformanceMode() {
     };
 
     const preloadModal = (key: DashboardModalKey) => {
-      if (!isPerformanceAnimationMode(getActiveMode())) return;
       void preloadDashboardModal(key).catch(() => undefined);
     };
 
@@ -233,15 +226,16 @@ export default function AnimationPerformanceMode() {
       cancelScheduledWork();
 
       const mode = getActiveMode();
-      if (
-        !isPerformanceAnimationMode(mode) ||
-        document.visibilityState !== "visible"
-      ) {
+      if (document.visibilityState !== "visible") {
         detachIntentListeners();
         return;
       }
 
+      // Standard mode stays lightweight: no automatic bulk warmup, but the next
+      // page or form is fetched as soon as the user shows navigation intent.
       attachIntentListeners();
+      if (!isPerformanceAnimationMode(mode)) return;
+
       const warm = () => runBoundedWarmup(mode);
 
       if (typeof window.requestIdleCallback === "function") {
@@ -256,14 +250,8 @@ export default function AnimationPerformanceMode() {
       }
     };
 
-    const handleAnimationModeChange = (event: Event) => {
-      const nextMode = (event as CustomEvent<AnimationMode>).detail;
-      if (isPerformanceAnimationMode(nextMode)) {
-        warmPerformanceExperience();
-      } else {
-        cancelScheduledWork();
-        detachIntentListeners();
-      }
+    const handleAnimationModeChange = () => {
+      warmPerformanceExperience();
     };
 
     const handleVisibilityChange = () => {
