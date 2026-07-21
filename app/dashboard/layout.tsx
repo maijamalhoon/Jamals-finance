@@ -5,7 +5,6 @@ import { Suspense } from "react";
 import { CurrencyProvider } from "@/components/currency/CurrencyProvider";
 import ConnectionStatus from "@/components/layout/ConnectionStatus";
 import DashboardContentScope from "@/components/layout/DashboardContentScope";
-import FloatingActions from "@/components/layout/FloatingActions";
 import MobileScrollContactGuard from "@/components/layout/MobileScrollContactGuard";
 import NotificationCenter, {
   NotificationCenterLoading,
@@ -180,8 +179,6 @@ export default async function DashboardLayout({
           >
             <DashboardContentScope>{children}</DashboardContentScope>
           </main>
-
-          <FloatingActions />
         </div>
       </div>
     </CurrencyProvider>
