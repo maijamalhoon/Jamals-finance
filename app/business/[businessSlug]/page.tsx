@@ -3,12 +3,12 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import {
   ArrowLeft,
+  ArrowRight,
   BarChart3,
   BookOpenCheck,
   Boxes,
   Building2,
   ContactRound,
-  FileText,
   Handshake,
   ReceiptText,
   ShieldCheck,
@@ -41,44 +41,51 @@ const MODULES = [
   {
     key: "accounting",
     label: "Accounting",
-    description: "Chart of accounts, journals, ledgers, and financial statements.",
+    description: "Chart of accounts, journals, ledgers, trial balance, and financial controls.",
     icon: BookOpenCheck,
+    route: "accounting",
   },
   {
     key: "contacts",
     label: "Contacts",
     description: "Customers, suppliers, contact people, balances, and statements.",
     icon: ContactRound,
+    route: null,
   },
   {
     key: "sales",
     label: "Sales & invoices",
     description: "Quotations, invoices, receipts, payments, returns, and credit notes.",
     icon: ReceiptText,
+    route: null,
   },
   {
     key: "purchases",
     label: "Purchases",
     description: "Purchase orders, supplier bills, payments, and purchase returns.",
     icon: ShoppingCart,
+    route: null,
   },
   {
     key: "inventory",
     label: "Inventory",
     description: "Products, warehouses, stock movements, valuation, and reorder control.",
     icon: Boxes,
+    route: null,
   },
   {
     key: "crm",
     label: "CRM",
     description: "Leads, opportunities, activities, follow-ups, and sales ownership.",
     icon: Handshake,
+    route: null,
   },
   {
     key: "reports",
     label: "Reports",
     description: "Profit and loss, balance sheet, cash flow, tax, and operations reports.",
     icon: BarChart3,
+    route: null,
   },
 ] as const;
 
@@ -205,31 +212,25 @@ export default async function BusinessWorkspacePage({
         </header>
 
         <section className="mt-8">
-          <div className="flex flex-wrap items-end justify-between gap-3">
-            <div>
-              <p className="text-xs font-black uppercase tracking-[0.14em] text-primary">
-                ERP foundation
-              </p>
-              <h2 className="mt-1 text-xl font-black tracking-tight text-text-primary sm:text-2xl">
-                Modules selected for this business
-              </h2>
-              <p className="mt-2 max-w-3xl text-sm leading-6 text-text-secondary">
-                These modules are configured from the nature of business. Accounting rules and
-                operational screens will be implemented on top of this tenant-safe foundation.
-              </p>
-            </div>
+          <div>
+            <p className="text-xs font-black uppercase tracking-[0.14em] text-primary">
+              ERP foundation
+            </p>
+            <h2 className="mt-1 text-xl font-black tracking-tight text-text-primary sm:text-2xl">
+              Modules selected for this business
+            </h2>
+            <p className="mt-2 max-w-3xl text-sm leading-6 text-text-secondary">
+              Modules are configured from the nature of business. Accounting is live first because
+              every invoice, payment, purchase, and stock movement must post through it.
+            </p>
           </div>
 
           <div className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
             {MODULES.map((module) => {
               const Icon = module.icon;
               const enabled = enabledModules[module.key] === true;
-
-              return (
-                <article
-                  key={module.key}
-                  className="rounded-[var(--radius-card)] bg-surface px-5 py-5 shadow-[var(--shadow-sm)]"
-                >
+              const moduleContent = (
+                <>
                   <div className="flex items-start justify-between gap-4">
                     <span
                       className={`inline-flex size-11 items-center justify-center rounded-[var(--radius-button)] ${
@@ -240,22 +241,49 @@ export default async function BusinessWorkspacePage({
                     >
                       <Icon aria-hidden="true" className="size-5" />
                     </span>
-                    <span
-                      className={`rounded-full px-2.5 py-1 text-[11px] font-black ${
-                        enabled
-                          ? "bg-success-soft text-success"
-                          : "bg-surface-secondary text-text-secondary"
-                      }`}
-                    >
-                      {enabled ? "Enabled" : "Not required"}
-                    </span>
+                    {enabled && module.route ? (
+                      <ArrowRight
+                        aria-hidden="true"
+                        className="size-4 text-primary transition-transform group-hover:translate-x-0.5"
+                      />
+                    ) : (
+                      <span
+                        className={`rounded-full px-2.5 py-1 text-[11px] font-black ${
+                          enabled
+                            ? "bg-success-soft text-success"
+                            : "bg-surface-secondary text-text-secondary"
+                        }`}
+                      >
+                        {enabled ? "Enabled" : "Not required"}
+                      </span>
+                    )}
                   </div>
-                  <h3 className="mt-5 text-base font-black text-text-primary">
-                    {module.label}
-                  </h3>
+                  <h3 className="mt-5 text-base font-black text-text-primary">{module.label}</h3>
                   <p className="mt-2 text-sm leading-6 text-text-secondary">
                     {module.description}
                   </p>
+                  {enabled && module.route ? (
+                    <span className="mt-4 inline-flex text-sm font-black text-primary">
+                      Open module
+                    </span>
+                  ) : null}
+                </>
+              );
+
+              return enabled && module.route ? (
+                <Link
+                  key={module.key}
+                  href={`/business/${business.slug}/${module.route}`}
+                  className="finance-focus group rounded-[var(--radius-card)] bg-surface px-5 py-5 shadow-[var(--shadow-sm)] transition-[transform,box-shadow] hover:-translate-y-0.5 hover:shadow-[var(--shadow-md)]"
+                >
+                  {moduleContent}
+                </Link>
+              ) : (
+                <article
+                  key={module.key}
+                  className="rounded-[var(--radius-card)] bg-surface px-5 py-5 shadow-[var(--shadow-sm)]"
+                >
+                  {moduleContent}
                 </article>
               );
             })}
@@ -264,13 +292,13 @@ export default async function BusinessWorkspacePage({
 
         <section className="mt-8 rounded-[var(--radius-card)] bg-primary-soft px-5 py-5 text-primary sm:px-6">
           <div className="flex items-start gap-3">
-            <FileText aria-hidden="true" className="mt-0.5 size-5 shrink-0" />
+            <BookOpenCheck aria-hidden="true" className="mt-0.5 size-5 shrink-0" />
             <div>
-              <h2 className="font-black">Next accounting implementation layer</h2>
+              <h2 className="font-black">Accounting source of truth is active</h2>
               <p className="mt-1 text-sm leading-6 opacity-80">
-                Chart of accounts, balanced journal entries, posting periods, reversals, and
-                financial statements will become the source of truth before invoices or stock can
-                affect reports.
+                Balanced journals, fiscal periods, currency conversion, immutable posting, and trial
+                balance are now available. Operational modules will post into this ledger instead of
+                calculating financial results independently.
               </p>
             </div>
           </div>
