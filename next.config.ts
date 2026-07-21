@@ -28,6 +28,7 @@ const contentSecurityPolicy = [
   [
     "img-src 'self' data: blob:",
     "https://coin-images.coingecko.com",
+    "https://cdn.jsdelivr.net",
     "https://www.google.com",
     "https://commons.wikimedia.org",
     "https://upload.wikimedia.org",
