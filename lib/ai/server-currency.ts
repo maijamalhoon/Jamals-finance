@@ -21,11 +21,13 @@ export async function getServerCurrencyContext(
   requestedCurrency: unknown,
 ): Promise<ServerCurrencyContext> {
   const snapshot = await getExchangeRateSnapshot();
-  const currency =
-    typeof requestedCurrency === "string" &&
-    isSupportedCurrency(requestedCurrency.toUpperCase())
+  const normalizedCurrency =
+    typeof requestedCurrency === "string"
       ? requestedCurrency.toUpperCase()
-      : BASE_CURRENCY;
+      : null;
+  const currency: SupportedCurrency = isSupportedCurrency(normalizedCurrency)
+    ? normalizedCurrency
+    : BASE_CURRENCY;
   const updatedAt = Date.parse(snapshot.updatedAt);
   const usable =
     Number.isFinite(updatedAt) &&
