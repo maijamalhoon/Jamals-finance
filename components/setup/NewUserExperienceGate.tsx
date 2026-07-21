@@ -265,6 +265,10 @@ export default function NewUserExperienceGate({
     router.refresh();
   };
   const transactionType = activeAction === "expense" ? "expense" : "income";
+  const transactionAction =
+    activeAction === "income" ||
+    activeAction === "expense" ||
+    activeAction === "transaction";
 
   return (
     <>
@@ -302,38 +306,36 @@ export default function NewUserExperienceGate({
         </div>
       </section>
 
-      <AccountModal
-        open={activeAction === "account"}
-        onClose={() => setActiveAction(null)}
-        onSuccess={finishAction}
-      />
-      <TransactionModal
-        open={
-          activeAction === "income" ||
-          activeAction === "expense" ||
-          activeAction === "transaction"
-        }
-        defaultType={transactionType}
-        onClose={() => setActiveAction(null)}
-        onSuccess={finishAction}
-      />
-      <InvestmentModal
-        open={activeAction === "investment"}
-        onClose={() => setActiveAction(null)}
-        onSuccess={finishAction}
-      />
-      <GoalModal
-        open={activeAction === "goal"}
-        onClose={() => setActiveAction(null)}
-        onSuccess={finishAction}
-      />
-      <PayableModal
-        open={activeAction === "payable"}
-        onClose={() => {
-          setActiveAction(null);
-          router.refresh();
-        }}
-      />
+      {activeAction === "account" ? (
+        <AccountModal open onClose={() => setActiveAction(null)} onSuccess={finishAction} />
+      ) : null}
+      {transactionAction ? (
+        <TransactionModal
+          open
+          defaultType={transactionType}
+          onClose={() => setActiveAction(null)}
+          onSuccess={finishAction}
+        />
+      ) : null}
+      {activeAction === "investment" ? (
+        <InvestmentModal
+          open
+          onClose={() => setActiveAction(null)}
+          onSuccess={finishAction}
+        />
+      ) : null}
+      {activeAction === "goal" ? (
+        <GoalModal open onClose={() => setActiveAction(null)} onSuccess={finishAction} />
+      ) : null}
+      {activeAction === "payable" ? (
+        <PayableModal
+          open
+          onClose={() => {
+            setActiveAction(null);
+            router.refresh();
+          }}
+        />
+      ) : null}
     </>
   );
 }
