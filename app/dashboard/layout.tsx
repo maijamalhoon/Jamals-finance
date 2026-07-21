@@ -11,6 +11,7 @@ import NotificationCenter, {
 } from "@/components/layout/NotificationCenter";
 import ResponsiveDashboardHeader from "@/components/layout/ResponsiveDashboardHeader";
 import DashboardScrollRestoration from "@/components/motion/DashboardScrollRestoration";
+import NewUserExperienceGate from "@/components/setup/NewUserExperienceGate";
 import TransactionReceiptViewportFit from "@/components/transactions/TransactionReceiptViewportFit";
 import DateFormatDisplaySync from "@/components/ui/DateFormatDisplaySync";
 import {
@@ -19,6 +20,10 @@ import {
   isSupportedCurrency,
   type SupportedCurrency,
 } from "@/lib/currency";
+import {
+  EMPTY_NEW_USER_EXPERIENCE_STATE,
+  loadNewUserExperienceState,
+} from "@/lib/new-user-experience";
 import type { NotificationState } from "@/lib/notifications";
 import { loadDashboardNotifications } from "@/lib/notifications-server";
 import { createClient } from "@/lib/supabase/server";
@@ -123,17 +128,26 @@ export default async function DashboardLayout({
   } = await supabase.auth.getUser();
 
   let accountPreference: SupportedCurrency | null = null;
+  let newUserExperience = EMPTY_NEW_USER_EXPERIENCE_STATE;
 
   if (user) {
-    const { data: profile, error } = await supabase
-      .from("profiles")
-      .select("preferred_currency")
-      .eq("id", user.id)
-      .maybeSingle();
+    const [profileResult, setupState] = await Promise.all([
+      supabase
+        .from("profiles")
+        .select("preferred_currency")
+        .eq("id", user.id)
+        .maybeSingle(),
+      loadNewUserExperienceState(supabase),
+    ]);
 
-    if (!error && isSupportedCurrency(profile?.preferred_currency)) {
-      accountPreference = profile.preferred_currency;
+    if (
+      !profileResult.error &&
+      isSupportedCurrency(profileResult.data?.preferred_currency)
+    ) {
+      accountPreference = profileResult.data.preferred_currency;
     }
+
+    newUserExperience = setupState;
   }
 
   const initialCurrency =
@@ -177,7 +191,11 @@ export default async function DashboardLayout({
             data-dashboard-scroll
             className="jf-dashboard-scroll relative flex-1 overflow-y-auto overscroll-contain px-3 pb-[var(--jf-mobile-content-bottom)] pt-[5rem] sm:px-5 sm:pb-[calc(var(--jf-mobile-content-bottom)+0.5rem)] sm:pt-[5.25rem] lg:px-6 lg:pb-10 lg:pt-6 xl:px-7"
           >
-            <DashboardContentScope>{children}</DashboardContentScope>
+            <DashboardContentScope>
+              <NewUserExperienceGate state={newUserExperience}>
+                {children}
+              </NewUserExperienceGate>
+            </DashboardContentScope>
           </main>
         </div>
       </div>
