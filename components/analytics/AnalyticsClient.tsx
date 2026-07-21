@@ -111,7 +111,10 @@ export default function AnalyticsClient({
   );
 
   return (
-    <div className="min-h-full min-w-0 text-text-primary">
+    <div
+      data-analytics-page
+      className="min-h-full min-w-0 pb-8 text-text-primary"
+    >
       <div className="space-y-4 sm:space-y-5">
         <AnalyticsRangeControls
           selection={selection}
@@ -135,11 +138,20 @@ export default function AnalyticsClient({
         ) : null}
 
         {transactionsStatus === "error" ? (
-          <section className="finance-panel min-h-64 p-5" aria-labelledby="analytics-query-error-title">
+          <section
+            className="finance-panel min-h-64 p-5"
+            aria-labelledby="analytics-query-error-title"
+          >
             <div className="grid min-h-52 place-items-center text-center">
               <div className="max-w-md">
-                <AlertTriangle aria-hidden="true" className="mx-auto size-7 text-danger" />
-                <h2 id="analytics-query-error-title" className="mt-3 text-lg font-bold text-text-primary">
+                <AlertTriangle
+                  aria-hidden="true"
+                  className="mx-auto size-7 text-danger"
+                />
+                <h2
+                  id="analytics-query-error-title"
+                  className="mt-3 text-lg font-bold text-text-primary"
+                >
                   Analytics could not be loaded
                 </h2>
                 <p className="mt-2 text-sm text-text-secondary">
@@ -191,7 +203,10 @@ export default function AnalyticsClient({
           </>
         )}
 
-        <InvestmentSnapshot investments={investments} status={investmentsStatus} />
+        <InvestmentSnapshot
+          investments={investments}
+          status={investmentsStatus}
+        />
       </div>
     </div>
   );
