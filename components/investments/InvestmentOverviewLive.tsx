@@ -4,6 +4,7 @@ import { useMemo } from "react";
 
 import InvestmentOverviewClean from "@/components/investments/InvestmentOverviewClean";
 import type { ExistingInvestment } from "@/components/investments/InvestmentModal";
+import { useInvestmentPageIcons } from "@/components/investments/useInvestmentPageIcons";
 import { useLiveInvestmentRows } from "@/components/investments/useLiveInvestmentRows";
 import {
   aggregateInvestmentHoldings,
@@ -15,7 +16,8 @@ export default function InvestmentOverviewLive({
 }: {
   investments: ExistingInvestment[];
 }) {
-  const liveInvestments = useLiveInvestmentRows(investments);
+  const liveRows = useLiveInvestmentRows(investments);
+  const liveInvestments = useInvestmentPageIcons(liveRows);
   const groupedHoldings = useMemo(
     () => aggregateInvestmentHoldings(liveInvestments),
     [liveInvestments],
