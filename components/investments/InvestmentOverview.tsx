@@ -1,45 +1,42 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import CountUp from "react-countup";
-import { motion } from "framer-motion";
+import { useEffect, useId, useMemo, useState } from "react";
 import Link from "next/link";
+import { motion } from "framer-motion";
+import {
+  Bar,
+  BarChart,
+  CartesianGrid,
+  Cell,
+  Pie,
+  PieChart as RechartsPieChart,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
 import {
   ArrowDownRight,
   ArrowRight,
   ArrowUpRight,
-  Banknote,
+  BarChart2,
   Brain,
-  Building2,
-  Coins,
-  LucideIcon,
-  Package,
+  Layers3,
   PieChart,
-  Sparkles,
   TrendingUp,
   WalletCards,
 } from "lucide-react";
+
 import { useCurrency } from "@/components/currency/CurrencyProvider";
+import {
+  chartMotion,
+  motionDurations,
+  motionEase,
+} from "@/components/motion/animation-config";
+import ChartFrame from "@/components/ui/chart-frame";
 import { getInvestmentGroupKey } from "@/lib/investments/aggregation";
 import type { AggregatedInvestment } from "@/lib/investments/aggregation";
 import InvestmentCard from "./InvestmentCard";
-import { ExistingInvestment } from "./InvestmentModal";
-
-const TYPE_META: Record<string, { label: string; color: string }> = {
-  crypto: { label: "Crypto", color: "var(--warning)" },
-  stocks: { label: "Stocks", color: "var(--info)" },
-  savings: { label: "Savings", color: "var(--success)" },
-  real_estate: { label: "Real Estate", color: "var(--investment)" },
-  other: { label: "Other", color: "var(--text-secondary)" },
-};
-
-const HOLDING_ICON_MAP: Record<string, LucideIcon> = {
-  crypto: Coins,
-  stocks: TrendingUp,
-  savings: Banknote,
-  real_estate: Building2,
-  other: Package,
-};
+import type { ExistingInvestment } from "./InvestmentModal";
 
 interface Insight {
   type: "positive" | "warning" | "tip";
@@ -47,35 +44,32 @@ interface Insight {
   message: string;
 }
 
-function getTypeLabel(type: string) {
-  return TYPE_META[type]?.label ?? TYPE_META.other.label;
-}
+type ComparisonTooltipItem = {
+  dataKey?: "invested" | "current";
+  value?: number;
+  payload?: {
+    name?: string;
+    symbol?: string;
+  };
+};
 
-function HoldingAvatar({ holding }: { holding: AggregatedInvestment }) {
-  const Icon = HOLDING_ICON_MAP[holding.type] ?? Package;
+type AllocationTooltipItem = {
+  value?: number;
+  payload?: {
+    name?: string;
+    percent?: number;
+  };
+};
 
-  return (
-    <span
-      className="grid h-8 w-8 flex-shrink-0 place-items-center rounded-full bg-surface-secondary"
-      style={{ color: holding.color }}
-      title={holding.name}
-    >
-      <Icon size={15} strokeWidth={2.2} aria-hidden="true" />
-    </span>
-  );
-}
-
-function SummaryMetric({
+function CompactMetric({
   label,
   value,
   helper,
-  icon: Icon,
   tone = "default",
 }: {
   label: string;
   value: string;
   helper: string;
-  icon: LucideIcon;
   tone?: "default" | "profit" | "loss";
 }) {
   const toneClass =
@@ -86,82 +80,97 @@ function SummaryMetric({
         : "text-text-primary";
 
   return (
-    <motion.article
-      initial={{ opacity: 0, y: 12 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.36, ease: [0.16, 1, 0.3, 1] }}
-      className="summary-card flex min-h-[118px] min-w-0 flex-col justify-between"
-    >
-      <div className="flex items-start justify-between gap-3">
-        <p className="text-xs font-medium text-text-secondary">{label}</p>
-        <span className="grid h-9 w-9 flex-shrink-0 place-items-center rounded-[14px] bg-surface-secondary text-active">
-          <Icon size={16} />
-        </span>
-      </div>
-      <div className="min-w-0">
-        <p
-          className={`break-words text-xl font-bold tracking-normal [overflow-wrap:anywhere] ${toneClass}`}
-        >
-          {value}
-        </p>
-        <p className="mt-1 text-xs leading-5 text-text-secondary">{helper}</p>
-      </div>
-    </motion.article>
+    <div className="min-w-0 rounded-[18px] bg-surface-secondary/70 px-3.5 py-3.5 sm:px-4">
+      <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-text-secondary">
+        {label}
+      </p>
+      <p
+        className={`mt-2 break-words text-base font-bold tabular-nums tracking-tight [overflow-wrap:anywhere] sm:text-lg ${toneClass}`}
+      >
+        {value}
+      </p>
+      <p className="mt-1 text-[11px] leading-4 text-text-secondary">{helper}</p>
+    </div>
   );
 }
 
-function PortfolioSummaryGrid({
-  totalInvested,
-  totalValue,
-  totalPnL,
-  totalPnLPct,
-  count,
+function ComparisonTooltip({
+  active,
+  payload,
 }: {
-  totalInvested: number;
-  totalValue: number;
-  totalPnL: number;
-  totalPnLPct: number;
-  count: number;
+  active?: boolean;
+  payload?: ComparisonTooltipItem[];
 }) {
   const { formatCurrency } = useCurrency();
-  const isProfit = totalPnL >= 0;
+
+  if (!active || !payload?.length) return null;
+
+  const invested = payload.find((item) => item.dataKey === "invested")?.value ?? 0;
+  const current = payload.find((item) => item.dataKey === "current")?.value ?? 0;
+  const holding = payload[0]?.payload;
+  const pnl = current - invested;
 
   return (
-    <section
-      aria-label="Portfolio summary"
-      data-mobile-summary-grid
-      className="grid grid-cols-2 gap-3 xl:grid-cols-4"
-    >
-      <SummaryMetric
-        label="Total Invested"
-        value={formatCurrency(totalInvested)}
-        helper="Cost basis"
-        icon={WalletCards}
-      />
-      <SummaryMetric
-        label="Current Value"
-        value={formatCurrency(totalValue)}
-        helper="Latest portfolio value"
-        icon={TrendingUp}
-      />
-      <SummaryMetric
-        label="Total Profit/Loss"
-        value={`${isProfit ? "+" : "-"}${formatCurrency(Math.abs(totalPnL))}`}
-        helper={`${isProfit ? "+" : "-"}${Math.abs(totalPnLPct).toFixed(1)}% overall`}
-        icon={isProfit ? ArrowUpRight : ArrowDownRight}
-        tone={isProfit ? "profit" : "loss"}
-      />
-      <SummaryMetric
-        label="Total Holdings"
-        value={String(count)}
-        helper={count === 1 ? "Tracked asset" : "Tracked assets"}
-        icon={Coins}
-      />
-    </section>
+    <div className="min-w-[176px] rounded-[14px] border border-border bg-card p-3 text-xs shadow-[var(--shadow-soft)]">
+      <p className="font-semibold text-text-primary">
+        {holding?.name ?? "Holding"}
+        {holding?.symbol ? ` · ${holding.symbol}` : ""}
+      </p>
+      <div className="mt-2 space-y-1.5">
+        <p className="flex items-center justify-between gap-5 text-text-secondary">
+          <span>Invested</span>
+          <span className="font-bold tabular-nums text-text-primary">
+            {formatCurrency(invested)}
+          </span>
+        </p>
+        <p className="flex items-center justify-between gap-5 text-text-secondary">
+          <span>Current</span>
+          <span className="font-bold tabular-nums text-text-primary">
+            {formatCurrency(current)}
+          </span>
+        </p>
+        <p className="flex items-center justify-between gap-5 border-t border-border/70 pt-1.5">
+          <span className="text-text-secondary">P/L</span>
+          <span
+            className={`font-bold tabular-nums ${pnl >= 0 ? "text-success" : "text-danger"}`}
+          >
+            {pnl >= 0 ? "+" : "-"}
+            {formatCurrency(Math.abs(pnl))}
+          </span>
+        </p>
+      </div>
+    </div>
   );
 }
 
-function PerformanceSection({
+function AllocationTooltip({
+  active,
+  payload,
+}: {
+  active?: boolean;
+  payload?: AllocationTooltipItem[];
+}) {
+  const { formatCurrency } = useCurrency();
+
+  if (!active || !payload?.length) return null;
+  const item = payload[0];
+
+  return (
+    <div className="rounded-[14px] border border-border bg-card px-3 py-2.5 text-xs shadow-[var(--shadow-soft)]">
+      <p className="font-semibold text-text-primary">
+        {item.payload?.name ?? "Holding"}
+      </p>
+      <p className="mt-1 font-bold tabular-nums text-text-primary">
+        {formatCurrency(item.value ?? 0)}
+      </p>
+      <p className="mt-0.5 text-[11px] text-text-secondary">
+        {(item.payload?.percent ?? 0).toFixed(1)}% of portfolio
+      </p>
+    </div>
+  );
+}
+
+function PortfolioAnalytics({
   groupedHoldings,
   totalInvested,
   totalValue,
@@ -175,154 +184,335 @@ function PerformanceSection({
   totalPnLPct: number;
 }) {
   const { formatCurrency } = useCurrency();
+  const gradientPrefix = useId().replace(/:/g, "");
   const isProfit = totalPnL >= 0;
-  const liveCount = groupedHoldings.filter((holding) => holding.is_live_priced)
-    .length;
-  const manualCount = groupedHoldings.length - liveCount;
-  const allocation = useMemo(() => {
-    return groupedHoldings
-      .map((holding) => ({
-        ...holding,
-        percent: totalValue > 0 ? (holding.currentValue / totalValue) * 100 : 0,
-      }))
-      .slice(0, 4);
-  }, [groupedHoldings, totalValue]);
-  const largestHolding = groupedHoldings[0];
-  const performanceMessage = isProfit
-    ? "Portfolio is ahead of cost basis. Keep an eye on concentration before adding more exposure."
-    : "Portfolio is below cost basis. Review position sizing and fresh entries before increasing risk.";
+  const liveCount = groupedHoldings.filter(
+    (holding) => holding.is_live_priced,
+  ).length;
+  const comparisonRows = useMemo(
+    () =>
+      groupedHoldings.slice(0, 7).map((holding) => ({
+        key: holding.groupKey,
+        name: holding.name,
+        symbol: holding.symbol ?? holding.name.slice(0, 5),
+        invested: holding.totalInvested,
+        current: holding.currentValue,
+      })),
+    [groupedHoldings],
+  );
+  const allocationRows = useMemo(
+    () =>
+      groupedHoldings.slice(0, 6).map((holding) => ({
+        key: holding.groupKey,
+        name: holding.name,
+        symbol: holding.symbol,
+        value: holding.currentValue,
+        color: holding.color,
+        percent:
+          totalValue > 0 ? (holding.currentValue / totalValue) * 100 : 0,
+      })),
+    [groupedHoldings, totalValue],
+  );
 
   return (
-    <section className="grid gap-4 lg:grid-cols-2" aria-label="Portfolio performance">
+    <section className="grid min-w-0 gap-4 xl:grid-cols-[minmax(0,1.7fr)_minmax(300px,0.8fr)]">
       <motion.article
-        initial={{ opacity: 0, y: 16 }}
+        initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.42, ease: [0.16, 1, 0.3, 1] }}
-        className="finance-reference-card min-h-[230px] p-5"
+        transition={{ duration: motionDurations.page, ease: motionEase }}
+        className="finance-reference-card min-w-0 overflow-hidden p-4 sm:p-5 lg:p-6"
       >
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-active">
-              <Sparkles size={13} />
-              Portfolio Performance
+        <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
+          <div className="min-w-0">
+            <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.14em] text-active sm:text-[11px]">
+              <BarChart2 size={14} />
+              Portfolio overview
             </div>
-            <p
-              className={`mt-4 flex items-center gap-2 text-4xl font-bold tracking-normal ${
-                isProfit ? "text-success" : "text-danger"
-              }`}
-            >
-              {isProfit ? <ArrowUpRight size={26} /> : <ArrowDownRight size={26} />}
-              {isProfit ? "+" : "-"}
-              <CountUp end={Math.abs(totalPnLPct)} duration={1} decimals={1} />%
-            </p>
-          </div>
-          <span
-            className={`rounded-full border px-3 py-1 text-xs font-bold ${
-              isProfit
-                ? "border-success/25 bg-success/10 text-success"
-                : "border-danger/25 bg-danger/10 text-danger"
-            }`}
-          >
-            {isProfit ? "In profit" : "Below cost"}
-          </span>
-        </div>
-
-        <div className="mt-5 grid gap-3 sm:grid-cols-2">
-          <div className="finance-panel-soft min-w-0 p-4">
-            <p className="text-xs text-text-secondary">Total P/L</p>
-            <p
-              className={`mt-1 break-words text-lg font-bold [overflow-wrap:anywhere] ${
-                isProfit ? "text-success" : "text-danger"
-              }`}
-            >
-              {isProfit ? "+" : "-"}
-              {formatCurrency(Math.abs(totalPnL))}
-            </p>
-          </div>
-          <div className="finance-panel-soft min-w-0 p-4">
-            <p className="text-xs text-text-secondary">Current vs invested</p>
-            <p className="mt-1 break-words text-lg font-bold text-text-primary [overflow-wrap:anywhere]">
+            <p className="mt-3 break-words text-3xl font-bold tabular-nums tracking-tight text-text-primary [overflow-wrap:anywhere] sm:text-4xl">
               {formatCurrency(totalValue)}
             </p>
-            <p className="mt-1 text-xs text-text-secondary">
-              against {formatCurrency(totalInvested)}
-            </p>
+            <div className="mt-2 flex flex-wrap items-center gap-2">
+              <span
+                className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-bold ${
+                  isProfit
+                    ? "bg-success/10 text-success"
+                    : "bg-danger/10 text-danger"
+                }`}
+              >
+                {isProfit ? (
+                  <ArrowUpRight size={13} />
+                ) : (
+                  <ArrowDownRight size={13} />
+                )}
+                {isProfit ? "+" : "-"}
+                {formatCurrency(Math.abs(totalPnL))} · {isProfit ? "+" : "-"}
+                {Math.abs(totalPnLPct).toFixed(1)}%
+              </span>
+              <span className="text-xs text-text-secondary">
+                {liveCount} live priced · {groupedHoldings.length - liveCount} manual
+              </span>
+            </div>
+          </div>
+
+          <div className="grid w-full grid-cols-2 gap-2 lg:w-[310px]">
+            <CompactMetric
+              label="Invested"
+              value={formatCurrency(totalInvested)}
+              helper="Total cost basis"
+            />
+            <CompactMetric
+              label="Holdings"
+              value={String(groupedHoldings.length)}
+              helper={
+                groupedHoldings.length === 1 ? "Grouped asset" : "Grouped assets"
+              }
+            />
           </div>
         </div>
 
-        <p className="mt-4 text-sm leading-6 text-text-secondary">
-          {performanceMessage}
-        </p>
+        <div className="mt-6 border-t border-border/70 pt-5">
+          <div className="mb-3 flex flex-wrap items-end justify-between gap-2">
+            <div>
+              <h3 className="text-sm font-semibold text-text-primary">
+                Value vs cost basis
+              </h3>
+              <p className="mt-0.5 text-[11px] text-text-secondary">
+                Current value and invested amount for your largest holdings.
+              </p>
+            </div>
+            <div className="flex items-center gap-3 text-[10px] font-semibold text-text-secondary">
+              <span className="inline-flex items-center gap-1.5">
+                <i className="h-2 w-2 rounded-full bg-text-secondary/45" /> Cost
+              </span>
+              <span className="inline-flex items-center gap-1.5">
+                <i className="h-2 w-2 rounded-full bg-[var(--investment)]" /> Current
+              </span>
+            </div>
+          </div>
+
+          <ChartFrame
+            className="h-[230px] min-h-[230px] sm:h-[270px] sm:min-h-[270px]"
+            tone="purple"
+          >
+            {({ width, height }) => {
+              const compact = width < 480;
+              const costGradientId = `${gradientPrefix}-cost`;
+              const currentGradientId = `${gradientPrefix}-current`;
+
+              return (
+                <BarChart
+                  accessibilityLayer
+                  data={comparisonRows}
+                  width={width}
+                  height={height}
+                  margin={{
+                    top: 12,
+                    right: compact ? 0 : 8,
+                    bottom: compact ? 4 : 0,
+                    left: compact ? 0 : 4,
+                  }}
+                  barGap={compact ? 2 : 4}
+                  barCategoryGap={compact ? "28%" : "34%"}
+                >
+                  <defs>
+                    <linearGradient
+                      id={costGradientId}
+                      x1="0"
+                      y1="0"
+                      x2="0"
+                      y2="1"
+                    >
+                      <stop
+                        offset="0%"
+                        stopColor="var(--text-secondary)"
+                        stopOpacity={0.52}
+                      />
+                      <stop
+                        offset="100%"
+                        stopColor="var(--text-secondary)"
+                        stopOpacity={0.16}
+                      />
+                    </linearGradient>
+                    <linearGradient
+                      id={currentGradientId}
+                      x1="0"
+                      y1="0"
+                      x2="0"
+                      y2="1"
+                    >
+                      <stop
+                        offset="0%"
+                        stopColor="var(--investment)"
+                        stopOpacity={0.96}
+                      />
+                      <stop
+                        offset="100%"
+                        stopColor="var(--investment)"
+                        stopOpacity={0.38}
+                      />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid
+                    vertical={false}
+                    stroke="var(--border)"
+                    strokeDasharray="3 5"
+                    strokeOpacity={0.7}
+                  />
+                  <XAxis
+                    dataKey="symbol"
+                    axisLine={false}
+                    tickLine={false}
+                    interval={0}
+                    minTickGap={0}
+                    tick={{
+                      fill: "var(--text-secondary)",
+                      fontSize: compact ? 9 : 10,
+                    }}
+                    tickFormatter={(value: string) =>
+                      value.slice(0, compact ? 4 : 7)
+                    }
+                  />
+                  <YAxis
+                    hide={compact}
+                    axisLine={false}
+                    tickLine={false}
+                    width={58}
+                    tick={{ fill: "var(--text-secondary)", fontSize: 10 }}
+                    tickFormatter={(value: number) =>
+                      formatCurrency(value, {
+                        compact: true,
+                        maximumFractionDigits: 1,
+                      })
+                    }
+                  />
+                  <Tooltip
+                    cursor={{ fill: "var(--hover)", opacity: 0.45 }}
+                    content={<ComparisonTooltip />}
+                  />
+                  <Bar
+                    dataKey="invested"
+                    fill={`url(#${costGradientId})`}
+                    radius={[8, 8, 3, 3]}
+                    maxBarSize={compact ? 18 : 26}
+                    {...chartMotion}
+                  />
+                  <Bar
+                    dataKey="current"
+                    fill={`url(#${currentGradientId})`}
+                    radius={[8, 8, 3, 3]}
+                    maxBarSize={compact ? 18 : 26}
+                    {...chartMotion}
+                  />
+                </BarChart>
+              );
+            }}
+          </ChartFrame>
+        </div>
       </motion.article>
 
       <motion.article
-        initial={{ opacity: 0, y: 16 }}
+        initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.42, delay: 0.04, ease: [0.16, 1, 0.3, 1] }}
-        className="finance-reference-card min-h-[230px] p-5"
+        transition={{
+          duration: motionDurations.page,
+          delay: 0.03,
+          ease: motionEase,
+        }}
+        className="finance-reference-card min-w-0 overflow-hidden p-4 sm:p-5"
       >
-        <div className="flex items-center justify-between gap-3">
+        <div className="flex items-start justify-between gap-3">
           <div>
-            <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-active">
-              <PieChart size={13} />
+            <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.14em] text-active sm:text-[11px]">
+              <PieChart size={14} />
               Allocation
             </div>
-            <p className="mt-2 text-sm text-text-secondary">
-              {liveCount} live priced, {manualCount} manual
+            <h3 className="mt-2 text-base font-semibold text-text-primary">
+              Portfolio mix
+            </h3>
+            <p className="mt-1 text-xs leading-5 text-text-secondary">
+              One segment per grouped asset, regardless of how many times it was
+              bought.
             </p>
           </div>
-          {largestHolding ? (
-            <div className="min-w-0 text-right">
-              <p className="text-[11px] text-text-secondary">Largest holding</p>
-              <p className="truncate text-sm font-semibold text-text-primary">
-                {largestHolding.name}
-              </p>
-            </div>
-          ) : null}
+          <span className="grid h-10 w-10 shrink-0 place-items-center rounded-[15px] bg-surface-secondary text-active">
+            <Layers3 size={17} />
+          </span>
         </div>
 
-        <div className="mt-5 space-y-3">
-          {allocation.map((item) => {
-            return (
-              <div key={item.groupKey} className="space-y-2">
-                <div className="flex items-center justify-between gap-3">
-                  <div className="flex min-w-0 items-center gap-2">
-                    <HoldingAvatar holding={item} />
-                    <div className="min-w-0">
-                      <p className="truncate text-xs font-semibold text-text-primary">
-                        {item.name}
-                      </p>
-                      <p className="text-[10px] uppercase text-text-secondary">
-                        {item.symbol ?? getTypeLabel(item.type)}
-                      </p>
-                    </div>
-                  </div>
-                  <span className="text-xs text-text-secondary">
-                    {item.percent.toFixed(0)}%
-                  </span>
-                </div>
-                <div className="h-2 overflow-hidden rounded-full bg-surface-secondary">
-                  <div
-                    className="h-full rounded-full"
-                    style={{
-                      width: `${Math.max(4, Math.min(100, item.percent))}%`,
-                      backgroundColor: item.color,
-                    }}
-                  />
-                </div>
-                <p className="text-xs text-text-secondary">
-                  {formatCurrency(item.currentValue)}
+        <div className="relative mt-3">
+          <ChartFrame className="h-[225px] min-h-[225px]" tone="purple">
+            {({ width, height }) => {
+              const outerRadius = Math.min(width, height) * 0.39;
+              const innerRadius = outerRadius * 0.66;
+
+              return (
+                <RechartsPieChart
+                  width={width}
+                  height={height}
+                  accessibilityLayer
+                >
+                  <Tooltip content={<AllocationTooltip />} />
+                  <Pie
+                    data={allocationRows}
+                    dataKey="value"
+                    nameKey="name"
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={innerRadius}
+                    outerRadius={outerRadius}
+                    paddingAngle={allocationRows.length > 1 ? 2 : 0}
+                    stroke="var(--card)"
+                    strokeWidth={3}
+                    {...chartMotion}
+                  >
+                    {allocationRows.map((entry) => (
+                      <Cell key={entry.key} fill={entry.color} />
+                    ))}
+                  </Pie>
+                </RechartsPieChart>
+              );
+            }}
+          </ChartFrame>
+          <div className="pointer-events-none absolute inset-0 grid place-items-center">
+            <div className="max-w-[130px] text-center">
+              <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-text-secondary">
+                Current value
+              </p>
+              <p className="mt-1 break-words text-sm font-bold tabular-nums text-text-primary [overflow-wrap:anywhere]">
+                {formatCurrency(totalValue, { compact: true })}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-2 space-y-2.5">
+          {allocationRows.slice(0, 5).map((item) => (
+            <div key={item.key} className="flex min-w-0 items-center gap-2.5">
+              <span
+                className="h-2.5 w-2.5 shrink-0 rounded-full"
+                style={{ backgroundColor: item.color }}
+              />
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-xs font-semibold text-text-primary">
+                  {item.name}
                 </p>
               </div>
-            );
-          })}
+              <span className="shrink-0 text-xs font-bold tabular-nums text-text-primary">
+                {item.percent.toFixed(1)}%
+              </span>
+            </div>
+          ))}
         </div>
       </motion.article>
     </section>
   );
 }
 
-function EmbeddedInsightCard({ investments }: { investments: ExistingInvestment[] }) {
+function EmbeddedInsightCard({
+  investments,
+}: {
+  investments: ExistingInvestment[];
+}) {
   const [insight, setInsight] = useState<Insight | null>(null);
   const [loading, setLoading] = useState(true);
   const [status, setStatus] = useState<"ready" | "empty" | "unavailable">(
@@ -364,16 +554,11 @@ function EmbeddedInsightCard({ investments }: { investments: ExistingInvestment[
         }
       })
       .catch((error) => {
-        if (error instanceof DOMException && error.name === "AbortError") {
-          return;
-        }
-
+        if (error instanceof DOMException && error.name === "AbortError") return;
         setStatus("unavailable");
       })
       .finally(() => {
-        if (!controller.signal.aborted) {
-          setLoading(false);
-        }
+        if (!controller.signal.aborted) setLoading(false);
       });
 
     return () => controller.abort();
@@ -387,18 +572,24 @@ function EmbeddedInsightCard({ investments }: { investments: ExistingInvestment[
 
   return (
     <motion.article
-      initial={{ opacity: 0, y: 14 }}
+      initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.38, delay: 0.06, ease: [0.16, 1, 0.3, 1] }}
-      className="finance-panel flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between"
+      transition={{
+        duration: motionDurations.base,
+        delay: 0.05,
+        ease: motionEase,
+      }}
+      className="finance-panel flex flex-col gap-3 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-5"
     >
       <div className="flex min-w-0 items-start gap-3">
-        <div className="grid h-10 w-10 flex-shrink-0 place-items-center rounded-[16px] bg-surface-secondary text-active">
+        <span className="grid h-10 w-10 shrink-0 place-items-center rounded-[15px] bg-surface-secondary text-active">
           <Brain size={17} />
-        </div>
+        </span>
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
-            <p className="text-sm font-semibold text-text-primary">AI Insights</p>
+            <p className="text-sm font-semibold text-text-primary">
+              AI portfolio note
+            </p>
             {!loading && status === "unavailable" ? (
               <span className="rounded-full bg-surface-secondary px-2 py-1 text-[10px] font-semibold text-text-secondary">
                 Unavailable
@@ -406,9 +597,7 @@ function EmbeddedInsightCard({ investments }: { investments: ExistingInvestment[
             ) : null}
           </div>
           <p className="mt-1 text-sm leading-6 text-text-secondary">
-            {loading
-              ? "Reading your latest portfolio and cash-flow signals..."
-              : message}
+            {loading ? "Reading your latest portfolio signals..." : message}
           </p>
           {!loading && insight?.title ? (
             <p className="mt-1 text-xs font-semibold text-active">
@@ -419,9 +608,9 @@ function EmbeddedInsightCard({ investments }: { investments: ExistingInvestment[
       </div>
       <Link
         href="/dashboard/ai-insights"
-        className="finance-focus inline-flex min-h-11 items-center justify-center gap-2 rounded-[16px] border border-border bg-surface-secondary px-3 text-xs font-semibold text-text-primary transition-colors hover:bg-hover"
+        className="finance-focus inline-flex min-h-10 shrink-0 items-center justify-center gap-2 rounded-[14px] bg-surface-secondary px-3 text-xs font-semibold text-text-primary transition-colors hover:bg-hover"
       >
-        View more
+        View insight
         <ArrowRight size={12} />
       </Link>
     </motion.article>
@@ -447,10 +636,8 @@ export default function InvestmentOverview({
     return investments.reduce((groups, investment) => {
       const groupKey = getInvestmentGroupKey(investment);
       const current = groups.get(groupKey) ?? [];
-
       current.push(investment);
       groups.set(groupKey, current);
-
       return groups;
     }, new Map<string, ExistingInvestment[]>());
   }, [investments]);
@@ -477,16 +664,8 @@ export default function InvestmentOverview({
   }));
 
   return (
-    <div className="space-y-5">
-      <PortfolioSummaryGrid
-        totalInvested={totalInvested}
-        totalValue={totalValue}
-        totalPnL={totalPnL}
-        totalPnLPct={totalPnLPct}
-        count={groupedHoldings.length}
-      />
-
-      <PerformanceSection
+    <div className="space-y-5 sm:space-y-6">
+      <PortfolioAnalytics
         groupedHoldings={groupedHoldings}
         totalInvested={totalInvested}
         totalValue={totalValue}
@@ -496,22 +675,30 @@ export default function InvestmentOverview({
 
       <EmbeddedInsightCard investments={investments} />
 
-      <section className="space-y-3" aria-label="Investment holdings">
-        <div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
+      <section className="space-y-3.5" aria-label="Investment holdings">
+        <div className="flex flex-col gap-1.5 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <h3 className="text-base font-semibold text-text-primary">
-              Investment Holdings
-            </h3>
-            <p className="text-sm text-text-secondary">
-              Crypto, international stocks, and manual assets in one aligned view.
+            <div className="flex items-center gap-2">
+              <TrendingUp size={16} className="text-active" />
+              <h2 className="text-base font-semibold text-text-primary sm:text-lg">
+                Your holdings
+              </h2>
+            </div>
+            <p className="mt-1 text-sm text-text-secondary">
+              Every asset appears once. Open it to view and manage each separate
+              buy.
             </p>
           </div>
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-text-secondary">
-            {groupedHoldings.length} grouped
-          </p>
+          <div className="flex items-center gap-2 text-xs font-semibold text-text-secondary">
+            <WalletCards size={14} />
+            {investments.length} purchase{investments.length === 1 ? "" : "s"}
+            {" across "}
+            {groupedHoldings.length} asset
+            {groupedHoldings.length === 1 ? "" : "s"}
+          </div>
         </div>
 
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+        <div className="grid min-w-0 grid-cols-1 gap-4 2xl:grid-cols-2">
           {groupedCards.map((investment) => (
             <InvestmentCard
               key={investment.id}
