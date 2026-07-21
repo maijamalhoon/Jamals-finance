@@ -1,0 +1,26 @@
+/* Investment comparison chart bars only.
+ * Keeps chart data and interaction logic untouched while refining the visual bars.
+ */
+.investment-overview-live .recharts-bar-rectangle {
+  clip-path: inset(0 round 999px);
+  transform-box: fill-box;
+  transform-origin: center;
+  transform: scaleY(1.18);
+  shape-rendering: geometricPrecision;
+}
+
+.investment-overview-live
+  .recharts-bar-rectangle[fill*="clean-cost"] {
+  fill: color-mix(
+    in srgb,
+    var(--text-muted) 72%,
+    var(--surface-primary)
+  );
+  opacity: 0.94;
+}
+
+.investment-overview-live
+  .recharts-bar-rectangle[fill*="clean-current"] {
+  fill: color-mix(in srgb, var(--investment) 88%, var(--primary));
+  opacity: 1;
+}
