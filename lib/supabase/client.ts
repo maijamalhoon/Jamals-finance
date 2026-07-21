@@ -19,8 +19,41 @@ type JsonRecord = Record<string, unknown>;
 
 type CurrencyContext = {
   currency: SupportedCurrency;
-  rates: CurrencyRates;
+  rates: CurrencyRates | null;
 };
+
+type NormalizedPayload =
+  | { ok: true; payload: unknown }
+  | { ok: false; message: string };
+
+const RATE_ERROR_MESSAGE =
+  "Exchange rates are unavailable. Your financial record was not saved, so no incorrect conversion was applied.";
+
+function isUsableCachedSnapshot(value: unknown): value is {
+  rates: CurrencyRates;
+  source: string;
+  updatedAt: string;
+} {
+  if (!value || typeof value !== "object") return false;
+
+  const candidate = value as {
+    rates?: unknown;
+    source?: unknown;
+    updatedAt?: unknown;
+  };
+  const updatedAt =
+    typeof candidate.updatedAt === "string"
+      ? Date.parse(candidate.updatedAt)
+      : Number.NaN;
+
+  return (
+    isValidCurrencyRates(candidate.rates) &&
+    typeof candidate.source === "string" &&
+    !candidate.source.startsWith("Built-in emergency") &&
+    Number.isFinite(updatedAt) &&
+    updatedAt > 0
+  );
+}
 
 function readCurrencyContext(): CurrencyContext {
   if (typeof window === "undefined") {
@@ -30,21 +63,25 @@ function readCurrencyContext(): CurrencyContext {
   const storedCurrency = window.localStorage.getItem(CURRENCY_STORAGE_KEY);
   const currency = isSupportedCurrency(storedCurrency) ? storedCurrency : "PKR";
 
+  if (currency === "PKR") {
+    return { currency, rates: FALLBACK_CURRENCY_RATES };
+  }
+
   try {
     const raw = window.localStorage.getItem(EXCHANGE_RATE_STORAGE_KEY);
-    const parsed = raw ? (JSON.parse(raw) as { rates?: unknown }) : null;
-    if (parsed && isValidCurrencyRates(parsed.rates)) {
+    const parsed = raw ? (JSON.parse(raw) as unknown) : null;
+    if (isUsableCachedSnapshot(parsed)) {
       return { currency, rates: parsed.rates };
     }
   } catch {
-    // Use the validated emergency matrix below.
+    // Missing or malformed cache is handled by the safe failure below.
   }
 
-  return { currency, rates: FALLBACK_CURRENCY_RATES };
+  return { currency, rates: null };
 }
 
-function hasAnyKey(row: JsonRecord, keys: string[]) {
-  return keys.some((key) => Object.prototype.hasOwnProperty.call(row, key));
+function hasOwn(row: JsonRecord, key: string) {
+  return Object.prototype.hasOwnProperty.call(row, key);
 }
 
 function normalizeField(
@@ -56,35 +93,76 @@ function normalizeField(
     rateField: string;
   },
   context: CurrencyContext,
-) {
-  if (!Object.prototype.hasOwnProperty.call(row, amountField)) return row;
+): { ok: true; row: JsonRecord } | { ok: false; message: string } {
+  if (!hasOwn(row, amountField)) return { ok: true, row };
+
+  const explicitCurrency = row[metadata.currencyField];
+  const inputCurrency = isSupportedCurrency(
+    typeof explicitCurrency === "string" ? explicitCurrency : null,
+  )
+    ? explicitCurrency
+    : context.currency;
+  const originalValue = hasOwn(row, metadata.originalField)
+    ? row[metadata.originalField]
+    : row[amountField];
+
+  let rates = context.rates;
+  const explicitRate = Number(row[metadata.rateField]);
   if (
-    hasAnyKey(row, [
-      metadata.originalField,
-      metadata.currencyField,
-      metadata.rateField,
-    ])
+    Number.isFinite(explicitRate) &&
+    explicitRate > 0 &&
+    inputCurrency !== "PKR"
   ) {
-    return row;
+    rates = {
+      ...FALLBACK_CURRENCY_RATES,
+      [inputCurrency]: FALLBACK_CURRENCY_RATES.PKR / explicitRate,
+    };
+  }
+
+  if (!rates && inputCurrency !== "PKR") {
+    return { ok: false, message: RATE_ERROR_MESSAGE };
   }
 
   const prepared = prepareMoneyInput(
-    row[amountField] as string | number | null | undefined,
-    context.currency,
-    context.rates,
+    originalValue as string | number | null | undefined,
+    inputCurrency,
+    rates ?? FALLBACK_CURRENCY_RATES,
   );
-  if (!prepared) return row;
+  if (!prepared) {
+    return {
+      ok: false,
+      message: "The amount or exchange rate is invalid. Nothing was saved.",
+    };
+  }
+
+  const lockedRate =
+    Number.isFinite(explicitRate) && explicitRate > 0
+      ? explicitRate
+      : prepared.exchangeRateToPkr;
+  const canonicalAmount = prepared.originalAmount * lockedRate;
+  if (!Number.isFinite(canonicalAmount)) {
+    return {
+      ok: false,
+      message: "The converted amount is invalid. Nothing was saved.",
+    };
+  }
 
   return {
-    ...row,
-    [amountField]: prepared.amountPkr,
-    [metadata.originalField]: prepared.originalAmount,
-    [metadata.currencyField]: prepared.currency,
-    [metadata.rateField]: prepared.exchangeRateToPkr,
+    ok: true,
+    row: {
+      ...row,
+      [amountField]: canonicalAmount,
+      [metadata.originalField]: prepared.originalAmount,
+      [metadata.currencyField]: inputCurrency,
+      [metadata.rateField]: lockedRate,
+    },
   };
 }
 
-function normalizeFinancialMutation(table: string, row: JsonRecord) {
+function normalizeFinancialMutation(
+  table: string,
+  row: JsonRecord,
+): { ok: true; row: JsonRecord } | { ok: false; message: string } {
   const context = readCurrencyContext();
 
   switch (table) {
@@ -161,7 +239,7 @@ function normalizeFinancialMutation(table: string, row: JsonRecord) {
       );
 
     case "liabilities": {
-      const normalized = normalizeField(
+      const principal = normalizeField(
         row,
         "original_value",
         {
@@ -171,46 +249,84 @@ function normalizeFinancialMutation(table: string, row: JsonRecord) {
         },
         context,
       );
+      if (!principal.ok) return principal;
 
-      const original = prepareMoneyInput(
-        row.original_value as string | number | null | undefined,
-        context.currency,
-        context.rates,
-      );
-      if (!original) return normalized;
-
-      let next = normalized;
+      let next = principal.row;
       for (const field of ["paid_amount", "remaining_amount"] as const) {
-        if (!Object.prototype.hasOwnProperty.call(row, field)) continue;
+        if (!hasOwn(row, field)) continue;
+
         const value = prepareMoneyInput(
           row[field] as string | number | null | undefined,
           context.currency,
-          context.rates,
+          context.rates ?? FALLBACK_CURRENCY_RATES,
         );
-        if (value) next = { ...next, [field]: value.amountPkr };
+        if (!value) {
+          return {
+            ok: false,
+            message: "The payable amount is invalid. Nothing was saved.",
+          };
+        }
+        next = { ...next, [field]: value.amountPkr };
       }
-      return next;
+      return { ok: true, row: next };
     }
 
     default:
-      return row;
+      return { ok: true, row };
   }
 }
 
-function normalizePayload(table: string, payload: unknown) {
+function normalizePayload(table: string, payload: unknown): NormalizedPayload {
   if (Array.isArray(payload)) {
-    return payload.map((row) =>
-      row && typeof row === "object"
-        ? normalizeFinancialMutation(table, row as JsonRecord)
-        : row,
-    );
+    const rows: unknown[] = [];
+    for (const row of payload) {
+      if (!row || typeof row !== "object") {
+        rows.push(row);
+        continue;
+      }
+
+      const normalized = normalizeFinancialMutation(table, row as JsonRecord);
+      if (!normalized.ok) return normalized;
+      rows.push(normalized.row);
+    }
+    return { ok: true, payload: rows };
   }
 
   if (payload && typeof payload === "object") {
-    return normalizeFinancialMutation(table, payload as JsonRecord);
+    const normalized = normalizeFinancialMutation(table, payload as JsonRecord);
+    return normalized.ok
+      ? { ok: true, payload: normalized.row }
+      : normalized;
   }
 
-  return payload;
+  return { ok: true, payload };
+}
+
+function createFailedQuery(message: string) {
+  const response = Promise.resolve({
+    data: null,
+    error: {
+      message,
+      details: null,
+      hint: null,
+      code: "JF_CURRENCY_RATE_UNAVAILABLE",
+    },
+  });
+
+  let proxy: object;
+  proxy = new Proxy(
+    {},
+    {
+      get(_target, property) {
+        if (property === "then") return response.then.bind(response);
+        if (property === "catch") return response.catch.bind(response);
+        if (property === "finally") return response.finally.bind(response);
+        return () => proxy;
+      },
+    },
+  );
+
+  return proxy;
 }
 
 function wrapTableBuilder<T extends object>(table: string, builder: T): T {
@@ -226,8 +342,11 @@ function wrapTableBuilder<T extends object>(table: string, builder: T): T {
           options?: unknown,
         ) => unknown;
 
-        return (payload: unknown, options?: unknown) =>
-          method.call(target, normalizePayload(table, payload), options);
+        return (payload: unknown, options?: unknown) => {
+          const normalized = normalizePayload(table, payload);
+          if (!normalized.ok) return createFailedQuery(normalized.message);
+          return method.call(target, normalized.payload, options);
+        };
       }
 
       const value = Reflect.get(target, property, receiver);
