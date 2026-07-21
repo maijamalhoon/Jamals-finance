@@ -15,23 +15,23 @@ const seconds = (value: number) =>
 const milliseconds = (value: number) =>
   scaleAnimationMilliseconds(value, animationMode);
 
-// Standard keeps the full animation language, but shorter entrances and tighter
-// staggers prevent long pages from queueing visible motion for several seconds.
-// Fast and none retain their existing authored scaling exactly.
+// Standard keeps every authored animation, but resolves entrances, chart travel
+// and stagger queues inside a smaller frame budget. Fast and none keep their
+// existing authored scaling exactly.
 const standardSeconds = (optimized: number, authored: number) =>
   animationMode === "standard" ? optimized : seconds(authored);
 const standardMilliseconds = (optimized: number, authored: number) =>
   animationMode === "standard" ? optimized : milliseconds(authored);
 
 export const motionDurations = {
-  instant: standardSeconds(0.08, 0.09),
-  fast: standardSeconds(0.14, 0.16),
-  base: standardSeconds(0.2, 0.22),
-  page: standardSeconds(0.24, 0.28),
-  slow: standardSeconds(0.29, 0.32),
-  deliberate: standardSeconds(0.36, 0.42),
-  skeleton: standardSeconds(1, 1.4),
-  chart: standardMilliseconds(650, 850),
+  instant: standardSeconds(0.07, 0.09),
+  fast: standardSeconds(0.12, 0.16),
+  base: standardSeconds(0.18, 0.22),
+  page: standardSeconds(0.21, 0.28),
+  slow: standardSeconds(0.25, 0.32),
+  deliberate: standardSeconds(0.31, 0.42),
+  skeleton: standardSeconds(0.84, 1.4),
+  chart: standardMilliseconds(540, 850),
 } as const;
 
 export const viewportReveal = {
@@ -43,7 +43,7 @@ export const viewportReveal = {
 export const pageVariants: Variants = {
   initial: {
     opacity: 0,
-    y: 10,
+    y: 8,
   },
   animate: {
     opacity: 1,
@@ -51,13 +51,13 @@ export const pageVariants: Variants = {
     transition: {
       duration: motionDurations.page,
       ease: motionEase,
-      staggerChildren: standardSeconds(0.018, 0.035),
-      delayChildren: standardSeconds(0.01, 0.02),
+      staggerChildren: standardSeconds(0.012, 0.035),
+      delayChildren: standardSeconds(0.006, 0.02),
     },
   },
   exit: {
     opacity: 0,
-    y: -4,
+    y: -3,
     transition: {
       duration: motionDurations.fast,
       ease: motionEase,
@@ -68,8 +68,8 @@ export const pageVariants: Variants = {
 export const panelVariants: Variants = {
   initial: {
     opacity: 0,
-    y: 8,
-    scale: 0.985,
+    y: 6,
+    scale: 0.99,
   },
   animate: {
     opacity: 1,
@@ -82,8 +82,8 @@ export const panelVariants: Variants = {
   },
   exit: {
     opacity: 0,
-    y: 6,
-    scale: 0.985,
+    y: 4,
+    scale: 0.99,
     transition: {
       duration: motionDurations.fast,
       ease: motionEase,
@@ -111,8 +111,8 @@ export const overlayVariants: Variants = {
 
 export const drawerVariants: Variants = {
   initial: {
-    x: "-4%",
-    opacity: 0.98,
+    x: "-3%",
+    opacity: 0.985,
   },
   animate: {
     x: 0,
@@ -123,7 +123,7 @@ export const drawerVariants: Variants = {
     },
   },
   exit: {
-    x: "-4%",
+    x: "-3%",
     opacity: 0,
     transition: {
       duration: motionDurations.fast,
@@ -135,8 +135,8 @@ export const drawerVariants: Variants = {
 export const listContainerVariants: Variants = {
   animate: {
     transition: {
-      staggerChildren: standardSeconds(0.018, 0.035),
-      delayChildren: standardSeconds(0.012, 0.03),
+      staggerChildren: standardSeconds(0.012, 0.035),
+      delayChildren: standardSeconds(0.008, 0.03),
     },
   },
 };
@@ -144,7 +144,7 @@ export const listContainerVariants: Variants = {
 export const listItemVariants: Variants = {
   initial: {
     opacity: 0,
-    y: 6,
+    y: 5,
   },
   animate: {
     opacity: 1,
@@ -156,7 +156,7 @@ export const listItemVariants: Variants = {
   },
   exit: {
     opacity: 0,
-    y: 4,
+    y: 3,
     transition: {
       duration: motionDurations.fast,
       ease: motionEase,
