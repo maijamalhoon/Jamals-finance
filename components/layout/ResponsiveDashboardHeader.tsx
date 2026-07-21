@@ -15,11 +15,66 @@ const CompactHeader = dynamic(
   { ssr: false },
 );
 
+const HEADER_SEARCH_TRIGGER_SELECTOR = [
+  "[data-header-search-trigger]",
+  'form[data-mobile-control-cluster][role="search"] button[aria-expanded]',
+].join(",");
+
 type HeaderMode = "desktop" | "compact" | null;
 
 type ResponsiveDashboardHeaderProps = {
   notificationSlot: ReactNode;
 };
+
+function HeaderSearchOpenFallback() {
+  useEffect(() => {
+    let fallbackTimer: number | null = null;
+
+    const isSearchOpen = (trigger: HTMLButtonElement) => {
+      if (trigger.hasAttribute("data-header-search-trigger")) {
+        const input = trigger
+          .closest("form")
+          ?.querySelector<HTMLInputElement>(
+            "#desktop-inline-transaction-search",
+          );
+
+        return input?.getAttribute("aria-hidden") === "false";
+      }
+
+      return trigger.getAttribute("aria-expanded") === "true";
+    };
+
+    const handlePointerUp = (event: PointerEvent) => {
+      if (!event.isPrimary || event.button !== 0) return;
+      if (!(event.target instanceof Element)) return;
+
+      const trigger = event.target.closest<HTMLButtonElement>(
+        HEADER_SEARCH_TRIGGER_SELECTOR,
+      );
+
+      if (!trigger || isSearchOpen(trigger)) return;
+
+      if (fallbackTimer !== null) window.clearTimeout(fallbackTimer);
+      fallbackTimer = window.setTimeout(() => {
+        fallbackTimer = null;
+
+        // Let the normal click handler run first. Only replay the click when a
+        // browser or focus helper suppressed it after the pointer interaction.
+        if (!document.contains(trigger) || isSearchOpen(trigger)) return;
+        trigger.click();
+      }, 0);
+    };
+
+    document.addEventListener("pointerup", handlePointerUp, true);
+
+    return () => {
+      document.removeEventListener("pointerup", handlePointerUp, true);
+      if (fallbackTimer !== null) window.clearTimeout(fallbackTimer);
+    };
+  }, []);
+
+  return null;
+}
 
 export default function ResponsiveDashboardHeader({
   notificationSlot,
@@ -64,6 +119,7 @@ export default function ResponsiveDashboardHeader({
             }
           }
         `}</style>
+        <HeaderSearchOpenFallback />
         <DesktopHeader notificationSlot={notificationSlot} />
         <HeaderSearchAutoClose />
       </div>
@@ -72,6 +128,7 @@ export default function ResponsiveDashboardHeader({
 
   return (
     <>
+      <HeaderSearchOpenFallback />
       <CompactHeader notificationSlot={notificationSlot} />
       <MobileHeaderSearchEnhancer />
     </>
