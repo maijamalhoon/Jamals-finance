@@ -77,6 +77,57 @@ html[data-animation-mode="fast"] {
   --motion-duration-skeleton: 560ms;
 }
 
+/* Fast mode keeps its visible animation language while adapting duration and
+ * continuously running effects to the actual device and runtime frame budget.
+ */
+html[data-animation-mode="fast"][data-fast-motion-tier="balanced"] {
+  --motion-duration-instant: 42ms;
+  --motion-duration-fast: 72ms;
+  --motion-duration-base: 102ms;
+  --motion-duration-slow: 145ms;
+  --motion-duration-deliberate: 185ms;
+  --motion-duration-skeleton: 480ms;
+}
+
+html[data-animation-mode="fast"][data-fast-motion-tier="lite"] {
+  --motion-duration-instant: 34ms;
+  --motion-duration-fast: 58ms;
+  --motion-duration-base: 84ms;
+  --motion-duration-slow: 116ms;
+  --motion-duration-deliberate: 150ms;
+  --motion-duration-skeleton: 390ms;
+}
+
+/* Fast content is paintable immediately. The first frame only settles opacity
+ * and transform on the compositor; it never gates streamed or hydrated content.
+ */
+html[data-animation-mode="fast"]
+  .jf-dashboard-content-frame[data-jf-initial-reveal="pending"] {
+  visibility: visible !important;
+  opacity: 0.992;
+  transform: translate3d(0, 1px, 0);
+}
+
+html[data-animation-mode="fast"]
+  .jf-dashboard-content-frame[data-jf-initial-reveal="ready"] {
+  opacity: 1;
+  transform: translate3d(0, 0, 0);
+  transition:
+    opacity var(--motion-duration-fast) var(--motion-ease),
+    transform var(--motion-duration-fast) var(--motion-ease);
+}
+
+html[data-animation-mode="fast"]
+  :where(button, a, [role="button"], [role="link"]) {
+  touch-action: manipulation;
+}
+
+html[data-animation-mode="fast"][data-fast-page-visibility="hidden"] *,
+html[data-animation-mode="fast"][data-fast-page-visibility="hidden"] *::before,
+html[data-animation-mode="fast"][data-fast-page-visibility="hidden"] *::after {
+  animation-play-state: paused !important;
+}
+
 html[data-animation-mode="none"] {
   scroll-behavior: auto !important;
 }
@@ -92,6 +143,8 @@ html[data-animation-mode="none"] *::after {
   transition-delay: 0s !important;
   transition-duration: 0s !important;
   scroll-behavior: auto !important;
+  will-change: auto !important;
+  view-transition-name: none !important;
 }
 
 html[data-animation-mode="none"] svg animate,
@@ -148,58 +201,66 @@ html[data-animation-mode="standard"] .jf-standard-route-loader > span {
   }
 }
 
-/* Fast mode uses one tiny animated indicator instead of painting a complete
- * route-sized skeleton tree. The animation remains visible and intentionally
- * quick, while the real route streams independently.
+/* Fast route loading uses one composited transform instead of three independent
+ * pulsing nodes. Real route content streams independently and is never delayed.
  */
 html[data-animation-mode="fast"] [data-fast-animation-route-loading="true"] {
   display: flex;
   min-width: 0;
+  min-height: 2rem;
   align-items: center;
 }
 
 html[data-animation-mode="fast"] .jf-fast-route-loader {
-  display: inline-flex;
-  height: 1rem;
-  align-items: center;
-  gap: 0.2rem;
+  position: relative;
+  display: block;
+  width: min(8rem, 36vw);
+  height: 0.18rem;
+  overflow: hidden;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--active), transparent 86%);
+  contain: layout paint style;
 }
 
 html[data-animation-mode="fast"] .jf-fast-route-loader > span {
-  width: 0.28rem;
-  height: 0.28rem;
-  border-radius: 999px;
+  display: none;
+}
+
+html[data-animation-mode="fast"] .jf-fast-route-loader > span:first-child {
+  position: absolute;
+  inset-block: 0;
+  left: 0;
+  display: block;
+  width: 38%;
+  border-radius: inherit;
   background: var(--active);
-  transform: translateY(0) scale(0.78);
-  opacity: 0.42;
-  animation: jf-fast-route-loader-pulse 520ms var(--motion-ease) infinite both;
+  opacity: 0.9;
+  transform: translate3d(-120%, 0, 0);
+  animation: jf-fast-route-loader-slide 480ms var(--motion-ease) infinite;
+  will-change: transform;
 }
 
-html[data-animation-mode="fast"] .jf-fast-route-loader > span:nth-child(2) {
-  animation-delay: 55ms;
-}
-
-html[data-animation-mode="fast"] .jf-fast-route-loader > span:nth-child(3) {
-  animation-delay: 110ms;
-}
-
-@keyframes jf-fast-route-loader-pulse {
-  0%,
-  100% {
-    transform: translateY(0) scale(0.78);
-    opacity: 0.42;
-  }
-
-  45% {
-    transform: translateY(-0.16rem) scale(1);
-    opacity: 1;
+@keyframes jf-fast-route-loader-slide {
+  to {
+    transform: translate3d(360%, 0, 0);
   }
 }
 
-/* No-animation mode never waits for the normal font/RAF reveal gate. */
+/* No-animation content is always fully painted. There is no reveal frame,
+ * opacity state, transform state, skeleton shimmer or view-transition snapshot.
+ */
 html[data-animation-mode="none"]
-  .jf-dashboard-content-frame[data-jf-initial-reveal="pending"] {
+  .jf-dashboard-content-frame[data-jf-initial-reveal="pending"],
+html[data-animation-mode="none"]
+  .jf-dashboard-content-frame[data-jf-initial-reveal="ready"] {
   visibility: visible !important;
+  opacity: 1 !important;
+  transform: none !important;
+}
+
+html[data-animation-mode="none"] .jf-standard-route-loader,
+html[data-animation-mode="none"] .jf-fast-route-loader {
+  display: none !important;
 }
 
 /* Replace large animated route skeletons with one tiny static status line.
