@@ -28,8 +28,6 @@ type ResponsiveDashboardHeaderProps = {
 
 function HeaderSearchOpenFallback() {
   useEffect(() => {
-    let fallbackTimer: number | null = null;
-
     const isSearchOpen = (trigger: HTMLButtonElement) => {
       if (trigger.hasAttribute("data-header-search-trigger")) {
         const input = trigger
@@ -44,7 +42,7 @@ function HeaderSearchOpenFallback() {
       return trigger.getAttribute("aria-expanded") === "true";
     };
 
-    const handlePointerUp = (event: PointerEvent) => {
+    const handlePointerDown = (event: PointerEvent) => {
       if (!event.isPrimary || event.button !== 0) return;
       if (!(event.target instanceof Element)) return;
 
@@ -54,22 +52,16 @@ function HeaderSearchOpenFallback() {
 
       if (!trigger || isSearchOpen(trigger)) return;
 
-      if (fallbackTimer !== null) window.clearTimeout(fallbackTimer);
-      fallbackTimer = window.setTimeout(() => {
-        fallbackTimer = null;
-
-        // Let the normal click handler run first. Only replay the click when a
-        // browser or focus helper suppressed it after the pointer interaction.
-        if (!document.contains(trigger) || isSearchOpen(trigger)) return;
-        trigger.click();
-      }, 0);
+      // Open immediately while the pointer interaction is still trusted.
+      // This avoids mobile/desktop browsers suppressing the later click.
+      event.preventDefault();
+      trigger.click();
     };
 
-    document.addEventListener("pointerup", handlePointerUp, true);
+    document.addEventListener("pointerdown", handlePointerDown, true);
 
     return () => {
-      document.removeEventListener("pointerup", handlePointerUp, true);
-      if (fallbackTimer !== null) window.clearTimeout(fallbackTimer);
+      document.removeEventListener("pointerdown", handlePointerDown, true);
     };
   }, []);
 
