@@ -1,5 +1,5 @@
 /* Global animation preference overrides.
- * Standard keeps the current experience unchanged.
+ * Standard keeps the full visual experience with lightweight composited loading.
  * Fast keeps every effect while shortening motion and loading presentation.
  * None resolves every CSS, SVG and view transition immediately.
  */
@@ -40,6 +40,48 @@ html[data-animation-mode="none"] svg set {
 html[data-animation-mode="none"]::view-transition-old(root),
 html[data-animation-mode="none"]::view-transition-new(root) {
   animation: none !important;
+}
+
+/* Standard mode uses one tiny transform-only loading rail instead of mounting a
+ * route-sized skeleton tree. The main thread stays free for streaming content,
+ * hydration and the authored page entrance animations.
+ */
+html[data-animation-mode="standard"]
+  [data-standard-animation-route-loading="true"] {
+  display: flex;
+  min-width: 0;
+  min-height: 2rem;
+  align-items: center;
+}
+
+html[data-animation-mode="standard"] .jf-standard-route-loader {
+  position: relative;
+  display: block;
+  width: min(10rem, 42vw);
+  height: 0.2rem;
+  overflow: hidden;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--active), transparent 84%);
+  contain: layout paint style;
+}
+
+html[data-animation-mode="standard"] .jf-standard-route-loader > span {
+  position: absolute;
+  inset-block: 0;
+  left: 0;
+  width: 42%;
+  border-radius: inherit;
+  background: var(--active);
+  opacity: 0.92;
+  transform: translate3d(-125%, 0, 0);
+  animation: jf-standard-route-loader-slide 860ms var(--motion-ease) infinite;
+  will-change: transform;
+}
+
+@keyframes jf-standard-route-loader-slide {
+  to {
+    transform: translate3d(340%, 0, 0);
+  }
 }
 
 /* Fast mode uses one tiny animated indicator instead of painting a complete
