@@ -33,11 +33,7 @@ const MANAGED_FORM_MARKER_SELECTOR = [
   '[role="listbox"][aria-roledescription="scroll picker"]',
 ].join(",");
 
-const MANAGED_GROUP_SELECTOR = [
-  '[role="radiogroup"]',
-  '[role="group"]:has(> button[aria-pressed])',
-].join(",");
-
+const MANAGED_GROUP_SELECTOR = '[role="radiogroup"], [role="group"]';
 const GLOBAL_FIELD_HEIGHT = "var(--jf-global-form-control-height, 3rem)";
 const RUNTIME_FIELD_ATTRIBUTE = "data-jf-global-field-height";
 const RUNTIME_GROUP_ATTRIBUTE = "data-jf-global-field-group";
@@ -64,12 +60,28 @@ function getManagedRoots() {
   return Array.from(roots);
 }
 
+function hasDirectButton(
+  container: HTMLElement,
+  predicate: (button: HTMLButtonElement) => boolean,
+) {
+  return Array.from(container.children).some(
+    (child) => child instanceof HTMLButtonElement && predicate(child),
+  );
+}
+
+function isManagedChoiceGroup(group: HTMLElement) {
+  return hasDirectButton(
+    group,
+    (button) => button.getAttribute("role") === "radio" || button.hasAttribute("aria-pressed"),
+  );
+}
+
 function isLockedPresentationField(element: HTMLElement) {
   if (element.dataset.financeLockedName === "true") return true;
 
   if (element.id === "investment-name") {
     const field = element.closest<HTMLElement>('[data-slot="finance-form-field"]');
-    if (field && !field.querySelector(":scope > button")) return true;
+    if (field && !hasDirectButton(field, () => true)) return true;
   }
 
   return false;
@@ -95,6 +107,8 @@ function setExactFieldFootprint(element: HTMLElement) {
 }
 
 function setExactGroupFootprint(group: HTMLElement) {
+  if (!isManagedChoiceGroup(group)) return;
+
   group.setAttribute(RUNTIME_GROUP_ATTRIBUTE, "true");
   group.style.setProperty("box-sizing", "border-box", "important");
   group.style.setProperty("inline-size", "100%", "important");
@@ -108,15 +122,15 @@ function setExactGroupFootprint(group: HTMLElement) {
   group.style.setProperty("min-height", GLOBAL_FIELD_HEIGHT, "important");
   group.style.setProperty("max-height", GLOBAL_FIELD_HEIGHT, "important");
 
-  group
-    .querySelectorAll<HTMLElement>(
-      ':scope > button[role="radio"], :scope > button[aria-pressed]',
-    )
-    .forEach((button) => {
-      button.style.setProperty("height", "100%", "important");
-      button.style.setProperty("min-height", "0", "important");
-      button.style.setProperty("max-height", "100%", "important");
-    });
+  Array.from(group.children).forEach((child) => {
+    if (!(child instanceof HTMLButtonElement)) return;
+    if (child.getAttribute("role") !== "radio" && !child.hasAttribute("aria-pressed")) {
+      return;
+    }
+    child.style.setProperty("height", "100%", "important");
+    child.style.setProperty("min-height", "0", "important");
+    child.style.setProperty("max-height", "100%", "important");
+  });
 }
 
 function syncAllFormFieldFootprints() {
@@ -131,9 +145,7 @@ function syncAllFormFieldFootprints() {
 
     if (root.matches(".finance-modal-content")) {
       root
-        .querySelectorAll<HTMLElement>(
-          '.finance-modal-body > div:has(> button[aria-pressed])',
-        )
+        .querySelectorAll<HTMLElement>(".finance-modal-body > div")
         .forEach(setExactGroupFootprint);
     }
   });
