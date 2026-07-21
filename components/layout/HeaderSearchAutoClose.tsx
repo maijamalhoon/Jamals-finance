@@ -2,76 +2,97 @@
 
 import { useEffect } from "react";
 
-const AUTO_CLOSE_DELAY_MS = 6000;
+const AUTO_CLOSE_DELAY_MS = 6_000;
 
 export default function HeaderSearchAutoClose() {
   useEffect(() => {
-    const input = document.getElementById(
-      "desktop-inline-transaction-search",
-    ) as HTMLInputElement | null;
-    const searchForm = input?.closest<HTMLFormElement>("form");
-    const openButton = searchForm?.querySelector<HTMLButtonElement>(
-      "[data-header-search-trigger]",
-    );
-    const closeButton = searchForm?.querySelector<HTMLButtonElement>(
-      'button[aria-label="Close transaction search"]',
-    );
+    let boundCleanup: (() => void) | null = null;
+    let mountObserver: MutationObserver | null = null;
 
-    if (!input || !searchForm || !openButton || !closeButton) return;
+    const bindSearch = () => {
+      const input = document.getElementById(
+        "desktop-inline-transaction-search",
+      ) as HTMLInputElement | null;
+      const searchForm = input?.closest<HTMLFormElement>("form");
+      const closeButton = searchForm?.querySelector<HTMLButtonElement>(
+        'button[aria-label="Close transaction search"]',
+      );
 
-    let closeTimer: number | null = null;
-    let openFrame: number | null = null;
+      if (!input || !searchForm || !closeButton) return false;
 
-    const isSearchOpen = () =>
-      input.getAttribute("aria-hidden") === "false" && closeButton.tabIndex === 0;
+      let closeTimer: number | null = null;
 
-    const cancelAutoClose = () => {
-      if (closeTimer !== null) {
+      const isSearchOpen = () => input.getAttribute("aria-hidden") === "false";
+
+      const cancelAutoClose = () => {
+        if (closeTimer === null) return;
         window.clearTimeout(closeTimer);
         closeTimer = null;
-      }
-    };
+      };
 
-    const scheduleAutoClose = () => {
-      cancelAutoClose();
-      if (input.value.trim()) return;
-
-      closeTimer = window.setTimeout(() => {
-        closeTimer = null;
-
-        if (isSearchOpen() && !input.value.trim()) {
-          closeButton.click();
-        }
-      }, AUTO_CLOSE_DELAY_MS);
-    };
-
-    const handleOpen = () => {
-      if (openFrame !== null) window.cancelAnimationFrame(openFrame);
-      openFrame = window.requestAnimationFrame(() => {
-        openFrame = null;
-        if (isSearchOpen()) scheduleAutoClose();
-      });
-    };
-
-    const handleInput = () => {
-      if (input.value.trim()) {
+      const scheduleAutoClose = () => {
         cancelAutoClose();
-        return;
-      }
+        if (!isSearchOpen() || input.value.trim()) return;
 
-      if (isSearchOpen()) scheduleAutoClose();
+        closeTimer = window.setTimeout(() => {
+          closeTimer = null;
+
+          if (isSearchOpen() && !input.value.trim()) {
+            closeButton.click();
+          }
+        }, AUTO_CLOSE_DELAY_MS);
+      };
+
+      const syncSearchState = () => {
+        if (isSearchOpen()) {
+          scheduleAutoClose();
+          return;
+        }
+
+        cancelAutoClose();
+      };
+
+      const handleInput = () => {
+        if (input.value.trim()) {
+          cancelAutoClose();
+          return;
+        }
+
+        scheduleAutoClose();
+      };
+
+      const stateObserver = new MutationObserver(syncSearchState);
+      stateObserver.observe(input, {
+        attributes: true,
+        attributeFilter: ["aria-hidden"],
+      });
+
+      input.addEventListener("input", handleInput);
+      closeButton.addEventListener("click", cancelAutoClose);
+      syncSearchState();
+
+      boundCleanup = () => {
+        cancelAutoClose();
+        stateObserver.disconnect();
+        input.removeEventListener("input", handleInput);
+        closeButton.removeEventListener("click", cancelAutoClose);
+      };
+
+      return true;
     };
 
-    openButton.addEventListener("click", handleOpen);
-    input.addEventListener("input", handleInput);
-    closeButton.addEventListener("click", cancelAutoClose);
+    if (!bindSearch()) {
+      mountObserver = new MutationObserver(() => {
+        if (!bindSearch()) return;
+        mountObserver?.disconnect();
+        mountObserver = null;
+      });
+      mountObserver.observe(document.body, { childList: true, subtree: true });
+    }
 
     return () => {
-      cancelAutoClose();
-      if (openFrame !== null) window.cancelAnimationFrame(openFrame);
-      openButton.removeEventListener("click", handleOpen);
-      input.removeEventListener("input", handleInput);
-      closeButton.removeEventListener("click", cancelAutoClose);
+      mountObserver?.disconnect();
+      boundCleanup?.();
     };
   }, []);
 
