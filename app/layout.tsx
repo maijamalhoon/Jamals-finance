@@ -27,7 +27,10 @@ import { Toaster } from "sonner";
 import DesktopOverscrollBounce from "@/components/motion/DesktopOverscrollBounce";
 import MotionProvider from "@/components/motion/MotionProvider";
 import GlobalConfirmDialog from "@/components/ui/global-confirm-dialog";
-import { CURRENCY_STORAGE_KEY } from "@/lib/currency";
+import {
+  CURRENCY_STORAGE_KEY,
+  SUPPORTED_CURRENCIES,
+} from "@/lib/currency";
 import { ANIMATION_BOOTSTRAP_SCRIPT } from "@/lib/animation-preference";
 import ChartTooltipAutoDismiss from "@/components/charts/ChartTooltipAutoDismiss";
 import PWARegister from "./pwa-register";
@@ -51,8 +54,9 @@ const CURRENCY_BOOTSTRAP_SCRIPT = `
 (() => {
   try {
     const key = ${JSON.stringify(CURRENCY_STORAGE_KEY)};
+    const allowed = ${JSON.stringify(SUPPORTED_CURRENCIES)};
     const saved = window.localStorage.getItem(key);
-    if (saved !== "PKR" && saved !== "USD") return;
+    if (!allowed.includes(saved)) return;
 
     const cookieEntry = document.cookie
       .split("; ")
