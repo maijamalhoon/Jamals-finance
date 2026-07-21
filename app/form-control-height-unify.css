@@ -1,8 +1,7 @@
 /*
- * Global form-control and modal-spacing authority.
- * Keeps every single-line input, select, picker and segmented option compact,
- * and keeps the final footer action evenly separated from the last field.
- * Data, validation and form logic remain unchanged.
+ * Global form-control, modal-spacing, positioning and motion authority.
+ * Every finance form shares one visual shell and animation contract while each
+ * feature keeps its own data, validation, API and submit logic.
  */
 
 :root {
@@ -11,12 +10,109 @@
   --jf-global-final-action-height: 2.5rem;
   --jf-global-final-action-radius: 0.95rem;
   --jf-global-form-edge-gap: 0.875rem;
+  --jf-global-form-motion-duration: var(--motion-duration-fast);
+  --jf-global-form-motion-ease: var(--motion-ease);
 }
 
 @media (min-width: 640px) {
   :root {
     --jf-global-form-edge-gap: 1rem;
   }
+}
+
+@keyframes jf-global-form-enter {
+  from {
+    opacity: 0;
+    scale: 0.965;
+  }
+
+  to {
+    opacity: 1;
+    scale: 1;
+  }
+}
+
+@keyframes jf-global-form-exit {
+  from {
+    opacity: 1;
+    scale: 1;
+  }
+
+  to {
+    opacity: 0;
+    scale: 0.965;
+  }
+}
+
+/* One open/close motion language for every finance form. */
+[data-slot="dialog-content"].finance-modal-content[data-open] {
+  animation-name: jf-global-form-enter !important;
+  animation-duration: var(--jf-global-form-motion-duration) !important;
+  animation-timing-function: var(--jf-global-form-motion-ease) !important;
+  animation-fill-mode: both !important;
+  transform-origin: center center !important;
+  will-change: opacity, scale;
+}
+
+[data-slot="dialog-content"].finance-modal-content[data-closed] {
+  animation-name: jf-global-form-exit !important;
+  animation-duration: var(--jf-global-form-motion-duration) !important;
+  animation-timing-function: var(--jf-global-form-motion-ease) !important;
+  animation-fill-mode: both !important;
+  transform-origin: center center !important;
+  will-change: opacity, scale;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-slot="dialog-content"].finance-modal-content[data-open],
+  [data-slot="dialog-content"].finance-modal-content[data-closed] {
+    animation-duration: 1ms !important;
+    scale: 1 !important;
+  }
+}
+
+/*
+ * Desktop positioning is owned globally. Individual forms must not calculate
+ * their own screen position; only their width and content height may differ.
+ */
+@media (min-width: 1024px) {
+  [data-slot="dialog-content"].finance-modal-content.finance-modal-content {
+    top: 50% !important;
+    right: auto !important;
+    bottom: auto !important;
+    left: 50% !important;
+    margin: 0 !important;
+    translate: -50% -50% !important;
+    transform: none !important;
+  }
+}
+
+/*
+ * Older Settings-only layers applied a second transform on top of Dialog's
+ * built-in translate. These higher-specificity selectors collapse every
+ * Settings form back onto the same global modal contract on every device.
+ */
+:is(
+    [data-slot="dialog-content"].finance-modal-content.finance-modal-content:has(#settings-category-name),
+    [data-slot="dialog-content"].finance-modal-content.finance-modal-content:has(#persistent-category-name),
+    [data-slot="dialog-content"].finance-modal-content.finance-modal-content:has(#settings-currency-select),
+    [data-slot="dialog-content"].finance-modal-content.finance-modal-content:has(#settings-date-format-select),
+    [data-slot="dialog-content"].finance-modal-content.finance-modal-content:has(#settings-reference-display-name),
+    [data-slot="dialog-content"].finance-modal-content.finance-modal-content:has(#custom-profile-name),
+    [data-slot="dialog-content"].finance-modal-content.finance-modal-content:has(.settings-security-panel),
+    [data-slot="dialog-content"].finance-modal-content.finance-modal-content:not(:has(#settings-category-name)):has([role="tablist"]),
+    [data-slot="dialog-content"].finance-modal-content.settings-profile-details-hard.settings-profile-details-hard,
+    [data-slot="dialog-content"].finance-modal-content.settings-account-security-hard.settings-account-security-hard,
+    [data-slot="dialog-content"].finance-modal-content.settings-currency-hard.settings-currency-hard,
+    [data-slot="dialog-content"].finance-modal-content.settings-date-format-hard.settings-date-format-hard
+  ) {
+  top: 50% !important;
+  right: auto !important;
+  bottom: auto !important;
+  left: 50% !important;
+  margin: 0 !important;
+  translate: -50% -50% !important;
+  transform: none !important;
 }
 
 :is(form, [data-slot="dialog-content"], .finance-modal-content)
