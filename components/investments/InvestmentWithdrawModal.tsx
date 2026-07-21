@@ -24,6 +24,13 @@ import {
   financePrimaryButtonClass,
 } from "@/components/ui/finance-modal";
 import { Input } from "@/components/ui/input";
+import {
+  BASE_CURRENCY,
+  SUPPORTED_CURRENCIES,
+  convertMoney,
+  isSupportedCurrency,
+  type SupportedCurrency,
+} from "@/lib/currency";
 import { getAppDateKey } from "@/lib/dates";
 import {
   calculateInvestmentWithdrawal,
@@ -61,7 +68,7 @@ function getInvestmentLabel(investment: ExistingInvestment) {
   return symbol ? `${investment.name} (${symbol})` : investment.name;
 }
 
-function CurrencyToggle({
+function CurrencyPicker({
   value,
   onChange,
 }: {
@@ -69,23 +76,20 @@ function CurrencyToggle({
   onChange: (currency: InvestmentCurrency) => void;
 }) {
   return (
-    <div className="grid grid-cols-2 rounded-[12px] border border-border bg-surface-secondary p-0.5">
-      {(["PKR", "USD"] as InvestmentCurrency[]).map((currency) => (
-        <button
-          key={currency}
-          type="button"
-          onClick={() => onChange(currency)}
-          aria-pressed={value === currency}
-          className={`finance-focus min-h-9 min-w-12 rounded-[9px] px-2 text-[10px] font-black transition-colors ${
-            value === currency
-              ? "bg-card text-text-primary shadow-theme"
-              : "text-text-secondary hover:text-text-primary"
-          }`}
-        >
+    <select
+      value={value}
+      onChange={(event) => {
+        if (isSupportedCurrency(event.target.value)) onChange(event.target.value);
+      }}
+      aria-label="Withdrawal currency"
+      className="finance-focus h-9 min-w-[4.75rem] rounded-[10px] border border-border bg-surface-secondary px-2 text-[10px] font-black text-text-primary"
+    >
+      {SUPPORTED_CURRENCIES.map((currency) => (
+        <option key={currency} value={currency}>
           {currency}
-        </button>
+        </option>
       ))}
-    </div>
+    </select>
   );
 }
 
@@ -101,14 +105,20 @@ export default function InvestmentWithdrawModal({
   onSuccess: () => void;
 }) {
   const supabase = useMemo(() => createClient(), []);
-  const { formatCurrency } = useCurrency();
+  const {
+    currency: displayCurrency,
+    rates,
+    ratesReady,
+    getRate,
+    formatCurrency,
+  } = useCurrency();
   const initializedInvestmentRef = useRef<string | null>(null);
 
   const [investmentId, setInvestmentId] = useState("");
   const [quantity, setQuantity] = useState("");
   const [withdrawalPrice, setWithdrawalPrice] = useState("");
   const [withdrawalCurrency, setWithdrawalCurrency] =
-    useState<InvestmentCurrency>("PKR");
+    useState<InvestmentCurrency>(BASE_CURRENCY);
   const [exchangeRate, setExchangeRate] = useState("1");
   const [accountId, setAccountId] = useState("");
   const [accounts, setAccounts] = useState<Account[]>([]);
@@ -121,6 +131,22 @@ export default function InvestmentWithdrawModal({
     () => investments.find((investment) => investment.id === investmentId) ?? null,
     [investmentId, investments],
   );
+
+  function getPriceInCurrency(
+    investment: ExistingInvestment,
+    currency: SupportedCurrency,
+  ) {
+    const canonicalPkr = parseFinite(investment.current_price) ?? 0;
+    const original = parseFinite(investment.current_price_original);
+    const originalCurrency = isSupportedCurrency(
+      investment.current_price_currency,
+    )
+      ? investment.current_price_currency
+      : null;
+
+    if (original !== null && originalCurrency === currency) return original;
+    return convertMoney(canonicalPkr, BASE_CURRENCY, currency, rates);
+  }
 
   useEffect(() => {
     if (!open) {
@@ -138,28 +164,17 @@ export default function InvestmentWithdrawModal({
 
     initializedInvestmentRef.current = nextId;
     const availableQuantity = parseFinite(investment.quantity) ?? 0;
-    const currentPkr = parseFinite(investment.current_price) ?? 0;
-    const currentOriginal = parseFinite(investment.current_price_original);
-    const hasUsdQuote =
-      investment.current_price_currency === "USD" &&
-      currentOriginal !== null &&
-      currentOriginal >= 0;
-    const derivedRate =
-      hasUsdQuote && currentOriginal > 0 && currentPkr > 0
-        ? currentPkr / currentOriginal
-        : null;
+    const nextCurrency = displayCurrency as InvestmentCurrency;
+    const nextPrice = getPriceInCurrency(investment, nextCurrency);
+    const nextRate = getRate(nextCurrency, BASE_CURRENCY);
 
     setQuantity(formatInputNumber(availableQuantity));
-    setWithdrawalCurrency(hasUsdQuote ? "USD" : "PKR");
-    setWithdrawalPrice(
-      formatInputNumber(hasUsdQuote ? (currentOriginal ?? 0) : currentPkr),
-    );
-    setExchangeRate(
-      formatInputNumber(hasUsdQuote ? (derivedRate ?? 0) : 1),
-    );
+    setWithdrawalCurrency(nextCurrency);
+    setWithdrawalPrice(formatInputNumber(nextPrice));
+    setExchangeRate(formatInputNumber(nextRate ?? 0));
     setWithdrawnAt(getAppDateKey());
     setError("");
-  }, [investmentId, investments, open]);
+  }, [displayCurrency, getRate, investmentId, investments, open, rates]);
 
   useEffect(() => {
     if (!open || !investmentId) return;
@@ -232,7 +247,7 @@ export default function InvestmentWithdrawModal({
         withdrawalPriceOriginal: parsedWithdrawalPrice,
         withdrawalCurrency,
         withdrawalExchangeRate:
-          withdrawalCurrency === "USD" ? parsedExchangeRate : 1,
+          withdrawalCurrency === BASE_CURRENCY ? 1 : parsedExchangeRate,
       })
     : null;
   const fullWithdrawal =
@@ -240,52 +255,16 @@ export default function InvestmentWithdrawModal({
     availableQuantity > 0 &&
     Math.abs(parsedQuantity - availableQuantity) < 1e-10;
 
-  async function loadUsdPkrRate() {
-    const response = await fetch("/api/exchange-rate");
-    const data = (await response.json()) as { rate?: number };
-    const rate = Number(data.rate);
-
-    if (!response.ok || !Number.isFinite(rate) || rate <= 0) {
-      throw new Error("USD to PKR rate is unavailable right now.");
-    }
-
-    return rate;
-  }
-
   function changeCurrency(currency: InvestmentCurrency) {
     setWithdrawalCurrency(currency);
 
     if (!selectedInvestment) return;
 
-    const currentPkr = parseFinite(selectedInvestment.current_price) ?? 0;
-    const currentOriginal = parseFinite(
-      selectedInvestment.current_price_original,
-    );
-
-    if (
-      currency === "USD" &&
-      selectedInvestment.current_price_currency === "USD" &&
-      currentOriginal !== null
-    ) {
-      setWithdrawalPrice(formatInputNumber(currentOriginal));
-      setExchangeRate(
-        formatInputNumber(
-          currentOriginal > 0 && currentPkr > 0
-            ? currentPkr / currentOriginal
-            : 0,
-        ),
-      );
-      return;
-    }
-
-    if (currency === "PKR") {
-      setWithdrawalPrice(formatInputNumber(currentPkr));
-      setExchangeRate("1");
-      return;
-    }
-
-    setWithdrawalPrice("");
-    setExchangeRate("");
+    const nextPrice = getPriceInCurrency(selectedInvestment, currency);
+    const nextRate = getRate(currency, BASE_CURRENCY);
+    setWithdrawalPrice(formatInputNumber(nextPrice));
+    setExchangeRate(formatInputNumber(nextRate ?? 0));
+    setError("");
   }
 
   async function handleWithdraw() {
@@ -315,27 +294,26 @@ export default function InvestmentWithdrawModal({
       return;
     }
 
+    if (withdrawalCurrency !== BASE_CURRENCY && !ratesReady) {
+      setError("Exchange rates are unavailable. The withdrawal was not recorded.");
+      return;
+    }
+
+    const confirmedRate =
+      withdrawalCurrency === BASE_CURRENCY
+        ? 1
+        : getRate(withdrawalCurrency, BASE_CURRENCY);
+    if (
+      confirmedRate === null ||
+      !Number.isFinite(confirmedRate) ||
+      confirmedRate <= 0
+    ) {
+      setError("The exchange rate is invalid. The withdrawal was not recorded.");
+      return;
+    }
+
     setLoading(true);
     setError("");
-
-    let confirmedRate = 1;
-    if (withdrawalCurrency === "USD") {
-      confirmedRate = parsedExchangeRate ?? 0;
-      if (!Number.isFinite(confirmedRate) || confirmedRate <= 0) {
-        try {
-          confirmedRate = await loadUsdPkrRate();
-          setExchangeRate(formatInputNumber(confirmedRate));
-        } catch (rateError) {
-          setLoading(false);
-          setError(
-            rateError instanceof Error
-              ? rateError.message
-              : "USD to PKR rate is unavailable right now.",
-          );
-          return;
-        }
-      }
-    }
 
     const { error: withdrawalError } = await supabase.rpc(
       "withdraw_investment",
@@ -437,7 +415,10 @@ export default function InvestmentWithdrawModal({
               <label className="field-label mb-0" htmlFor="withdraw-price">
                 Withdrawal Price
               </label>
-              <CurrencyToggle value={withdrawalCurrency} onChange={changeCurrency} />
+              <CurrencyPicker
+                value={withdrawalCurrency}
+                onChange={changeCurrency}
+              />
             </div>
             <Input
               id="withdraw-price"
@@ -451,8 +432,12 @@ export default function InvestmentWithdrawModal({
             />
           </div>
 
-          {withdrawalCurrency === "USD" ? (
-            <FinanceFormField label="USD to PKR Rate" htmlFor="withdraw-rate">
+          {withdrawalCurrency !== BASE_CURRENCY ? (
+            <FinanceFormField
+              label={`${withdrawalCurrency} to PKR Rate`}
+              htmlFor="withdraw-rate"
+              hint="The validated rate is locked with this withdrawal."
+            >
               <Input
                 id="withdraw-rate"
                 type="number"
@@ -460,9 +445,9 @@ export default function InvestmentWithdrawModal({
                 min="0"
                 step="any"
                 value={exchangeRate}
-                onChange={(event) => setExchangeRate(event.target.value)}
-                placeholder="Current USD to PKR rate"
-                className="font-semibold tabular-nums"
+                readOnly
+                placeholder="Live exchange rate"
+                className="font-semibold tabular-nums read-only:bg-surface-secondary"
               />
             </FinanceFormField>
           ) : null}
@@ -526,7 +511,12 @@ export default function InvestmentWithdrawModal({
           <Button
             type="button"
             onClick={handleWithdraw}
-            disabled={loading || loadingOptions || !selectedInvestment}
+            disabled={
+              loading ||
+              loadingOptions ||
+              !selectedInvestment ||
+              (withdrawalCurrency !== BASE_CURRENCY && !ratesReady)
+            }
             loading={loading}
             loadingLabel="Withdrawing investment…"
             className={financePrimaryButtonClass}
