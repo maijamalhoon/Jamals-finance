@@ -28,6 +28,7 @@ type NormalizedPayload =
 
 const RATE_ERROR_MESSAGE =
   "Exchange rates are unavailable. Your financial record was not saved, so no incorrect conversion was applied.";
+const PRIVATE_AVATAR_BUCKET = "avatars";
 
 function isUsableCachedSnapshot(value: unknown): value is {
   rates: CurrencyRates;
@@ -355,6 +356,45 @@ function wrapTableBuilder<T extends object>(table: string, builder: T): T {
   });
 }
 
+function privateAvatarUrl(path: string) {
+  return `/api/profile/avatar?path=${encodeURIComponent(path)}`;
+}
+
+function wrapStorageBucket<T extends object>(bucket: string, builder: T): T {
+  if (bucket !== PRIVATE_AVATAR_BUCKET) return builder;
+
+  return new Proxy(builder, {
+    get(target, property, receiver) {
+      if (property === "getPublicUrl") {
+        return (path: string) => ({
+          data: { publicUrl: privateAvatarUrl(path) },
+        });
+      }
+
+      const value = Reflect.get(target, property, receiver);
+      return typeof value === "function" ? value.bind(target) : value;
+    },
+  });
+}
+
+function wrapStorage<T extends object>(storage: T): T {
+  return new Proxy(storage, {
+    get(target, property, receiver) {
+      if (property === "from") {
+        const from = Reflect.get(target, property, target) as (
+          bucket: string,
+        ) => object;
+
+        return (bucket: string) =>
+          wrapStorageBucket(bucket, from.call(target, bucket));
+      }
+
+      const value = Reflect.get(target, property, receiver);
+      return typeof value === "function" ? value.bind(target) : value;
+    },
+  });
+}
+
 export function createClient() {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
@@ -366,6 +406,7 @@ export function createClient() {
   const client = createBrowserClient(supabaseUrl, supabaseAnonKey, {
     auth: SUPABASE_BROWSER_AUTH_OPTIONS,
   });
+  const privateStorage = wrapStorage(client.storage as unknown as object);
 
   return new Proxy(client, {
     get(target, property, receiver) {
@@ -375,6 +416,10 @@ export function createClient() {
             table,
             target.from(table as never) as unknown as object,
           );
+      }
+
+      if (property === "storage") {
+        return privateStorage;
       }
 
       const value = Reflect.get(target, property, receiver);
