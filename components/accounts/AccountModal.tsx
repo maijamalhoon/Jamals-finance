@@ -15,6 +15,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import TouchWheelPicker, {
+  useTouchWheelPickerMode,
+} from "@/components/ui/touch-wheel-picker";
 import {
   FinanceModalBody,
   FinanceModalFooter,
@@ -85,6 +88,7 @@ export default function AccountModal({
   const supabase = createClient();
   const isEditing = Boolean(account);
   const { currency, ratesReady, fromBaseCurrency } = useCurrency();
+  const touchWheelPickerMode = useTouchWheelPickerMode();
 
   const [name, setName] = useState("");
   const [accountNumber, setAccountNumber] = useState("");
@@ -230,23 +234,44 @@ export default function AccountModal({
           </FinanceFormField>
 
           <FinanceFormField label="Account Type" htmlFor="account-kind">
-            <Select
-              value={accountKind}
-              onValueChange={(nextValue) => {
-                if (typeof nextValue === "string") setAccountKind(nextValue);
-              }}
-            >
-              <SelectTrigger id="account-kind" className="w-full">
-                <SelectValue placeholder="Select account type" />
-              </SelectTrigger>
-              <SelectContent align="start" sideOffset={8} className="z-[90]">
-                {ACCOUNT_KINDS.map((kind) => (
-                  <SelectItem key={kind.value} value={kind.value}>
-                    {kind.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            {touchWheelPickerMode ? (
+              <TouchWheelPicker
+                id="account-kind"
+                value={accountKind}
+                options={ACCOUNT_KINDS.map((kind) => ({
+                  value: kind.value,
+                  ariaLabel: kind.label,
+                  content: (
+                    <span className="block truncate font-semibold text-text-primary">
+                      {kind.label}
+                    </span>
+                  ),
+                }))}
+                onValueChange={setAccountKind}
+                ariaLabel="Account Type"
+                disabled={loading}
+                className="field-input w-full p-0"
+                itemClassName="px-4"
+              />
+            ) : (
+              <Select
+                value={accountKind}
+                onValueChange={(nextValue) => {
+                  if (typeof nextValue === "string") setAccountKind(nextValue);
+                }}
+              >
+                <SelectTrigger id="account-kind" className="w-full">
+                  <SelectValue placeholder="Select account type" />
+                </SelectTrigger>
+                <SelectContent align="start" sideOffset={8} className="z-[90]">
+                  {ACCOUNT_KINDS.map((kind) => (
+                    <SelectItem key={kind.value} value={kind.value}>
+                      {kind.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
           </FinanceFormField>
 
           <FinanceFormField
