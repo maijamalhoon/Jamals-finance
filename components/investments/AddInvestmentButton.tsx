@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowDownToLine, BriefcaseBusiness } from "lucide-react";
+import { ArrowDownToLine, BriefcaseBusiness, Plus } from "lucide-react";
 
 import PageHeadingActionPortal from "@/components/layout/PageHeadingActionPortal";
 import { useLiveInvestmentRows } from "@/components/investments/useLiveInvestmentRows";
@@ -13,18 +13,21 @@ import InvestmentWithdrawModal from "./InvestmentWithdrawModal";
 interface AddInvestmentButtonProps {
   label?: string;
   showIcon?: boolean;
+  icon?: "investment" | "plus";
   investments?: ExistingInvestment[];
 }
 
 export default function AddInvestmentButton({
   label = "Add Investment",
   showIcon = true,
+  icon = "investment",
   investments = [],
 }: AddInvestmentButtonProps = {}) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [withdrawOpen, setWithdrawOpen] = useState(false);
   const liveInvestments = useLiveInvestmentRows(investments);
+  const ActionIcon = icon === "plus" ? Plus : BriefcaseBusiness;
 
   return (
     <>
@@ -36,7 +39,7 @@ export default function AddInvestmentButton({
             onClick={() => setOpen(true)}
             className="investment-action w-auto"
           >
-            {showIcon ? <BriefcaseBusiness size={16} /> : null}
+            {showIcon ? <ActionIcon size={16} /> : null}
             <span className="sr-only">{label}</span>
           </button>
 
