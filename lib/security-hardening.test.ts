@@ -4,6 +4,7 @@ import { describe, expect, it } from "vitest";
 
 const root = resolve(process.cwd());
 const applicationSourceDirectories = ["app", "components", "lib", "public"];
+const thisTestFile = join(root, "lib/security-hardening.test.ts");
 
 function read(path: string) {
   return readFileSync(join(root, path), "utf8");
@@ -85,6 +86,7 @@ describe("security hardening contracts", () => {
   it("does not place administrative Supabase secrets in application source", () => {
     const source = applicationSourceDirectories
       .flatMap(collectSourceFiles)
+      .filter((path) => path !== thisTestFile)
       .map((path) => readFileSync(path, "utf8"))
       .join("\n");
 
