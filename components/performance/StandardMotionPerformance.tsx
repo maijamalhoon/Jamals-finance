@@ -9,6 +9,7 @@ import {
 } from "@/lib/animation-preference";
 
 type StandardMotionTier = "full" | "balanced" | "lite";
+type StandardRefreshTier = "high" | "normal" | "low";
 
 type NetworkInformationLike = {
   saveData?: boolean;
@@ -32,12 +33,6 @@ const CONTINUOUS_SVG_SELECTOR = [
   'animateTransform[repeatCount="indefinite"]',
 ].join(",");
 
-const ESSENTIAL_MOTION_SELECTOR = [
-  '[aria-busy="true"]',
-  '[role="progressbar"]',
-  '[data-standard-animation-route-loading="true"]',
-].join(",");
-
 function getInitialStandardMotionTier(): StandardMotionTier {
   const runtimeNavigator = navigator as NavigatorWithPerformanceHints;
   const connection = runtimeNavigator.connection;
@@ -45,7 +40,7 @@ function getInitialStandardMotionTier(): StandardMotionTier {
   const downlink = connection?.downlink;
   const memory = runtimeNavigator.deviceMemory;
   const cores = runtimeNavigator.hardwareConcurrency;
-  const slowDisplay = window.matchMedia("(update: slow)").matches;
+  const slowDisplay = window.matchMedia?.("(update: slow)").matches === true;
 
   if (
     connection?.saveData === true ||
@@ -97,7 +92,7 @@ function isContinuousAnimation(animation: Animation) {
 
 function isNearViewport(element: Element) {
   const rect = element.getBoundingClientRect();
-  const margin = 96;
+  const margin = 160;
 
   return (
     rect.bottom >= -margin &&
@@ -107,8 +102,30 @@ function isNearViewport(element: Element) {
   );
 }
 
-function isEssentialMotion(element: Element) {
-  return Boolean(element.closest(ESSENTIAL_MOTION_SELECTOR));
+function getRefreshTier(medianFrameMs: number): StandardRefreshTier {
+  if (medianFrameMs > 0 && medianFrameMs <= 10.5) return "high";
+  if (medianFrameMs > 18.5) return "low";
+  return "normal";
+}
+
+function collectContinuousSvgRoots(root: ParentNode) {
+  const svgRoots = new Set<PausableSvg>();
+
+  if (
+    root instanceof SVGSVGElement &&
+    root.querySelector(CONTINUOUS_SVG_SELECTOR)
+  ) {
+    svgRoots.add(root);
+  }
+
+  root
+    .querySelectorAll<SVGElement>(CONTINUOUS_SVG_SELECTOR)
+    .forEach((motionNode) => {
+      const svg = motionNode.closest("svg");
+      if (svg instanceof SVGSVGElement) svgRoots.add(svg);
+    });
+
+  return svgRoots;
 }
 
 export default function StandardMotionPerformance() {
@@ -122,10 +139,12 @@ export default function StandardMotionPerformance() {
     let sampleFrame = 0;
     let previousFrameTime = 0;
     let longTaskCount = 0;
-    let longTaskWindowStartedAt = performance.now();
+    let slowInteractionCount = 0;
+    let pressureWindowStartedAt = performance.now();
     let mutationFrame = 0;
     let mutationObserver: MutationObserver | null = null;
     let longTaskObserver: PerformanceObserver | null = null;
+    let eventTimingObserver: PerformanceObserver | null = null;
     let intersectionObserver: IntersectionObserver | null = null;
 
     const frameDurations: number[] = [];
@@ -139,9 +158,7 @@ export default function StandardMotionPerformance() {
 
     const shouldRunElementMotion = (element: Element) => {
       if (document.visibilityState !== "visible") return false;
-      if (elementVisibility.get(element) === false) return false;
-      if (tier === "lite" && !isEssentialMotion(element)) return false;
-      return true;
+      return elementVisibility.get(element) !== false;
     };
 
     const pauseAnimation = (animation: Animation) => {
@@ -176,8 +193,7 @@ export default function StandardMotionPerformance() {
     const updateSvg = (svg: PausableSvg) => {
       const shouldRun =
         document.visibilityState === "visible" &&
-        svgVisibility.get(svg) !== false &&
-        (tier !== "lite" || isEssentialMotion(svg));
+        svgVisibility.get(svg) !== false;
 
       try {
         if (shouldRun) svg.unpauseAnimations?.();
@@ -203,6 +219,19 @@ export default function StandardMotionPerformance() {
         elementAnimations.delete(target);
         intersectionObserver?.unobserve(target);
       }
+    };
+
+    const pruneDisconnectedMotion = () => {
+      elementAnimations.forEach((animations, element) => {
+        if (element.isConnected) return;
+        animations.forEach(cleanupAnimation);
+      });
+
+      trackedSvgs.forEach((svg) => {
+        if (svg.isConnected) return;
+        trackedSvgs.delete(svg);
+        intersectionObserver?.unobserve(svg);
+      });
     };
 
     const trackAnimation = (animation: Animation) => {
@@ -244,9 +273,7 @@ export default function StandardMotionPerformance() {
 
     const scanSvgRoot = (scanRoot: ParentNode) => {
       if (!active) return;
-
-      if (scanRoot instanceof SVGSVGElement) trackSvg(scanRoot);
-      scanRoot.querySelectorAll<SVGSVGElement>("svg").forEach(trackSvg);
+      collectContinuousSvgRoots(scanRoot).forEach(trackSvg);
     };
 
     const scanInitialMotion = () => {
@@ -255,6 +282,7 @@ export default function StandardMotionPerformance() {
         document.getAnimations().forEach(trackAnimation);
       }
       scanSvgRoot(document);
+      pruneDisconnectedMotion();
     };
 
     const scheduleInitialScan = () => {
@@ -265,9 +293,9 @@ export default function StandardMotionPerformance() {
       };
 
       if (typeof window.requestIdleCallback === "function") {
-        idleHandle = window.requestIdleCallback(scan, { timeout: 700 });
+        idleHandle = window.requestIdleCallback(scan, { timeout: 650 });
       } else {
-        fallbackHandle = globalThis.setTimeout(scan, 48);
+        fallbackHandle = globalThis.setTimeout(scan, 40);
       }
     };
 
@@ -290,7 +318,6 @@ export default function StandardMotionPerformance() {
 
       tier = nextTier;
       root.dataset.standardMotionTier = nextTier;
-      updateAllMotion();
     };
 
     const downgradeForRuntimePressure = () => {
@@ -302,20 +329,25 @@ export default function StandardMotionPerformance() {
       if (frameDurations.length === 0) return;
       const ordered = [...frameDurations].sort((a, b) => a - b);
       const median = ordered[Math.floor(ordered.length / 2)] ?? 0;
+      const p90 = ordered[Math.floor(ordered.length * 0.9)] ?? median;
 
-      if (median > 24) applyTier("lite");
-      else if (median > 18.5 && tier === "full") applyTier("balanced");
+      root.dataset.standardRefreshTier = getRefreshTier(median);
+
+      if (median > 25 || p90 > 42) applyTier("lite");
+      else if ((median > 18.5 || p90 > 29) && tier === "full") {
+        applyTier("balanced");
+      }
     };
 
     const sampleFrameRate = (time: number) => {
-      if (!active) return;
+      if (!active || document.visibilityState !== "visible") return;
 
       if (previousFrameTime > 0) {
         frameDurations.push(time - previousFrameTime);
       }
       previousFrameTime = time;
 
-      if (frameDurations.length >= 24) {
+      if (frameDurations.length >= 48) {
         sampleFrame = 0;
         finishFrameSampling();
         return;
@@ -324,31 +356,41 @@ export default function StandardMotionPerformance() {
       sampleFrame = window.requestAnimationFrame(sampleFrameRate);
     };
 
-    const startRuntimeSampling = () => {
+    const startFrameSampling = () => {
+      if (!active || document.visibilityState !== "visible") return;
+      if (sampleFrame) window.cancelAnimationFrame(sampleFrame);
       frameDurations.length = 0;
       previousFrameTime = 0;
       sampleFrame = window.requestAnimationFrame(sampleFrameRate);
+    };
 
-      if (
-        typeof PerformanceObserver !== "undefined" &&
-        PerformanceObserver.supportedEntryTypes?.includes("longtask")
-      ) {
+    const recordRuntimePressure = (kind: "longtask" | "interaction") => {
+      const now = performance.now();
+      if (now - pressureWindowStartedAt > 8_000) {
+        pressureWindowStartedAt = now;
+        longTaskCount = 0;
+        slowInteractionCount = 0;
+      }
+
+      if (kind === "longtask") longTaskCount += 1;
+      else slowInteractionCount += 1;
+
+      if (longTaskCount >= 3 || slowInteractionCount >= 3) {
+        longTaskCount = 0;
+        slowInteractionCount = 0;
+        pressureWindowStartedAt = now;
+        downgradeForRuntimePressure();
+      }
+    };
+
+    const startPressureObservers = () => {
+      if (typeof PerformanceObserver === "undefined") return;
+
+      if (PerformanceObserver.supportedEntryTypes?.includes("longtask")) {
         longTaskObserver = new PerformanceObserver((list) => {
-          const now = performance.now();
-          if (now - longTaskWindowStartedAt > 8_000) {
-            longTaskWindowStartedAt = now;
-            longTaskCount = 0;
-          }
-
           list.getEntries().forEach((entry) => {
-            if (entry.duration >= 80) longTaskCount += 1;
+            if (entry.duration >= 70) recordRuntimePressure("longtask");
           });
-
-          if (longTaskCount >= 4) {
-            longTaskCount = 0;
-            longTaskWindowStartedAt = now;
-            downgradeForRuntimePressure();
-          }
         });
 
         try {
@@ -358,13 +400,36 @@ export default function StandardMotionPerformance() {
           longTaskObserver = null;
         }
       }
+
+      if (PerformanceObserver.supportedEntryTypes?.includes("event")) {
+        eventTimingObserver = new PerformanceObserver((list) => {
+          list.getEntries().forEach((entry) => {
+            if (entry.duration >= 80) recordRuntimePressure("interaction");
+          });
+        });
+
+        try {
+          eventTimingObserver.observe({
+            type: "event",
+            buffered: true,
+            durationThreshold: 50,
+          } as PerformanceObserverInit & { durationThreshold: number });
+        } catch {
+          eventTimingObserver.disconnect();
+          eventTimingObserver = null;
+        }
+      }
     };
 
     const scheduleRuntimeSampling = () => {
+      if (samplingStartHandle !== null) {
+        globalThis.clearTimeout(samplingStartHandle);
+      }
+
       samplingStartHandle = globalThis.setTimeout(() => {
         samplingStartHandle = null;
-        if (active) startRuntimeSampling();
-      }, 900);
+        if (active) startFrameSampling();
+      }, 650);
     };
 
     const stopRuntimeSampling = () => {
@@ -376,6 +441,8 @@ export default function StandardMotionPerformance() {
       sampleFrame = 0;
       longTaskObserver?.disconnect();
       longTaskObserver = null;
+      eventTimingObserver?.disconnect();
+      eventTimingObserver = null;
     };
 
     const handleAnimationStart = (event: Event) => {
@@ -391,19 +458,48 @@ export default function StandardMotionPerformance() {
     const handleVisibilityChange = () => {
       root.dataset.pageVisibility = document.visibilityState;
       updateAllMotion();
+
+      if (document.visibilityState === "visible") {
+        scheduleRuntimeSampling();
+      }
     };
 
     const flushSvgRoots = () => {
       mutationFrame = 0;
-      const roots = Array.from(pendingSvgRoots);
+      const roots = Array.from(pendingSvgRoots).filter(
+        (candidate) =>
+          candidate.isConnected &&
+          !Array.from(pendingSvgRoots).some(
+            (other) => other !== candidate && other.contains(candidate),
+          ),
+      );
       pendingSvgRoots.clear();
       roots.forEach(scanSvgRoot);
+      pruneDisconnectedMotion();
+    };
+
+    const queueSvgRoot = (node: Element) => {
+      if (node instanceof SVGSVGElement) {
+        pendingSvgRoots.add(node);
+        return;
+      }
+
+      if (node.matches(CONTINUOUS_SVG_SELECTOR)) {
+        const svg = node.closest("svg");
+        if (svg instanceof SVGSVGElement) pendingSvgRoots.add(svg);
+        return;
+      }
+
+      if (node.querySelector(CONTINUOUS_SVG_SELECTOR)) {
+        pendingSvgRoots.add(node);
+      }
     };
 
     const attachStandardRuntime = () => {
       if (active) return;
       active = true;
       root.dataset.standardMotionRuntime = "active";
+      root.dataset.standardVisibleMotion = "preserved";
       root.dataset.pageVisibility = document.visibilityState;
       applyTier(getInitialStandardMotionTier());
 
@@ -426,21 +522,14 @@ export default function StandardMotionPerformance() {
               }
             });
           },
-          { rootMargin: "96px" },
+          { rootMargin: "160px" },
         );
       }
 
       mutationObserver = new MutationObserver((mutations) => {
         mutations.forEach((mutation) => {
           mutation.addedNodes.forEach((node) => {
-            if (!(node instanceof Element)) return;
-            if (
-              node instanceof SVGSVGElement ||
-              node.matches(CONTINUOUS_SVG_SELECTOR) ||
-              node.querySelector(CONTINUOUS_SVG_SELECTOR)
-            ) {
-              pendingSvgRoots.add(node);
-            }
+            if (node instanceof Element) queueSvgRoot(node);
           });
         });
 
@@ -457,6 +546,7 @@ export default function StandardMotionPerformance() {
       document.addEventListener("visibilitychange", handleVisibilityChange);
       scheduleInitialScan();
       scheduleRuntimeSampling();
+      startPressureObservers();
     };
 
     const detachStandardRuntime = () => {
@@ -490,7 +580,9 @@ export default function StandardMotionPerformance() {
       elementAnimations.clear();
       animationTargets.clear();
       delete root.dataset.standardMotionRuntime;
+      delete root.dataset.standardVisibleMotion;
       delete root.dataset.standardMotionTier;
+      delete root.dataset.standardRefreshTier;
       delete root.dataset.pageVisibility;
     };
 
