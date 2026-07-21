@@ -40,21 +40,26 @@ function countOf(result: { count: number | null }) {
   return Math.max(0, Number(result.count ?? 0));
 }
 
+function reportErrors(
+  stage: "core" | "details",
+  results: Array<{ error: { code?: string | null } | null }>,
+) {
+  const errors = results.map((result) => result.error).filter(Boolean);
+  if (errors.length === 0) return false;
+
+  console.error("[new-user-experience] Setup state could not be verified", {
+    stage,
+    codes: errors.map((error) => error?.code ?? "unknown"),
+  });
+  return true;
+}
+
 export async function loadNewUserExperienceState(
   supabase: SupabaseClient,
 ): Promise<NewUserExperienceState> {
-  const [
-    accountsResult,
-    incomeResult,
-    expensesResult,
-    transactionsResult,
-    transfersResult,
-    incomeCategoriesResult,
-    expenseCategoriesResult,
-    goalsResult,
-    investmentsResult,
-    payablesResult,
-  ] = await Promise.all([
+  // Existing users only need these three lightweight count checks. The wider
+  // setup snapshot is loaded only while the guided experience is still active.
+  const [accountsResult, incomeResult, expensesResult] = await Promise.all([
     supabase.from("accounts").select("id", { count: "exact", head: true }),
     supabase
       .from("transactions")
@@ -64,6 +69,42 @@ export async function loadNewUserExperienceState(
       .from("transactions")
       .select("id", { count: "exact", head: true })
       .eq("type", "expense"),
+  ]);
+
+  if (reportErrors("core", [accountsResult, incomeResult, expensesResult])) {
+    return EMPTY_NEW_USER_EXPERIENCE_STATE;
+  }
+
+  const coreCounts = {
+    accounts: countOf(accountsResult),
+    incomeTransactions: countOf(incomeResult),
+    expenseTransactions: countOf(expensesResult),
+  };
+  const setupActive =
+    coreCounts.accounts === 0 ||
+    coreCounts.incomeTransactions === 0 ||
+    coreCounts.expenseTransactions === 0;
+
+  if (!setupActive) {
+    return {
+      available: true,
+      setupActive: false,
+      counts: {
+        ...EMPTY_NEW_USER_EXPERIENCE_STATE.counts,
+        ...coreCounts,
+      },
+    };
+  }
+
+  const [
+    transactionsResult,
+    transfersResult,
+    incomeCategoriesResult,
+    expenseCategoriesResult,
+    goalsResult,
+    investmentsResult,
+    payablesResult,
+  ] = await Promise.all([
     supabase.from("transactions").select("id", { count: "exact", head: true }),
     supabase
       .from("account_transfers")
@@ -81,46 +122,32 @@ export async function loadNewUserExperienceState(
     supabase.from("payables").select("id", { count: "exact", head: true }),
   ]);
 
-  const results = [
-    accountsResult,
-    incomeResult,
-    expensesResult,
-    transactionsResult,
-    transfersResult,
-    incomeCategoriesResult,
-    expenseCategoriesResult,
-    goalsResult,
-    investmentsResult,
-    payablesResult,
-  ];
-  const errors = results.map((result) => result.error).filter(Boolean);
-
-  if (errors.length > 0) {
-    console.error("[new-user-experience] Setup state could not be verified", {
-      codes: errors.map((error) => error?.code ?? "unknown"),
-    });
+  if (
+    reportErrors("details", [
+      transactionsResult,
+      transfersResult,
+      incomeCategoriesResult,
+      expenseCategoriesResult,
+      goalsResult,
+      investmentsResult,
+      payablesResult,
+    ])
+  ) {
     return EMPTY_NEW_USER_EXPERIENCE_STATE;
   }
 
-  const counts: NewUserExperienceCounts = {
-    accounts: countOf(accountsResult),
-    incomeTransactions: countOf(incomeResult),
-    expenseTransactions: countOf(expensesResult),
-    totalTransactions: countOf(transactionsResult),
-    transfers: countOf(transfersResult),
-    incomeCategories: countOf(incomeCategoriesResult),
-    expenseCategories: countOf(expenseCategoriesResult),
-    goals: countOf(goalsResult),
-    investments: countOf(investmentsResult),
-    payables: countOf(payablesResult),
-  };
-
   return {
     available: true,
-    setupActive:
-      counts.accounts === 0 ||
-      counts.incomeTransactions === 0 ||
-      counts.expenseTransactions === 0,
-    counts,
+    setupActive: true,
+    counts: {
+      ...coreCounts,
+      totalTransactions: countOf(transactionsResult),
+      transfers: countOf(transfersResult),
+      incomeCategories: countOf(incomeCategoriesResult),
+      expenseCategories: countOf(expenseCategoriesResult),
+      goals: countOf(goalsResult),
+      investments: countOf(investmentsResult),
+      payables: countOf(payablesResult),
+    },
   };
 }
