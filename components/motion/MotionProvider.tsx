@@ -218,44 +218,44 @@ export default function MotionProvider({ children }: { children: ReactNode }) {
 
     const flushPendingRoots = () => {
       pendingFrame = null;
-      const roots = Array.from(pendingRoots);
+      const roots = Array.from(pendingRoots).filter(
+        (root) =>
+          root.isConnected &&
+          !Array.from(pendingRoots).some(
+            (candidate) => candidate !== root && candidate.contains(root),
+          ),
+      );
       pendingRoots.clear();
 
       roots.forEach((root) => {
-        if (root.isConnected) {
-          tuneDocumentAnimations(activeMode, root, true);
-        }
+        tuneSvgAnimations(root, activeMode);
+        tuneDocumentAnimations(activeMode, root, true);
       });
     };
 
     const scheduleRootTuning = (root: Element) => {
-      if (activeMode === "standard") return;
+      if (activeMode !== "fast") return;
 
-      // Run once immediately for already-created animations and once on the next
-      // frame for libraries that create Web Animations after DOM insertion.
-      tuneDocumentAnimations(activeMode, root, true);
       pendingRoots.add(root);
-
       if (pendingFrame === null) {
         pendingFrame = window.requestAnimationFrame(flushPendingRoots);
       }
     };
 
     const handleAnimationStart = (event: Event) => {
+      if (activeMode !== "fast") return;
       const target = event.target;
       if (!(target instanceof Element)) return;
       queueMicrotask(() => tuneDocumentAnimations(activeMode, target));
     };
 
     const attachRuntimeTuning = () => {
-      if (runtimeObserver) return;
+      if (activeMode !== "fast" || runtimeObserver) return;
 
       runtimeObserver = new MutationObserver((mutations) => {
         mutations.forEach((mutation) => {
           mutation.addedNodes.forEach((node) => {
-            if (!(node instanceof Element)) return;
-            tuneSvgAnimations(node, activeMode);
-            scheduleRootTuning(node);
+            if (node instanceof Element) scheduleRootTuning(node);
           });
         });
       });
@@ -268,7 +268,6 @@ export default function MotionProvider({ children }: { children: ReactNode }) {
       if (!runtimeListenersAttached) {
         runtimeListenersAttached = true;
         document.addEventListener("animationstart", handleAnimationStart, true);
-        document.addEventListener("transitionrun", handleAnimationStart, true);
       }
     };
 
@@ -285,7 +284,6 @@ export default function MotionProvider({ children }: { children: ReactNode }) {
       if (runtimeListenersAttached) {
         runtimeListenersAttached = false;
         document.removeEventListener("animationstart", handleAnimationStart, true);
-        document.removeEventListener("transitionrun", handleAnimationStart, true);
       }
     };
 
@@ -311,13 +309,16 @@ export default function MotionProvider({ children }: { children: ReactNode }) {
         tuneSvgAnimations(document, mode);
       }
 
-      if (mode === "standard") detachRuntimeTuning();
-      else attachRuntimeTuning();
+      // Fast keeps one batched mutation pass so newly authored animations inherit
+      // its playback rate. None relies on CSS, reduced motion and two bounded scans
+      // instead of continuously observing every DOM mutation.
+      if (mode === "fast") attachRuntimeTuning();
+      else detachRuntimeTuning();
 
-      // CSS and motion libraries can recreate animation objects after the root
-      // data attribute changes. One bounded follow-up scan prevents stale speed
-      // or a stopped SVG when leaving no-animation mode.
-      if (previousMode !== mode && previousMode === "none") {
+      if (
+        previousMode !== mode &&
+        (previousMode === "none" || mode === "none")
+      ) {
         restoreFrame = window.requestAnimationFrame(() => {
           restoreFrame = null;
           tuneDocumentAnimations(mode);
