@@ -23,6 +23,9 @@ import "./dark-icon-tone.css";
 import "./animation-preference.css";
 // Final global authority for equal, compact single-line form controls.
 import "./form-control-height-unify.css";
+// Standard/green animation polish stays last so it can optimize every surface
+// without changing Fast or No-animation behavior.
+import "./standard-motion-ultra.css";
 import { Toaster } from "sonner";
 import DesktopOverscrollBounce from "@/components/motion/DesktopOverscrollBounce";
 import MotionProvider from "@/components/motion/MotionProvider";
