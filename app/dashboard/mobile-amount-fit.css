@@ -1,0 +1,82 @@
+/* Mobile-only amount fitting for the dashboard overview.
+   Presentation only: currency values, calculations, data, actions, and animations stay unchanged. */
+
+@media (max-width: 639px) {
+  [data-dashboard-scroll]
+    .dashboard-overview
+    .dashboard-balance-copy {
+    container-type: inline-size;
+  }
+
+  [data-dashboard-scroll]
+    .dashboard-overview
+    .dashboard-balance-amount {
+    width: 100% !important;
+    max-width: 100% !important;
+    padding-inline: 0.08em !important;
+    box-sizing: border-box;
+    font-size: clamp(1.55rem, 10.4cqi, 2.7rem) !important;
+    letter-spacing: -0.04em !important;
+    white-space: nowrap !important;
+  }
+
+  [data-dashboard-scroll]
+    .dashboard-overview
+    .dashboard-balance-amount[data-balance-size="long"] {
+    font-size: clamp(1.2rem, 7.8cqi, 2.05rem) !important;
+    letter-spacing: -0.035em !important;
+  }
+
+  [data-dashboard-scroll]
+    .dashboard-overview
+    .dashboard-balance-amount[data-balance-size="xlong"] {
+    font-size: clamp(1rem, 6.4cqi, 1.65rem) !important;
+    letter-spacing: -0.03em !important;
+  }
+
+  [data-dashboard-scroll]
+    .dashboard-overview
+    .dashboard-balance-amount > span {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    white-space: nowrap !important;
+  }
+
+  [data-dashboard-scroll]
+    .dashboard-overview
+    .dashboard-metric-card-amount {
+    width: 100% !important;
+    max-width: 100% !important;
+    padding-inline-end: 0.12em;
+    box-sizing: border-box;
+    font-size: clamp(0.95rem, 10cqi, 1.45rem) !important;
+    letter-spacing: -0.04em !important;
+    white-space: nowrap !important;
+  }
+
+  [data-dashboard-scroll]
+    .dashboard-overview
+    .dashboard-metric-card-amount[data-amount-size="long"] {
+    font-size: clamp(0.78rem, 8.2cqi, 1.12rem) !important;
+    letter-spacing: -0.035em !important;
+  }
+
+  [data-dashboard-scroll]
+    .dashboard-overview
+    .dashboard-metric-card-amount[data-amount-size="xlong"] {
+    font-size: clamp(0.66rem, 6.9cqi, 0.96rem) !important;
+    letter-spacing: -0.028em !important;
+  }
+
+  [data-dashboard-scroll]
+    .dashboard-overview
+    .dashboard-metric-card-amount > span {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    white-space: nowrap !important;
+  }
+}
