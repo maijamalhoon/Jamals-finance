@@ -54,12 +54,16 @@ export default function AppUpdateManager() {
           duration: 20_000,
           action: {
             label: "Update",
-            onClick: () => {
+            onClick: async () => {
               baselineVersionRef.current = nextVersion;
-              void navigator.serviceWorker
-                ?.getRegistration()
-                .then((registration) => registration?.update())
-                .finally(() => window.location.reload());
+
+              try {
+                const registration =
+                  await navigator.serviceWorker?.getRegistration();
+                await registration?.update();
+              } finally {
+                window.location.reload();
+              }
             },
           },
         });
