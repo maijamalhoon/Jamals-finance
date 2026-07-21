@@ -1,0 +1,60 @@
+/*
+ * Settings card surface parity only.
+ * Keeps every label, icon, handler, value, animation and responsive grid unchanged.
+ */
+
+/* The Appearance selectors use --surface-secondary. Give the remaining Settings
+   action cards the exact same surface while keeping each action visually separate. */
+.settings-page-polish
+  .settings-reference-preferences-wrapper
+  .finance-panel,
+.settings-page-polish
+  .settings-reference-categories-wrapper
+  .finance-panel,
+.settings-page-polish
+  .settings-reference-profile-security
+  .settings-reference-group,
+.settings-page-polish
+  .settings-reference-data
+  .settings-reference-group {
+  gap: 0.5rem !important;
+  overflow: visible !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.settings-page-polish
+  .settings-reference-preferences-wrapper
+  .finance-panel
+  > button,
+.settings-page-polish
+  .settings-reference-categories-wrapper
+  .finance-panel
+  > button,
+.settings-page-polish
+  .settings-reference-profile-security
+  .settings-reference-group
+  > .settings-reference-row,
+.settings-page-polish
+  .settings-reference-data
+  .settings-reference-group
+  > .settings-reference-row {
+  overflow: hidden !important;
+  border-radius: 1rem !important;
+  background: var(--surface-secondary) !important;
+  box-shadow: none !important;
+}
+
+/* The actions are now independent cards, so the old internal divider is no longer needed. */
+.settings-page-polish
+  .settings-reference-preferences-wrapper
+  .settings-preferences-divider,
+.settings-page-polish
+  .settings-reference-categories-wrapper
+  .finance-panel
+  > div[class*="h-px"],
+.settings-page-polish
+  .settings-reference-profile-security
+  .settings-reference-divider {
+  display: none !important;
+}
