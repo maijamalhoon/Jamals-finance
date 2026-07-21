@@ -57,25 +57,49 @@ export default function CreateBusinessWorkspaceForm() {
 
     setSaving(true);
 
-    const { error } = await supabase.rpc("create_business_workspace", {
-      p_name: cleanName,
-      p_business_type: businessType,
-      p_country_code: cleanCountry || null,
-      p_base_currency: baseCurrency,
-      p_timezone: timezone,
-    });
+    try {
+      const { data: businessId, error } = await supabase.rpc(
+        "create_business_workspace",
+        {
+          p_name: cleanName,
+          p_business_type: businessType,
+          p_country_code: cleanCountry || null,
+          p_base_currency: baseCurrency,
+          p_timezone: timezone,
+        },
+      );
 
-    setSaving(false);
+      if (error || typeof businessId !== "string") {
+        console.error("Business workspace creation failed", { code: error?.code });
+        toast.error("Business workspace could not be created. Please try again.");
+        return;
+      }
 
-    if (error) {
-      console.error("Business workspace creation failed", { code: error.code });
-      toast.error("Business workspace could not be created. Please try again.");
-      return;
+      const { data: business, error: businessError } = await supabase
+        .from("businesses")
+        .select("slug")
+        .eq("id", businessId)
+        .single();
+
+      if (businessError || !business?.slug) {
+        console.error("Created business could not be resolved", {
+          code: businessError?.code,
+        });
+        toast.success("Business workspace created.");
+        router.replace("/business");
+        router.refresh();
+        return;
+      }
+
+      setName("");
+      toast.success("Business workspace created with its accounting foundation.");
+      router.replace(`/business/${business.slug}`);
+      router.refresh();
+    } catch {
+      toast.error("Business workspace could not be created. Check your connection and try again.");
+    } finally {
+      setSaving(false);
     }
-
-    setName("");
-    toast.success("Business workspace created.");
-    router.refresh();
   }
 
   return (
@@ -89,7 +113,8 @@ export default function CreateBusinessWorkspaceForm() {
             Create a business workspace
           </h2>
           <p className="mt-1 max-w-2xl text-sm leading-6 text-text-secondary">
-            Your business records will stay separate from personal finance and from every other company.
+            Your company receives an isolated tenant, fiscal period, standard chart of accounts,
+            roles, currency, and modules selected from its nature of business.
           </p>
         </div>
       </div>
@@ -171,7 +196,7 @@ export default function CreateBusinessWorkspaceForm() {
         <div className="grid gap-3 rounded-[var(--radius-button)] bg-surface-secondary px-4 py-4 text-sm text-text-secondary sm:grid-cols-2">
           <span className="flex items-center gap-2">
             <ShieldCheck aria-hidden="true" className="size-4 text-success" />
-            Tenant-isolated records and roles
+            Tenant-isolated data and accounting
           </span>
           <span className="flex items-center gap-2">
             <Globe2 aria-hidden="true" className="size-4 text-primary" />
