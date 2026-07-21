@@ -15,10 +15,9 @@ const CompactHeader = dynamic(
   { ssr: false },
 );
 
-const HEADER_SEARCH_TRIGGER_SELECTOR = [
-  "[data-header-search-trigger]",
-  'form[data-mobile-control-cluster][role="search"] button[aria-expanded]',
-].join(",");
+const DESKTOP_HEADER_SEARCH_TRIGGER_SELECTOR = "[data-header-search-trigger]";
+const MOBILE_HEADER_SEARCH_TRIGGER_SELECTOR =
+  'form[data-mobile-control-cluster][role="search"] button[aria-expanded]';
 
 type HeaderMode = "desktop" | "compact" | null;
 
@@ -29,17 +28,13 @@ type ResponsiveDashboardHeaderProps = {
 function HeaderSearchOpenFallback() {
   useEffect(() => {
     const isSearchOpen = (trigger: HTMLButtonElement) => {
-      if (trigger.hasAttribute("data-header-search-trigger")) {
-        const input = trigger
-          .closest("form")
-          ?.querySelector<HTMLInputElement>(
-            "#desktop-inline-transaction-search",
-          );
+      const input = trigger
+        .closest("form")
+        ?.querySelector<HTMLInputElement>(
+          "#desktop-inline-transaction-search",
+        );
 
-        return input?.getAttribute("aria-hidden") === "false";
-      }
-
-      return trigger.getAttribute("aria-expanded") === "true";
+      return input?.getAttribute("aria-hidden") === "false";
     };
 
     const handlePointerDown = (event: PointerEvent) => {
@@ -47,13 +42,13 @@ function HeaderSearchOpenFallback() {
       if (!(event.target instanceof Element)) return;
 
       const trigger = event.target.closest<HTMLButtonElement>(
-        HEADER_SEARCH_TRIGGER_SELECTOR,
+        DESKTOP_HEADER_SEARCH_TRIGGER_SELECTOR,
       );
 
       if (!trigger || isSearchOpen(trigger)) return;
 
-      // Open immediately while the pointer interaction is still trusted.
-      // This avoids mobile/desktop browsers suppressing the later click.
+      // Desktop keeps the trusted pointer fallback because its search surface
+      // does not move underneath the active pointer.
       event.preventDefault();
       trigger.click();
     };
@@ -62,6 +57,53 @@ function HeaderSearchOpenFallback() {
 
     return () => {
       document.removeEventListener("pointerdown", handlePointerDown, true);
+    };
+  }, []);
+
+  return null;
+}
+
+function MobileSearchPointerDownGuard() {
+  useEffect(() => {
+    let boundCleanup: (() => void) | null = null;
+    let mountObserver: MutationObserver | null = null;
+
+    const bindTrigger = () => {
+      const trigger = document.querySelector<HTMLButtonElement>(
+        MOBILE_HEADER_SEARCH_TRIGGER_SELECTOR,
+      );
+
+      if (!trigger) return false;
+
+      const handlePointerDown = (event: PointerEvent) => {
+        if (!event.isPrimary || event.button !== 0) return;
+
+        // The mobile search expands and moves. Prevent the legacy pointer-down
+        // enhancer from opening it before pointer-up; the normal click remains
+        // untouched and becomes the single reliable open action.
+        event.stopImmediatePropagation();
+      };
+
+      trigger.addEventListener("pointerdown", handlePointerDown, true);
+      boundCleanup = () => {
+        trigger.removeEventListener("pointerdown", handlePointerDown, true);
+      };
+
+      return true;
+    };
+
+    if (!bindTrigger()) {
+      mountObserver = new MutationObserver(() => {
+        if (!bindTrigger()) return;
+        mountObserver?.disconnect();
+        mountObserver = null;
+      });
+      mountObserver.observe(document.body, { childList: true, subtree: true });
+    }
+
+    return () => {
+      mountObserver?.disconnect();
+      boundCleanup?.();
     };
   }, []);
 
@@ -120,7 +162,7 @@ export default function ResponsiveDashboardHeader({
 
   return (
     <>
-      <HeaderSearchOpenFallback />
+      <MobileSearchPointerDownGuard />
       <CompactHeader notificationSlot={notificationSlot} />
       <MobileHeaderSearchEnhancer />
     </>
