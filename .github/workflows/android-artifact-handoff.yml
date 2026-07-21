@@ -1,0 +1,55 @@
+name: Android Artifact Handoff
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - ".github/workflows/android-artifact-handoff.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  handoff:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Download completed unsigned package
+        run: |
+          set -euo pipefail
+          curl --fail --location --silent --show-error \
+            "https://pwabuilder-cloudapk.azurewebsites.net/downloadPackageZip?id=googleplaypackagejob%3Ajamals-finance-sable.vercel.app%3A093031" \
+            --output jamals-finance-android-unsigned.zip
+          unzip -t jamals-finance-android-unsigned.zip
+
+      - name: Upload connector artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: jamals-finance-android-unsigned-handoff
+          path: jamals-finance-android-unsigned.zip
+          if-no-files-found: error
+          retention-days: 3
+
+      - name: Report artifact run ID
+        run: |
+          mkdir -p android-twa/build-output
+          cat > android-twa/build-output/artifact-handoff.json <<JSON
+          {
+            "status": "completed",
+            "runId": "${GITHUB_RUN_ID}",
+            "artifactName": "jamals-finance-android-unsigned-handoff",
+            "sourceCommit": "${GITHUB_SHA}"
+          }
+          JSON
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add android-twa/build-output/artifact-handoff.json
+          git commit -m "chore(android): record artifact handoff" || exit 0
+          git pull --rebase origin main
+          git push origin HEAD:main
