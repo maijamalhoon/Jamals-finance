@@ -55,7 +55,13 @@ function toEditableAmount(value: number) {
 export default function TransferModal({ open, onClose, onSuccess }: Props) {
   const supabase = useMemo(() => createClient(), []);
   const router = useRouter();
-  const { currency, rate, formatCurrency } = useCurrency();
+  const {
+    currency,
+    rates,
+    ratesReady,
+    formatCurrency,
+    getRate,
+  } = useCurrency();
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [fromAccountId, setFromAccountId] = useState("");
   const [toAccountId, setToAccountId] = useState("");
@@ -76,24 +82,23 @@ export default function TransferModal({ open, onClose, onSuccess }: Props) {
     [accounts, fromAccountId],
   );
   const availableBalance = getAvailableTransferBalance(fromAccount?.balance);
-  const availableBalanceInSelectedCurrency = convertMoney(
-    availableBalance,
-    BASE_CURRENCY,
-    currency,
-    rate,
-  );
+  const availableBalanceInSelectedCurrency =
+    currency === BASE_CURRENCY || ratesReady
+      ? convertMoney(availableBalance, BASE_CURRENCY, currency, rates)
+      : Number.NaN;
   const formattedAvailableBalance = formatCurrency(availableBalance, {
     fromCurrency: BASE_CURRENCY,
-    maximumFractionDigits: 2,
+    maximumFractionDigits: currency === "JPY" ? 0 : 2,
   });
   const amountInBaseCurrency = (() => {
     if (!amount.trim()) return amount;
 
     const parsedAmount = Number(amount);
     if (!Number.isFinite(parsedAmount)) return amount;
+    if (currency !== BASE_CURRENCY && !ratesReady) return "";
 
     return toEditableAmount(
-      convertMoney(parsedAmount, currency, BASE_CURRENCY, rate),
+      convertMoney(parsedAmount, currency, BASE_CURRENCY, rates),
     );
   })();
   const amountIssue = getTransferAmountIssue(
@@ -168,7 +173,15 @@ export default function TransferModal({ open, onClose, onSuccess }: Props) {
   }
 
   function handleUseMaximum() {
-    if (!fromAccountId || availableBalance <= 0 || loading || saving) return;
+    if (
+      !fromAccountId ||
+      availableBalance <= 0 ||
+      !Number.isFinite(availableBalanceInSelectedCurrency) ||
+      loading ||
+      saving
+    ) {
+      return;
+    }
 
     setAmount(toEditableAmount(availableBalanceInSelectedCurrency));
     setAmountTouched(true);
@@ -188,13 +201,31 @@ export default function TransferModal({ open, onClose, onSuccess }: Props) {
       return;
     }
 
+    if (currency !== BASE_CURRENCY && !ratesReady) {
+      setError("Exchange rates are unavailable. The transfer was not saved.");
+      return;
+    }
+
     setAmountTouched(true);
     if (amountIssue) {
       setError("");
       return;
     }
 
+    const originalAmount = Number(amount);
+    const exchangeRateToPkr = getRate(currency, BASE_CURRENCY);
     const parsedAmount = Number(amountInBaseCurrency);
+    if (
+      !Number.isFinite(originalAmount) ||
+      originalAmount <= 0 ||
+      exchangeRateToPkr === null ||
+      !Number.isFinite(parsedAmount) ||
+      parsedAmount <= 0
+    ) {
+      setError("The transfer amount could not be converted safely.");
+      return;
+    }
+
     setSaving(true);
     setError("");
 
@@ -216,6 +247,9 @@ export default function TransferModal({ open, onClose, onSuccess }: Props) {
         from_account_id: fromAccountId,
         to_account_id: toAccountId,
         amount: parsedAmount,
+        amount_original: originalAmount,
+        currency,
+        exchange_rate_to_pkr: exchangeRateToPkr,
         transfer_date: transferDate,
         note: null,
         reference: null,
@@ -356,7 +390,11 @@ export default function TransferModal({ open, onClose, onSuccess }: Props) {
                       type="number"
                       inputMode="decimal"
                       min="0"
-                      max={availableBalanceInSelectedCurrency || undefined}
+                      max={
+                        Number.isFinite(availableBalanceInSelectedCurrency)
+                          ? availableBalanceInSelectedCurrency
+                          : undefined
+                      }
                       step="any"
                       value={amount}
                       onChange={(event) => {
@@ -380,6 +418,7 @@ export default function TransferModal({ open, onClose, onSuccess }: Props) {
                       disabled={
                         !fromAccountId ||
                         availableBalance <= 0 ||
+                        !Number.isFinite(availableBalanceInSelectedCurrency) ||
                         loading ||
                         saving
                       }
@@ -414,7 +453,11 @@ export default function TransferModal({ open, onClose, onSuccess }: Props) {
             type="button"
             onClick={handleSave}
             disabled={
-              saving || loading || accounts.length < 2 || Boolean(amountIssue)
+              saving ||
+              loading ||
+              accounts.length < 2 ||
+              Boolean(amountIssue) ||
+              (currency !== BASE_CURRENCY && !ratesReady)
             }
             loading={saving}
             loadingLabel="Saving transfer…"
