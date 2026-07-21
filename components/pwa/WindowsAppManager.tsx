@@ -74,15 +74,15 @@ export default function WindowsAppManager() {
       return;
     }
 
-    if (!installEvent || !isWindowsDevice() || isStandaloneExperience()) return;
+    if (!isWindowsDevice() || isStandaloneExperience()) return;
     if (window.localStorage.getItem(WINDOWS_APP_INSTALLED_KEY) === "true") return;
     if (window.localStorage.getItem(WINDOWS_PROMPT_DISMISSED_KEY) === "true") {
       return;
     }
 
-    const timer = window.setTimeout(() => setShowPrompt(true), 650);
+    const timer = window.setTimeout(() => setShowPrompt(true), 900);
     return () => window.clearTimeout(timer);
-  }, [installEvent, pathname]);
+  }, [pathname]);
 
   useEffect(() => {
     if (!showPrompt) return;
@@ -105,10 +105,12 @@ export default function WindowsAppManager() {
     };
   }, [showPrompt]);
 
-  const installWindowsApp = async () => {
+  const downloadForWindows = async () => {
     if (!installEvent) {
-      toast.info("Install is available from your browser menu.", {
-        description: "In Microsoft Edge, choose Apps → Install Jamal's Finance.",
+      toast.info("Use your browser's app install option.", {
+        description:
+          "In Microsoft Edge choose Apps → Install Jamal's Finance, or use the install icon in the address bar.",
+        duration: 12_000,
       });
       return;
     }
@@ -128,7 +130,7 @@ export default function WindowsAppManager() {
     setShowPrompt(false);
   };
 
-  const continueOnWebsite = () => {
+  const continueOnBrowser = () => {
     window.localStorage.setItem(WINDOWS_PROMPT_DISMISSED_KEY, "true");
     setShowPrompt(false);
   };
@@ -163,14 +165,14 @@ export default function WindowsAppManager() {
               className="mt-1 text-xl font-bold tracking-tight text-text-primary"
               id="windows-app-title"
             >
-              Install Jamal&apos;s Finance
+              Get Jamal&apos;s Finance
             </h2>
             <p
               className="mt-2 text-sm leading-6 text-text-secondary"
               id="windows-app-description"
             >
-              Use the same secure finance workspace from your Start Menu,
-              Taskbar, and desktop without a browser address bar.
+              Install the current live app for Start Menu, Taskbar, and desktop
+              access, or continue in your browser.
             </p>
           </div>
         </div>
@@ -178,27 +180,27 @@ export default function WindowsAppManager() {
         <div className="mt-5 grid gap-2.5">
           <button
             className="primary-action finance-focus flex min-h-12 w-full items-center justify-center gap-2 rounded-2xl"
-            onClick={() => void installWindowsApp()}
+            onClick={() => void downloadForWindows()}
             ref={installButtonRef}
             type="button"
           >
             <Download aria-hidden="true" size={18} />
-            Install Windows App
+            Download for Windows
           </button>
 
           <button
             className="finance-focus flex min-h-12 w-full items-center justify-center gap-2 rounded-2xl bg-black/5 px-4 text-sm font-semibold text-text-primary transition-colors hover:bg-black/8 dark:bg-white/8 dark:hover:bg-white/12"
-            onClick={continueOnWebsite}
+            onClick={continueOnBrowser}
             type="button"
           >
             <Globe2 aria-hidden="true" size={18} />
-            Continue on Website
+            Continue on Browser
           </button>
         </div>
 
         <p className="mt-4 text-center text-[11px] leading-5 text-text-secondary">
-          Installs securely through Microsoft Edge or another supported Chromium
-          browser. Website updates arrive automatically.
+          Windows installs the current live version. Future website updates arrive
+          through the installed app without downloading another installer.
         </p>
       </section>
     </div>
