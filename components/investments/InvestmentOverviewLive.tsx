@@ -2,7 +2,7 @@
 
 import { useMemo } from "react";
 
-import InvestmentOverview from "@/components/investments/InvestmentOverview";
+import InvestmentOverviewClean from "@/components/investments/InvestmentOverviewClean";
 import type { ExistingInvestment } from "@/components/investments/InvestmentModal";
 import { useLiveInvestmentRows } from "@/components/investments/useLiveInvestmentRows";
 import {
@@ -26,7 +26,7 @@ export default function InvestmentOverviewLive({
   );
 
   return (
-    <InvestmentOverview
+    <InvestmentOverviewClean
       investments={liveInvestments}
       groupedHoldings={groupedHoldings}
       totalInvested={totals.totalInvested}
