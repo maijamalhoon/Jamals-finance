@@ -1,6 +1,12 @@
 "use client";
 
-import { type CSSProperties, useEffect, useMemo, useState } from "react";
+import {
+  type CSSProperties,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { toast } from "sonner";
 
 import AccountSelect from "@/components/accounts/AccountSelect";
@@ -101,6 +107,7 @@ export default function InvestmentCashOutModal({
     getRate,
     formatCurrency,
   } = useCurrency();
+  const initializedOpenRef = useRef(false);
 
   const [lotId, setLotId] = useState("");
   const [amount, setAmount] = useState("");
@@ -115,18 +122,36 @@ export default function InvestmentCashOutModal({
     () => lots.find((lot) => lot.id === lotId) ?? lots[0] ?? null,
     [lotId, lots],
   );
+  const selectedLotId = selectedLot?.id ?? "";
 
   useEffect(() => {
-    if (!open) return;
-    const nextLotId = lots[0]?.id ?? "";
-    setLotId(nextLotId);
-    setAmount("");
-    setMaximumSelected(false);
-    setError("");
-  }, [displayCurrency, lots, open]);
+    if (!open) {
+      initializedOpenRef.current = false;
+      return;
+    }
+
+    const firstLotId = lots[0]?.id ?? "";
+    if (!firstLotId) return;
+
+    if (!initializedOpenRef.current) {
+      initializedOpenRef.current = true;
+      setLotId(firstLotId);
+      setAmount("");
+      setMaximumSelected(false);
+      setError("");
+      return;
+    }
+
+    if (lotId && !lots.some((lot) => lot.id === lotId)) {
+      setLotId(firstLotId);
+      setAmount("");
+      setMaximumSelected(false);
+      setError("");
+    }
+  }, [lotId, lots, open]);
 
   useEffect(() => {
-    if (!open || !selectedLot) return;
+    if (!open || !selectedLotId) return;
 
     let cancelled = false;
 
@@ -142,7 +167,7 @@ export default function InvestmentCashOutModal({
       const linkedTransactionRequest = supabase
         .from("transactions")
         .select("account_id")
-        .eq("investment_id", selectedLot.id)
+        .eq("investment_id", selectedLotId)
         .is("deleted_at", null)
         .order("created_at", { ascending: true })
         .limit(1)
@@ -181,7 +206,7 @@ export default function InvestmentCashOutModal({
     return () => {
       cancelled = true;
     };
-  }, [open, selectedLot, supabase]);
+  }, [open, selectedLotId, supabase]);
 
   const withdrawalCurrency = displayCurrency as InvestmentCurrency;
   const availableQuantity = parseFinite(selectedLot?.quantity) ?? 0;
@@ -235,6 +260,13 @@ export default function InvestmentCashOutModal({
     quantityToWithdraw !== null &&
     availableQuantity > 0 &&
     Math.abs(quantityToWithdraw - availableQuantity) < 1e-10;
+
+  useEffect(() => {
+    if (!open || !maximumSelected || maximumAmount <= 0) return;
+
+    const nextAmount = formatInputNumber(maximumAmount, displayCurrency);
+    setAmount((current) => (current === nextAmount ? current : nextAmount));
+  }, [displayCurrency, maximumAmount, maximumSelected, open]);
 
   async function handleCashOut() {
     if (loading || !selectedLot) return;
