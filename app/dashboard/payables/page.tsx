@@ -35,7 +35,9 @@ export default async function PayablesPage({
   const [{ data: rawPayables }, { data: accounts }] = await Promise.all([
     supabase
       .from("liabilities")
-      .select("*, liability_payments(*, accounts(name, type))")
+      .select(
+        "*, liability_payments!liability_payments_liability_owner_fkey(*, accounts!liability_payments_account_owner_fkey(name, type))",
+      )
       .order("due_date", { ascending: true, nullsFirst: false })
       .order("created_at", { ascending: false }),
     supabase
