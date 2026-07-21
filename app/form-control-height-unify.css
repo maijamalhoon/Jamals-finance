@@ -7,7 +7,7 @@
  */
 
 :root {
-  --jf-global-form-control-height: 2.5rem;
+  --jf-global-form-control-height: 5rem;
   --jf-global-date-control-height: var(--jf-global-form-control-height);
   --jf-global-multiline-control-height: var(--jf-global-form-control-height);
   --jf-global-final-action-height: 2.5rem;
