@@ -52,6 +52,19 @@ const standardPerformanceSource = readFileSync(
   "utf8",
 );
 
+const acceleratedPerformanceSource = readFileSync(
+  new URL(
+    "../components/performance/AcceleratedMotionPerformance.tsx",
+    import.meta.url,
+  ),
+  "utf8",
+);
+
+const pwaRuntimeSource = readFileSync(
+  new URL("../app/pwa-register.tsx", import.meta.url),
+  "utf8",
+);
+
 const routeLoadingSource = readFileSync(
   new URL(
     "../components/loading/AnimationAwareDashboardRouteLoading.tsx",
@@ -145,6 +158,15 @@ describe("animation preference contracts", () => {
     expect(motionProviderSource).toContain(
       "target.getAnimations({ subtree })",
     );
+    expect(acceleratedPerformanceSource).toContain(
+      'if (activeMode === "fast")',
+    );
+    expect(acceleratedPerformanceSource).toContain(
+      'if (activeMode === "none")',
+    );
+    expect(acceleratedPerformanceSource).not.toContain(
+      'if (activeMode === "standard") attachFastRuntime()',
+    );
   });
 
   it("reveals standard pages without waiting for window load or fonts", () => {
@@ -171,7 +193,7 @@ describe("animation preference contracts", () => {
     );
   });
 
-  it("adapts standard motion without touching fast or none", () => {
+  it("keeps the locked standard controller independent", () => {
     expect(motionProviderSource).toContain("<StandardMotionPerformance />");
     expect(standardPerformanceSource).toContain("standardMotionTier");
     expect(standardPerformanceSource).toContain(
@@ -185,6 +207,46 @@ describe("animation preference contracts", () => {
     expect(standardPerformanceSource).toContain("animation.play()");
     expect(standardPerformanceSource).toContain(
       'if (nextMode === "standard") attachStandardRuntime();',
+    );
+    expect(acceleratedPerformanceSource).not.toContain("standardMotionTier");
+  });
+
+  it("adapts fast motion and pauses non-visible continuous work", () => {
+    expect(acceleratedPerformanceSource).toContain("fastMotionTier");
+    expect(acceleratedPerformanceSource).toContain(
+      "connection?.saveData === true",
+    );
+    expect(acceleratedPerformanceSource).toContain(
+      "runtimeNavigator.deviceMemory",
+    );
+    expect(acceleratedPerformanceSource).toContain("IntersectionObserver");
+    expect(acceleratedPerformanceSource).toContain("requestIdleCallback");
+    expect(acceleratedPerformanceSource).toContain("CONTINUOUS_SVG_SELECTOR");
+    expect(acceleratedPerformanceSource).toContain("animation.pause()");
+    expect(acceleratedPerformanceSource).toContain("animation.play()");
+    expect(animationCssSource).toContain('data-fast-motion-tier="balanced"');
+    expect(animationCssSource).toContain('data-fast-motion-tier="lite"');
+    expect(animationCssSource).toContain("jf-fast-route-loader-slide");
+    expect(animationCssSource).not.toContain("jf-fast-route-loader-pulse");
+  });
+
+  it("keeps none static with no reveal or compositor reservations", () => {
+    expect(acceleratedPerformanceSource).toContain("resolveNoAnimationState");
+    expect(acceleratedPerformanceSource).toContain(
+      'root.dataset.noneMotionRuntime = "static"',
+    );
+    expect(animationCssSource).toContain("will-change: auto !important;");
+    expect(animationCssSource).toContain("view-transition-name: none !important;");
+    expect(animationCssSource).toContain("opacity: 1 !important;");
+    expect(animationCssSource).toContain("transform: none !important;");
+  });
+
+  it("mounts accelerated performance globally without changing UI", () => {
+    expect(pwaRuntimeSource).toContain(
+      "AcceleratedMotionPerformance",
+    );
+    expect(pwaRuntimeSource).toContain(
+      "return <AcceleratedMotionPerformance />;",
     );
   });
 
