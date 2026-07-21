@@ -55,10 +55,7 @@ export async function loadNewUserExperienceState(
     investmentsResult,
     payablesResult,
   ] = await Promise.all([
-    supabase
-      .from("accounts")
-      .select("id", { count: "exact", head: true })
-      .neq("status", "archived"),
+    supabase.from("accounts").select("id", { count: "exact", head: true }),
     supabase
       .from("transactions")
       .select("id", { count: "exact", head: true })
