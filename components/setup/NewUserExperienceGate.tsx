@@ -54,13 +54,11 @@ type DataKind =
   | "any";
 
 type NewUserPageConfig = {
-  label: string;
   title: string;
   description: string;
   actionLabel: string;
   action: ActionKind;
   dataKind: DataKind;
-  accent: string;
 };
 
 const SETUP_STORAGE_KEY = "jamals-finance-new-user-setup-dismissed";
@@ -72,105 +70,83 @@ const NEW_USER_ACTION_CLASS =
 
 const NEW_USER_PAGE_CONFIG: Record<string, NewUserPageConfig> = {
   accounts: {
-    label: "Accounts",
     title: "No accounts yet",
     description: "Add your first account to see balances and activity here.",
     actionLabel: "Add an account",
     action: "account",
     dataKind: "accounts",
-    accent: "var(--info)",
   },
   income: {
-    label: "Income",
     title: "No income yet",
     description: "Add your first income to see account totals and activity here.",
     actionLabel: "Add income",
     action: "income",
     dataKind: "income",
-    accent: "var(--income)",
   },
   expenses: {
-    label: "Expenses",
     title: "No expenses yet",
     description: "Add your first expense to see spending activity here.",
     actionLabel: "Add an expense",
     action: "expense",
     dataKind: "expenses",
-    accent: "var(--expense)",
   },
   investments: {
-    label: "Investments",
     title: "No investments yet",
     description: "Add your first investment to see portfolio allocation here.",
     actionLabel: "Add an investment",
     action: "investment",
     dataKind: "investments",
-    accent: "var(--investment)",
   },
   goals: {
-    label: "Goals",
     title: "No goals yet",
     description: "Create your first goal to see savings progress here.",
     actionLabel: "Create a goal",
     action: "goal",
     dataKind: "goals",
-    accent: "var(--goals)",
   },
   payables: {
-    label: "Payables",
     title: "No payables yet",
     description: "Add your first payable to see repayment progress here.",
     actionLabel: "Add a payable",
     action: "payable",
     dataKind: "payables",
-    accent: "var(--payables)",
   },
   transactions: {
-    label: "Transactions",
     title: "No transactions yet",
     description: "Add your first transaction to see account activity here.",
     actionLabel: "Add a transaction",
     action: "transaction",
     dataKind: "transactions",
-    accent: "var(--info)",
   },
   analytics: {
-    label: "Analytics",
     title: "No analytics yet",
     description: "Add your first transaction to see financial analytics here.",
     actionLabel: "Add a transaction",
     action: "transaction",
     dataKind: "financial",
-    accent: "var(--primary)",
   },
   reports: {
-    label: "Reports",
     title: "No reports yet",
     description: "Add your first transaction to create financial reports here.",
     actionLabel: "Add a transaction",
     action: "transaction",
     dataKind: "financial",
-    accent: "var(--primary)",
   },
   "ai-insights": {
-    label: "AI Insights",
     title: "No insights yet",
     description:
       "Add your first transaction to see personalized financial insights here.",
     actionLabel: "Add a transaction",
     action: "transaction",
     dataKind: "financial",
-    accent: "var(--primary)",
   },
   insights: {
-    label: "AI Insights",
     title: "No insights yet",
     description:
       "Add your first transaction to see personalized financial insights here.",
     actionLabel: "Add a transaction",
     action: "transaction",
     dataKind: "financial",
-    accent: "var(--primary)",
   },
 };
 
@@ -183,15 +159,13 @@ function titleFromSegment(segment: string) {
 }
 
 function fallbackConfig(segment: string): NewUserPageConfig {
-  const label = titleFromSegment(segment) || "Page";
+  const title = titleFromSegment(segment) || "Page";
   return {
-    label,
-    title: `No ${label.toLowerCase()} yet`,
-    description: `Add your first transaction to see ${label.toLowerCase()} here.`,
+    title: `No ${title.toLowerCase()} yet`,
+    description: `Add your first transaction to see ${title.toLowerCase()} here.`,
     actionLabel: "Add a transaction",
     action: "transaction",
     dataKind: "any",
-    accent: "var(--primary)",
   };
 }
 
@@ -276,17 +250,6 @@ export default function NewUserExperienceGate({
         data-new-user-page
         className="flex min-h-[calc(100dvh-8rem)] w-full min-w-0 flex-col pb-10"
       >
-        <div className="flex min-h-10 items-center gap-3">
-          <span
-            aria-hidden="true"
-            className="h-7 w-1 shrink-0 rounded-full"
-            style={{ background: pageConfig.accent }}
-          />
-          <h1 className="m-0 text-[clamp(1rem,0.8rem+0.55vw,1.45rem)] font-[760] leading-tight tracking-[-0.025em] text-text-primary">
-            {pageConfig.label}
-          </h1>
-        </div>
-
         <div className="flex min-h-[24rem] flex-1 items-center justify-center px-4 py-12 text-center sm:min-h-[30rem]">
           <div className="mx-auto flex w-full max-w-xl flex-col items-center">
             <h2 className="text-base font-black leading-tight text-text-primary sm:text-lg">
