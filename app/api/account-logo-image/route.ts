@@ -127,12 +127,18 @@ export async function GET(request: NextRequest) {
     Math.floor(Date.now() / RESOLVER_RETRY_WINDOW_MS).toString(),
   );
 
+  const upstreamHeaders: Record<string, string> = {
+    Accept: "image/avif,image/webp,image/apng,image/*,*/*;q=0.8",
+    "User-Agent": USER_AGENT,
+  };
+  const cookie = request.headers.get("cookie");
+  const authorization = request.headers.get("authorization");
+  if (cookie) upstreamHeaders.Cookie = cookie;
+  if (authorization) upstreamHeaders.Authorization = authorization;
+
   try {
     const upstream = await fetch(resolverUrl, {
-      headers: {
-        Accept: "image/avif,image/webp,image/apng,image/*,*/*;q=0.8",
-        "User-Agent": USER_AGENT,
-      },
+      headers: upstreamHeaders,
       redirect: "follow",
       cache: "no-store",
       signal: AbortSignal.timeout(8_000),
