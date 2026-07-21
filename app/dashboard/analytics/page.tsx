@@ -32,6 +32,7 @@ interface RawTransaction {
   source_name?: string | null;
   person_name?: string | null;
   item_name?: string | null;
+  deleted_at?: string | null;
   categories?: RawCategory | RawCategory[] | null;
 }
 
@@ -94,6 +95,7 @@ function sanitizeTransactions(
     const type = transaction.type?.trim().toLowerCase();
 
     if (
+      transaction.deleted_at ||
       !id ||
       !date ||
       amount === null ||
@@ -107,21 +109,23 @@ function sanitizeTransactions(
     const account = accountId ? accountLookup.get(accountId) : null;
     const category = getCategoryDetail(transaction.categories, transaction.category_id);
 
-    return [{
-      id,
-      amount,
-      date: formatDateKey(date.year, date.month, date.day),
-      type,
-      categoryId: category.id,
-      categoryName: category.name,
-      categoryColor: category.color,
-      accountId,
-      accountName: account?.name?.trim() || null,
-      accountType: account?.type?.trim() || null,
-      sourceName: transaction.source_name?.trim() || null,
-      personName: transaction.person_name?.trim() || null,
-      itemName: transaction.item_name?.trim() || null,
-    }];
+    return [
+      {
+        id,
+        amount,
+        date: formatDateKey(date.year, date.month, date.day),
+        type,
+        categoryId: category.id,
+        categoryName: category.name,
+        categoryColor: category.color,
+        accountId,
+        accountName: account?.name?.trim() || null,
+        accountType: account?.type?.trim() || null,
+        sourceName: transaction.source_name?.trim() || null,
+        personName: transaction.person_name?.trim() || null,
+        itemName: transaction.item_name?.trim() || null,
+      },
+    ];
   });
 }
 
@@ -135,36 +139,53 @@ export default async function AnalyticsPage({
   const parsedSearch = parseAnalyticsSearchParams((await searchParams) ?? {}, now);
   const queryRange = getCombinedQueryRange(parsedSearch.selection);
 
-  const [transactionsResult, investmentsResult, transactionCountResult] = await Promise.all([
-    supabase
-      .from("transactions")
-      .select(
-        "id, amount, date, type, category_id, account_id, source_name, person_name, item_name, categories(id, name, color)",
-      )
-      .gte("date", queryRange.start)
-      .lte("date", queryRange.end)
-      .order("date", { ascending: true })
-      .order("id", { ascending: true }),
-    supabase
-      .from("investments")
-      .select("id, name, symbol, type, quantity, purchase_price, current_price, created_at")
-      .order("created_at", { ascending: false }),
-    supabase.from("transactions").select("id", { count: "exact", head: true }),
-  ]);
+  const [transactionsResult, investmentsResult, transactionCountResult] =
+    await Promise.all([
+      supabase
+        .from("transactions")
+        .select(
+          "id, amount, date, type, category_id, account_id, source_name, person_name, item_name, deleted_at, categories(id, name, color)",
+        )
+        .is("deleted_at", null)
+        .gte("date", queryRange.start)
+        .lte("date", queryRange.end)
+        .order("date", { ascending: true })
+        .order("id", { ascending: true }),
+      supabase
+        .from("investments")
+        .select(
+          "id, name, symbol, type, quantity, purchase_price, current_price, created_at",
+        )
+        .order("created_at", { ascending: false }),
+      supabase
+        .from("transactions")
+        .select("id", { count: "exact", head: true })
+        .is("deleted_at", null),
+    ]);
 
   if (transactionsResult.error) {
-    console.error("[analytics] Transactions query failed", { code: transactionsResult.error.code });
+    console.error("[analytics] Transactions query failed", {
+      code: transactionsResult.error.code,
+    });
   }
   if (investmentsResult.error) {
-    console.error("[analytics] Investments query failed", { code: investmentsResult.error.code });
+    console.error("[analytics] Investments query failed", {
+      code: investmentsResult.error.code,
+    });
   }
   if (transactionCountResult.error) {
-    console.error("[analytics] Transaction count query failed", { code: transactionCountResult.error.code });
+    console.error("[analytics] Transaction count query failed", {
+      code: transactionCountResult.error.code,
+    });
   }
 
   const rawTransactions = (transactionsResult.data ?? []) as RawTransaction[];
   const accountIds = Array.from(
-    new Set(rawTransactions.map((row) => row.account_id?.trim()).filter((id): id is string => Boolean(id))),
+    new Set(
+      rawTransactions
+        .map((row) => row.account_id?.trim())
+        .filter((id): id is string => Boolean(id)),
+    ),
   ).sort((left, right) => left.localeCompare(right));
 
   let accountStatus: AnalyticsAccountStatus = "available";
@@ -177,10 +198,17 @@ export default async function AnalyticsPage({
 
     if (accountsResult.error) {
       accountStatus = "partial";
-      console.error("[analytics] Account labels query failed", { code: accountsResult.error.code });
+      console.error("[analytics] Account labels query failed", {
+        code: accountsResult.error.code,
+      });
     } else {
       rawAccounts = (accountsResult.data ?? []) as RawAccount[];
-      if (hasPartialAccountMetadata(accountIds, rawAccounts.map((account) => account.id))) {
+      if (
+        hasPartialAccountMetadata(
+          accountIds,
+          rawAccounts.map((account) => account.id),
+        )
+      ) {
         accountStatus = "partial";
       }
     }
@@ -194,27 +222,29 @@ export default async function AnalyticsPage({
   );
 
   const transactions = sanitizeTransactions(rawTransactions, accountLookup);
-  const investments = ((investmentsResult.data ?? []) as RawInvestment[]).flatMap<AnalyticsInvestmentData>(
-    (investment) => {
-      const id = investment.id?.trim();
-      const metrics = calculateInvestmentMetrics(
-        investment.quantity,
-        investment.purchase_price,
-        investment.current_price,
-      );
-      if (!id || !metrics) return [];
+  const investments = (
+    (investmentsResult.data ?? []) as RawInvestment[]
+  ).flatMap<AnalyticsInvestmentData>((investment) => {
+    const id = investment.id?.trim();
+    const metrics = calculateInvestmentMetrics(
+      investment.quantity,
+      investment.purchase_price,
+      investment.current_price,
+    );
+    if (!id || !metrics) return [];
 
-      const rawType = String(investment.type || "other").trim().toLowerCase();
-      return [{
+    const rawType = String(investment.type || "other").trim().toLowerCase();
+    return [
+      {
         id,
         name: investment.name?.trim() || "Unnamed investment",
         symbol: investment.symbol?.trim() || null,
         type: titleCase(rawType),
         ...metrics,
         color: INVESTMENT_TYPE_COLORS[rawType] ?? INVESTMENT_TYPE_COLORS.other,
-      }];
-    },
-  );
+      },
+    ];
+  });
 
   return (
     <AnalyticsClient
@@ -224,7 +254,9 @@ export default async function AnalyticsPage({
       accountsStatus={accountStatus}
       investmentsStatus={investmentsResult.error ? "error" : "available"}
       hasAnyTransactions={
-        transactionCountResult.error ? null : (transactionCountResult.count ?? 0) > 0
+        transactionCountResult.error
+          ? null
+          : (transactionCountResult.count ?? 0) > 0
       }
       selection={parsedSearch.selection}
       invalidRangeWasReset={parsedSearch.wasReset}
