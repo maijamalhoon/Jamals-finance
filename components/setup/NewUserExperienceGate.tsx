@@ -1,18 +1,37 @@
 "use client";
 
-import { useLayoutEffect, useMemo, useState, type ReactNode } from "react";
+import dynamic from "next/dynamic";
 import { usePathname, useRouter } from "next/navigation";
+import { useLayoutEffect, useMemo, useState, type ReactNode } from "react";
 
-import AccountModal from "@/components/accounts/AccountModal";
-import NewUserSetupGuide from "@/components/dashboard/NewUserSetupGuide";
-import TransactionModal from "@/components/dashboard/TransactionModal";
-import GoalModal from "@/components/goals/GoalModal";
-import InvestmentModal from "@/components/investments/InvestmentModal";
-import PayableModal from "@/components/payables/PayableModal";
 import type {
   NewUserExperienceCounts,
   NewUserExperienceState,
 } from "@/lib/new-user-experience";
+
+const AccountModal = dynamic(
+  () => import("@/components/accounts/AccountModal"),
+  { ssr: false },
+);
+const NewUserSetupGuide = dynamic(
+  () => import("@/components/dashboard/NewUserSetupGuide"),
+  { ssr: false },
+);
+const TransactionModal = dynamic(
+  () => import("@/components/dashboard/TransactionModal"),
+  { ssr: false },
+);
+const GoalModal = dynamic(() => import("@/components/goals/GoalModal"), {
+  ssr: false,
+});
+const InvestmentModal = dynamic(
+  () => import("@/components/investments/InvestmentModal"),
+  { ssr: false },
+);
+const PayableModal = dynamic(
+  () => import("@/components/payables/PayableModal"),
+  { ssr: false },
+);
 
 type ActionKind =
   | "account"
