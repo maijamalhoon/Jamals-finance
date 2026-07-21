@@ -20,7 +20,6 @@ import {
 } from "@/components/ui/finance-modal";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { BASE_CURRENCY } from "@/lib/currency";
 import { getAppDateKey } from "@/lib/dates";
 import { createClient } from "@/lib/supabase/client";
 import { getUserMutationError } from "@/lib/user-errors";
@@ -53,7 +52,7 @@ interface Props {
 export default function PaymentModal({ open, onClose, payable, accounts }: Props) {
   const supabase = useMemo(() => createClient(), []);
   const router = useRouter();
-  const { formatCurrency } = useCurrency();
+  const { currency, ratesReady, getRate, formatCurrency } = useCurrency();
   const [amount, setAmount] = useState("");
   const [accountId, setAccountId] = useState(accounts[0]?.id ?? "");
   const [paidAt, setPaidAt] = useState(getAppDateKey());
@@ -69,8 +68,22 @@ export default function PaymentModal({ open, onClose, payable, accounts }: Props
       setError("Enter a payment amount and select the account used.");
       return;
     }
+    if (currency !== "PKR" && !ratesReady) {
+      setError("Exchange rates are unavailable. The payment was not saved.");
+      return;
+    }
 
-    if (parsedAmount > Number(payable.remaining_amount)) {
+    const exchangeRateToPkr = getRate(currency, "PKR");
+    if (exchangeRateToPkr === null) {
+      setError("The exchange rate is invalid. The payment was not saved.");
+      return;
+    }
+    const canonicalAmount = parsedAmount * exchangeRateToPkr;
+
+    if (
+      !Number.isFinite(canonicalAmount) ||
+      canonicalAmount > Number(payable.remaining_amount)
+    ) {
       setError(
         `Payment cannot be more than ${formatCurrency(payable.remaining_amount)}.`,
       );
@@ -93,11 +106,13 @@ export default function PaymentModal({ open, onClose, payable, accounts }: Props
 
     try {
       const { error: paymentError } = await supabase.rpc(
-        "record_liability_payment",
+        "record_liability_payment_currency",
         {
           p_liability_id: payable.id,
           p_account_id: accountId,
-          p_amount: parsedAmount,
+          p_amount_original: parsedAmount,
+          p_currency: currency,
+          p_exchange_rate_to_pkr: exchangeRateToPkr,
           p_paid_at: paidAt,
           p_note: note.trim() || null,
         },
@@ -137,7 +152,7 @@ export default function PaymentModal({ open, onClose, payable, accounts }: Props
 
         <FinanceModalBody>
           <FinanceFormField
-            label={`Payment Amount (${BASE_CURRENCY})`}
+            label={`Payment Amount (${currency})`}
             htmlFor="payment-amount"
           >
             <Input
@@ -203,7 +218,11 @@ export default function PaymentModal({ open, onClose, payable, accounts }: Props
           <Button
             type="button"
             onClick={handleSave}
-            disabled={loading || !accounts.length}
+            disabled={
+              loading ||
+              !accounts.length ||
+              (currency !== "PKR" && !ratesReady)
+            }
             loading={loading}
             loadingLabel="Recording payment…"
             className={financePrimaryButtonClass}
