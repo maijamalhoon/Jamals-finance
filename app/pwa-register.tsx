@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import { toast } from "sonner";
 
+import GlobalFormAuditAuthority from "@/components/forms/GlobalFormAuditAuthority";
 import GlobalFormFieldAuthority from "@/components/forms/GlobalFormFieldAuthority";
 import AndroidAppManager from "@/components/pwa/AndroidAppManager";
 import AppUpdateManager from "@/components/pwa/AppUpdateManager";
@@ -88,6 +89,7 @@ export default function PWARegister() {
 
   return (
     <>
+      <GlobalFormAuditAuthority />
       <GlobalFormFieldAuthority />
       <AcceleratedMotionPerformance />
       <AndroidAppManager />
