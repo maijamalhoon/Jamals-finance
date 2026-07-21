@@ -30,6 +30,13 @@ export default function InvestmentModal(props: InvestmentModalProps) {
     <>
       <InvestmentModalLocal key={catalogVersion} {...props} />
       <style jsx global>{`
+        label[for="investment-purchase-price"]
+          + select[aria-label="Currency"],
+        label[for="investment-current-price"]
+          + select[aria-label="Currency"] {
+          display: none;
+        }
+
         @media (max-width: 639px) {
           #investment-crypto-results {
             max-height: min(18rem, 40dvh);
