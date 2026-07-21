@@ -22,7 +22,14 @@ import {
 } from "lucide-react";
 
 import TransactionReceiptActions from "@/components/transactions/TransactionReceiptActions";
-import { formatMoney } from "@/lib/currency";
+import {
+  BASE_CURRENCY,
+  formatMoney,
+  isSupportedCurrency,
+  type CurrencyRates,
+  type SupportedCurrency,
+} from "@/lib/currency";
+import { getExchangeRateSnapshot } from "@/lib/exchange-rate";
 import { createClient } from "@/lib/supabase/server";
 
 type ReceiptType =
@@ -98,6 +105,8 @@ type ReceiptTransferRow = {
   from_account: { name?: string | null } | null;
   to_account: { name?: string | null } | null;
 };
+
+type MoneyFormatter = (amount: number) => string;
 
 const TYPE_META: Record<
   ReceiptType,
@@ -205,7 +214,10 @@ function normalizeReceiptType(type: string): Exclude<ReceiptType, "transfer"> {
   return "expense";
 }
 
-function mapTransactionReceipt(transaction: ReceiptTransactionRow): ReceiptData {
+function mapTransactionReceipt(
+  transaction: ReceiptTransactionRow,
+  money: MoneyFormatter,
+): ReceiptData {
   const type = normalizeReceiptType(transaction.type);
   const meta = TYPE_META[type];
   const amount = Number(transaction.amount ?? 0);
@@ -225,7 +237,7 @@ function mapTransactionReceipt(transaction: ReceiptTransactionRow): ReceiptData 
     typeLabel: meta.label,
     title,
     amount,
-    amountText: `${meta.amountPrefix}${formatMoney(amount)}`,
+    amountText: `${meta.amountPrefix}${money(amount)}`,
     dateText: formatDate(transaction.date),
     createdText: formatDate(transaction.created_at, true),
     accountText: transaction.accounts?.name || "No linked account",
@@ -253,7 +265,10 @@ function mapTransactionReceipt(transaction: ReceiptTransactionRow): ReceiptData 
   };
 }
 
-function mapTransferReceipt(transfer: ReceiptTransferRow): ReceiptData {
+function mapTransferReceipt(
+  transfer: ReceiptTransferRow,
+  money: MoneyFormatter,
+): ReceiptData {
   const meta = TYPE_META.transfer;
   const amount = Number(transfer.amount ?? 0);
   const baseReceipt: Omit<ReceiptData, "receiptText"> = {
@@ -262,7 +277,7 @@ function mapTransferReceipt(transfer: ReceiptTransferRow): ReceiptData {
     typeLabel: meta.label,
     title: transfer.note || "Internal transfer",
     amount,
-    amountText: formatMoney(amount),
+    amountText: money(amount),
     dateText: formatDate(transfer.transfer_date),
     createdText: formatDate(transfer.created_at, true),
     accountText: "Internal transfer",
@@ -311,6 +326,25 @@ function DetailLine({
   );
 }
 
+function createMoneyFormatter({
+  currency,
+  rates,
+  usableRates,
+}: {
+  currency: SupportedCurrency;
+  rates: CurrencyRates;
+  usableRates: boolean;
+}): MoneyFormatter {
+  if (currency !== BASE_CURRENCY && !usableRates) return () => "—";
+
+  return (amount) =>
+    formatMoney(amount, {
+      currency,
+      fromCurrency: BASE_CURRENCY,
+      rates,
+    });
+}
+
 export default async function TransactionReceiptPage({
   params,
 }: {
@@ -323,6 +357,27 @@ export default async function TransactionReceiptPage({
   } = await supabase.auth.getUser();
 
   if (!user) redirect("/login");
+
+  const [profileResult, rateSnapshot] = await Promise.all([
+    supabase
+      .from("profiles")
+      .select("preferred_currency")
+      .eq("id", user.id)
+      .maybeSingle(),
+    getExchangeRateSnapshot(),
+  ]);
+  const currency = isSupportedCurrency(profileResult.data?.preferred_currency)
+    ? profileResult.data.preferred_currency
+    : BASE_CURRENCY;
+  const usableRates =
+    !rateSnapshot.source.startsWith("Built-in emergency") &&
+    Number.isFinite(Date.parse(rateSnapshot.updatedAt)) &&
+    Date.parse(rateSnapshot.updatedAt) > 0;
+  const money = createMoneyFormatter({
+    currency,
+    rates: rateSnapshot.rates,
+    usableRates,
+  });
 
   const { data: transaction, error: transactionError } = await supabase
     .from("transactions")
@@ -399,11 +454,14 @@ export default async function TransactionReceiptPage({
   }
 
   let receipt: ReceiptData | null = transaction
-    ? mapTransactionReceipt({
-        ...(transaction as ReceiptTransactionBaseRow),
-        accounts: account,
-        categories: category,
-      })
+    ? mapTransactionReceipt(
+        {
+          ...(transaction as ReceiptTransactionBaseRow),
+          accounts: account,
+          categories: category,
+        },
+        money,
+      )
     : null;
 
   if (receipt?.type === "expense") {
@@ -444,7 +502,7 @@ export default async function TransactionReceiptPage({
     }
 
     receipt = transfer
-      ? mapTransferReceipt(transfer as unknown as ReceiptTransferRow)
+      ? mapTransferReceipt(transfer as unknown as ReceiptTransferRow, money)
       : null;
   }
 
@@ -616,7 +674,7 @@ export default async function TransactionReceiptPage({
                 <DetailLine
                   icon={RotateCcw}
                   label="Refunded So Far"
-                  value={formatMoney(receipt.refundedAmount)}
+                  value={money(receipt.refundedAmount)}
                 />
               ) : null}
 
