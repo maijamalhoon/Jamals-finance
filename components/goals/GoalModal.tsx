@@ -5,6 +5,7 @@ import { toast } from "sonner";
 
 import { createClient } from "@/lib/supabase/client";
 import AccountSelect from "@/components/accounts/AccountSelect";
+import { useCurrency } from "@/components/currency/CurrencyProvider";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import DatePicker from "@/components/ui/date-picker";
@@ -18,8 +19,8 @@ import {
   financeModalContentClass,
   financePrimaryButtonClass,
 } from "@/components/ui/finance-modal";
+import { getEditableMoneyValue } from "@/lib/currency-input";
 import { getGoalPresentation } from "./goal-icons";
-import { BASE_CURRENCY } from "@/lib/currency";
 import { getUserMutationError } from "@/lib/user-errors";
 
 export interface GoalAccount {
@@ -34,6 +35,9 @@ export interface ExistingGoal {
   id: string;
   name: string;
   target_amount: number;
+  target_amount_original?: number | string | null;
+  currency?: string | null;
+  exchange_rate_to_pkr?: number | string | null;
   current_amount: number;
   deadline: string | null;
   icon: string | null;
@@ -52,6 +56,11 @@ const NO_GOAL_ACCOUNTS: GoalAccount[] = [];
 const NO_LINKED_ACCOUNT_ID = "__no_linked_goal_account__";
 const GOAL_ACTION_COLOR = "#157462";
 
+function formatInputValue(value: number | null) {
+  if (value === null || !Number.isFinite(value)) return "";
+  return value.toFixed(8).replace(/\.?0+$/, "");
+}
+
 export default function GoalModal({
   open,
   onClose,
@@ -62,6 +71,13 @@ export default function GoalModal({
   const supabase = createClient();
   const isEditing = Boolean(goal);
   const suppliedAccounts = accounts ?? NO_GOAL_ACCOUNTS;
+  const {
+    currency,
+    rates,
+    ratesReady,
+    fromBaseCurrency,
+    toBaseCurrency,
+  } = useCurrency();
 
   const [name, setName] = useState("");
   const [targetAmount, setTargetAmount] = useState("");
@@ -79,9 +95,18 @@ export default function GoalModal({
     if (!open) return;
 
     if (goal) {
+      const editableTarget = getEditableMoneyValue({
+        amountPkr: goal.target_amount,
+        originalAmount: goal.target_amount_original,
+        originalCurrency: goal.currency,
+        displayCurrency: currency,
+        rates,
+      });
+      const editableCurrent = fromBaseCurrency(Number(goal.current_amount));
+
       setName(goal.name);
-      setTargetAmount(String(goal.target_amount));
-      setCurrentAmount(String(goal.current_amount));
+      setTargetAmount(formatInputValue(editableTarget));
+      setCurrentAmount(formatInputValue(editableCurrent));
       setDeadline(goal.deadline || "");
       setAccountId(goal.account_id || "");
     } else {
@@ -93,7 +118,7 @@ export default function GoalModal({
     }
 
     setError("");
-  }, [goal, open]);
+  }, [currency, fromBaseCurrency, goal, open, rates]);
 
   useEffect(() => {
     setAvailableAccounts(suppliedAccounts);
@@ -135,6 +160,17 @@ export default function GoalModal({
       return;
     }
 
+    if (currency !== "PKR" && !ratesReady) {
+      setError("Exchange rates are unavailable. The goal was not saved.");
+      return;
+    }
+
+    const currentAmountPkr = isEditing ? null : toBaseCurrency(parsedCurrent);
+    if (!isEditing && currentAmountPkr === null) {
+      setError("Saved amount could not be converted safely. Nothing was saved.");
+      return;
+    }
+
     setLoading(true);
     setError("");
 
@@ -161,7 +197,7 @@ export default function GoalModal({
       ? await supabase.from("goals").update(payload).eq("id", goal!.id)
       : await supabase.from("goals").insert({
           ...payload,
-          current_amount: parsedCurrent || 0,
+          current_amount: currentAmountPkr ?? 0,
         });
 
     setLoading(false);
@@ -203,7 +239,7 @@ export default function GoalModal({
 
           <div className="grid gap-3 sm:grid-cols-2">
             <FinanceFormField
-              label={`Target Amount (${BASE_CURRENCY})`}
+              label={`Target Amount (${currency})`}
               htmlFor="goal-target-amount"
             >
               <Input
@@ -220,7 +256,7 @@ export default function GoalModal({
             </FinanceFormField>
 
             <FinanceFormField
-              label={`Saved Amount (${BASE_CURRENCY})`}
+              label={`Saved Amount (${currency})`}
               htmlFor="goal-current-amount"
             >
               <Input
@@ -282,7 +318,7 @@ export default function GoalModal({
           <Button
             type="button"
             onClick={handleSave}
-            disabled={loading}
+            disabled={loading || (currency !== "PKR" && !ratesReady)}
             loading={loading}
             loadingLabel="Saving goal…"
             className={financePrimaryButtonClass}
