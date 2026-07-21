@@ -9,6 +9,10 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: android-sdk36-final-build
+  cancel-in-progress: true
+
 jobs:
   build-sdk36:
     runs-on: ubuntu-latest
@@ -20,6 +24,25 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Report build start
+        run: |
+          set -euo pipefail
+          mkdir -p android-twa/build-output
+          cat > android-twa/build-output/sdk36-build-handoff.json <<JSON
+          {
+            "status": "started",
+            "runId": "${GITHUB_RUN_ID}",
+            "artifactName": "jamals-finance-android-sdk36-unsigned",
+            "sourceCommit": "${GITHUB_SHA}"
+          }
+          JSON
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add android-twa/build-output/sdk36-build-handoff.json
+          git commit -m "chore(android): record SDK 36 build start" || true
+          git pull --rebase origin main
+          git push origin HEAD:main
+
       - name: Set up Java 17
         uses: actions/setup-java@v4
         with:
@@ -29,60 +52,55 @@ jobs:
       - name: Set up Gradle cache
         uses: gradle/actions/setup-gradle@v4
 
-      - name: Install Android SDK 36
+      - name: Build and verify unsigned SDK 36 package
+        id: build
+        continue-on-error: true
         run: |
+          set -o pipefail
+          exec > >(tee build.log) 2>&1
           set -euo pipefail
+
           yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" \
             "platforms;android-36" \
             "build-tools;36.0.0" \
             "platform-tools" >/dev/null
 
-      - name: Download generated Android source
-        run: |
-          set -euo pipefail
           curl --fail --location --silent --show-error \
             "https://pwabuilder-cloudapk.azurewebsites.net/downloadPackageZip?id=googleplaypackagejob%3Ajamals-finance-sable.vercel.app%3A008936" \
             --output source-package.zip
           unzip -q source-package.zip -d package
+
           source_dir="$(find package -type f -path '*/app/build.gradle' -printf '%h\n' | sed 's#/app$##' | head -n 1)"
           test -n "$source_dir"
-          echo "SOURCE_DIR=$source_dir" >> "$GITHUB_ENV"
-          echo "Android source: $source_dir"
+          build_file="$source_dir/app/build.gradle"
 
-      - name: Set target SDK 36
-        run: |
-          set -euo pipefail
-          build_file="$SOURCE_DIR/app/build.gradle"
           grep -q 'compileSdkVersion 36' "$build_file"
           grep -q 'targetSdkVersion 35' "$build_file"
           sed -i 's/targetSdkVersion 35/targetSdkVersion 36/' "$build_file"
           grep -q 'targetSdkVersion 36' "$build_file"
-          grep -E 'compileSdkVersion|applicationId|minSdkVersion|targetSdkVersion|versionCode|versionName' "$build_file"
 
-      - name: Build unsigned APK and AAB
-        run: |
-          set -euo pipefail
-          cd "$SOURCE_DIR"
+          cd "$source_dir"
           chmod +x gradlew
           ./gradlew clean assembleRelease bundleRelease --no-daemon --stacktrace
+          cd "$GITHUB_WORKSPACE"
 
-      - name: Verify unsigned package metadata
-        run: |
-          set -euo pipefail
-          apk="$(find "$SOURCE_DIR/app/build/outputs/apk/release" -type f -name '*release*.apk' | head -n 1)"
-          aab="$(find "$SOURCE_DIR/app/build/outputs/bundle/release" -type f -name '*release*.aab' | head -n 1)"
+          apk="$(find "$source_dir/app/build/outputs/apk/release" -type f -name '*release*.apk' | head -n 1)"
+          aab="$(find "$source_dir/app/build/outputs/bundle/release" -type f -name '*release*.aab' | head -n 1)"
           test -s "$apk"
           test -s "$aab"
+
           "$ANDROID_HOME/build-tools/36.0.0/aapt" dump badging "$apk" > apk-badging.txt
           grep -q "package: name='com.jamalsfinance.app'" apk-badging.txt
           grep -q "sdkVersion:'23'" apk-badging.txt
           grep -q "targetSdkVersion:'36'" apk-badging.txt
+
           mkdir -p handoff
           cp "$apk" handoff/jamals-finance-v1.0.0-unsigned.apk
           cp "$aab" handoff/jamals-finance-v1.0.0-unsigned.aab
-          cp apk-badging.txt handoff/
+          cp apk-badging.txt build.log handoff/
 
       - name: Upload SDK 36 unsigned package
+        if: steps.build.outcome == 'success'
         uses: actions/upload-artifact@v4
         with:
           name: jamals-finance-android-sdk36-unsigned
@@ -90,12 +108,18 @@ jobs:
           if-no-files-found: error
           retention-days: 1
 
-      - name: Report artifact run ID
+      - name: Report final build status
+        if: always()
+        env:
+          BUILD_OUTCOME: ${{ steps.build.outcome }}
         run: |
+          set -euo pipefail
+          status="failed"
+          if [ "$BUILD_OUTCOME" = "success" ]; then status="completed"; fi
           mkdir -p android-twa/build-output
           cat > android-twa/build-output/sdk36-build-handoff.json <<JSON
           {
-            "status": "completed",
+            "status": "${status}",
             "runId": "${GITHUB_RUN_ID}",
             "artifactName": "jamals-finance-android-sdk36-unsigned",
             "sourceCommit": "${GITHUB_SHA}"
@@ -104,6 +128,10 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add android-twa/build-output/sdk36-build-handoff.json
-          git commit -m "chore(android): record SDK 36 build handoff" || exit 0
+          git commit -m "chore(android): record SDK 36 build ${status}" || true
           git pull --rebase origin main
           git push origin HEAD:main
+
+      - name: Fail workflow when package build failed
+        if: steps.build.outcome != 'success'
+        run: exit 1
