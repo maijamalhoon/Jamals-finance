@@ -37,8 +37,9 @@ type CentralPriceStore = {
 };
 
 const CENTRAL_PRICE_ENDPOINT = "/api/market/crypto-prices";
-const LIVE_POLL_INTERVAL_MS = 1_000;
-const MAX_RETRY_INTERVAL_MS = 30_000;
+const LIVE_POLL_INTERVAL_MS = 5_000;
+const BACKGROUND_POLL_INTERVAL_MS = 30_000;
+const MAX_RETRY_INTERVAL_MS = 60_000;
 const REQUEST_TIMEOUT_MS = 8_000;
 
 const EMPTY_SNAPSHOT: BinancePriceSnapshot = {
@@ -137,7 +138,7 @@ async function runCentralPricePoll() {
   if (subscribers.size === 0) return;
 
   if (document.visibilityState === "hidden") {
-    scheduleNextPoll(5_000);
+    scheduleNextPoll(BACKGROUND_POLL_INTERVAL_MS);
     return;
   }
 
