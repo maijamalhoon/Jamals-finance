@@ -1,120 +1,103 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useMemo, useState } from "react";
 import { ArrowLeftRight, RefreshCw } from "lucide-react";
-import {
-  convertMoney,
-  FALLBACK_USD_PKR_RATE,
-  formatMoney,
-  SupportedCurrency,
-} from "@/lib/currency";
+
+import { useCurrency } from "@/components/currency/CurrencyProvider";
+import type { SupportedCurrency } from "@/lib/currency";
 
 export default function CurrencyConverter() {
-  const [rate, setRate] = useState<number | null>(null);
+  const {
+    currency,
+    ratesReady,
+    live,
+    stale,
+    rateLabel,
+    formatCurrency,
+    convertCurrency,
+  } = useCurrency();
   const [amount, setAmount] = useState("1");
-  const [fromUSD, setFromUSD] = useState(true);
-  const [loading, setLoading] = useState(true);
-  const [live, setLive] = useState(false);
+  const [reversed, setReversed] = useState(false);
 
-  async function fetchRate() {
-    setLoading(true);
-    try {
-      const res = await fetch("/api/exchange-rate");
-      const data = await res.json();
-      setRate(data.rate);
-      setLive(data.live);
-    } catch {
-      setRate(FALLBACK_USD_PKR_RATE);
-      setLive(false);
-    }
-    setLoading(false);
-  }
+  const comparisonCurrency: SupportedCurrency =
+    currency === "USD" ? "PKR" : "USD";
+  const fromCurrency = reversed ? comparisonCurrency : currency;
+  const toCurrency = reversed ? currency : comparisonCurrency;
+  const numericAmount = Number(amount);
+  const converted = useMemo(() => {
+    if (!Number.isFinite(numericAmount)) return null;
+    return convertCurrency(numericAmount, fromCurrency, toCurrency);
+  }, [convertCurrency, fromCurrency, numericAmount, toCurrency]);
 
-  useEffect(() => {
-    fetchRate();
-  }, []);
-
-  const num = parseFloat(amount) || 0;
-  const fromCurrency: SupportedCurrency = fromUSD ? "USD" : "PKR";
-  const toCurrency: SupportedCurrency = fromUSD ? "PKR" : "USD";
-  const converted =
-    rate ?
-      formatMoney(convertMoney(num, fromCurrency, toCurrency, rate), {
-        currency: toCurrency,
-        fromCurrency: toCurrency,
-        usdToPkrRate: rate,
-        maximumFractionDigits: toCurrency === "USD" ? 4 : 2,
-      })
-    : "...";
+  const formatted =
+    converted === null
+      ? "—"
+      : formatCurrency(converted, {
+          currency: toCurrency,
+          fromCurrency: toCurrency,
+          maximumFractionDigits: toCurrency === "JPY" ? 0 : 4,
+        });
 
   return (
     <div className="finance-panel p-5">
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="text-text-primary font-semibold text-sm">Currency Converter</h3>
-        <button
-          onClick={fetchRate}
-          disabled={loading}
-          className="finance-control w-7 h-7 flex items-center justify-center disabled:opacity-50"
-          aria-label="Refresh exchange rate"
+      <div className="mb-4 flex items-center justify-between">
+        <h3 className="text-sm font-semibold text-text-primary">
+          Currency Converter
+        </h3>
+        <span
+          className="finance-control flex h-7 w-7 items-center justify-center"
+          aria-label={ratesReady ? rateLabel : "Exchange rates are loading"}
         >
           <RefreshCw
             size={12}
-            className={`text-text-secondary ${loading ? "animate-spin" : ""}`}
+            className={`text-text-secondary ${ratesReady ? "" : "animate-spin"}`}
           />
-        </button>
+        </span>
       </div>
 
       <div className="flex items-center gap-2">
-        <div className="flex-1 finance-panel-soft p-3">
-          <p className="text-text-secondary text-[10px] mb-1">From</p>
-          <p className="text-text-secondary text-xs mb-1.5">
-            {fromUSD ? "USD" : "PKR"}
-          </p>
+        <div className="finance-panel-soft flex-1 p-3">
+          <p className="mb-1 text-[10px] text-text-secondary">From</p>
+          <p className="mb-1.5 text-xs text-text-secondary">{fromCurrency}</p>
           <input
             type="number"
             value={amount}
-            onChange={(e) => setAmount(e.target.value)}
+            onChange={(event) => setAmount(event.target.value)}
             className="w-full bg-input text-sm font-semibold text-text-primary outline-none"
-            min="0"
+            step="any"
           />
         </div>
 
         <button
-          onClick={() => setFromUSD((p) => !p)}
-          className="finance-control w-8 h-8 flex items-center justify-center flex-shrink-0"
+          type="button"
+          onClick={() => setReversed((current) => !current)}
+          className="finance-control flex h-8 w-8 flex-shrink-0 items-center justify-center"
           aria-label="Swap currencies"
         >
           <ArrowLeftRight size={13} className="text-text-secondary" />
         </button>
 
-        <div className="flex-1 finance-panel-soft p-3">
-          <p className="text-text-secondary text-[10px] mb-1">To</p>
-          <p className="text-text-secondary text-xs mb-1.5">
-            {fromUSD ? "PKR" : "USD"}
-          </p>
-          <p className="text-text-primary text-sm font-semibold">{converted}</p>
+        <div className="finance-panel-soft flex-1 p-3">
+          <p className="mb-1 text-[10px] text-text-secondary">To</p>
+          <p className="mb-1.5 text-xs text-text-secondary">{toCurrency}</p>
+          <p className="text-sm font-semibold text-text-primary">{formatted}</p>
         </div>
       </div>
 
-      <div className="flex items-center gap-2 mt-3">
-        {loading ?
-          <p className="text-text-secondary text-xs">Fetching rate...</p>
-        : <>
-            <p className="text-text-secondary text-xs">
-              1 USD = {rate?.toFixed(2)} PKR
-            </p>
-            <span className="flex items-center gap-1">
-              <span
-                className={`h-1.5 w-1.5 rounded-full ${live ? "bg-success" : "bg-warning"}`}
-              />
-              <span
-                className={`text-[10px] ${live ? "text-success" : "text-warning"}`}
-              >
-                {live ? "Live" : "Fallback"}
-              </span>
-            </span>
-          </>
-        }
+      <div className="mt-3 flex items-center gap-2">
+        <p className="truncate text-xs text-text-secondary">
+          {ratesReady ? rateLabel : "Fetching rates…"}
+        </p>
+        <span className="flex flex-shrink-0 items-center gap-1">
+          <span
+            className={`h-1.5 w-1.5 rounded-full ${live && !stale ? "bg-success" : "bg-warning"}`}
+          />
+          <span
+            className={`text-[10px] ${live && !stale ? "text-success" : "text-warning"}`}
+          >
+            {live && !stale ? "Latest" : "Saved"}
+          </span>
+        </span>
       </div>
     </div>
   );
