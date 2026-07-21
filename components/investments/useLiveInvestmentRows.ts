@@ -5,17 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useBinanceSearchPrices } from "@/components/investments/useBinanceLivePrices";
 import type { InvestmentLike } from "@/lib/investments/aggregation";
 import type { CryptoCatalogAsset } from "@/lib/market/crypto-catalog";
-import { createClient } from "@/lib/supabase/client";
-
-type CryptoAssetRow = {
-  id: string;
-  name: string;
-  symbol: string;
-  aliases: string[] | null;
-  logo_url: string | null;
-  rank: number | null;
-  binance_symbol: string | null;
-};
+import { loadRuntimeCryptoCatalog } from "@/lib/market/crypto-catalog-client";
 
 type CatalogIndex = {
   byId: Map<string, CryptoCatalogAsset>;
@@ -32,7 +22,7 @@ function normalize(value: string | null | undefined) {
 function isCryptoInvestment(investment: InvestmentLike) {
   const type = normalize(investment.type).toLowerCase();
   const source = normalize(investment.price_source).toLowerCase();
-  return type === "crypto" || source === "binance";
+  return type === "crypto" || source === "binance" || source === "coingecko";
 }
 
 function fallbackBinancePair(symbol: string) {
@@ -43,42 +33,20 @@ function fallbackBinancePair(symbol: string) {
   return `${normalized}USDT`;
 }
 
-function toCatalogAsset(row: CryptoAssetRow): CryptoCatalogAsset {
-  return {
-    id: row.id,
-    name: row.name,
-    symbol: row.symbol.toUpperCase(),
-    aliases: Array.isArray(row.aliases) ? row.aliases : [],
-    rank: Number.isFinite(Number(row.rank)) ? Number(row.rank) : 999999,
-    logoUrl: row.logo_url ?? "",
-    binanceSymbol: row.binance_symbol,
-  };
-}
-
 async function loadCatalogIndex() {
   if (catalogRequest) return catalogRequest;
 
-  catalogRequest = (async () => {
-    const supabase = createClient();
-    const { data, error } = await supabase
-      .from("crypto_assets")
-      .select("id, name, symbol, aliases, logo_url, rank, binance_symbol")
-      .eq("is_active", true)
-      .order("rank", { ascending: true });
-
+  catalogRequest = loadRuntimeCryptoCatalog().then((assets) => {
     const byId = new Map<string, CryptoCatalogAsset>();
     const bySymbol = new Map<string, CryptoCatalogAsset>();
 
-    if (error || !data?.length) return { byId, bySymbol };
-
-    for (const row of data as CryptoAssetRow[]) {
-      const asset = toCatalogAsset(row);
+    for (const asset of assets) {
       byId.set(asset.id.toLowerCase(), asset);
       if (!bySymbol.has(asset.symbol)) bySymbol.set(asset.symbol, asset);
     }
 
     return { byId, bySymbol };
-  })();
+  });
 
   return catalogRequest;
 }
@@ -154,6 +122,7 @@ export function useLiveInvestmentRows<T extends InvestmentLike>(investments: T[]
 
     return {
       assets: Array.from(assetsByKey.values()),
+      assetsByKey,
       investmentAssetKeys,
     };
   }, [catalog, investments]);
@@ -164,28 +133,32 @@ export function useLiveInvestmentRows<T extends InvestmentLike>(investments: T[]
   );
 
   return useMemo(() => {
-    if (usdPkrRate === null) return investments;
-
     return investments.map((investment) => {
       const assetKey = resolved.investmentAssetKeys.get(investment.id);
+      const asset = assetKey ? resolved.assetsByKey.get(assetKey) : undefined;
       const snapshot = assetKey ? prices[assetKey] : undefined;
+      const investmentWithCanonicalLogo =
+        asset?.logoUrl && asset.logoUrl !== normalize(investment.image_url)
+          ? ({ ...investment, image_url: asset.logoUrl } as T)
+          : investment;
 
       if (
+        usdPkrRate === null ||
         snapshot?.status !== "live" ||
         snapshot.priceUsd === null ||
         !Number.isFinite(snapshot.priceUsd) ||
         snapshot.priceUsd <= 0
       ) {
-        return investment;
+        return investmentWithCanonicalLogo;
       }
 
       const currentPricePkr = snapshot.priceUsd * usdPkrRate;
       if (!Number.isFinite(currentPricePkr) || currentPricePkr <= 0) {
-        return investment;
+        return investmentWithCanonicalLogo;
       }
 
       return {
-        ...investment,
+        ...investmentWithCanonicalLogo,
         current_price: currentPricePkr,
         current_price_original: snapshot.priceUsd,
         current_price_currency: "USD",
@@ -196,7 +169,13 @@ export function useLiveInvestmentRows<T extends InvestmentLike>(investments: T[]
         ).toISOString(),
         price_change_24h: snapshot.change24h,
         is_live_priced: true,
-      };
-    }) as T[];
-  }, [investments, prices, resolved.investmentAssetKeys, usdPkrRate]);
+      } as T;
+    });
+  }, [
+    investments,
+    prices,
+    resolved.assetsByKey,
+    resolved.investmentAssetKeys,
+    usdPkrRate,
+  ]);
 }
