@@ -1,6 +1,6 @@
 {
-  "status": "failed",
-  "runId": "29791458546",
+  "status": "started",
+  "runId": "29791557531",
   "artifactName": "jamals-finance-android-sdk36-unsigned",
-  "sourceCommit": "c17e7916e219fe4cc904de4cbb547bf99cb49e8d"
+  "sourceCommit": "f1f3e429e08bd930ab473afa229b009b61a5e7bf"
 }
