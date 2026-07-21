@@ -8,7 +8,7 @@ on:
       - "android-twa/**"
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   build-unsigned-package:
@@ -125,10 +125,21 @@ jobs:
             --output jamals-finance-android-unsigned.zip
           unzip -t jamals-finance-android-unsigned.zip
 
-      - name: Upload unsigned Android package
+      - name: Upload unsigned Android package artifact
         uses: actions/upload-artifact@v4
         with:
           name: jamals-finance-android-unsigned
           path: jamals-finance-android-unsigned.zip
           if-no-files-found: error
           retention-days: 3
+
+      - name: Publish temporary unsigned build release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release delete android-build-v1.0.0-unsigned --yes --cleanup-tag || true
+          gh release create android-build-v1.0.0-unsigned \
+            jamals-finance-android-unsigned.zip \
+            --title "Temporary unsigned Android build" \
+            --notes "Temporary unsigned APK/AAB package generated for local signing." \
+            --prerelease
