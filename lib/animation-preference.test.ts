@@ -44,6 +44,14 @@ const performanceModeSource = readFileSync(
   "utf8",
 );
 
+const standardPerformanceSource = readFileSync(
+  new URL(
+    "../components/performance/StandardMotionPerformance.tsx",
+    import.meta.url,
+  ),
+  "utf8",
+);
+
 const routeLoadingSource = readFileSync(
   new URL(
     "../components/loading/AnimationAwareDashboardRouteLoading.tsx",
@@ -108,6 +116,10 @@ describe("animation preference contracts", () => {
     expect(animationCssSource).toContain(
       'html[data-animation-mode="standard"]',
     );
+    expect(animationCssSource).toContain(
+      'data-standard-motion-tier="balanced"',
+    );
+    expect(animationCssSource).toContain('data-standard-motion-tier="lite"');
     expect(animationCssSource).toContain("jf-standard-route-loader-slide");
     expect(animationCssSource).toContain(
       'html[data-animation-mode="fast"] {',
@@ -119,11 +131,11 @@ describe("animation preference contracts", () => {
     expect(animationCssSource).toContain("animation: none !important;");
     expect(animationCssSource).toContain("transition: none !important;");
     expect(animationCssSource).not.toContain(
-      'html[data-animation-mode="standard"] *',
+      'html[data-animation-mode="standard"] * {',
     );
   });
 
-  it("keeps standard mode free from animation runtime observers", () => {
+  it("keeps accelerated-mode tuning detached from standard", () => {
     expect(motionProviderSource).toContain(
       'if (mode === "standard") detachRuntimeTuning();',
     );
@@ -141,6 +153,10 @@ describe("animation preference contracts", () => {
     expect(dashboardContentSource).not.toContain(
       'window.addEventListener("load"',
     );
+    expect(animationCssSource).toContain(
+      '.jf-dashboard-content-frame[data-jf-initial-reveal="pending"]',
+    );
+    expect(animationCssSource).toContain("visibility: visible !important;");
   });
 
   it("keeps standard motion smooth while shortening long queues", () => {
@@ -152,6 +168,23 @@ describe("animation preference contracts", () => {
     );
     expect(motionConfigSource).toContain(
       "standardMilliseconds(650, 850)",
+    );
+  });
+
+  it("adapts standard motion without touching fast or none", () => {
+    expect(motionProviderSource).toContain("<StandardMotionPerformance />");
+    expect(standardPerformanceSource).toContain("standardMotionTier");
+    expect(standardPerformanceSource).toContain(
+      "connection?.saveData === true",
+    );
+    expect(standardPerformanceSource).toContain("runtimeNavigator.deviceMemory");
+    expect(standardPerformanceSource).toContain("IntersectionObserver");
+    expect(standardPerformanceSource).toContain("requestIdleCallback");
+    expect(standardPerformanceSource).toContain("CONTINUOUS_SVG_SELECTOR");
+    expect(standardPerformanceSource).toContain("animation.pause()");
+    expect(standardPerformanceSource).toContain("animation.play()");
+    expect(standardPerformanceSource).toContain(
+      'if (nextMode === "standard") attachStandardRuntime();',
     );
   });
 
