@@ -1,25 +1,37 @@
 import type { Variants } from "framer-motion";
 import {
   getAnimationDurationScale,
+  getDocumentAnimationMode,
   scaleAnimationMilliseconds,
   scaleAnimationSeconds,
 } from "@/lib/animation-preference";
 
 export const motionEase = [0.16, 1, 0.3, 1] as const;
 
-const animationScale = getAnimationDurationScale();
-const seconds = (value: number) => scaleAnimationSeconds(value);
-const milliseconds = (value: number) => scaleAnimationMilliseconds(value);
+const animationMode = getDocumentAnimationMode();
+const animationScale = getAnimationDurationScale(animationMode);
+const seconds = (value: number) =>
+  scaleAnimationSeconds(value, animationMode);
+const milliseconds = (value: number) =>
+  scaleAnimationMilliseconds(value, animationMode);
+
+// Standard keeps the full animation language, but shorter entrances and tighter
+// staggers prevent long pages from queueing visible motion for several seconds.
+// Fast and none retain their existing authored scaling exactly.
+const standardSeconds = (optimized: number, authored: number) =>
+  animationMode === "standard" ? optimized : seconds(authored);
+const standardMilliseconds = (optimized: number, authored: number) =>
+  animationMode === "standard" ? optimized : milliseconds(authored);
 
 export const motionDurations = {
-  instant: seconds(0.09),
-  fast: seconds(0.16),
-  base: seconds(0.22),
-  page: seconds(0.28),
-  slow: seconds(0.32),
-  deliberate: seconds(0.42),
-  skeleton: seconds(1.4),
-  chart: milliseconds(850),
+  instant: standardSeconds(0.08, 0.09),
+  fast: standardSeconds(0.14, 0.16),
+  base: standardSeconds(0.2, 0.22),
+  page: standardSeconds(0.24, 0.28),
+  slow: standardSeconds(0.29, 0.32),
+  deliberate: standardSeconds(0.36, 0.42),
+  skeleton: standardSeconds(1, 1.4),
+  chart: standardMilliseconds(650, 850),
 } as const;
 
 export const viewportReveal = {
@@ -39,8 +51,8 @@ export const pageVariants: Variants = {
     transition: {
       duration: motionDurations.page,
       ease: motionEase,
-      staggerChildren: seconds(0.035),
-      delayChildren: seconds(0.02),
+      staggerChildren: standardSeconds(0.018, 0.035),
+      delayChildren: standardSeconds(0.01, 0.02),
     },
   },
   exit: {
@@ -123,8 +135,8 @@ export const drawerVariants: Variants = {
 export const listContainerVariants: Variants = {
   animate: {
     transition: {
-      staggerChildren: seconds(0.035),
-      delayChildren: seconds(0.03),
+      staggerChildren: standardSeconds(0.018, 0.035),
+      delayChildren: standardSeconds(0.012, 0.03),
     },
   },
 };
