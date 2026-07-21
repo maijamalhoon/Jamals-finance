@@ -26,6 +26,9 @@ const PUBLIC_CACHE_HEADERS = {
   "Vercel-CDN-Cache-Control":
     "public, s-maxage=1, stale-while-revalidate=5",
 };
+const NO_STORE_HEADERS = {
+  "Cache-Control": "private, no-store, max-age=0",
+};
 
 function getRetryAfterMs(response: Response) {
   const seconds = Number(response.headers.get("retry-after"));
@@ -141,7 +144,18 @@ async function getSnapshot() {
   }
 }
 
-export async function GET() {
+export async function GET(request: Request) {
+  const url = new URL(request.url);
+
+  // Keep one canonical CDN cache key. Unknown query strings otherwise create
+  // unlimited cache variants and can amplify upstream market-data requests.
+  if (url.search.length > 0) {
+    return Response.json(
+      { error: "Query parameters are not supported." },
+      { status: 400, headers: NO_STORE_HEADERS },
+    );
+  }
+
   try {
     const snapshot = await getSnapshot();
     return Response.json(snapshot, {
