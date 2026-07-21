@@ -13,6 +13,20 @@ const dashboardActionAuthority = read(
 const pwaRegister = read("../app/pwa-register.tsx");
 const authControls = read("../components/auth/AuthControls.tsx");
 const loginPage = read("../app/login/page.tsx");
+const onboardingPage = read("../app/onboarding/page.tsx");
+const resetPasswordPage = read("../app/reset-password/page.tsx");
+const profileCustomization = read(
+  "../components/settings/ProfileCustomizationSection.tsx",
+);
+const settingsPreferences = read(
+  "../components/settings/SettingsPreferencesSection.tsx",
+);
+const settingsReference = read(
+  "../components/settings/SettingsReferenceSections.tsx",
+);
+const categoryManagement = read(
+  "../components/settings/CategoryManagementExperience.tsx",
+);
 const settingsCentering = read(
   "../app/dashboard/settings/settings-mobile-modal-centering.css",
 );
@@ -50,6 +64,9 @@ describe("site-wide form UI audit authority", () => {
     ]) {
       expect(fieldAuthority).toContain(selector);
     }
+    expect(fieldAuthority).toContain('[role="radiogroup"], [role="group"]');
+    expect(fieldAuthority).toContain("isManagedChoiceGroup");
+    expect(fieldAuthority).not.toContain(':has(> button[aria-pressed])');
   });
 
   it("keeps finance action colors while removing button icons and shortening labels", () => {
@@ -80,13 +97,34 @@ describe("site-wide form UI audit authority", () => {
     expect(actionAuthority).toContain("data-global-confirm-dialog");
   });
 
-  it("preserves auth labels and colors while removing only primary action icons", () => {
+  it("preserves auth labels and colors while making auth actions iconless and equal", () => {
     expect(auditAuthority).toContain(".auth-primary-action svg");
+    expect(auditAuthority).toContain(".jf-auth-card button.w-full");
     expect(auditAuthority).toContain("display: none !important");
     expect(authControls).toContain("auth-primary-action w-full");
     expect(loginPage).toContain("Continue");
     expect(loginPage).toContain("Log in");
     expect(loginPage).toContain("Create account");
+    expect(resetPasswordPage).toContain("Update password");
+    expect(onboardingPage).toContain("Open dashboard");
+  });
+
+  it("keeps onboarding segmented account type inside the shared field footprint", () => {
+    expect(onboardingPage).toContain('role="group" aria-label="Account type"');
+    expect(onboardingPage).toContain("aria-pressed={selected}");
+    expect(fieldAuthority).toContain('[role="group"]');
+  });
+
+  it("covers all Settings form families and their supporting actions", () => {
+    expect(profileCustomization).toContain("Choose Photo");
+    expect(profileCustomization).toContain("Save Profile");
+    expect(settingsPreferences).toContain("settings-currency-select");
+    expect(settingsPreferences).toContain("settings-date-format-select");
+    expect(settingsReference).toContain("Send verification code");
+    expect(settingsReference).toContain("Resend code");
+    expect(settingsReference).toContain("Sign out other devices");
+    expect(categoryManagement).toContain("Create Category");
+    expect(categoryManagement).toContain("Delete");
   });
 
   it("keeps every known Settings dialog centered with its purpose-specific width", () => {
