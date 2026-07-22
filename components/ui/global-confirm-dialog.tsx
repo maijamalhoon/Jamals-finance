@@ -38,14 +38,11 @@ function getActionElement(event: MouseEvent): HTMLElement | null {
 }
 
 function getConfirmAction(message: string): ConfirmAction {
-  const action = message.trim().match(/^(delete|remove|archive|restore)\b/i)?.[1];
+  const destructive = /^(delete|remove)\b/i.test(message.trim());
 
-  if (!action) return { label: "Confirm", destructive: false };
-
-  const normalized = action.toLowerCase();
   return {
-    label: normalized.charAt(0).toUpperCase() + normalized.slice(1),
-    destructive: normalized === "delete" || normalized === "remove",
+    label: "Confirm",
+    destructive,
   };
 }
 
