@@ -30,6 +30,18 @@ function canUseServiceWorker() {
 
 export default function PWARegister() {
   useEffect(() => {
+    const allowTextSelection = (event: Event) => {
+      event.stopPropagation();
+    };
+
+    window.addEventListener("selectstart", allowTextSelection, true);
+
+    return () => {
+      window.removeEventListener("selectstart", allowTextSelection, true);
+    };
+  }, []);
+
+  useEffect(() => {
     if (!canUseServiceWorker()) return;
     if (window.__jamalsFinancePwaRegistered) return;
 
