@@ -41,7 +41,9 @@ export default async function IncomePage({
   if (income.length === 0) {
     return (
       <div data-income-page className="space-y-5 pb-8">
-        <AddIncomeButton />
+        <div data-page-action-row className="flex justify-end">
+          <AddIncomeButton icon="plus" />
+        </div>
         <div className="py-3 sm:py-6">
           <EmptyState
             icon={TrendingUp}
@@ -64,7 +66,11 @@ export default async function IncomePage({
     <div data-income-page className="pb-8">
       <TransactionTypeOverview
         tone="income"
-        action={<AddIncomeButton />}
+        action={
+          <div data-page-action-row className="flex justify-end">
+            <AddIncomeButton icon="plus" />
+          </div>
+        }
         thisMonth={summary.thisMonth}
         thisYear={summary.thisYear}
         recordMonthAmount={summary.recordMonthAmount}
