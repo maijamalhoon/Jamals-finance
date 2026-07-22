@@ -19,6 +19,13 @@ declare global {
   }
 }
 
+const EDITABLE_TEXT_SELECTOR = [
+  'input:not([type="button"]):not([type="submit"]):not([type="reset"]):not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="range"]):not([type="color"])',
+  "textarea",
+  '[contenteditable="true"]',
+  '[contenteditable="plaintext-only"]',
+].join(",");
+
 function canUseServiceWorker() {
   if (!("serviceWorker" in navigator)) return false;
 
@@ -35,10 +42,20 @@ export default function PWARegister() {
       event.stopPropagation();
     };
 
+    const allowEditableContextMenu = (event: Event) => {
+      const target = event.target;
+      if (!(target instanceof Element)) return;
+      if (!target.closest(EDITABLE_TEXT_SELECTOR)) return;
+
+      event.stopPropagation();
+    };
+
     window.addEventListener("selectstart", allowTextSelection, true);
+    window.addEventListener("contextmenu", allowEditableContextMenu, true);
 
     return () => {
       window.removeEventListener("selectstart", allowTextSelection, true);
+      window.removeEventListener("contextmenu", allowEditableContextMenu, true);
     };
   }, []);
 
