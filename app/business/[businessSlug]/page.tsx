@@ -78,7 +78,7 @@ const MODULES = [
     label: "CRM",
     description: "Leads, opportunities, activities, follow-ups, and sales ownership.",
     icon: Handshake,
-    route: null,
+    route: "crm",
   },
   {
     key: "reports",
@@ -90,9 +90,7 @@ const MODULES = [
 ] as const;
 
 function formatLabel(value: string) {
-  return value
-    .replace(/_/g, " ")
-    .replace(/\b\w/g, (character) => character.toUpperCase());
+  return value.replace(/_/g, " ").replace(/\b\w/g, (character) => character.toUpperCase());
 }
 
 export default async function BusinessWorkspacePage({
@@ -117,11 +115,8 @@ export default async function BusinessWorkspacePage({
     .maybeSingle();
 
   if (businessResult.error) {
-    console.error("Failed to load business workspace", {
-      code: businessResult.error.code,
-    });
+    console.error("Failed to load business workspace", { code: businessResult.error.code });
   }
-
   if (!businessResult.data && !businessResult.error) notFound();
 
   const business = businessResult.data as BusinessRow | null;
@@ -144,6 +139,11 @@ export default async function BusinessWorkspacePage({
     permissions.includes("*") ||
     permissions.includes("reports.view") ||
     permissions.includes("accounting.view");
+  const canViewCrm =
+    ["owner", "admin", "accountant", "manager", "sales", "viewer"].includes(role) ||
+    permissions.includes("*") ||
+    permissions.includes("crm.view") ||
+    permissions.includes("crm.manage");
 
   return (
     <main className="min-h-dvh bg-background px-4 py-5 text-foreground sm:px-6 sm:py-7 lg:px-8 lg:py-8">
@@ -156,7 +156,6 @@ export default async function BusinessWorkspacePage({
             <ArrowLeft aria-hidden="true" className="size-4" />
             Business workspaces
           </Link>
-
           <Link
             href="/dashboard"
             className="finance-focus inline-flex min-h-10 items-center gap-2 rounded-[var(--radius-button)] px-3 text-sm font-bold text-primary transition-colors hover:bg-primary-soft"
@@ -183,7 +182,6 @@ export default async function BusinessWorkspacePage({
                 </p>
               </div>
             </div>
-
             <span className="inline-flex w-fit items-center gap-2 rounded-full bg-success-soft px-3 py-1.5 text-xs font-black text-success">
               <ShieldCheck aria-hidden="true" className="size-4" />
               Tenant isolation active
@@ -191,44 +189,29 @@ export default async function BusinessWorkspacePage({
           </div>
 
           <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            <div className="rounded-[var(--radius-button)] bg-surface-secondary px-4 py-3">
-              <span className="text-xs font-bold text-text-secondary">Base currency</span>
-              <strong className="mt-1 block text-base font-black text-text-primary">
-                {business.base_currency}
-              </strong>
-            </div>
-            <div className="rounded-[var(--radius-button)] bg-surface-secondary px-4 py-3">
-              <span className="text-xs font-bold text-text-secondary">Country</span>
-              <strong className="mt-1 block text-base font-black text-text-primary">
-                {business.country_code ?? "Not set"}
-              </strong>
-            </div>
-            <div className="rounded-[var(--radius-button)] bg-surface-secondary px-4 py-3">
-              <span className="text-xs font-bold text-text-secondary">Timezone</span>
-              <strong className="mt-1 block truncate text-base font-black text-text-primary">
-                {business.timezone}
-              </strong>
-            </div>
-            <div className="rounded-[var(--radius-button)] bg-surface-secondary px-4 py-3">
-              <span className="text-xs font-bold text-text-secondary">Fiscal year starts</span>
-              <strong className="mt-1 block text-base font-black text-text-primary">
-                Month {business.fiscal_year_start_month}
-              </strong>
-            </div>
+            {[
+              ["Base currency", business.base_currency],
+              ["Country", business.country_code ?? "Not set"],
+              ["Timezone", business.timezone],
+              ["Fiscal year starts", `Month ${business.fiscal_year_start_month}`],
+            ].map(([label, value]) => (
+              <div key={label} className="rounded-[var(--radius-button)] bg-surface-secondary px-4 py-3">
+                <span className="text-xs font-bold text-text-secondary">{label}</span>
+                <strong className="mt-1 block truncate text-base font-black text-text-primary">{value}</strong>
+              </div>
+            ))}
           </div>
         </header>
 
         <section className="mt-8">
           <div>
-            <p className="text-xs font-black uppercase tracking-[0.14em] text-primary">
-              ERP foundation
-            </p>
+            <p className="text-xs font-black uppercase tracking-[0.14em] text-primary">ERP foundation</p>
             <h2 className="mt-1 text-xl font-black tracking-tight text-text-primary sm:text-2xl">
               Modules selected for this business
             </h2>
             <p className="mt-2 max-w-3xl text-sm leading-6 text-text-secondary">
-              Modules are configured from the nature of business. Accounting is live first because
-              every invoice, payment, purchase, stock movement, and report must use its posted ledger.
+              Modules are configured from the nature of business. Accounting is live first because every invoice,
+              payment, purchase, stock movement, CRM conversion, and report must use its verified source of truth.
             </p>
           </div>
 
@@ -236,9 +219,10 @@ export default async function BusinessWorkspacePage({
             {MODULES.map((module) => {
               const Icon = module.icon;
               const enabled = enabledModules[module.key] === true;
-              const accessible = module.key !== "reports" || canViewReports;
-              const openable = enabled && Boolean(module.route) && accessible;
-              const moduleContent = (
+              const accessible =
+                module.key === "reports" ? canViewReports : module.key === "crm" ? canViewCrm : true;
+              const openable = enabled && accessible;
+              const content = (
                 <>
                   <div className="flex items-start justify-between gap-4">
                     <span
@@ -270,31 +254,22 @@ export default async function BusinessWorkspacePage({
                     )}
                   </div>
                   <h3 className="mt-5 text-base font-black text-text-primary">{module.label}</h3>
-                  <p className="mt-2 text-sm leading-6 text-text-secondary">
-                    {module.description}
-                  </p>
-                  {openable ? (
-                    <span className="mt-4 inline-flex text-sm font-black text-primary">
-                      Open module
-                    </span>
-                  ) : null}
+                  <p className="mt-2 text-sm leading-6 text-text-secondary">{module.description}</p>
+                  {openable ? <span className="mt-4 inline-flex text-sm font-black text-primary">Open module</span> : null}
                 </>
               );
 
-              return openable && module.route ? (
+              return openable ? (
                 <Link
                   key={module.key}
                   href={`/business/${business.slug}/${module.route}`}
                   className="finance-focus group rounded-[var(--radius-card)] bg-surface px-5 py-5 shadow-[var(--shadow-sm)] transition-[transform,box-shadow] hover:-translate-y-0.5 hover:shadow-[var(--shadow-md)]"
                 >
-                  {moduleContent}
+                  {content}
                 </Link>
               ) : (
-                <article
-                  key={module.key}
-                  className="rounded-[var(--radius-card)] bg-surface px-5 py-5 shadow-[var(--shadow-sm)]"
-                >
-                  {moduleContent}
+                <article key={module.key} className="rounded-[var(--radius-card)] bg-surface px-5 py-5 shadow-[var(--shadow-sm)]">
+                  {content}
                 </article>
               );
             })}
@@ -307,9 +282,8 @@ export default async function BusinessWorkspacePage({
             <div>
               <h2 className="font-black">Accounting source of truth is active</h2>
               <p className="mt-1 text-sm leading-6 opacity-80">
-                Balanced journals, fiscal periods, currency conversion, immutable posting, and verified
-                reports are available. Operational modules use this ledger instead of calculating
-                financial results independently.
+                Balanced journals, fiscal periods, currency conversion, immutable posting, CRM conversions, and
+                verified reports are available. Operational modules do not calculate financial results independently.
               </p>
             </div>
           </div>
