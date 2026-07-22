@@ -84,6 +84,7 @@ html body textarea::placeholder {
 .finance-modal-content:has(#settings-category-name)
   form:has(#settings-category-name) {
   display: grid !important;
+  grid-template-columns: minmax(0, 1fr) !important;
   gap: var(--finance-field-gap, 0.75rem) !important;
 }
 
@@ -122,10 +123,20 @@ html body textarea::placeholder {
   line-height: 1rem !important;
 }
 
-/* Income/Expense remains a semantic two-way selector, now sized like a field. */
+/* Income/Expense is a compact two-way selector rather than two large buttons. */
+.finance-modal-content:has(#settings-category-name)
+  form:has(#settings-category-name)
+  > :has([role="radiogroup"]) {
+  width: max-content !important;
+  max-width: 100% !important;
+  justify-self: start !important;
+}
+
 .finance-modal-content:has(#settings-category-name) [role="radiogroup"] {
   box-sizing: border-box !important;
-  width: 100% !important;
+  grid-template-columns: repeat(2, auto) !important;
+  width: max-content !important;
+  max-width: 100% !important;
   height: var(--finance-control-height) !important;
   min-height: var(--finance-control-height) !important;
   padding: 0.25rem !important;
@@ -136,16 +147,51 @@ html body textarea::placeholder {
 }
 
 .finance-modal-content:has(#settings-category-name) [role="radio"] {
+  width: auto !important;
+  min-width: 5rem !important;
   height: 100% !important;
   min-height: 0 !important;
+  gap: 0.35rem !important;
+  padding-inline: 0.65rem !important;
   border-radius: 0.7rem !important;
   box-shadow: none !important;
+  font-size: 0.8rem !important;
+}
+
+/* Category name and the compact type selector share one row where space allows. */
+@media (min-width: 390px) {
+  .finance-modal-content:has(#settings-category-name)
+    form:has(#settings-category-name) {
+    grid-template-columns: minmax(0, 1fr) auto !important;
+    align-items: end !important;
+  }
+
+  .finance-modal-content:has(#settings-category-name)
+    form:has(#settings-category-name)
+    > div:first-child:not([data-slot="finance-form-field"]) {
+    grid-column: 1 / -1 !important;
+  }
+
+  .finance-modal-content:has(#settings-category-name)
+    form:has(#settings-category-name)
+    > :has(#settings-category-name) {
+    grid-column: 1 !important;
+    min-width: 0 !important;
+  }
+
+  .finance-modal-content:has(#settings-category-name)
+    form:has(#settings-category-name)
+    > :has([role="radiogroup"]) {
+    grid-column: 2 !important;
+    justify-self: end !important;
+  }
 }
 
 /* Match the single primary action used by the other finalized forms. */
 .finance-modal-content:has(#settings-category-name)
   form:has(#settings-category-name)
   > button[type="submit"] {
+  grid-column: 1 / -1 !important;
   width: 100% !important;
   height: var(--finance-action-height) !important;
   min-height: var(--finance-action-height) !important;
@@ -155,8 +201,22 @@ html body textarea::placeholder {
   border-radius: 0.9rem !important;
   box-shadow: none !important;
   color: var(--status-foreground) !important;
-  font-size: 0.95rem !important;
+  font-size: 0 !important;
   font-weight: 700 !important;
+}
+
+.finance-modal-content:has(#settings-category-name)
+  form:has(#settings-category-name)
+  > button[type="submit"]::after {
+  content: "Create";
+  font-size: 0.95rem;
+  line-height: 1;
+}
+
+.finance-modal-content:has(#settings-category-name)
+  form:has(#settings-category-name)
+  > button[type="submit"]:has(.animate-spin)::after {
+  content: "Creating...";
 }
 
 .finance-modal-content:has(#settings-category-name)
