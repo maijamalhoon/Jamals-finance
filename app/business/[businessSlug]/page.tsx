@@ -5,6 +5,7 @@ import {
   ArrowLeft,
   ArrowRight,
   BarChart3,
+  BellRing,
   BookOpenCheck,
   Boxes,
   Building2,
@@ -16,6 +17,7 @@ import {
   UsersRound,
 } from "lucide-react";
 
+import BusinessNotificationBell from "@/components/business/BusinessNotificationBell";
 import { createClient } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
@@ -37,6 +39,11 @@ type BusinessRow = {
   module_config: Record<string, boolean> | null;
   workspace_mode: "advanced_company" | "simple_shop";
   status: string;
+};
+
+type NotificationSnapshot = {
+  summary?: { unread?: number; critical?: number };
+  preferences?: { realtime_enabled?: boolean };
 };
 
 const MODULES = [
@@ -88,6 +95,13 @@ const MODULES = [
     description: "Invitations, employee roles, custom permissions, ownership, and audit history.",
     icon: UsersRound,
     route: "team",
+  },
+  {
+    key: "notifications",
+    label: "Notifications & alerts",
+    description: "Role-filtered dues, stock, CRM, accounting, payment, invitation, and access alerts.",
+    icon: BellRing,
+    route: "notifications",
   },
   {
     key: "reports",
@@ -160,6 +174,18 @@ export default async function BusinessWorkspacePage({
     permissions.includes("team.view") ||
     permissions.includes("team.manage");
 
+  const notificationsResult = await supabase.rpc("get_business_notifications_snapshot", {
+    p_business_id: business.id,
+    p_limit: 1,
+  });
+  if (notificationsResult.error) {
+    console.error("Business notification bell failed", { code: notificationsResult.error.code });
+  }
+  const notificationSnapshot = (notificationsResult.data ?? {}) as NotificationSnapshot;
+  const unreadNotifications = Number(notificationSnapshot.summary?.unread ?? 0);
+  const criticalNotifications = Number(notificationSnapshot.summary?.critical ?? 0);
+  const realtimeNotifications = notificationSnapshot.preferences?.realtime_enabled !== false;
+
   return (
     <main className="min-h-dvh bg-background px-4 py-5 text-foreground sm:px-6 sm:py-7 lg:px-8 lg:py-8">
       <div className="mx-auto w-full max-w-7xl">
@@ -171,12 +197,21 @@ export default async function BusinessWorkspacePage({
             <ArrowLeft aria-hidden="true" className="size-4" />
             Business workspaces
           </Link>
-          <Link
-            href="/dashboard"
-            className="finance-focus inline-flex min-h-10 items-center gap-2 rounded-[var(--radius-button)] px-3 text-sm font-bold text-primary transition-colors hover:bg-primary-soft"
-          >
-            Personal finance
-          </Link>
+          <div className="flex items-center gap-2">
+            <BusinessNotificationBell
+              businessId={business.id}
+              businessSlug={business.slug}
+              unreadCount={unreadNotifications}
+              criticalCount={criticalNotifications}
+              realtimeEnabled={realtimeNotifications}
+            />
+            <Link
+              href="/dashboard"
+              className="finance-focus inline-flex min-h-10 items-center gap-2 rounded-[var(--radius-button)] px-3 text-sm font-bold text-primary transition-colors hover:bg-primary-soft"
+            >
+              Personal finance
+            </Link>
+          </div>
         </div>
 
         <header className="mt-7 rounded-[var(--radius-card)] bg-surface px-5 py-6 shadow-[var(--shadow-sm)] sm:px-7 sm:py-7">
@@ -226,14 +261,16 @@ export default async function BusinessWorkspacePage({
             </h2>
             <p className="mt-2 max-w-3xl text-sm leading-6 text-text-secondary">
               Modules are configured from the nature of business. Accounting is live first because every invoice,
-              payment, purchase, stock movement, CRM conversion, team permission, and report must use its verified source of truth.
+              payment, purchase, stock movement, CRM conversion, team permission, notification, and report must use its verified source of truth.
             </p>
           </div>
 
           <div className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
             {MODULES.map((module) => {
               const Icon = module.icon;
-              const enabled = module.key === "team" ? true : enabledModules[module.key] === true;
+              const enabled = ["team", "notifications"].includes(module.key)
+                ? true
+                : enabledModules[module.key] === true;
               const accessible =
                 module.key === "reports"
                   ? canViewReports
@@ -301,9 +338,9 @@ export default async function BusinessWorkspacePage({
           <div className="flex items-start gap-3">
             <BookOpenCheck aria-hidden="true" className="mt-0.5 size-5 shrink-0" />
             <div>
-              <h2 className="font-black">Accounting and access control are active</h2>
+              <h2 className="font-black">Accounting, access control, and alerts are active</h2>
               <p className="mt-1 text-sm leading-6 opacity-80">
-                Balanced journals, fiscal periods, currency conversion, immutable posting, team audit history, CRM conversions, and verified reports are available. Operational modules do not calculate financial results independently.
+                Balanced journals, fiscal periods, currency conversion, immutable posting, team audit history, CRM conversions, verified reports, and role-filtered alerts are available. Operational modules do not calculate financial results independently.
               </p>
             </div>
           </div>
