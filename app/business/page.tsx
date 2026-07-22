@@ -8,6 +8,7 @@ import {
   CircleDollarSign,
   Layers3,
   ShieldCheck,
+  Store,
 } from "lucide-react";
 
 import CreateBusinessWorkspaceForm from "@/components/business/CreateBusinessWorkspaceForm";
@@ -28,6 +29,7 @@ type BusinessRow = {
   base_currency: string;
   country_code: string | null;
   module_config: Record<string, boolean> | null;
+  workspace_mode: "advanced_company" | "simple_shop";
 };
 
 type MembershipRow = {
@@ -58,7 +60,7 @@ export default async function BusinessWorkspacesPage() {
   const membershipResult = await supabase
     .from("business_members")
     .select(
-      "role, status, created_at, businesses(id, name, slug, business_type, base_currency, country_code, module_config)",
+      "role, status, created_at, businesses(id, name, slug, business_type, base_currency, country_code, module_config, workspace_mode)",
     )
     .eq("user_id", user.id)
     .eq("status", "active")
@@ -113,8 +115,8 @@ export default async function BusinessWorkspacesPage() {
             </div>
           </div>
           <p className="mt-4 text-sm leading-7 text-text-secondary sm:text-base">
-            Personal finance stays unchanged. Every company receives its own tenant, members,
-            roles, currency, timezone, and module configuration.
+            Personal finance stays unchanged. Create a fast Simple Shop or a complete Advanced
+            Company, each with independent data, members, currency, stock, and accounting.
           </p>
         </header>
 
@@ -130,10 +132,10 @@ export default async function BusinessWorkspacesPage() {
             <div className="flex items-end justify-between gap-4">
               <div>
                 <h2 className="text-base font-black text-text-primary sm:text-lg">
-                  Your companies
+                  Your businesses
                 </h2>
                 <p className="mt-1 text-sm text-text-secondary">
-                  Choose a workspace to open its independent ERP foundation.
+                  Open the shop counter or full company ERP.
                 </p>
               </div>
               <span className="text-sm font-black tabular-nums text-text-secondary">
@@ -146,16 +148,21 @@ export default async function BusinessWorkspacesPage() {
                 const enabledModules = Object.values(business.module_config ?? {}).filter(
                   Boolean,
                 ).length;
+                const simpleShop = business.workspace_mode === "simple_shop";
+                const WorkspaceIcon = simpleShop ? Store : Building2;
+                const href = simpleShop
+                  ? `/business/${business.slug}/shop`
+                  : `/business/${business.slug}`;
 
                 return (
                   <Link
                     key={business.id}
-                    href={`/business/${business.slug}`}
+                    href={href}
                     className="finance-focus group rounded-[var(--radius-card)] bg-surface px-5 py-5 shadow-[var(--shadow-sm)] transition-[transform,box-shadow] hover:-translate-y-0.5 hover:shadow-[var(--shadow-md)]"
                   >
                     <div className="flex items-start justify-between gap-4">
                       <span className="inline-flex size-11 items-center justify-center rounded-[var(--radius-button)] bg-primary-soft text-primary">
-                        <Building2 aria-hidden="true" className="size-5" />
+                        <WorkspaceIcon aria-hidden="true" className="size-5" />
                       </span>
                       <ArrowRight
                         aria-hidden="true"
@@ -167,7 +174,7 @@ export default async function BusinessWorkspacesPage() {
                       {business.name}
                     </h3>
                     <p className="mt-1 text-sm text-text-secondary">
-                      {formatLabel(business.business_type)} · {formatLabel(membership.role)}
+                      {simpleShop ? "Simple Shop" : "Advanced Company"} · {formatLabel(membership.role)}
                     </p>
 
                     <div className="mt-5 grid grid-cols-2 gap-3 text-sm">
@@ -183,8 +190,12 @@ export default async function BusinessWorkspacesPage() {
                       </span>
                       <span className="rounded-[var(--radius-button)] bg-surface-secondary px-3 py-3">
                         <Layers3 aria-hidden="true" className="mb-2 size-4 text-primary" />
-                        <strong className="block text-text-primary">{enabledModules}</strong>
-                        <span className="text-xs text-text-secondary">Modules enabled</span>
+                        <strong className="block text-text-primary">
+                          {simpleShop ? "Fast" : enabledModules}
+                        </strong>
+                        <span className="text-xs text-text-secondary">
+                          {simpleShop ? "Daily workflow" : "Modules enabled"}
+                        </span>
                       </span>
                     </div>
                   </Link>
@@ -194,8 +205,8 @@ export default async function BusinessWorkspacesPage() {
           </section>
         ) : (
           <section className="mt-8 rounded-[var(--radius-card)] bg-surface-secondary px-5 py-5 text-sm text-text-secondary sm:px-6">
-            No business workspace exists yet. Create the first company below without changing
-            your personal tracker.
+            No business workspace exists yet. Create the first shop or company below without
+            changing your personal tracker.
           </section>
         )}
 
