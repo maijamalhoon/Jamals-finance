@@ -15,6 +15,12 @@ const CompactHeader = dynamic(
 );
 
 const DESKTOP_HEADER_SEARCH_TRIGGER_SELECTOR = "[data-header-search-trigger]";
+const GLOBAL_SEARCH_INPUT_SELECTOR = [
+  'input[type="search"]',
+  'input[role="searchbox"]',
+  'input[placeholder*="search" i]',
+  'input[aria-label*="search" i]',
+].join(",");
 
 type HeaderMode = "desktop" | "compact" | null;
 
@@ -58,6 +64,240 @@ function HeaderSearchOpenFallback() {
   }, []);
 
   return null;
+}
+
+function GlobalFloatingSearchPlaceholders() {
+  useEffect(() => {
+    const enhancedInputs = new Set<HTMLInputElement>();
+    let geometryFrame = 0;
+
+    const getPlaceholder = (input: HTMLInputElement) => {
+      const currentPlaceholder = input.getAttribute("placeholder")?.trim();
+      if (currentPlaceholder) return currentPlaceholder;
+
+      const accessibleLabel = input.getAttribute("aria-label")?.trim();
+      if (accessibleLabel?.toLowerCase().includes("search")) {
+        return `${accessibleLabel.replace(/[.…]+$/, "")}...`;
+      }
+
+      return "Search...";
+    };
+
+    const syncInputGeometry = (input: HTMLInputElement) => {
+      if (!input.isConnected) {
+        enhancedInputs.delete(input);
+        return;
+      }
+
+      const host = input.parentElement;
+      if (!host) return;
+
+      const hostRect = host.getBoundingClientRect();
+      const inputRect = input.getBoundingClientRect();
+      const inputStyle = window.getComputedStyle(input);
+      const paddingLeft = Number.parseFloat(inputStyle.paddingLeft) || 0;
+      const paddingRight = Number.parseFloat(inputStyle.paddingRight) || 0;
+      const relativeInputTop = inputRect.top - hostRect.top;
+      const labelLeft = inputRect.left - hostRect.left + paddingLeft;
+      const labelWidth = Math.max(
+        0,
+        inputRect.width - paddingLeft - paddingRight,
+      );
+      const idleTop = relativeInputTop + inputRect.height / 2;
+      const activeTop = Math.max(3, relativeInputTop - 7);
+
+      host.style.setProperty("--jf-search-label-left", `${labelLeft}px`);
+      host.style.setProperty("--jf-search-label-width", `${labelWidth}px`);
+      host.style.setProperty("--jf-search-label-idle-top", `${idleTop}px`);
+      host.style.setProperty("--jf-search-label-active-top", `${activeTop}px`);
+    };
+
+    const syncAllGeometry = () => {
+      window.cancelAnimationFrame(geometryFrame);
+      geometryFrame = window.requestAnimationFrame(() => {
+        enhancedInputs.forEach(syncInputGeometry);
+      });
+    };
+
+    const enhanceInput = (input: HTMLInputElement) => {
+      if (!input.matches(GLOBAL_SEARCH_INPUT_SELECTOR)) return;
+
+      const host = input.parentElement;
+      if (!host) return;
+
+      const placeholder = getPlaceholder(input);
+      if (!input.getAttribute("placeholder")?.trim()) {
+        input.setAttribute("placeholder", placeholder);
+      }
+
+      input.dataset.jfFloatingSearch = "true";
+      host.dataset.jfSearchHost = "true";
+      host.dataset.jfSearchPlaceholder = placeholder;
+      enhancedInputs.add(input);
+      resizeObserver?.observe(input);
+      resizeObserver?.observe(host);
+      syncAllGeometry();
+    };
+
+    const scanForSearchInputs = (root: ParentNode) => {
+      if (
+        root instanceof HTMLInputElement &&
+        root.matches(GLOBAL_SEARCH_INPUT_SELECTOR)
+      ) {
+        enhanceInput(root);
+      }
+
+      root
+        .querySelectorAll<HTMLInputElement>(GLOBAL_SEARCH_INPUT_SELECTOR)
+        .forEach(enhanceInput);
+    };
+
+    const resizeObserver =
+      typeof ResizeObserver === "undefined"
+        ? null
+        : new ResizeObserver(syncAllGeometry);
+
+    scanForSearchInputs(document);
+
+    const mutationObserver = new MutationObserver((mutations) => {
+      for (const mutation of mutations) {
+        if (mutation.type === "attributes") {
+          if (mutation.target instanceof HTMLInputElement) {
+            enhanceInput(mutation.target);
+          }
+          continue;
+        }
+
+        mutation.addedNodes.forEach((node) => {
+          if (node instanceof Element) scanForSearchInputs(node);
+        });
+      }
+    });
+
+    mutationObserver.observe(document.documentElement, {
+      subtree: true,
+      childList: true,
+      attributes: true,
+      attributeFilter: [
+        "type",
+        "role",
+        "placeholder",
+        "aria-label",
+        "aria-hidden",
+        "class",
+        "style",
+      ],
+    });
+
+    window.addEventListener("resize", syncAllGeometry, { passive: true });
+    window.addEventListener("orientationchange", syncAllGeometry, {
+      passive: true,
+    });
+
+    return () => {
+      window.cancelAnimationFrame(geometryFrame);
+      mutationObserver.disconnect();
+      resizeObserver?.disconnect();
+      window.removeEventListener("resize", syncAllGeometry);
+      window.removeEventListener("orientationchange", syncAllGeometry);
+
+      enhancedInputs.forEach((input) => {
+        const host = input.parentElement;
+        delete input.dataset.jfFloatingSearch;
+        if (!host) return;
+
+        delete host.dataset.jfSearchHost;
+        delete host.dataset.jfSearchPlaceholder;
+        host.style.removeProperty("--jf-search-label-left");
+        host.style.removeProperty("--jf-search-label-width");
+        host.style.removeProperty("--jf-search-label-idle-top");
+        host.style.removeProperty("--jf-search-label-active-top");
+      });
+    };
+  }, []);
+
+  return (
+    <style jsx global>{`
+      :where([data-jf-search-host="true"]):not(.fixed):not(.absolute):not(
+          .sticky
+        ):not(.relative) {
+        position: relative;
+      }
+
+      [data-jf-search-host="true"]::after {
+        content: attr(data-jf-search-placeholder);
+        position: absolute;
+        z-index: 2;
+        top: var(--jf-search-label-idle-top, 50%);
+        left: var(--jf-search-label-left, 0.75rem);
+        width: max-content;
+        max-width: var(--jf-search-label-width, calc(100% - 1.5rem));
+        overflow: hidden;
+        color: var(--text-secondary);
+        font-family: var(--font-geist-sans), sans-serif;
+        font-size: 0.875rem;
+        font-weight: 500;
+        line-height: 1;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        pointer-events: none;
+        opacity: 1;
+        transform: translateY(-50%) scale(1);
+        transform-origin: left top;
+        transition:
+          top 180ms cubic-bezier(0.22, 1, 0.36, 1),
+          transform 180ms cubic-bezier(0.22, 1, 0.36, 1),
+          opacity 140ms ease;
+      }
+
+      [data-jf-search-host="true"]:has(
+          input[data-jf-floating-search="true"]:focus
+        )::after,
+      [data-jf-search-host="true"]:has(
+          input[data-jf-floating-search="true"]:not(:placeholder-shown)
+        )::after {
+        top: var(--jf-search-label-active-top, 0.2rem);
+        opacity: 0.9;
+        transform: translateY(0) scale(0.72);
+      }
+
+      [data-jf-search-host="true"]:has(
+          input[data-jf-floating-search="true"][aria-hidden="true"]
+        )::after {
+        opacity: 0;
+      }
+
+      input[data-jf-floating-search="true"]::placeholder {
+        color: transparent !important;
+        opacity: 0 !important;
+      }
+
+      [data-jf-search-host="true"]:has(
+          input[data-jf-floating-search="true"]:focus
+        )
+        input[data-jf-floating-search="true"],
+      [data-jf-search-host="true"]:has(
+          input[data-jf-floating-search="true"]:not(:placeholder-shown)
+        )
+        input[data-jf-floating-search="true"] {
+        translate: 0 0.22rem;
+      }
+
+      input[data-jf-floating-search="true"] {
+        transition:
+          width 200ms ease,
+          opacity 200ms ease,
+          translate 180ms cubic-bezier(0.22, 1, 0.36, 1);
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        [data-jf-search-host="true"]::after,
+        input[data-jf-floating-search="true"] {
+          transition-duration: 1ms !important;
+        }
+      }
+    `}</style>
+  );
 }
 
 function MobileHeaderSearchStyles() {
@@ -111,16 +351,20 @@ export default function ResponsiveDashboardHeader({
 
   if (mode === null) {
     return (
-      <div
-        aria-hidden="true"
-        className="min-h-0 shrink-0 print:hidden lg:min-h-[88px]"
-      />
+      <>
+        <GlobalFloatingSearchPlaceholders />
+        <div
+          aria-hidden="true"
+          className="min-h-0 shrink-0 print:hidden lg:min-h-[88px]"
+        />
+      </>
     );
   }
 
   if (mode === "desktop") {
     return (
       <div className="jf-dashboard-header-wrap shrink-0 print:hidden">
+        <GlobalFloatingSearchPlaceholders />
         <style jsx global>{`
           @media (min-width: 1024px) {
             .jf-dashboard-header-wrap,
@@ -144,6 +388,7 @@ export default function ResponsiveDashboardHeader({
 
   return (
     <>
+      <GlobalFloatingSearchPlaceholders />
       <CompactHeader notificationSlot={notificationSlot} />
       <MobileHeaderSearchStyles />
     </>
