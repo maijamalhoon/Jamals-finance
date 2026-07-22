@@ -8,6 +8,7 @@ import {
   CircleDollarSign,
   ContactRound,
   ReceiptText,
+  RotateCcw,
   ShieldCheck,
 } from "lucide-react";
 
@@ -29,6 +30,7 @@ type BusinessRow = {
   base_currency: string;
   business_type: string;
   workspace_mode: "advanced_company" | "simple_shop";
+  timezone: string;
 };
 
 type ContactRow = {
@@ -59,16 +61,16 @@ type InvoiceRow = {
   tax_transaction: number | string;
   total_transaction: number | string;
   paid_transaction: number | string;
+  returned_transaction: number | string;
   total_base: number | string;
   paid_base: number | string;
+  returned_base: number | string;
   journal_entry_id: string | null;
   issued_at: string | null;
 };
 
 function formatLabel(value: string) {
-  return value
-    .replace(/_/g, " ")
-    .replace(/\b\w/g, (character) => character.toUpperCase());
+  return value.replace(/_/g, " ").replace(/\b\w/g, (character) => character.toUpperCase());
 }
 
 function formatMoney(value: number | string, currency: string) {
@@ -89,11 +91,25 @@ function formatDate(value: string) {
   }).format(new Date(`${value}T00:00:00Z`));
 }
 
-function statusClass(status: InvoiceRow["status"], overdue: boolean) {
-  if (status === "paid") return "bg-success-soft text-success";
-  if (overdue) return "bg-danger-soft text-danger";
-  if (status === "partially_paid") return "bg-warning-soft text-warning";
-  return "bg-primary-soft text-primary";
+function invoicePresentation(invoice: InvoiceRow, today: string) {
+  const total = Number(invoice.total_transaction);
+  const paid = Number(invoice.paid_transaction);
+  const returned = Number(invoice.returned_transaction);
+  const balance = Math.max(0, total - paid - returned);
+  const overdue = balance > 0 && invoice.due_date < today;
+  if (overdue) return { label: "Overdue", className: "bg-danger-soft text-danger", balance };
+  if (balance === 0 && returned > 0) {
+    return {
+      label: paid > 0 ? "Settled after return" : "Returned",
+      className: "bg-success-soft text-success",
+      balance,
+    };
+  }
+  if (balance === 0) return { label: "Paid", className: "bg-success-soft text-success", balance };
+  if (paid > 0 || returned > 0) {
+    return { label: "Partially settled", className: "bg-warning-soft text-warning", balance };
+  }
+  return { label: "Issued", className: "bg-primary-soft text-primary", balance };
 }
 
 export default async function BusinessSalesPage({
@@ -113,7 +129,7 @@ export default async function BusinessSalesPage({
 
   const businessResult = await supabase
     .from("businesses")
-    .select("id, name, slug, base_currency, business_type, workspace_mode")
+    .select("id, name, slug, base_currency, business_type, workspace_mode, timezone")
     .eq("slug", businessSlug)
     .maybeSingle();
 
@@ -136,9 +152,7 @@ export default async function BusinessSalesPage({
     permissions.includes("*") ||
     permissions.includes("sales.manage");
   const canCollectPayments =
-    canManageSales ||
-    role === "cashier" ||
-    permissions.includes("sales.collect");
+    canManageSales || role === "cashier" || permissions.includes("sales.collect");
 
   const [settingsResult, contactsResult, revenueResult, paymentAccountsResult, invoicesResult] =
     await Promise.all([
@@ -171,7 +185,7 @@ export default async function BusinessSalesPage({
       supabase
         .from("business_sales_invoices")
         .select(
-          "id, customer_id, invoice_code, invoice_date, due_date, status, currency, exchange_rate, subtotal_transaction, discount_transaction, tax_transaction, total_transaction, paid_transaction, total_base, paid_base, journal_entry_id, issued_at",
+          "id, customer_id, invoice_code, invoice_date, due_date, status, currency, exchange_rate, subtotal_transaction, discount_transaction, tax_transaction, total_transaction, paid_transaction, returned_transaction, total_base, paid_base, returned_base, journal_entry_id, issued_at",
         )
         .eq("business_id", business.id)
         .order("invoice_date", { ascending: false })
@@ -189,33 +203,42 @@ export default async function BusinessSalesPage({
     year: "numeric",
     month: "2-digit",
     day: "2-digit",
-    timeZone: business.slug ? undefined : "UTC",
+    timeZone: business.timezone,
   }).format(new Date());
 
   const openInvoices = invoices
-    .filter((invoice) => invoice.status !== "paid")
     .map((invoice) => ({
       id: invoice.id,
       code: invoice.invoice_code,
       customerName: contactNames.get(invoice.customer_id) ?? "Customer",
       currency: invoice.currency,
-      outstanding: Math.max(0, Number(invoice.total_transaction) - Number(invoice.paid_transaction)),
+      outstanding: Math.max(
+        0,
+        Number(invoice.total_transaction) -
+          Number(invoice.paid_transaction) -
+          Number(invoice.returned_transaction),
+      ),
       invoiceDate: invoice.invoice_date,
-    }));
+    }))
+    .filter((invoice) => invoice.outstanding > 0);
 
   const totalInvoicedBase = invoices.reduce((sum, invoice) => sum + Number(invoice.total_base), 0);
+  const totalReturnedBase = invoices.reduce((sum, invoice) => sum + Number(invoice.returned_base), 0);
   const totalPaidBase = invoices.reduce((sum, invoice) => sum + Number(invoice.paid_base), 0);
-  const outstandingBase = Math.max(0, totalInvoicedBase - totalPaidBase);
-  const overdueCount = invoices.filter(
-    (invoice) => invoice.status !== "paid" && invoice.due_date < today,
-  ).length;
+  const netSalesBase = Math.max(0, totalInvoicedBase - totalReturnedBase);
+  const outstandingBase = Math.max(0, netSalesBase - totalPaidBase);
+  const overdueCount = invoices.filter((invoice) => {
+    const presentation = invoicePresentation(invoice, today);
+    return presentation.balance > 0 && invoice.due_date < today;
+  }).length;
 
-  const loadError =
-    settingsResult.error ||
-    contactsResult.error ||
-    revenueResult.error ||
-    paymentAccountsResult.error ||
-    invoicesResult.error;
+  const loadError = [
+    settingsResult.error,
+    contactsResult.error,
+    revenueResult.error,
+    paymentAccountsResult.error,
+    invoicesResult.error,
+  ].find(Boolean);
 
   if (loadError) {
     console.error("Business sales workspace load failed", { code: loadError.code });
@@ -234,10 +257,19 @@ export default async function BusinessSalesPage({
             <ArrowLeft className="size-4" aria-hidden="true" />
             {business.name}
           </Link>
-          <span className="inline-flex items-center gap-2 rounded-full bg-success-soft px-3 py-1.5 text-xs font-black text-success">
-            <ShieldCheck className="size-4" aria-hidden="true" />
-            Invoice-to-ledger controls active
-          </span>
+          <div className="flex flex-wrap items-center gap-2">
+            <Link
+              href={`/business/${business.slug}/inventory`}
+              className="finance-focus inline-flex min-h-10 items-center gap-2 rounded-[var(--radius-button)] px-3 text-sm font-black text-primary transition-colors hover:bg-primary-soft"
+            >
+              <RotateCcw className="size-4" aria-hidden="true" />
+              Sales returns
+            </Link>
+            <span className="inline-flex items-center gap-2 rounded-full bg-success-soft px-3 py-1.5 text-xs font-black text-success">
+              <ShieldCheck className="size-4" aria-hidden="true" />
+              Invoice-to-ledger controls active
+            </span>
+          </div>
         </div>
 
         <header className="mt-7">
@@ -248,22 +280,20 @@ export default async function BusinessSalesPage({
             Sales and invoices
           </h1>
           <p className="mt-3 max-w-3xl text-sm leading-7 text-text-secondary sm:text-base">
-            Customer invoices, discounts, taxes, partial receipts, final settlements, and accounting
-            journals use one atomic tenant-scoped workflow.
+            Invoices, inventory issues, receipts, returns, customer credits, and return-adjusted
+            receivables use one atomic tenant-scoped workflow.
           </p>
         </header>
 
         {loadError ? (
           <section className="mt-6 rounded-[var(--radius-card)] bg-danger-soft px-4 py-4 text-sm text-danger">
-            Some sales information could not be loaded. No invoice, payment, or journal was changed.
+            Some sales information could not be loaded. No invoice, payment, return, or journal was changed.
           </section>
         ) : null}
 
         {!accrualReady ? (
           <section className="mt-6 rounded-[var(--radius-card)] bg-warning-soft px-4 py-4 text-sm text-warning">
-            Automated invoice posting is intentionally paused because this company is not using
-            accrual accounting. Cash-basis revenue recognition will be added as a separate verified
-            workflow instead of applying incorrect entries.
+            Automated invoice posting is paused because this company is not using accrual accounting.
           </section>
         ) : null}
 
@@ -277,10 +307,13 @@ export default async function BusinessSalesPage({
           </article>
           <article className="rounded-[var(--radius-card)] bg-surface px-5 py-5 shadow-[var(--shadow-sm)]">
             <CircleDollarSign className="size-5 text-primary" aria-hidden="true" />
-            <p className="mt-4 text-xs font-bold text-text-secondary">Invoiced</p>
+            <p className="mt-4 text-xs font-bold text-text-secondary">Net invoiced</p>
             <strong className="mt-1 block truncate text-lg font-black text-text-primary">
-              {formatMoney(totalInvoicedBase, business.base_currency)}
+              {formatMoney(netSalesBase, business.base_currency)}
             </strong>
+            <span className="mt-1 block text-xs text-text-secondary">
+              Returns {formatMoney(totalReturnedBase, business.base_currency)}
+            </span>
           </article>
           <article className="rounded-[var(--radius-card)] bg-surface px-5 py-5 shadow-[var(--shadow-sm)]">
             <Banknote className="size-5 text-success" aria-hidden="true" />
@@ -290,9 +323,16 @@ export default async function BusinessSalesPage({
             </strong>
           </article>
           <article className="rounded-[var(--radius-card)] bg-surface px-5 py-5 shadow-[var(--shadow-sm)]">
-            <CalendarClock className={`size-5 ${overdueCount > 0 ? "text-danger" : "text-success"}`} aria-hidden="true" />
+            <CalendarClock
+              className={`size-5 ${overdueCount > 0 ? "text-danger" : "text-success"}`}
+              aria-hidden="true"
+            />
             <p className="mt-4 text-xs font-bold text-text-secondary">Overdue</p>
-            <strong className={`mt-1 block text-xl font-black tabular-nums ${overdueCount > 0 ? "text-danger" : "text-success"}`}>
+            <strong
+              className={`mt-1 block text-xl font-black tabular-nums ${
+                overdueCount > 0 ? "text-danger" : "text-success"
+              }`}
+            >
               {overdueCount}
             </strong>
           </article>
@@ -363,7 +403,7 @@ export default async function BusinessSalesPage({
 
           {invoices.length > 0 ? (
             <div className="mt-4 overflow-x-auto rounded-[var(--radius-card)] bg-surface shadow-[var(--shadow-sm)]">
-              <table className="w-full min-w-[920px] text-left text-sm">
+              <table className="w-full min-w-[1040px] text-left text-sm">
                 <thead className="bg-surface-secondary text-xs uppercase tracking-[0.08em] text-text-tertiary">
                   <tr>
                     <th className="px-4 py-3 font-black">Invoice</th>
@@ -372,6 +412,7 @@ export default async function BusinessSalesPage({
                     <th className="px-4 py-3 font-black">Due</th>
                     <th className="px-4 py-3 text-right font-black">Total</th>
                     <th className="px-4 py-3 text-right font-black">Paid</th>
+                    <th className="px-4 py-3 text-right font-black">Returned</th>
                     <th className="px-4 py-3 text-right font-black">Balance</th>
                     <th className="px-4 py-3 text-right font-black">Status</th>
                   </tr>
@@ -380,20 +421,22 @@ export default async function BusinessSalesPage({
                   {invoices.map((invoice) => {
                     const total = Number(invoice.total_transaction);
                     const paid = Number(invoice.paid_transaction);
-                    const balance = Math.max(0, total - paid);
-                    const overdue = invoice.status !== "paid" && invoice.due_date < today;
+                    const returned = Number(invoice.returned_transaction);
+                    const presentation = invoicePresentation(invoice, today);
                     return (
                       <tr key={invoice.id} className="border-t border-border/60">
-                        <td className="px-4 py-4 font-black text-text-primary">
-                          {invoice.invoice_code}
-                        </td>
+                        <td className="px-4 py-4 font-black text-text-primary">{invoice.invoice_code}</td>
                         <td className="px-4 py-4 text-text-secondary">
                           {contactNames.get(invoice.customer_id) ?? "Customer"}
                         </td>
-                        <td className="px-4 py-4 text-text-secondary">
-                          {formatDate(invoice.invoice_date)}
-                        </td>
-                        <td className={`px-4 py-4 ${overdue ? "font-bold text-danger" : "text-text-secondary"}`}>
+                        <td className="px-4 py-4 text-text-secondary">{formatDate(invoice.invoice_date)}</td>
+                        <td
+                          className={`px-4 py-4 ${
+                            presentation.label === "Overdue"
+                              ? "font-bold text-danger"
+                              : "text-text-secondary"
+                          }`}
+                        >
                           {formatDate(invoice.due_date)}
                         </td>
                         <td className="px-4 py-4 text-right font-black tabular-nums text-text-primary">
@@ -402,12 +445,17 @@ export default async function BusinessSalesPage({
                         <td className="px-4 py-4 text-right tabular-nums text-text-secondary">
                           {formatMoney(paid, invoice.currency)}
                         </td>
+                        <td className="px-4 py-4 text-right tabular-nums text-warning">
+                          {formatMoney(returned, invoice.currency)}
+                        </td>
                         <td className="px-4 py-4 text-right font-black tabular-nums text-text-primary">
-                          {formatMoney(balance, invoice.currency)}
+                          {formatMoney(presentation.balance, invoice.currency)}
                         </td>
                         <td className="px-4 py-4 text-right">
-                          <span className={`inline-flex rounded-full px-2.5 py-1 text-[11px] font-black ${statusClass(invoice.status, overdue)}`}>
-                            {overdue ? "Overdue" : formatLabel(invoice.status)}
+                          <span
+                            className={`inline-flex rounded-full px-2.5 py-1 text-[11px] font-black ${presentation.className}`}
+                          >
+                            {presentation.label}
                           </span>
                         </td>
                       </tr>
