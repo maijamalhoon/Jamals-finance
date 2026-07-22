@@ -8,46 +8,46 @@ Calculating task graph as no cached configuration is available for tasks: :share
 > Task :shared:preAndroidHostTestBuild UP-TO-DATE
 > Task :androidApp:preBuild UP-TO-DATE
 > Task :androidApp:preDebugBuild UP-TO-DATE
-> Task :androidApp:mergeDebugNativeDebugMetadata NO-SOURCE
 > Task :shared:processAndroidHostTestJavaRes NO-SOURCE
+> Task :androidApp:mergeDebugNativeDebugMetadata NO-SOURCE
 > Task :shared:kmpPartiallyResolvedDependenciesChecker
 > Task :shared:checkKotlinGradlePluginConfigurationErrors SKIPPED
 > Task :androidApp:generateDebugResources FROM-CACHE
 > Task :androidApp:generateDebugBuildConfig FROM-CACHE
 > Task :shared:androidJar
-> Task :androidApp:javaPreCompileDebug FROM-CACHE
 > Task :androidApp:packageDebugResources FROM-CACHE
 > Task :androidApp:generateDebugAssets UP-TO-DATE
+> Task :androidApp:javaPreCompileDebug FROM-CACHE
 > Task :shared:generateAndroidMainEmptyResourceFiles
 > Task :androidApp:processDebugNavigationResources FROM-CACHE
-> Task :androidApp:mergeDebugAssets
-> Task :androidApp:compressDebugAssets FROM-CACHE
 > Task :androidApp:parseDebugLocalResources FROM-CACHE
 > Task :androidApp:generateDebugRFile FROM-CACHE
+> Task :androidApp:mergeDebugAssets
+> Task :androidApp:compressDebugAssets FROM-CACHE
 > Task :shared:writeAndroidMainAarMetadata
 > Task :androidApp:checkDebugAarMetadata
 > Task :androidApp:mapDebugSourceSetPaths
 > Task :androidApp:compileDebugNavigationResources FROM-CACHE
-> Task :androidApp:mergeDebugResources FROM-CACHE
 > Task :androidApp:createDebugCompatibleScreenManifests
 > Task :androidApp:extractDeepLinksDebug FROM-CACHE
 > Task :shared:processAndroidMainManifest FROM-CACHE
 > Task :androidApp:processDebugMainManifest FROM-CACHE
+> Task :androidApp:mergeDebugResources FROM-CACHE
 > Task :androidApp:processDebugManifest FROM-CACHE
 > Task :androidApp:processDebugManifestForPackage FROM-CACHE
 > Task :androidApp:processDebugResources FROM-CACHE
+> Task :androidApp:checkDebugDuplicateClasses
 > Task :androidApp:mergeDebugJniLibFolders
 > Task :shared:mergeAndroidMainJniLibFolders
 > Task :shared:mergeAndroidMainNativeLibs NO-SOURCE
-> Task :androidApp:checkDebugDuplicateClasses
 > Task :shared:copyAndroidMainJniLibsProjectOnly
 > Task :androidApp:mergeDebugNativeLibs
-> Task :androidApp:validateSigningDebug
+> Task :androidApp:stripDebugDebugSymbols
+> Task :androidApp:desugarDebugFileDependencies FROM-CACHE
 > Task :androidApp:writeDebugAppMetadata
 > Task :androidApp:writeDebugSigningConfigVersions
-> Task :androidApp:desugarDebugFileDependencies FROM-CACHE
-> Task :androidApp:stripDebugDebugSymbols
 > Task :androidApp:mergeExtDexDebug FROM-CACHE
+> Task :androidApp:validateSigningDebug
 > Task :shared:compileAndroidMain
 > Task :shared:processAndroidMainJavaRes
 > Task :shared:bundleAndroidMainClassesToCompileJar
@@ -55,20 +55,25 @@ Calculating task graph as no cached configuration is available for tasks: :share
 > Task :shared:compileAndroidHostTest
 > Task :shared:testAndroidHostTest
 > Task :androidApp:mergeLibDexDebug
+
 > Task :androidApp:compileDebugKotlin
+w: file:///home/runner/work/Jamals-finance/Jamals-finance/native/androidApp/src/main/kotlin/com/jamalsfinance/nativeapp/ui/GoalsPayablesDashboard.kt:875:81 'constructor(p0: String!, p1: String!): Locale' is deprecated. Deprecated in Java.
+
 > Task :androidApp:processDebugJavaRes
 > Task :androidApp:mergeDebugJavaResource
 > Task :androidApp:compileDebugJavaWithJavac
 > Task :androidApp:dexBuilderDebug
-> Task :androidApp:mergeDebugGlobalSynthetics FROM-CACHE
+> Task :androidApp:mergeDebugGlobalSynthetics
 > Task :androidApp:mergeProjectDexDebug
 > Task :androidApp:packageDebug
 > Task :androidApp:assembleDebug
 > Task :androidApp:createDebugApkListingFileRedirect
-gradle/actions: Writing build results to /home/runner/work/_temp/.gradle-actions/build-results/native_build-1784727584950.json
+gradle/actions: Writing build results to /home/runner/work/_temp/.gradle-actions/build-results/native_build-1784741569625.json
 
-BUILD SUCCESSFUL in 40s
-51 actionable tasks: 32 executed, 19 from cache
+[Incubating] Problems report is available at: file:///home/runner/work/Jamals-finance/Jamals-finance/native/build/reports/problems/problems-report.html
+
+BUILD SUCCESSFUL in 55s
+51 actionable tasks: 33 executed, 18 from cache
 Configuration cache entry stored.
 
 === FINAL 80 LINES ===
@@ -79,46 +84,46 @@ Calculating task graph as no cached configuration is available for tasks: :share
 > Task :shared:preAndroidHostTestBuild UP-TO-DATE
 > Task :androidApp:preBuild UP-TO-DATE
 > Task :androidApp:preDebugBuild UP-TO-DATE
-> Task :androidApp:mergeDebugNativeDebugMetadata NO-SOURCE
 > Task :shared:processAndroidHostTestJavaRes NO-SOURCE
+> Task :androidApp:mergeDebugNativeDebugMetadata NO-SOURCE
 > Task :shared:kmpPartiallyResolvedDependenciesChecker
 > Task :shared:checkKotlinGradlePluginConfigurationErrors SKIPPED
 > Task :androidApp:generateDebugResources FROM-CACHE
 > Task :androidApp:generateDebugBuildConfig FROM-CACHE
 > Task :shared:androidJar
-> Task :androidApp:javaPreCompileDebug FROM-CACHE
 > Task :androidApp:packageDebugResources FROM-CACHE
 > Task :androidApp:generateDebugAssets UP-TO-DATE
+> Task :androidApp:javaPreCompileDebug FROM-CACHE
 > Task :shared:generateAndroidMainEmptyResourceFiles
 > Task :androidApp:processDebugNavigationResources FROM-CACHE
-> Task :androidApp:mergeDebugAssets
-> Task :androidApp:compressDebugAssets FROM-CACHE
 > Task :androidApp:parseDebugLocalResources FROM-CACHE
 > Task :androidApp:generateDebugRFile FROM-CACHE
+> Task :androidApp:mergeDebugAssets
+> Task :androidApp:compressDebugAssets FROM-CACHE
 > Task :shared:writeAndroidMainAarMetadata
 > Task :androidApp:checkDebugAarMetadata
 > Task :androidApp:mapDebugSourceSetPaths
 > Task :androidApp:compileDebugNavigationResources FROM-CACHE
-> Task :androidApp:mergeDebugResources FROM-CACHE
 > Task :androidApp:createDebugCompatibleScreenManifests
 > Task :androidApp:extractDeepLinksDebug FROM-CACHE
 > Task :shared:processAndroidMainManifest FROM-CACHE
 > Task :androidApp:processDebugMainManifest FROM-CACHE
+> Task :androidApp:mergeDebugResources FROM-CACHE
 > Task :androidApp:processDebugManifest FROM-CACHE
 > Task :androidApp:processDebugManifestForPackage FROM-CACHE
 > Task :androidApp:processDebugResources FROM-CACHE
+> Task :androidApp:checkDebugDuplicateClasses
 > Task :androidApp:mergeDebugJniLibFolders
 > Task :shared:mergeAndroidMainJniLibFolders
 > Task :shared:mergeAndroidMainNativeLibs NO-SOURCE
-> Task :androidApp:checkDebugDuplicateClasses
 > Task :shared:copyAndroidMainJniLibsProjectOnly
 > Task :androidApp:mergeDebugNativeLibs
-> Task :androidApp:validateSigningDebug
+> Task :androidApp:stripDebugDebugSymbols
+> Task :androidApp:desugarDebugFileDependencies FROM-CACHE
 > Task :androidApp:writeDebugAppMetadata
 > Task :androidApp:writeDebugSigningConfigVersions
-> Task :androidApp:desugarDebugFileDependencies FROM-CACHE
-> Task :androidApp:stripDebugDebugSymbols
 > Task :androidApp:mergeExtDexDebug FROM-CACHE
+> Task :androidApp:validateSigningDebug
 > Task :shared:compileAndroidMain
 > Task :shared:processAndroidMainJavaRes
 > Task :shared:bundleAndroidMainClassesToCompileJar
@@ -126,18 +131,23 @@ Calculating task graph as no cached configuration is available for tasks: :share
 > Task :shared:compileAndroidHostTest
 > Task :shared:testAndroidHostTest
 > Task :androidApp:mergeLibDexDebug
+
 > Task :androidApp:compileDebugKotlin
+w: file:///home/runner/work/Jamals-finance/Jamals-finance/native/androidApp/src/main/kotlin/com/jamalsfinance/nativeapp/ui/GoalsPayablesDashboard.kt:875:81 'constructor(p0: String!, p1: String!): Locale' is deprecated. Deprecated in Java.
+
 > Task :androidApp:processDebugJavaRes
 > Task :androidApp:mergeDebugJavaResource
 > Task :androidApp:compileDebugJavaWithJavac
 > Task :androidApp:dexBuilderDebug
-> Task :androidApp:mergeDebugGlobalSynthetics FROM-CACHE
+> Task :androidApp:mergeDebugGlobalSynthetics
 > Task :androidApp:mergeProjectDexDebug
 > Task :androidApp:packageDebug
 > Task :androidApp:assembleDebug
 > Task :androidApp:createDebugApkListingFileRedirect
-gradle/actions: Writing build results to /home/runner/work/_temp/.gradle-actions/build-results/native_build-1784727584950.json
+gradle/actions: Writing build results to /home/runner/work/_temp/.gradle-actions/build-results/native_build-1784741569625.json
 
-BUILD SUCCESSFUL in 40s
-51 actionable tasks: 32 executed, 19 from cache
+[Incubating] Problems report is available at: file:///home/runner/work/Jamals-finance/Jamals-finance/native/build/reports/problems/problems-report.html
+
+BUILD SUCCESSFUL in 55s
+51 actionable tasks: 33 executed, 18 from cache
 Configuration cache entry stored.
