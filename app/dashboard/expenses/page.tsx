@@ -42,7 +42,9 @@ export default async function ExpensesPage({
   if (expenses.length === 0) {
     return (
       <div data-expenses-page className="space-y-5 pb-8">
-        <AddExpenseButton />
+        <div data-page-action-row className="flex justify-end">
+          <AddExpenseButton icon="plus" />
+        </div>
         <div className="py-3 sm:py-6">
           <EmptyState
             icon={TrendingDown}
@@ -69,7 +71,11 @@ export default async function ExpensesPage({
     <div data-expenses-page className="pb-8">
       <TransactionTypeOverview
         tone="expense"
-        action={<AddExpenseButton />}
+        action={
+          <div data-page-action-row className="flex justify-end">
+            <AddExpenseButton icon="plus" />
+          </div>
+        }
         thisMonth={summary.thisMonth}
         thisYear={summary.thisYear}
         recordMonthAmount={summary.recordMonthAmount}
