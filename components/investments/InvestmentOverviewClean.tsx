@@ -55,6 +55,19 @@ type AllocationTooltipItem = {
   };
 };
 
+const COST_CHART_COLOR =
+  "color-mix(in srgb, var(--expense) 88%, var(--primary) 12%)";
+const COST_CHART_LIGHT =
+  "color-mix(in srgb, var(--expense) 74%, white 26%)";
+const COST_CHART_DEEP =
+  "color-mix(in srgb, var(--expense) 91%, black 9%)";
+const CURRENT_CHART_COLOR =
+  "color-mix(in srgb, var(--income) 88%, var(--primary) 12%)";
+const CURRENT_CHART_LIGHT =
+  "color-mix(in srgb, var(--income) 74%, white 26%)";
+const CURRENT_CHART_DEEP =
+  "color-mix(in srgb, var(--income) 90%, black 10%)";
+
 function MetricTile({
   label,
   value,
@@ -74,7 +87,7 @@ function MetricTile({
         : "text-text-primary";
 
   return (
-    <div className="min-w-0 rounded-[18px] bg-surface-secondary/60 px-3.5 py-3.5 sm:px-4">
+    <div className="min-w-0 rounded-[18px] bg-surface-secondary/55 px-3.5 py-3.5 sm:px-4">
       <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-text-secondary">
         {label}
       </p>
@@ -105,23 +118,25 @@ function ComparisonTooltip({
   const pnl = current - invested;
 
   return (
-    <div className="min-w-[176px] rounded-[14px] bg-card p-3 text-xs shadow-[var(--shadow-soft)]">
+    <div className="min-w-[184px] rounded-[14px] bg-card p-3 text-xs shadow-[var(--shadow-soft)]">
       <p className="font-semibold text-text-primary">
         {holding?.name ?? "Holding"}
         {holding?.symbol ? ` · ${holding.symbol}` : ""}
       </p>
       <div className="mt-2 space-y-1.5">
-        <p className="flex items-center justify-between gap-5 text-text-secondary">
-          <span>Invested</span>
-          <span className="font-bold tabular-nums text-text-primary">
-            {formatCurrency(invested)}
-          </span>
+        <p
+          className="flex items-center justify-between gap-5 font-medium"
+          style={{ color: COST_CHART_COLOR }}
+        >
+          <span>Cost</span>
+          <span className="font-bold tabular-nums">{formatCurrency(invested)}</span>
         </p>
-        <p className="flex items-center justify-between gap-5 text-text-secondary">
+        <p
+          className="flex items-center justify-between gap-5 font-medium"
+          style={{ color: CURRENT_CHART_COLOR }}
+        >
           <span>Current</span>
-          <span className="font-bold tabular-nums text-text-primary">
-            {formatCurrency(current)}
-          </span>
+          <span className="font-bold tabular-nums">{formatCurrency(current)}</span>
         </p>
         <p className="flex items-center justify-between gap-5 pt-1.5">
           <span className="text-text-secondary">P/L</span>
@@ -216,20 +231,21 @@ function PortfolioAnalytics({
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: motionDurations.page, ease: motionEase }}
-        className="min-w-0 overflow-hidden rounded-[26px] bg-card p-4 sm:p-5 lg:p-6"
+        className="min-w-0 overflow-hidden rounded-[28px] bg-card p-4 sm:p-5 lg:p-6"
       >
-        <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
+        <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_316px] lg:items-end">
           <div className="min-w-0">
             <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.14em] text-active sm:text-[11px]">
               <BarChart3 size={14} />
               Portfolio overview
             </div>
-            <p className="mt-3 break-words text-3xl font-bold tabular-nums tracking-tight text-text-primary [overflow-wrap:anywhere] sm:text-4xl">
-              {formatCurrency(totalValue)}
-            </p>
-            <div className="mt-2 flex flex-wrap items-center gap-2">
+
+            <div className="mt-3 flex flex-wrap items-end gap-x-3 gap-y-2">
+              <p className="min-w-0 break-words text-3xl font-bold tabular-nums tracking-tight text-text-primary [overflow-wrap:anywhere] sm:text-4xl">
+                {formatCurrency(totalValue)}
+              </p>
               <span
-                className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-bold ${
+                className={`mb-0.5 inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-bold ${
                   isProfit
                     ? "bg-success/10 text-success"
                     : "bg-danger/10 text-danger"
@@ -244,13 +260,14 @@ function PortfolioAnalytics({
                 {formatCurrency(Math.abs(totalPnL))} · {isProfit ? "+" : "-"}
                 {Math.abs(totalPnLPct).toFixed(1)}%
               </span>
-              <span className="text-xs text-text-secondary">
-                {liveCount} live priced · {groupedHoldings.length - liveCount} manual
-              </span>
             </div>
+
+            <p className="mt-2 text-xs text-text-secondary">
+              {liveCount} live priced · {groupedHoldings.length - liveCount} manual
+            </p>
           </div>
 
-          <div className="grid w-full grid-cols-2 gap-2 lg:w-[316px]">
+          <div className="grid w-full grid-cols-2 gap-2">
             <MetricTile
               label="Invested"
               value={formatCurrency(totalInvested)}
@@ -266,29 +283,38 @@ function PortfolioAnalytics({
           </div>
         </div>
 
-        <div className="mt-6 rounded-[22px] bg-surface-secondary/38 px-3 py-4 sm:px-4 sm:py-5">
-          <div className="mb-4 flex flex-wrap items-end justify-between gap-2">
-            <div>
+        <div className="mt-5 overflow-hidden rounded-[24px] bg-surface-secondary/34 p-3 sm:p-4">
+          <div className="mb-3.5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="min-w-0">
               <h3 className="text-sm font-semibold text-text-primary">
                 Current value vs cost
               </h3>
-              <p className="mt-0.5 text-[11px] text-text-secondary">
-                Clear comparison across your largest positions.
+              <p className="mt-0.5 text-[11px] leading-4 text-text-secondary">
+                Cost is shown in expense red and current value in income green.
               </p>
             </div>
-            <div className="flex items-center gap-3 text-[10px] font-semibold text-text-secondary">
+
+            <div className="flex shrink-0 items-center gap-3 rounded-full bg-surface-primary/45 px-3 py-2 text-[10px] font-semibold text-text-secondary">
               <span className="inline-flex items-center gap-1.5">
-                <i className="h-2 w-2 rounded-full bg-text-secondary/35" /> Cost
+                <i
+                  className="h-2 w-2 rounded-full"
+                  style={{ backgroundColor: COST_CHART_COLOR }}
+                />
+                Cost
               </span>
               <span className="inline-flex items-center gap-1.5">
-                <i className="h-2 w-2 rounded-full bg-[var(--investment)]" /> Current
+                <i
+                  className="h-2 w-2 rounded-full"
+                  style={{ backgroundColor: CURRENT_CHART_COLOR }}
+                />
+                Current
               </span>
             </div>
           </div>
 
           <ChartFrame
-            className="h-[250px] min-h-[250px] sm:h-[282px] sm:min-h-[282px]"
-            tone="purple"
+            className="h-[242px] min-h-[242px] sm:h-[272px] sm:min-h-[272px]"
+            tone="default"
           >
             {({ width, height }) => {
               const compact = width < 500;
@@ -308,8 +334,8 @@ function PortfolioAnalytics({
                     bottom: 0,
                     left: compact ? 0 : 4,
                   }}
-                  barGap={3}
-                  barCategoryGap={compact ? "30%" : "34%"}
+                  barGap={4}
+                  barCategoryGap={compact ? "28%" : "32%"}
                 >
                   <defs>
                     <linearGradient
@@ -319,16 +345,9 @@ function PortfolioAnalytics({
                       x2="1"
                       y2="0"
                     >
-                      <stop
-                        offset="0%"
-                        stopColor="var(--text-secondary)"
-                        stopOpacity={0.18}
-                      />
-                      <stop
-                        offset="100%"
-                        stopColor="var(--text-secondary)"
-                        stopOpacity={0.46}
-                      />
+                      <stop offset="0%" stopColor={COST_CHART_DEEP} />
+                      <stop offset="52%" stopColor={COST_CHART_LIGHT} />
+                      <stop offset="100%" stopColor={COST_CHART_COLOR} />
                     </linearGradient>
                     <linearGradient
                       id={currentGradientId}
@@ -337,23 +356,16 @@ function PortfolioAnalytics({
                       x2="1"
                       y2="0"
                     >
-                      <stop
-                        offset="0%"
-                        stopColor="var(--investment)"
-                        stopOpacity={0.44}
-                      />
-                      <stop
-                        offset="100%"
-                        stopColor="var(--investment)"
-                        stopOpacity={0.96}
-                      />
+                      <stop offset="0%" stopColor={CURRENT_CHART_DEEP} />
+                      <stop offset="52%" stopColor={CURRENT_CHART_LIGHT} />
+                      <stop offset="100%" stopColor={CURRENT_CHART_COLOR} />
                     </linearGradient>
                   </defs>
                   <CartesianGrid
                     horizontal={false}
                     stroke="var(--chart-grid)"
-                    strokeDasharray="3 6"
-                    strokeOpacity={0.55}
+                    strokeDasharray="3 7"
+                    strokeOpacity={0.42}
                   />
                   <XAxis
                     type="number"
@@ -379,21 +391,18 @@ function PortfolioAnalytics({
                       value.slice(0, compact ? 5 : 8)
                     }
                   />
-                  <Tooltip
-                    cursor={{ fill: "var(--hover)", opacity: 0.3 }}
-                    content={<ComparisonTooltip />}
-                  />
+                  <Tooltip cursor={{ fill: "transparent" }} content={<ComparisonTooltip />} />
                   <Bar
                     dataKey="invested"
                     fill={`url(#${costGradientId})`}
-                    radius={[0, 8, 8, 0]}
+                    radius={[8, 8, 8, 8]}
                     maxBarSize={compact ? 11 : 14}
                     {...chartMotion}
                   />
                   <Bar
                     dataKey="current"
                     fill={`url(#${currentGradientId})`}
-                    radius={[0, 8, 8, 0]}
+                    radius={[8, 8, 8, 8]}
                     maxBarSize={compact ? 11 : 14}
                     {...chartMotion}
                   />
