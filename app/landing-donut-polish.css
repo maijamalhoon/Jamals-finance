@@ -1,19 +1,18 @@
-/* High-resolution polish for the landing-page savings donut.
-   Keeps the same 34/25/17/24 segment values while removing raster-like edges. */
+/* Reference-style polish for the landing-page savings donut.
+   Keeps the existing 34/25/17/24 values and authored colors unchanged. */
 
 .jf-donut {
   isolation: isolate;
   overflow: hidden;
   contain: paint;
   background: var(--jf-surface-solid);
-  box-shadow:
-    0 18px 38px rgb(49 91 216 / 0.13),
-    inset 0 0 0 1px color-mix(in srgb, var(--jf-line) 82%, transparent);
+  box-shadow: 0 16px 34px rgb(24 45 78 / 0.1);
   transform: translateZ(0);
   backface-visibility: hidden;
 }
 
-/* Render the conic artwork at 2x and composite it back down for smoother arcs. */
+/* Render the segmented ring at 2x and composite it back down for clean arcs.
+   Slightly wider neutral gaps match the separated reference segments. */
 .jf-donut::before {
   position: absolute;
   inset: -50%;
@@ -21,13 +20,14 @@
   border-radius: 50%;
   background: conic-gradient(
     from 0deg,
-    var(--jf-blue) 0 33.72%,
-    var(--jf-surface-solid) 33.72% 34.18%,
-    var(--jf-green) 34.18% 58.72%,
-    var(--jf-surface-solid) 58.72% 59.18%,
-    var(--jf-violet) 59.18% 75.72%,
-    var(--jf-surface-solid) 75.72% 76.18%,
-    var(--jf-soft) 76.18% 100%
+    var(--jf-blue) 0 33.25%,
+    var(--jf-surface-solid) 33.25% 34.65%,
+    var(--jf-green) 34.65% 58.25%,
+    var(--jf-surface-solid) 58.25% 59.65%,
+    var(--jf-violet) 59.65% 75.25%,
+    var(--jf-surface-solid) 75.25% 76.65%,
+    var(--jf-soft) 76.65% 99.3%,
+    var(--jf-surface-solid) 99.3% 100%
   );
   transform: scale(0.5) translateZ(0);
   transform-origin: center;
@@ -35,27 +35,53 @@
 }
 
 .jf-donut::after {
-  inset: 22.5%;
+  inset: 28%;
   z-index: 1;
-  background: color-mix(in srgb, var(--jf-surface-solid) 96%, var(--jf-soft));
-  box-shadow:
-    0 8px 24px rgb(24 45 78 / 0.09),
-    inset 0 0 0 1px color-mix(in srgb, var(--jf-line) 88%, transparent);
+  background: color-mix(in srgb, var(--jf-surface-solid) 97%, var(--jf-soft));
+  box-shadow: none;
 }
 
+/* Same centre hierarchy as the reference: label first, strong amount below. */
 .jf-donut > span {
   z-index: 2;
+  display: flex;
+  min-width: 0;
+  max-width: 58%;
+  flex-direction: column-reverse;
+  align-items: center;
+  justify-content: center;
+  gap: 0.38rem;
+  text-align: center;
   transform: translateZ(0);
 }
 
 .jf-donut strong {
-  text-shadow: 0 1px 0 color-mix(in srgb, var(--jf-surface-solid) 70%, transparent);
+  overflow: hidden;
+  max-width: 100%;
+  font-weight: 850;
+  line-height: 1;
+  letter-spacing: -0.035em;
+  text-overflow: ellipsis;
+  text-shadow: none;
+  white-space: nowrap;
+}
+
+.jf-donut small {
+  overflow: hidden;
+  max-width: 100%;
+  font-size: 0.62rem;
+  font-weight: 750;
+  line-height: 1;
+  letter-spacing: 0.105em;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  white-space: nowrap;
 }
 
 @media (hover: hover) and (pointer: fine) {
   .jf-insight-visual:hover .jf-donut {
-    transform: translateZ(0) scale(1.025);
-    filter: drop-shadow(0 14px 24px rgb(49 91 216 / 0.16));
+    transform: translateZ(0) scale(1.018);
+    filter: brightness(1.025);
   }
 }
 
