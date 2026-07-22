@@ -43,18 +43,8 @@ jobs:
             echo "=== ACTIONABLE ERROR LINES ==="
             grep -n -E "(^e: |FAILURE:|What went wrong:|Script compilation error|Unresolved reference|Could not|Exception is:|error:)" /tmp/native-build.log | head -n 180 || true
             echo
-            echo "=== FIRST FAILURE CONTEXT ==="
-            first_line="$(grep -n -m1 -E "(^e: |FAILURE:|What went wrong:|Script compilation error|Unresolved reference|Could not|error:)" /tmp/native-build.log | cut -d: -f1)"
-            if [ -n "${first_line}" ]; then
-              start=$(( first_line > 30 ? first_line - 30 : 1 ))
-              end=$(( first_line + 90 ))
-              sed -n "${start},${end}p" /tmp/native-build.log
-            else
-              head -n 180 /tmp/native-build.log
-            fi
-            echo
-            echo "=== FINAL 80 LINES ==="
-            tail -n 80 /tmp/native-build.log
+            echo "=== FINAL 100 LINES ==="
+            tail -n 100 /tmp/native-build.log
           } > ../.github/native-ci-log.txt
           echo "exit_code=${exit_code}" >> "$GITHUB_OUTPUT"
           exit 0
@@ -66,7 +56,7 @@ jobs:
           path: native/androidApp/build/outputs/apk/debug/androidApp-debug.apk
           if-no-files-found: error
           retention-days: 7
-      - name: Record native CI result
+      - name: Apply safe generated-ledger parity and record result
         if: always()
         working-directory: .
         env:
@@ -84,120 +74,114 @@ jobs:
           python - <<'PY'
           from pathlib import Path
 
-          repo = Path("native/shared/src/commonMain/kotlin/com/jamalsfinance/shared/finance/FinanceRepository.kt")
-          text = repo.read_text(encoding="utf-8")
+          repository_path = Path("native/shared/src/commonMain/kotlin/com/jamalsfinance/shared/finance/FinanceRepository.kt")
+          source = repository_path.read_text(encoding="utf-8")
 
-          old_flags = '''    val isDeleted: Boolean get() = deletedAt != null
-              val isTransfer: Boolean get() = type == "transfer"
-              val canEditDirectly: Boolean get() = !isDeleted && (type == "income" || type == "expense")'''
-          new_flags = '''    val isDeleted: Boolean get() = deletedAt != null
-              val isTransfer: Boolean get() = type == "transfer"
-              val semanticContext: String
-                  get() = listOfNotNull(type, note, categories?.name, sourceName, itemName)
-                      .joinToString(" ")
-                      .lowercase()
-              val isPayablePayment: Boolean
-                  get() = type == "expense" && listOf(
-                      "payable",
-                      "liability",
-                      "debt repayment",
-                      "debt payment",
-                      "loan repayment",
-                      "payment returned to",
-                  ).any(semanticContext::contains)
-              val canEditDirectly: Boolean
-                  get() = !isDeleted && (type == "income" || type == "expense") && !isPayablePayment
-              val canDeleteSafely: Boolean
-                  get() = !isDeleted &&
-                      type != "investment" &&
-                      (type != "goal" || goalContributionId != null)'''
-          if old_flags not in text:
-              raise SystemExit("Ledger action marker not found")
-          text = text.replace(old_flags, new_flags)
+          old_flags = (
+              '    val isDeleted: Boolean get() = deletedAt != null\n'
+              '    val isTransfer: Boolean get() = type == "transfer"\n'
+              '    val canEditDirectly: Boolean get() = !isDeleted && (type == "income" || type == "expense")'
+          )
+          new_flags = (
+              '    val isDeleted: Boolean get() = deletedAt != null\n'
+              '    val isTransfer: Boolean get() = type == "transfer"\n'
+              '    val semanticContext: String\n'
+              '        get() = listOfNotNull(type, note, categories?.name, sourceName, itemName)\n'
+              '            .joinToString(" ")\n'
+              '            .lowercase()\n'
+              '    val isPayablePayment: Boolean\n'
+              '        get() = type == "expense" && listOf(\n'
+              '            "payable",\n'
+              '            "liability",\n'
+              '            "debt repayment",\n'
+              '            "debt payment",\n'
+              '            "loan repayment",\n'
+              '            "payment returned to",\n'
+              '        ).any(semanticContext::contains)\n'
+              '    val canEditDirectly: Boolean\n'
+              '        get() = !isDeleted && (type == "income" || type == "expense") && !isPayablePayment\n'
+              '    val canDeleteSafely: Boolean\n'
+              '        get() = !isDeleted && type != "investment" &&\n'
+              '            (type != "goal" || goalContributionId != null)'
+          )
+          if old_flags not in source:
+              raise RuntimeError("Ledger action flags marker not found")
+          source = source.replace(old_flags, new_flags, 1)
 
-          old_delete = '''    override suspend fun softDelete(entry: LedgerEntry): FinanceResult = mutate {
-                  require(!entry.isDeleted) { "This ledger entry is already deleted." }
-                  val session = requireSession()
-                  val response = if (entry.isTransfer) {
+          delete_start = source.index('    override suspend fun softDelete(entry: LedgerEntry): FinanceResult = mutate {')
+          delete_end = source.index('\n\n    private suspend fun mutate', delete_start)
+          safe_delete = '''    override suspend fun softDelete(entry: LedgerEntry): FinanceResult = mutate {
+              require(entry.canDeleteSafely) {
+                  if (entry.type == "investment") {
+                      "Investment ledger entries must be managed from Investments."
+                  } else {
+                      "This generated ledger entry cannot be deleted safely."
+                  }
+              }
+              val session = requireSession()
+              val response = when {
+                  entry.type == "goal" -> {
+                      val contributionId = entry.goalContributionId
+                          ?: throw FinanceException("This goal contribution is missing its ledger link.")
+                      client.post("${config.normalizedSupabaseUrl}/rest/v1/rpc/delete_goal_contribution") {
+                          authenticated(session)
+                          setBody(DeleteGoalContributionRequest(contributionId))
+                      }
+                  }
+                  entry.isPayablePayment -> {
+                      client.post("${config.normalizedSupabaseUrl}/rest/v1/rpc/delete_liability_payment_transaction") {
+                          authenticated(session)
+                          setBody(DeleteLiabilityPaymentRequest(entry.id))
+                      }
+                  }
+                  entry.isTransfer -> {
                       client.post("${config.normalizedSupabaseUrl}/rest/v1/rpc/soft_delete_account_transfer") {
                           authenticated(session)
                           setBody(DeleteTransferRequest(entry.id))
                       }
-                  } else {
+                  }
+                  else -> {
                       client.post("${config.normalizedSupabaseUrl}/rest/v1/rpc/soft_delete_transaction") {
                           authenticated(session)
                           setBody(DeleteTransactionRequest(entry.id))
                       }
                   }
-                  response.requireSuccess("Ledger entry could not be deleted.")
-              }'''
-          new_delete = '''    override suspend fun softDelete(entry: LedgerEntry): FinanceResult = mutate {
-                  require(entry.canDeleteSafely) {
-                      if (entry.type == "investment") {
-                          "Investment ledger entries must be managed from Investments."
-                      } else {
-                          "This generated ledger entry cannot be deleted safely."
-                      }
-                  }
-                  val session = requireSession()
-                  val response = when {
-                      entry.type == "goal" -> {
-                          val contributionId = entry.goalContributionId
-                              ?: throw FinanceException("This goal contribution is missing its ledger link.")
-                          client.post("${config.normalizedSupabaseUrl}/rest/v1/rpc/delete_goal_contribution") {
-                              authenticated(session)
-                              setBody(DeleteGoalContributionRequest(contributionId))
-                          }
-                      }
-                      entry.isPayablePayment -> {
-                          client.post("${config.normalizedSupabaseUrl}/rest/v1/rpc/delete_liability_payment_transaction") {
-                              authenticated(session)
-                              setBody(DeleteLiabilityPaymentRequest(entry.id))
-                          }
-                      }
-                      entry.isTransfer -> {
-                          client.post("${config.normalizedSupabaseUrl}/rest/v1/rpc/soft_delete_account_transfer") {
-                              authenticated(session)
-                              setBody(DeleteTransferRequest(entry.id))
-                          }
-                      }
-                      else -> {
-                          client.post("${config.normalizedSupabaseUrl}/rest/v1/rpc/soft_delete_transaction") {
-                              authenticated(session)
-                              setBody(DeleteTransactionRequest(entry.id))
-                          }
-                      }
-                  }
-                  response.requireSuccess("Ledger entry could not be deleted.")
-              }'''
-          if old_delete not in text:
-              raise SystemExit("Soft-delete marker not found")
-          text = text.replace(old_delete, new_delete)
+              }
+              response.requireSuccess("Ledger entry could not be deleted.")
+          }'''
+          source = source[:delete_start] + safe_delete + source[delete_end:]
 
-          old_requests = '''    @Serializable private data class DeleteTransactionRequest(@SerialName("p_transaction_id") val transactionId: String)
-              @Serializable private data class DeleteTransferRequest(@SerialName("p_transfer_id") val transferId: String)'''
-          new_requests = '''    @Serializable private data class DeleteGoalContributionRequest(@SerialName("p_contribution_id") val contributionId: String)
-              @Serializable private data class DeleteLiabilityPaymentRequest(@SerialName("p_transaction_id") val transactionId: String)
-              @Serializable private data class DeleteTransactionRequest(@SerialName("p_transaction_id") val transactionId: String)
-              @Serializable private data class DeleteTransferRequest(@SerialName("p_transfer_id") val transferId: String)'''
-          if old_requests not in text:
-              raise SystemExit("Delete request marker not found")
-          repo.write_text(text.replace(old_requests, new_requests), encoding="utf-8")
+          request_marker = '    @Serializable private data class DeleteTransactionRequest(@SerialName("p_transaction_id") val transactionId: String)'
+          if request_marker not in source:
+              raise RuntimeError("Delete request marker not found")
+          extra_requests = (
+              '    @Serializable private data class DeleteGoalContributionRequest(@SerialName("p_contribution_id") val contributionId: String)\n'
+              '    @Serializable private data class DeleteLiabilityPaymentRequest(@SerialName("p_transaction_id") val transactionId: String)\n'
+          )
+          source = source.replace(request_marker, extra_requests + request_marker, 1)
+          repository_path.write_text(source, encoding="utf-8")
 
-          ui = Path("native/androidApp/src/main/kotlin/com/jamalsfinance/nativeapp/ui/FinanceDashboard.kt")
-          ui_text = ui.read_text(encoding="utf-8")
-          old_ui = '''                if (entry.canEditDirectly) TextButton(onClick = { onEdit(entry) }) { Text("Edit") }
-                      TextButton(onClick = { onDelete(entry) }) { Text("Delete") }'''
-          new_ui = '''                if (entry.canEditDirectly) TextButton(onClick = { onEdit(entry) }) { Text("Edit") }
-                      if (entry.canDeleteSafely) TextButton(onClick = { onDelete(entry) }) { Text("Delete") }'''
-          if old_ui not in ui_text:
-              raise SystemExit("Ledger action UI marker not found")
-          ui.write_text(ui_text.replace(old_ui, new_ui), encoding="utf-8")
+          ui_path = Path("native/androidApp/src/main/kotlin/com/jamalsfinance/nativeapp/ui/FinanceDashboard.kt")
+          ui_source = ui_path.read_text(encoding="utf-8")
+          old_ui = (
+              '                if (entry.canEditDirectly) TextButton(onClick = { onEdit(entry) }) { Text("Edit") }\n'
+              '                TextButton(onClick = { onDelete(entry) }) { Text("Delete") }'
+          )
+          new_ui = (
+              '                if (entry.canEditDirectly) TextButton(onClick = { onEdit(entry) }) { Text("Edit") }\n'
+              '                if (entry.canDeleteSafely) TextButton(onClick = { onDelete(entry) }) { Text("Delete") }'
+          )
+          if old_ui not in ui_source:
+              raise RuntimeError("Ledger UI marker not found")
+          ui_path.write_text(ui_source.replace(old_ui, new_ui, 1), encoding="utf-8")
 
-          tests = Path("native/shared/src/commonTest/kotlin/com/jamalsfinance/shared/finance/FinanceModelsTest.kt")
-          test_text = tests.read_text(encoding="utf-8")
-          marker = "\n}"
-          addition = '''
+          test_path = Path("native/shared/src/commonTest/kotlin/com/jamalsfinance/shared/finance/FinanceModelsTest.kt")
+          test_source = test_path.read_text(encoding="utf-8")
+          if "generatedLedgerActionsUseDedicatedSafetyRules" not in test_source:
+              closing = test_source.rfind('\n}')
+              if closing < 0:
+                  raise RuntimeError("Test class closing marker not found")
+              addition = '''
 
               @Test
               fun generatedLedgerActionsUseDedicatedSafetyRules() {
@@ -224,17 +208,14 @@ jobs:
                   assertTrue(payable.isPayablePayment)
                   assertFalse(payable.canEditDirectly)
                   assertTrue(payable.canDeleteSafely)
-              }
-          }'''
-          if "generatedLedgerActionsUseDedicatedSafetyRules" not in test_text:
-              if not test_text.endswith(marker):
-                  raise SystemExit("Test class marker not found")
-              tests.write_text(test_text[:-len(marker)] + addition + "\n", encoding="utf-8")
+              }'''
+              test_source = test_source[:closing] + addition + test_source[closing:]
+              test_path.write_text(test_source, encoding="utf-8")
           PY
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add native/shared/src/commonMain/kotlin/com/jamalsfinance/shared/finance/FinanceRepository.kt native/shared/src/commonTest/kotlin/com/jamalsfinance/shared/finance/FinanceModelsTest.kt native/androidApp/src/main/kotlin/com/jamalsfinance/nativeapp/ui/FinanceDashboard.kt .github/native-ci-status.json .github/native-ci-log.txt
-          git commit -m "chore(native): record foundation CI ${result}" || exit 0
+          git commit -m "chore(native): record foundation CI ${result} and apply ledger safety" || exit 0
           git pull --rebase origin main
           git push origin HEAD:main
       - name: Fail when native build failed
