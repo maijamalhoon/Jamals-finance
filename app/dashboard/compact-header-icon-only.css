@@ -1,14 +1,9 @@
 /*
- * Final compact-header surface override.
- * Removes only the compact control badges; icons, spacing, motion and logic stay unchanged.
+ * Final compact-header badge surface.
+ * Mobile and tablet controls keep their existing icons and actions, while each
+ * control receives one soft curved badge that adapts to the active theme.
  */
 @media (max-width: 1023px) {
-  /*
-   * The compact header has several older !important surface rules. Target every
-   * non-search control button through the dashboard shell with deliberately
-   * stronger specificity so menu, notification and profile remain icon-only in
-   * normal, hover, focus, active and open states.
-   */
   html body
     [data-dashboard-shell][data-dashboard-shell]
     div[data-mobile-control-cluster][data-mobile-control-cluster]:not(form)
@@ -16,15 +11,7 @@
   html body
     [data-dashboard-shell][data-dashboard-shell]
     div[data-mobile-control-cluster][data-mobile-control-cluster]:not(form)
-    button:hover,
-  html body
-    [data-dashboard-shell][data-dashboard-shell]
-    div[data-mobile-control-cluster][data-mobile-control-cluster]:not(form)
     button:focus-visible,
-  html body
-    [data-dashboard-shell][data-dashboard-shell]
-    div[data-mobile-control-cluster][data-mobile-control-cluster]:not(form)
-    button:active,
   html body
     [data-dashboard-shell][data-dashboard-shell]
     div[data-mobile-control-cluster][data-mobile-control-cluster]:not(form)
@@ -33,20 +20,43 @@
     [data-dashboard-shell][data-dashboard-shell]
     div[data-mobile-control-cluster][data-mobile-control-cluster]:not(form)
     button[data-popup-open] {
+    -webkit-appearance: none !important;
+    appearance: none !important;
     border: 0 !important;
     border-color: transparent !important;
+    border-radius: 14px !important;
     outline: 0 !important;
-    background: none !important;
-    background-color: transparent !important;
+    background: color-mix(
+      in srgb,
+      var(--surface-elevated) 88%,
+      transparent
+    ) !important;
     background-image: none !important;
     box-shadow: none !important;
     filter: none !important;
     -webkit-filter: none !important;
-    backdrop-filter: none !important;
-    -webkit-backdrop-filter: none !important;
+    backdrop-filter: blur(14px) saturate(112%) !important;
+    -webkit-backdrop-filter: blur(14px) saturate(112%) !important;
   }
 
-  /* Search stays icon-only only while closed; its expanded input remains intact. */
+  html body
+    [data-dashboard-shell][data-dashboard-shell]
+    div[data-mobile-control-cluster][data-mobile-control-cluster]:not(form)
+    button:hover,
+  html body
+    [data-dashboard-shell][data-dashboard-shell]
+    div[data-mobile-control-cluster][data-mobile-control-cluster]:not(form)
+    button:active {
+    border: 0 !important;
+    background: color-mix(
+      in srgb,
+      var(--surface-elevated) 96%,
+      transparent
+    ) !important;
+    box-shadow: none !important;
+  }
+
+  /* Search receives the same badge only while collapsed. */
   html body
     [data-dashboard-shell][data-dashboard-shell]
     form[data-mobile-control-cluster][data-mobile-control-cluster][role="search"]:has(
@@ -64,15 +74,19 @@
     ):focus-within {
     border: 0 !important;
     border-color: transparent !important;
+    border-radius: 14px !important;
     outline: 0 !important;
-    background: none !important;
-    background-color: transparent !important;
+    background: color-mix(
+      in srgb,
+      var(--surface-elevated) 88%,
+      transparent
+    ) !important;
     background-image: none !important;
     box-shadow: none !important;
     filter: none !important;
     -webkit-filter: none !important;
-    backdrop-filter: none !important;
-    -webkit-backdrop-filter: none !important;
+    backdrop-filter: blur(14px) saturate(112%) !important;
+    -webkit-backdrop-filter: blur(14px) saturate(112%) !important;
   }
 
   html body
@@ -91,41 +105,19 @@
     [data-dashboard-shell][data-dashboard-shell]
     form[data-mobile-control-cluster][data-mobile-control-cluster][role="search"]
     > button:first-child[aria-expanded="false"]:active {
-    background: none !important;
+    background: transparent !important;
     background-color: transparent !important;
     background-image: none !important;
     box-shadow: none !important;
   }
 
-  /* The notification wrapper has its own Tailwind descendant !important surface. */
-  html body
-    [data-dashboard-shell][data-dashboard-shell]
-    div[data-mobile-control-cluster][data-mobile-control-cluster]:not(form)
-    > div[class][class]
-    button[data-notification-trigger][data-notification-trigger],
-  html body
-    [data-dashboard-shell][data-dashboard-shell]
-    div[data-mobile-control-cluster][data-mobile-control-cluster]:not(form)
-    > div[class][class]
-    button[data-notification-trigger][data-notification-trigger]:hover,
-  html body
-    [data-dashboard-shell][data-dashboard-shell]
-    div[data-mobile-control-cluster][data-mobile-control-cluster]:not(form)
-    > div[class][class]
-    button[data-notification-trigger][data-notification-trigger]:focus-visible,
-  html body
-    [data-dashboard-shell][data-dashboard-shell]
-    div[data-mobile-control-cluster][data-mobile-control-cluster]:not(form)
-    > div[class][class]
-    button[data-notification-trigger][data-notification-trigger]:active,
-  html body
-    [data-dashboard-shell][data-dashboard-shell]
-    div[data-mobile-control-cluster][data-mobile-control-cluster]:not(form)
-    > div[class][class]
-    button[data-notification-trigger][data-notification-trigger][aria-expanded="true"] {
+  /* Keep notification wrappers transparent so only its button owns the badge. */
+  html body [data-dashboard-shell] [data-mobile-control-cluster]
+    > div:has(button[data-notification-trigger]),
+  html body [data-dashboard-shell] [data-mobile-control-cluster]
+    > div:has(button[data-notification-trigger])
+    > div {
     border: 0 !important;
-    border-color: transparent !important;
-    outline: 0 !important;
     background: transparent !important;
     background-color: transparent !important;
     background-image: none !important;
@@ -137,49 +129,43 @@
   }
 }
 
-/* Tailwind utility declarations use !important on this wrapper. Important
- * declarations inside the earlier base layer outrank utility-layer important
- * declarations, so the bell remains truly icon-only in every interaction state.
- */
+/* Notification trigger utilities use important declarations in the base layer. */
 @layer base {
   @media (max-width: 1023px) {
     html body [data-dashboard-shell] [data-mobile-control-cluster]
       button[data-notification-trigger],
     html body [data-dashboard-shell] [data-mobile-control-cluster]
-      button[data-notification-trigger]:hover,
-    html body [data-dashboard-shell] [data-mobile-control-cluster]
       button[data-notification-trigger]:focus-visible,
-    html body [data-dashboard-shell] [data-mobile-control-cluster]
-      button[data-notification-trigger]:active,
     html body [data-dashboard-shell] [data-mobile-control-cluster]
       button[data-notification-trigger][aria-expanded="true"] {
       -webkit-appearance: none !important;
       appearance: none !important;
       border: 0 !important;
+      border-radius: 14px !important;
       outline: 0 !important;
-      background: transparent !important;
-      background-color: transparent !important;
+      background: color-mix(
+        in srgb,
+        var(--surface-elevated) 88%,
+        transparent
+      ) !important;
       background-image: none !important;
       box-shadow: none !important;
       filter: none !important;
       -webkit-filter: none !important;
-      backdrop-filter: none !important;
-      -webkit-backdrop-filter: none !important;
+      backdrop-filter: blur(14px) saturate(112%) !important;
+      -webkit-backdrop-filter: blur(14px) saturate(112%) !important;
     }
 
     html body [data-dashboard-shell] [data-mobile-control-cluster]
-      > div:has(button[data-notification-trigger]),
+      button[data-notification-trigger]:hover,
     html body [data-dashboard-shell] [data-mobile-control-cluster]
-      > div:has(button[data-notification-trigger]) > div {
-      border: 0 !important;
-      background: transparent !important;
-      background-color: transparent !important;
-      background-image: none !important;
+      button[data-notification-trigger]:active {
+      background: color-mix(
+        in srgb,
+        var(--surface-elevated) 96%,
+        transparent
+      ) !important;
       box-shadow: none !important;
-      filter: none !important;
-      -webkit-filter: none !important;
-      backdrop-filter: none !important;
-      -webkit-backdrop-filter: none !important;
     }
   }
 }
