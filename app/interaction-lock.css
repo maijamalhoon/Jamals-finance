@@ -159,3 +159,9 @@ select:disabled,
   ):disabled {
   cursor: not-allowed;
 }
+
+/* Controls that already render a dedicated Lucide icon must not get a second one. */
+[data-report-native-icon-control]
+  :is(select, input[type="date"]) {
+  background-image: none !important;
+}
