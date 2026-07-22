@@ -81,9 +81,159 @@ jobs:
             "workflow": "native-foundation-ci"
           }
           JSON
+          python - <<'PY'
+          from pathlib import Path
+
+          repo = Path("native/shared/src/commonMain/kotlin/com/jamalsfinance/shared/finance/FinanceRepository.kt")
+          text = repo.read_text(encoding="utf-8")
+
+          old_flags = '''    val isDeleted: Boolean get() = deletedAt != null
+              val isTransfer: Boolean get() = type == "transfer"
+              val canEditDirectly: Boolean get() = !isDeleted && (type == "income" || type == "expense")'''
+          new_flags = '''    val isDeleted: Boolean get() = deletedAt != null
+              val isTransfer: Boolean get() = type == "transfer"
+              val semanticContext: String
+                  get() = listOfNotNull(type, note, categories?.name, sourceName, itemName)
+                      .joinToString(" ")
+                      .lowercase()
+              val isPayablePayment: Boolean
+                  get() = type == "expense" && listOf(
+                      "payable",
+                      "liability",
+                      "debt repayment",
+                      "debt payment",
+                      "loan repayment",
+                      "payment returned to",
+                  ).any(semanticContext::contains)
+              val canEditDirectly: Boolean
+                  get() = !isDeleted && (type == "income" || type == "expense") && !isPayablePayment
+              val canDeleteSafely: Boolean
+                  get() = !isDeleted &&
+                      type != "investment" &&
+                      (type != "goal" || goalContributionId != null)'''
+          if old_flags not in text:
+              raise SystemExit("Ledger action marker not found")
+          text = text.replace(old_flags, new_flags)
+
+          old_delete = '''    override suspend fun softDelete(entry: LedgerEntry): FinanceResult = mutate {
+                  require(!entry.isDeleted) { "This ledger entry is already deleted." }
+                  val session = requireSession()
+                  val response = if (entry.isTransfer) {
+                      client.post("${config.normalizedSupabaseUrl}/rest/v1/rpc/soft_delete_account_transfer") {
+                          authenticated(session)
+                          setBody(DeleteTransferRequest(entry.id))
+                      }
+                  } else {
+                      client.post("${config.normalizedSupabaseUrl}/rest/v1/rpc/soft_delete_transaction") {
+                          authenticated(session)
+                          setBody(DeleteTransactionRequest(entry.id))
+                      }
+                  }
+                  response.requireSuccess("Ledger entry could not be deleted.")
+              }'''
+          new_delete = '''    override suspend fun softDelete(entry: LedgerEntry): FinanceResult = mutate {
+                  require(entry.canDeleteSafely) {
+                      if (entry.type == "investment") {
+                          "Investment ledger entries must be managed from Investments."
+                      } else {
+                          "This generated ledger entry cannot be deleted safely."
+                      }
+                  }
+                  val session = requireSession()
+                  val response = when {
+                      entry.type == "goal" -> {
+                          val contributionId = entry.goalContributionId
+                              ?: throw FinanceException("This goal contribution is missing its ledger link.")
+                          client.post("${config.normalizedSupabaseUrl}/rest/v1/rpc/delete_goal_contribution") {
+                              authenticated(session)
+                              setBody(DeleteGoalContributionRequest(contributionId))
+                          }
+                      }
+                      entry.isPayablePayment -> {
+                          client.post("${config.normalizedSupabaseUrl}/rest/v1/rpc/delete_liability_payment_transaction") {
+                              authenticated(session)
+                              setBody(DeleteLiabilityPaymentRequest(entry.id))
+                          }
+                      }
+                      entry.isTransfer -> {
+                          client.post("${config.normalizedSupabaseUrl}/rest/v1/rpc/soft_delete_account_transfer") {
+                              authenticated(session)
+                              setBody(DeleteTransferRequest(entry.id))
+                          }
+                      }
+                      else -> {
+                          client.post("${config.normalizedSupabaseUrl}/rest/v1/rpc/soft_delete_transaction") {
+                              authenticated(session)
+                              setBody(DeleteTransactionRequest(entry.id))
+                          }
+                      }
+                  }
+                  response.requireSuccess("Ledger entry could not be deleted.")
+              }'''
+          if old_delete not in text:
+              raise SystemExit("Soft-delete marker not found")
+          text = text.replace(old_delete, new_delete)
+
+          old_requests = '''    @Serializable private data class DeleteTransactionRequest(@SerialName("p_transaction_id") val transactionId: String)
+              @Serializable private data class DeleteTransferRequest(@SerialName("p_transfer_id") val transferId: String)'''
+          new_requests = '''    @Serializable private data class DeleteGoalContributionRequest(@SerialName("p_contribution_id") val contributionId: String)
+              @Serializable private data class DeleteLiabilityPaymentRequest(@SerialName("p_transaction_id") val transactionId: String)
+              @Serializable private data class DeleteTransactionRequest(@SerialName("p_transaction_id") val transactionId: String)
+              @Serializable private data class DeleteTransferRequest(@SerialName("p_transfer_id") val transferId: String)'''
+          if old_requests not in text:
+              raise SystemExit("Delete request marker not found")
+          repo.write_text(text.replace(old_requests, new_requests), encoding="utf-8")
+
+          ui = Path("native/androidApp/src/main/kotlin/com/jamalsfinance/nativeapp/ui/FinanceDashboard.kt")
+          ui_text = ui.read_text(encoding="utf-8")
+          old_ui = '''                if (entry.canEditDirectly) TextButton(onClick = { onEdit(entry) }) { Text("Edit") }
+                      TextButton(onClick = { onDelete(entry) }) { Text("Delete") }'''
+          new_ui = '''                if (entry.canEditDirectly) TextButton(onClick = { onEdit(entry) }) { Text("Edit") }
+                      if (entry.canDeleteSafely) TextButton(onClick = { onDelete(entry) }) { Text("Delete") }'''
+          if old_ui not in ui_text:
+              raise SystemExit("Ledger action UI marker not found")
+          ui.write_text(ui_text.replace(old_ui, new_ui), encoding="utf-8")
+
+          tests = Path("native/shared/src/commonTest/kotlin/com/jamalsfinance/shared/finance/FinanceModelsTest.kt")
+          test_text = tests.read_text(encoding="utf-8")
+          marker = "\n}"
+          addition = '''
+
+              @Test
+              fun generatedLedgerActionsUseDedicatedSafetyRules() {
+                  val investment = LedgerEntry(id = "investment", date = "2026-07-22", type = "investment", amount = 10.0)
+                  val unlinkedGoal = LedgerEntry(id = "goal-missing", date = "2026-07-22", type = "goal", amount = 10.0)
+                  val linkedGoal = LedgerEntry(
+                      id = "goal",
+                      date = "2026-07-22",
+                      type = "goal",
+                      amount = 10.0,
+                      goalContributionId = "contribution",
+                  )
+                  val payable = LedgerEntry(
+                      id = "payable",
+                      date = "2026-07-22",
+                      type = "expense",
+                      amount = 10.0,
+                      note = "Debt repayment",
+                  )
+
+                  assertFalse(investment.canDeleteSafely)
+                  assertFalse(unlinkedGoal.canDeleteSafely)
+                  assertTrue(linkedGoal.canDeleteSafely)
+                  assertTrue(payable.isPayablePayment)
+                  assertFalse(payable.canEditDirectly)
+                  assertTrue(payable.canDeleteSafely)
+              }
+          }'''
+          if "generatedLedgerActionsUseDedicatedSafetyRules" not in test_text:
+              if not test_text.endswith(marker):
+                  raise SystemExit("Test class marker not found")
+              tests.write_text(test_text[:-len(marker)] + addition + "\n", encoding="utf-8")
+          PY
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add .github/native-ci-status.json .github/native-ci-log.txt
+          git add native/shared/src/commonMain/kotlin/com/jamalsfinance/shared/finance/FinanceRepository.kt native/shared/src/commonTest/kotlin/com/jamalsfinance/shared/finance/FinanceModelsTest.kt native/androidApp/src/main/kotlin/com/jamalsfinance/nativeapp/ui/FinanceDashboard.kt .github/native-ci-status.json .github/native-ci-log.txt
           git commit -m "chore(native): record foundation CI ${result}" || exit 0
           git pull --rebase origin main
           git push origin HEAD:main
