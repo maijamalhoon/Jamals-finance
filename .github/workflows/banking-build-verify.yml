@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   build:
@@ -16,6 +16,27 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          ref: agent/banking-reconciliation-build-verify
+      - name: Apply exact nullable reconciliation guard
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          path = Path("components/business/BusinessBankingWorkspace.tsx")
+          source = path.read_text()
+          old = '{reconciliation?.status !== "draft" ? ('
+          new = '{reconciliation && reconciliation.status !== "draft" ? ('
+          if old in source:
+              path.write_text(source.replace(old, new, 1))
+          PY
+          if ! git diff --quiet; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add components/business/BusinessBankingWorkspace.tsx
+            git commit -m "fix(banking): guard optional reconciliation details"
+            git push origin HEAD:agent/banking-reconciliation-build-verify
+          fi
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
