@@ -29,3 +29,133 @@ a {
   background: transparent;
   color: inherit;
 }
+
+/*
+ * Browserless native control surface
+ *
+ * A few legacy/business forms still use semantic native select and date-like
+ * inputs for their existing state and validation logic. Keep that logic intact,
+ * but remove browser/OS chrome so every visible control follows the shared
+ * Jamal's Finance field language on desktop, tablet, mobile and installed PWA.
+ */
+select:not([multiple]) {
+  -webkit-appearance: none !important;
+  appearance: none !important;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23607187' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m7 10 5 5 5-5'/%3E%3C/svg%3E") !important;
+  background-position: right 0.9rem center !important;
+  background-repeat: no-repeat !important;
+  background-size: 1rem 1rem !important;
+  padding-inline-end: 2.75rem !important;
+  cursor: pointer;
+}
+
+select:not([multiple])::-ms-expand {
+  display: none;
+}
+
+select option,
+select optgroup {
+  background-color: var(--card);
+  color: var(--text-primary);
+  font: inherit;
+}
+
+:is(
+    input[type="date"],
+    input[type="month"],
+    input[type="week"],
+    input[type="datetime-local"]
+  ) {
+  -webkit-appearance: none !important;
+  appearance: none !important;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23607187' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='5' width='18' height='16' rx='2'/%3E%3Cpath d='M16 3v4M8 3v4M3 11h18'/%3E%3C/svg%3E") !important;
+  background-position: right 0.9rem center !important;
+  background-repeat: no-repeat !important;
+  background-size: 1rem 1rem !important;
+  padding-inline-end: 2.75rem !important;
+  cursor: pointer;
+}
+
+input[type="time"] {
+  -webkit-appearance: none !important;
+  appearance: none !important;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23607187' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='9'/%3E%3Cpath d='M12 7v5l3 2'/%3E%3C/svg%3E") !important;
+  background-position: right 0.9rem center !important;
+  background-repeat: no-repeat !important;
+  background-size: 1rem 1rem !important;
+  padding-inline-end: 2.75rem !important;
+  cursor: pointer;
+}
+
+:is(
+    input[type="date"],
+    input[type="month"],
+    input[type="week"],
+    input[type="time"],
+    input[type="datetime-local"]
+  )::-webkit-calendar-picker-indicator {
+  width: 2.75rem;
+  height: 100%;
+  margin: 0 -0.75rem 0 0;
+  padding: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+:is(
+    input[type="date"],
+    input[type="month"],
+    input[type="week"],
+    input[type="time"],
+    input[type="datetime-local"]
+  )::-webkit-clear-button,
+:is(
+    input[type="date"],
+    input[type="month"],
+    input[type="week"],
+    input[type="time"],
+    input[type="datetime-local"]
+  )::-webkit-inner-spin-button {
+  display: none;
+  -webkit-appearance: none;
+}
+
+:is(
+    input[type="date"],
+    input[type="month"],
+    input[type="week"],
+    input[type="time"],
+    input[type="datetime-local"]
+  )::-webkit-date-and-time-value {
+  min-height: 1.25em;
+  text-align: start;
+}
+
+.dark select:not([multiple]) {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2394a4ba' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m7 10 5 5 5-5'/%3E%3C/svg%3E") !important;
+}
+
+.dark
+  :is(
+    input[type="date"],
+    input[type="month"],
+    input[type="week"],
+    input[type="datetime-local"]
+  ) {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2394a4ba' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='5' width='18' height='16' rx='2'/%3E%3Cpath d='M16 3v4M8 3v4M3 11h18'/%3E%3C/svg%3E") !important;
+}
+
+.dark input[type="time"] {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2394a4ba' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='9'/%3E%3Cpath d='M12 7v5l3 2'/%3E%3C/svg%3E") !important;
+}
+
+select:disabled,
+:is(
+    input[type="date"],
+    input[type="month"],
+    input[type="week"],
+    input[type="time"],
+    input[type="datetime-local"]
+  ):disabled {
+  cursor: not-allowed;
+}
