@@ -2,202 +2,279 @@
 
 const GLOBAL_FORM_AUDIT_STYLE = `
 :root {
+  --jf-global-form-modal-width: 36rem;
+  --jf-global-form-wide-modal-width: 46rem;
   --jf-global-form-control-height: clamp(
-    2.875rem,
-    calc(2.75rem + 0.3vw),
-    3rem
+    3rem,
+    calc(2.95rem + 0.2vw),
+    3.125rem
   );
   --jf-global-date-control-height: var(--jf-global-form-control-height);
   --jf-global-multiline-control-height: var(--jf-global-form-control-height);
-  --jf-global-final-action-height: clamp(
-    2.5rem,
-    calc(2.375rem + 0.3vw),
-    2.75rem
-  );
-  --jf-global-form-action-height: var(--jf-global-final-action-height);
-  --jf-global-final-action-radius: 1.05rem;
+  --jf-global-final-action-height: var(--jf-global-form-control-height);
+  --jf-global-form-action-height: var(--jf-global-form-control-height);
+  --jf-global-final-action-radius: var(--oneui-control-radius, 1rem);
   --jf-global-form-action-radius: var(--jf-global-final-action-radius);
+  --jf-global-form-side-padding: clamp(1rem, 2vw, 1.25rem);
+  --jf-global-form-edge-gap: clamp(0.875rem, 1.5vw, 1rem);
 }
 
 /*
- * One viewport contract for every finance modal. The repeated class selector is
- * intentional: it outranks older per-form mobile positioning without touching
- * each form's data, width cap, content, state or submit behavior.
+ * Every normal dashboard form uses one width. Its total height remains content
+ * driven; only the body becomes scrollable when the viewport is too short.
  */
+html body [data-slot="dialog-content"].finance-modal-content.finance-modal-content.finance-modal-content,
+html body [role="dialog"].finance-modal-content.finance-modal-content.finance-modal-content {
+  position: fixed !important;
+  top: 50vh !important;
+  top: 50svh !important;
+  right: auto !important;
+  bottom: auto !important;
+  left: 50vw !important;
+  box-sizing: border-box !important;
+  width: calc(100vw - 1rem) !important;
+  max-width: var(--jf-global-form-modal-width) !important;
+  height: max-content !important;
+  min-height: 0 !important;
+  max-height: calc(100vh - 1rem) !important;
+  max-height: calc(
+    100svh - 1rem - env(safe-area-inset-top) -
+      env(safe-area-inset-bottom)
+  ) !important;
+  margin: 0 !important;
+  translate: none !important;
+  transform: translate3d(-50%, -50%, 0) !important;
+  transform-origin: center center !important;
+  overflow: hidden !important;
+}
+
+@media (min-width: 640px) {
+  html body [data-slot="dialog-content"].finance-modal-content.finance-modal-content.finance-modal-content,
+  html body [role="dialog"].finance-modal-content.finance-modal-content.finance-modal-content {
+    width: min(
+      calc(100vw - 2rem),
+      var(--jf-global-form-modal-width)
+    ) !important;
+  }
+}
+
 @media (max-width: 1023px) {
   html body [data-slot="dialog-content"].finance-modal-content.finance-modal-content.finance-modal-content,
   html body [role="dialog"].finance-modal-content.finance-modal-content.finance-modal-content {
-    position: fixed !important;
-    top: 50vh !important;
-    top: 50svh !important;
-    right: auto !important;
-    bottom: auto !important;
-    left: 50vw !important;
-    box-sizing: border-box !important;
-    width: calc(100vw - 1rem) !important;
-    max-width: var(
-      --finance-modal-max-width,
-      var(--settings-hard-modal-width, 28rem)
-    ) !important;
     width: min(
       calc(
         100vw - 1rem - env(safe-area-inset-left) -
           env(safe-area-inset-right)
       ),
-      var(--finance-modal-max-width, var(--settings-hard-modal-width, 28rem))
+      var(--jf-global-form-modal-width)
     ) !important;
-    max-width: calc(
-      100vw - 1rem - env(safe-area-inset-left) -
-        env(safe-area-inset-right)
-    ) !important;
-    height: max-content !important;
-    max-height: calc(100vh - 1rem) !important;
-    max-height: calc(
-      100vh - 1rem - env(safe-area-inset-top) -
-        env(safe-area-inset-bottom)
-    ) !important;
-    max-height: calc(
-      100svh - 1rem - env(safe-area-inset-top) -
-        env(safe-area-inset-bottom)
-    ) !important;
-    margin: 0 !important;
-    translate: none !important;
-    transform: translate3d(-50%, -50%, 0) !important;
-    transform-origin: center center !important;
-    overflow: hidden !important;
   }
+}
 
-  /* Settings keeps purpose-specific width caps while sharing the same center,
-   * safe area and scroll behavior as every other form. */
+/* Category management is the only intentionally wider management workspace. */
+html body :is(
+    [data-slot="dialog-content"].finance-modal-content:has(#settings-category-name),
+    [data-slot="dialog-content"].finance-modal-content:has(#persistent-category-name),
+    [data-slot="dialog-content"].finance-modal-content:not(:has(#settings-category-name)):has([role="tablist"])
+  ) {
+  max-width: var(--jf-global-form-wide-modal-width) !important;
+}
+
+@media (min-width: 640px) {
   html body :is(
       [data-slot="dialog-content"].finance-modal-content:has(#settings-category-name),
       [data-slot="dialog-content"].finance-modal-content:has(#persistent-category-name),
       [data-slot="dialog-content"].finance-modal-content:not(:has(#settings-category-name)):has([role="tablist"])
     ) {
-    width: calc(100vw - 1rem) !important;
-    max-width: 46rem !important;
     width: min(
-      calc(
-        100vw - 1rem - env(safe-area-inset-left) -
-          env(safe-area-inset-right)
-      ),
-      46rem
+      calc(100vw - 2rem),
+      var(--jf-global-form-wide-modal-width)
     ) !important;
-  }
-
-  html body :is(
-      [data-slot="dialog-content"].finance-modal-content:has(.settings-security-panel),
-      [data-slot="dialog-content"].finance-modal-content.settings-account-security-hard
-    ) {
-    width: calc(100vw - 1rem) !important;
-    max-width: 36rem !important;
-    width: min(
-      calc(
-        100vw - 1rem - env(safe-area-inset-left) -
-          env(safe-area-inset-right)
-      ),
-      36rem
-    ) !important;
-  }
-
-  html body :is(
-      [data-slot="dialog-content"].finance-modal-content:has(#settings-currency-select),
-      [data-slot="dialog-content"].finance-modal-content:has(#settings-date-format-select),
-      [data-slot="dialog-content"].finance-modal-content:has(#settings-reference-display-name),
-      [data-slot="dialog-content"].finance-modal-content:has(#custom-profile-name),
-      [data-slot="dialog-content"].finance-modal-content.settings-profile-details-hard,
-      [data-slot="dialog-content"].finance-modal-content.settings-currency-hard,
-      [data-slot="dialog-content"].finance-modal-content.settings-date-format-hard
-    ) {
-    width: calc(100vw - 1rem) !important;
-    max-width: 32rem !important;
-    width: min(
-      calc(
-        100vw - 1rem - env(safe-area-inset-left) -
-          env(safe-area-inset-right)
-      ),
-      32rem
-    ) !important;
-  }
-
-  html body [data-slot="dialog-content"].finance-modal-content.finance-modal-content.finance-modal-content
-    :is(form, .finance-modal-body, .finance-modal-footer),
-  html body [role="dialog"].finance-modal-content.finance-modal-content.finance-modal-content
-    :is(form, .finance-modal-body, .finance-modal-footer) {
-    min-width: 0 !important;
-    max-width: 100% !important;
   }
 }
 
-/* Sign-in/sign-up keep their authored color and label, but join the shared
- * responsive action height/radius and lose decorative inline icons. */
-.auth-primary-action {
+/* Content-fit height contract. */
+html body .finance-modal-content > form {
+  flex: 0 1 auto !important;
+  width: 100% !important;
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: inherit !important;
+}
+
+html body .finance-modal-content .finance-modal-header,
+html body .finance-modal-content .finance-modal-body,
+html body .finance-modal-content .finance-modal-footer {
   box-sizing: border-box !important;
-  height: var(--jf-global-final-action-height) !important;
-  min-height: var(--jf-global-final-action-height) !important;
-  max-height: var(--jf-global-final-action-height) !important;
-  border-radius: var(--jf-global-final-action-radius) !important;
-  gap: 0 !important;
+  width: 100% !important;
+  padding-inline: var(--jf-global-form-side-padding) !important;
+  border: 0 !important;
+  box-shadow: none !important;
 }
 
-.auth-primary-action svg {
-  display: none !important;
+html body .finance-modal-content .finance-modal-body {
+  flex: 0 1 auto !important;
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: calc(100vh - 9rem) !important;
+  max-height: calc(
+    100svh - 9rem - env(safe-area-inset-top) -
+      env(safe-area-inset-bottom)
+  ) !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  overscroll-behavior: contain !important;
 }
 
-/* Password recovery and onboarding use the same auth shell. Their full-width
- * actions keep the exact authored label, variant and color, but share the same
- * responsive height/curve and remove decorative arrows/spinners. Provider
- * branding, back controls, mode tabs and password visibility remain untouched. */
-.auth-step button.w-full:not(.auth-provider-action),
-.jf-auth-card button.w-full:not(.auth-provider-action) {
-  box-sizing: border-box !important;
-  height: var(--jf-global-final-action-height) !important;
-  min-height: var(--jf-global-final-action-height) !important;
-  max-height: var(--jf-global-final-action-height) !important;
-  border-radius: var(--jf-global-final-action-radius) !important;
+html body .finance-modal-content .finance-modal-footer {
+  flex: 0 0 auto !important;
+  padding-top: var(--jf-global-form-edge-gap) !important;
+  padding-bottom: calc(
+    var(--jf-global-form-edge-gap) + env(safe-area-inset-bottom)
+  ) !important;
 }
 
-.auth-step button.w-full:not(.auth-provider-action) svg,
-.jf-auth-card button.w-full:not(.auth-provider-action) svg {
-  display: none !important;
+html body .finance-modal-content :is(
+    [data-slot="finance-form-field"],
+    .finance-form-field
+  ) {
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
 }
 
-/* Every marked form action keeps its authored semantic color and click logic,
- * while sharing one height, curve, iconless presentation and short label. */
-:is(.finance-modal-content, [data-slot="dialog-content"])
+/*
+ * One real action footprint. Authored text/loading content remains authoritative;
+ * old generated ::after labels are explicitly disabled.
+ */
+html body :is(.finance-modal-content, [data-slot="dialog-content"])
   button[data-jf-form-action="true"] {
   box-sizing: border-box !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
   height: var(--jf-global-final-action-height) !important;
   min-height: var(--jf-global-final-action-height) !important;
   max-height: var(--jf-global-final-action-height) !important;
+  padding-inline: 1rem !important;
   border-radius: var(--jf-global-final-action-radius) !important;
   gap: 0 !important;
-  font-size: 0 !important;
+  font-size: clamp(0.875rem, 1.5vw, 0.95rem) !important;
+  font-weight: 800 !important;
   line-height: 1 !important;
+  letter-spacing: -0.01em !important;
+  white-space: nowrap !important;
 }
 
-:is(.finance-modal-content, [data-slot="dialog-content"])
+html body :is(.finance-modal-content, [data-slot="dialog-content"])
   button[data-jf-form-action="true"] > * {
-  display: none !important;
+  display: grid !important;
 }
 
-:is(.finance-modal-content, [data-slot="dialog-content"])
+html body :is(.finance-modal-content, [data-slot="dialog-content"])
   button[data-jf-form-action="true"] svg {
   display: none !important;
 }
 
-:is(.finance-modal-content, [data-slot="dialog-content"])
-  button[data-jf-form-action="true"]::after {
-  content: attr(data-jf-form-action-label);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  color: inherit;
-  font-size: clamp(0.82rem, 1.6vw, 0.9rem);
-  font-weight: 700;
-  line-height: 1;
-  letter-spacing: -0.01em;
-  white-space: nowrap;
+html body :is(.finance-modal-content, [data-slot="dialog-content"])
+  button[data-jf-form-action="true"]::after,
+html body :is(.finance-modal-content, [data-slot="dialog-content"])
+  button[data-jf-inline-form-action="true"]::before {
+  content: none !important;
+  display: none !important;
+}
+
+html body :is(.finance-modal-content, [data-slot="dialog-content"])
+  button[data-jf-inline-form-action="true"] {
+  width: 100% !important;
+  margin-top: var(--jf-global-form-edge-gap) !important;
+}
+
+/* Settings actions use the same button shell with only semantic color changes. */
+html body :is(
+    [data-slot="dialog-content"].finance-modal-content:has(#settings-reference-display-name),
+    [data-slot="dialog-content"].finance-modal-content:has(#custom-profile-name),
+    [data-slot="dialog-content"].finance-modal-content.settings-profile-details-hard
+  ) button[data-jf-form-action="true"] {
+  border-color: transparent !important;
+  background: var(--investment) !important;
+  color: var(--text-inverse) !important;
+  box-shadow: none !important;
+}
+
+html body :is(
+    [data-slot="dialog-content"].finance-modal-content:has(#settings-currency-select),
+    [data-slot="dialog-content"].finance-modal-content.settings-currency-hard
+  ) button[data-jf-form-action="true"] {
+  border-color: transparent !important;
+  background: var(--info) !important;
+  color: var(--text-inverse) !important;
+  box-shadow: none !important;
+}
+
+html body :is(
+    [data-slot="dialog-content"].finance-modal-content:has(#settings-date-format-select),
+    [data-slot="dialog-content"].finance-modal-content.settings-date-format-hard
+  ) button[data-jf-form-action="true"] {
+  border-color: transparent !important;
+  background: var(--warning) !important;
+  color: var(--text-inverse) !important;
+  box-shadow: none !important;
+}
+
+html body :is(
+    [data-slot="dialog-content"].finance-modal-content:has(.settings-security-panel),
+    [data-slot="dialog-content"].finance-modal-content.settings-account-security-hard
+  ) .settings-security-panel button[data-jf-form-action="true"] {
+  border-color: transparent !important;
+  background: var(--info) !important;
+  color: var(--text-inverse) !important;
+  box-shadow: none !important;
+}
+
+html body :is(
+    [data-slot="dialog-content"].finance-modal-content:has(.settings-security-panel),
+    [data-slot="dialog-content"].finance-modal-content.settings-account-security-hard
+  ) .settings-security-panel:last-of-type button[data-jf-form-action="true"]:not(:disabled) {
+  background: var(--danger) !important;
+  color: var(--text-inverse) !important;
+}
+
+html body :is(
+    [data-slot="dialog-content"].finance-modal-content:has(.settings-security-panel),
+    [data-slot="dialog-content"].finance-modal-content.settings-account-security-hard
+  ) .settings-security-panel button[data-jf-form-action="true"]:disabled {
+  background: var(--surface-inset) !important;
+  color: var(--text-tertiary) !important;
+  opacity: 1 !important;
+}
+
+html body :is(
+    [data-slot="dialog-content"].finance-modal-content:has(.settings-security-panel),
+    [data-slot="dialog-content"].finance-modal-content.settings-account-security-hard
+  ) .settings-security-panel form .grid:has(> button[data-jf-form-action="true"]) {
+  grid-template-columns: minmax(0, 1fr) !important;
+}
+
+/* Authentication forms retain their authored labels and semantic colors. */
+.auth-primary-action,
+.auth-step button.w-full:not(.auth-provider-action),
+.jf-auth-card button.w-full:not(.auth-provider-action) {
+  box-sizing: border-box !important;
+  width: 100% !important;
+  height: var(--jf-global-final-action-height) !important;
+  min-height: var(--jf-global-final-action-height) !important;
+  max-height: var(--jf-global-final-action-height) !important;
+  border-radius: var(--jf-global-final-action-radius) !important;
+}
+
+.auth-primary-action svg,
+.auth-step button.w-full:not(.auth-provider-action) svg,
+.jf-auth-card button.w-full:not(.auth-provider-action) svg {
+  display: none !important;
 }
 `;
 
