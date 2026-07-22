@@ -1,96 +1,53 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 import { usePathname, useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import { AnimatePresence, motion, type Variants } from "framer-motion";
 import {
   ArrowDown,
-  ArrowLeftRight,
   ArrowUp,
-  HandCoins,
-  Landmark,
   Plus,
-  Target,
   TrendingUp,
   type LucideIcon,
 } from "lucide-react";
 
-const TransferModal = dynamic(() => import("@/components/accounts/TransferModal"), {
-  ssr: false,
-});
-const AccountModal = dynamic(() => import("@/components/accounts/AccountModal"), {
-  ssr: false,
-});
 const TransactionModal = dynamic(
   () => import("@/components/dashboard/TransactionModal"),
   { ssr: false },
 );
-const GoalModal = dynamic(() => import("@/components/goals/GoalModal"), {
-  ssr: false,
-});
 const InvestmentModal = dynamic(
   () => import("@/components/investments/InvestmentModal"),
   { ssr: false },
 );
-const PayableModal = dynamic(() => import("@/components/payables/PayableModal"), {
-  ssr: false,
-});
 
-type ActionKey =
-  | "income"
-  | "expense"
-  | "investment"
-  | "transfer"
-  | "goal"
-  | "payable"
-  | "account";
+type ActionKey = "income" | "expense" | "investment";
 
 const actions = [
   {
     key: "income",
+    label: "Add Income",
     ariaLabel: "Add income",
     icon: ArrowUp,
     color: "text-income",
   },
   {
     key: "expense",
+    label: "Add Expense",
     ariaLabel: "Add expense",
     icon: ArrowDown,
     color: "text-expense",
   },
   {
     key: "investment",
+    label: "Add Investment",
     ariaLabel: "Add investment",
     icon: TrendingUp,
     color: "text-investment",
   },
-  {
-    key: "transfer",
-    ariaLabel: "Transfer money",
-    icon: ArrowLeftRight,
-    color: "text-transfer",
-  },
-  {
-    key: "goal",
-    ariaLabel: "Add goal",
-    icon: Target,
-    color: "text-goals",
-  },
-  {
-    key: "payable",
-    ariaLabel: "Add payable",
-    icon: HandCoins,
-    color: "text-payables",
-  },
-  {
-    key: "account",
-    ariaLabel: "Add account",
-    icon: Landmark,
-    color: "text-active",
-  },
 ] satisfies Array<{
   key: ActionKey;
+  label: string;
   ariaLabel: string;
   icon: LucideIcon;
   color: string;
@@ -113,7 +70,7 @@ const menuVariants: Variants = {
     transition: {
       duration: 0.22,
       ease: motionEase,
-      staggerChildren: 0.035,
+      staggerChildren: 0.045,
       delayChildren: 0.025,
     },
   },
@@ -133,7 +90,7 @@ const itemVariants: Variants = {
   initial: {
     opacity: 0,
     y: 7,
-    scale: 0.86,
+    scale: 0.94,
   },
   animate: {
     opacity: 1,
@@ -148,7 +105,7 @@ const itemVariants: Variants = {
   exit: {
     opacity: 0,
     y: 4,
-    scale: 0.92,
+    scale: 0.96,
     transition: {
       duration: 0.1,
       ease: motionEase,
@@ -159,29 +116,20 @@ const itemVariants: Variants = {
 export default function FloatingActions() {
   const router = useRouter();
   const pathname = usePathname();
-  const available = pathname === "/dashboard/transactions";
 
   const [open, setOpen] = useState(false);
   const [transactionOpen, setTransactionOpen] = useState(false);
-  const [transferOpen, setTransferOpen] = useState(false);
-  const [goalOpen, setGoalOpen] = useState(false);
   const [investmentOpen, setInvestmentOpen] = useState(false);
-  const [payableOpen, setPayableOpen] = useState(false);
-  const [accountOpen, setAccountOpen] = useState(false);
   const [externalDialogOpen, setExternalDialogOpen] = useState(false);
   const [txType, setTxType] = useState<"income" | "expense">("income");
-  const modalOpen =
-    transactionOpen ||
-    transferOpen ||
-    goalOpen ||
-    investmentOpen ||
-    payableOpen ||
-    accountOpen ||
-    externalDialogOpen;
+
+  const modalOpen = transactionOpen || investmentOpen || externalDialogOpen;
 
   useEffect(() => {
-    if (!available) return;
+    setOpen(false);
+  }, [pathname]);
 
+  useEffect(() => {
     const updateDialogState = () => {
       setExternalDialogOpen(
         Boolean(document.querySelector('[data-slot="dialog-content"], [role="dialog"]')),
@@ -194,20 +142,7 @@ export default function FloatingActions() {
     observer.observe(document.body, { childList: true, subtree: true });
 
     return () => observer.disconnect();
-  }, [available]);
-
-  useEffect(() => {
-    if (available) return;
-
-    setOpen(false);
-    setTransactionOpen(false);
-    setTransferOpen(false);
-    setGoalOpen(false);
-    setInvestmentOpen(false);
-    setPayableOpen(false);
-    setAccountOpen(false);
-    setExternalDialogOpen(false);
-  }, [available]);
+  }, []);
 
   useEffect(() => {
     if (modalOpen) setOpen(false);
@@ -233,34 +168,14 @@ export default function FloatingActions() {
       return;
     }
 
-    if (key === "investment") {
-      setInvestmentOpen(true);
-      return;
-    }
-
-    if (key === "transfer") {
-      setTransferOpen(true);
-      return;
-    }
-
-    if (key === "goal") {
-      setGoalOpen(true);
-      return;
-    }
-
-    if (key === "payable") {
-      setPayableOpen(true);
-      return;
-    }
-
-    setAccountOpen(true);
+    setInvestmentOpen(true);
   }
 
   function refreshAfterSuccess() {
     router.refresh();
   }
 
-  if (!available) return null;
+  if (!pathname.startsWith("/dashboard")) return null;
 
   return (
     <>
@@ -291,9 +206,9 @@ export default function FloatingActions() {
                 initial="initial"
                 animate="animate"
                 exit="exit"
-                className="origin-bottom-right overflow-hidden rounded-[22px] border border-border/60 bg-card/94 p-2.5 text-card-foreground shadow-[0_18px_50px_rgb(15_23_42_/_0.16)] backdrop-blur-2xl dark:border-border-strong/55 dark:bg-surface-elevated/94 dark:shadow-[0_22px_56px_rgb(0_0_0_/_0.42)]"
+                className="min-w-[13.5rem] origin-bottom-right overflow-hidden rounded-[22px] bg-card/96 p-2.5 text-card-foreground shadow-[0_18px_50px_rgb(15_23_42_/_0.16)] backdrop-blur-2xl dark:bg-surface-elevated/96 dark:shadow-[0_22px_56px_rgb(0_0_0_/_0.42)]"
               >
-                <div className="grid grid-cols-4 gap-1.5">
+                <div className="grid gap-1">
                   {actions.map((action) => {
                     const Icon = action.icon;
 
@@ -305,19 +220,25 @@ export default function FloatingActions() {
                         aria-label={action.ariaLabel}
                         data-keep-icon-surface
                         variants={itemVariants}
-                        whileHover={{ y: -2, scale: 1.055 }}
-                        whileTap={{ scale: 0.9 }}
+                        whileHover={{ x: -2 }}
+                        whileTap={{ scale: 0.96 }}
                         onClick={() => handleAction(action.key)}
-                        className={`finance-focus group relative grid size-11 place-items-center rounded-[14px] bg-transparent ${action.color} transition-[background-color,filter] duration-150 hover:bg-surface-secondary/90 hover:drop-shadow-[0_5px_8px_rgb(15_23_42_/_0.12)] dark:hover:bg-surface-soft/70`}
+                        className="finance-focus group flex h-12 w-full items-center gap-3 rounded-[15px] px-2.5 text-left transition-colors duration-150 hover:bg-surface-secondary/90 dark:hover:bg-surface-soft/70"
                       >
-                        <Icon
-                          size={20}
-                          strokeWidth={2.4}
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          aria-hidden="true"
-                          className="transition-transform duration-150 group-hover:scale-105"
-                        />
+                        <span
+                          className={`grid size-9 shrink-0 place-items-center rounded-[12px] bg-surface-secondary/80 ${action.color} transition-transform duration-150 group-hover:scale-105 dark:bg-surface-soft/65`}
+                        >
+                          <Icon
+                            size={19}
+                            strokeWidth={2.4}
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            aria-hidden="true"
+                          />
+                        </span>
+                        <span className="text-sm font-semibold tracking-[-0.01em]">
+                          {action.label}
+                        </span>
                       </motion.button>
                     );
                   })}
@@ -379,40 +300,12 @@ export default function FloatingActions() {
         />
       ) : null}
 
-      {transferOpen ? (
-        <TransferModal
-          open
-          onClose={() => setTransferOpen(false)}
-          onSuccess={refreshAfterSuccess}
-        />
-      ) : null}
-
-      {goalOpen ? (
-        <GoalModal
-          open
-          onClose={() => setGoalOpen(false)}
-          onSuccess={refreshAfterSuccess}
-        />
-      ) : null}
-
       {investmentOpen ? (
         <InvestmentModal
           open
           onClose={() => setInvestmentOpen(false)}
-          onSuccess={refreshAfterSuccess}
-        />
-      ) : null}
-
-      {payableOpen ? (
-        <PayableModal open onClose={() => setPayableOpen(false)} />
-      ) : null}
-
-      {accountOpen ? (
-        <AccountModal
-          open
-          onClose={() => setAccountOpen(false)}
           onSuccess={() => {
-            setAccountOpen(false);
+            setInvestmentOpen(false);
             refreshAfterSuccess();
           }}
         />
