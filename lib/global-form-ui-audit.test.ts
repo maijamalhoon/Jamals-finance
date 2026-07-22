@@ -5,6 +5,7 @@ const read = (path: string) =>
   readFileSync(new URL(path, import.meta.url), "utf8");
 
 const auditAuthority = read("../components/forms/GlobalFormAuditAuthority.tsx");
+const dialogAuthority = read("../components/forms/GlobalFormDialogAuthority.tsx");
 const fieldAuthority = read("../components/forms/GlobalFormFieldAuthority.tsx");
 const actionAuthority = read("../components/forms/GlobalFormActionAuthority.tsx");
 const pwaRegister = read("../app/pwa-register.tsx");
@@ -26,13 +27,25 @@ const categoryManagement = read(
 );
 
 describe("site-wide form UI audit authority", () => {
-  it("mounts one field, action and modal authority on every route", () => {
+  it("mounts one field, action, modal and viewport authority on every route", () => {
     expect(pwaRegister).toContain("GlobalFormAuditAuthority");
+    expect(pwaRegister).toContain("GlobalFormDialogAuthority");
     expect(pwaRegister).toContain("GlobalFormFieldAuthority");
     expect(pwaRegister).toContain("GlobalFormActionAuthority");
     expect(pwaRegister).toContain("<GlobalFormAuditAuthority />");
+    expect(pwaRegister).toContain("<GlobalFormDialogAuthority />");
     expect(pwaRegister).toContain("<GlobalFormFieldAuthority />");
     expect(pwaRegister).toContain("<GlobalFormActionAuthority />");
+  });
+
+  it("centers every rendered dialog against the real visible viewport", () => {
+    expect(dialogAuthority).toContain("window.visualViewport");
+    expect(dialogAuthority).toContain("viewport?.offsetLeft");
+    expect(dialogAuthority).toContain("viewport?.offsetTop");
+    expect(dialogAuthority).toContain('"translate3d(-50%, -50%, 0)"');
+    expect(dialogAuthority).toContain('viewport?.addEventListener("resize"');
+    expect(dialogAuthority).toContain('viewport?.addEventListener("scroll"');
+    expect(dialogAuthority).toContain("data-jf-global-centered-dialog");
   });
 
   it("uses one normal modal width and content-driven height", () => {
@@ -52,6 +65,14 @@ describe("site-wide form UI audit authority", () => {
       "--jf-global-form-action-height: var(--jf-global-form-control-height)",
     );
     expect(auditAuthority).toContain("width: 100% !important");
+  });
+
+  it("keeps final actions narrower, centered and more rounded", () => {
+    expect(dialogAuthority).toContain("--jf-global-final-action-width: 88%");
+    expect(dialogAuthority).toContain("--jf-global-final-action-max-width: 28rem");
+    expect(dialogAuthority).toContain("--jf-global-final-action-radius: 1.3rem");
+    expect(dialogAuthority).toContain("margin-inline: auto !important");
+    expect(dialogAuthority).toContain("justify-self: center !important");
   });
 
   it("covers native, auth, date, account, category and wheel controls", () => {
