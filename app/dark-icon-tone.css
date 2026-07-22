@@ -59,11 +59,11 @@ html body textarea::placeholder {
 }
 
 /*
- * Create Category follows the approved finance-form language while retaining
- * its live, automatically assigned category preview and all existing logic.
+ * Create Category follows the shared form contract while retaining its live,
+ * automatically assigned category preview and all existing data logic.
  */
 .finance-modal-content:has(#settings-category-name) {
-  --finance-modal-max-width: 32rem;
+  --finance-modal-max-width: var(--jf-global-form-modal-width, 36rem);
 }
 
 .finance-modal-content:has(#settings-category-name)
@@ -85,12 +85,14 @@ html body textarea::placeholder {
   form:has(#settings-category-name) {
   display: grid !important;
   grid-template-columns: minmax(0, 1fr) !important;
+  width: 100% !important;
   gap: var(--finance-field-gap, 0.75rem) !important;
 }
 
 .finance-modal-content:has(#settings-category-name)
   form:has(#settings-category-name)
   > * {
+  min-width: 0 !important;
   margin-block: 0 !important;
 }
 
@@ -123,22 +125,22 @@ html body textarea::placeholder {
   line-height: 1rem !important;
 }
 
-/* Income/Expense is a compact two-way selector rather than two large buttons. */
+/* Type is a full-width field, equal to Category Name on every viewport. */
 .finance-modal-content:has(#settings-category-name)
   form:has(#settings-category-name)
   > :has([role="radiogroup"]) {
-  width: max-content !important;
+  width: 100% !important;
   max-width: 100% !important;
-  justify-self: start !important;
+  justify-self: stretch !important;
 }
 
 .finance-modal-content:has(#settings-category-name) [role="radiogroup"] {
   box-sizing: border-box !important;
-  grid-template-columns: repeat(2, auto) !important;
-  width: max-content !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  width: 100% !important;
   max-width: 100% !important;
-  height: var(--finance-control-height) !important;
-  min-height: var(--finance-control-height) !important;
+  height: var(--jf-global-form-control-height, var(--finance-control-height)) !important;
+  min-height: var(--jf-global-form-control-height, var(--finance-control-height)) !important;
   padding: 0.25rem !important;
   border: 0 !important;
   border-radius: 0.9rem !important;
@@ -147,8 +149,8 @@ html body textarea::placeholder {
 }
 
 .finance-modal-content:has(#settings-category-name) [role="radio"] {
-  width: auto !important;
-  min-width: 5rem !important;
+  width: 100% !important;
+  min-width: 0 !important;
   height: 100% !important;
   min-height: 0 !important;
   gap: 0.35rem !important;
@@ -158,65 +160,37 @@ html body textarea::placeholder {
   font-size: 0.8rem !important;
 }
 
-/* Category name and the compact type selector share one row where space allows. */
-@media (min-width: 390px) {
-  .finance-modal-content:has(#settings-category-name)
-    form:has(#settings-category-name) {
-    grid-template-columns: minmax(0, 1fr) auto !important;
-    align-items: end !important;
-  }
-
-  .finance-modal-content:has(#settings-category-name)
-    form:has(#settings-category-name)
-    > div:first-child:not([data-slot="finance-form-field"]) {
-    grid-column: 1 / -1 !important;
-  }
-
-  .finance-modal-content:has(#settings-category-name)
-    form:has(#settings-category-name)
-    > :has(#settings-category-name) {
-    grid-column: 1 !important;
-    min-width: 0 !important;
-  }
-
-  .finance-modal-content:has(#settings-category-name)
-    form:has(#settings-category-name)
-    > :has([role="radiogroup"]) {
-    grid-column: 2 !important;
-    justify-self: end !important;
-  }
-}
-
-/* Match the single primary action used by the other finalized forms. */
+/* Use the authored button label; generated pseudo-element labels are forbidden. */
 .finance-modal-content:has(#settings-category-name)
   form:has(#settings-category-name)
   > button[type="submit"] {
-  grid-column: 1 / -1 !important;
-  width: 100% !important;
-  height: var(--finance-action-height) !important;
-  min-height: var(--finance-action-height) !important;
-  max-height: var(--finance-action-height) !important;
-  margin-top: 0.15rem !important;
+  justify-self: center !important;
+  width: var(--jf-global-final-action-width, 88%) !important;
+  max-width: var(--jf-global-final-action-max-width, 28rem) !important;
+  height: var(--jf-global-final-action-height, var(--finance-action-height)) !important;
+  min-height: var(--jf-global-final-action-height, var(--finance-action-height)) !important;
+  max-height: var(--jf-global-final-action-height, var(--finance-action-height)) !important;
+  margin-top: var(--jf-global-form-edge-gap, 0.875rem) !important;
+  margin-bottom: var(--jf-global-form-button-bottom-space, 0.4rem) !important;
+  margin-inline: auto !important;
   border: 0 !important;
-  border-radius: 0.9rem !important;
+  border-radius: var(--jf-global-final-action-radius, 1.3rem) !important;
   box-shadow: none !important;
   color: var(--status-foreground) !important;
-  font-size: 0 !important;
-  font-weight: 700 !important;
+  -webkit-text-fill-color: var(--status-foreground) !important;
+  font-size: clamp(0.875rem, 1.5vw, 0.95rem) !important;
+  font-weight: 800 !important;
+  line-height: 1 !important;
 }
 
+.finance-modal-content:has(#settings-category-name)
+  form:has(#settings-category-name)
+  > button[type="submit"]::before,
 .finance-modal-content:has(#settings-category-name)
   form:has(#settings-category-name)
   > button[type="submit"]::after {
-  content: "Create";
-  font-size: 0.95rem;
-  line-height: 1;
-}
-
-.finance-modal-content:has(#settings-category-name)
-  form:has(#settings-category-name)
-  > button[type="submit"]:has(.animate-spin)::after {
-  content: "Creating...";
+  content: none !important;
+  display: none !important;
 }
 
 .finance-modal-content:has(#settings-category-name)
@@ -234,6 +208,6 @@ html body textarea::placeholder {
 .finance-modal-content:has(#settings-category-name)
   form:has(#settings-category-name)
   > button[type="submit"]
-  > svg:not(.animate-spin) {
+  > svg {
   display: none !important;
 }
