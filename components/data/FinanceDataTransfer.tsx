@@ -55,6 +55,10 @@ function getFriendlyImportError(error: unknown) {
     return "This backup is incomplete or damaged. No data was changed.";
   }
 
+  if (/fetch|network|timeout|connection|could not be verified/i.test(message)) {
+    return "The import result could not be confirmed. Drop the same backup again; duplicate protection will verify it safely.";
+  }
+
   return "This backup file is invalid or damaged. No data was changed.";
 }
 
@@ -161,51 +165,45 @@ export default function FinanceDataTransfer() {
       );
       setPhase("importing");
 
-      const { data, error } = await supabase.rpc("import_finance_backup", {
-        p_backup: validation.value,
-      });
+      try {
+        const { data, error } = await supabase.rpc("import_finance_backup", {
+          p_backup: validation.value,
+        });
 
-      if (error) {
+        if (error) throw error;
+
+        const result = parseFinanceImportResult(data);
+        if (!result) {
+          throw new Error("Data import could not be verified.");
+        }
+
+        if (result.alreadyImported) {
+          const successMessage =
+            "This backup was already imported. No duplicate data was added.";
+          setMessage(successMessage);
+          setPhase("success");
+          toast.info(successMessage);
+        } else {
+          const successMessage = `Data imported successfully — ${result.totalAdded.toLocaleString()} records added.`;
+          setMessage(successMessage);
+          setPhase("success");
+          toast.success(successMessage);
+        }
+
+        window.dispatchEvent(
+          new CustomEvent(FINANCE_DATA_IMPORTED_EVENT, { detail: result }),
+        );
+        router.refresh();
+        scheduleReset(1800);
+      } catch (error) {
         const friendlyError = getFriendlyImportError(error);
         setMessage(friendlyError);
         setPhase("error");
         toast.error(friendlyError);
+        scheduleReset(3200);
+      } finally {
         busyRef.current = false;
-        scheduleReset(2600);
-        return;
       }
-
-      const result = parseFinanceImportResult(data);
-      if (!result) {
-        const friendlyError =
-          "Data import could not be verified. No partial import was kept.";
-        setMessage(friendlyError);
-        setPhase("error");
-        toast.error(friendlyError);
-        busyRef.current = false;
-        scheduleReset(2600);
-        return;
-      }
-
-      if (result.alreadyImported) {
-        const successMessage =
-          "This backup was already imported. No duplicate data was added.";
-        setMessage(successMessage);
-        setPhase("success");
-        toast.info(successMessage);
-      } else {
-        const successMessage = `Data imported successfully — ${result.totalAdded.toLocaleString()} records added.`;
-        setMessage(successMessage);
-        setPhase("success");
-        toast.success(successMessage);
-      }
-
-      busyRef.current = false;
-      window.dispatchEvent(
-        new CustomEvent(FINANCE_DATA_IMPORTED_EVENT, { detail: result }),
-      );
-      router.refresh();
-      scheduleReset(1800);
     },
     [clearResetTimer, router, scheduleReset, supabase],
   );
