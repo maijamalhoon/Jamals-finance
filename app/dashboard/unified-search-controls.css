@@ -1,0 +1,323 @@
+/*
+ * Keeps every true dashboard search control on the same compact-to-inline
+ * interaction language as the approved header search. Selectors are tightly
+ * scoped so forms, filters, cards and surrounding page content remain intact.
+ */
+
+#transaction-filter-controls > div:first-of-type {
+  width: 100%;
+}
+
+#transaction-filter-controls .jf-transaction-search {
+  position: relative;
+  isolation: isolate;
+  min-width: 2.75rem;
+  height: 2.75rem !important;
+  padding: 0 !important;
+  gap: 0.25rem;
+  overflow: visible !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  outline: 0 !important;
+  transform: translateZ(0);
+  transition:
+    width 320ms cubic-bezier(0.22, 1, 0.36, 1),
+    flex-basis 320ms cubic-bezier(0.22, 1, 0.36, 1) !important;
+}
+
+#transaction-filter-controls .jf-transaction-search::after,
+form[data-unified-search="payables"]::after {
+  content: "";
+  position: absolute;
+  right: 0.25rem;
+  bottom: 0.15rem;
+  left: 0.25rem;
+  height: 1px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--brand) 58%, var(--border));
+  opacity: 0;
+  transform: scaleX(0.35);
+  transform-origin: center;
+  pointer-events: none;
+  transition:
+    opacity 180ms ease,
+    transform 320ms cubic-bezier(0.22, 1, 0.36, 1),
+    background-color 180ms ease,
+    height 180ms ease;
+}
+
+#transaction-filter-controls .jf-transaction-search[data-open="false"] {
+  width: 2.75rem !important;
+  flex: 0 0 2.75rem !important;
+}
+
+#transaction-filter-controls .jf-transaction-search[data-open="true"] {
+  width: auto !important;
+  min-width: 0 !important;
+  max-width: 26.25rem;
+  flex: 1 1 15rem !important;
+}
+
+#transaction-filter-controls .jf-transaction-search[data-open="true"]::after,
+form[data-unified-search="payables"][data-open="true"]::after {
+  opacity: 1;
+  transform: scaleX(1);
+}
+
+#transaction-filter-controls
+  .jf-transaction-search[data-open="true"]:focus-within::after,
+form[data-unified-search="payables"][data-open="true"]:focus-within::after {
+  height: 2px;
+  background: var(--brand);
+}
+
+#transaction-filter-controls
+  .jf-transaction-search[data-open="true"]
+  + div {
+  width: auto !important;
+  overflow: visible !important;
+  opacity: 1 !important;
+  transform: translateX(0) !important;
+  pointer-events: auto !important;
+}
+
+#transaction-filter-controls .jf-transaction-search > button,
+form[data-unified-search="payables"] > button {
+  border: 0 !important;
+  box-shadow: none !important;
+  outline: 0 !important;
+  --tw-ring-offset-width: 0px !important;
+  --tw-ring-offset-shadow: 0 0 #0000 !important;
+  --tw-ring-shadow: 0 0 #0000 !important;
+}
+
+#transaction-filter-controls
+  .jf-transaction-search
+  > button:first-of-type {
+  width: 2.75rem !important;
+  min-width: 2.75rem !important;
+  height: 2.75rem !important;
+  min-height: 2.75rem !important;
+  border-radius: 0.875rem !important;
+  background: transparent !important;
+  transition:
+    color 180ms ease,
+    background-color 180ms ease,
+    transform 240ms cubic-bezier(0.22, 1, 0.36, 1) !important;
+}
+
+#transaction-filter-controls
+  .jf-transaction-search[data-open="false"]
+  > button:first-of-type:hover {
+  color: var(--text-primary) !important;
+  background: var(--hover) !important;
+  transform: translateY(-1px);
+}
+
+#transaction-filter-controls
+  .jf-transaction-search[data-open="true"]
+  > button:first-of-type {
+  color: var(--brand) !important;
+  transform: scale(0.94);
+}
+
+#transaction-filter-controls .jf-transaction-search input,
+#transaction-filter-controls .jf-transaction-search input:hover,
+#transaction-filter-controls .jf-transaction-search input:focus,
+#transaction-filter-controls .jf-transaction-search input:focus-visible,
+#transaction-filter-controls .jf-transaction-search input:active,
+form[data-unified-search="payables"] input,
+form[data-unified-search="payables"] input:hover,
+form[data-unified-search="payables"] input:focus,
+form[data-unified-search="payables"] input:focus-visible,
+form[data-unified-search="payables"] input:active {
+  min-width: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  outline: 0 !important;
+  appearance: textfield !important;
+  -webkit-appearance: textfield !important;
+  caret-color: var(--brand);
+  --tw-ring-offset-width: 0px !important;
+  --tw-ring-offset-shadow: 0 0 #0000 !important;
+  --tw-ring-shadow: 0 0 #0000 !important;
+}
+
+#transaction-filter-controls
+  .jf-transaction-search
+  input::-webkit-search-decoration,
+#transaction-filter-controls
+  .jf-transaction-search
+  input::-webkit-search-cancel-button,
+#transaction-filter-controls
+  .jf-transaction-search
+  input::-webkit-search-results-button,
+#transaction-filter-controls
+  .jf-transaction-search
+  input::-webkit-search-results-decoration,
+form[data-unified-search="payables"] input::-webkit-search-decoration,
+form[data-unified-search="payables"] input::-webkit-search-cancel-button,
+form[data-unified-search="payables"] input::-webkit-search-results-button,
+form[data-unified-search="payables"] input::-webkit-search-results-decoration {
+  display: none !important;
+  -webkit-appearance: none !important;
+}
+
+#transaction-filter-controls
+  .jf-transaction-search
+  > button:last-of-type,
+form[data-unified-search="payables"] .jf-unified-search-close {
+  width: 2.25rem !important;
+  min-width: 2.25rem !important;
+  height: 2.25rem !important;
+  min-height: 2.25rem !important;
+  margin-right: 0 !important;
+  padding: 0 !important;
+  flex: 0 0 2.25rem;
+  place-items: center;
+  border-radius: 0.75rem !important;
+  background: transparent !important;
+  color: var(--text-secondary) !important;
+  transition:
+    opacity 150ms ease,
+    transform 240ms cubic-bezier(0.22, 1, 0.36, 1),
+    color 180ms ease,
+    background-color 180ms ease !important;
+}
+
+#transaction-filter-controls
+  .jf-transaction-search[data-open="true"]
+  > button:last-of-type:hover,
+form[data-unified-search="payables"][data-open="true"]
+  .jf-unified-search-close:hover {
+  color: var(--text-primary) !important;
+  background: var(--hover) !important;
+}
+
+form[data-unified-search="payables"] {
+  position: relative;
+  isolation: isolate;
+  align-self: flex-end;
+  width: 2.75rem !important;
+  min-width: 2.75rem !important;
+  max-width: 24rem;
+  height: 2.75rem !important;
+  min-height: 2.75rem !important;
+  margin-left: auto;
+  padding: 0 !important;
+  gap: 0.25rem !important;
+  overflow: visible !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  outline: 0 !important;
+  cursor: text;
+  transform: translateZ(0);
+  transition: width 320ms cubic-bezier(0.22, 1, 0.36, 1) !important;
+}
+
+form[data-unified-search="payables"][data-open="true"] {
+  width: min(100%, 24rem) !important;
+}
+
+form[data-unified-search="payables"] > svg {
+  width: 2.75rem !important;
+  min-width: 2.75rem !important;
+  height: 2.75rem !important;
+  padding: 0.75rem !important;
+  border-radius: 0.875rem;
+  color: var(--text-secondary) !important;
+  cursor: pointer;
+  transition:
+    color 180ms ease,
+    background-color 180ms ease,
+    transform 240ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+form[data-unified-search="payables"][data-open="false"]:hover > svg {
+  color: var(--text-primary) !important;
+  background: var(--hover);
+  transform: translateY(-1px);
+}
+
+form[data-unified-search="payables"][data-open="true"] > svg {
+  color: var(--brand) !important;
+  transform: scale(0.94);
+}
+
+form[data-unified-search="payables"] input {
+  width: 0 !important;
+  flex: 0 0 0 !important;
+  padding: 0 !important;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateX(0.75rem);
+  transition:
+    width 260ms cubic-bezier(0.22, 1, 0.36, 1),
+    flex-basis 260ms cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 150ms ease,
+    transform 280ms cubic-bezier(0.22, 1, 0.36, 1) !important;
+}
+
+form[data-unified-search="payables"][data-open="true"] input {
+  width: auto !important;
+  flex: 1 1 auto !important;
+  padding: 0 0.25rem !important;
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateX(0);
+  transition-delay: 55ms !important;
+}
+
+form[data-unified-search="payables"] .jf-unified-search-close {
+  display: grid;
+  opacity: 0;
+  transform: scale(0.9);
+  pointer-events: none;
+}
+
+form[data-unified-search="payables"] .jf-unified-search-close svg {
+  width: 1rem;
+  height: 1rem;
+}
+
+form[data-unified-search="payables"][data-open="true"]
+  .jf-unified-search-close {
+  opacity: 1;
+  transform: scale(1);
+  pointer-events: auto;
+}
+
+@media (max-width: 639px) {
+  #transaction-filter-controls .jf-transaction-search[data-open="true"] {
+    max-width: none;
+    flex-basis: 8rem !important;
+  }
+
+  #transaction-filter-controls > div:first-of-type {
+    gap: 0.25rem !important;
+  }
+
+  form[data-unified-search="payables"][data-open="true"] {
+    max-width: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #transaction-filter-controls .jf-transaction-search,
+  #transaction-filter-controls .jf-transaction-search::after,
+  #transaction-filter-controls .jf-transaction-search input,
+  #transaction-filter-controls .jf-transaction-search > button,
+  form[data-unified-search="payables"],
+  form[data-unified-search="payables"]::after,
+  form[data-unified-search="payables"] input,
+  form[data-unified-search="payables"] > svg,
+  form[data-unified-search="payables"] .jf-unified-search-close {
+    transition-duration: 1ms !important;
+  }
+}
