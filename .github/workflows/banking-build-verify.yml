@@ -15,6 +15,10 @@ jobs:
   build:
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    env:
+      NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: build-verification-placeholder
+      NEXT_PUBLIC_SITE_URL: https://jamals-finance-sable.vercel.app
     steps:
       - name: Checkout latest main source
         uses: actions/checkout@v4
@@ -53,7 +57,7 @@ jobs:
             echo "main_sha=${main_sha}"
             echo "verified_at=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
             echo "--- build log tail ---"
-            tail -n 160 banking-build.log 2>/dev/null || true
+            tail -n 200 banking-build.log 2>/dev/null || true
           } > report/banking-github-build-result.txt
           cd report
           git config user.name "github-actions[bot]"
