@@ -12,6 +12,7 @@ import type {
   KeyboardEvent,
   PointerEvent,
   ReactNode,
+  WheelEvent,
 } from "react";
 
 import { getAnimationDurationScale } from "@/lib/animation-preference";
@@ -22,6 +23,9 @@ import styles from "./TouchWheelPicker.module.css";
 const TOUCH_PICKER_QUERY = "(max-width: 1024px) and (pointer: coarse)";
 const MOMENTUM_WINDOW_MS = 220;
 const MAX_MOMENTUM_ITEMS = 4;
+const WHEEL_STEP_PX = 28;
+const WHEEL_RESET_MS = 120;
+const MAX_WHEEL_ITEMS_PER_EVENT = 3;
 
 export interface TouchWheelPickerOption {
   value: string;
@@ -102,6 +106,8 @@ export default function TouchWheelPicker({
   const isSettlingRef = useRef(false);
   const settleTimerRef = useRef<number | null>(null);
   const animationFrameRef = useRef<number | null>(null);
+  const wheelDeltaRef = useRef(0);
+  const wheelResetTimerRef = useRef<number | null>(null);
   const [position, setPosition] = useState(0);
   const [transitionMs, setTransitionMs] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
@@ -128,6 +134,21 @@ export default function TouchWheelPicker({
       animationFrameRef.current = null;
     }
   }, []);
+
+  const clearWheelReset = useCallback(() => {
+    if (wheelResetTimerRef.current !== null) {
+      window.clearTimeout(wheelResetTimerRef.current);
+      wheelResetTimerRef.current = null;
+    }
+  }, []);
+
+  const scheduleWheelReset = useCallback(() => {
+    clearWheelReset();
+    wheelResetTimerRef.current = window.setTimeout(() => {
+      wheelDeltaRef.current = 0;
+      wheelResetTimerRef.current = null;
+    }, WHEEL_RESET_MS);
+  }, [clearWheelReset]);
 
   const commitIndex = useCallback((index: number) => {
     const option = optionsRef.current[index];
@@ -185,8 +206,9 @@ export default function TouchWheelPicker({
   useEffect(
     () => () => {
       clearPendingAnimation();
+      clearWheelReset();
     },
-    [clearPendingAnimation],
+    [clearPendingAnimation, clearWheelReset],
   );
 
   const handlePointerDown = useCallback(
@@ -275,6 +297,59 @@ export default function TouchWheelPicker({
     [maximumIndex, settleAt],
   );
 
+  const handleWheel = useCallback(
+    (event: WheelEvent<HTMLDivElement>) => {
+      if (unavailable) return;
+
+      event.preventDefault();
+      clearPendingAnimation();
+      isSettlingRef.current = false;
+
+      const normalizedDelta =
+        event.deltaMode === 1
+          ? event.deltaY * 16
+          : event.deltaMode === 2
+            ? event.deltaY * Math.max(1, event.currentTarget.clientHeight)
+            : event.deltaY;
+
+      wheelDeltaRef.current += normalizedDelta;
+      const requestedSteps = Math.trunc(wheelDeltaRef.current / WHEEL_STEP_PX);
+
+      if (requestedSteps === 0) {
+        scheduleWheelReset();
+        return;
+      }
+
+      const appliedSteps = clamp(
+        requestedSteps,
+        -MAX_WHEEL_ITEMS_PER_EVENT,
+        MAX_WHEEL_ITEMS_PER_EVENT,
+      );
+      wheelDeltaRef.current -= appliedSteps * WHEEL_STEP_PX;
+
+      const currentIndex = clamp(
+        Math.round(positionRef.current),
+        0,
+        maximumIndex,
+      );
+      const targetIndex = clamp(
+        currentIndex + appliedSteps,
+        0,
+        maximumIndex,
+      );
+
+      scheduleWheelReset();
+      settleAt(targetIndex, 170);
+    },
+    [
+      clearPendingAnimation,
+      maximumIndex,
+      scheduleWheelReset,
+      settleAt,
+      unavailable,
+    ],
+  );
+
   const handleKeyDown = useCallback(
     (event: KeyboardEvent<HTMLDivElement>) => {
       if (unavailable) return;
@@ -340,6 +415,7 @@ export default function TouchWheelPicker({
       onPointerMove={handlePointerMove}
       onPointerUp={(event) => finishGesture(event)}
       onPointerCancel={(event) => finishGesture(event, true)}
+      onWheel={handleWheel}
       onKeyDown={handleKeyDown}
     >
       <div className={styles.sizer} aria-hidden="true">
