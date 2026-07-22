@@ -34,6 +34,7 @@ type BusinessRow = {
   timezone: string;
   fiscal_year_start_month: number;
   module_config: Record<string, boolean> | null;
+  workspace_mode: "advanced_company" | "simple_shop";
   status: string;
 };
 
@@ -109,7 +110,7 @@ export default async function BusinessWorkspacePage({
   const businessResult = await supabase
     .from("businesses")
     .select(
-      "id, name, slug, business_type, country_code, base_currency, timezone, fiscal_year_start_month, module_config, status",
+      "id, name, slug, business_type, country_code, base_currency, timezone, fiscal_year_start_month, module_config, workspace_mode, status",
     )
     .eq("slug", businessSlug)
     .maybeSingle();
@@ -130,6 +131,7 @@ export default async function BusinessWorkspacePage({
     .maybeSingle();
 
   if (!membershipResult.data || membershipResult.data.status !== "active") notFound();
+  if (business.workspace_mode === "simple_shop") redirect(`/business/${business.slug}/shop`);
 
   const enabledModules = business.module_config ?? {};
   const role = membershipResult.data.role;
