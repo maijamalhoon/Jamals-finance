@@ -1,0 +1,53 @@
+/*
+ * Mobile/tablet search expands only through the free header space. Navigation,
+ * notification and profile controls remain in their authored positions.
+ */
+@media (max-width: 1023px) {
+  body:has(#mobile-inline-transaction-search[aria-hidden="false"])
+    form[data-mobile-control-cluster][role="search"] {
+    left: 4.25rem !important;
+    width: clamp(8.25rem, calc(100vw - 11.75rem), 34rem) !important;
+    max-width: calc(100vw - 11.75rem) !important;
+  }
+
+  body:has(#mobile-inline-transaction-search[aria-hidden="false"])
+    [data-mobile-header-badge-group="left"],
+  body:has(#mobile-inline-transaction-search[aria-hidden="false"])
+    [data-mobile-header-badge-group="right"] {
+    opacity: 1 !important;
+    transform: translate3d(0, 0, 0) scale(1) !important;
+    pointer-events: auto !important;
+  }
+
+  body:has(#mobile-inline-transaction-search[aria-hidden="false"])
+    [data-dashboard-shell]
+    > div:last-child::before {
+    display: none !important;
+    content: none !important;
+    background: transparent !important;
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+  }
+
+  body:has(#mobile-inline-transaction-search[aria-hidden="false"])
+    button[aria-label="Close transaction search"][class*="inset-0"] {
+    background: transparent !important;
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+    pointer-events: none !important;
+  }
+
+  form[data-mobile-control-cluster][role="search"] input {
+    min-width: 0 !important;
+  }
+}
+
+@media (max-width: 359px) {
+  body:has(#mobile-inline-transaction-search[aria-hidden="false"])
+    form[data-mobile-control-cluster][role="search"] {
+    left: 4rem !important;
+    width: calc(100vw - 11.25rem) !important;
+    min-width: 7.75rem !important;
+    max-width: calc(100vw - 11.25rem) !important;
+  }
+}
