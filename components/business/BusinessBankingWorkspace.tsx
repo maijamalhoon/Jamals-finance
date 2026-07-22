@@ -672,7 +672,7 @@ export default function BusinessBankingWorkspace({
                       <Metric label="Matched" value={`${statementImport.matched_lines}/${statementImport.line_count - statementImport.excluded_lines}`} />
                       <Metric label="Difference" value={reconciliation?.difference_base == null ? "Pending" : money(reconciliation.difference_base)} />
                     </div>
-                    {reconciliation?.status !== "draft" ? (
+                    {reconciliation && reconciliation.status !== "draft" ? (
                       <div className="mt-4 rounded-[var(--radius-button)] bg-surface-secondary px-4 py-3 text-xs text-text-secondary">
                         Ledger {money(reconciliation.ledger_balance_base)} · adjusted statement {money(reconciliation.adjusted_statement_balance_base)} · outstanding in {money(reconciliation.outstanding_debits_base)} · out {money(reconciliation.outstanding_credits_base)}
                       </div>
