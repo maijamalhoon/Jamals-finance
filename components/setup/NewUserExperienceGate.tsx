@@ -204,6 +204,7 @@ export default function NewUserExperienceGate({
     () => NEW_USER_PAGE_CONFIG[routeSegment] ?? fallbackConfig(routeSegment),
     [routeSegment],
   );
+  const showInlinePageHeading = routeSegment === "transactions";
 
   useLayoutEffect(() => {
     if (isDashboard && state.available && state.setupActive) {
@@ -250,6 +251,22 @@ export default function NewUserExperienceGate({
         data-new-user-page
         className="flex min-h-[calc(100dvh-8rem)] w-full min-w-0 flex-col pb-10"
       >
+        {showInlinePageHeading ? (
+          <div className="flex min-h-[clamp(2rem,3vw,2.55rem)] min-w-0 items-center gap-[clamp(0.55rem,1vw,0.75rem)]">
+            <span
+              aria-hidden="true"
+              className="h-[clamp(1.35rem,2.1vw,1.85rem)] w-[clamp(0.24rem,0.35vw,0.34rem)] shrink-0 rounded-full bg-info"
+              style={{
+                boxShadow:
+                  "0 0 0.65rem color-mix(in srgb, var(--info) 20%, transparent)",
+              }}
+            />
+            <h2 className="m-0 whitespace-nowrap text-[clamp(1rem,0.78rem+0.55vw,1.45rem)] font-[760] leading-[1.15] tracking-[-0.025em] text-text-primary">
+              Transactions
+            </h2>
+          </div>
+        ) : null}
+
         <div className="flex min-h-[24rem] flex-1 items-center justify-center px-4 py-12 text-center sm:min-h-[30rem]">
           <div className="mx-auto flex w-full max-w-xl flex-col items-center">
             <h2 className="text-base font-black leading-tight text-text-primary sm:text-lg">
