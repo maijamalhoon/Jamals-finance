@@ -428,7 +428,7 @@ private fun LedgerCard(entry: LedgerEntry, onEdit: (LedgerEntry) -> Unit, onDele
             if (entry.isDeleted) Text("Deleted • history preserved", color = MaterialTheme.colorScheme.error)
             else Row {
                 if (entry.canEditDirectly) TextButton(onClick = { onEdit(entry) }) { Text("Edit") }
-                TextButton(onClick = { onDelete(entry) }) { Text("Delete") }
+                if (entry.canDeleteSafely) TextButton(onClick = { onDelete(entry) }) { Text("Delete") }
             }
         }
     }

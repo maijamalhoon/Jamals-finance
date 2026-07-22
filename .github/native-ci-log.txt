@@ -1,6 +1,6 @@
 === ACTIONABLE ERROR LINES ===
 
-=== FIRST FAILURE CONTEXT ===
+=== FINAL 100 LINES ===
 Starting a Gradle Daemon (subsequent builds will be faster)
 Calculating task graph as no cached configuration is available for tasks: :shared:testAndroidHostTest :androidApp:assembleDebug
 > Task :shared:androidPreBuild UP-TO-DATE
@@ -12,132 +12,61 @@ Calculating task graph as no cached configuration is available for tasks: :share
 > Task :androidApp:mergeDebugNativeDebugMetadata NO-SOURCE
 > Task :shared:kmpPartiallyResolvedDependenciesChecker
 > Task :shared:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :androidApp:generateDebugBuildConfig FROM-CACHE
 > Task :androidApp:generateDebugResources FROM-CACHE
-> Task :androidApp:generateDebugBuildConfig
-> Task :androidApp:packageDebugResources FROM-CACHE
 > Task :shared:androidJar
-> Task :androidApp:generateDebugAssets UP-TO-DATE
 > Task :androidApp:javaPreCompileDebug FROM-CACHE
+> Task :androidApp:generateDebugAssets UP-TO-DATE
+> Task :androidApp:packageDebugResources FROM-CACHE
 > Task :shared:generateAndroidMainEmptyResourceFiles
 > Task :androidApp:processDebugNavigationResources FROM-CACHE
 > Task :androidApp:parseDebugLocalResources FROM-CACHE
 > Task :androidApp:generateDebugRFile FROM-CACHE
-> Task :shared:compileAndroidMain FROM-CACHE
 > Task :androidApp:mergeDebugAssets
+> Task :androidApp:compressDebugAssets FROM-CACHE
+> Task :shared:writeAndroidMainAarMetadata
+> Task :shared:compileAndroidMain FROM-CACHE
 > Task :shared:bundleAndroidMainClassesToRuntimeJar
+> Task :androidApp:checkDebugAarMetadata
 > Task :shared:bundleAndroidMainClassesToCompileJar
 > Task :shared:processAndroidMainJavaRes
-> Task :androidApp:compressDebugAssets FROM-CACHE
-> Task :shared:compileAndroidHostTest FROM-CACHE
-> Task :shared:writeAndroidMainAarMetadata
-> Task :shared:testAndroidHostTest FROM-CACHE
 > Task :androidApp:mapDebugSourceSetPaths
 > Task :androidApp:compileDebugNavigationResources FROM-CACHE
-> Task :androidApp:checkDebugAarMetadata
+> Task :shared:compileAndroidHostTest FROM-CACHE
+> Task :shared:testAndroidHostTest FROM-CACHE
 > Task :androidApp:createDebugCompatibleScreenManifests
 > Task :androidApp:extractDeepLinksDebug FROM-CACHE
 > Task :shared:processAndroidMainManifest FROM-CACHE
+> Task :androidApp:compileDebugKotlin FROM-CACHE
 > Task :androidApp:mergeDebugResources FROM-CACHE
+> Task :androidApp:processDebugJavaRes
+> Task :androidApp:processDebugMainManifest FROM-CACHE
+> Task :androidApp:processDebugManifest FROM-CACHE
+> Task :androidApp:processDebugManifestForPackage FROM-CACHE
+> Task :androidApp:processDebugResources FROM-CACHE
 > Task :androidApp:checkDebugDuplicateClasses
 > Task :androidApp:mergeLibDexDebug FROM-CACHE
 > Task :androidApp:mergeDebugJniLibFolders
 > Task :shared:mergeAndroidMainJniLibFolders
 > Task :shared:mergeAndroidMainNativeLibs NO-SOURCE
 > Task :shared:copyAndroidMainJniLibsProjectOnly
-> Task :androidApp:mergeDebugNativeLibs
-> Task :androidApp:processDebugMainManifest
-> Task :androidApp:processDebugManifest
 > Task :androidApp:desugarDebugFileDependencies FROM-CACHE
+> Task :androidApp:mergeDebugNativeLibs
+> Task :androidApp:compileDebugJavaWithJavac FROM-CACHE
+> Task :androidApp:dexBuilderDebug FROM-CACHE
+> Task :androidApp:mergeDebugGlobalSynthetics FROM-CACHE
+> Task :androidApp:mergeProjectDexDebug FROM-CACHE
 > Task :androidApp:stripDebugDebugSymbols
-> Task :androidApp:processDebugManifestForPackage
-> Task :androidApp:mergeExtDexDebug FROM-CACHE
 > Task :androidApp:writeDebugAppMetadata
 > Task :androidApp:writeDebugSigningConfigVersions
-> Task :androidApp:processDebugResources
-> Task :androidApp:validateSigningDebug
-> Task :androidApp:compileDebugKotlin
-> Task :androidApp:processDebugJavaRes
+> Task :androidApp:mergeExtDexDebug FROM-CACHE
 > Task :androidApp:mergeDebugJavaResource
-> Task :androidApp:compileDebugJavaWithJavac
-> Task :androidApp:dexBuilderDebug
-> Task :androidApp:mergeDebugGlobalSynthetics FROM-CACHE
-> Task :androidApp:mergeProjectDexDebug
+> Task :androidApp:validateSigningDebug
 > Task :androidApp:packageDebug
 > Task :androidApp:assembleDebug
 > Task :androidApp:createDebugApkListingFileRedirect
-gradle/actions: Writing build results to /home/runner/work/_temp/.gradle-actions/build-results/native_build-1784726264044.json
+gradle/actions: Writing build results to /home/runner/work/_temp/.gradle-actions/build-results/native_build-1784727399261.json
 
-BUILD SUCCESSFUL in 43s
-51 actionable tasks: 33 executed, 18 from cache
-Configuration cache entry stored.
-
-=== FINAL 80 LINES ===
-Starting a Gradle Daemon (subsequent builds will be faster)
-Calculating task graph as no cached configuration is available for tasks: :shared:testAndroidHostTest :androidApp:assembleDebug
-> Task :shared:androidPreBuild UP-TO-DATE
-> Task :shared:preAndroidMainBuild UP-TO-DATE
-> Task :shared:preAndroidHostTestBuild UP-TO-DATE
-> Task :androidApp:preBuild UP-TO-DATE
-> Task :androidApp:preDebugBuild UP-TO-DATE
-> Task :shared:processAndroidHostTestJavaRes NO-SOURCE
-> Task :androidApp:mergeDebugNativeDebugMetadata NO-SOURCE
-> Task :shared:kmpPartiallyResolvedDependenciesChecker
-> Task :shared:checkKotlinGradlePluginConfigurationErrors SKIPPED
-> Task :androidApp:generateDebugResources FROM-CACHE
-> Task :androidApp:generateDebugBuildConfig
-> Task :androidApp:packageDebugResources FROM-CACHE
-> Task :shared:androidJar
-> Task :androidApp:generateDebugAssets UP-TO-DATE
-> Task :androidApp:javaPreCompileDebug FROM-CACHE
-> Task :shared:generateAndroidMainEmptyResourceFiles
-> Task :androidApp:processDebugNavigationResources FROM-CACHE
-> Task :androidApp:parseDebugLocalResources FROM-CACHE
-> Task :androidApp:generateDebugRFile FROM-CACHE
-> Task :shared:compileAndroidMain FROM-CACHE
-> Task :androidApp:mergeDebugAssets
-> Task :shared:bundleAndroidMainClassesToRuntimeJar
-> Task :shared:bundleAndroidMainClassesToCompileJar
-> Task :shared:processAndroidMainJavaRes
-> Task :androidApp:compressDebugAssets FROM-CACHE
-> Task :shared:compileAndroidHostTest FROM-CACHE
-> Task :shared:writeAndroidMainAarMetadata
-> Task :shared:testAndroidHostTest FROM-CACHE
-> Task :androidApp:mapDebugSourceSetPaths
-> Task :androidApp:compileDebugNavigationResources FROM-CACHE
-> Task :androidApp:checkDebugAarMetadata
-> Task :androidApp:createDebugCompatibleScreenManifests
-> Task :androidApp:extractDeepLinksDebug FROM-CACHE
-> Task :shared:processAndroidMainManifest FROM-CACHE
-> Task :androidApp:mergeDebugResources FROM-CACHE
-> Task :androidApp:checkDebugDuplicateClasses
-> Task :androidApp:mergeLibDexDebug FROM-CACHE
-> Task :androidApp:mergeDebugJniLibFolders
-> Task :shared:mergeAndroidMainJniLibFolders
-> Task :shared:mergeAndroidMainNativeLibs NO-SOURCE
-> Task :shared:copyAndroidMainJniLibsProjectOnly
-> Task :androidApp:mergeDebugNativeLibs
-> Task :androidApp:processDebugMainManifest
-> Task :androidApp:processDebugManifest
-> Task :androidApp:desugarDebugFileDependencies FROM-CACHE
-> Task :androidApp:stripDebugDebugSymbols
-> Task :androidApp:processDebugManifestForPackage
-> Task :androidApp:mergeExtDexDebug FROM-CACHE
-> Task :androidApp:writeDebugAppMetadata
-> Task :androidApp:writeDebugSigningConfigVersions
-> Task :androidApp:processDebugResources
-> Task :androidApp:validateSigningDebug
-> Task :androidApp:compileDebugKotlin
-> Task :androidApp:processDebugJavaRes
-> Task :androidApp:mergeDebugJavaResource
-> Task :androidApp:compileDebugJavaWithJavac
-> Task :androidApp:dexBuilderDebug
-> Task :androidApp:mergeDebugGlobalSynthetics FROM-CACHE
-> Task :androidApp:mergeProjectDexDebug
-> Task :androidApp:packageDebug
-> Task :androidApp:assembleDebug
-> Task :androidApp:createDebugApkListingFileRedirect
-gradle/actions: Writing build results to /home/runner/work/_temp/.gradle-actions/build-results/native_build-1784726264044.json
-
-BUILD SUCCESSFUL in 43s
-51 actionable tasks: 33 executed, 18 from cache
+BUILD SUCCESSFUL in 18s
+51 actionable tasks: 24 executed, 27 from cache
 Configuration cache entry stored.

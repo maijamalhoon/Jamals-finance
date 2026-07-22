@@ -96,7 +96,24 @@ data class LedgerEntry(
 ) {
     val isDeleted: Boolean get() = deletedAt != null
     val isTransfer: Boolean get() = type == "transfer"
-    val canEditDirectly: Boolean get() = !isDeleted && (type == "income" || type == "expense")
+    val semanticContext: String
+        get() = listOfNotNull(type, note, categories?.name, sourceName, itemName)
+            .joinToString(" ")
+            .lowercase()
+    val isPayablePayment: Boolean
+        get() = type == "expense" && listOf(
+            "payable",
+            "liability",
+            "debt repayment",
+            "debt payment",
+            "loan repayment",
+            "payment returned to",
+        ).any(semanticContext::contains)
+    val canEditDirectly: Boolean
+        get() = !isDeleted && (type == "income" || type == "expense") && !isPayablePayment
+    val canDeleteSafely: Boolean
+        get() = !isDeleted && type != "investment" &&
+            (type != "goal" || goalContributionId != null)
 }
 
 @Serializable
@@ -365,21 +382,44 @@ class SupabaseFinanceRepository(
     }
 
     override suspend fun softDelete(entry: LedgerEntry): FinanceResult = mutate {
-        require(!entry.isDeleted) { "This ledger entry is already deleted." }
-        val session = requireSession()
-        val response = if (entry.isTransfer) {
+    require(entry.canDeleteSafely) {
+        if (entry.type == "investment") {
+            "Investment ledger entries must be managed from Investments."
+        } else {
+            "This generated ledger entry cannot be deleted safely."
+        }
+    }
+    val session = requireSession()
+    val response = when {
+        entry.type == "goal" -> {
+            val contributionId = entry.goalContributionId
+                ?: throw FinanceException("This goal contribution is missing its ledger link.")
+            client.post("${config.normalizedSupabaseUrl}/rest/v1/rpc/delete_goal_contribution") {
+                authenticated(session)
+                setBody(DeleteGoalContributionRequest(contributionId))
+            }
+        }
+        entry.isPayablePayment -> {
+            client.post("${config.normalizedSupabaseUrl}/rest/v1/rpc/delete_liability_payment_transaction") {
+                authenticated(session)
+                setBody(DeleteLiabilityPaymentRequest(entry.id))
+            }
+        }
+        entry.isTransfer -> {
             client.post("${config.normalizedSupabaseUrl}/rest/v1/rpc/soft_delete_account_transfer") {
                 authenticated(session)
                 setBody(DeleteTransferRequest(entry.id))
             }
-        } else {
+        }
+        else -> {
             client.post("${config.normalizedSupabaseUrl}/rest/v1/rpc/soft_delete_transaction") {
                 authenticated(session)
                 setBody(DeleteTransactionRequest(entry.id))
             }
         }
-        response.requireSuccess("Ledger entry could not be deleted.")
     }
+    response.requireSuccess("Ledger entry could not be deleted.")
+}
 
     private suspend fun mutate(block: suspend () -> Unit): FinanceResult = runCatching {
         block()
@@ -593,6 +633,8 @@ class SupabaseFinanceRepository(
         val note: String? = null,
         val reference: String? = null,
     )
+    @Serializable private data class DeleteGoalContributionRequest(@SerialName("p_contribution_id") val contributionId: String)
+    @Serializable private data class DeleteLiabilityPaymentRequest(@SerialName("p_transaction_id") val transactionId: String)
     @Serializable private data class DeleteTransactionRequest(@SerialName("p_transaction_id") val transactionId: String)
     @Serializable private data class DeleteTransferRequest(@SerialName("p_transfer_id") val transferId: String)
 }

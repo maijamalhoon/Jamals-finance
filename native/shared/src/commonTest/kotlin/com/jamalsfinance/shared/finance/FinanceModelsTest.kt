@@ -40,4 +40,31 @@ class FinanceModelsTest {
         assertFalse(deletedTransfer.canEditDirectly)
         assertFalse(goal.canEditDirectly)
     }
+
+    @Test
+    fun generatedLedgerActionsUseDedicatedSafetyRules() {
+        val investment = LedgerEntry(id = "investment", date = "2026-07-22", type = "investment", amount = 10.0)
+        val unlinkedGoal = LedgerEntry(id = "goal-missing", date = "2026-07-22", type = "goal", amount = 10.0)
+        val linkedGoal = LedgerEntry(
+            id = "goal",
+            date = "2026-07-22",
+            type = "goal",
+            amount = 10.0,
+            goalContributionId = "contribution",
+        )
+        val payable = LedgerEntry(
+            id = "payable",
+            date = "2026-07-22",
+            type = "expense",
+            amount = 10.0,
+            note = "Debt repayment",
+        )
+
+        assertFalse(investment.canDeleteSafely)
+        assertFalse(unlinkedGoal.canDeleteSafely)
+        assertTrue(linkedGoal.canDeleteSafely)
+        assertTrue(payable.isPayablePayment)
+        assertFalse(payable.canEditDirectly)
+        assertTrue(payable.canDeleteSafely)
+    }
 }
