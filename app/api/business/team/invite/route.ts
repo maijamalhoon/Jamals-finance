@@ -9,6 +9,8 @@ const NO_STORE_HEADERS = {
   "Cache-Control": "private, no-store, max-age=0",
   Expires: "0",
   Pragma: "no-cache",
+  "Referrer-Policy": "no-referrer",
+  "X-Content-Type-Options": "nosniff",
 };
 
 type InviteRequest =
@@ -199,7 +201,6 @@ export async function POST(request: Request) {
   return response({
     ok: true,
     invitationId: invitation.id,
-    manualUrl: acceptUrl,
     expiresAt: invitation.expires_at,
     message: body.action === "resend" ? "Invitation email sent again." : "Invitation email sent.",
   });
