@@ -32,3 +32,10 @@ jobs:
           gradle-version: "9.3.1"
       - name: Run shared tests and compile Android
         run: gradle :shared:testAndroidHostTest :androidApp:assembleDebug --stacktrace
+      - name: Upload native debug APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: jamals-finance-native-foundation-debug
+          path: native/androidApp/build/outputs/apk/debug/androidApp-debug.apk
+          if-no-files-found: error
+          retention-days: 7
