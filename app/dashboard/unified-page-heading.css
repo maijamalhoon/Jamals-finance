@@ -116,9 +116,17 @@
   stroke-width: 3 !important;
 }
 
-.jf-page-heading-action > button:not([data-loading="true"]) svg {
+:is(
+  .jf-page-heading-action[data-jf-page-action="accounts"],
+  .jf-page-heading-action[data-jf-page-action="income"],
+  .jf-page-heading-action[data-jf-page-action="expenses"],
+  .jf-page-heading-action[data-jf-page-action="goals"],
+  .jf-page-heading-action[data-jf-page-action="payables"],
+  .jf-page-heading-action[data-jf-page-action="investments"]
+) > button:not([data-loading="true"]):not(:disabled) svg {
   transform-origin: center;
-  animation: jf-page-heading-action-attention 4.8s ease-in-out infinite;
+  will-change: transform, opacity;
+  animation: jf-page-heading-plus-attention 3.8s cubic-bezier(0.22, 1, 0.36, 1) infinite;
 }
 
 .jf-page-heading-action > button:is(:hover, :focus-visible) {
@@ -126,31 +134,31 @@
   filter: saturate(1.08);
 }
 
-@keyframes jf-page-heading-action-attention {
+@keyframes jf-page-heading-plus-attention {
   0%,
-  68%,
+  62%,
   100% {
-    transform: translateY(0) scale(1);
+    transform: translateY(0) scale(1) rotate(0deg);
     opacity: 0.9;
   }
 
-  75% {
-    transform: translateY(-1px) scale(1.08);
+  69% {
+    transform: translateY(-1px) scale(1.12) rotate(4deg);
     opacity: 1;
   }
 
-  82% {
-    transform: translateY(0) scale(0.985);
+  76% {
+    transform: translateY(0) scale(0.965) rotate(-3deg);
     opacity: 0.96;
   }
 
-  89% {
-    transform: translateY(-0.5px) scale(1.04);
+  83% {
+    transform: translateY(-0.5px) scale(1.075) rotate(2deg);
     opacity: 1;
   }
 
-  95% {
-    transform: translateY(0) scale(1);
+  91% {
+    transform: translateY(0) scale(1) rotate(0deg);
     opacity: 0.92;
   }
 }
