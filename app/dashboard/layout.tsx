@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import { Suspense } from "react";
 
 import { CurrencyProvider } from "@/components/currency/CurrencyProvider";
+import FinanceDataTransfer from "@/components/data/FinanceDataTransfer";
 import ConnectionStatus from "@/components/layout/ConnectionStatus";
 import DashboardContentScope from "@/components/layout/DashboardContentScope";
 import MobileScrollContactGuard from "@/components/layout/MobileScrollContactGuard";
@@ -107,6 +108,8 @@ import "./donut-reference-system.css";
 import "./unified-search-controls.css";
 // Compact search expands only inside the free header space on mobile and tablet.
 import "./mobile-search-inline-stability.css";
+// Full-screen finance backup transfer feedback stays isolated and GPU-friendly.
+import "./data-transfer-overlay.css";
 
 export const dynamic = "force-dynamic";
 
@@ -200,6 +203,7 @@ export default async function DashboardLayout({
           <TransactionReceiptViewportFit />
           <DateFormatDisplaySync />
           <UnifiedSearchBehavior />
+          <FinanceDataTransfer />
 
           <main
             data-dashboard-scroll
