@@ -1,0 +1,80 @@
+name: Native accounts transactions branch CI
+
+on:
+  push:
+    branches: [native-accounts-transactions-m1]
+    paths:
+      - "native/**"
+      - ".github/workflows/native-m1-branch-ci.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  android-and-shared:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: native
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+      - uses: android-actions/setup-android@v3
+      - name: Install Android SDK 36
+        run: sdkmanager "platforms;android-36" "build-tools;36.0.0" "platform-tools"
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: "9.3.1"
+      - name: Run shared tests and compile Android
+        id: native_build
+        shell: bash
+        run: |
+          set +e
+          gradle :shared:testAndroidHostTest :androidApp:assembleDebug --stacktrace 2>&1 | tee /tmp/native-m1-build.log
+          exit_code=${PIPESTATUS[0]}
+          echo "exit_code=${exit_code}" >> "$GITHUB_OUTPUT"
+          {
+            echo "=== ACTIONABLE ERROR LINES ==="
+            grep -n -E "(^e: |FAILURE:|What went wrong:|Unresolved reference|Cannot access|Could not|error:)" /tmp/native-m1-build.log | head -n 220 || true
+            echo
+            echo "=== FINAL 100 LINES ==="
+            tail -n 100 /tmp/native-m1-build.log
+          } > ../.github/native-m1-ci-log.txt
+          exit 0
+      - name: Upload debug APK
+        if: steps.native_build.outputs.exit_code == '0'
+        uses: actions/upload-artifact@v4
+        with:
+          name: jamals-finance-native-accounts-transactions-debug
+          path: native/androidApp/build/outputs/apk/debug/androidApp-debug.apk
+          if-no-files-found: error
+          retention-days: 7
+      - name: Record branch result
+        if: always()
+        working-directory: .
+        env:
+          BUILD_EXIT_CODE: ${{ steps.native_build.outputs.exit_code }}
+        run: |
+          if [ "${BUILD_EXIT_CODE}" = "0" ]; then result="success"; else result="failure"; fi
+          cat > .github/native-m1-ci-status.json <<JSON
+          {
+            "status": "${result}",
+            "runId": "${GITHUB_RUN_ID}",
+            "commit": "${GITHUB_SHA}"
+          }
+          JSON
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add .github/native-m1-ci-status.json .github/native-m1-ci-log.txt
+          git commit -m "chore(native): record milestone CI ${result}" || exit 0
+          git pull --rebase origin native-accounts-transactions-m1
+          git push origin HEAD:native-accounts-transactions-m1
+      - name: Fail when build failed
+        if: steps.native_build.outputs.exit_code != '0'
+        run: exit 1
