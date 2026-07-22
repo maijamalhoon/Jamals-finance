@@ -7,14 +7,14 @@ import TransactionFilters from "@/components/transactions/TransactionFilters";
 import TransactionSearchAutoClose from "@/components/transactions/TransactionSearchAutoClose";
 import ViewportTransactionList from "@/components/transactions/ViewportTransactionList";
 import EmptyState from "@/components/ui/empty-state";
+import { getPaginationState } from "@/lib/pagination";
 import { getTransactionIconMeta } from "@/lib/transaction-icons";
 import { loadTransactions } from "@/lib/transactions";
 import styles from "./transactions.module.css";
 
 export const dynamic = "force-dynamic";
 
-const STEP_LIMIT = 15;
-const MAX_LIMIT = 100;
+const PAGE_SIZE = 20;
 
 type SearchParams = {
   type?: string;
@@ -30,7 +30,7 @@ type SearchParams = {
   min?: string;
   max?: string;
   sort?: string;
-  limit?: string;
+  page?: string;
 };
 
 type TransactionSort = "newest" | "oldest" | "highest" | "lowest" | "name";
@@ -92,15 +92,6 @@ function transactionName(transaction: TransactionListRow) {
   );
 }
 
-function cleanLimit(value?: string) {
-  if (!value || value.trim() === "") return null;
-
-  const parsed = Number(value);
-  if (!Number.isFinite(parsed) || parsed <= 0) return null;
-
-  return Math.min(Math.max(1, Math.floor(parsed)), MAX_LIMIT);
-}
-
 function cleanAmount(value?: string) {
   if (!value || value.trim() === "") return null;
 
@@ -135,7 +126,7 @@ export default async function TransactionsPage({
   const min = resolvedSearchParams.min;
   const max = resolvedSearchParams.max;
   const sort = cleanSort(resolvedSearchParams.sort);
-  const requestedLimit = cleanLimit(resolvedSearchParams.limit);
+  const page = resolvedSearchParams.page;
 
   const supabase = await createClient();
 
@@ -340,6 +331,12 @@ export default async function TransactionsPage({
       return sort === "oldest" ? -idDifference : idDifference;
     });
 
+  const pagination = getPaginationState(transactions.length, page, PAGE_SIZE);
+  const visibleTransactions = transactions.slice(
+    pagination.startIndex,
+    pagination.endIndex,
+  );
+
   const baseParams = new URLSearchParams();
 
   addParam(baseParams, "type", type);
@@ -403,11 +400,10 @@ export default async function TransactionsPage({
           />
         ) : (
           <ViewportTransactionList
-            transactions={transactions}
-            requestedLimit={requestedLimit}
+            transactions={visibleTransactions}
+            pagination={pagination}
+            basePath="/dashboard/transactions"
             baseQuery={baseParams.toString()}
-            stepLimit={STEP_LIMIT}
-            maxLimit={MAX_LIMIT}
             groupByMonth={sort === "newest" || sort === "oldest"}
           />
         )}
