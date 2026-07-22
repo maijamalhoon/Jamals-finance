@@ -5,6 +5,32 @@ import { useEffect } from "react";
 const DIALOG_SELECTOR = '[data-slot="dialog-content"], [role="dialog"]';
 const CENTERED_ATTRIBUTE = "data-jf-global-centered-dialog";
 
+const GLOBAL_DIALOG_STYLE = `
+:root {
+  --jf-global-final-action-width: 88%;
+  --jf-global-final-action-max-width: 28rem;
+  --jf-global-final-action-radius: 1.3rem;
+  --jf-global-form-action-radius: var(--jf-global-final-action-radius);
+}
+
+html body .finance-modal-content .finance-modal-footer {
+  justify-items: center !important;
+}
+
+html body :is(.finance-modal-content, [data-slot="dialog-content"])
+  button[data-jf-form-action="true"],
+.auth-primary-action,
+.auth-step button.w-full:not(.auth-provider-action),
+.jf-auth-card button.w-full:not(.auth-provider-action) {
+  width: var(--jf-global-final-action-width) !important;
+  min-width: 0 !important;
+  max-width: var(--jf-global-final-action-max-width) !important;
+  margin-inline: auto !important;
+  justify-self: center !important;
+  border-radius: var(--jf-global-final-action-radius) !important;
+}
+`;
+
 function getDialogs() {
   const dialogs = new Set<HTMLElement>();
 
@@ -114,5 +140,5 @@ export default function GlobalFormDialogAuthority() {
     };
   }, []);
 
-  return null;
+  return <style>{GLOBAL_DIALOG_STYLE}</style>;
 }
