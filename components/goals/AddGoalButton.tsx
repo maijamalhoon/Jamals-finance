@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Target } from "lucide-react";
+import { Plus, Target } from "lucide-react";
 import PageHeadingActionPortal from "@/components/layout/PageHeadingActionPortal";
 import GoalModal, { type GoalAccount } from "./GoalModal";
 
@@ -10,15 +10,18 @@ interface AddGoalButtonProps {
   accounts?: GoalAccount[];
   label?: string;
   showIcon?: boolean;
+  icon?: "goal" | "plus";
 }
 
 export default function AddGoalButton({
   accounts,
   label = "New Goal",
   showIcon = true,
+  icon = "goal",
 }: AddGoalButtonProps = {}) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
+  const ActionIcon = icon === "plus" ? Plus : Target;
 
   return (
     <>
@@ -29,7 +32,7 @@ export default function AddGoalButton({
           onClick={() => setOpen(true)}
           className="primary-action"
         >
-          {showIcon ? <Target size={16} /> : null}
+          {showIcon ? <ActionIcon size={16} /> : null}
           <span className="sr-only">{label}</span>
         </button>
       </PageHeadingActionPortal>
