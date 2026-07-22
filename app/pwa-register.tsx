@@ -5,6 +5,7 @@ import { toast } from "sonner";
 
 import GlobalFormActionAuthority from "@/components/forms/GlobalFormActionAuthority";
 import GlobalFormAuditAuthority from "@/components/forms/GlobalFormAuditAuthority";
+import GlobalFormDialogAuthority from "@/components/forms/GlobalFormDialogAuthority";
 import GlobalFormFieldAuthority from "@/components/forms/GlobalFormFieldAuthority";
 import AndroidAppManager from "@/components/pwa/AndroidAppManager";
 import AppUpdateManager from "@/components/pwa/AppUpdateManager";
@@ -91,6 +92,7 @@ export default function PWARegister() {
   return (
     <>
       <GlobalFormAuditAuthority />
+      <GlobalFormDialogAuthority />
       <GlobalFormFieldAuthority />
       <GlobalFormActionAuthority />
       <AcceleratedMotionPerformance />
