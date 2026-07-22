@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { ArrowLeft, Crown, MailCheck, ShieldCheck, UserRoundCheck, UsersRound } from "lucide-react";
 
+import BusinessFinancialPermissionPanel from "@/components/business/BusinessFinancialPermissionPanel";
 import BusinessTeamManager from "@/components/business/BusinessTeamManager";
 import { createClient } from "@/lib/supabase/server";
 
@@ -194,6 +195,18 @@ export default async function BusinessTeamPage({
           <MetricCard icon={Crown} label="Administrators" value={String(administrators)} />
           <MetricCard icon={UserRoundCheck} label="Your access" value={formatLabel(role)} />
         </section>
+
+        {business.workspace_mode === "advanced_company" ? (
+          <div className="mt-8">
+            <BusinessFinancialPermissionPanel
+              businessId={business.id}
+              currentUserId={user.id}
+              canManage={canManage}
+              members={snapshot.members}
+              permissionCatalog={snapshot.permission_catalog}
+            />
+          </div>
+        ) : null}
 
         <div className="mt-8">
           <BusinessTeamManager
