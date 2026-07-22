@@ -105,6 +105,8 @@ import "./final-eight-pages-polish.css";
 import "./donut-reference-system.css";
 // Search controls share the approved header interaction without moving nearby actions.
 import "./unified-search-controls.css";
+// Compact search expands only inside the free header space on mobile and tablet.
+import "./mobile-search-inline-stability.css";
 
 export const dynamic = "force-dynamic";
 
