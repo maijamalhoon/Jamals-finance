@@ -120,7 +120,8 @@ export function CashFlowCharts({ data }: { data: CashFlowPoint[] }) {
                     height={height}
                     data={data}
                     margin={{ top: 10, right: 8, bottom: 4, left: 0 }}
-                    barGap={4}
+                    barGap={10}
+                    barCategoryGap="38%"
                   >
                     <CartesianGrid
                       stroke="var(--chart-grid)"
@@ -158,14 +159,18 @@ export function CashFlowCharts({ data }: { data: CashFlowPoint[] }) {
                     <Bar
                       dataKey="income"
                       fill="var(--success)"
-                      radius={[7, 7, 2, 2]}
+                      fillOpacity={0.88}
+                      radius={[999, 999, 999, 999]}
+                      minPointSize={7}
                       maxBarSize={30}
                       isAnimationActive={false}
                     />
                     <Bar
                       dataKey="expenses"
                       fill="var(--danger)"
-                      radius={[7, 7, 2, 2]}
+                      fillOpacity={0.88}
+                      radius={[999, 999, 999, 999]}
+                      minPointSize={7}
                       maxBarSize={30}
                       isAnimationActive={false}
                     />
