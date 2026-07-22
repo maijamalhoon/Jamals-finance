@@ -97,8 +97,36 @@ class InvestmentsAnalyticsModelsTest {
         )
         val transactions = listOf(
             AnalyticsTransaction("i", 1000.0, "2026-07-02", "income", null, "Salary", null, null, null, null, "Employer", null, null),
-            AnalyticsTransaction("e", 400.0, "2026-07-03", "expense", "food", "Food", "#ff0000", null, null, null, null, null, null, "Dinner"),
-            AnalyticsTransaction("r", 100.0, "2026-07-04", "refund", "food", "Food", "#ff0000", null, null, null, null, null, null, "Refund"),
+            AnalyticsTransaction(
+                id = "e",
+                amount = 400.0,
+                date = "2026-07-03",
+                type = "expense",
+                categoryId = "food",
+                categoryName = "Food",
+                categoryColor = "#ff0000",
+                accountId = null,
+                accountName = null,
+                accountType = null,
+                sourceName = null,
+                personName = null,
+                itemName = "Dinner",
+            ),
+            AnalyticsTransaction(
+                id = "r",
+                amount = 100.0,
+                date = "2026-07-04",
+                type = "refund",
+                categoryId = "food",
+                categoryName = "Food",
+                categoryColor = "#ff0000",
+                accountId = null,
+                accountName = null,
+                accountType = null,
+                sourceName = null,
+                personName = null,
+                itemName = "Refund",
+            ),
         )
         val summary = calculateAnalytics(selection, transactions, emptyList(), emptyList())
         assertEquals(1000.0, summary.totalIncome)
@@ -122,6 +150,7 @@ class InvestmentsAnalyticsModelsTest {
         assertEquals(400.0, summary.portfolioInvested)
         assertEquals(-10.0, summary.portfolioPnl)
     }
+
     @Test
     fun investmentTypeAliasesMatchWebsiteAndDatabaseContracts() {
         for (value in listOf("stock", "stocks", "Equity", "equities", "share", "shares")) {
@@ -132,5 +161,4 @@ class InvestmentsAnalyticsModelsTest {
         assertEquals("other", normalizeInvestmentEditorType("real_estate"))
         assertNull(normalizeInvestmentMarketType("real_estate"))
     }
-
 }
