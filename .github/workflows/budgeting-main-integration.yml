@@ -1,0 +1,217 @@
+name: Budgeting main integration
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - .github/workflows/budgeting-main-integration.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  integrate-and-build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: build-verification-placeholder
+      NEXT_PUBLIC_SITE_URL: https://jamals-finance-sable.vercel.app
+    steps:
+      - name: Checkout current main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Integrate Budgeting module and permissions
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          page = Path("app/business/[businessSlug]/page.tsx")
+          text = page.read_text()
+
+          if "  TrendingUp,\n" not in text:
+              marker = "  ShoppingCart,\n"
+              if marker not in text:
+                  raise SystemExit("Business page icon marker not found")
+              text = text.replace(marker, marker + "  TrendingUp,\n", 1)
+
+          if 'key: "budgeting"' not in text:
+              marker = '''  {
+    key: "contacts",
+'''
+              block = '''  {
+    key: "budgeting",
+    label: "Budgeting & forecasting",
+    description: "Monthly budgets, rolling forecasts, actual variance, runway, approvals, and locked baselines.",
+    icon: TrendingUp,
+    route: "budgeting",
+  },
+'''
+              if marker not in text:
+                  raise SystemExit("Business module insertion marker not found")
+              text = text.replace(marker, block + marker, 1)
+
+          if "const canViewBudgeting" not in text:
+              marker = '''  const canViewBanking =
+    ["owner", "admin", "accountant", "manager", "viewer"].includes(role) ||
+    permissions.includes("*") ||
+    permissions.includes("banking.view") ||
+    permissions.includes("banking.manage") ||
+    permissions.includes("accounting.view") ||
+    permissions.includes("accounting.manage");
+'''
+              addition = marker + '''  const canViewBudgeting =
+    ["owner", "admin", "accountant", "manager", "viewer"].includes(role) ||
+    permissions.includes("*") ||
+    permissions.includes("budget.view") ||
+    permissions.includes("budget.manage") ||
+    permissions.includes("budget.approve") ||
+    permissions.includes("accounting.view") ||
+    permissions.includes("accounting.manage") ||
+    permissions.includes("reports.view");
+'''
+              if marker not in text:
+                  raise SystemExit("Budgeting permission insertion marker not found")
+              text = text.replace(marker, addition, 1)
+
+          text = text.replace(
+              '["banking", "team", "notifications", "tax-closing"].includes(module.key)',
+              '["banking", "budgeting", "team", "notifications", "tax-closing"].includes(module.key)',
+              1,
+          )
+
+          if 'module.key === "budgeting"' not in text:
+              marker = '''                        : module.key === "banking"
+                          ? canViewBanking
+                          : true;'''
+              replacement = '''                        : module.key === "banking"
+                          ? canViewBanking
+                          : module.key === "budgeting"
+                            ? canViewBudgeting
+                            : true;'''
+              if marker not in text:
+                  raise SystemExit("Budgeting accessibility marker not found")
+              text = text.replace(marker, replacement, 1)
+
+          text = text.replace(
+              "Every operational module uses the same verified accounting, banking, tax, permission, notification, and reporting source of truth.",
+              "Every operational module uses the same verified accounting, banking, budgeting, tax, permission, notification, and reporting source of truth.",
+              1,
+          )
+          text = text.replace(
+              "Accounting, banking, tax, access control, and alerts are active",
+              "Accounting, banking, budgeting, tax, access control, and alerts are active",
+              1,
+          )
+          text = text.replace(
+              "Balanced journals, bank reconciliation locks, fiscal periods, tax returns, retained-earnings close, immutable posting, team audit history, CRM conversions, verified reports, and role-filtered alerts are available.",
+              "Balanced journals, bank reconciliation locks, approved budgets, rolling forecasts, fiscal periods, tax returns, retained-earnings close, immutable posting, team audit history, CRM conversions, verified reports, and role-filtered alerts are available.",
+              1,
+          )
+          page.write_text(text)
+
+          team = Path("components/business/BusinessTeamManager.tsx")
+          text = team.read_text()
+          if 'label: "Banking"' not in text:
+              marker = '  {\n    label: "Contacts & sales",'
+              groups = '''  {
+    label: "Banking",
+    permissions: [
+      ["banking.view", "View banking"],
+      ["banking.manage", "Manage banking and reconciliation"],
+    ],
+  },
+  {
+    label: "Budgeting & planning",
+    permissions: [
+      ["budget.view", "View budgets and forecasts"],
+      ["budget.manage", "Manage draft plans"],
+      ["budget.approve", "Approve and lock baselines"],
+    ],
+  },
+'''
+              if marker not in text:
+                  raise SystemExit("Team permission insertion marker not found")
+              text = text.replace(marker, groups + marker, 1)
+
+          replacements = {
+              'if (role === "accountant") return ["accounting.manage", "purchases.manage", "purchases.pay", "reports.view"];':
+              'if (role === "accountant") return ["accounting.manage", "banking.manage", "budget.manage", "purchases.manage", "purchases.pay", "reports.view"];',
+              'if (role === "viewer") return ["accounting.view", "reports.view"];':
+              'if (role === "viewer") return ["accounting.view", "banking.view", "budget.view", "reports.view"];',
+          }
+          for old, new in replacements.items():
+              if old in text:
+                  text = text.replace(old, new, 1)
+
+          manager_line = '  if (role === "manager") return ["budget.manage"];\n'
+          accountant_line = '  if (role === "accountant") return ["accounting.manage", "banking.manage", "budget.manage", "purchases.manage", "purchases.pay", "reports.view"];\n'
+          if manager_line not in text:
+              if accountant_line not in text:
+                  raise SystemExit("Manager permission marker not found")
+              text = text.replace(accountant_line, accountant_line + manager_line, 1)
+          team.write_text(text)
+
+          budget = Path("components/business/BusinessBudgetingWorkspace.tsx")
+          text = budget.read_text().replace(
+              '<details className="rounded-[var(--radius-card)] bg-surface px-5 py-5 shadow-[var(--shadow-sm)] sm:px-6" disabled={!selectedScenario}>',
+              '<details className="rounded-[var(--radius-card)] bg-surface px-5 py-5 shadow-[var(--shadow-sm)] sm:px-6">',
+              1,
+          )
+          budget.write_text(text)
+          PY
+
+          rm -f .github/workflows/budgeting-main-integration.yml
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add app/business/[businessSlug]/page.tsx components/business/BusinessTeamManager.tsx components/business/BusinessBudgetingWorkspace.tsx .github/workflows/budgeting-main-integration.yml
+          if ! git diff --cached --quiet; then
+            git commit -m "feat(budgeting): connect module and team permissions"
+            git pull --rebase origin main
+            git push origin HEAD:main
+          fi
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build application
+        id: app_build
+        continue-on-error: true
+        run: npm run build > budgeting-build.log 2>&1
+
+      - name: Record build result on main
+        if: always()
+        shell: bash
+        run: |
+          git pull --rebase origin main
+          main_sha=$(git rev-parse HEAD)
+          {
+            echo "status=${{ steps.app_build.outcome }}"
+            echo "main_sha=${main_sha}"
+            echo "verified_at=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+            echo "--- build log tail ---"
+            tail -n 220 budgeting-build.log 2>/dev/null || true
+          } > budgeting-build-result.txt
+          git add budgeting-build-result.txt
+          if ! git diff --cached --quiet; then
+            git commit -m "ci(budgeting): record verified main build"
+            git pull --rebase origin main
+            git push origin HEAD:main
+          fi
+
+      - name: Enforce successful build
+        if: steps.app_build.outcome != 'success'
+        run: exit 1
