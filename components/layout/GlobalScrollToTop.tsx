@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { ArrowUp } from "lucide-react";
+import GlobalFloatingSearchPlaceholders from "@/components/ui/GlobalFloatingSearchPlaceholders";
 import {
   getAnimationDurationScale,
   getDocumentAnimationMode,
@@ -132,96 +133,99 @@ export default function GlobalScrollToTop() {
     : "bottom-[calc(1.25rem+env(safe-area-inset-bottom))] sm:bottom-[calc(1.5rem+env(safe-area-inset-bottom))] lg:bottom-8";
 
   return (
-    <AnimatePresence>
-      {visible ? (
-        <motion.button
-          key="global-scroll-to-top"
-          type="button"
-          aria-label="Scroll to top"
-          disabled={launching}
-          onClick={handleScrollToTop}
-          initial={{ opacity: 1, y: 0, scale: 1 }}
-          animate={
-            launching
-              ? motionDisabled
-                ? { opacity: 0 }
-                : {
-                    opacity: [1, 1, 0],
-                    y: [0, -10, -180],
-                    scale: [1, 1.08, 0.68],
-                    filter: ["blur(0px)", "blur(0px)", "blur(2px)"],
-                  }
-              : { opacity: 1, y: 0, scale: 1, filter: "blur(0px)" }
-          }
-          exit={{
-            opacity: 0,
-            y: motionDisabled ? 0 : -14,
-            scale: motionDisabled ? 1 : 0.82,
-            transition: {
-              duration: scaleAnimationSeconds(0.18, animationMode),
-              ease: motionEase,
-            },
-          }}
-          transition={
-            launching
-              ? {
-                  duration: motionDisabled
-                    ? 0
-                    : scaleAnimationSeconds(
-                        ROCKET_LAUNCH_DURATION_MS / 1000,
-                        animationMode,
-                      ),
-                  times: motionDisabled ? undefined : [0, 0.18, 1],
-                  ease: motionEase,
-                }
-              : {
-                  duration: scaleAnimationSeconds(0.18, animationMode),
-                  ease: motionEase,
-                }
-          }
-          whileHover={
-            launching || motionDisabled ? undefined : { y: -7, scale: 1.07 }
-          }
-          whileTap={
-            launching || motionDisabled ? undefined : { scale: 0.92 }
-          }
-          className={`fixed right-3 z-[70] grid size-11 appearance-none place-items-center border-0 !bg-transparent p-0 text-text-secondary !shadow-none outline-none transition-colors duration-200 [-webkit-tap-highlight-color:transparent] hover:!bg-transparent hover:text-text-primary focus:!bg-transparent focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-active active:!bg-transparent disabled:pointer-events-none sm:right-5 lg:right-8 ${positionClass}`}
-        >
-          <motion.span
-            aria-hidden="true"
+    <>
+      <GlobalFloatingSearchPlaceholders />
+      <AnimatePresence>
+        {visible ? (
+          <motion.button
+            key="global-scroll-to-top"
+            type="button"
+            aria-label="Scroll to top"
+            disabled={launching}
+            onClick={handleScrollToTop}
+            initial={{ opacity: 1, y: 0, scale: 1 }}
             animate={
-              launching || motionDisabled
-                ? { y: 0, scale: 1, rotate: 0 }
-                : {
-                    y: [0, -12, 0, 0],
-                    scale: [1, 1.2, 1, 1],
-                    rotate: [0, -3, 3, 0],
-                  }
+              launching
+                ? motionDisabled
+                  ? { opacity: 0 }
+                  : {
+                      opacity: [1, 1, 0],
+                      y: [0, -10, -180],
+                      scale: [1, 1.08, 0.68],
+                      filter: ["blur(0px)", "blur(0px)", "blur(2px)"],
+                    }
+                : { opacity: 1, y: 0, scale: 1, filter: "blur(0px)" }
             }
+            exit={{
+              opacity: 0,
+              y: motionDisabled ? 0 : -14,
+              scale: motionDisabled ? 1 : 0.82,
+              transition: {
+                duration: scaleAnimationSeconds(0.18, animationMode),
+                ease: motionEase,
+              },
+            }}
             transition={
-              launching || motionDisabled
-                ? { duration: 0 }
+              launching
+                ? {
+                    duration: motionDisabled
+                      ? 0
+                      : scaleAnimationSeconds(
+                          ROCKET_LAUNCH_DURATION_MS / 1000,
+                          animationMode,
+                        ),
+                    times: motionDisabled ? undefined : [0, 0.18, 1],
+                    ease: motionEase,
+                  }
                 : {
-                    duration: 1.25 * durationScale,
-                    times: [0, 0.24, 0.48, 1],
-                    repeat: Number.POSITIVE_INFINITY,
-                    repeatDelay: 0.45 * durationScale,
-                    ease: "easeInOut",
+                    duration: scaleAnimationSeconds(0.18, animationMode),
+                    ease: motionEase,
                   }
             }
-            className="grid place-items-center"
+            whileHover={
+              launching || motionDisabled ? undefined : { y: -7, scale: 1.07 }
+            }
+            whileTap={
+              launching || motionDisabled ? undefined : { scale: 0.92 }
+            }
+            className={`fixed right-3 z-[70] grid size-11 appearance-none place-items-center border-0 !bg-transparent p-0 text-text-secondary !shadow-none outline-none transition-colors duration-200 [-webkit-tap-highlight-color:transparent] hover:!bg-transparent hover:text-text-primary focus:!bg-transparent focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-active active:!bg-transparent disabled:pointer-events-none sm:right-5 lg:right-8 ${positionClass}`}
           >
-            <ArrowUp
-              key="scroll-arrow-weight-4"
-              size={36}
-              strokeWidth={4}
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              style={{ strokeWidth: 4 }}
-            />
-          </motion.span>
-        </motion.button>
-      ) : null}
-    </AnimatePresence>
+            <motion.span
+              aria-hidden="true"
+              animate={
+                launching || motionDisabled
+                  ? { y: 0, scale: 1, rotate: 0 }
+                  : {
+                      y: [0, -12, 0, 0],
+                      scale: [1, 1.2, 1, 1],
+                      rotate: [0, -3, 3, 0],
+                    }
+              }
+              transition={
+                launching || motionDisabled
+                  ? { duration: 0 }
+                  : {
+                      duration: 1.25 * durationScale,
+                      times: [0, 0.24, 0.48, 1],
+                      repeat: Number.POSITIVE_INFINITY,
+                      repeatDelay: 0.45 * durationScale,
+                      ease: "easeInOut",
+                    }
+              }
+              className="grid place-items-center"
+            >
+              <ArrowUp
+                key="scroll-arrow-weight-4"
+                size={36}
+                strokeWidth={4}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                style={{ strokeWidth: 4 }}
+              />
+            </motion.span>
+          </motion.button>
+        ) : null}
+      </AnimatePresence>
+    </>
   );
 }
