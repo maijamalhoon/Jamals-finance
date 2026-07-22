@@ -1,6 +1,6 @@
 "use client";
 
-import { type FormEvent, useMemo, useRef, useState } from "react";
+import { type FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { FilePlus2, Plus, ReceiptText, ShieldCheck, Trash2 } from "lucide-react";
 import { toast } from "sonner";
@@ -24,8 +24,25 @@ type RevenueAccountOption = {
   name: string;
 };
 
+type ProductOption = {
+  id: string;
+  sku: string;
+  name: string;
+  sales_price: number | string;
+  revenue_account_id: string;
+};
+
+type WarehouseOption = {
+  id: string;
+  code: string;
+  name: string;
+  is_default: boolean;
+};
+
 type InvoiceLine = {
   key: string;
+  productId: string;
+  warehouseId: string;
   description: string;
   quantity: string;
   unitPrice: string;
@@ -65,9 +82,16 @@ function requestKey() {
     : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
 }
 
+function numeric(value: string) {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : 0;
+}
+
 function newLine(defaultRevenueAccountId: string): InvoiceLine {
   return {
     key: requestKey(),
+    productId: "",
+    warehouseId: "",
     description: "",
     quantity: "1",
     unitPrice: "",
@@ -75,11 +99,6 @@ function newLine(defaultRevenueAccountId: string): InvoiceLine {
     taxRate: "0",
     revenueAccountId: defaultRevenueAccountId,
   };
-}
-
-function numeric(value: string) {
-  const parsed = Number(value);
-  return Number.isFinite(parsed) ? parsed : 0;
 }
 
 export default function CreateSalesInvoiceForm({
@@ -91,15 +110,16 @@ export default function CreateSalesInvoiceForm({
   const router = useRouter();
   const supabase = useMemo(() => createClient(), []);
   const today = useMemo(localDateString, []);
-  const defaultRevenueAccountId = revenueAccounts[0]?.id ?? "";
   const firstCustomer = customers[0] ?? null;
+  const defaultRevenueAccountId = revenueAccounts[0]?.id ?? "";
   const idempotencyKey = useRef(requestKey());
 
+  const [products, setProducts] = useState<ProductOption[]>([]);
+  const [warehouses, setWarehouses] = useState<WarehouseOption[]>([]);
+  const [catalogLoading, setCatalogLoading] = useState(true);
   const [customerId, setCustomerId] = useState(firstCustomer?.id ?? "");
   const [invoiceDate, setInvoiceDate] = useState(today);
-  const [dueDate, setDueDate] = useState(
-    addDays(today, firstCustomer?.paymentTermsDays ?? 0),
-  );
+  const [dueDate, setDueDate] = useState(addDays(today, firstCustomer?.paymentTermsDays ?? 0));
   const [currency, setCurrency] = useState(firstCustomer?.currency ?? baseCurrency);
   const [exchangeRate, setExchangeRate] = useState(
     (firstCustomer?.currency ?? baseCurrency) === baseCurrency ? "1" : "",
@@ -108,18 +128,55 @@ export default function CreateSalesInvoiceForm({
   const [lines, setLines] = useState<InvoiceLine[]>([newLine(defaultRevenueAccountId)]);
   const [saving, setSaving] = useState(false);
 
+  const defaultWarehouseId = warehouses.find((warehouse) => warehouse.is_default)?.id ?? warehouses[0]?.id ?? "";
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadCatalog() {
+      const [productsResult, warehousesResult] = await Promise.all([
+        supabase
+          .from("business_products")
+          .select("id, sku, name, sales_price, revenue_account_id")
+          .eq("business_id", businessId)
+          .eq("status", "active")
+          .order("name", { ascending: true }),
+        supabase
+          .from("business_warehouses")
+          .select("id, code, name, is_default")
+          .eq("business_id", businessId)
+          .eq("status", "active")
+          .order("is_default", { ascending: false })
+          .order("name", { ascending: true }),
+      ]);
+
+      if (cancelled) return;
+      if (productsResult.error || warehousesResult.error) {
+        console.error("Invoice inventory catalog load failed", {
+          productCode: productsResult.error?.code,
+          warehouseCode: warehousesResult.error?.code,
+        });
+        toast.error("Inventory catalog could not be loaded. Service invoices are still available.");
+      }
+      setProducts((productsResult.data ?? []) as ProductOption[]);
+      setWarehouses((warehousesResult.data ?? []) as WarehouseOption[]);
+      setCatalogLoading(false);
+    }
+
+    void loadCatalog();
+    return () => {
+      cancelled = true;
+    };
+  }, [businessId, supabase]);
+
   const totals = useMemo(
     () =>
       lines.reduce(
         (result, line) => {
-          const quantity = numeric(line.quantity);
-          const unitPrice = numeric(line.unitPrice);
-          const discountPercent = numeric(line.discountPercent);
-          const taxRate = numeric(line.taxRate);
-          const gross = quantity * unitPrice;
-          const discount = gross * (discountPercent / 100);
+          const gross = numeric(line.quantity) * numeric(line.unitPrice);
+          const discount = gross * (numeric(line.discountPercent) / 100);
           const net = gross - discount;
-          const tax = net * (taxRate / 100);
+          const tax = net * (numeric(line.taxRate) / 100);
           return {
             gross: result.gross + gross,
             discount: result.discount + discount,
@@ -138,6 +195,22 @@ export default function CreateSalesInvoiceForm({
     );
   }
 
+  function selectProduct(key: string, productId: string) {
+    if (!productId) {
+      updateLine(key, { productId: "", warehouseId: "" });
+      return;
+    }
+    const product = products.find((item) => item.id === productId);
+    if (!product) return;
+    updateLine(key, {
+      productId,
+      warehouseId: defaultWarehouseId,
+      description: product.name,
+      unitPrice: String(product.sales_price ?? ""),
+      revenueAccountId: product.revenue_account_id,
+    });
+  }
+
   function handleCustomerChange(nextCustomerId: string) {
     setCustomerId(nextCustomerId);
     const customer = customers.find((item) => item.id === nextCustomerId);
@@ -147,21 +220,13 @@ export default function CreateSalesInvoiceForm({
     setDueDate(addDays(invoiceDate, customer.paymentTermsDays));
   }
 
-  function handleInvoiceDateChange(nextDate: string) {
-    setInvoiceDate(nextDate);
-    const customer = customers.find((item) => item.id === customerId);
-    setDueDate(addDays(nextDate, customer?.paymentTermsDays ?? 0));
-  }
-
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (saving) return;
-
     if (!customerId) {
       toast.error("Select a customer.");
       return;
     }
-
     if (!invoiceDate || !dueDate || dueDate < invoiceDate) {
       toast.error("Due date cannot be before the invoice date.");
       return;
@@ -172,7 +237,6 @@ export default function CreateSalesInvoiceForm({
       toast.error("Enter a valid exchange rate greater than zero.");
       return;
     }
-
     if (currency === baseCurrency && parsedExchangeRate !== 1) {
       toast.error(`${baseCurrency} invoices must use an exchange rate of 1.`);
       return;
@@ -185,6 +249,8 @@ export default function CreateSalesInvoiceForm({
       discount_percent: numeric(line.discountPercent),
       tax_rate: numeric(line.taxRate),
       revenue_account_id: line.revenueAccountId,
+      product_id: line.productId || null,
+      warehouse_id: line.productId ? line.warehouseId || defaultWarehouseId || null : null,
     }));
 
     const invalidLine = preparedLines.some(
@@ -196,16 +262,16 @@ export default function CreateSalesInvoiceForm({
         line.discount_percent > 100 ||
         line.tax_rate < 0 ||
         line.tax_rate > 100 ||
-        !line.revenue_account_id,
+        !line.revenue_account_id ||
+        (line.product_id !== null && line.warehouse_id === null),
     );
-
     if (invalidLine || totals.total <= 0) {
-      toast.error("Complete every invoice line with valid quantity, price, discount, and tax.");
+      toast.error("Complete every line with valid product, warehouse, quantity, price, discount, and tax.");
       return;
     }
 
     setSaving(true);
-    const { error } = await supabase.rpc("create_business_sales_invoice", {
+    const { error } = await supabase.rpc("create_business_stock_sales_invoice", {
       p_business_id: businessId,
       p_customer_id: customerId,
       p_invoice_date: invoiceDate,
@@ -219,15 +285,15 @@ export default function CreateSalesInvoiceForm({
     setSaving(false);
 
     if (error) {
-      console.error("Sales invoice creation failed", { code: error.code });
-      toast.error("Invoice was not issued. No partial invoice or journal was saved.");
+      console.error("Stock-aware sales invoice creation failed", { code: error.code });
+      toast.error("Invoice was not issued. Check stock availability and line details; nothing partial was saved.");
       return;
     }
 
     idempotencyKey.current = requestKey();
     setNotes("");
     setLines([newLine(defaultRevenueAccountId)]);
-    toast.success("Invoice issued and accounting journal posted.");
+    toast.success("Invoice issued. Revenue, stock, and COGS were posted where applicable.");
     router.refresh();
   }
 
@@ -240,8 +306,7 @@ export default function CreateSalesInvoiceForm({
         <div>
           <h2 className="text-base font-black text-text-primary sm:text-lg">Create and issue invoice</h2>
           <p className="mt-1 text-sm leading-6 text-text-secondary">
-            The server recalculates every line, locks currency, issues the invoice, and posts
-            Accounts Receivable, Revenue, and Tax in one database transaction.
+            Service lines post revenue only. Inventory products also lock stock, issue units, and post weighted-average Cost of Goods Sold atomically.
           </p>
         </div>
       </div>
@@ -250,87 +315,40 @@ export default function CreateSalesInvoiceForm({
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           <label className="space-y-2 md:col-span-2">
             <span className="text-sm font-bold text-text-primary">Customer</span>
-            <select
-              value={customerId}
-              onChange={(event) => handleCustomerChange(event.target.value)}
-              className="field-input min-h-11 w-full"
-              disabled={saving}
-              required
-            >
-              {customers.map((customer) => (
-                <option key={customer.id} value={customer.id}>
-                  {customer.name}
-                </option>
-              ))}
+            <select value={customerId} onChange={(event) => handleCustomerChange(event.target.value)} className="field-input min-h-11 w-full" disabled={saving} required>
+              {customers.map((customer) => <option key={customer.id} value={customer.id}>{customer.name}</option>)}
             </select>
           </label>
-
           <label className="space-y-2">
             <span className="text-sm font-bold text-text-primary">Invoice date</span>
-            <Input
-              type="date"
-              value={invoiceDate}
-              onChange={(event) => handleInvoiceDateChange(event.target.value)}
-              disabled={saving}
-              required
-            />
+            <Input type="date" value={invoiceDate} onChange={(event) => {
+              const nextDate = event.target.value;
+              setInvoiceDate(nextDate);
+              const customer = customers.find((item) => item.id === customerId);
+              setDueDate(addDays(nextDate, customer?.paymentTermsDays ?? 0));
+            }} disabled={saving} required />
           </label>
-
           <label className="space-y-2">
             <span className="text-sm font-bold text-text-primary">Due date</span>
-            <Input
-              type="date"
-              value={dueDate}
-              min={invoiceDate}
-              onChange={(event) => setDueDate(event.target.value)}
-              disabled={saving}
-              required
-            />
+            <Input type="date" value={dueDate} min={invoiceDate} onChange={(event) => setDueDate(event.target.value)} disabled={saving} required />
           </label>
-
           <label className="space-y-2">
             <span className="text-sm font-bold text-text-primary">Invoice currency</span>
-            <select
-              value={currency}
-              onChange={(event) => {
-                const nextCurrency = event.target.value;
-                setCurrency(nextCurrency);
-                setExchangeRate(nextCurrency === baseCurrency ? "1" : "");
-              }}
-              className="field-input min-h-11 w-full"
-              disabled={saving}
-            >
-              {SUPPORTED_CURRENCIES.map((item) => (
-                <option key={item} value={item}>
-                  {item}
-                </option>
-              ))}
+            <select value={currency} onChange={(event) => {
+              const nextCurrency = event.target.value;
+              setCurrency(nextCurrency);
+              setExchangeRate(nextCurrency === baseCurrency ? "1" : "");
+            }} className="field-input min-h-11 w-full" disabled={saving}>
+              {SUPPORTED_CURRENCIES.map((item) => <option key={item} value={item}>{item}</option>)}
             </select>
           </label>
-
-          <label className="space-y-2 md:col-span-1 xl:col-span-2">
-            <span className="text-sm font-bold text-text-primary">
-              Exchange rate to {baseCurrency}
-            </span>
-            <Input
-              value={exchangeRate}
-              onChange={(event) => setExchangeRate(event.target.value)}
-              inputMode="decimal"
-              placeholder={currency === baseCurrency ? "1" : `1 ${currency} in ${baseCurrency}`}
-              disabled={saving || currency === baseCurrency}
-              required
-            />
+          <label className="space-y-2 xl:col-span-2">
+            <span className="text-sm font-bold text-text-primary">Exchange rate to {baseCurrency}</span>
+            <Input value={exchangeRate} onChange={(event) => setExchangeRate(event.target.value)} inputMode="decimal" placeholder={currency === baseCurrency ? "1" : `1 ${currency} in ${baseCurrency}`} disabled={saving || currency === baseCurrency} required />
           </label>
-
           <label className="space-y-2 md:col-span-2 xl:col-span-1">
             <span className="text-sm font-bold text-text-primary">Invoice notes</span>
-            <Input
-              value={notes}
-              onChange={(event) => setNotes(event.target.value)}
-              placeholder="Optional reference or terms"
-              maxLength={1000}
-              disabled={saving}
-            />
+            <Input value={notes} onChange={(event) => setNotes(event.target.value)} placeholder="Optional reference or terms" maxLength={1000} disabled={saving} />
           </label>
         </div>
 
@@ -340,117 +358,60 @@ export default function CreateSalesInvoiceForm({
               <p className="text-xs font-black uppercase tracking-[0.12em] text-primary">Line items</p>
               <h3 className="mt-1 font-black text-text-primary">Products and services</h3>
             </div>
-            <Button
-              type="button"
-              variant="secondary"
-              size="sm"
-              onClick={() => setLines((current) => [...current, newLine(defaultRevenueAccountId)])}
-              disabled={saving || lines.length >= 100}
-            >
+            <Button type="button" variant="secondary" size="sm" onClick={() => setLines((current) => [...current, newLine(defaultRevenueAccountId)])} disabled={saving || lines.length >= 100}>
               <Plus aria-hidden="true" /> Add line
             </Button>
           </div>
 
           <div className="mt-4 space-y-3">
             {lines.map((line, index) => (
-              <div
-                key={line.key}
-                className="rounded-[var(--radius-button)] bg-surface-secondary px-3 py-4 sm:px-4"
-              >
+              <div key={line.key} className="rounded-[var(--radius-button)] bg-surface-secondary px-3 py-4 sm:px-4">
                 <div className="flex items-center justify-between gap-3">
                   <span className="text-xs font-black text-text-secondary">Line {index + 1}</span>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon-sm"
-                    aria-label={`Remove invoice line ${index + 1}`}
-                    onClick={() =>
-                      setLines((current) => current.filter((item) => item.key !== line.key))
-                    }
-                    disabled={saving || lines.length === 1}
-                  >
+                  <Button type="button" variant="ghost" size="icon-sm" aria-label={`Remove invoice line ${index + 1}`} onClick={() => setLines((current) => current.filter((item) => item.key !== line.key))} disabled={saving || lines.length === 1}>
                     <Trash2 aria-hidden="true" />
                   </Button>
                 </div>
 
                 <div className="mt-3 grid gap-3 md:grid-cols-2 xl:grid-cols-6">
+                  <label className="space-y-2 md:col-span-2 xl:col-span-3">
+                    <span className="text-xs font-bold text-text-secondary">Inventory product · optional</span>
+                    <select value={line.productId} onChange={(event) => selectProduct(line.key, event.target.value)} className="field-input min-h-11 w-full" disabled={saving || catalogLoading}>
+                      <option value="">Service or non-stock line</option>
+                      {products.map((product) => <option key={product.id} value={product.id}>{product.sku} · {product.name}</option>)}
+                    </select>
+                  </label>
+                  <label className="space-y-2 md:col-span-2 xl:col-span-3">
+                    <span className="text-xs font-bold text-text-secondary">Warehouse</span>
+                    <select value={line.warehouseId} onChange={(event) => updateLine(line.key, { warehouseId: event.target.value })} className="field-input min-h-11 w-full" disabled={saving || !line.productId}>
+                      <option value="">Select warehouse</option>
+                      {warehouses.map((warehouse) => <option key={warehouse.id} value={warehouse.id}>{warehouse.code} · {warehouse.name}{warehouse.is_default ? " · Default" : ""}</option>)}
+                    </select>
+                  </label>
                   <label className="space-y-2 md:col-span-2 xl:col-span-2">
                     <span className="text-xs font-bold text-text-secondary">Description</span>
-                    <Input
-                      value={line.description}
-                      onChange={(event) =>
-                        updateLine(line.key, { description: event.target.value })
-                      }
-                      placeholder="Product or service"
-                      maxLength={300}
-                      disabled={saving}
-                      required
-                    />
+                    <Input value={line.description} onChange={(event) => updateLine(line.key, { description: event.target.value })} placeholder="Product or service" maxLength={300} disabled={saving} required />
                   </label>
-
                   <label className="space-y-2">
                     <span className="text-xs font-bold text-text-secondary">Quantity</span>
-                    <Input
-                      value={line.quantity}
-                      onChange={(event) => updateLine(line.key, { quantity: event.target.value })}
-                      inputMode="decimal"
-                      placeholder="1"
-                      disabled={saving}
-                      required
-                    />
+                    <Input value={line.quantity} onChange={(event) => updateLine(line.key, { quantity: event.target.value })} inputMode="decimal" placeholder="1" disabled={saving} required />
                   </label>
-
                   <label className="space-y-2">
                     <span className="text-xs font-bold text-text-secondary">Unit price</span>
-                    <Input
-                      value={line.unitPrice}
-                      onChange={(event) => updateLine(line.key, { unitPrice: event.target.value })}
-                      inputMode="decimal"
-                      placeholder="0"
-                      disabled={saving}
-                      required
-                    />
+                    <Input value={line.unitPrice} onChange={(event) => updateLine(line.key, { unitPrice: event.target.value })} inputMode="decimal" placeholder="0" disabled={saving} required />
                   </label>
-
                   <label className="space-y-2">
                     <span className="text-xs font-bold text-text-secondary">Discount %</span>
-                    <Input
-                      value={line.discountPercent}
-                      onChange={(event) =>
-                        updateLine(line.key, { discountPercent: event.target.value })
-                      }
-                      inputMode="decimal"
-                      placeholder="0"
-                      disabled={saving}
-                    />
+                    <Input value={line.discountPercent} onChange={(event) => updateLine(line.key, { discountPercent: event.target.value })} inputMode="decimal" placeholder="0" disabled={saving} />
                   </label>
-
                   <label className="space-y-2">
                     <span className="text-xs font-bold text-text-secondary">Tax %</span>
-                    <Input
-                      value={line.taxRate}
-                      onChange={(event) => updateLine(line.key, { taxRate: event.target.value })}
-                      inputMode="decimal"
-                      placeholder="0"
-                      disabled={saving}
-                    />
+                    <Input value={line.taxRate} onChange={(event) => updateLine(line.key, { taxRate: event.target.value })} inputMode="decimal" placeholder="0" disabled={saving} />
                   </label>
-
                   <label className="space-y-2 md:col-span-2 xl:col-span-6">
                     <span className="text-xs font-bold text-text-secondary">Revenue account</span>
-                    <select
-                      value={line.revenueAccountId}
-                      onChange={(event) =>
-                        updateLine(line.key, { revenueAccountId: event.target.value })
-                      }
-                      className="field-input min-h-11 w-full"
-                      disabled={saving}
-                    >
-                      {revenueAccounts.map((account) => (
-                        <option key={account.id} value={account.id}>
-                          {account.code} · {account.name}
-                        </option>
-                      ))}
+                    <select value={line.revenueAccountId} onChange={(event) => updateLine(line.key, { revenueAccountId: event.target.value })} className="field-input min-h-11 w-full" disabled={saving || Boolean(line.productId)}>
+                      {revenueAccounts.map((account) => <option key={account.id} value={account.id}>{account.code} · {account.name}</option>)}
                     </select>
                   </label>
                 </div>
@@ -462,41 +423,18 @@ export default function CreateSalesInvoiceForm({
         <div className="grid gap-4 rounded-[var(--radius-button)] bg-surface-secondary px-4 py-4 lg:grid-cols-[1fr_auto] lg:items-end">
           <div className="flex items-start gap-2 text-sm text-text-secondary">
             <ShieldCheck className="mt-0.5 size-4 shrink-0 text-success" aria-hidden="true" />
-            <span>
-              Preview totals are for convenience. PostgreSQL independently recalculates and validates
-              every amount before posting.
-            </span>
+            <span>PostgreSQL recalculates totals and atomically validates stock, revenue, tax, inventory value, and COGS before saving.</span>
           </div>
-
           <dl className="grid min-w-[18rem] grid-cols-2 gap-x-5 gap-y-2 text-sm">
-            <dt className="text-text-secondary">Gross</dt>
-            <dd className="text-right font-black tabular-nums text-text-primary">
-              {currency} {totals.gross.toFixed(2)}
-            </dd>
-            <dt className="text-text-secondary">Discount</dt>
-            <dd className="text-right font-black tabular-nums text-text-primary">
-              {currency} {totals.discount.toFixed(2)}
-            </dd>
-            <dt className="text-text-secondary">Tax</dt>
-            <dd className="text-right font-black tabular-nums text-text-primary">
-              {currency} {totals.tax.toFixed(2)}
-            </dd>
-            <dt className="font-black text-text-primary">Invoice total</dt>
-            <dd className="text-right text-base font-black tabular-nums text-primary">
-              {currency} {totals.total.toFixed(2)}
-            </dd>
+            <dt className="text-text-secondary">Gross</dt><dd className="text-right font-black tabular-nums text-text-primary">{currency} {totals.gross.toFixed(2)}</dd>
+            <dt className="text-text-secondary">Discount</dt><dd className="text-right font-black tabular-nums text-text-primary">{currency} {totals.discount.toFixed(2)}</dd>
+            <dt className="text-text-secondary">Tax</dt><dd className="text-right font-black tabular-nums text-text-primary">{currency} {totals.tax.toFixed(2)}</dd>
+            <dt className="font-black text-text-primary">Invoice total</dt><dd className="text-right text-base font-black tabular-nums text-primary">{currency} {totals.total.toFixed(2)}</dd>
           </dl>
         </div>
 
-        <Button
-          type="submit"
-          size="lg"
-          loading={saving}
-          loadingLabel="Issuing invoice..."
-          className="w-full sm:w-auto"
-        >
-          <FilePlus2 aria-hidden="true" />
-          Issue invoice and post journal
+        <Button type="submit" size="lg" loading={saving} loadingLabel="Issuing invoice..." className="w-full sm:w-auto">
+          <FilePlus2 aria-hidden="true" /> Issue invoice and post journal
         </Button>
       </form>
     </section>
