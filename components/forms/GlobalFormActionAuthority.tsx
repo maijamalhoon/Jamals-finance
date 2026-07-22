@@ -2,53 +2,12 @@
 
 import { useEffect } from "react";
 
-const ACTION_PATTERN = /^(add|apply|archive|cancel|cash out|choose|confirm|create|delete|download|enable|export|pay|record|refund|remove|resend|reset|restore|retry|save|send|set|sign out|transfer|update|upload|verify|withdraw)\b/i;
+const ACTION_PATTERN = /^(add|apply|archive|cancel|cash out|confirm|create|delete|download|enable|export|pay|record|refund|remove|resend|reset|restore|retry|save|send|set|sign out|transfer|update|upload|verify|withdraw)\b/i;
 const LOADING_PATTERN = /^(adding|applying|archiving|cancelling|confirming|creating|deleting|downloading|enabling|exporting|paying|processing|recording|refunding|removing|resending|resetting|restoring|retrying|saving|sending|signing out|transferring|updating|uploading|verifying|withdrawing)\b/i;
 const CONFIRMATION_TITLE_PATTERN = /^(archive|cash out|confirm|delete|refund|remove|restore|sign out|transfer|withdraw)\b/i;
 
 function compactText(value: string) {
   return value.replace(/\s+/g, " ").replace(/\.{3,}/g, "…").trim();
-}
-
-function shortActionLabel(value: string) {
-  const label = compactText(value);
-  const lower = label.toLowerCase();
-
-  if (!label) return "Action";
-  if (LOADING_PATTERN.test(label)) {
-    if (lower.startsWith("signing out")) return "Signing Out…";
-    if (lower.startsWith("processing")) return "Processing…";
-    const verb = label.split(/\s+/)[0].replace(/…?$/, "");
-    return `${verb.charAt(0).toUpperCase()}${verb.slice(1).toLowerCase()}…`;
-  }
-
-  if (lower.startsWith("cash out")) return "Cash Out";
-  if (lower.startsWith("sign out")) return "Sign Out";
-  if (lower.startsWith("choose")) return "Choose";
-  if (lower.startsWith("resend")) return "Resend";
-  if (lower.startsWith("record") || lower.startsWith("pay")) return "Pay";
-  if (lower.startsWith("save") || lower.startsWith("set")) return "Save";
-  if (lower.startsWith("add")) return "Add";
-  if (lower.startsWith("create")) return "Create";
-  if (lower.startsWith("update")) return "Update";
-  if (lower.startsWith("delete") || lower.startsWith("remove")) return "Delete";
-  if (lower.startsWith("send")) return "Send";
-  if (lower.startsWith("verify")) return "Verify";
-  if (lower.startsWith("withdraw")) return "Withdraw";
-  if (lower.startsWith("transfer")) return "Transfer";
-  if (lower.startsWith("refund")) return "Refund";
-  if (lower.startsWith("apply")) return "Apply";
-  if (lower.startsWith("confirm")) return "Confirm";
-  if (lower.startsWith("download") || lower.startsWith("export")) return "Download";
-  if (lower.startsWith("upload")) return "Upload";
-  if (lower.startsWith("enable")) return "Enable";
-  if (lower.startsWith("archive")) return "Archive";
-  if (lower.startsWith("restore")) return "Restore";
-  if (lower.startsWith("reset")) return "Reset";
-  if (lower.startsWith("retry")) return "Retry";
-  if (lower.startsWith("cancel")) return "Cancel";
-
-  return label.length <= 14 ? label : label.split(" ").slice(0, 2).join(" ");
 }
 
 function isConfirmationDialog(dialog: HTMLElement) {
@@ -59,18 +18,15 @@ function isConfirmationDialog(dialog: HTMLElement) {
 }
 
 function getActionRoots() {
-  const roots = new Set<HTMLElement>();
-
-  document
-    .querySelectorAll<HTMLElement>('.finance-modal-content, [data-slot="dialog-content"]')
-    .forEach((dialog) => {
-      if (dialog.hasAttribute("data-global-confirm-dialog")) return;
-      if (dialog.classList.contains("finance-modal-content") || isConfirmationDialog(dialog)) {
-        roots.add(dialog);
-      }
-    });
-
-  return Array.from(roots);
+  return Array.from(
+    document.querySelectorAll<HTMLElement>(
+      '.finance-modal-content, [data-slot="dialog-content"]',
+    ),
+  ).filter(
+    (dialog) =>
+      dialog.classList.contains("finance-modal-content") ||
+      isConfirmationDialog(dialog),
+  );
 }
 
 function isDecorativeOrNavigationButton(button: HTMLButtonElement) {
@@ -94,38 +50,73 @@ function isDecorativeOrNavigationButton(button: HTMLButtonElement) {
 
   const label = compactText(button.textContent ?? "");
   if (!label) return true;
-  if (/^(back|view)\b/i.test(label)) return true;
-
-  return false;
+  return /^(back|view|max|swap)\b/i.test(label);
 }
 
-function shouldManageAction(button: HTMLButtonElement) {
-  if (isDecorativeOrNavigationButton(button)) return false;
-  if (button.type === "submit") return true;
-  if (button.closest('.finance-modal-footer, [data-slot="dialog-footer"]')) return true;
-
+function hasActionCopy(button: HTMLButtonElement) {
   const label = compactText(button.textContent ?? "");
   return ACTION_PATTERN.test(label) || LOADING_PATTERN.test(label);
 }
 
-function markAction(button: HTMLButtonElement) {
-  if (!shouldManageAction(button)) return;
+function shouldManageAction(button: HTMLButtonElement, root: HTMLElement) {
+  if (isDecorativeOrNavigationButton(button)) return false;
 
-  const originalLabel = compactText(button.textContent ?? "");
-  button.dataset.jfFormAction = "true";
-  button.dataset.jfFormActionLabel = shortActionLabel(originalLabel);
-
-  if (button.dataset.jfGlobalGeneratedActionAria === "true") {
-    button.setAttribute("aria-label", originalLabel);
-  } else if (!button.hasAttribute("aria-label") && originalLabel) {
-    button.setAttribute("aria-label", originalLabel);
-    button.dataset.jfGlobalGeneratedActionAria = "true";
+  if (
+    button.closest('.finance-modal-footer, [data-slot="dialog-footer"]')
+  ) {
+    return true;
   }
+
+  if (button.type === "submit") return true;
+
+  if (button.closest(".settings-security-panel")) {
+    return hasActionCopy(button);
+  }
+
+  if (isConfirmationDialog(root)) {
+    return hasActionCopy(button);
+  }
+
+  return false;
+}
+
+function clearLegacyGeneratedPresentation(button: HTMLButtonElement) {
+  delete button.dataset.jfFormActionLabel;
+  delete button.dataset.jfInlineFormAction;
+
+  if (
+    button.dataset.jfGeneratedActionAria === "true" ||
+    button.dataset.jfGlobalGeneratedActionAria === "true"
+  ) {
+    button.removeAttribute("aria-label");
+  }
+
+  delete button.dataset.jfGeneratedActionAria;
+  delete button.dataset.jfGlobalGeneratedActionAria;
+}
+
+function syncAction(button: HTMLButtonElement, root: HTMLElement) {
+  const managed = shouldManageAction(button, root);
+
+  if (!managed) {
+    if (button.dataset.jfGlobalActionManaged === "true") {
+      delete button.dataset.jfFormAction;
+      delete button.dataset.jfGlobalActionManaged;
+    }
+    clearLegacyGeneratedPresentation(button);
+    return;
+  }
+
+  button.dataset.jfFormAction = "true";
+  button.dataset.jfGlobalActionManaged = "true";
+  clearLegacyGeneratedPresentation(button);
 }
 
 function syncActions() {
   getActionRoots().forEach((root) => {
-    root.querySelectorAll<HTMLButtonElement>("button").forEach(markAction);
+    root
+      .querySelectorAll<HTMLButtonElement>("button")
+      .forEach((button) => syncAction(button, root));
   });
 }
 
@@ -142,23 +133,35 @@ export default function GlobalFormActionAuthority() {
     };
 
     syncActions();
+
     const observer = new MutationObserver(schedule);
     observer.observe(document.body, {
       childList: true,
       subtree: true,
       characterData: true,
+      attributes: true,
+      attributeFilter: [
+        "class",
+        "disabled",
+        "aria-label",
+        "data-jf-form-action",
+        "data-jf-form-action-label",
+        "data-jf-inline-form-action",
+      ],
     });
 
     return () => {
       observer.disconnect();
       if (frame !== null) window.cancelAnimationFrame(frame);
+
       document
         .querySelectorAll<HTMLButtonElement>(
-          'button[data-jf-global-generated-action-aria="true"]',
+          'button[data-jf-global-action-managed="true"]',
         )
         .forEach((button) => {
-          button.removeAttribute("aria-label");
-          delete button.dataset.jfGlobalGeneratedActionAria;
+          delete button.dataset.jfFormAction;
+          delete button.dataset.jfGlobalActionManaged;
+          clearLegacyGeneratedPresentation(button);
         });
     };
   }, []);
