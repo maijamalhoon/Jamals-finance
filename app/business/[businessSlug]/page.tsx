@@ -13,6 +13,7 @@ import {
   ReceiptText,
   ShieldCheck,
   ShoppingCart,
+  UsersRound,
 } from "lucide-react";
 
 import { createClient } from "@/lib/supabase/server";
@@ -82,6 +83,13 @@ const MODULES = [
     route: "crm",
   },
   {
+    key: "team",
+    label: "Team & permissions",
+    description: "Invitations, employee roles, custom permissions, ownership, and audit history.",
+    icon: UsersRound,
+    route: "team",
+  },
+  {
     key: "reports",
     label: "Reports",
     description: "Profit and loss, balance sheet, cash flow, aging, stock, and returns reports.",
@@ -146,6 +154,11 @@ export default async function BusinessWorkspacePage({
     permissions.includes("*") ||
     permissions.includes("crm.view") ||
     permissions.includes("crm.manage");
+  const canViewTeam =
+    ["owner", "admin", "accountant", "manager", "viewer"].includes(role) ||
+    permissions.includes("*") ||
+    permissions.includes("team.view") ||
+    permissions.includes("team.manage");
 
   return (
     <main className="min-h-dvh bg-background px-4 py-5 text-foreground sm:px-6 sm:py-7 lg:px-8 lg:py-8">
@@ -213,16 +226,22 @@ export default async function BusinessWorkspacePage({
             </h2>
             <p className="mt-2 max-w-3xl text-sm leading-6 text-text-secondary">
               Modules are configured from the nature of business. Accounting is live first because every invoice,
-              payment, purchase, stock movement, CRM conversion, and report must use its verified source of truth.
+              payment, purchase, stock movement, CRM conversion, team permission, and report must use its verified source of truth.
             </p>
           </div>
 
           <div className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
             {MODULES.map((module) => {
               const Icon = module.icon;
-              const enabled = enabledModules[module.key] === true;
+              const enabled = module.key === "team" ? true : enabledModules[module.key] === true;
               const accessible =
-                module.key === "reports" ? canViewReports : module.key === "crm" ? canViewCrm : true;
+                module.key === "reports"
+                  ? canViewReports
+                  : module.key === "crm"
+                    ? canViewCrm
+                    : module.key === "team"
+                      ? canViewTeam
+                      : true;
               const openable = enabled && accessible;
               const content = (
                 <>
@@ -282,10 +301,9 @@ export default async function BusinessWorkspacePage({
           <div className="flex items-start gap-3">
             <BookOpenCheck aria-hidden="true" className="mt-0.5 size-5 shrink-0" />
             <div>
-              <h2 className="font-black">Accounting source of truth is active</h2>
+              <h2 className="font-black">Accounting and access control are active</h2>
               <p className="mt-1 text-sm leading-6 opacity-80">
-                Balanced journals, fiscal periods, currency conversion, immutable posting, CRM conversions, and
-                verified reports are available. Operational modules do not calculate financial results independently.
+                Balanced journals, fiscal periods, currency conversion, immutable posting, team audit history, CRM conversions, and verified reports are available. Operational modules do not calculate financial results independently.
               </p>
             </div>
           </div>
