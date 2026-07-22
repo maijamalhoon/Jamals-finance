@@ -1,0 +1,22 @@
+create index business_crm_pipelines_created_by_idx on public.business_crm_pipelines(created_by);
+create index business_crm_settings_default_pipeline_idx on public.business_crm_settings(business_id,default_pipeline_id);
+
+create index business_crm_leads_owner_user_idx on public.business_crm_leads(owner_user_id);
+create index business_crm_leads_converted_contact_idx on public.business_crm_leads(business_id,converted_contact_id);
+create index business_crm_leads_converted_opportunity_idx on public.business_crm_leads(business_id,converted_opportunity_id);
+create index business_crm_leads_created_by_idx on public.business_crm_leads(created_by);
+
+create index business_crm_opportunities_pipeline_idx on public.business_crm_opportunities(business_id,pipeline_id);
+create index business_crm_opportunities_lead_idx on public.business_crm_opportunities(business_id,lead_id);
+create index business_crm_opportunities_contact_idx on public.business_crm_opportunities(business_id,contact_id);
+create index business_crm_opportunities_owner_user_idx on public.business_crm_opportunities(owner_user_id);
+create index business_crm_opportunities_invoice_idx on public.business_crm_opportunities(business_id,invoice_id);
+create index business_crm_opportunities_created_by_idx on public.business_crm_opportunities(created_by);
+
+create index business_crm_opportunity_lines_opportunity_idx on public.business_crm_opportunity_lines(business_id,opportunity_id);
+create index business_crm_opportunity_lines_warehouse_idx on public.business_crm_opportunity_lines(business_id,warehouse_id);
+create index business_crm_opportunity_lines_revenue_idx on public.business_crm_opportunity_lines(business_id,revenue_account_id);
+
+create index business_crm_activities_contact_idx on public.business_crm_activities(business_id,contact_id);
+create index business_crm_activities_assigned_to_idx on public.business_crm_activities(assigned_to);
+create index business_crm_activities_created_by_idx on public.business_crm_activities(created_by);
