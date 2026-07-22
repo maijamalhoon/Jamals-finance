@@ -1,0 +1,2 @@
+Banking and reconciliation verification branch.
+No production alias, UI behavior, financial data, or business logic is changed by this file.
