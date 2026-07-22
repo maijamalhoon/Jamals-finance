@@ -18,9 +18,13 @@ There is no Chrome, WebView, Trusted Web Activity, or website rendering in this 
 
 The development app uses `com.jamalsfinance.app.native.dev`, so it cannot overwrite the currently working TWA app. The production package will switch to `com.jamalsfinance.app` only after feature parity, data-isolation tests, signing-key verification, and migration testing pass.
 
-## Configure Android
+## Public client configuration
 
-Copy `local.properties.example` to `local.properties` and enter only the public Supabase URL and publishable/anon client key. Never add a service-role key.
+`public.properties` contains only the Supabase project URL and modern publishable client key. Both values are intended for untrusted client applications and remain protected by Supabase Auth and database Row Level Security.
+
+Never place a service-role key, database password, signing key, or other privileged secret in `public.properties`, `local.properties`, the mobile binary, or GitHub.
+
+For a local non-production override, copy `local.properties.example` to `local.properties`. Local values take precedence and the file is ignored by Git.
 
 ## Build
 
