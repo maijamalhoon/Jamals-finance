@@ -96,6 +96,7 @@ export default function MobileNav({ notificationSlot }: MobileNavProps) {
       <Sheet open={open} onOpenChange={setOpen}>
         <motion.div
           data-mobile-control-cluster
+          data-mobile-header-badge-group="left"
           initial={false}
           animate={
             searchOpen
@@ -245,6 +246,7 @@ export default function MobileNav({ notificationSlot }: MobileNavProps) {
 
       <motion.div
         data-mobile-control-cluster
+        data-mobile-header-badge-group="right"
         initial={false}
         animate={
           searchOpen
