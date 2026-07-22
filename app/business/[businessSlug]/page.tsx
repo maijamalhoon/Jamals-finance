@@ -71,7 +71,7 @@ const MODULES = [
     label: "Inventory",
     description: "Products, warehouses, stock movements, valuation, and reorder control.",
     icon: Boxes,
-    route: null,
+    route: "inventory",
   },
   {
     key: "crm",
@@ -297,7 +297,7 @@ export default async function BusinessWorkspacePage({
               <h2 className="font-black">Accounting source of truth is active</h2>
               <p className="mt-1 text-sm leading-6 opacity-80">
                 Balanced journals, fiscal periods, currency conversion, immutable posting, and trial
-                balance are now available. Operational modules will post into this ledger instead of
+                balance are now available. Operational modules post into this ledger instead of
                 calculating financial results independently.
               </p>
             </div>
