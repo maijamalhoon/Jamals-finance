@@ -1,0 +1,8 @@
+{
+  "status": "failure",
+  "runId": "29953882907",
+  "commit": "a2047924c70ac982f8dc1a36d8364475454be1fe",
+  "workflow": "native-v05-bootstrap-verify",
+  "websiteTypecheck": "not-run",
+  "nativeBuild": "not-run"
+}
