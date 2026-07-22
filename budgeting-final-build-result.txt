@@ -1,0 +1,100 @@
+status=success
+source_sha=c386fc2a356be1467d68c7bf6fe43c2b1a1872d9
+verified_at=2026-07-22T20:45:16Z
+--- build log tail ---
+
+> jamals-finance@0.1.0 build
+> next build
+
+⚠ No build cache found. Please configure build caching for faster rebuilds. Read more: https://nextjs.org/docs/messages/no-cache
+Attention: Next.js now collects completely anonymous telemetry regarding usage.
+This information is used to shape Next.js' roadmap and prioritize features.
+You can learn more, including how to opt-out if you'd not like to participate in this anonymous program, by visiting the following URL:
+https://nextjs.org/telemetry
+
+▲ Next.js 16.2.9 (Turbopack)
+
+  Creating an optimized production build ...
+✓ Compiled successfully in 19.2s
+  Running TypeScript ...
+  Finished TypeScript in 18.7s ...
+  Collecting page data using 3 workers ...
+⚠ Using edge runtime on a page currently disables static generation for that page
+  Generating static pages using 3 workers (0/23) ...
+  Generating static pages using 3 workers (5/23) 
+  Generating static pages using 3 workers (11/23) 
+  Generating static pages using 3 workers (17/23) 
+✓ Generating static pages using 3 workers (23/23) in 757ms
+  Finalizing page optimization ...
+
+Route (app)
+┌ ○ /
+├ ○ /_not-found
+├ ƒ /api/account-logo
+├ ƒ /api/account-logo-image
+├ ƒ /api/ai-insights
+├ ƒ /api/ai-insights/chat
+├ ƒ /api/ai-insights/exact
+├ ƒ /api/app-icon/[size]
+├ ƒ /api/app-release/android
+├ ƒ /api/app-version
+├ ƒ /api/business/team/invite
+├ ƒ /api/exchange-rate
+├ ƒ /api/market/asset-search
+├ ƒ /api/market/crypto-prices
+├ ƒ /api/market/crypto-prices/catalog
+├ ƒ /api/market/crypto/price
+├ ƒ /api/market/crypto/search
+├ ƒ /api/market/forex-prices
+├ ƒ /api/market/search
+├ ƒ /api/market/stock-prices
+├ ƒ /api/market/stocks/price
+├ ƒ /api/market/stocks/search
+├ ƒ /api/profile/avatar
+├ ƒ /auth/callback
+├ ƒ /business
+├ ƒ /business/[businessSlug]
+├ ƒ /business/[businessSlug]/accounting
+├ ƒ /business/[businessSlug]/banking
+├ ƒ /business/[businessSlug]/budgeting
+├ ƒ /business/[businessSlug]/contacts
+├ ƒ /business/[businessSlug]/crm
+├ ƒ /business/[businessSlug]/inventory
+├ ƒ /business/[businessSlug]/notifications
+├ ƒ /business/[businessSlug]/purchases
+├ ƒ /business/[businessSlug]/reports
+├ ƒ /business/[businessSlug]/sales
+├ ƒ /business/[businessSlug]/shop
+├ ƒ /business/[businessSlug]/tax-closing
+├ ƒ /business/[businessSlug]/team
+├ ƒ /business/invitations/accept
+├ ƒ /dashboard
+├ ƒ /dashboard/accounts
+├ ƒ /dashboard/accounts/[id]
+├ ƒ /dashboard/ai-insights
+├ ƒ /dashboard/analytics
+├ ƒ /dashboard/expenses
+├ ƒ /dashboard/goals
+├ ƒ /dashboard/income
+├ ƒ /dashboard/investments
+├ ƒ /dashboard/payables
+├ ƒ /dashboard/reports
+├ ƒ /dashboard/settings
+├ ƒ /dashboard/transactions
+├ ƒ /dashboard/transactions/[id]
+├ ○ /login
+├ ○ /login-step5-preview
+├ ○ /manifest.webmanifest
+├ ○ /onboarding
+├ ○ /opengraph-image
+├ ○ /reset-password
+├ ○ /robots.txt
+├ ○ /sitemap.xml
+└ ○ /twitter-image
+
+
+ƒ Proxy (Middleware)
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+
