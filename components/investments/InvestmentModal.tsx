@@ -138,21 +138,21 @@ export default function InvestmentModal(props: InvestmentModalProps) {
             font-size: 10px !important;
             line-height: 1rem;
           }
+        }
 
-          @media (max-width: 380px) {
-            #investment-asset-results [role="option"] {
-              grid-template-columns: 2.25rem minmax(0, 1fr) minmax(5.75rem, 7.25rem);
-              column-gap: 0.5rem !important;
-            }
+        @media (max-width: 380px) {
+          #investment-asset-results [role="option"] {
+            grid-template-columns: 2.25rem minmax(0, 1fr) minmax(5.75rem, 7.25rem);
+            column-gap: 0.5rem !important;
+          }
 
-            #investment-asset-results [role="option"] > :first-child {
-              width: 2.25rem !important;
-              height: 2.25rem !important;
-            }
+          #investment-asset-results [role="option"] > :first-child {
+            width: 2.25rem !important;
+            height: 2.25rem !important;
+          }
 
-            #investment-asset-results [role="option"] > :last-child > :first-child {
-              font-size: 9px !important;
-            }
+          #investment-asset-results [role="option"] > :last-child > :first-child {
+            font-size: 9px !important;
           }
         }
       `}</style>
