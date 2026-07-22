@@ -1,0 +1,34 @@
+status=failure
+main_sha=86030a07619c195a7194bfcdce50a2d6534dafed
+verified_at=2026-07-22T19:39:43Z
+--- build log tail ---
+
+> jamals-finance@0.1.0 build
+> next build
+
+⚠ No build cache found. Please configure build caching for faster rebuilds. Read more: https://nextjs.org/docs/messages/no-cache
+Attention: Next.js now collects completely anonymous telemetry regarding usage.
+This information is used to shape Next.js' roadmap and prioritize features.
+You can learn more, including how to opt-out if you'd not like to participate in this anonymous program, by visiting the following URL:
+https://nextjs.org/telemetry
+
+▲ Next.js 16.2.9 (Turbopack)
+
+  Creating an optimized production build ...
+✓ Compiled successfully in 18.4s
+  Running TypeScript ...
+  Finished TypeScript in 17.7s ...
+  Collecting page data using 3 workers ...
+⚠ Using edge runtime on a page currently disables static generation for that page
+  Generating static pages using 3 workers (0/23) ...
+  Generating static pages using 3 workers (5/23) 
+  Generating static pages using 3 workers (11/23) 
+Error occurred prerendering page "/login". Read more: https://nextjs.org/docs/messages/prerender-error
+Error: Supabase browser configuration is unavailable.
+    at <unknown> (.next/server/chunks/ssr/_1rj9vf2._.js:59:8038)
+    at <unknown> (.next/server/chunks/ssr/app_login_page_tsx_1nv--5q._.js:1:3801)
+    at <unknown> (.next/server/chunks/ssr/app_login_page_tsx_1nv--5q._.js:1:3778) {
+  digest: '3477252603'
+}
+Export encountered an error on /login/page: /login, exiting the build.
+⨯ Next.js build worker exited with code: 1 and signal: null
