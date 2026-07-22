@@ -1,0 +1,59 @@
+name: Budgeting final build verification
+
+on:
+  push:
+    branches:
+      - agent/budgeting-final-build-verify
+    paths-ignore:
+      - budgeting-final-build-result.txt
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: build-verification-placeholder
+      NEXT_PUBLIC_SITE_URL: https://jamals-finance-sable.vercel.app
+    steps:
+      - name: Checkout verification source
+        uses: actions/checkout@v4
+        with:
+          ref: agent/budgeting-final-build-verify
+          fetch-depth: 1
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Build application
+        id: app_build
+        continue-on-error: true
+        run: npm run build > budgeting-final-build.log 2>&1
+      - name: Record result
+        if: always()
+        shell: bash
+        run: |
+          {
+            echo "status=${{ steps.app_build.outcome }}"
+            echo "source_sha=$(git rev-parse HEAD)"
+            echo "verified_at=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+            echo "--- build log tail ---"
+            tail -n 240 budgeting-final-build.log 2>/dev/null || true
+          } > budgeting-final-build-result.txt
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add budgeting-final-build-result.txt
+          if ! git diff --cached --quiet; then
+            git commit -m "ci(budgeting): record final build result"
+            git push origin HEAD:agent/budgeting-final-build-verify
+          fi
+      - name: Enforce successful build
+        if: steps.app_build.outcome != 'success'
+        run: exit 1
