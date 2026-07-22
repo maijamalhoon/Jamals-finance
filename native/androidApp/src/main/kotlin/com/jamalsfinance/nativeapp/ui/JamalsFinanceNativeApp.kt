@@ -33,25 +33,30 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.jamalsfinance.shared.auth.AuthRepository
 import com.jamalsfinance.shared.auth.AuthResult
 import com.jamalsfinance.shared.auth.AuthState
+import com.jamalsfinance.shared.finance.FinanceRepository
 import kotlinx.coroutines.launch
 
 @Composable
-fun JamalsFinanceNativeApp(repository: AuthRepository?) {
+fun JamalsFinanceNativeApp(
+    authRepository: AuthRepository?,
+    financeRepository: FinanceRepository?,
+) {
     JamalsFinanceTheme {
         Surface(modifier = Modifier.fillMaxSize()) {
-            if (repository == null) {
+            if (authRepository == null || financeRepository == null) {
                 ConfigurationRequired()
             } else {
-                val state by repository.state.collectAsStateWithLifecycle()
-                LaunchedEffect(repository) { repository.restoreSession() }
+                val state by authRepository.state.collectAsStateWithLifecycle()
+                LaunchedEffect(authRepository) { authRepository.restoreSession() }
                 when (val current = state) {
                     AuthState.Restoring -> CenteredProgress()
-                    AuthState.SignedOut -> LoginScreen(repository)
+                    AuthState.SignedOut -> LoginScreen(authRepository)
                     is AuthState.SignedIn -> NativeDashboardShell(
                         email = current.session.user.email ?: "Signed in",
-                        onSignOut = { repository.signOut() },
+                        financeRepository = financeRepository,
+                        onSignOut = { authRepository.signOut() },
                     )
-                    is AuthState.Failure -> LoginScreen(repository, current.message)
+                    is AuthState.Failure -> LoginScreen(authRepository, current.message)
                 }
             }
         }
@@ -64,7 +69,7 @@ private fun LoginScreen(repository: AuthRepository, initialMessage: String? = nu
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var loading by remember { mutableStateOf(false) }
-    var message by remember { mutableStateOf(initialMessage) }
+    var message by remember(initialMessage) { mutableStateOf(initialMessage) }
 
     Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
         Column(
@@ -73,14 +78,14 @@ private fun LoginScreen(repository: AuthRepository, initialMessage: String? = nu
         ) {
             Text("Jamal's Finance", style = MaterialTheme.typography.headlineMedium)
             Text(
-                "Native security foundation",
+                "True native finance",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             Spacer(Modifier.height(28.dp))
             OutlinedTextField(
                 value = email,
-                onValueChange = { email = it },
+                onValueChange = { email = it; message = null },
                 modifier = Modifier.fillMaxWidth(),
                 label = { Text("Email") },
                 singleLine = true,
@@ -89,7 +94,7 @@ private fun LoginScreen(repository: AuthRepository, initialMessage: String? = nu
             Spacer(Modifier.height(12.dp))
             OutlinedTextField(
                 value = password,
-                onValueChange = { password = it },
+                onValueChange = { password = it; message = null },
                 modifier = Modifier.fillMaxWidth(),
                 label = { Text("Password") },
                 singleLine = true,
@@ -126,8 +131,7 @@ private fun LoginScreen(repository: AuthRepository, initialMessage: String? = nu
                         loading = true
                         message = when (val result = repository.signUp(email, password)) {
                             is AuthResult.Success -> null
-                            is AuthResult.ConfirmationRequired ->
-                                "Confirmation email sent to ${result.email}."
+                            is AuthResult.ConfirmationRequired -> "Confirmation email sent to ${result.email}."
                             is AuthResult.Failure -> result.message
                         }
                         loading = false
@@ -135,27 +139,7 @@ private fun LoginScreen(repository: AuthRepository, initialMessage: String? = nu
                 },
                 modifier = Modifier.align(Alignment.CenterHorizontally),
                 enabled = !loading,
-            ) {
-                Text("Create account")
-            }
-        }
-    }
-}
-
-@Composable
-private fun NativeDashboardShell(email: String, onSignOut: suspend () -> Unit) {
-    val scope = rememberCoroutineScope()
-    Column(Modifier.fillMaxSize().padding(24.dp)) {
-        Text("Native session active", style = MaterialTheme.typography.headlineSmall)
-        Text(email, color = MaterialTheme.colorScheme.onSurfaceVariant)
-        Spacer(Modifier.height(18.dp))
-        Text(
-            "Chrome, WebView and website rendering are not used in this application.",
-            style = MaterialTheme.typography.bodyLarge,
-        )
-        Spacer(Modifier.height(24.dp))
-        Button(onClick = { scope.launch { onSignOut() } }) {
-            Text("Sign out")
+            ) { Text("Create account") }
         }
     }
 }
