@@ -1,0 +1,2 @@
+Verify the complete Budgeting and Forecasting Engine from consolidated main.
+This marker changes no application behavior, financial data, permissions, or production alias.
