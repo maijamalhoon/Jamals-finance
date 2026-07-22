@@ -5,14 +5,18 @@ plugins {
     alias(libs.plugins.compose.compiler)
 }
 
-val localProperties = Properties().apply {
-    val file = rootProject.file("local.properties")
+fun loadProperties(path: String): Properties = Properties().apply {
+    val file = rootProject.file(path)
     if (file.exists()) file.inputStream().use(::load)
 }
 
-fun secret(name: String): String =
+val publicProperties = loadProperties("public.properties")
+val localProperties = loadProperties("local.properties")
+
+fun clientConfig(name: String): String =
     providers.gradleProperty(name).orNull
         ?: localProperties.getProperty(name)
+        ?: publicProperties.getProperty(name)
         ?: ""
 
 android {
@@ -26,11 +30,15 @@ android {
         versionCode = 1
         versionName = "0.1.0-foundation"
 
-        buildConfigField("String", "SUPABASE_URL", "\"${secret("JAMALS_SUPABASE_URL")}\"")
+        buildConfigField(
+            "String",
+            "SUPABASE_URL",
+            "\"${clientConfig("JAMALS_SUPABASE_URL")}\"",
+        )
         buildConfigField(
             "String",
             "SUPABASE_PUBLISHABLE_KEY",
-            "\"${secret("JAMALS_SUPABASE_PUBLISHABLE_KEY")}\"",
+            "\"${clientConfig("JAMALS_SUPABASE_PUBLISHABLE_KEY")}\"",
         )
     }
 
