@@ -145,3 +145,42 @@ select:disabled,
   :is(select, input[type="date"]) {
   background-image: none !important;
 }
+
+/*
+ * Search text must remain natively selectable on every device. The explicit
+ * rules win over any compact-control or interaction-lock utility while the
+ * brand-tinted selection makes the selected range unmistakable in both themes.
+ */
+:is(
+    input[type="search"],
+    input[role="searchbox"],
+    [role="search"] input[type="text"],
+    [role="search"] input:not([type])
+  ) {
+  -webkit-user-select: text !important;
+  user-select: text !important;
+  -webkit-touch-callout: default !important;
+  touch-action: auto;
+}
+
+:is(
+    input[type="search"],
+    input[role="searchbox"],
+    [role="search"] input[type="text"],
+    [role="search"] input:not([type])
+  )::selection {
+  background: color-mix(in srgb, var(--brand-accent), transparent 58%) !important;
+  color: var(--text-primary) !important;
+  text-shadow: none;
+}
+
+:is(
+    input[type="search"],
+    input[role="searchbox"],
+    [role="search"] input[type="text"],
+    [role="search"] input:not([type])
+  )::-moz-selection {
+  background: color-mix(in srgb, var(--brand-accent), transparent 58%) !important;
+  color: var(--text-primary) !important;
+  text-shadow: none;
+}
