@@ -61,21 +61,71 @@ function getAssetKey(asset: InvestmentMarketAsset) {
   return `${asset.assetType}:${providerSymbol}`;
 }
 
+function normalizeSearchValue(value: string) {
+  return value
+    .normalize("NFKD")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "")
+    .trim();
+}
+
+function getCandidateScore(asset: InvestmentMarketAsset, normalizedQuery: string) {
+  const symbol = normalizeSearchValue(asset.symbol);
+  const name = normalizeSearchValue(asset.name);
+  const aliases = asset.aliases.map(normalizeSearchValue);
+
+  if (symbol === normalizedQuery) return 0;
+  if (name === normalizedQuery) return 1;
+  if (aliases.includes(normalizedQuery)) return 2;
+  if (symbol.startsWith(normalizedQuery)) return 10;
+  if (name.startsWith(normalizedQuery)) return 20;
+  if (aliases.some((alias) => alias.startsWith(normalizedQuery))) return 25;
+  if (symbol.includes(normalizedQuery)) return 30;
+  if (name.includes(normalizedQuery)) return 40;
+  if (aliases.some((alias) => alias.includes(normalizedQuery))) return 45;
+  return 100;
+}
+
+export function rankInvestmentAssetCandidates(
+  query: string,
+  candidates: readonly InvestmentMarketAsset[],
+  limit: number,
+) {
+  const normalizedQuery = normalizeSearchValue(query);
+  if (!normalizedQuery || limit <= 0) return [];
+
+  const deduped = new Map<string, InvestmentMarketAsset>();
+  for (const asset of candidates) {
+    const key = getAssetKey(asset);
+    if (!key || deduped.has(key)) continue;
+    deduped.set(key, asset);
+  }
+
+  return Array.from(deduped.values())
+    .sort((left, right) => {
+      const scoreDifference =
+        getCandidateScore(left, normalizedQuery) -
+        getCandidateScore(right, normalizedQuery);
+      if (scoreDifference !== 0) return scoreDifference;
+
+      const providerDifference =
+        Number(Boolean(right.providerSymbol || right.binanceSymbol)) -
+        Number(Boolean(left.providerSymbol || left.binanceSymbol));
+      if (providerDifference !== 0) return providerDifference;
+
+      if (left.rank !== right.rank) return left.rank - right.rank;
+      return left.name.localeCompare(right.name);
+    })
+    .slice(0, limit);
+}
+
 function mergeAssets(
+  query: string,
   preferred: readonly InvestmentMarketAsset[],
   fallback: readonly InvestmentMarketAsset[],
   limit: number,
 ) {
-  const result: InvestmentMarketAsset[] = [];
-  const seen = new Set<string>();
-  for (const asset of [...preferred, ...fallback]) {
-    const key = getAssetKey(asset);
-    if (!key || seen.has(key)) continue;
-    seen.add(key);
-    result.push(asset);
-    if (result.length >= limit) break;
-  }
-  return result;
+  return rankInvestmentAssetCandidates(query, [...preferred, ...fallback], limit);
 }
 
 function dispatchAssetUpdate() {
@@ -133,7 +183,7 @@ function scheduleRemoteSearch(
       if (!response.ok || !Array.isArray(payload.assets)) return;
 
       const validated = payload.assets.filter(isMarketAsset);
-      const merged = mergeAssets(validated, mutableResults, limit);
+      const merged = mergeAssets(query, validated, mutableResults, limit);
       for (const asset of validated) remoteAssets.set(getAssetKey(asset), asset);
       searchCache.set(cacheKey, merged);
       mutableResults.splice(0, mutableResults.length, ...merged);

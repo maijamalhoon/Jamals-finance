@@ -78,6 +78,82 @@ export default function InvestmentModal(props: InvestmentModalProps) {
             overscroll-behavior: contain;
             -webkit-overflow-scrolling: touch;
           }
+
+          #investment-asset-results [role="option"] {
+            display: grid !important;
+            grid-template-columns: 2.5rem minmax(0, 1fr) minmax(6.5rem, 8.75rem);
+            align-items: center;
+            column-gap: 0.625rem !important;
+            padding-left: 0.5rem !important;
+            padding-right: 0.5rem !important;
+          }
+
+          #investment-asset-results [role="option"] > :first-child {
+            width: 2.5rem !important;
+            height: 2.5rem !important;
+          }
+
+          #investment-asset-results [role="option"] > :nth-child(2) {
+            min-width: 0;
+            overflow: hidden;
+          }
+
+          #investment-asset-results [role="option"] > :nth-child(2) > :first-child {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+          }
+
+          #investment-asset-results [role="option"] > :nth-child(2) > :last-child {
+            display: flex !important;
+            min-width: 0;
+            flex-wrap: nowrap !important;
+            gap: 0.3rem !important;
+            overflow: hidden;
+            white-space: nowrap;
+            font-size: 9px !important;
+            line-height: 1rem;
+            letter-spacing: 0.035em !important;
+          }
+
+          #investment-asset-results [role="option"] > :nth-child(2) > :last-child > span {
+            flex: 0 0 auto;
+            white-space: nowrap;
+          }
+
+          #investment-asset-results [role="option"] > :last-child {
+            min-width: 0;
+            max-width: 8.75rem;
+            overflow: hidden;
+            white-space: nowrap;
+          }
+
+          #investment-asset-results [role="option"] > :last-child > span {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+          }
+
+          #investment-asset-results [role="option"] > :last-child > :first-child {
+            font-size: 10px !important;
+            line-height: 1rem;
+          }
+
+          @media (max-width: 380px) {
+            #investment-asset-results [role="option"] {
+              grid-template-columns: 2.25rem minmax(0, 1fr) minmax(5.75rem, 7.25rem);
+              column-gap: 0.5rem !important;
+            }
+
+            #investment-asset-results [role="option"] > :first-child {
+              width: 2.25rem !important;
+              height: 2.25rem !important;
+            }
+
+            #investment-asset-results [role="option"] > :last-child > :first-child {
+              font-size: 9px !important;
+            }
+          }
         }
       `}</style>
     </>
