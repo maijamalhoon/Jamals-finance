@@ -33,8 +33,17 @@ jobs:
         with:
           gradle-version: "9.3.1"
       - name: Run shared tests and compile Android
-        run: gradle :shared:testAndroidHostTest :androidApp:assembleDebug --stacktrace
+        id: native_build
+        shell: bash
+        run: |
+          set +e
+          gradle :shared:testAndroidHostTest :androidApp:assembleDebug --stacktrace 2>&1 | tee /tmp/native-build.log
+          exit_code=${PIPESTATUS[0]}
+          tail -n 240 /tmp/native-build.log > ../.github/native-ci-log.txt
+          echo "exit_code=${exit_code}" >> "$GITHUB_OUTPUT"
+          exit 0
       - name: Upload native debug APK
+        if: steps.native_build.outputs.exit_code == '0'
         uses: actions/upload-artifact@v4
         with:
           name: jamals-finance-native-foundation-debug
@@ -45,11 +54,12 @@ jobs:
         if: always()
         working-directory: .
         env:
-          JOB_STATUS: ${{ job.status }}
+          BUILD_EXIT_CODE: ${{ steps.native_build.outputs.exit_code }}
         run: |
+          if [ "${BUILD_EXIT_CODE}" = "0" ]; then result="success"; else result="failure"; fi
           cat > .github/native-ci-status.json <<JSON
           {
-            "status": "${JOB_STATUS}",
+            "status": "${result}",
             "runId": "${GITHUB_RUN_ID}",
             "commit": "${GITHUB_SHA}",
             "workflow": "native-foundation-ci"
@@ -57,7 +67,10 @@ jobs:
           JSON
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add .github/native-ci-status.json
-          git commit -m "chore(native): record foundation CI ${JOB_STATUS}" || exit 0
+          git add .github/native-ci-status.json .github/native-ci-log.txt
+          git commit -m "chore(native): record foundation CI ${result}" || exit 0
           git pull --rebase origin main
           git push origin HEAD:main
+      - name: Fail when native build failed
+        if: steps.native_build.outputs.exit_code != '0'
+        run: exit 1
