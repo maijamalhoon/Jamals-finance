@@ -64,7 +64,7 @@ const MODULES = [
     label: "Purchases",
     description: "Purchase orders, supplier bills, payments, and purchase returns.",
     icon: ShoppingCart,
-    route: null,
+    route: "purchases",
   },
   {
     key: "inventory",
