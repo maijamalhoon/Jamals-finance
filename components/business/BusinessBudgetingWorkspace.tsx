@@ -425,7 +425,7 @@ export default function BusinessBudgetingWorkspace({
               </form>
             </details>
 
-            <details className="rounded-[var(--radius-card)] bg-surface px-5 py-5 shadow-[var(--shadow-sm)] sm:px-6" disabled={!selectedScenario}>
+            <details className="rounded-[var(--radius-card)] bg-surface px-5 py-5 shadow-[var(--shadow-sm)] sm:px-6">
               <summary className="finance-focus flex cursor-pointer items-center gap-3 font-black text-text-primary"><Copy className="size-5 text-primary" aria-hidden="true" /> Copy & adjust scenario</summary>
               {selectedScenario ? (
                 <form onSubmit={copyScenario} className="mt-5 space-y-4">
