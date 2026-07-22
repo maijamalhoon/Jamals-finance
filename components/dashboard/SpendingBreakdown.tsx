@@ -183,6 +183,7 @@ export default function SpendingBreakdown({
                     innerRadius="52%"
                     outerRadius="78%"
                     paddingAngle={2}
+                    cornerRadius={8}
                     isAnimationActive={!reduceMotion}
                     animationBegin={0}
                     animationDuration={Math.round(700 * durationScale)}
@@ -228,15 +229,15 @@ export default function SpendingBreakdown({
             </ChartFrame>
 
             <div className="pointer-events-none absolute inset-0 grid place-items-center text-center">
-              <div className="flex w-[56%] min-w-0 flex-col items-center justify-center">
+              <div className="flex w-[50%] min-w-0 flex-col items-center justify-center">
                 <p
-                  className="max-w-full whitespace-nowrap font-black leading-none tracking-[-0.04em] text-text-primary tabular-nums"
-                  style={{ fontSize: "clamp(0.78rem, 7.2cqw, 1.3rem)" }}
+                  className="max-w-full overflow-hidden text-ellipsis whitespace-nowrap font-black leading-none tracking-[-0.04em] text-text-primary tabular-nums"
+                  style={{ fontSize: "clamp(0.72rem, 6.1cqw, 1.08rem)" }}
                   title={formatCurrency(safeTotal)}
                 >
                   <CountedAmount amount={donutTotalLabel} duration={0.82} />
                 </p>
-                <p className="mt-1.5 whitespace-nowrap text-[10px] font-semibold text-text-secondary sm:text-[11px]">
+                <p className="mt-1 whitespace-nowrap text-[9px] font-semibold text-text-secondary sm:text-[10px]">
                   Total spent
                 </p>
               </div>

@@ -267,7 +267,7 @@ export function SpendingDistributionChart({
 
   return (
     <div className="grid min-w-0 items-center gap-4 md:grid-cols-[minmax(0,0.9fr)_minmax(15rem,1.1fr)]">
-      <div className="relative min-w-0">
+      <div className="relative min-w-0 [container-type:inline-size]">
         <div
           role="img"
           aria-label="Donut chart of spending distribution by category"
@@ -283,7 +283,7 @@ export function SpendingDistributionChart({
                   innerRadius="58%"
                   outerRadius="81%"
                   paddingAngle={2.5}
-                  cornerRadius={5}
+                  cornerRadius={8}
                   stroke="none"
                   isAnimationActive={false}
                 >
@@ -310,11 +310,11 @@ export function SpendingDistributionChart({
           </ChartFrame>
         </div>
         <div className="pointer-events-none absolute inset-0 grid place-items-center">
-          <div className="max-w-28 text-center">
-            <p className="text-[9px] font-bold uppercase tracking-[0.11em] text-text-tertiary">
+          <div className="w-[52%] max-w-24 min-w-0 text-center">
+            <p className="whitespace-nowrap text-[8px] font-bold uppercase tracking-[0.1em] text-text-tertiary">
               Total spent
             </p>
-            <p className="mt-1 break-words text-sm font-extrabold tabular-nums text-text-primary">
+            <p className="mt-1 max-w-full truncate whitespace-nowrap text-[clamp(0.7rem,4.8cqw,0.82rem)] font-extrabold tabular-nums text-text-primary">
               {formatCurrency(total, { compact: true })}
             </p>
           </div>

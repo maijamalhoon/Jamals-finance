@@ -463,7 +463,7 @@ export default function InvestmentOverviewWidget({
                 : ""}
             </p>
 
-            <div className="relative mx-auto aspect-square w-full max-w-[240px] min-[420px]:max-w-[248px] sm:max-w-[256px] md:max-w-[272px] lg:max-w-[288px] xl:max-w-[300px] 2xl:max-w-[260px]">
+            <div className="relative mx-auto aspect-square w-full max-w-[240px] [container-type:inline-size] min-[420px]:max-w-[248px] sm:max-w-[256px] md:max-w-[272px] lg:max-w-[288px] xl:max-w-[300px] 2xl:max-w-[260px]">
               <ChartFrame>
                 {({ width, height }) => (
                   <PieChart width={width} height={height} accessibilityLayer>
@@ -474,6 +474,7 @@ export default function InvestmentOverviewWidget({
                       innerRadius="52%"
                       outerRadius="78%"
                       paddingAngle={2}
+                      cornerRadius={8}
                       isAnimationActive={!reduceMotion}
                       animationBegin={0}
                       animationDuration={Math.round(700 * durationScale)}
@@ -527,8 +528,8 @@ export default function InvestmentOverviewWidget({
               </ChartFrame>
 
               <div className="pointer-events-none absolute inset-0 grid place-items-center text-center">
-                <div className="w-[58%] min-w-0 px-1">
-                  <p className="whitespace-nowrap text-[clamp(1.15rem,5.4vw,1.8rem)] font-black leading-none tracking-[-0.04em] text-text-primary tabular-nums">
+                <div className="w-[52%] min-w-0 px-1">
+                  <p className="max-w-full overflow-hidden text-ellipsis whitespace-nowrap text-[clamp(0.76rem,6.1cqw,1.08rem)] font-black leading-none tracking-[-0.04em] text-text-primary tabular-nums">
                     <CountedAmount
                       amount={formatCurrency(allocationTotalValue, {
                         compact: true,
@@ -537,7 +538,7 @@ export default function InvestmentOverviewWidget({
                     />
                   </p>
                   <p
-                    className="mt-2 text-sm font-black leading-none tabular-nums sm:text-base"
+                    className="mt-1.5 max-w-full overflow-hidden text-ellipsis whitespace-nowrap text-[clamp(0.68rem,5.2cqw,0.9rem)] font-black leading-none tabular-nums"
                     style={{ color: pnlColor }}
                   >
                     {resolvedTotalPnLPct === null ? (
@@ -546,7 +547,7 @@ export default function InvestmentOverviewWidget({
                       <CountedAmount amount={pnlLabel} />
                     )}
                   </p>
-                  <p className="mt-2 text-[9px] font-bold uppercase leading-none tracking-[0.13em] text-text-tertiary sm:text-[10px]">
+                  <p className="mt-1.5 whitespace-nowrap text-[8px] font-bold uppercase leading-none tracking-[0.11em] text-text-tertiary sm:text-[9px]">
                     Portfolio value
                   </p>
                 </div>

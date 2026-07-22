@@ -432,7 +432,7 @@ function PortfolioAnalytics({
           </span>
         </div>
 
-        <div className="relative mt-3 rounded-[22px] bg-surface-secondary/35 py-2">
+        <div className="relative mt-3 rounded-[22px] bg-surface-secondary/35 py-2 [container-type:inline-size]">
           <ChartFrame className="h-[228px] min-h-[228px]" tone="purple">
             {({ width, height }) => {
               const outerRadius = Math.min(width, height) * 0.37;
@@ -467,15 +467,18 @@ function PortfolioAnalytics({
             }}
           </ChartFrame>
           <div className="pointer-events-none absolute inset-0 grid place-items-center">
-            <div className="max-w-[132px] text-center">
-              <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-text-secondary">
+            <div className="w-[52%] max-w-[118px] min-w-0 text-center">
+              <p className="whitespace-nowrap text-[8px] font-bold uppercase tracking-[0.1em] text-text-secondary sm:text-[9px]">
                 Current value
               </p>
-              <p className="mt-1 break-words text-sm font-bold tabular-nums text-text-primary [overflow-wrap:anywhere]">
+              <p
+                className="mt-1 max-w-full truncate whitespace-nowrap text-[clamp(0.7rem,5.1cqw,0.84rem)] font-bold tabular-nums text-text-primary"
+                title={formatCurrency(totalValue)}
+              >
                 {formatCurrency(totalValue, { compact: true })}
               </p>
               {largestHolding ? (
-                <p className="mt-1 truncate text-[10px] text-text-secondary">
+                <p className="mt-1 truncate text-[9px] text-text-secondary">
                   Top: {largestHolding.name}
                 </p>
               ) : null}
