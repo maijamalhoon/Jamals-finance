@@ -107,9 +107,10 @@ jobs:
           expected = "2d7d678788b8e764b4e25466a5e874bd1be7cf2e08fbf4e91a0359dbe9ba6eed"
           root = Path(".github/native-bootstrap-v05")
           try:
+              paths = [root / f"bundle.part{index:02d}.b64" for index in range(1, 6)]
+              paths.extend(root / f"part06.{index:02d}.b64" for index in range(1, 7))
               pieces = []
-              for index in range(1, 7):
-                  path = root / f"bundle.part{index:02d}.b64"
+              for path in paths:
                   text = "".join(path.read_text().split())
                   print(f"{path}: {len(text)} base64 characters")
                   pieces.append(text)
