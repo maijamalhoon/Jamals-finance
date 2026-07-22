@@ -1,0 +1,213 @@
+/*
+ * Categories modal — UI structure polish only.
+ * Modal sizing, position, form behavior, data flow, and category logic stay unchanged.
+ */
+
+/* Scope the list-view dialog by its existing 46rem category modal marker. */
+.finance-modal-content[class*="--finance-modal-max-width:46rem"] {
+  --category-row-divider: color-mix(in srgb, var(--border), transparent 34%);
+  --category-row-hover: color-mix(in srgb, var(--hover), transparent 8%);
+}
+
+/* Segmented tabs: one calm surface, clearer active state, no extra outline. */
+.finance-modal-content[class*="--finance-modal-max-width:46rem"]
+  .finance-modal-body
+  [role="tablist"] {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 0.25rem !important;
+  padding: 0.25rem !important;
+  border: 0 !important;
+  border-radius: 1rem !important;
+  background: var(--surface-secondary) !important;
+  box-shadow: none !important;
+}
+
+.finance-modal-content[class*="--finance-modal-max-width:46rem"]
+  .finance-modal-body
+  [role="tab"] {
+  position: relative;
+  min-width: 0;
+  border: 0 !important;
+  border-radius: 0.75rem !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  color: var(--text-secondary) !important;
+  font-weight: 700 !important;
+  transition:
+    background-color var(--motion-duration-fast) var(--motion-ease-standard),
+    color var(--motion-duration-fast) var(--motion-ease-standard),
+    transform var(--motion-duration-fast) var(--motion-ease-standard) !important;
+}
+
+.finance-modal-content[class*="--finance-modal-max-width:46rem"]
+  .finance-modal-body
+  [role="tab"][data-state="active"] {
+  background: var(--card) !important;
+  color: var(--text-primary) !important;
+  box-shadow: 0 1px 2px color-mix(in srgb, #000, transparent 88%) !important;
+}
+
+.finance-modal-content[class*="--finance-modal-max-width:46rem"]
+  .finance-modal-body
+  [role="tab"]:active {
+  transform: scale(0.985);
+}
+
+/* Convert separate bordered cards into one connected, easier-to-scan list. */
+.finance-modal-content[class*="--finance-modal-max-width:46rem"]
+  .finance-modal-body
+  [role="tabpanel"]
+  > .space-y-2 {
+  display: block !important;
+  overflow: hidden;
+  border: 0 !important;
+  border-radius: 1.25rem !important;
+  background: var(--surface-secondary) !important;
+  box-shadow: none !important;
+}
+
+.finance-modal-content[class*="--finance-modal-max-width:46rem"]
+  .finance-modal-body
+  [role="tabpanel"]
+  > .space-y-2
+  > div {
+  position: relative;
+  margin: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.finance-modal-content[class*="--finance-modal-max-width:46rem"]
+  .finance-modal-body
+  [role="tabpanel"]
+  > .space-y-2
+  > div:not(:last-child)::after {
+  content: "";
+  position: absolute;
+  right: 1rem;
+  bottom: 0;
+  left: 4.15rem;
+  height: 1px;
+  background: var(--category-row-divider);
+  pointer-events: none;
+}
+
+.finance-modal-content[class*="--finance-modal-max-width:46rem"]
+  .finance-modal-body
+  [role="tabpanel"]
+  > .space-y-2
+  > div:hover {
+  background: var(--category-row-hover) !important;
+}
+
+/* Keep icon/name/actions aligned as one clean row. */
+.finance-modal-content[class*="--finance-modal-max-width:46rem"]
+  .finance-modal-body
+  [role="tabpanel"]
+  > .space-y-2
+  > div
+  > .flex.min-w-0.items-center.gap-3 {
+  min-height: 3.4rem;
+}
+
+.finance-modal-content[class*="--finance-modal-max-width:46rem"]
+  .finance-modal-body
+  [role="tabpanel"]
+  p.truncate.text-sm {
+  letter-spacing: -0.01em;
+}
+
+.finance-modal-content[class*="--finance-modal-max-width:46rem"]
+  .finance-modal-body
+  [role="tabpanel"]
+  p[class*="text-[11px]"] {
+  margin-top: 0.2rem !important;
+  line-height: 1.15rem !important;
+  color: color-mix(in srgb, var(--text-secondary), transparent 5%) !important;
+}
+
+/* Edit and delete controls share one compact action surface instead of floating boxes. */
+.finance-modal-content[class*="--finance-modal-max-width:46rem"]
+  .finance-modal-body
+  [role="tabpanel"]
+  div.flex.shrink-0.items-center.gap-1:has(> button[aria-label^="Edit "]) {
+  gap: 0.125rem !important;
+  padding: 0.2rem !important;
+  border-radius: 0.9rem !important;
+  background: color-mix(in srgb, var(--card), transparent 18%) !important;
+}
+
+.finance-modal-content[class*="--finance-modal-max-width:46rem"]
+  .finance-modal-body
+  button[aria-label^="Edit "],
+.finance-modal-content[class*="--finance-modal-max-width:46rem"]
+  .finance-modal-body
+  button[aria-label^="Delete "] {
+  border-radius: 0.7rem !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.finance-modal-content[class*="--finance-modal-max-width:46rem"]
+  .finance-modal-body
+  button[aria-label^="Edit "]:hover {
+  background: var(--hover) !important;
+}
+
+.finance-modal-content[class*="--finance-modal-max-width:46rem"]
+  .finance-modal-body
+  button[aria-label^="Delete "]:hover {
+  background: color-mix(in srgb, var(--danger), transparent 88%) !important;
+}
+
+/* Inline editor remains in the exact row position but reads as an active state. */
+.finance-modal-content[class*="--finance-modal-max-width:46rem"]
+  .finance-modal-body
+  [role="tabpanel"]
+  > .space-y-2
+  > div:has(input[aria-label^="Edit "]) {
+  padding: 0.9rem 1rem !important;
+  background: color-mix(in srgb, var(--active), transparent 94%) !important;
+}
+
+.finance-modal-content[class*="--finance-modal-max-width:46rem"]
+  .finance-modal-body
+  [role="tabpanel"]
+  > .space-y-2
+  > div:has(input[aria-label^="Edit "]):hover {
+  background: color-mix(in srgb, var(--active), transparent 92%) !important;
+}
+
+/* Empty state follows the same borderless list language. */
+.finance-modal-content[class*="--finance-modal-max-width:46rem"]
+  .finance-modal-body
+  [role="tabpanel"]
+  > div[class*="border-dashed"] {
+  border: 0 !important;
+  border-radius: 1.25rem !important;
+  background: var(--surface-secondary) !important;
+  box-shadow: none !important;
+}
+
+@media (max-width: 639px) {
+  .finance-modal-content[class*="--finance-modal-max-width:46rem"]
+    .finance-modal-body
+    [role="tabpanel"]
+    > .space-y-2
+    > div:not(:last-child)::after {
+    right: 0.75rem;
+    left: 3.85rem;
+  }
+
+  .finance-modal-content[class*="--finance-modal-max-width:46rem"]
+    .finance-modal-body
+    [role="tabpanel"]
+    > .space-y-2
+    > div
+    > .flex.min-w-0.items-center.gap-3 {
+    min-height: 3.25rem;
+  }
+}
