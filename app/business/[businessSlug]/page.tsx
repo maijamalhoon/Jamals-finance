@@ -83,9 +83,9 @@ const MODULES = [
   {
     key: "reports",
     label: "Reports",
-    description: "Profit and loss, balance sheet, cash flow, tax, and operations reports.",
+    description: "Profit and loss, balance sheet, cash flow, aging, stock, and returns reports.",
     icon: BarChart3,
-    route: null,
+    route: "reports",
   },
 ] as const;
 
@@ -129,7 +129,7 @@ export default async function BusinessWorkspacePage({
 
   const membershipResult = await supabase
     .from("business_members")
-    .select("role, status")
+    .select("role, status, permissions")
     .eq("business_id", business.id)
     .eq("user_id", user.id)
     .maybeSingle();
@@ -137,6 +137,13 @@ export default async function BusinessWorkspacePage({
   if (!membershipResult.data || membershipResult.data.status !== "active") notFound();
 
   const enabledModules = business.module_config ?? {};
+  const role = membershipResult.data.role;
+  const permissions = membershipResult.data.permissions ?? [];
+  const canViewReports =
+    ["owner", "admin", "accountant", "manager", "viewer"].includes(role) ||
+    permissions.includes("*") ||
+    permissions.includes("reports.view") ||
+    permissions.includes("accounting.view");
 
   return (
     <main className="min-h-dvh bg-background px-4 py-5 text-foreground sm:px-6 sm:py-7 lg:px-8 lg:py-8">
@@ -172,7 +179,7 @@ export default async function BusinessWorkspacePage({
                   {business.name}
                 </h1>
                 <p className="mt-2 text-sm text-text-secondary">
-                  {formatLabel(membershipResult.data.role)} access · {business.status}
+                  {formatLabel(role)} access · {business.status}
                 </p>
               </div>
             </div>
@@ -221,7 +228,7 @@ export default async function BusinessWorkspacePage({
             </h2>
             <p className="mt-2 max-w-3xl text-sm leading-6 text-text-secondary">
               Modules are configured from the nature of business. Accounting is live first because
-              every invoice, payment, purchase, and stock movement must post through it.
+              every invoice, payment, purchase, stock movement, and report must use its posted ledger.
             </p>
           </div>
 
@@ -229,19 +236,21 @@ export default async function BusinessWorkspacePage({
             {MODULES.map((module) => {
               const Icon = module.icon;
               const enabled = enabledModules[module.key] === true;
+              const accessible = module.key !== "reports" || canViewReports;
+              const openable = enabled && Boolean(module.route) && accessible;
               const moduleContent = (
                 <>
                   <div className="flex items-start justify-between gap-4">
                     <span
                       className={`inline-flex size-11 items-center justify-center rounded-[var(--radius-button)] ${
-                        enabled
+                        enabled && accessible
                           ? "bg-primary-soft text-primary"
                           : "bg-surface-secondary text-text-tertiary"
                       }`}
                     >
                       <Icon aria-hidden="true" className="size-5" />
                     </span>
-                    {enabled && module.route ? (
+                    {openable ? (
                       <ArrowRight
                         aria-hidden="true"
                         className="size-4 text-primary transition-transform group-hover:translate-x-0.5"
@@ -249,12 +258,14 @@ export default async function BusinessWorkspacePage({
                     ) : (
                       <span
                         className={`rounded-full px-2.5 py-1 text-[11px] font-black ${
-                          enabled
-                            ? "bg-success-soft text-success"
-                            : "bg-surface-secondary text-text-secondary"
+                          enabled && !accessible
+                            ? "bg-warning-soft text-warning"
+                            : enabled
+                              ? "bg-success-soft text-success"
+                              : "bg-surface-secondary text-text-secondary"
                         }`}
                       >
-                        {enabled ? "Enabled" : "Not required"}
+                        {enabled && !accessible ? "Restricted" : enabled ? "Enabled" : "Not required"}
                       </span>
                     )}
                   </div>
@@ -262,7 +273,7 @@ export default async function BusinessWorkspacePage({
                   <p className="mt-2 text-sm leading-6 text-text-secondary">
                     {module.description}
                   </p>
-                  {enabled && module.route ? (
+                  {openable ? (
                     <span className="mt-4 inline-flex text-sm font-black text-primary">
                       Open module
                     </span>
@@ -270,7 +281,7 @@ export default async function BusinessWorkspacePage({
                 </>
               );
 
-              return enabled && module.route ? (
+              return openable && module.route ? (
                 <Link
                   key={module.key}
                   href={`/business/${business.slug}/${module.route}`}
@@ -296,9 +307,9 @@ export default async function BusinessWorkspacePage({
             <div>
               <h2 className="font-black">Accounting source of truth is active</h2>
               <p className="mt-1 text-sm leading-6 opacity-80">
-                Balanced journals, fiscal periods, currency conversion, immutable posting, and trial
-                balance are now available. Operational modules post into this ledger instead of
-                calculating financial results independently.
+                Balanced journals, fiscal periods, currency conversion, immutable posting, and verified
+                reports are available. Operational modules use this ledger instead of calculating
+                financial results independently.
               </p>
             </div>
           </div>
