@@ -29,6 +29,8 @@ const contentSecurityPolicy = [
     "img-src 'self' data: blob:",
     "https://coin-images.coingecko.com",
     "https://cdn.jsdelivr.net",
+    "https://cdn.simpleicons.org",
+    "https://flagcdn.com",
     "https://www.google.com",
     "https://commons.wikimedia.org",
     "https://upload.wikimedia.org",
@@ -43,6 +45,8 @@ const contentSecurityPolicy = [
     "connect-src 'self'",
     supabaseOrigin,
     supabaseWebSocketOrigin,
+    "wss://stream.binance.com:9443",
+    "wss://data-stream.binance.vision",
     "https://*.ingest.sentry.io",
   ].join(" "),
   "frame-src 'none'",
@@ -116,6 +120,36 @@ const privateNoStoreHeaders = [
   },
 ];
 
+const stockMarketCacheHeaders = [
+  {
+    key: "Cache-Control",
+    value: "public, max-age=0, must-revalidate",
+  },
+  {
+    key: "CDN-Cache-Control",
+    value: "public, s-maxage=60, stale-while-revalidate=300",
+  },
+  {
+    key: "Vercel-CDN-Cache-Control",
+    value: "public, s-maxage=60, stale-while-revalidate=300",
+  },
+];
+
+const forexMarketCacheHeaders = [
+  {
+    key: "Cache-Control",
+    value: "public, max-age=0, must-revalidate",
+  },
+  {
+    key: "CDN-Cache-Control",
+    value: "public, s-maxage=21600, stale-while-revalidate=43200",
+  },
+  {
+    key: "Vercel-CDN-Cache-Control",
+    value: "public, s-maxage=21600, stale-while-revalidate=43200",
+  },
+];
+
 const nextConfig: NextConfig = {
   poweredByHeader: false,
   images: {
@@ -152,6 +186,14 @@ const nextConfig: NextConfig = {
       {
         source: "/api/:path*",
         headers: privateNoStoreHeaders,
+      },
+      {
+        source: "/api/market/stock-prices",
+        headers: stockMarketCacheHeaders,
+      },
+      {
+        source: "/api/market/forex-prices",
+        headers: forexMarketCacheHeaders,
       },
       {
         source: "/onboarding",
