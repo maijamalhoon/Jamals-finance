@@ -59,18 +59,28 @@ function normalizeProviderSymbol(value: string | null | undefined) {
   return (value ?? "").trim().toUpperCase();
 }
 
+function chunkSymbols(symbols: readonly string[], size: number) {
+  const chunks: string[][] = [];
+  for (let index = 0; index < symbols.length; index += size) {
+    chunks.push(symbols.slice(index, index + size));
+  }
+  return chunks;
+}
+
 function useRemotePriceStore({
   symbols,
   enabled,
   endpoint,
   priceMode,
   pollIntervalMs,
+  batchSize,
 }: {
   symbols: readonly string[];
   enabled: boolean;
   endpoint: string;
   priceMode: InvestmentPriceMode;
   pollIntervalMs: number;
+  batchSize: number;
 }) {
   const symbolKey = useMemo(
     () =>
@@ -124,20 +134,30 @@ function useRemotePriceStore({
 
       try {
         const parameter = endpoint.includes("forex") ? "pairs" : "symbols";
-        const response = await fetch(
-          `${endpoint}?${parameter}=${encodeURIComponent(normalizedSymbols.join(","))}`,
-          {
-            cache: "no-store",
-            headers: { Accept: "application/json" },
-            signal: controller.signal,
-          },
+        const batches = chunkSymbols(normalizedSymbols, batchSize);
+        const payloads = await Promise.all(
+          batches.map(async (batch) => {
+            const response = await fetch(
+              `${endpoint}?${parameter}=${encodeURIComponent(batch.join(","))}`,
+              {
+                cache: "no-store",
+                headers: { Accept: "application/json" },
+                signal: controller?.signal,
+              },
+            );
+            const payload = (await response.json()) as RemotePriceResponse;
+            if (!response.ok) throw new Error("Market quote request failed.");
+            return payload;
+          }),
         );
-        const payload = (await response.json()) as RemotePriceResponse;
-        if (!response.ok) throw new Error("Market quote request failed.");
+        const remoteRows = Object.assign(
+          {},
+          ...payloads.map((payload) => payload.prices ?? {}),
+        ) as Record<string, RemotePriceRow>;
 
         const next: Record<string, MarketPriceSnapshot> = {};
         for (const symbol of normalizedSymbols) {
-          const row = payload.prices?.[symbol];
+          const row = remoteRows[symbol];
           const price = toPositiveNumber(row?.price);
           const rawCurrency = String(row?.currency ?? "").trim().toUpperCase();
           const currency = isSupportedCurrency(rawCurrency) ? rawCurrency : null;
@@ -199,7 +219,14 @@ function useRemotePriceStore({
       if (timer !== null) window.clearTimeout(timer);
       document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
-  }, [enabled, endpoint, normalizedSymbols, pollIntervalMs, priceMode]);
+  }, [
+    batchSize,
+    enabled,
+    endpoint,
+    normalizedSymbols,
+    pollIntervalMs,
+    priceMode,
+  ]);
 
   return prices;
 }
@@ -251,6 +278,7 @@ export function useInvestmentMarketPrices(
     endpoint: "/api/market/stock-prices",
     priceMode: "delayed",
     pollIntervalMs: 60_000,
+    batchSize: 12,
   });
   const forexPrices = useRemotePriceStore({
     symbols: forexSymbols,
@@ -258,6 +286,7 @@ export function useInvestmentMarketPrices(
     endpoint: "/api/market/forex-prices",
     priceMode: "reference",
     pollIntervalMs: 6 * 60 * 60_000,
+    batchSize: 24,
   });
 
   return useMemo(() => {
