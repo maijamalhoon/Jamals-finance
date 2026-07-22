@@ -1,2 +1,3 @@
 Final Banking and Reconciliation verification from consolidated main.
 No production alias, UI behavior, financial data, or business logic is changed by this file.
+Retry after nullable reconciliation guard verification.
