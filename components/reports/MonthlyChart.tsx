@@ -82,43 +82,52 @@ export default function MonthlyChart({ data, title = "Cash-flow overview" }: Pro
               width={width}
               height={height}
               data={data}
-              margin={{ top: 5, right: 5, left: -20, bottom: 0 }}
+              margin={{ top: 8, right: 8, left: -12, bottom: 0 }}
+              barGap={10}
+              barCategoryGap="38%"
             >
               <CartesianGrid
-                strokeDasharray="3 3"
-                stroke="var(--border)"
+                strokeDasharray="3 6"
+                stroke="var(--chart-grid)"
                 vertical={false}
               />
               <XAxis
                 dataKey="month"
-                tick={{ fill: "var(--text-secondary)", fontSize: 11 }}
+                tick={{ fill: "var(--text-tertiary)", fontSize: 11 }}
                 axisLine={false}
                 tickLine={false}
               />
               <YAxis
-                tick={{ fill: "var(--text-secondary)", fontSize: 11 }}
+                tick={{ fill: "var(--text-tertiary)", fontSize: 11 }}
                 axisLine={false}
                 tickLine={false}
                 tickFormatter={(value) =>
                   formatCurrency(Number(value), { compact: true })
                 }
               />
-              <Tooltip cursor={false} content={<CustomTooltip />} />
+              <Tooltip
+                cursor={{ fill: "var(--hover)", opacity: 0.25 }}
+                content={<CustomTooltip />}
+              />
               <Bar
                 dataKey="income"
                 name="Income"
-                fill="var(--active)"
-                radius={[4, 4, 0, 0]}
-                maxBarSize={32}
+                fill="var(--success)"
+                fillOpacity={0.88}
+                radius={[999, 999, 999, 999]}
+                minPointSize={7}
+                maxBarSize={30}
                 isAnimationActive
                 {...chartMotion}
               />
               <Bar
                 dataKey="expenses"
                 name="Expenses"
-                fill="var(--text-secondary)"
-                radius={[4, 4, 0, 0]}
-                maxBarSize={32}
+                fill="var(--danger)"
+                fillOpacity={0.88}
+                radius={[999, 999, 999, 999]}
+                minPointSize={7}
+                maxBarSize={30}
                 isAnimationActive
                 {...chartMotion}
                 animationBegin={140}
