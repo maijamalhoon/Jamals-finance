@@ -100,6 +100,8 @@ import "./mobile-sidebar-focus-state-fix.css";
 import "./mobile-amount-fit.css";
 // Final launch design layer is strictly scoped to the requested eight content routes.
 import "./final-eight-pages-polish.css";
+// Unified reference-style donut design and amount-only hover for every dashboard donut.
+import "./donut-reference-system.css";
 
 export const dynamic = "force-dynamic";
 
