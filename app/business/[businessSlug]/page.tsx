@@ -16,6 +16,7 @@ import {
   ReceiptText,
   ShieldCheck,
   ShoppingCart,
+  TrendingUp,
   UsersRound,
 } from "lucide-react";
 
@@ -62,6 +63,13 @@ const MODULES = [
     description: "Bank and cash accounts, statement imports, ledger matching, outstanding items, and permanent locks.",
     icon: Landmark,
     route: "banking",
+  },
+  {
+    key: "budgeting",
+    label: "Budgeting & forecasting",
+    description: "Monthly budgets, rolling forecasts, actual variance, runway, approvals, and locked baselines.",
+    icon: TrendingUp,
+    route: "budgeting",
   },
   {
     key: "contacts",
@@ -203,6 +211,15 @@ export default async function BusinessWorkspacePage({
     permissions.includes("banking.manage") ||
     permissions.includes("accounting.view") ||
     permissions.includes("accounting.manage");
+  const canViewBudgeting =
+    ["owner", "admin", "accountant", "manager", "viewer"].includes(role) ||
+    permissions.includes("*") ||
+    permissions.includes("budget.view") ||
+    permissions.includes("budget.manage") ||
+    permissions.includes("budget.approve") ||
+    permissions.includes("accounting.view") ||
+    permissions.includes("accounting.manage") ||
+    permissions.includes("reports.view");
 
   const notificationsResult = await supabase.rpc("get_business_notifications_snapshot", {
     p_business_id: business.id,
@@ -290,14 +307,14 @@ export default async function BusinessWorkspacePage({
               Modules selected for this business
             </h2>
             <p className="mt-2 max-w-3xl text-sm leading-6 text-text-secondary">
-              Modules are configured from the nature of business. Every operational module uses the same verified accounting, banking, tax, permission, notification, and reporting source of truth.
+              Modules are configured from the nature of business. Every operational module uses the same verified accounting, banking, budgeting, tax, permission, notification, and reporting source of truth.
             </p>
           </div>
 
           <div className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
             {MODULES.map((module) => {
               const Icon = module.icon;
-              const enabled = ["banking", "team", "notifications", "tax-closing"].includes(module.key)
+              const enabled = ["banking", "budgeting", "team", "notifications", "tax-closing"].includes(module.key)
                 ? true
                 : enabledModules[module.key] === true;
               const accessible =
@@ -311,7 +328,9 @@ export default async function BusinessWorkspacePage({
                         ? canViewTax
                         : module.key === "banking"
                           ? canViewBanking
-                          : true;
+                          : module.key === "budgeting"
+                            ? canViewBudgeting
+                            : true;
               const openable = enabled && accessible;
               const content = (
                 <>
@@ -371,9 +390,9 @@ export default async function BusinessWorkspacePage({
           <div className="flex items-start gap-3">
             <BookOpenCheck aria-hidden="true" className="mt-0.5 size-5 shrink-0" />
             <div>
-              <h2 className="font-black">Accounting, banking, tax, access control, and alerts are active</h2>
+              <h2 className="font-black">Accounting, banking, budgeting, tax, access control, and alerts are active</h2>
               <p className="mt-1 text-sm leading-6 opacity-80">
-                Balanced journals, bank reconciliation locks, fiscal periods, tax returns, retained-earnings close, immutable posting, team audit history, CRM conversions, verified reports, and role-filtered alerts are available. Operational modules do not calculate financial results independently.
+                Balanced journals, bank reconciliation locks, approved budgets, rolling forecasts, fiscal periods, tax returns, retained-earnings close, immutable posting, team audit history, CRM conversions, verified reports, and role-filtered alerts are available. Operational modules do not calculate financial results independently.
               </p>
             </div>
           </div>
