@@ -1,3 +1,4 @@
+import FloatingActions from "@/components/layout/FloatingActions";
 import PageTransition from "@/components/motion/PageTransition";
 
 export default function DashboardTemplate({
@@ -5,5 +6,10 @@ export default function DashboardTemplate({
 }: {
   children: React.ReactNode;
 }) {
-  return <PageTransition>{children}</PageTransition>;
+  return (
+    <>
+      <PageTransition>{children}</PageTransition>
+      <FloatingActions />
+    </>
+  );
 }
