@@ -25,9 +25,12 @@ export default function BusinessTeamError({
           <Button type="button" onClick={reset}>
             <RotateCcw aria-hidden="true" /> Try again
           </Button>
-          <Button asChild variant="secondary">
-            <Link href="/business">Business workspaces</Link>
-          </Button>
+          <Link
+            href="/business"
+            className="finance-focus inline-flex min-h-11 items-center justify-center rounded-[var(--radius-button)] bg-secondary px-4 text-sm font-semibold text-secondary-foreground shadow-[var(--shadow-xs)] transition-colors hover:bg-secondary-hover"
+          >
+            Business workspaces
+          </Link>
         </div>
       </section>
     </main>
