@@ -4,15 +4,17 @@ import { Tooltip as TooltipPrimitive } from "@base-ui/react/tooltip"
 
 import { cn } from "@/lib/utils"
 
+const GLOBAL_TOOLTIP_DELAY_MS = 2000
+
 function TooltipProvider({
-  delay = 2000,
   ...props
 }: TooltipPrimitive.Provider.Props) {
   return (
     <TooltipPrimitive.Provider
       data-slot="tooltip-provider"
-      delay={delay}
       {...props}
+      delay={GLOBAL_TOOLTIP_DELAY_MS}
+      timeout={0}
     />
   )
 }
@@ -22,7 +24,13 @@ function Tooltip({ ...props }: TooltipPrimitive.Root.Props) {
 }
 
 function TooltipTrigger({ ...props }: TooltipPrimitive.Trigger.Props) {
-  return <TooltipPrimitive.Trigger data-slot="tooltip-trigger" {...props} />
+  return (
+    <TooltipPrimitive.Trigger
+      data-slot="tooltip-trigger"
+      {...props}
+      delay={GLOBAL_TOOLTIP_DELAY_MS}
+    />
+  )
 }
 
 function TooltipContent({
