@@ -50,14 +50,14 @@ const MODULES = [
     label: "Contacts",
     description: "Customers, suppliers, contact people, balances, and statements.",
     icon: ContactRound,
-    route: null,
+    route: "contacts",
   },
   {
     key: "sales",
     label: "Sales & invoices",
     description: "Quotations, invoices, receipts, payments, returns, and credit notes.",
     icon: ReceiptText,
-    route: null,
+    route: "sales",
   },
   {
     key: "purchases",
