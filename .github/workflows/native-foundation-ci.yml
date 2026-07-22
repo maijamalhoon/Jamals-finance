@@ -39,7 +39,23 @@ jobs:
           set +e
           gradle :shared:testAndroidHostTest :androidApp:assembleDebug --stacktrace 2>&1 | tee /tmp/native-build.log
           exit_code=${PIPESTATUS[0]}
-          tail -n 240 /tmp/native-build.log > ../.github/native-ci-log.txt
+          {
+            echo "=== ACTIONABLE ERROR LINES ==="
+            grep -n -E "(^e: |FAILURE:|What went wrong:|Script compilation error|Unresolved reference|Could not|Exception is:|error:)" /tmp/native-build.log | head -n 180 || true
+            echo
+            echo "=== FIRST FAILURE CONTEXT ==="
+            first_line="$(grep -n -m1 -E "(^e: |FAILURE:|What went wrong:|Script compilation error|Unresolved reference|Could not|error:)" /tmp/native-build.log | cut -d: -f1)"
+            if [ -n "${first_line}" ]; then
+              start=$(( first_line > 30 ? first_line - 30 : 1 ))
+              end=$(( first_line + 90 ))
+              sed -n "${start},${end}p" /tmp/native-build.log
+            else
+              head -n 180 /tmp/native-build.log
+            fi
+            echo
+            echo "=== FINAL 80 LINES ==="
+            tail -n 80 /tmp/native-build.log
+          } > ../.github/native-ci-log.txt
           echo "exit_code=${exit_code}" >> "$GITHUB_OUTPUT"
           exit 0
       - name: Upload native debug APK
