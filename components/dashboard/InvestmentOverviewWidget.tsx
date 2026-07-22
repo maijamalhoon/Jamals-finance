@@ -464,7 +464,7 @@ export default function InvestmentOverviewWidget({
             </p>
 
             <div className="relative mx-auto aspect-square w-full max-w-[240px] [container-type:inline-size] min-[420px]:max-w-[248px] sm:max-w-[256px] md:max-w-[272px] lg:max-w-[288px] xl:max-w-[300px] 2xl:max-w-[260px]">
-              <ChartFrame>
+              <ChartFrame className="!overflow-visible [&>div]:!overflow-visible">
                 {({ width, height }) => (
                   <PieChart width={width} height={height} accessibilityLayer>
                     <Pie
@@ -490,6 +490,11 @@ export default function InvestmentOverviewWidget({
                       cursor={false}
                       offset={18}
                       allowEscapeViewBox={{ x: true, y: true }}
+                      position={
+                        width < 270
+                          ? { x: Math.max(12, width / 2 - 78), y: -10 }
+                          : { x: width - 18, y: Math.max(6, height * 0.18) }
+                      }
                       wrapperStyle={{
                         zIndex: 20,
                         pointerEvents: "none",
@@ -548,7 +553,7 @@ export default function InvestmentOverviewWidget({
                     )}
                   </p>
                   <p className="mt-1.5 whitespace-nowrap text-[8px] font-bold uppercase leading-none tracking-[0.11em] text-text-tertiary sm:text-[9px]">
-                    Portfolio value
+                    Portfolio
                   </p>
                 </div>
               </div>
