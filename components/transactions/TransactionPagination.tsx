@@ -8,15 +8,26 @@ type TransactionPaginationProps = Pick<
   "currentPage" | "endIndex" | "startIndex" | "totalItems" | "totalPages"
 > & {
   basePath: string;
+  baseQuery?: string;
   itemLabel: string;
 };
 
-function pageHref(basePath: string, page: number) {
-  return page === 1 ? basePath : `${basePath}?page=${page}`;
+function pageHref(basePath: string, page: number, baseQuery = "") {
+  const query = new URLSearchParams(baseQuery);
+
+  if (page === 1) {
+    query.delete("page");
+  } else {
+    query.set("page", String(page));
+  }
+
+  const search = query.toString();
+  return search ? `${basePath}?${search}` : basePath;
 }
 
 export default function TransactionPagination({
   basePath,
+  baseQuery,
   currentPage,
   endIndex,
   itemLabel,
@@ -43,7 +54,7 @@ export default function TransactionPagination({
       <div className="flex flex-wrap items-center gap-2">
         {currentPage > 1 ? (
           <Link
-            href={pageHref(basePath, currentPage - 1)}
+            href={pageHref(basePath, currentPage - 1, baseQuery)}
             className={linkClassName}
             aria-label={`Previous ${itemLabel} page`}
           >
@@ -63,7 +74,7 @@ export default function TransactionPagination({
 
         {currentPage < totalPages ? (
           <Link
-            href={pageHref(basePath, currentPage + 1)}
+            href={pageHref(basePath, currentPage + 1, baseQuery)}
             className={linkClassName}
             aria-label={`Next ${itemLabel} page`}
           >
