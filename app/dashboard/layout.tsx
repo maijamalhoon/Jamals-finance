@@ -10,6 +10,7 @@ import NotificationCenter, {
   NotificationCenterLoading,
 } from "@/components/layout/NotificationCenter";
 import ResponsiveDashboardHeader from "@/components/layout/ResponsiveDashboardHeader";
+import UnifiedSearchBehavior from "@/components/layout/UnifiedSearchBehavior";
 import DashboardScrollRestoration from "@/components/motion/DashboardScrollRestoration";
 import NewUserExperienceGate from "@/components/setup/NewUserExperienceGate";
 import TransactionReceiptViewportFit from "@/components/transactions/TransactionReceiptViewportFit";
@@ -102,6 +103,8 @@ import "./mobile-amount-fit.css";
 import "./final-eight-pages-polish.css";
 // Unified reference-style donut design and amount-only hover for every dashboard donut.
 import "./donut-reference-system.css";
+// Search controls share the approved header interaction without moving nearby actions.
+import "./unified-search-controls.css";
 
 export const dynamic = "force-dynamic";
 
@@ -194,6 +197,7 @@ export default async function DashboardLayout({
           <MobileScrollContactGuard />
           <TransactionReceiptViewportFit />
           <DateFormatDisplaySync />
+          <UnifiedSearchBehavior />
 
           <main
             data-dashboard-scroll
