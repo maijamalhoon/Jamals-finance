@@ -5,6 +5,12 @@ import { useEffect } from "react";
 const ACTION_PATTERN = /^(add|apply|archive|cancel|cash out|confirm|create|delete|download|enable|export|pay|record|refund|remove|resend|reset|restore|retry|save|send|set|sign out|transfer|update|upload|verify|withdraw)\b/i;
 const LOADING_PATTERN = /^(adding|applying|archiving|cancelling|confirming|creating|deleting|downloading|enabling|exporting|paying|processing|recording|refunding|removing|resending|resetting|restoring|retrying|saving|sending|signing out|transferring|updating|uploading|verifying|withdrawing)\b/i;
 const CONFIRMATION_TITLE_PATTERN = /^(archive|cash out|confirm|delete|refund|remove|restore|sign out|transfer|withdraw)\b/i;
+const AUTH_ACTION_SELECTOR = [
+  ".auth-primary-action",
+  ".auth-step button.w-full:not(.auth-provider-action)",
+  ".jf-auth-card button.w-full:not(.auth-provider-action)",
+].join(",");
+const UNIFIED_ACTION_RADIUS = "var(--jf-global-final-action-radius, 1.3rem)";
 
 function compactText(value: string) {
   return value.replace(/\s+/g, " ").replace(/\.{3,}/g, "…").trim();
@@ -95,6 +101,19 @@ function clearLegacyGeneratedPresentation(button: HTMLButtonElement) {
   delete button.dataset.jfGlobalGeneratedActionAria;
 }
 
+function applyUnifiedCurve(button: HTMLButtonElement) {
+  button.style.setProperty("border-radius", UNIFIED_ACTION_RADIUS, "important");
+  button.style.setProperty("overflow", "hidden", "important");
+  button.dataset.jfGlobalActionCurve = "true";
+}
+
+function clearUnifiedCurve(button: HTMLButtonElement) {
+  if (button.dataset.jfGlobalActionCurve !== "true") return;
+  button.style.removeProperty("border-radius");
+  button.style.removeProperty("overflow");
+  delete button.dataset.jfGlobalActionCurve;
+}
+
 function syncAction(button: HTMLButtonElement, root: HTMLElement) {
   const managed = shouldManageAction(button, root);
 
@@ -102,12 +121,14 @@ function syncAction(button: HTMLButtonElement, root: HTMLElement) {
     delete button.dataset.jfFormAction;
     delete button.dataset.jfGlobalActionManaged;
     clearLegacyGeneratedPresentation(button);
+    clearUnifiedCurve(button);
     return;
   }
 
   button.dataset.jfFormAction = "true";
   button.dataset.jfGlobalActionManaged = "true";
   clearLegacyGeneratedPresentation(button);
+  applyUnifiedCurve(button);
 }
 
 function syncActions() {
@@ -116,6 +137,10 @@ function syncActions() {
       .querySelectorAll<HTMLButtonElement>("button")
       .forEach((button) => syncAction(button, root));
   });
+
+  document
+    .querySelectorAll<HTMLButtonElement>(AUTH_ACTION_SELECTOR)
+    .forEach(applyUnifiedCurve);
 }
 
 export default function GlobalFormActionAuthority() {
@@ -161,6 +186,12 @@ export default function GlobalFormActionAuthority() {
           delete button.dataset.jfGlobalActionManaged;
           clearLegacyGeneratedPresentation(button);
         });
+
+      document
+        .querySelectorAll<HTMLButtonElement>(
+          'button[data-jf-global-action-curve="true"]',
+        )
+        .forEach(clearUnifiedCurve);
     };
   }, []);
 
