@@ -1,7 +1,14 @@
 "use client";
 
-import { useEffect, useRef, useState, type ComponentProps } from "react";
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ComponentProps,
+} from "react";
 
+import { normalizeInvestmentEditorType } from "@/lib/investments/type-normalization";
 import { loadSearchableCryptoCatalog } from "@/lib/market/crypto-search-catalog-client";
 
 import InvestmentModalUniversal from "./InvestmentModalUniversal";
@@ -14,6 +21,14 @@ export default function InvestmentModal(props: InvestmentModalProps) {
   const [catalogVersion, setCatalogVersion] = useState(0);
   const openRef = useRef(props.open);
   const pendingCatalogRefreshRef = useRef(false);
+  const normalizedInvestment = useMemo(() => {
+    if (!props.investment) return undefined;
+
+    const normalizedType = normalizeInvestmentEditorType(props.investment.type);
+    if (normalizedType === props.investment.type) return props.investment;
+
+    return { ...props.investment, type: normalizedType };
+  }, [props.investment]);
 
   useEffect(() => {
     openRef.current = props.open;
@@ -45,7 +60,11 @@ export default function InvestmentModal(props: InvestmentModalProps) {
 
   return (
     <>
-      <InvestmentModalUniversal key={catalogVersion} {...props} />
+      <InvestmentModalUniversal
+        key={catalogVersion}
+        {...props}
+        investment={normalizedInvestment}
+      />
       <style jsx global>{`
         @media (max-width: 639px) {
           #investment-asset-results {

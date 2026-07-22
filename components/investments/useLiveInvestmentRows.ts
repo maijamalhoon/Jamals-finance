@@ -11,25 +11,15 @@ import {
   type SupportedCurrency,
 } from "@/lib/currency";
 import type { InvestmentLike } from "@/lib/investments/aggregation";
+import { normalizeInvestmentMarketType } from "@/lib/investments/type-normalization";
 import { loadRuntimeCryptoCatalog } from "@/lib/market/crypto-catalog-client";
 import {
   getInvestmentAssetCatalog,
-  type InvestmentAssetType,
   type InvestmentMarketAsset,
 } from "@/lib/market/investment-asset-catalog";
 
 function normalize(value: string | null | undefined) {
   return (value ?? "").trim();
-}
-
-function normalizeType(
-  value: string | null | undefined,
-): InvestmentAssetType | null {
-  const type = normalize(value).toLowerCase();
-  if (type === "stock" || type === "equity") return "stock";
-  if (type === "forex" || type === "fx") return "forex";
-  if (type === "crypto" || type === "cryptocurrency") return "crypto";
-  return null;
 }
 
 function fallbackBinancePair(symbol: string) {
@@ -61,7 +51,7 @@ function createFallbackAsset(
 
   const source = normalize(investment.price_source).toLowerCase();
   const resolvedType =
-    normalizeType(investment.type) ??
+    normalizeInvestmentMarketType(investment.type) ??
     (source.includes("binance") || source.includes("coingecko")
       ? "crypto"
       : null);
@@ -161,7 +151,7 @@ export function useLiveInvestmentRows<T extends InvestmentLike>(investments: T[]
     for (const investment of investments) {
       const assetId = normalize(investment.asset_id).toLowerCase();
       const symbol = normalize(investment.symbol).toUpperCase();
-      const type = normalizeType(investment.type);
+      const type = normalizeInvestmentMarketType(investment.type);
       const catalogAsset =
         (assetId ? catalogIndex.byId.get(assetId) : undefined) ??
         (assetId ? catalogIndex.byId.get(`crypto-${assetId}`) : undefined) ??
