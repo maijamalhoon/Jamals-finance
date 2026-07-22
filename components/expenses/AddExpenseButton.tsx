@@ -2,21 +2,24 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { TrendingDown } from "lucide-react";
+import { Plus, TrendingDown } from "lucide-react";
 import TransactionModal from "@/components/dashboard/TransactionModal";
 import PageHeadingActionPortal from "@/components/layout/PageHeadingActionPortal";
 
 interface AddExpenseButtonProps {
   label?: string;
   showIcon?: boolean;
+  icon?: "expense" | "plus";
 }
 
 export default function AddExpenseButton({
   label = "Add Expense",
   showIcon = true,
+  icon = "expense",
 }: AddExpenseButtonProps = {}) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
+  const ActionIcon = icon === "plus" ? Plus : TrendingDown;
 
   return (
     <>
@@ -27,7 +30,7 @@ export default function AddExpenseButton({
           onClick={() => setOpen(true)}
           className="danger-action"
         >
-          {showIcon ? <TrendingDown size={16} /> : null}
+          {showIcon ? <ActionIcon size={16} /> : null}
           <span className="sr-only">{label}</span>
         </button>
       </PageHeadingActionPortal>
