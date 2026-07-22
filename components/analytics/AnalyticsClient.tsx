@@ -5,12 +5,14 @@ import { useRouter } from "next/navigation";
 import { AlertTriangle, WifiOff } from "lucide-react";
 
 import { CashFlowCharts } from "@/components/analytics/AnalyticsCharts";
+import {
+  AccountActivity,
+  CompactIncomeSources,
+} from "@/components/analytics/CompactActivitySections";
 import AnalyticsRangeControls from "@/components/analytics/AnalyticsRangeControls";
 import {
-  IncomeSources,
   InvestmentSnapshot,
   KpiSummary,
-  LargestEntries,
   PeriodContext,
   SpendingAnalysis,
 } from "@/components/analytics/AnalyticsSections";
@@ -22,7 +24,6 @@ import {
   buildIncomeSourceSummary,
   calculateKpisForRanges,
   calculatePeriodFacts,
-  getLargestEntries,
   type AnalyticsAccountStatus,
   type AnalyticsDataStatus,
   type AnalyticsInvestmentData,
@@ -30,11 +31,17 @@ import {
   type AnalyticsRangeSelection,
   type AnalyticsTransactionData,
 } from "@/lib/analytics/calculations";
+import {
+  buildAccountActivity,
+  type AnalyticsTransferData,
+} from "@/lib/analytics/account-activity";
 
 interface AnalyticsClientProps {
   transactions: AnalyticsTransactionData[];
+  transfers: AnalyticsTransferData[];
   investments: AnalyticsInvestmentData[];
   transactionsStatus: AnalyticsDataStatus;
+  transfersStatus: AnalyticsDataStatus;
   accountsStatus: AnalyticsAccountStatus;
   investmentsStatus: AnalyticsDataStatus;
   hasAnyTransactions: boolean | null;
@@ -45,8 +52,10 @@ interface AnalyticsClientProps {
 
 export default function AnalyticsClient({
   transactions,
+  transfers,
   investments,
   transactionsStatus,
+  transfersStatus,
   accountsStatus,
   investmentsStatus,
   hasAnyTransactions,
@@ -88,10 +97,9 @@ export default function AnalyticsClient({
       incomeSources: buildIncomeSourceSummary(transactions, current),
       categories: buildExpenseCategoryBreakdown(transactions, current),
       accounts: buildAccountBreakdown(transactions, current),
-      largestExpenses: getLargestEntries(transactions, current, "expense"),
-      largestIncome: getLargestEntries(transactions, current, "income"),
+      accountActivity: buildAccountActivity(transactions, transfers, current),
     };
-  }, [current, previous, transactions]);
+  }, [current, previous, transactions, transfers]);
 
   function navigate(url: string) {
     startTransition(() => router.push(url, { scroll: false }));
@@ -106,9 +114,10 @@ export default function AnalyticsClient({
     navigate(`/dashboard/analytics?${query.toString()}`);
   }
 
-  const noCurrentActivity = !analysis.cashFlow.some(
-    (point) => point.income !== 0 || point.expenses !== 0,
-  );
+  const noCurrentActivity =
+    !analysis.cashFlow.some(
+      (point) => point.income !== 0 || point.expenses !== 0,
+    ) && analysis.accountActivity.length === 0;
 
   return (
     <div
@@ -193,11 +202,11 @@ export default function AnalyticsClient({
               />
             </section>
 
-            <div className="grid min-w-0 gap-4 xl:grid-cols-2">
-              <IncomeSources summary={analysis.incomeSources} />
-              <LargestEntries
-                expenses={analysis.largestExpenses}
-                income={analysis.largestIncome}
+            <div className="grid min-w-0 items-start gap-4 lg:grid-cols-2">
+              <CompactIncomeSources summary={analysis.incomeSources} />
+              <AccountActivity
+                accounts={analysis.accountActivity}
+                transfersStatus={transfersStatus}
               />
             </div>
           </>
