@@ -1,0 +1,235 @@
+/* Reference donut system
+   Visual-only layer for every Recharts donut inside the authenticated dashboard.
+   Data, calculations, segment colors and chart logic remain untouched. */
+
+[data-dashboard-shell] .recharts-wrapper:has(.recharts-pie) {
+  overflow: visible;
+}
+
+[data-dashboard-shell]
+  .recharts-wrapper:has(.recharts-pie)
+  .recharts-pie-sector,
+[data-dashboard-shell]
+  .recharts-wrapper:has(.recharts-pie)
+  .recharts-sector {
+  outline: none;
+}
+
+[data-dashboard-shell]
+  .recharts-wrapper:has(.recharts-pie)
+  .recharts-pie-sector
+  .recharts-sector {
+  cursor: pointer;
+  transform-box: view-box;
+  transform-origin: center;
+  vector-effect: non-scaling-stroke;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transition:
+    transform 180ms cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 180ms ease,
+    filter 180ms ease;
+}
+
+/* Keep the ring calm and clean while making the active segment easy to read. */
+@media (hover: hover) and (pointer: fine) {
+  [data-dashboard-shell]
+    .recharts-wrapper:has(.recharts-pie)
+    .recharts-pie:hover
+    .recharts-pie-sector:not(:hover)
+    .recharts-sector {
+    opacity: 0.72;
+  }
+
+  [data-dashboard-shell]
+    .recharts-wrapper:has(.recharts-pie)
+    .recharts-pie-sector:hover
+    .recharts-sector {
+    filter: brightness(1.045);
+    transform: scale(1.025);
+  }
+}
+
+/* Standard centre hierarchy: small uppercase label, then the strong amount. */
+[data-dashboard-shell]
+  .relative:has(.recharts-wrapper .recharts-pie)
+  > .pointer-events-none.absolute.inset-0
+  > div {
+  display: flex !important;
+  min-width: 0;
+  max-width: 58%;
+  flex-direction: column !important;
+  align-items: center;
+  justify-content: center;
+  padding-inline: 0.25rem;
+  text-align: center;
+}
+
+[data-dashboard-shell]
+  .relative:has(.recharts-wrapper .recharts-pie)
+  > .pointer-events-none.absolute.inset-0
+  > div
+  > p {
+  max-width: 100%;
+}
+
+[data-dashboard-shell]
+  .relative:has(.recharts-wrapper .recharts-pie)
+  > .pointer-events-none.absolute.inset-0
+  > div
+  > p[class*="uppercase"] {
+  order: -3;
+  margin-top: 0 !important;
+  margin-bottom: 0.42rem;
+  overflow: hidden;
+  color: var(--text-secondary) !important;
+  font-size: clamp(0.55rem, 0.72vw, 0.67rem) !important;
+  font-weight: 750 !important;
+  line-height: 1 !important;
+  letter-spacing: 0.105em !important;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+[data-dashboard-shell]
+  .relative:has(.recharts-wrapper .recharts-pie)
+  > .pointer-events-none.absolute.inset-0
+  > div
+  > p[class*="tabular-nums"] {
+  order: -2;
+  max-width: 100%;
+  margin-top: 0 !important;
+  overflow: hidden;
+  font-size: clamp(0.94rem, 2vw, 1.28rem) !important;
+  font-weight: 850 !important;
+  line-height: 1.05 !important;
+  letter-spacing: -0.035em !important;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Existing investment-page CSS intentionally hid donut tooltips.
+   Restore them with a more specific selector so hover always reveals the amount. */
+[data-dashboard-shell]
+  .investment-overview-live
+  .recharts-wrapper:has(.recharts-pie)
+  > .recharts-tooltip-wrapper {
+  display: block !important;
+}
+
+[data-dashboard-shell]
+  .recharts-wrapper:has(.recharts-pie)
+  > .recharts-tooltip-wrapper {
+  z-index: 40 !important;
+  pointer-events: none !important;
+}
+
+/* Compact, theme-safe amount bubble. No white hover card, border or outline. */
+[data-dashboard-shell]
+  .recharts-wrapper:has(.recharts-pie)
+  > .recharts-tooltip-wrapper
+  > * {
+  min-width: 0 !important;
+  max-width: min(72vw, 13rem) !important;
+  border: 0 !important;
+  border-radius: 0.72rem !important;
+  background: color-mix(in srgb, var(--chart-tooltip) 92%, transparent) !important;
+  box-shadow: 0 8px 22px rgb(0 0 0 / 0.14) !important;
+  padding: 0.42rem 0.62rem !important;
+  color: var(--text-primary) !important;
+  backdrop-filter: blur(12px);
+}
+
+[data-dashboard-shell]
+  .recharts-wrapper:has(.recharts-pie)
+  .recharts-default-tooltip
+  .recharts-tooltip-label,
+[data-dashboard-shell]
+  .recharts-wrapper:has(.recharts-pie)
+  .recharts-default-tooltip
+  .recharts-tooltip-item-name,
+[data-dashboard-shell]
+  .recharts-wrapper:has(.recharts-pie)
+  .recharts-default-tooltip
+  .recharts-tooltip-item-separator {
+  display: none !important;
+}
+
+[data-dashboard-shell]
+  .recharts-wrapper:has(.recharts-pie)
+  .recharts-default-tooltip
+  .recharts-tooltip-item-list,
+[data-dashboard-shell]
+  .recharts-wrapper:has(.recharts-pie)
+  .recharts-default-tooltip
+  .recharts-tooltip-item {
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+[data-dashboard-shell]
+  .recharts-wrapper:has(.recharts-pie)
+  .recharts-default-tooltip
+  .recharts-tooltip-item-value,
+[data-dashboard-shell]
+  .recharts-wrapper:has(.recharts-pie)
+  > .recharts-tooltip-wrapper
+  > div
+  > p:nth-child(2) {
+  color: var(--text-primary) !important;
+  font-size: 0.72rem !important;
+  font-weight: 850 !important;
+  line-height: 1.1 !important;
+  letter-spacing: -0.015em;
+  white-space: nowrap;
+}
+
+/* Custom allocation tooltips contain name, amount and percentage.
+   The reference interaction shows the amount only. */
+[data-dashboard-shell]
+  .recharts-wrapper:has(.recharts-pie)
+  > .recharts-tooltip-wrapper
+  > div
+  > p:first-child:not(:only-child),
+[data-dashboard-shell]
+  .recharts-wrapper:has(.recharts-pie)
+  > .recharts-tooltip-wrapper
+  > div
+  > p:last-child:not(:only-child) {
+  display: none !important;
+}
+
+@media (max-width: 639px) {
+  [data-dashboard-shell]
+    .relative:has(.recharts-wrapper .recharts-pie)
+    > .pointer-events-none.absolute.inset-0
+    > div {
+    max-width: 56%;
+  }
+
+  [data-dashboard-shell]
+    .relative:has(.recharts-wrapper .recharts-pie)
+    > .pointer-events-none.absolute.inset-0
+    > div
+    > p[class*="uppercase"] {
+    margin-bottom: 0.34rem;
+    font-size: 0.54rem !important;
+  }
+
+  [data-dashboard-shell]
+    .relative:has(.recharts-wrapper .recharts-pie)
+    > .pointer-events-none.absolute.inset-0
+    > div
+    > p[class*="tabular-nums"] {
+    font-size: clamp(0.88rem, 4.7vw, 1.12rem) !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-dashboard-shell]
+    .recharts-wrapper:has(.recharts-pie)
+    .recharts-pie-sector
+    .recharts-sector {
+    transition: none !important;
+  }
+}
