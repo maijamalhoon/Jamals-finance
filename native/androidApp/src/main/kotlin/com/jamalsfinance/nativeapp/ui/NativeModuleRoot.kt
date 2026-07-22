@@ -2,7 +2,6 @@ package com.jamalsfinance.nativeapp.ui
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -33,15 +32,22 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.jamalsfinance.shared.finance.FinanceRepository
 import com.jamalsfinance.shared.goals.GoalsPayablesRepository
+import com.jamalsfinance.shared.investments.InvestmentsAnalyticsRepository
 import kotlinx.coroutines.launch
 
-private enum class NativeWorkspace { Launcher, AccountsTransactions, GoalsPayables }
+private enum class NativeWorkspace {
+    Launcher,
+    AccountsTransactions,
+    GoalsPayables,
+    InvestmentsAnalytics,
+}
 
 @Composable
 fun NativeModuleRootShell(
     email: String,
     financeRepository: FinanceRepository,
     goalsPayablesRepository: GoalsPayablesRepository,
+    investmentsAnalyticsRepository: InvestmentsAnalyticsRepository,
     onSignOut: suspend () -> Unit,
 ) {
     var workspace by remember { mutableStateOf(NativeWorkspace.Launcher) }
@@ -54,6 +60,7 @@ fun NativeModuleRootShell(
             email = email,
             onAccountsTransactions = { workspace = NativeWorkspace.AccountsTransactions },
             onGoalsPayables = { workspace = NativeWorkspace.GoalsPayables },
+            onInvestmentsAnalytics = { workspace = NativeWorkspace.InvestmentsAnalytics },
             onSignOut = onSignOut,
         )
         NativeWorkspace.AccountsTransactions -> NativeDashboardShell(
@@ -65,6 +72,10 @@ fun NativeModuleRootShell(
             repository = goalsPayablesRepository,
             onBack = { workspace = NativeWorkspace.Launcher },
         )
+        NativeWorkspace.InvestmentsAnalytics -> InvestmentsAnalyticsDashboard(
+            repository = investmentsAnalyticsRepository,
+            onBack = { workspace = NativeWorkspace.Launcher },
+        )
     }
 }
 
@@ -74,6 +85,7 @@ private fun NativeModuleLauncher(
     email: String,
     onAccountsTransactions: () -> Unit,
     onGoalsPayables: () -> Unit,
+    onInvestmentsAnalytics: () -> Unit,
     onSignOut: suspend () -> Unit,
 ) {
     val scope = rememberCoroutineScope()
@@ -122,6 +134,14 @@ private fun NativeModuleLauncher(
                     description = "Savings goals, contribution history, payables, repayments and due-status tracking.",
                     action = "Open goals & payables",
                     onClick = onGoalsPayables,
+                )
+            }
+            item {
+                ModuleCard(
+                    title = "Investments & Analytics",
+                    description = "Portfolio lots, live market prices, profit/loss, cash out, cash-flow and spending intelligence.",
+                    action = "Open investments & analytics",
+                    onClick = onInvestmentsAnalytics,
                 )
             }
             item {

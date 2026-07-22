@@ -9,7 +9,15 @@ import com.jamalsfinance.shared.auth.SupabaseAuthRepository
 import com.jamalsfinance.shared.core.AppConfig
 import com.jamalsfinance.shared.finance.SupabaseFinanceRepository
 import com.jamalsfinance.shared.goals.SupabaseGoalsPayablesRepository
+import com.jamalsfinance.shared.investments.SupabaseInvestmentsAnalyticsRepository
 import com.jamalsfinance.shared.network.platformHttpClient
+
+private data class NativeRepositories(
+    val auth: SupabaseAuthRepository,
+    val finance: SupabaseFinanceRepository,
+    val goalsPayables: SupabaseGoalsPayablesRepository,
+    val investmentsAnalytics: SupabaseInvestmentsAnalyticsRepository,
+)
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -29,14 +37,19 @@ class MainActivity : ComponentActivity() {
                 config = config,
                 sessionStore = AndroidKeystoreSessionStore(applicationContext),
             )
-            Triple(
-                authRepository,
-                SupabaseFinanceRepository(
+            NativeRepositories(
+                auth = authRepository,
+                finance = SupabaseFinanceRepository(
                     baseClient = baseClient,
                     config = config,
                     authRepository = authRepository,
                 ),
-                SupabaseGoalsPayablesRepository(
+                goalsPayables = SupabaseGoalsPayablesRepository(
+                    baseClient = baseClient,
+                    config = config,
+                    authRepository = authRepository,
+                ),
+                investmentsAnalytics = SupabaseInvestmentsAnalyticsRepository(
                     baseClient = baseClient,
                     config = config,
                     authRepository = authRepository,
@@ -48,9 +61,10 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             JamalsFinanceNativeApp(
-                authRepository = repositories?.first,
-                financeRepository = repositories?.second,
-                goalsPayablesRepository = repositories?.third,
+                authRepository = repositories?.auth,
+                financeRepository = repositories?.finance,
+                goalsPayablesRepository = repositories?.goalsPayables,
+                investmentsAnalyticsRepository = repositories?.investmentsAnalytics,
             )
         }
     }
