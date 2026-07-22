@@ -1,0 +1,51 @@
+name: Native goals payables bootstrap
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/native-goals-payables-bootstrap.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  bootstrap:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Materialize Kotlin sources
+        shell: bash
+        run: |
+          set -euo pipefail
+          materialize() {
+            local encoded="$1"
+            local target="$2"
+            mkdir -p "$(dirname "$target")"
+            base64 -d "$encoded" | gzip -d > "$target"
+          }
+          materialize .github/native-bootstrap/goals-payables-repository.kt.gz.b64 native/shared/src/commonMain/kotlin/com/jamalsfinance/shared/goals/GoalsPayablesRepository.kt
+          materialize .github/native-bootstrap/goals-payables-models-test.kt.gz.b64 native/shared/src/commonTest/kotlin/com/jamalsfinance/shared/goals/GoalsPayablesModelsTest.kt
+          materialize .github/native-bootstrap/native-module-root.kt.gz.b64 native/androidApp/src/main/kotlin/com/jamalsfinance/nativeapp/ui/NativeModuleRoot.kt
+          materialize .github/native-bootstrap/goals-payables-dashboard.kt.gz.b64 native/androidApp/src/main/kotlin/com/jamalsfinance/nativeapp/ui/GoalsPayablesDashboard.kt
+          materialize .github/native-bootstrap/main-activity.kt.gz.b64 native/androidApp/src/main/kotlin/com/jamalsfinance/nativeapp/MainActivity.kt
+          materialize .github/native-bootstrap/jamals-finance-native-app.kt.gz.b64 native/androidApp/src/main/kotlin/com/jamalsfinance/nativeapp/ui/JamalsFinanceNativeApp.kt
+      - name: Commit native milestone
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git rm -r .github/native-bootstrap
+          git rm .github/workflows/native-goals-payables-bootstrap.yml
+          git add native/shared/src/commonMain/kotlin/com/jamalsfinance/shared/goals/GoalsPayablesRepository.kt
+          git add native/shared/src/commonTest/kotlin/com/jamalsfinance/shared/goals/GoalsPayablesModelsTest.kt
+          git add native/androidApp/src/main/kotlin/com/jamalsfinance/nativeapp/ui/NativeModuleRoot.kt
+          git add native/androidApp/src/main/kotlin/com/jamalsfinance/nativeapp/ui/GoalsPayablesDashboard.kt
+          git add native/androidApp/src/main/kotlin/com/jamalsfinance/nativeapp/MainActivity.kt
+          git add native/androidApp/src/main/kotlin/com/jamalsfinance/nativeapp/ui/JamalsFinanceNativeApp.kt
+          git commit -m "feat(native): add goals and payables milestone"
+          git pull --rebase origin main
+          git push origin HEAD:main
