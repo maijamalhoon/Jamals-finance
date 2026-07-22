@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.weight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
@@ -356,7 +355,10 @@ private fun AccountCard(account: FinanceAccount, onEdit: (FinanceAccount) -> Uni
                 }
                 Text(formatPkr(account.balance), fontWeight = FontWeight.Bold)
             }
-            if (!account.accountNumber.isNullOrBlank()) Text("•••• ${account.accountNumber.takeLast(4)}", style = MaterialTheme.typography.bodySmall)
+            val lastFour = account.accountNumber?.takeLast(4)
+    if (lastFour != null) {
+        Text("•••• $lastFour", style = MaterialTheme.typography.bodySmall)
+    }
             Row {
                 TextButton(onClick = { onEdit(account) }, enabled = account.status == "active") { Text("Edit") }
                 TextButton(onClick = { onArchive(account) }) { Text(if (account.status == "active") "Archive" else "Restore") }
