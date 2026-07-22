@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import { toast } from "sonner";
 
+import GlobalAccountAmountMaxAuthority from "@/components/forms/GlobalAccountAmountMaxAuthority";
 import GlobalFormActionAuthority from "@/components/forms/GlobalFormActionAuthority";
 import GlobalFormAuditAuthority from "@/components/forms/GlobalFormAuditAuthority";
 import GlobalFormDialogAuthority from "@/components/forms/GlobalFormDialogAuthority";
@@ -107,6 +108,7 @@ export default function PWARegister() {
       <GlobalFormDialogAuthority />
       <GlobalFormFieldAuthority />
       <GlobalFormActionAuthority />
+      <GlobalAccountAmountMaxAuthority />
       <AcceleratedMotionPerformance />
       <AndroidAppManager />
       <WindowsAppManager />
