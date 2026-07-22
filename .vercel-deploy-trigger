@@ -1,3 +1,3 @@
-Production deployment trigger for the current Jamals Finance main branch.
-No application UI, UX, business logic, performance behavior, or animations are changed by this file.
-Triggered on 2026-07-21 to retry Vercel production after the previous build failure and build-rate limit.
+Tax and fiscal closing verification trigger.
+No application behavior is changed by this file.
+Triggered on 2026-07-22 for strict Next.js and TypeScript verification.
