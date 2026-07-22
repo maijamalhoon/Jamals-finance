@@ -1,5 +1,6 @@
 name: Native foundation CI
 
+# Verification marker: goals-and-payables-milestone
 on:
   push:
     branches: [main]
