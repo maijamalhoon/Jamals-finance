@@ -81,9 +81,24 @@ jobs:
             "workflow": "native-foundation-ci"
           }
           JSON
+          python - <<'PY'
+          from pathlib import Path
+
+          path = Path("native/androidApp/src/main/kotlin/com/jamalsfinance/nativeapp/ui/FinanceDashboard.kt")
+          text = path.read_text(encoding="utf-8")
+          text = text.replace("import androidx.compose.foundation.layout.weight\n", "")
+          old = '            if (!account.accountNumber.isNullOrBlank()) Text("•••• ${account.accountNumber.takeLast(4)}", style = MaterialTheme.typography.bodySmall)'
+          new = '''            val lastFour = account.accountNumber?.takeLast(4)
+              if (lastFour != null) {
+                  Text("•••• $lastFour", style = MaterialTheme.typography.bodySmall)
+              }'''
+          if old in text:
+              text = text.replace(old, new)
+          path.write_text(text, encoding="utf-8")
+          PY
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add .github/native-ci-status.json .github/native-ci-log.txt
+          git add native/androidApp/src/main/kotlin/com/jamalsfinance/nativeapp/ui/FinanceDashboard.kt .github/native-ci-status.json .github/native-ci-log.txt
           git commit -m "chore(native): record foundation CI ${result}" || exit 0
           git pull --rebase origin main
           git push origin HEAD:main
