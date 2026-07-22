@@ -11,7 +11,7 @@ kotlin {
         namespace = "com.jamalsfinance.shared"
         compileSdk = 36
         minSdk = 23
-        compilerOptions.configure {
+        compilerOptions {
             jvmTarget.set(JvmTarget.JVM_17)
         }
         withHostTestBuilder {}.configure {}
