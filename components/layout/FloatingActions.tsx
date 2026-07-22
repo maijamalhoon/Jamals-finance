@@ -3,7 +3,12 @@
 import dynamic from "next/dynamic";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { AnimatePresence, motion, type Variants } from "framer-motion";
+import {
+  AnimatePresence,
+  motion,
+  useReducedMotion,
+  type Variants,
+} from "framer-motion";
 import {
   ArrowDown,
   ArrowUp,
@@ -116,6 +121,7 @@ const itemVariants: Variants = {
 export default function FloatingActions() {
   const router = useRouter();
   const pathname = usePathname();
+  const reduceMotion = useReducedMotion();
 
   const [open, setOpen] = useState(false);
   const [transactionOpen, setTransactionOpen] = useState(false);
@@ -124,6 +130,7 @@ export default function FloatingActions() {
   const [txType, setTxType] = useState<"income" | "expense">("income");
 
   const modalOpen = transactionOpen || investmentOpen || externalDialogOpen;
+  const shouldAnimateAttention = !open && !modalOpen && !reduceMotion;
 
   useEffect(() => {
     setOpen(false);
@@ -180,7 +187,7 @@ export default function FloatingActions() {
   return (
     <>
       <div
-        className={`jf-floating-actions fixed bottom-[calc(1rem+env(safe-area-inset-bottom))] right-3 z-40 flex flex-col items-end gap-2.5 transition-all duration-200 print:hidden sm:right-5 lg:bottom-8 lg:right-8 ${
+        className={`jf-floating-actions fixed bottom-[calc(5.25rem+env(safe-area-inset-bottom))] left-3 z-40 flex flex-col items-start gap-2.5 transition-all duration-200 print:hidden sm:bottom-[calc(5.75rem+env(safe-area-inset-bottom))] sm:left-5 lg:bottom-10 lg:left-8 ${
           modalOpen ? "pointer-events-none translate-y-2 opacity-0" : ""
         }`}
         aria-hidden={modalOpen ? "true" : undefined}
@@ -206,9 +213,9 @@ export default function FloatingActions() {
                 initial="initial"
                 animate="animate"
                 exit="exit"
-                className="min-w-[13.5rem] origin-bottom-right overflow-hidden rounded-[22px] bg-card/96 p-2.5 text-card-foreground shadow-[0_18px_50px_rgb(15_23_42_/_0.16)] backdrop-blur-2xl dark:bg-surface-elevated/96 dark:shadow-[0_22px_56px_rgb(0_0_0_/_0.42)]"
+                className="w-[clamp(12.75rem,58vw,15rem)] origin-bottom-left overflow-hidden rounded-[clamp(1.1rem,4vw,1.45rem)] bg-card/96 p-[clamp(0.45rem,2vw,0.7rem)] text-card-foreground shadow-[0_18px_50px_rgb(15_23_42_/_0.16)] backdrop-blur-2xl dark:bg-surface-elevated/96 dark:shadow-[0_22px_56px_rgb(0_0_0_/_0.42)]"
               >
-                <div className="grid gap-1">
+                <div className="grid gap-[clamp(0.15rem,0.8vw,0.3rem)]">
                   {actions.map((action) => {
                     const Icon = action.icon;
 
@@ -220,23 +227,23 @@ export default function FloatingActions() {
                         aria-label={action.ariaLabel}
                         data-keep-icon-surface
                         variants={itemVariants}
-                        whileHover={{ x: -2 }}
+                        whileHover={{ x: 2 }}
                         whileTap={{ scale: 0.96 }}
                         onClick={() => handleAction(action.key)}
-                        className="finance-focus group flex h-12 w-full items-center gap-3 rounded-[15px] px-2.5 text-left transition-colors duration-150 hover:bg-surface-secondary/90 dark:hover:bg-surface-soft/70"
+                        className="finance-focus group flex h-[clamp(2.8rem,12vw,3.25rem)] w-full items-center gap-[clamp(0.6rem,2.8vw,0.85rem)] rounded-[clamp(0.8rem,3vw,1rem)] px-[clamp(0.5rem,2.4vw,0.75rem)] text-left transition-colors duration-150 hover:bg-surface-secondary/90 dark:hover:bg-surface-soft/70"
                       >
                         <span
-                          className={`grid size-9 shrink-0 place-items-center rounded-[12px] bg-surface-secondary/80 ${action.color} transition-transform duration-150 group-hover:scale-105 dark:bg-surface-soft/65`}
+                          className={`grid size-[clamp(2rem,9vw,2.4rem)] shrink-0 place-items-center rounded-[clamp(0.65rem,2.8vw,0.85rem)] bg-surface-secondary/80 ${action.color} transition-transform duration-150 group-hover:scale-105 dark:bg-surface-soft/65`}
                         >
                           <Icon
-                            size={19}
-                            strokeWidth={2.4}
+                            strokeWidth={2.35}
                             strokeLinecap="round"
                             strokeLinejoin="round"
                             aria-hidden="true"
+                            className="size-[clamp(1rem,4.8vw,1.25rem)]"
                           />
                         </span>
-                        <span className="text-sm font-semibold tracking-[-0.01em]">
+                        <span className="text-[clamp(0.78rem,3.4vw,0.9rem)] font-semibold tracking-[-0.01em]">
                           {action.label}
                         </span>
                       </motion.button>
@@ -248,44 +255,88 @@ export default function FloatingActions() {
           ) : null}
         </AnimatePresence>
 
-        <motion.button
-          type="button"
-          aria-label={open ? "Close quick actions" : "Open quick actions"}
-          aria-expanded={open}
-          aria-controls="quick-finance-actions"
-          data-keep-icon-surface
-          onClick={() => setOpen((current) => !current)}
-          whileHover={{ y: -1, scale: 1.025 }}
-          whileTap={{ scale: 0.92 }}
-          animate={{ borderRadius: open ? 18 : 20 }}
-          transition={{
-            type: "spring",
-            stiffness: 390,
-            damping: 25,
-          }}
-          className="finance-focus relative grid h-[54px] w-[54px] place-items-center bg-active text-primary-foreground shadow-[0_14px_30px_color-mix(in_srgb,var(--active)_28%,transparent)] transition-[filter,box-shadow] duration-200 hover:brightness-[1.04] sm:h-[56px] sm:w-[56px]"
+        <motion.div
+          animate={
+            shouldAnimateAttention
+              ? { y: [0, -2, 0], scale: [1, 1.025, 1] }
+              : { y: 0, scale: 1 }
+          }
+          transition={
+            shouldAnimateAttention
+              ? {
+                  duration: 2.6,
+                  ease: "easeInOut",
+                  repeat: Infinity,
+                  repeatDelay: 1.15,
+                }
+              : { duration: 0.18 }
+          }
+          className="relative grid place-items-center"
         >
           <motion.span
-            animate={{
-              rotate: open ? 45 : 0,
-              scale: open ? 0.96 : 1,
-            }}
+            aria-hidden="true"
+            animate={
+              shouldAnimateAttention
+                ? { opacity: [0, 0.24, 0], scale: [0.82, 1.22, 1.34] }
+                : { opacity: 0, scale: 0.9 }
+            }
+            transition={
+              shouldAnimateAttention
+                ? {
+                    duration: 2.1,
+                    ease: "easeOut",
+                    repeat: Infinity,
+                    repeatDelay: 1.65,
+                  }
+                : { duration: 0.15 }
+            }
+            className="pointer-events-none absolute inset-0 rounded-full bg-active/35 blur-[1px]"
+          />
+
+          <motion.button
+            type="button"
+            aria-label={open ? "Close quick actions" : "Open quick actions"}
+            aria-expanded={open}
+            aria-controls="quick-finance-actions"
+            data-keep-icon-surface
+            onClick={() => setOpen((current) => !current)}
+            whileHover={{ y: -1, scale: 1.035 }}
+            whileTap={{ scale: 0.92 }}
+            animate={{ borderRadius: open ? 18 : 999 }}
             transition={{
               type: "spring",
-              stiffness: 430,
+              stiffness: 390,
               damping: 25,
             }}
-            className="relative z-10 grid place-items-center"
+            className="finance-focus relative grid size-[clamp(3.15rem,13vw,3.9rem)] place-items-center overflow-hidden bg-card/92 text-foreground shadow-[0_14px_34px_rgb(15_23_42_/_0.18),inset_0_1px_0_rgb(255_255_255_/_0.72)] backdrop-blur-xl transition-[filter,box-shadow,background-color] duration-200 hover:brightness-[1.03] dark:bg-surface-elevated/94 dark:shadow-[0_16px_38px_rgb(0_0_0_/_0.48),inset_0_1px_0_rgb(255_255_255_/_0.08)]"
           >
-            <Plus
-              size={25}
-              strokeWidth={2.5}
-              strokeLinecap="round"
-              strokeLinejoin="round"
+            <span
               aria-hidden="true"
+              className="absolute inset-[clamp(0.28rem,1.4vw,0.38rem)] rounded-full bg-active shadow-[0_8px_22px_color-mix(in_srgb,var(--active)_30%,transparent)]"
             />
-          </motion.span>
-        </motion.button>
+
+            <motion.span
+              animate={{
+                rotate: open ? 45 : 0,
+                scale: open ? 0.94 : 1,
+              }}
+              transition={{
+                type: "spring",
+                stiffness: 430,
+                damping: 25,
+              }}
+              className="relative z-10 grid place-items-center text-primary-foreground"
+            >
+              <Plus
+                strokeWidth={2.6}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+                className="size-[clamp(1.35rem,5.8vw,1.75rem)]"
+              />
+            </motion.span>
+          </motion.button>
+        </motion.div>
       </div>
 
       {transactionOpen ? (
