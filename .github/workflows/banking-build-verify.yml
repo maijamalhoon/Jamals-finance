@@ -26,6 +26,47 @@ jobs:
           ref: main
           fetch-depth: 1
           path: source
+      - name: Add Banking permission controls to Team UI
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          path = Path("source/components/business/BusinessTeamManager.tsx")
+          source = path.read_text()
+          if 'label: "Banking"' not in source:
+              marker = '''  {
+                label: "Contacts & sales",'''.replace('                ', '')
+              banking = '''  {
+    label: "Banking",
+    permissions: [
+      ["banking.view", "View banking"],
+      ["banking.manage", "Manage banking and reconciliation"],
+    ],
+  },
+'''
+              if marker not in source:
+                  raise SystemExit("Banking permission insertion marker not found")
+              source = source.replace(marker, banking + marker, 1)
+          source = source.replace(
+              'if (role === "accountant") return ["accounting.manage", "purchases.manage", "purchases.pay", "reports.view"];',
+              'if (role === "accountant") return ["accounting.manage", "banking.manage", "purchases.manage", "purchases.pay", "reports.view"];',
+              1,
+          )
+          source = source.replace(
+              'if (role === "viewer") return ["accounting.view", "reports.view"];',
+              'if (role === "viewer") return ["accounting.view", "banking.view", "reports.view"];',
+              1,
+          )
+          path.write_text(source)
+          PY
+          cd source
+          if ! git diff --quiet; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add components/business/BusinessTeamManager.tsx
+            git commit -m "feat(banking): expose banking team permissions"
+            git push origin HEAD:main
+          fi
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
