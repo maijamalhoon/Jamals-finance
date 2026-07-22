@@ -56,6 +56,12 @@ function getInvestmentValuesByAccount(investments: AccountLinkedInvestment[]) {
   return totals;
 }
 
+function sortAccountsByBalance(accounts: AccountGridAccount[]) {
+  return [...accounts].sort(
+    (first, second) => Number(second.balance ?? 0) - Number(first.balance ?? 0),
+  );
+}
+
 export default function AccountsLiveGrid({
   activeAccounts,
   archivedAccounts,
@@ -70,12 +76,20 @@ export default function AccountsLiveGrid({
     () => getInvestmentValuesByAccount(liveInvestments),
     [liveInvestments],
   );
+  const sortedActiveAccounts = useMemo(
+    () => sortAccountsByBalance(activeAccounts),
+    [activeAccounts],
+  );
+  const sortedArchivedAccounts = useMemo(
+    () => sortAccountsByBalance(archivedAccounts),
+    [archivedAccounts],
+  );
   const accountGridClass =
     "grid w-full auto-rows-fr grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4";
 
   return (
     <div className="space-y-6">
-      {activeAccounts.length > 0 ? (
+      {sortedActiveAccounts.length > 0 ? (
         <section aria-labelledby="active-accounts-heading" className="space-y-3">
           <h3
             id="active-accounts-heading"
@@ -84,7 +98,7 @@ export default function AccountsLiveGrid({
             Active accounts
           </h3>
           <div className={accountGridClass}>
-            {activeAccounts.map((account) => (
+            {sortedActiveAccounts.map((account) => (
               <AccountCard
                 key={account.id}
                 account={account}
@@ -95,7 +109,7 @@ export default function AccountsLiveGrid({
         </section>
       ) : null}
 
-      {archivedAccounts.length > 0 ? (
+      {sortedArchivedAccounts.length > 0 ? (
         <section aria-labelledby="archived-accounts-heading" className="space-y-3">
           <div>
             <h3
@@ -109,7 +123,7 @@ export default function AccountsLiveGrid({
             </p>
           </div>
           <div className={accountGridClass}>
-            {archivedAccounts.map((account) => (
+            {sortedArchivedAccounts.map((account) => (
               <AccountCard
                 key={account.id}
                 account={account}
