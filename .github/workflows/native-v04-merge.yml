@@ -21,14 +21,23 @@ jobs:
           ref: main
           fetch-depth: 0
 
-      - name: Squash verified native branch onto main
+      - name: Apply exact verified native files to main
         shell: bash
         run: |
           set -euo pipefail
           git fetch origin main native-investments-analytics-v0.4
-          git merge --squash origin/native-investments-analytics-v0.4
+          git checkout origin/native-investments-analytics-v0.4 -- \
+            native/androidApp/build.gradle.kts \
+            native/androidApp/src/main/kotlin/com/jamalsfinance/nativeapp/MainActivity.kt \
+            native/androidApp/src/main/kotlin/com/jamalsfinance/nativeapp/ui/InvestmentsAnalyticsDashboard.kt \
+            native/androidApp/src/main/kotlin/com/jamalsfinance/nativeapp/ui/JamalsFinanceNativeApp.kt \
+            native/androidApp/src/main/kotlin/com/jamalsfinance/nativeapp/ui/NativeModuleRoot.kt \
+            native/shared/src/commonMain/kotlin/com/jamalsfinance/shared/investments/InvestmentsAnalyticsRepository.kt \
+            native/shared/src/commonTest/kotlin/com/jamalsfinance/shared/investments/InvestmentsAnalyticsModelsTest.kt
+
           rm -rf .github/native-bootstrap-v04
           rm -f .github/native-v04-status.json .github/native-v04-log.txt
+          rm -f .github/native-v04-main-status.json .github/native-v04-main-log.txt
           rm -f .github/workflows/native-v04-bootstrap.yml
           rm -f .github/workflows/native-v04-verify.yml
           rm -f .github/workflows/native-v04-merge.yml
