@@ -144,6 +144,24 @@ function keepTransactionActionsAvailable() {
   );
 }
 
+function keepCompactHeaderActionsAvailable() {
+  const mobileInput = document.getElementById(
+    "mobile-inline-transaction-search",
+  );
+  if (mobileInput?.getAttribute("aria-hidden") !== "false") return;
+
+  document
+    .querySelectorAll<HTMLElement>("[data-mobile-header-badge-group]")
+    .forEach((group) => {
+      if (group.hasAttribute("aria-hidden")) {
+        group.removeAttribute("aria-hidden");
+      }
+      if (group.hasAttribute("inert")) {
+        group.removeAttribute("inert");
+      }
+    });
+}
+
 export default function UnifiedSearchBehavior() {
   useEffect(() => {
     const cleanups = new Map<HTMLFormElement, () => void>();
@@ -166,6 +184,7 @@ export default function UnifiedSearchBehavior() {
       }
 
       keepTransactionActionsAvailable();
+      keepCompactHeaderActionsAvailable();
     };
 
     scan();
@@ -175,7 +194,7 @@ export default function UnifiedSearchBehavior() {
       childList: true,
       subtree: true,
       attributes: true,
-      attributeFilter: ["aria-hidden", "tabindex", "data-open"],
+      attributeFilter: ["aria-hidden", "inert", "tabindex", "data-open"],
     });
 
     return () => {
