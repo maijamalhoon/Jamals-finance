@@ -111,71 +111,77 @@ export function CashFlowCharts({ data }: { data: CashFlowPoint[] }) {
             <div
               role="img"
               aria-label="Bar chart comparing income and expenses by time bucket"
-              className="h-64 min-w-0 overflow-hidden rounded-[18px] bg-surface-secondary/30 px-1 pt-2 sm:h-72"
+              className="h-44 min-w-0 overflow-hidden rounded-[18px] bg-surface-secondary/30 px-1 pt-2 sm:h-52 xl:h-56"
             >
               <ChartFrame>
-                {({ width, height }) => (
-                  <BarChart
-                    width={width}
-                    height={height}
-                    data={data}
-                    margin={{ top: 10, right: 8, bottom: 4, left: 0 }}
-                    barGap={10}
-                    barCategoryGap="38%"
-                  >
-                    <CartesianGrid
-                      stroke="var(--chart-grid)"
-                      strokeDasharray="3 6"
-                      vertical={false}
-                    />
-                    <XAxis
-                      dataKey="label"
-                      tick={{ fill: "var(--text-tertiary)", fontSize: 10 }}
-                      tickLine={false}
-                      axisLine={false}
-                      interval="preserveStartEnd"
-                    />
-                    <YAxis
-                      domain={[
-                        (minimum: number) => Math.min(minimum, 0),
-                        (maximum: number) => Math.max(maximum, 0),
-                      ]}
-                      tick={{ fill: "var(--text-tertiary)", fontSize: 10 }}
-                      tickLine={false}
-                      axisLine={false}
-                      width={54}
-                      tickFormatter={(value) =>
-                        formatCurrency(Number(value), { compact: true })
-                      }
-                    />
-                    <Tooltip
-                      cursor={{ fill: "var(--hover)", opacity: 0.35 }}
-                      contentStyle={tooltipStyle}
-                      formatter={(value, name) => [
-                        formatCurrency(Number(value ?? 0)),
-                        name === "income" ? "Income" : "Expenses",
-                      ]}
-                    />
-                    <Bar
-                      dataKey="income"
-                      fill="var(--success)"
-                      fillOpacity={0.88}
-                      radius={[999, 999, 999, 999]}
-                      minPointSize={7}
-                      maxBarSize={30}
-                      isAnimationActive={false}
-                    />
-                    <Bar
-                      dataKey="expenses"
-                      fill="var(--danger)"
-                      fillOpacity={0.88}
-                      radius={[999, 999, 999, 999]}
-                      minPointSize={7}
-                      maxBarSize={30}
-                      isAnimationActive={false}
-                    />
-                  </BarChart>
-                )}
+                {({ width, height }) => {
+                  const isMobile = width < 520;
+                  const isTablet = width < 900;
+                  const maxBarSize = isMobile ? 22 : isTablet ? 26 : 30;
+
+                  return (
+                    <BarChart
+                      width={width}
+                      height={height}
+                      data={data}
+                      margin={{ top: 10, right: 8, bottom: 4, left: 0 }}
+                      barGap={isMobile ? 6 : 10}
+                      barCategoryGap={isMobile ? "28%" : "38%"}
+                    >
+                      <CartesianGrid
+                        stroke="var(--chart-grid)"
+                        strokeDasharray="3 6"
+                        vertical={false}
+                      />
+                      <XAxis
+                        dataKey="label"
+                        tick={{ fill: "var(--text-tertiary)", fontSize: 10 }}
+                        tickLine={false}
+                        axisLine={false}
+                        interval="preserveStartEnd"
+                      />
+                      <YAxis
+                        domain={[
+                          (minimum: number) => Math.min(minimum, 0),
+                          (maximum: number) => Math.max(maximum, 0),
+                        ]}
+                        tick={{ fill: "var(--text-tertiary)", fontSize: 10 }}
+                        tickLine={false}
+                        axisLine={false}
+                        width={54}
+                        tickFormatter={(value) =>
+                          formatCurrency(Number(value), { compact: true })
+                        }
+                      />
+                      <Tooltip
+                        cursor={{ fill: "var(--hover)", opacity: 0.35 }}
+                        contentStyle={tooltipStyle}
+                        formatter={(value, name) => [
+                          formatCurrency(Number(value ?? 0)),
+                          name === "income" ? "Income" : "Expenses",
+                        ]}
+                      />
+                      <Bar
+                        dataKey="income"
+                        fill="var(--success)"
+                        fillOpacity={0.88}
+                        radius={[999, 999, 999, 999]}
+                        minPointSize={7}
+                        maxBarSize={maxBarSize}
+                        isAnimationActive={false}
+                      />
+                      <Bar
+                        dataKey="expenses"
+                        fill="var(--danger)"
+                        fillOpacity={0.88}
+                        radius={[999, 999, 999, 999]}
+                        minPointSize={7}
+                        maxBarSize={maxBarSize}
+                        isAnimationActive={false}
+                      />
+                    </BarChart>
+                  );
+                }}
               </ChartFrame>
             </div>
           </div>
@@ -188,7 +194,7 @@ export function CashFlowCharts({ data }: { data: CashFlowPoint[] }) {
             <div
               role="img"
               aria-label="Line chart of cumulative net cash flow by time bucket"
-              className="h-64 min-w-0 overflow-hidden rounded-[18px] bg-surface-secondary/30 px-1 pt-2 sm:h-72"
+              className="h-44 min-w-0 overflow-hidden rounded-[18px] bg-surface-secondary/30 px-1 pt-2 sm:h-52 xl:h-56"
             >
               <ChartFrame>
                 {({ width, height }) => (
