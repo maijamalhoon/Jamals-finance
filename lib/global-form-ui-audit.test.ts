@@ -7,9 +7,6 @@ const read = (path: string) =>
 const auditAuthority = read("../components/forms/GlobalFormAuditAuthority.tsx");
 const fieldAuthority = read("../components/forms/GlobalFormFieldAuthority.tsx");
 const actionAuthority = read("../components/forms/GlobalFormActionAuthority.tsx");
-const dashboardActionAuthority = read(
-  "../components/forms/FinancePickerKeyboardGuard.tsx",
-);
 const pwaRegister = read("../app/pwa-register.tsx");
 const authControls = read("../components/auth/AuthControls.tsx");
 const loginPage = read("../app/login/page.tsx");
@@ -27,12 +24,9 @@ const settingsReference = read(
 const categoryManagement = read(
   "../components/settings/CategoryManagementExperience.tsx",
 );
-const settingsCentering = read(
-  "../app/dashboard/settings/settings-mobile-modal-centering.css",
-);
 
 describe("site-wide form UI audit authority", () => {
-  it("mounts responsive field, action and audit authorities for every route", () => {
+  it("mounts one field, action and modal authority on every route", () => {
     expect(pwaRegister).toContain("GlobalFormAuditAuthority");
     expect(pwaRegister).toContain("GlobalFormFieldAuthority");
     expect(pwaRegister).toContain("GlobalFormActionAuthority");
@@ -41,12 +35,23 @@ describe("site-wide form UI audit authority", () => {
     expect(pwaRegister).toContain("<GlobalFormActionAuthority />");
   });
 
-  it("uses one device-responsive field and action token", () => {
+  it("uses one normal modal width and content-driven height", () => {
+    expect(auditAuthority).toContain("--jf-global-form-modal-width: 36rem");
+    expect(auditAuthority).toContain("--jf-global-form-wide-modal-width: 46rem");
+    expect(auditAuthority).toContain("height: max-content !important");
+    expect(auditAuthority).toContain("flex: 0 1 auto !important");
+    expect(auditAuthority).toContain("overflow-y: auto !important");
+  });
+
+  it("uses the exact same height token for fields and form actions", () => {
     expect(auditAuthority).toContain("--jf-global-form-control-height: clamp(");
-    expect(auditAuthority).toContain("--jf-global-date-control-height");
-    expect(auditAuthority).toContain("--jf-global-multiline-control-height");
-    expect(auditAuthority).toContain("--jf-global-final-action-height: clamp(");
-    expect(auditAuthority).toContain("--jf-global-form-action-height");
+    expect(auditAuthority).toContain(
+      "--jf-global-final-action-height: var(--jf-global-form-control-height)",
+    );
+    expect(auditAuthority).toContain(
+      "--jf-global-form-action-height: var(--jf-global-form-control-height)",
+    );
+    expect(auditAuthority).toContain("width: 100% !important");
   });
 
   it("covers native, auth, date, account, category and wheel controls", () => {
@@ -69,36 +74,46 @@ describe("site-wide form UI audit authority", () => {
     expect(fieldAuthority).not.toContain(':has(> button[aria-pressed])');
   });
 
-  it("keeps finance action colors while removing button icons and shortening labels", () => {
-    expect(dashboardActionAuthority).toContain(
-      'button[data-jf-form-action="true"] svg',
+  it("keeps authored button and loading copy instead of generated pseudo labels", () => {
+    expect(auditAuthority).toContain(
+      'button[data-jf-form-action="true"]::after',
     );
-    expect(dashboardActionAuthority).toContain("display: none !important");
-    expect(dashboardActionAuthority).toContain("getShortActionLabel");
-    expect(dashboardActionAuthority).toContain("data-jf-form-action-label");
-    expect(auditAuthority).toContain('button[data-jf-form-action="true"]::after');
+    expect(auditAuthority).toContain("content: none !important");
+    expect(auditAuthority).toContain(
+      'button[data-jf-form-action="true"] > *',
+    );
+    expect(auditAuthority).toContain("display: grid !important");
+    expect(actionAuthority).not.toContain("shortActionLabel");
+    expect(actionAuthority).not.toContain("jfFormActionLabel =");
+    expect(actionAuthority).toContain("clearLegacyGeneratedPresentation");
   });
 
-  it("covers supporting Settings and confirmation actions without touching controls", () => {
-    for (const verb of [
-      "choose",
-      "resend",
-      "enable",
-      "archive",
-      "restore",
-      "retry",
+  it("marks only real final, submit, security and confirmation actions", () => {
+    expect(actionAuthority).toContain("finance-modal-footer");
+    expect(actionAuthority).toContain('button.type === "submit"');
+    expect(actionAuthority).toContain("settings-security-panel");
+    expect(actionAuthority).toContain("isConfirmationDialog(root)");
+    expect(actionAuthority).toContain('/^(back|view|max|swap)\\b/i');
+  });
+
+  it("keeps Settings actions equal while changing only semantic colors", () => {
+    for (const marker of [
+      "#settings-currency-select",
+      "#settings-date-format-select",
+      "#settings-reference-display-name",
+      "#custom-profile-name",
+      ".settings-security-panel",
     ]) {
-      expect(actionAuthority).toContain(verb);
+      expect(auditAuthority).toContain(marker);
     }
-    expect(actionAuthority).toContain('[data-slot="dialog-close"]');
-    expect(actionAuthority).toContain('[aria-haspopup]');
-    expect(actionAuthority).toContain('[role="radio"]');
-    expect(actionAuthority).toContain("finance-icon-bubble");
-    expect(actionAuthority).toContain("data-global-confirm-dialog");
+    expect(auditAuthority).toContain("background: var(--investment) !important");
+    expect(auditAuthority).toContain("background: var(--info) !important");
+    expect(auditAuthority).toContain("background: var(--warning) !important");
+    expect(auditAuthority).toContain("background: var(--danger) !important");
   });
 
-  it("preserves auth labels and colors while making auth actions iconless and equal", () => {
-    expect(auditAuthority).toContain(".auth-primary-action svg");
+  it("preserves auth labels and colors while keeping actions equal and iconless", () => {
+    expect(auditAuthority).toContain(".auth-primary-action");
     expect(auditAuthority).toContain(".jf-auth-card button.w-full");
     expect(auditAuthority).toContain("display: none !important");
     expect(authControls).toContain("auth-primary-action w-full");
@@ -115,7 +130,7 @@ describe("site-wide form UI audit authority", () => {
     expect(fieldAuthority).toContain('[role="group"]');
   });
 
-  it("covers all Settings form families and their supporting actions", () => {
+  it("covers all Settings form families and their real actions", () => {
     expect(profileCustomization).toContain("Choose Photo");
     expect(profileCustomization).toContain("Save Profile");
     expect(settingsPreferences).toContain("settings-currency-select");
@@ -125,23 +140,5 @@ describe("site-wide form UI audit authority", () => {
     expect(settingsReference).toContain("Sign out other devices");
     expect(categoryManagement).toContain("Create Category");
     expect(categoryManagement).toContain("Delete");
-  });
-
-  it("keeps every known Settings dialog centered with its purpose-specific width", () => {
-    for (const marker of [
-      "#settings-category-name",
-      "#persistent-category-name",
-      "#settings-currency-select",
-      "#settings-date-format-select",
-      "#settings-reference-display-name",
-      "#custom-profile-name",
-      ".settings-security-panel",
-    ]) {
-      expect(settingsCentering).toContain(marker);
-      expect(auditAuthority).toContain(marker);
-    }
-    expect(auditAuthority).toContain("46rem");
-    expect(auditAuthority).toContain("36rem");
-    expect(auditAuthority).toContain("32rem");
   });
 });
