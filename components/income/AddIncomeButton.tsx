@@ -2,21 +2,24 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { TrendingUp } from "lucide-react";
+import { Plus, TrendingUp } from "lucide-react";
 import TransactionModal from "@/components/dashboard/TransactionModal";
 import PageHeadingActionPortal from "@/components/layout/PageHeadingActionPortal";
 
 interface AddIncomeButtonProps {
   label?: string;
   showIcon?: boolean;
+  icon?: "income" | "plus";
 }
 
 export default function AddIncomeButton({
   label = "Add Income",
   showIcon = true,
+  icon = "income",
 }: AddIncomeButtonProps = {}) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
+  const ActionIcon = icon === "plus" ? Plus : TrendingUp;
 
   return (
     <>
@@ -27,7 +30,7 @@ export default function AddIncomeButton({
           onClick={() => setOpen(true)}
           className="success-action"
         >
-          {showIcon ? <TrendingUp size={16} /> : null}
+          {showIcon ? <ActionIcon size={16} /> : null}
           <span className="sr-only">{label}</span>
         </button>
       </PageHeadingActionPortal>
