@@ -120,7 +120,7 @@ export default async function GoalsPage() {
   return (
     <div data-goals-page className="space-y-4 pb-8 sm:space-y-5">
       <div data-page-action-row className="flex justify-end">
-        <AddGoalButton accounts={accountList} />
+        <AddGoalButton accounts={accountList} icon="plus" />
       </div>
 
       {list.length > 0 ? (
