@@ -2,27 +2,34 @@
 
 import { useEffect, useMemo, useState } from "react";
 
-import { useBinanceSearchPrices } from "@/components/investments/useBinanceLivePrices";
+import { useCurrency } from "@/components/currency/CurrencyProvider";
+import { useInvestmentMarketPrices } from "@/components/investments/useInvestmentMarketPrices";
+import {
+  BASE_CURRENCY,
+  convertMoney,
+  isSupportedCurrency,
+  type SupportedCurrency,
+} from "@/lib/currency";
 import type { InvestmentLike } from "@/lib/investments/aggregation";
-import type { CryptoCatalogAsset } from "@/lib/market/crypto-catalog";
 import { loadRuntimeCryptoCatalog } from "@/lib/market/crypto-catalog-client";
-
-type CatalogIndex = {
-  byId: Map<string, CryptoCatalogAsset>;
-  bySymbol: Map<string, CryptoCatalogAsset>;
-};
-
-let catalogRequest: Promise<CatalogIndex> | null = null;
-let usdPkrRequest: Promise<number | null> | null = null;
+import {
+  getInvestmentAssetCatalog,
+  type InvestmentAssetType,
+  type InvestmentMarketAsset,
+} from "@/lib/market/investment-asset-catalog";
 
 function normalize(value: string | null | undefined) {
   return (value ?? "").trim();
 }
 
-function isCryptoInvestment(investment: InvestmentLike) {
-  const type = normalize(investment.type).toLowerCase();
-  const source = normalize(investment.price_source).toLowerCase();
-  return type === "crypto" || source === "binance" || source === "coingecko";
+function normalizeType(
+  value: string | null | undefined,
+): InvestmentAssetType | null {
+  const type = normalize(value).toLowerCase();
+  if (type === "stock" || type === "equity") return "stock";
+  if (type === "forex" || type === "fx") return "forex";
+  if (type === "crypto" || type === "cryptocurrency") return "crypto";
+  return null;
 }
 
 function fallbackBinancePair(symbol: string) {
@@ -33,87 +40,135 @@ function fallbackBinancePair(symbol: string) {
   return `${normalized}USDT`;
 }
 
-async function loadCatalogIndex() {
-  if (catalogRequest) return catalogRequest;
-
-  catalogRequest = loadRuntimeCryptoCatalog().then((assets) => {
-    const byId = new Map<string, CryptoCatalogAsset>();
-    const bySymbol = new Map<string, CryptoCatalogAsset>();
-
-    for (const asset of assets) {
-      byId.set(asset.id.toLowerCase(), asset);
-      if (!bySymbol.has(asset.symbol)) bySymbol.set(asset.symbol, asset);
-    }
-
-    return { byId, bySymbol };
-  });
-
-  return catalogRequest;
+function getCurrentCurrency(
+  investment: InvestmentLike,
+  fallback: SupportedCurrency,
+) {
+  const raw = String(
+    (investment as InvestmentLike & { current_price_currency?: unknown })
+      .current_price_currency ?? "",
+  )
+    .trim()
+    .toUpperCase();
+  return isSupportedCurrency(raw) ? raw : fallback;
 }
 
-async function loadUsdPkrRate() {
-  if (usdPkrRequest) return usdPkrRequest;
+function createFallbackAsset(
+  investment: InvestmentLike,
+): InvestmentMarketAsset | null {
+  const symbol = normalize(investment.symbol).toUpperCase();
+  if (!symbol) return null;
 
-  usdPkrRequest = fetch("/api/exchange-rate", { cache: "no-store" })
-    .then(async (response) => {
-      const data = (await response.json()) as { rate?: number };
-      const rate = Number(data.rate);
-      return response.ok && Number.isFinite(rate) && rate > 0 ? rate : null;
-    })
-    .catch(() => null);
+  const source = normalize(investment.price_source).toLowerCase();
+  const resolvedType =
+    normalizeType(investment.type) ??
+    (source.includes("binance") || source.includes("coingecko")
+      ? "crypto"
+      : null);
+  if (!resolvedType) return null;
 
-  return usdPkrRequest;
+  const assetId = normalize(investment.asset_id).toLowerCase();
+  const name = normalize(investment.name) || symbol;
+  const imageUrl = normalize(investment.image_url);
+
+  if (resolvedType === "crypto") {
+    return {
+      id: assetId || `crypto-symbol-${symbol.toLowerCase()}`,
+      name,
+      symbol,
+      aliases: [],
+      rank: 999_999,
+      logoUrl: imageUrl,
+      assetType: "crypto",
+      quoteCurrency: "USD",
+      priceMode: "realtime",
+      providerSymbol: fallbackBinancePair(symbol),
+      binanceSymbol: fallbackBinancePair(symbol),
+    };
+  }
+
+  if (resolvedType === "stock") {
+    const quoteCurrency = getCurrentCurrency(investment, "USD");
+    return {
+      id: assetId || `stock-symbol-${symbol.toLowerCase()}`,
+      name,
+      symbol,
+      aliases: [],
+      rank: 999_999,
+      logoUrl: imageUrl,
+      assetType: "stock",
+      quoteCurrency,
+      priceMode: "delayed",
+      providerSymbol: symbol.replace(".", "-"),
+      binanceSymbol: null,
+    };
+  }
+
+  const compactPair = symbol.replace(/[^A-Z]/g, "");
+  if (compactPair.length !== 6) return null;
+  const base = compactPair.slice(0, 3);
+  const quote = compactPair.slice(3, 6);
+  if (!isSupportedCurrency(base) || !isSupportedCurrency(quote)) return null;
+
+  return {
+    id: assetId || `forex-${base.toLowerCase()}-${quote.toLowerCase()}`,
+    name,
+    symbol: `${base}/${quote}`,
+    aliases: [],
+    rank: 999_999,
+    logoUrl: imageUrl,
+    assetType: "forex",
+    quoteCurrency: quote,
+    priceMode: "reference",
+    providerSymbol: `${base}-${quote}`,
+    binanceSymbol: null,
+  };
 }
 
 export function useLiveInvestmentRows<T extends InvestmentLike>(investments: T[]) {
-  const [catalog, setCatalog] = useState<CatalogIndex>({
-    byId: new Map(),
-    bySymbol: new Map(),
-  });
-  const [usdPkrRate, setUsdPkrRate] = useState<number | null>(null);
+  const { rates } = useCurrency();
+  const [catalogVersion, setCatalogVersion] = useState(0);
 
   useEffect(() => {
     let active = true;
-
-    void Promise.all([loadCatalogIndex(), loadUsdPkrRate()]).then(
-      ([nextCatalog, nextRate]) => {
-        if (!active) return;
-        setCatalog(nextCatalog);
-        setUsdPkrRate(nextRate);
-      },
-    );
-
+    void loadRuntimeCryptoCatalog().then(() => {
+      if (active) setCatalogVersion((current) => current + 1);
+    });
     return () => {
       active = false;
     };
   }, []);
 
+  const catalogIndex = useMemo(() => {
+    const byId = new Map<string, InvestmentMarketAsset>();
+    const byTypeAndSymbol = new Map<string, InvestmentMarketAsset>();
+
+    for (const asset of getInvestmentAssetCatalog()) {
+      byId.set(asset.id.toLowerCase(), asset);
+      byTypeAndSymbol.set(
+        `${asset.assetType}:${asset.symbol.toUpperCase()}`,
+        asset,
+      );
+    }
+
+    return { byId, byTypeAndSymbol };
+  }, [catalogVersion]);
+
   const resolved = useMemo(() => {
-    const assetsByKey = new Map<string, CryptoCatalogAsset>();
+    const assetsByKey = new Map<string, InvestmentMarketAsset>();
     const investmentAssetKeys = new Map<string, string>();
 
     for (const investment of investments) {
-      if (!isCryptoInvestment(investment)) continue;
-
       const assetId = normalize(investment.asset_id).toLowerCase();
       const symbol = normalize(investment.symbol).toUpperCase();
+      const type = normalizeType(investment.type);
       const catalogAsset =
-        (assetId ? catalog.byId.get(assetId) : undefined) ??
-        (symbol ? catalog.bySymbol.get(symbol) : undefined);
-
-      const fallbackAsset: CryptoCatalogAsset | null = symbol
-        ? {
-            id: assetId || `symbol-${symbol.toLowerCase()}`,
-            name: normalize(investment.name) || symbol,
-            symbol,
-            aliases: [],
-            rank: 999999,
-            logoUrl: normalize(investment.image_url),
-            binanceSymbol: fallbackBinancePair(symbol),
-          }
-        : null;
-
-      const asset = catalogAsset ?? fallbackAsset;
+        (assetId ? catalogIndex.byId.get(assetId) : undefined) ??
+        (assetId ? catalogIndex.byId.get(`crypto-${assetId}`) : undefined) ??
+        (type && symbol
+          ? catalogIndex.byTypeAndSymbol.get(`${type}:${symbol}`)
+          : undefined);
+      const asset = catalogAsset ?? createFallbackAsset(investment);
       if (!asset) continue;
 
       assetsByKey.set(asset.id, asset);
@@ -125,9 +180,9 @@ export function useLiveInvestmentRows<T extends InvestmentLike>(investments: T[]
       assetsByKey,
       investmentAssetKeys,
     };
-  }, [catalog, investments]);
+  }, [catalogIndex, investments]);
 
-  const prices = useBinanceSearchPrices(
+  const prices = useInvestmentMarketPrices(
     resolved.assets,
     resolved.assets.length > 0,
   );
@@ -143,16 +198,21 @@ export function useLiveInvestmentRows<T extends InvestmentLike>(investments: T[]
           : investment;
 
       if (
-        usdPkrRate === null ||
         snapshot?.status !== "live" ||
-        snapshot.priceUsd === null ||
-        !Number.isFinite(snapshot.priceUsd) ||
-        snapshot.priceUsd <= 0
+        snapshot.price === null ||
+        !snapshot.currency ||
+        !Number.isFinite(snapshot.price) ||
+        snapshot.price <= 0
       ) {
         return investmentWithCanonicalLogo;
       }
 
-      const currentPricePkr = snapshot.priceUsd * usdPkrRate;
+      const currentPricePkr = convertMoney(
+        snapshot.price,
+        snapshot.currency,
+        BASE_CURRENCY,
+        rates,
+      );
       if (!Number.isFinite(currentPricePkr) || currentPricePkr <= 0) {
         return investmentWithCanonicalLogo;
       }
@@ -160,10 +220,10 @@ export function useLiveInvestmentRows<T extends InvestmentLike>(investments: T[]
       return {
         ...investmentWithCanonicalLogo,
         current_price: currentPricePkr,
-        current_price_original: snapshot.priceUsd,
-        current_price_currency: "USD",
-        price_source: "binance",
-        price_currency: "PKR",
+        current_price_original: snapshot.price,
+        current_price_currency: snapshot.currency,
+        price_source: snapshot.source,
+        price_currency: BASE_CURRENCY,
         price_updated_at: new Date(
           snapshot.updatedAt ?? Date.now(),
         ).toISOString(),
@@ -174,8 +234,8 @@ export function useLiveInvestmentRows<T extends InvestmentLike>(investments: T[]
   }, [
     investments,
     prices,
+    rates,
     resolved.assetsByKey,
     resolved.investmentAssetKeys,
-    usdPkrRate,
   ]);
 }
