@@ -7,11 +7,11 @@ on:
       - main
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
-  group: ci-${{ github.workflow }}-${{ github.sha }}
-  cancel-in-progress: false
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   validate:
@@ -25,13 +25,13 @@ jobs:
       NEXT_PUBLIC_ENABLE_GOOGLE_AUTH: "false"
     steps:
       - name: Check out repository
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           persist-credentials: false
           show-progress: false
 
       - name: Set up Node.js
-        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
         with:
           node-version: 24
           cache: npm
@@ -50,7 +50,7 @@ jobs:
 
       - name: Upload lint diagnostics
         if: steps.lint.outcome == 'failure'
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: lint-report
           path: lint-report.txt
@@ -70,7 +70,7 @@ jobs:
 
       - name: Upload legacy test diagnostics
         if: steps.test.outcome == 'failure'
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: test-report
           path: test-report.txt
@@ -79,187 +79,3 @@ jobs:
 
       - name: Build production application
         run: npm run build
-
-  native-v05:
-    name: Native v0.5 Reports AI
-    runs-on: ubuntu-latest
-    timeout-minutes: 45
-    steps:
-      - name: Checkout isolated v0.5 branch
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
-        with:
-          ref: native-reports-ai-insights-v0.5
-          fetch-depth: 0
-          persist-credentials: false
-
-      - name: Materialize checksum-verified source bundle
-        id: materialize
-        shell: bash
-        run: |
-          set +e
-          python - <<'PY' > /tmp/native-v05-materialize.log 2>&1
-          from pathlib import Path, PurePosixPath
-          import base64
-          import hashlib
-          import tarfile
-          import traceback
-
-          archive_sha = "2d7d678788b8e764b4e25466a5e874bd1be7cf2e08fbf4e91a0359dbe9ba6eed"
-          patched_dashboard_sha = "0c7d1877ee6da94b301224da580df3073a2d24dc72ec59bc9ee3c19183fafb37"
-          root = Path(".github/native-bootstrap-v05")
-          try:
-              paths = [root / f"bundle.part{index:02d}.b64" for index in range(1, 6)]
-              paths.extend(root / f"part06.{index:02d}.b64" for index in range(1, 7))
-              encoded = "".join("".join(path.read_text().split()) for path in paths)
-              raw = base64.b64decode(encoded, validate=True)
-              actual = hashlib.sha256(raw).hexdigest()
-              print(f"Archive SHA-256: {actual}")
-              if actual != archive_sha:
-                  raise RuntimeError(f"Archive checksum mismatch: {actual}")
-
-              archive_path = Path("/tmp/native-v05.tar.gz")
-              archive_path.write_bytes(raw)
-              with tarfile.open(archive_path, "r:gz") as archive:
-                  members = archive.getmembers()
-                  for member in members:
-                      path = PurePosixPath(member.name)
-                      if path.is_absolute() or ".." in path.parts or member.issym() or member.islnk():
-                          raise RuntimeError(f"Unsafe archive member: {member.name}")
-                  Path("/tmp/native-v05-files.txt").write_text(
-                      "\n".join(member.name for member in members) + "\n"
-                  )
-                  archive.extractall(".", members=members)
-
-              dashboard = Path("native/androidApp/src/main/kotlin/com/jamalsfinance/nativeapp/ui/ReportsInsightsDashboard.kt")
-              text = dashboard.read_text()
-              old = '''        if (!insights.message.isNullOrBlank()) {\n            item { InlineNativeNotice(insights.message, danger = false) }\n        }\n'''
-              new = '''        insights.message?.takeIf { it.isNotBlank() }?.let { message ->\n            item { InlineNativeNotice(message, danger = false) }\n        }\n'''
-              if old not in text:
-                  raise RuntimeError("Expected nullable message block was not found")
-              dashboard.write_text(text.replace(old, new, 1))
-              dashboard_actual = hashlib.sha256(dashboard.read_bytes()).hexdigest()
-              print(f"Patched dashboard SHA-256: {dashboard_actual}")
-              if dashboard_actual != patched_dashboard_sha:
-                  raise RuntimeError(f"Patched dashboard checksum mismatch: {dashboard_actual}")
-              print(f"Verified and extracted {len(members)} files")
-          except Exception:
-              traceback.print_exc()
-              raise
-          PY
-          code=$?
-          cat /tmp/native-v05-materialize.log
-          echo "exit_code=${code}" >> "$GITHUB_OUTPUT"
-          exit 0
-
-      - name: Set up Node 24
-        if: steps.materialize.outputs.exit_code == '0'
-        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
-        with:
-          node-version: "24"
-          cache: npm
-
-      - name: Install website dependencies
-        if: steps.materialize.outputs.exit_code == '0'
-        run: npm ci --silent
-
-      - name: Typecheck native AI server route
-        if: steps.materialize.outputs.exit_code == '0'
-        id: webcheck
-        shell: bash
-        run: |
-          set +e
-          npm run typecheck 2>&1 | tee /tmp/native-v05-web.log
-          code=${PIPESTATUS[0]}
-          if [ "$code" -ne 0 ]; then
-            unknown_errors=$(grep -E "error TS[0-9]+:" /tmp/native-v05-web.log \
-              | grep -v "^lib/data-backup.test.ts(43,31): error TS2345:" \
-              | grep -v "^lib/data-backup.test.ts(44,35): error TS2345:" || true)
-            if [ -z "$unknown_errors" ]; then
-              echo "Only two pre-existing data-backup test typing errors remain; native AI route introduced no TypeScript error."
-              code=0
-            fi
-          fi
-          echo "exit_code=${code}" >> "$GITHUB_OUTPUT"
-          exit 0
-
-      - name: Set up Java 17
-        if: steps.materialize.outputs.exit_code == '0'
-        uses: actions/setup-java@c1e323688fd81a25caa38c78aa6df2d33d3e20d9
-        with:
-          distribution: temurin
-          java-version: "17"
-
-      - name: Set up Android
-        if: steps.materialize.outputs.exit_code == '0'
-        uses: android-actions/setup-android@9fc6c4e9069bf8d3d10b2204b1fb8f6ef7065407
-
-      - name: Install Android SDK 36
-        if: steps.materialize.outputs.exit_code == '0'
-        run: sdkmanager "platforms;android-36" "build-tools;36.0.0" "platform-tools"
-
-      - name: Set up Gradle
-        if: steps.materialize.outputs.exit_code == '0'
-        uses: gradle/actions/setup-gradle@ed408507eac070d1f99cc633dbcf757c94c7933a
-        with:
-          gradle-version: "9.3.1"
-
-      - name: Run shared tests and compile Android
-        if: steps.materialize.outputs.exit_code == '0'
-        id: nativebuild
-        shell: bash
-        working-directory: native
-        run: |
-          set +e
-          gradle :shared:testAndroidHostTest :androidApp:assembleDebug --stacktrace 2>&1 \
-            | tee /tmp/native-v05-android.log
-          code=${PIPESTATUS[0]}
-          echo "exit_code=${code}" >> "$GITHUB_OUTPUT"
-          exit 0
-
-      - name: Prepare v0.5 verification artifact
-        if: always()
-        env:
-          MATERIALIZE_EXIT_CODE: ${{ steps.materialize.outputs.exit_code }}
-          WEB_EXIT_CODE: ${{ steps.webcheck.outputs.exit_code }}
-          NATIVE_EXIT_CODE: ${{ steps.nativebuild.outputs.exit_code }}
-        shell: bash
-        run: |
-          mkdir -p /tmp/native-v05-verification
-          if [ "${MATERIALIZE_EXIT_CODE}" = "0" ] && [ "${WEB_EXIT_CODE}" = "0" ] && [ "${NATIVE_EXIT_CODE}" = "0" ]; then result="success"; else result="failure"; fi
-          cat > /tmp/native-v05-verification/status.json <<JSON
-          {
-            "status": "${result}",
-            "runId": "${GITHUB_RUN_ID}",
-            "commit": "${GITHUB_SHA}",
-            "workflow": "ci-native-v05",
-            "materialize": "${MATERIALIZE_EXIT_CODE:-not-run}",
-            "websiteTypecheck": "${WEB_EXIT_CODE:-not-run}",
-            "nativeBuild": "${NATIVE_EXIT_CODE:-not-run}"
-          }
-          JSON
-          cp /tmp/native-v05-materialize.log /tmp/native-v05-verification/materialize.log 2>/dev/null || true
-          cp /tmp/native-v05-files.txt /tmp/native-v05-verification/materialized-files.txt 2>/dev/null || true
-          cp /tmp/native-v05-web.log /tmp/native-v05-verification/website-typecheck.log 2>/dev/null || true
-          cp /tmp/native-v05-android.log /tmp/native-v05-verification/android-build.log 2>/dev/null || true
-
-      - name: Upload v0.5 verification logs
-        if: always()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
-        with:
-          name: jamals-finance-native-v05-verification
-          path: /tmp/native-v05-verification
-          if-no-files-found: error
-          retention-days: 7
-
-      - name: Upload v0.5 debug APK
-        if: steps.materialize.outputs.exit_code == '0' && steps.webcheck.outputs.exit_code == '0' && steps.nativebuild.outputs.exit_code == '0'
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
-        with:
-          name: jamals-finance-native-reports-ai-insights-v0.5.0-branch-debug
-          path: native/androidApp/build/outputs/apk/debug/androidApp-debug.apk
-          if-no-files-found: error
-          retention-days: 7
-
-      - name: Fail when v0.5 verification failed
-        if: steps.materialize.outputs.exit_code != '0' || steps.webcheck.outputs.exit_code != '0' || steps.nativebuild.outputs.exit_code != '0'
-        run: exit 1
