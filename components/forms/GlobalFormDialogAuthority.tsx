@@ -11,10 +11,15 @@ const GLOBAL_DIALOG_STYLE = `
   --jf-global-final-action-max-width: 28rem;
   --jf-global-final-action-radius: 1.3rem;
   --jf-global-form-action-radius: var(--jf-global-final-action-radius);
+  --jf-global-form-button-bottom-space: clamp(0.3rem, 0.75vw, 0.45rem);
 }
 
 html body .finance-modal-content .finance-modal-footer {
   justify-items: center !important;
+  padding-bottom: calc(
+    var(--jf-global-form-edge-gap, 1rem) +
+      var(--jf-global-form-button-bottom-space) + env(safe-area-inset-bottom)
+  ) !important;
 }
 
 html body :is(.finance-modal-content, [data-slot="dialog-content"])
@@ -28,6 +33,18 @@ html body :is(.finance-modal-content, [data-slot="dialog-content"])
   margin-inline: auto !important;
   justify-self: center !important;
   border-radius: var(--jf-global-final-action-radius) !important;
+}
+
+html body .finance-modal-content form > button[data-jf-form-action="true"]:last-child,
+html body .finance-modal-content > button[data-jf-form-action="true"]:last-child,
+html body .finance-modal-content .finance-modal-body > button[data-jf-form-action="true"]:last-child {
+  margin-bottom: var(--jf-global-form-button-bottom-space) !important;
+}
+
+.auth-primary-action:last-child,
+.auth-step button.w-full:not(.auth-provider-action):last-child,
+.jf-auth-card button.w-full:not(.auth-provider-action):last-child {
+  margin-bottom: var(--jf-global-form-button-bottom-space) !important;
 }
 `;
 
