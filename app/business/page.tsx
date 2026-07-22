@@ -9,6 +9,7 @@ import {
   Layers3,
   ShieldCheck,
   Store,
+  UsersRound,
 } from "lucide-react";
 
 import CreateBusinessWorkspaceForm from "@/components/business/CreateBusinessWorkspaceForm";
@@ -35,6 +36,7 @@ type BusinessRow = {
 type MembershipRow = {
   role: string;
   status: string;
+  permissions: string[];
   created_at: string;
   businesses: BusinessRow | BusinessRow[] | null;
 };
@@ -60,7 +62,7 @@ export default async function BusinessWorkspacesPage() {
   const membershipResult = await supabase
     .from("business_members")
     .select(
-      "role, status, created_at, businesses(id, name, slug, business_type, base_currency, country_code, module_config, workspace_mode)",
+      "role, status, permissions, created_at, businesses(id, name, slug, business_type, base_currency, country_code, module_config, workspace_mode)",
     )
     .eq("user_id", user.id)
     .eq("status", "active")
@@ -153,52 +155,69 @@ export default async function BusinessWorkspacesPage() {
                 const href = simpleShop
                   ? `/business/${business.slug}/shop`
                   : `/business/${business.slug}`;
+                const canViewTeam =
+                  ["owner", "admin", "accountant", "manager", "viewer"].includes(
+                    membership.role,
+                  ) ||
+                  membership.permissions.includes("*") ||
+                  membership.permissions.includes("team.view") ||
+                  membership.permissions.includes("team.manage");
 
                 return (
-                  <Link
+                  <article
                     key={business.id}
-                    href={href}
-                    className="finance-focus group rounded-[var(--radius-card)] bg-surface px-5 py-5 shadow-[var(--shadow-sm)] transition-[transform,box-shadow] hover:-translate-y-0.5 hover:shadow-[var(--shadow-md)]"
+                    className="rounded-[var(--radius-card)] bg-surface px-5 py-5 shadow-[var(--shadow-sm)] transition-[transform,box-shadow] hover:-translate-y-0.5 hover:shadow-[var(--shadow-md)]"
                   >
-                    <div className="flex items-start justify-between gap-4">
-                      <span className="inline-flex size-11 items-center justify-center rounded-[var(--radius-button)] bg-primary-soft text-primary">
-                        <WorkspaceIcon aria-hidden="true" className="size-5" />
-                      </span>
-                      <ArrowRight
-                        aria-hidden="true"
-                        className="size-4 text-text-tertiary transition-transform group-hover:translate-x-0.5"
-                      />
-                    </div>
-
-                    <h3 className="mt-5 truncate text-lg font-black text-text-primary">
-                      {business.name}
-                    </h3>
-                    <p className="mt-1 text-sm text-text-secondary">
-                      {simpleShop ? "Simple Shop" : "Advanced Company"} · {formatLabel(membership.role)}
-                    </p>
-
-                    <div className="mt-5 grid grid-cols-2 gap-3 text-sm">
-                      <span className="rounded-[var(--radius-button)] bg-surface-secondary px-3 py-3">
-                        <CircleDollarSign
-                          aria-hidden="true"
-                          className="mb-2 size-4 text-success"
-                        />
-                        <strong className="block text-text-primary">
-                          {business.base_currency}
-                        </strong>
-                        <span className="text-xs text-text-secondary">Base currency</span>
-                      </span>
-                      <span className="rounded-[var(--radius-button)] bg-surface-secondary px-3 py-3">
-                        <Layers3 aria-hidden="true" className="mb-2 size-4 text-primary" />
-                        <strong className="block text-text-primary">
-                          {simpleShop ? "Fast" : enabledModules}
-                        </strong>
-                        <span className="text-xs text-text-secondary">
-                          {simpleShop ? "Daily workflow" : "Modules enabled"}
+                    <Link href={href} className="finance-focus group block rounded-[var(--radius-button)]">
+                      <div className="flex items-start justify-between gap-4">
+                        <span className="inline-flex size-11 items-center justify-center rounded-[var(--radius-button)] bg-primary-soft text-primary">
+                          <WorkspaceIcon aria-hidden="true" className="size-5" />
                         </span>
-                      </span>
-                    </div>
-                  </Link>
+                        <ArrowRight
+                          aria-hidden="true"
+                          className="size-4 text-text-tertiary transition-transform group-hover:translate-x-0.5"
+                        />
+                      </div>
+
+                      <h3 className="mt-5 truncate text-lg font-black text-text-primary">
+                        {business.name}
+                      </h3>
+                      <p className="mt-1 text-sm text-text-secondary">
+                        {simpleShop ? "Simple Shop" : "Advanced Company"} · {formatLabel(membership.role)}
+                      </p>
+
+                      <div className="mt-5 grid grid-cols-2 gap-3 text-sm">
+                        <span className="rounded-[var(--radius-button)] bg-surface-secondary px-3 py-3">
+                          <CircleDollarSign
+                            aria-hidden="true"
+                            className="mb-2 size-4 text-success"
+                          />
+                          <strong className="block text-text-primary">
+                            {business.base_currency}
+                          </strong>
+                          <span className="text-xs text-text-secondary">Base currency</span>
+                        </span>
+                        <span className="rounded-[var(--radius-button)] bg-surface-secondary px-3 py-3">
+                          <Layers3 aria-hidden="true" className="mb-2 size-4 text-primary" />
+                          <strong className="block text-text-primary">
+                            {simpleShop ? "Fast" : enabledModules}
+                          </strong>
+                          <span className="text-xs text-text-secondary">
+                            {simpleShop ? "Daily workflow" : "Modules enabled"}
+                          </span>
+                        </span>
+                      </div>
+                    </Link>
+
+                    {simpleShop && canViewTeam ? (
+                      <Link
+                        href={`/business/${business.slug}/team`}
+                        className="finance-focus mt-4 inline-flex min-h-10 items-center gap-2 rounded-[var(--radius-button)] bg-surface-secondary px-3 text-sm font-black text-text-secondary transition-colors hover:bg-primary-soft hover:text-primary"
+                      >
+                        <UsersRound className="size-4" aria-hidden="true" /> Team & permissions
+                      </Link>
+                    ) : null}
+                  </article>
                 );
               })}
             </div>
