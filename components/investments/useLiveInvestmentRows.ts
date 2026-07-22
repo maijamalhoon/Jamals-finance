@@ -99,7 +99,7 @@ function createFallbackAsset(
       assetType: "stock",
       quoteCurrency,
       priceMode: "delayed",
-      providerSymbol: symbol.replace(".", "-"),
+      providerSymbol: symbol,
       binanceSymbol: null,
     };
   }

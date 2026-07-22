@@ -19,6 +19,9 @@
       }
     ],
     "paths": {
+      "@/lib/market/investment-asset-catalog": [
+        "./lib/market/investment-asset-catalog-runtime.ts"
+      ],
       "@/*": ["./*"]
     }
   },

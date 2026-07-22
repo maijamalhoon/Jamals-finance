@@ -1,4 +1,8 @@
-import type { SupportedCurrency } from "@/lib/currency";
+import {
+  isSupportedCurrency,
+  type SupportedCurrency,
+} from "@/lib/currency";
+import type { InvestmentPriceMode } from "@/lib/market/investment-asset-catalog";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -15,13 +19,37 @@ const SUPPORTED: readonly SupportedCurrency[] = [
 ];
 const MAX_PAIRS = 24;
 const UPSTREAM_TIMEOUT_MS = 7_000;
+const TWELVE_QUOTE_URL = "https://api.twelvedata.com/quote";
 const FRANKFURTER_BASE = "https://api.frankfurter.dev/v2/rates";
 
 const CACHE_HEADERS = {
   "Cache-Control": "public, max-age=0, must-revalidate",
-  "CDN-Cache-Control": "public, s-maxage=21600, stale-while-revalidate=43200",
+  "CDN-Cache-Control": "public, s-maxage=60, stale-while-revalidate=300",
   "Vercel-CDN-Cache-Control":
-    "public, s-maxage=21600, stale-while-revalidate=43200",
+    "public, s-maxage=60, stale-while-revalidate=300",
+};
+
+type ForexPriceRow = {
+  price: number;
+  currency: SupportedCurrency;
+  change24h: number | null;
+  updatedAt: number;
+  source: string;
+  delayed: boolean;
+  priceMode: InvestmentPriceMode;
+  marketStatus: "open" | "reference" | "unknown";
+  stale: boolean;
+};
+
+type TwelveQuoteRow = {
+  close?: unknown;
+  price?: unknown;
+  previous_close?: unknown;
+  percent_change?: unknown;
+  timestamp?: unknown;
+  datetime?: unknown;
+  status?: unknown;
+  message?: unknown;
 };
 
 type FrankfurterRow = {
@@ -31,8 +59,18 @@ type FrankfurterRow = {
   rate?: unknown;
 };
 
-function isSupportedCurrency(value: string): value is SupportedCurrency {
-  return SUPPORTED.includes(value as SupportedCurrency);
+function cleanText(value: unknown, maxLength = 60) {
+  return String(value ?? "").replace(/\s+/g, " ").trim().slice(0, maxLength);
+}
+
+function toFiniteNumber(value: unknown) {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
+function toPositiveNumber(value: unknown) {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
 }
 
 function normalizePairs(request: Request) {
@@ -44,12 +82,31 @@ function normalizePairs(request: Request) {
         .map((pair) => pair.trim().toUpperCase())
         .filter((pair) => {
           const [base, quote, extra] = pair.split("-");
-          return !extra && isSupportedCurrency(base) && isSupportedCurrency(quote);
+          return !extra && isSupportedCurrency(base) && isSupportedCurrency(quote) && base !== quote;
         }),
     ),
   )
     .sort()
     .slice(0, MAX_PAIRS);
+}
+
+function parseTimestamp(value: unknown, fallback = Date.now()) {
+  const numeric = toPositiveNumber(value);
+  if (numeric !== null) {
+    const milliseconds = numeric < 10_000_000_000 ? numeric * 1000 : numeric;
+    if (Number.isFinite(milliseconds)) return milliseconds;
+  }
+  const parsed = Date.parse(cleanText(value, 50));
+  return Number.isFinite(parsed) ? parsed : fallback;
+}
+
+function calculateChange(price: number, previousClose: number | null, percent: unknown) {
+  const explicit = toFiniteNumber(percent);
+  if (explicit !== null) return explicit;
+  if (previousClose && previousClose > 0) {
+    return ((price - previousClose) / previousClose) * 100;
+  }
+  return null;
 }
 
 function toDateKey(date: Date) {
@@ -61,11 +118,6 @@ function getRange() {
   const start = new Date(end);
   start.setUTCDate(start.getUTCDate() - 10);
   return { from: toDateKey(start), to: toDateKey(end) };
-}
-
-function toPositiveNumber(value: unknown) {
-  const parsed = Number(value);
-  return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
 }
 
 function getPairRate(
@@ -80,6 +132,80 @@ function getPairRate(
   return quoteRate / baseRate;
 }
 
+async function fetchJson(url: string, headers?: HeadersInit, revalidate?: number) {
+  const response = await fetch(url, {
+    ...(revalidate ? { next: { revalidate } } : { cache: "no-store" as const }),
+    signal: AbortSignal.timeout(UPSTREAM_TIMEOUT_MS),
+    headers: {
+      Accept: "application/json",
+      "User-Agent": "Jamals-Finance-Forex/2.0",
+      ...headers,
+    },
+  });
+  if (!response.ok) throw new Error(`Forex provider failed (${response.status}).`);
+  return response.json() as Promise<unknown>;
+}
+
+function getTwelveRows(payload: unknown, pairs: readonly string[]) {
+  if (!payload || typeof payload !== "object") return new Map<string, TwelveQuoteRow>();
+  const object = payload as Record<string, unknown>;
+  const rows = new Map<string, TwelveQuoteRow>();
+
+  if (pairs.length === 1 && ("close" in object || "price" in object)) {
+    rows.set(pairs[0], object as TwelveQuoteRow);
+    return rows;
+  }
+
+  for (const pair of pairs) {
+    const slashPair = pair.replace("-", "/");
+    const value = object[slashPair] ?? object[pair];
+    if (value && typeof value === "object") rows.set(pair, value as TwelveQuoteRow);
+  }
+  return rows;
+}
+
+async function fetchTwelveForex(pairs: readonly string[]) {
+  const apiKey = process.env.TWELVE_DATA_API_KEY?.trim();
+  const prices = new Map<string, ForexPriceRow>();
+  if (!apiKey || pairs.length === 0) return prices;
+
+  const parameters = new URLSearchParams({
+    symbol: pairs.map((pair) => pair.replace("-", "/")).join(","),
+    dp: "10",
+  });
+  const payload = await fetchJson(`${TWELVE_QUOTE_URL}?${parameters}`, {
+    Authorization: `apikey ${apiKey}`,
+  });
+  const rows = getTwelveRows(payload, pairs);
+
+  for (const pair of pairs) {
+    const row = rows.get(pair);
+    if (!row) continue;
+    const price = toPositiveNumber(row.close) ?? toPositiveNumber(row.price);
+    if (price === null) continue;
+    const [, quote] = pair.split("-") as [SupportedCurrency, SupportedCurrency];
+    const updatedAt = parseTimestamp(row.timestamp ?? row.datetime);
+    const fresh = Date.now() - updatedAt <= 10 * 60_000;
+    prices.set(pair, {
+      price,
+      currency: quote,
+      change24h: calculateChange(
+        price,
+        toPositiveNumber(row.previous_close),
+        row.percent_change,
+      ),
+      updatedAt,
+      source: "twelve-data-forex",
+      delayed: !fresh,
+      priceMode: fresh ? "realtime" : "delayed",
+      marketStatus: "open",
+      stale: !fresh,
+    });
+  }
+
+  return prices;
+}
+
 async function fetchReferenceRows() {
   const { from, to } = getRange();
   const query = new URLSearchParams({
@@ -88,20 +214,60 @@ async function fetchReferenceRows() {
     from,
     to,
   });
-  const response = await fetch(`${FRANKFURTER_BASE}?${query.toString()}`, {
-    next: { revalidate: 21_600 },
-    signal: AbortSignal.timeout(UPSTREAM_TIMEOUT_MS),
-    headers: {
-      Accept: "application/json",
-      "User-Agent": "Jamals-Finance-Forex-Reference/1.0",
-    },
-  });
+  return (await fetchJson(`${FRANKFURTER_BASE}?${query}`, undefined, 21_600)) as FrankfurterRow[];
+}
 
-  if (!response.ok) {
-    throw new Error(`Forex reference request failed (${response.status}).`);
+async function fillReferenceFallback(
+  pairs: readonly string[],
+  prices: Map<string, ForexPriceRow>,
+) {
+  const unresolved = pairs.filter((pair) => !prices.has(pair));
+  if (unresolved.length === 0) return;
+
+  const rows = await fetchReferenceRows();
+  const byDate = new Map<string, Map<SupportedCurrency, number>>();
+  for (const row of rows) {
+    const date = cleanText(row.date, 10);
+    const quote = cleanText(row.quote, 3).toUpperCase();
+    const rate = toPositiveNumber(row.rate);
+    if (!date || !isSupportedCurrency(quote) || rate === null) continue;
+    const rates = byDate.get(date) ?? new Map<SupportedCurrency, number>();
+    rates.set(quote, rate);
+    byDate.set(date, rates);
   }
 
-  return (await response.json()) as FrankfurterRow[];
+  const dates = Array.from(byDate.keys()).sort();
+  const latestDate = dates.at(-1);
+  const previousDate = dates.at(-2);
+  if (!latestDate) return;
+
+  const latestRates = byDate.get(latestDate) ?? new Map<SupportedCurrency, number>();
+  const previousRates = previousDate
+    ? byDate.get(previousDate) ?? new Map<SupportedCurrency, number>()
+    : null;
+  const parsedUpdatedAt = Date.parse(`${latestDate}T16:00:00Z`);
+  const updatedAt = Number.isFinite(parsedUpdatedAt) ? parsedUpdatedAt : Date.now();
+
+  for (const pair of unresolved) {
+    const [base, quote] = pair.split("-") as [SupportedCurrency, SupportedCurrency];
+    const price = getPairRate(base, quote, latestRates);
+    if (!price || !Number.isFinite(price)) continue;
+    const previousPrice = previousRates ? getPairRate(base, quote, previousRates) : null;
+    prices.set(pair, {
+      price,
+      currency: quote,
+      change24h:
+        previousPrice && previousPrice > 0
+          ? ((price - previousPrice) / previousPrice) * 100
+          : null,
+      updatedAt,
+      source: "frankfurter-reference",
+      delayed: true,
+      priceMode: "reference",
+      marketStatus: "reference",
+      stale: false,
+    });
+  }
 }
 
 export async function GET(request: Request) {
@@ -113,93 +279,21 @@ export async function GET(request: Request) {
     );
   }
 
-  try {
-    const rows = await fetchReferenceRows();
-    const byDate = new Map<string, Map<SupportedCurrency, number>>();
+  const prices = await fetchTwelveForex(pairs).catch(
+    () => new Map<string, ForexPriceRow>(),
+  );
+  await fillReferenceFallback(pairs, prices).catch(() => undefined);
+  const responsePrices = Object.fromEntries(prices.entries());
 
-    for (const row of rows) {
-      const date = String(row.date ?? "").trim();
-      const quote = String(row.quote ?? "").trim().toUpperCase();
-      const rate = toPositiveNumber(row.rate);
-      if (!date || !isSupportedCurrency(quote) || rate === null) continue;
-      const rates = byDate.get(date) ?? new Map<SupportedCurrency, number>();
-      rates.set(quote, rate);
-      byDate.set(date, rates);
-    }
-
-    const dates = Array.from(byDate.keys()).sort();
-    const latestDate = dates.at(-1);
-    const previousDate = dates.at(-2);
-    if (!latestDate) throw new Error("No forex reference rows were returned.");
-
-    const latestRates = byDate.get(latestDate) ?? new Map();
-    const previousRates = previousDate ? byDate.get(previousDate) ?? new Map() : null;
-    const updatedAt = Date.parse(`${latestDate}T16:00:00Z`);
-    const prices: Record<
-      string,
-      {
-        price: number;
-        currency: SupportedCurrency;
-        change24h: number | null;
-        updatedAt: number;
-        source: string;
-        delayed: true;
-      }
-    > = {};
-
-    for (const pair of pairs) {
-      const [base, quote] = pair.split("-") as [
-        SupportedCurrency,
-        SupportedCurrency,
-      ];
-      const price = getPairRate(base, quote, latestRates);
-      if (!price || !Number.isFinite(price)) continue;
-
-      const previousPrice = previousRates
-        ? getPairRate(base, quote, previousRates)
-        : null;
-      const change24h =
-        previousPrice && previousPrice > 0
-          ? ((price - previousPrice) / previousPrice) * 100
-          : null;
-
-      prices[pair] = {
-        price,
-        currency: quote,
-        change24h,
-        updatedAt: Number.isFinite(updatedAt) ? updatedAt : Date.now(),
-        source: "frankfurter-reference",
-        delayed: true,
-      };
-    }
-
-    return Response.json(
-      {
-        generatedAt: Date.now(),
-        source: "frankfurter-reference",
-        delayed: true,
-        referenceDate: latestDate,
-        prices,
-      },
-      {
-        status: Object.keys(prices).length > 0 ? 200 : 503,
-        headers: CACHE_HEADERS,
-      },
-    );
-  } catch (error) {
-    console.error("[forex-prices] Reference refresh failed", {
-      message: error instanceof Error ? error.message : "Unknown error",
-    });
-
-    return Response.json(
-      {
-        generatedAt: Date.now(),
-        source: "frankfurter-reference",
-        delayed: true,
-        prices: {},
-        error: "Forex reference rates are temporarily unavailable.",
-      },
-      { status: 503, headers: CACHE_HEADERS },
-    );
-  }
+  return Response.json(
+    {
+      generatedAt: Date.now(),
+      source: "hybrid-forex-market-data",
+      prices: responsePrices,
+    },
+    {
+      status: Object.keys(responsePrices).length > 0 ? 200 : 503,
+      headers: CACHE_HEADERS,
+    },
+  );
 }

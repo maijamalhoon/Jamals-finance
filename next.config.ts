@@ -30,6 +30,7 @@ const contentSecurityPolicy = [
     "https://coin-images.coingecko.com",
     "https://cdn.jsdelivr.net",
     "https://cdn.simpleicons.org",
+    "https://static.finnhub.io",
     "https://flagcdn.com",
     "https://www.google.com",
     "https://commons.wikimedia.org",
@@ -120,6 +121,21 @@ const privateNoStoreHeaders = [
   },
 ];
 
+const assetSearchCacheHeaders = [
+  {
+    key: "Cache-Control",
+    value: "public, max-age=0, must-revalidate",
+  },
+  {
+    key: "CDN-Cache-Control",
+    value: "public, s-maxage=300, stale-while-revalidate=1800",
+  },
+  {
+    key: "Vercel-CDN-Cache-Control",
+    value: "public, s-maxage=300, stale-while-revalidate=1800",
+  },
+];
+
 const stockMarketCacheHeaders = [
   {
     key: "Cache-Control",
@@ -142,11 +158,11 @@ const forexMarketCacheHeaders = [
   },
   {
     key: "CDN-Cache-Control",
-    value: "public, s-maxage=21600, stale-while-revalidate=43200",
+    value: "public, s-maxage=60, stale-while-revalidate=300",
   },
   {
     key: "Vercel-CDN-Cache-Control",
-    value: "public, s-maxage=21600, stale-while-revalidate=43200",
+    value: "public, s-maxage=60, stale-while-revalidate=300",
   },
 ];
 
@@ -186,6 +202,10 @@ const nextConfig: NextConfig = {
       {
         source: "/api/:path*",
         headers: privateNoStoreHeaders,
+      },
+      {
+        source: "/api/market/asset-search",
+        headers: assetSearchCacheHeaders,
       },
       {
         source: "/api/market/stock-prices",

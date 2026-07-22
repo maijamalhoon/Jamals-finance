@@ -8,10 +8,13 @@ import {
 } from "@/components/investments/useBinanceLivePrices";
 import { isSupportedCurrency, type SupportedCurrency } from "@/lib/currency";
 import type { CryptoCatalogAsset } from "@/lib/market/crypto-catalog";
-import type {
-  InvestmentMarketAsset,
-  InvestmentPriceMode,
+import {
+  INVESTMENT_ASSET_UPDATE_EVENT,
+  type InvestmentMarketAsset,
+  type InvestmentPriceMode,
 } from "@/lib/market/investment-asset-catalog";
+
+export type MarketStatus = "open" | "closed" | "reference" | "unknown";
 
 export type MarketPriceSnapshot = {
   price: number | null;
@@ -21,6 +24,8 @@ export type MarketPriceSnapshot = {
   status: BinancePriceStatus;
   source: string;
   priceMode: InvestmentPriceMode;
+  marketStatus: MarketStatus;
+  stale: boolean;
 };
 
 type RemotePriceRow = {
@@ -29,6 +34,9 @@ type RemotePriceRow = {
   change24h?: unknown;
   updatedAt?: unknown;
   source?: unknown;
+  priceMode?: unknown;
+  marketStatus?: unknown;
+  stale?: unknown;
 };
 
 type RemotePriceResponse = {
@@ -43,6 +51,8 @@ const EMPTY_SNAPSHOT: MarketPriceSnapshot = {
   status: "idle",
   source: "manual",
   priceMode: "delayed",
+  marketStatus: "unknown",
+  stale: false,
 };
 
 function toFiniteNumber(value: unknown) {
@@ -57,6 +67,24 @@ function toPositiveNumber(value: unknown) {
 
 function normalizeProviderSymbol(value: string | null | undefined) {
   return (value ?? "").trim().toUpperCase();
+}
+
+function normalizePriceMode(
+  value: unknown,
+  fallback: InvestmentPriceMode,
+): InvestmentPriceMode {
+  return value === "realtime" || value === "delayed" || value === "reference"
+    ? value
+    : fallback;
+}
+
+function normalizeMarketStatus(value: unknown): MarketStatus {
+  return value === "open" ||
+    value === "closed" ||
+    value === "reference" ||
+    value === "unknown"
+    ? value
+    : "unknown";
 }
 
 function chunkSymbols(symbols: readonly string[], size: number) {
@@ -161,6 +189,7 @@ function useRemotePriceStore({
           const price = toPositiveNumber(row?.price);
           const rawCurrency = String(row?.currency ?? "").trim().toUpperCase();
           const currency = isSupportedCurrency(rawCurrency) ? rawCurrency : null;
+          const resolvedMode = normalizePriceMode(row?.priceMode, priceMode);
 
           next[symbol] =
             price !== null && currency
@@ -171,13 +200,15 @@ function useRemotePriceStore({
                   updatedAt: toPositiveNumber(row?.updatedAt) ?? Date.now(),
                   status: "live",
                   source: String(row?.source ?? "public-market-data"),
-                  priceMode,
+                  priceMode: resolvedMode,
+                  marketStatus: normalizeMarketStatus(row?.marketStatus),
+                  stale: row?.stale === true,
                 }
               : {
                   ...EMPTY_SNAPSHOT,
                   status: "unavailable",
                   source: "manual",
-                  priceMode,
+                  priceMode: resolvedMode,
                 };
         }
 
@@ -247,9 +278,26 @@ export function useInvestmentMarketPrices(
   assets: readonly InvestmentMarketAsset[],
   enabled: boolean,
 ) {
-  const cryptoAssets = useMemo(
-    () => assets.filter((asset) => asset.assetType === "crypto").map(toCryptoAsset),
-    [assets],
+  const [assetRevision, setAssetRevision] = useState(0);
+
+  useEffect(() => {
+    if (!enabled) return;
+    const handleAssetsUpdated = () => setAssetRevision((current) => current + 1);
+    window.addEventListener(INVESTMENT_ASSET_UPDATE_EVENT, handleAssetsUpdated);
+    return () =>
+      window.removeEventListener(INVESTMENT_ASSET_UPDATE_EVENT, handleAssetsUpdated);
+  }, [enabled]);
+
+  const assetKey = `${assetRevision}:${assets
+    .map((asset) => `${asset.id}:${asset.providerSymbol ?? ""}:${asset.binanceSymbol ?? ""}`)
+    .join("|")}`;
+
+  const binanceCryptoAssets = useMemo(
+    () =>
+      assets
+        .filter((asset) => asset.assetType === "crypto" && asset.binanceSymbol)
+        .map(toCryptoAsset),
+    [assetKey, assets],
   );
   const stockSymbols = useMemo(
     () =>
@@ -257,7 +305,7 @@ export function useInvestmentMarketPrices(
         .filter((asset) => asset.assetType === "stock")
         .map((asset) => normalizeProviderSymbol(asset.providerSymbol))
         .filter(Boolean),
-    [assets],
+    [assetKey, assets],
   );
   const forexSymbols = useMemo(
     () =>
@@ -265,12 +313,12 @@ export function useInvestmentMarketPrices(
         .filter((asset) => asset.assetType === "forex")
         .map((asset) => normalizeProviderSymbol(asset.providerSymbol))
         .filter(Boolean),
-    [assets],
+    [assetKey, assets],
   );
 
   const cryptoPrices = useBinanceSearchPrices(
-    cryptoAssets,
-    enabled && cryptoAssets.length > 0,
+    binanceCryptoAssets,
+    enabled && binanceCryptoAssets.length > 0,
   );
   const stockPrices = useRemotePriceStore({
     symbols: stockSymbols,
@@ -285,7 +333,7 @@ export function useInvestmentMarketPrices(
     enabled: enabled && forexSymbols.length > 0,
     endpoint: "/api/market/forex-prices",
     priceMode: "reference",
-    pollIntervalMs: 6 * 60 * 60_000,
+    pollIntervalMs: 60_000,
     batchSize: 24,
   });
 
@@ -304,8 +352,14 @@ export function useInvestmentMarketPrices(
               status: snapshot.status,
               source: "binance-realtime",
               priceMode: "realtime",
+              marketStatus: "open",
+              stale: false,
             }
-          : { ...EMPTY_SNAPSHOT, priceMode: "realtime" };
+          : {
+              ...EMPTY_SNAPSHOT,
+              status: asset.binanceSymbol ? "connecting" : "unavailable",
+              priceMode: "realtime",
+            };
         continue;
       }
 
@@ -323,7 +377,7 @@ export function useInvestmentMarketPrices(
     }
 
     return result;
-  }, [assets, cryptoPrices, forexPrices, stockPrices]);
+  }, [assetKey, assets, cryptoPrices, forexPrices, stockPrices]);
 }
 
 export function useSelectedInvestmentMarketPrice(
