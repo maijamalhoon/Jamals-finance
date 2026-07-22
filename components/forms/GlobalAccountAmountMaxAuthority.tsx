@@ -130,10 +130,9 @@ function getSelectedBalance(root: HTMLElement) {
     : accountControl.querySelector<HTMLElement>(
         '[role="option"][aria-selected="true"]',
       );
-  const selectedScope = activeOption ?? accountControl;
-  const balanceNode =
-    selectedScope.querySelector<HTMLElement>(".text-right") ??
-    accountControl.querySelector<HTMLElement>(".text-right");
+  const balanceNode = activeOption
+    ? activeOption.querySelector<HTMLElement>(".text-right")
+    : accountControl.querySelector<HTMLElement>(".text-right");
 
   return parseDisplayedNumber(balanceNode?.textContent);
 }
