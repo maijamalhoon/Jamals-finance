@@ -7,30 +7,41 @@ import com.jamalsfinance.nativeapp.security.AndroidKeystoreSessionStore
 import com.jamalsfinance.nativeapp.ui.JamalsFinanceNativeApp
 import com.jamalsfinance.shared.auth.SupabaseAuthRepository
 import com.jamalsfinance.shared.core.AppConfig
+import com.jamalsfinance.shared.finance.SupabaseFinanceRepository
 import com.jamalsfinance.shared.network.platformHttpClient
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val repository = if (
-            BuildConfig.SUPABASE_URL.isNotBlank() &&
+        val configured = BuildConfig.SUPABASE_URL.isNotBlank() &&
             BuildConfig.SUPABASE_PUBLISHABLE_KEY.isNotBlank()
-        ) {
-            SupabaseAuthRepository(
-                baseClient = platformHttpClient(),
-                config = AppConfig(
-                    supabaseUrl = BuildConfig.SUPABASE_URL,
-                    supabasePublishableKey = BuildConfig.SUPABASE_PUBLISHABLE_KEY,
-                ),
+
+        val repositories = if (configured) {
+            val config = AppConfig(
+                supabaseUrl = BuildConfig.SUPABASE_URL,
+                supabasePublishableKey = BuildConfig.SUPABASE_PUBLISHABLE_KEY,
+            )
+            val baseClient = platformHttpClient()
+            val authRepository = SupabaseAuthRepository(
+                baseClient = baseClient,
+                config = config,
                 sessionStore = AndroidKeystoreSessionStore(applicationContext),
+            )
+            authRepository to SupabaseFinanceRepository(
+                baseClient = baseClient,
+                config = config,
+                authRepository = authRepository,
             )
         } else {
             null
         }
 
         setContent {
-            JamalsFinanceNativeApp(repository)
+            JamalsFinanceNativeApp(
+                authRepository = repositories?.first,
+                financeRepository = repositories?.second,
+            )
         }
     }
 }
