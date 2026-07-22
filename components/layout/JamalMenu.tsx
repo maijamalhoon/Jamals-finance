@@ -44,15 +44,57 @@ type ProfileUpdatedDetail = {
   avatarUrl?: unknown;
 };
 
+type AuthProfileUser = {
+  email?: string | null;
+  user_metadata?: Record<string, unknown> | null;
+};
+
 const FALLBACK_PROFILE: ProfileSummary = {
   displayName: "Jamal",
   email: "",
   avatarUrl: null,
 };
 
+const PROFILE_AUTH_EVENTS = new Set([
+  "INITIAL_SESSION",
+  "SIGNED_IN",
+  "TOKEN_REFRESHED",
+  "USER_UPDATED",
+]);
 const MENU_ICON_STROKE_WIDTH = 2.35;
 
 let profileRequest: Promise<ProfileSummary> | null = null;
+
+function readMetadataString(value: unknown) {
+  return typeof value === "string" && value.trim() ? value.trim() : null;
+}
+
+function getPrivateAvatarUrl(path: string) {
+  return `/api/profile/avatar?path=${encodeURIComponent(path)}`;
+}
+
+function profileSummaryFromUser(user: AuthProfileUser | null | undefined) {
+  if (!user) return FALLBACK_PROFILE;
+
+  const metadata = user.user_metadata ?? {};
+  const displayName =
+    readMetadataString(metadata.full_name) ??
+    readMetadataString(metadata.name) ??
+    readMetadataString(metadata.display_name) ??
+    FALLBACK_PROFILE.displayName;
+  const storedAvatarUrl =
+    readMetadataString(metadata.avatar_url) ??
+    readMetadataString(metadata.picture);
+  const avatarPath = readMetadataString(metadata.avatar_path);
+  const avatarUrl =
+    storedAvatarUrl ?? (avatarPath ? getPrivateAvatarUrl(avatarPath) : null);
+
+  return {
+    displayName,
+    email: user.email ?? "",
+    avatarUrl,
+  };
+}
 
 function getProfileSummary(supabase: ReturnType<typeof createClient>) {
   if (!profileRequest) {
@@ -60,18 +102,7 @@ function getProfileSummary(supabase: ReturnType<typeof createClient>) {
       .getUser()
       .then(({ data: { user }, error }) => {
         if (error) throw error;
-
-        const metadata = user?.user_metadata ?? {};
-
-        return {
-          displayName:
-            metadata.full_name ||
-            metadata.name ||
-            metadata.display_name ||
-            FALLBACK_PROFILE.displayName,
-          email: user?.email ?? "",
-          avatarUrl: metadata.avatar_url || metadata.picture || null,
-        };
+        return profileSummaryFromUser(user);
       })
       .catch(() => {
         profileRequest = null;
@@ -107,6 +138,30 @@ export default function JamalMenu({
     return () => {
       active = false;
     };
+  }, [supabase]);
+
+  useEffect(() => {
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === "SIGNED_OUT") {
+        profileRequest = null;
+        setDisplayName(FALLBACK_PROFILE.displayName);
+        setEmail(FALLBACK_PROFILE.email);
+        setAvatarUrl(FALLBACK_PROFILE.avatarUrl);
+        return;
+      }
+
+      if (!PROFILE_AUTH_EVENTS.has(event) || !session?.user) return;
+
+      const profile = profileSummaryFromUser(session.user);
+      profileRequest = Promise.resolve(profile);
+      setDisplayName(profile.displayName);
+      setEmail(profile.email);
+      setAvatarUrl(profile.avatarUrl);
+    });
+
+    return () => subscription.unsubscribe();
   }, [supabase]);
 
   useEffect(() => {
