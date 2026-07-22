@@ -99,10 +99,8 @@ function syncAction(button: HTMLButtonElement, root: HTMLElement) {
   const managed = shouldManageAction(button, root);
 
   if (!managed) {
-    if (button.dataset.jfGlobalActionManaged === "true") {
-      delete button.dataset.jfFormAction;
-      delete button.dataset.jfGlobalActionManaged;
-    }
+    delete button.dataset.jfFormAction;
+    delete button.dataset.jfGlobalActionManaged;
     clearLegacyGeneratedPresentation(button);
     return;
   }
