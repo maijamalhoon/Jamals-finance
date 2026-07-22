@@ -36,6 +36,7 @@ import com.jamalsfinance.shared.auth.AuthState
 import com.jamalsfinance.shared.finance.FinanceRepository
 import com.jamalsfinance.shared.goals.GoalsPayablesRepository
 import com.jamalsfinance.shared.investments.InvestmentsAnalyticsRepository
+import com.jamalsfinance.shared.reports.ReportsInsightsRepository
 import kotlinx.coroutines.launch
 
 @Composable
@@ -44,6 +45,7 @@ fun JamalsFinanceNativeApp(
     financeRepository: FinanceRepository?,
     goalsPayablesRepository: GoalsPayablesRepository?,
     investmentsAnalyticsRepository: InvestmentsAnalyticsRepository?,
+    reportsInsightsRepository: ReportsInsightsRepository?,
 ) {
     JamalsFinanceTheme {
         Surface(modifier = Modifier.fillMaxSize()) {
@@ -51,7 +53,8 @@ fun JamalsFinanceNativeApp(
                 authRepository == null ||
                 financeRepository == null ||
                 goalsPayablesRepository == null ||
-                investmentsAnalyticsRepository == null
+                investmentsAnalyticsRepository == null ||
+                reportsInsightsRepository == null
             ) {
                 ConfigurationRequired()
             } else {
@@ -65,6 +68,7 @@ fun JamalsFinanceNativeApp(
                         financeRepository = financeRepository,
                         goalsPayablesRepository = goalsPayablesRepository,
                         investmentsAnalyticsRepository = investmentsAnalyticsRepository,
+                        reportsInsightsRepository = reportsInsightsRepository,
                         onSignOut = { authRepository.signOut() },
                     )
                     is AuthState.Failure -> LoginScreen(authRepository, current.message)

@@ -11,12 +11,14 @@ import com.jamalsfinance.shared.finance.SupabaseFinanceRepository
 import com.jamalsfinance.shared.goals.SupabaseGoalsPayablesRepository
 import com.jamalsfinance.shared.investments.SupabaseInvestmentsAnalyticsRepository
 import com.jamalsfinance.shared.network.platformHttpClient
+import com.jamalsfinance.shared.reports.SupabaseReportsInsightsRepository
 
 private data class NativeRepositories(
     val auth: SupabaseAuthRepository,
     val finance: SupabaseFinanceRepository,
     val goalsPayables: SupabaseGoalsPayablesRepository,
     val investmentsAnalytics: SupabaseInvestmentsAnalyticsRepository,
+    val reportsInsights: SupabaseReportsInsightsRepository,
 )
 
 class MainActivity : ComponentActivity() {
@@ -54,6 +56,11 @@ class MainActivity : ComponentActivity() {
                     config = config,
                     authRepository = authRepository,
                 ),
+                reportsInsights = SupabaseReportsInsightsRepository(
+                    baseClient = baseClient,
+                    config = config,
+                    authRepository = authRepository,
+                ),
             )
         } else {
             null
@@ -65,6 +72,7 @@ class MainActivity : ComponentActivity() {
                 financeRepository = repositories?.finance,
                 goalsPayablesRepository = repositories?.goalsPayables,
                 investmentsAnalyticsRepository = repositories?.investmentsAnalytics,
+                reportsInsightsRepository = repositories?.reportsInsights,
             )
         }
     }

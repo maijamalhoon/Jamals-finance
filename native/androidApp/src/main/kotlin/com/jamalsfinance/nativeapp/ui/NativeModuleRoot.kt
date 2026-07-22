@@ -33,6 +33,7 @@ import androidx.compose.ui.unit.dp
 import com.jamalsfinance.shared.finance.FinanceRepository
 import com.jamalsfinance.shared.goals.GoalsPayablesRepository
 import com.jamalsfinance.shared.investments.InvestmentsAnalyticsRepository
+import com.jamalsfinance.shared.reports.ReportsInsightsRepository
 import kotlinx.coroutines.launch
 
 private enum class NativeWorkspace {
@@ -40,6 +41,7 @@ private enum class NativeWorkspace {
     AccountsTransactions,
     GoalsPayables,
     InvestmentsAnalytics,
+    ReportsInsights,
 }
 
 @Composable
@@ -48,6 +50,7 @@ fun NativeModuleRootShell(
     financeRepository: FinanceRepository,
     goalsPayablesRepository: GoalsPayablesRepository,
     investmentsAnalyticsRepository: InvestmentsAnalyticsRepository,
+    reportsInsightsRepository: ReportsInsightsRepository,
     onSignOut: suspend () -> Unit,
 ) {
     var workspace by remember { mutableStateOf(NativeWorkspace.Launcher) }
@@ -61,6 +64,7 @@ fun NativeModuleRootShell(
             onAccountsTransactions = { workspace = NativeWorkspace.AccountsTransactions },
             onGoalsPayables = { workspace = NativeWorkspace.GoalsPayables },
             onInvestmentsAnalytics = { workspace = NativeWorkspace.InvestmentsAnalytics },
+            onReportsInsights = { workspace = NativeWorkspace.ReportsInsights },
             onSignOut = onSignOut,
         )
         NativeWorkspace.AccountsTransactions -> NativeDashboardShell(
@@ -76,6 +80,10 @@ fun NativeModuleRootShell(
             repository = investmentsAnalyticsRepository,
             onBack = { workspace = NativeWorkspace.Launcher },
         )
+        NativeWorkspace.ReportsInsights -> ReportsInsightsDashboard(
+            repository = reportsInsightsRepository,
+            onBack = { workspace = NativeWorkspace.Launcher },
+        )
     }
 }
 
@@ -86,6 +94,7 @@ private fun NativeModuleLauncher(
     onAccountsTransactions: () -> Unit,
     onGoalsPayables: () -> Unit,
     onInvestmentsAnalytics: () -> Unit,
+    onReportsInsights: () -> Unit,
     onSignOut: suspend () -> Unit,
 ) {
     val scope = rememberCoroutineScope()
@@ -142,6 +151,14 @@ private fun NativeModuleLauncher(
                     description = "Portfolio lots, live market prices, profit/loss, cash out, cash-flow and spending intelligence.",
                     action = "Open investments & analytics",
                     onClick = onInvestmentsAnalytics,
+                )
+            }
+            item {
+                ModuleCard(
+                    title = "Reports & AI Insights",
+                    description = "Date-range reports, native CSV export, financial health, secure insights and finance chat.",
+                    action = "Open reports & AI insights",
+                    onClick = onReportsInsights,
                 )
             }
             item {
