@@ -19,6 +19,7 @@ jobs:
       NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
       NEXT_PUBLIC_SUPABASE_ANON_KEY: build-verification-placeholder
       NEXT_PUBLIC_SITE_URL: https://jamals-finance-sable.vercel.app
+      BUDGETING_INTEGRATION_RUN: "2026-07-23"
     steps:
       - name: Checkout current main
         uses: actions/checkout@v4
