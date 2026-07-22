@@ -37,6 +37,7 @@
     -webkit-filter: none !important;
     backdrop-filter: blur(14px) saturate(112%) !important;
     -webkit-backdrop-filter: blur(14px) saturate(112%) !important;
+    transition: background-color 160ms ease !important;
   }
 
   html body
@@ -87,6 +88,7 @@
     -webkit-filter: none !important;
     backdrop-filter: blur(14px) saturate(112%) !important;
     -webkit-backdrop-filter: blur(14px) saturate(112%) !important;
+    transition: background-color 160ms ease !important;
   }
 
   html body
@@ -154,6 +156,7 @@
       -webkit-filter: none !important;
       backdrop-filter: blur(14px) saturate(112%) !important;
       -webkit-backdrop-filter: blur(14px) saturate(112%) !important;
+      transition: background-color 160ms ease !important;
     }
 
     html body [data-dashboard-shell] [data-mobile-control-cluster]
