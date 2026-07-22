@@ -1,6 +1,6 @@
-status=failure
+status=success
 main_sha=86030a07619c195a7194bfcdce50a2d6534dafed
-verified_at=2026-07-22T19:39:43Z
+verified_at=2026-07-22T19:42:57Z
 --- build log tail ---
 
 > jamals-finance@0.1.0 build
@@ -15,20 +15,85 @@ https://nextjs.org/telemetry
 ▲ Next.js 16.2.9 (Turbopack)
 
   Creating an optimized production build ...
-✓ Compiled successfully in 18.4s
+✓ Compiled successfully in 16.5s
   Running TypeScript ...
-  Finished TypeScript in 17.7s ...
+  Finished TypeScript in 14.7s ...
   Collecting page data using 3 workers ...
 ⚠ Using edge runtime on a page currently disables static generation for that page
   Generating static pages using 3 workers (0/23) ...
   Generating static pages using 3 workers (5/23) 
   Generating static pages using 3 workers (11/23) 
-Error occurred prerendering page "/login". Read more: https://nextjs.org/docs/messages/prerender-error
-Error: Supabase browser configuration is unavailable.
-    at <unknown> (.next/server/chunks/ssr/_1rj9vf2._.js:59:8038)
-    at <unknown> (.next/server/chunks/ssr/app_login_page_tsx_1nv--5q._.js:1:3801)
-    at <unknown> (.next/server/chunks/ssr/app_login_page_tsx_1nv--5q._.js:1:3778) {
-  digest: '3477252603'
-}
-Export encountered an error on /login/page: /login, exiting the build.
-⨯ Next.js build worker exited with code: 1 and signal: null
+  Generating static pages using 3 workers (17/23) 
+✓ Generating static pages using 3 workers (23/23) in 649ms
+  Finalizing page optimization ...
+
+Route (app)
+┌ ○ /
+├ ○ /_not-found
+├ ƒ /api/account-logo
+├ ƒ /api/account-logo-image
+├ ƒ /api/ai-insights
+├ ƒ /api/ai-insights/chat
+├ ƒ /api/ai-insights/exact
+├ ƒ /api/app-icon/[size]
+├ ƒ /api/app-release/android
+├ ƒ /api/app-version
+├ ƒ /api/business/team/invite
+├ ƒ /api/exchange-rate
+├ ƒ /api/market/asset-search
+├ ƒ /api/market/crypto-prices
+├ ƒ /api/market/crypto-prices/catalog
+├ ƒ /api/market/crypto/price
+├ ƒ /api/market/crypto/search
+├ ƒ /api/market/forex-prices
+├ ƒ /api/market/search
+├ ƒ /api/market/stock-prices
+├ ƒ /api/market/stocks/price
+├ ƒ /api/market/stocks/search
+├ ƒ /api/profile/avatar
+├ ƒ /auth/callback
+├ ƒ /business
+├ ƒ /business/[businessSlug]
+├ ƒ /business/[businessSlug]/accounting
+├ ƒ /business/[businessSlug]/banking
+├ ƒ /business/[businessSlug]/contacts
+├ ƒ /business/[businessSlug]/crm
+├ ƒ /business/[businessSlug]/inventory
+├ ƒ /business/[businessSlug]/notifications
+├ ƒ /business/[businessSlug]/purchases
+├ ƒ /business/[businessSlug]/reports
+├ ƒ /business/[businessSlug]/sales
+├ ƒ /business/[businessSlug]/shop
+├ ƒ /business/[businessSlug]/tax-closing
+├ ƒ /business/[businessSlug]/team
+├ ƒ /business/invitations/accept
+├ ƒ /dashboard
+├ ƒ /dashboard/accounts
+├ ƒ /dashboard/accounts/[id]
+├ ƒ /dashboard/ai-insights
+├ ƒ /dashboard/analytics
+├ ƒ /dashboard/expenses
+├ ƒ /dashboard/goals
+├ ƒ /dashboard/income
+├ ƒ /dashboard/investments
+├ ƒ /dashboard/payables
+├ ƒ /dashboard/reports
+├ ƒ /dashboard/settings
+├ ƒ /dashboard/transactions
+├ ƒ /dashboard/transactions/[id]
+├ ○ /login
+├ ○ /login-step5-preview
+├ ○ /manifest.webmanifest
+├ ○ /onboarding
+├ ○ /opengraph-image
+├ ○ /reset-password
+├ ○ /robots.txt
+├ ○ /sitemap.xml
+└ ○ /twitter-image
+
+
+ƒ Proxy (Middleware)
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+
