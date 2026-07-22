@@ -34,16 +34,18 @@ import com.jamalsfinance.shared.auth.AuthRepository
 import com.jamalsfinance.shared.auth.AuthResult
 import com.jamalsfinance.shared.auth.AuthState
 import com.jamalsfinance.shared.finance.FinanceRepository
+import com.jamalsfinance.shared.goals.GoalsPayablesRepository
 import kotlinx.coroutines.launch
 
 @Composable
 fun JamalsFinanceNativeApp(
     authRepository: AuthRepository?,
     financeRepository: FinanceRepository?,
+    goalsPayablesRepository: GoalsPayablesRepository?,
 ) {
     JamalsFinanceTheme {
         Surface(modifier = Modifier.fillMaxSize()) {
-            if (authRepository == null || financeRepository == null) {
+            if (authRepository == null || financeRepository == null || goalsPayablesRepository == null) {
                 ConfigurationRequired()
             } else {
                 val state by authRepository.state.collectAsStateWithLifecycle()
@@ -51,9 +53,10 @@ fun JamalsFinanceNativeApp(
                 when (val current = state) {
                     AuthState.Restoring -> CenteredProgress()
                     AuthState.SignedOut -> LoginScreen(authRepository)
-                    is AuthState.SignedIn -> NativeDashboardShell(
+                    is AuthState.SignedIn -> NativeModuleRootShell(
                         email = current.session.user.email ?: "Signed in",
                         financeRepository = financeRepository,
+                        goalsPayablesRepository = goalsPayablesRepository,
                         onSignOut = { authRepository.signOut() },
                     )
                     is AuthState.Failure -> LoginScreen(authRepository, current.message)

@@ -8,6 +8,7 @@ import com.jamalsfinance.nativeapp.ui.JamalsFinanceNativeApp
 import com.jamalsfinance.shared.auth.SupabaseAuthRepository
 import com.jamalsfinance.shared.core.AppConfig
 import com.jamalsfinance.shared.finance.SupabaseFinanceRepository
+import com.jamalsfinance.shared.goals.SupabaseGoalsPayablesRepository
 import com.jamalsfinance.shared.network.platformHttpClient
 
 class MainActivity : ComponentActivity() {
@@ -28,10 +29,18 @@ class MainActivity : ComponentActivity() {
                 config = config,
                 sessionStore = AndroidKeystoreSessionStore(applicationContext),
             )
-            authRepository to SupabaseFinanceRepository(
-                baseClient = baseClient,
-                config = config,
-                authRepository = authRepository,
+            Triple(
+                authRepository,
+                SupabaseFinanceRepository(
+                    baseClient = baseClient,
+                    config = config,
+                    authRepository = authRepository,
+                ),
+                SupabaseGoalsPayablesRepository(
+                    baseClient = baseClient,
+                    config = config,
+                    authRepository = authRepository,
+                ),
             )
         } else {
             null
@@ -41,6 +50,7 @@ class MainActivity : ComponentActivity() {
             JamalsFinanceNativeApp(
                 authRepository = repositories?.first,
                 financeRepository = repositories?.second,
+                goalsPayablesRepository = repositories?.third,
             )
         }
     }
