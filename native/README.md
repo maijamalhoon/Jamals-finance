@@ -36,7 +36,7 @@ gradle :shared:testAndroidHostTest :androidApp:assembleDebug
 
 The same command runs in `Native foundation CI`. A successful run publishes a development-only debug APK artifact for validation.
 
-## Current milestone: v0.3.0
+## Current milestone: v0.4.0
 
 - KMP module with Android and iOS targets
 - Typed Supabase email/password auth over Ktor
@@ -47,9 +47,12 @@ The same command runs in `Native foundation CI`. A successful run publishes a de
 - Transactions: income, expense, transfers, search, filters and deleted history
 - Goals: create, edit, delete, contributions, progress and contribution history
 - Payables: create, edit, delete, payment recording, repayment history and due status
+- Investments: load, search, create, edit, delete, cash out and aggregate repeated purchases
+- Live investment prices for supported crypto, stock and forex assets with safe manual fallback
+- Analytics: aligned date presets, previous-period comparisons, refunds, cash flow, categories, accounts and portfolio metrics
 - Original-currency metadata with PKR canonical values
 - Existing database RLS, secure RPCs and financial triggers reused
 
 ## Not complete yet
 
-This development milestone is not the final Play Store replacement and does not claim complete finance-feature parity or final 1:1 website visual parity. Investments, analytics, reports, AI, business modules, notifications, remaining platform integrations, release hardening and dedicated visual-parity work remain future milestones.
+This development milestone is not the final Play Store replacement and does not claim complete finance-feature parity or final 1:1 website visual parity. Reports, AI, business modules, notifications, remaining platform integrations, release hardening and dedicated visual-parity work remain future milestones.
