@@ -16,22 +16,13 @@ import {
   DialogContent,
 } from "@/components/ui/dialog";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
   FinanceFormField,
   FinanceModalBody,
   FinanceModalFooter,
   FinanceModalHeader,
   financeModalContentClass,
 } from "@/components/ui/finance-modal";
-import TouchWheelPicker, {
-  useTouchWheelPickerMode,
-} from "@/components/ui/touch-wheel-picker";
+import TouchWheelPicker from "@/components/ui/touch-wheel-picker";
 import {
   useCurrency,
   type Currency,
@@ -168,7 +159,6 @@ export default function SettingsPreferencesSection({
 }: SettingsPreferencesSectionProps) {
   const supabase = createClient();
   const { currency, rateLabel, setCurrency } = useCurrency();
-  const touchWheelPickerMode = useTouchWheelPickerMode();
   const [dateFormat, setDateFormat] = useState<DateFormat>("MMM d, yyyy");
   const [currencyOpen, setCurrencyOpen] = useState(false);
   const [dateOpen, setDateOpen] = useState(false);
@@ -324,49 +314,26 @@ export default function SettingsPreferencesSection({
                 htmlFor="settings-currency-select"
                 hint={rateLabel}
               >
-                {touchWheelPickerMode ? (
-                  <TouchWheelPicker
-                    id="settings-currency-select"
-                    value={draftCurrency}
-                    options={CURRENCY_OPTIONS.map((option) => ({
-                      value: option.value,
-                      ariaLabel: option.label,
-                      content: (
-                        <span className="block truncate font-semibold text-text-primary">
-                          {option.label}
-                        </span>
-                      ),
-                    }))}
-                    onValueChange={(value) =>
-                      setDraftCurrency(value as Currency)
-                    }
-                    ariaLabel="Currency"
-                    disabled={savingCurrency}
-                    className="field-input w-full p-0"
-                    itemClassName="px-4"
-                  />
-                ) : (
-                  <Select
-                    value={draftCurrency}
-                    onValueChange={(value) => setDraftCurrency(value as Currency)}
-                    disabled={savingCurrency}
-                  >
-                    <SelectTrigger
-                      id="settings-currency-select"
-                      aria-label="Currency"
-                      className="w-full"
-                    >
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent align="start" sideOffset={8} className="z-[90] p-1.5">
-                      {CURRENCY_OPTIONS.map((option) => (
-                        <SelectItem key={option.value} value={option.value}>
-                          {option.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                )}
+                <TouchWheelPicker
+                  id="settings-currency-select"
+                  value={draftCurrency}
+                  options={CURRENCY_OPTIONS.map((option) => ({
+                    value: option.value,
+                    ariaLabel: option.label,
+                    content: (
+                      <span className="block truncate font-semibold text-text-primary">
+                        {option.label}
+                      </span>
+                    ),
+                  }))}
+                  onValueChange={(value) =>
+                    setDraftCurrency(value as Currency)
+                  }
+                  ariaLabel="Currency"
+                  disabled={savingCurrency}
+                  className="field-input w-full p-0"
+                  itemClassName="px-4"
+                />
               </FinanceFormField>
             </FinanceModalBody>
             <FinanceModalFooter>
@@ -405,49 +372,25 @@ export default function SettingsPreferencesSection({
                 label="Date format"
                 htmlFor="settings-date-format-select"
               >
-                {touchWheelPickerMode ? (
-                  <TouchWheelPicker
-                    id="settings-date-format-select"
-                    value={draftDateFormat}
-                    options={DATE_FORMAT_OPTIONS.map((option) => ({
-                      value: option.value,
-                      ariaLabel: option.label,
-                      content: (
-                        <span className="block truncate font-semibold text-text-primary">
-                          {option.label}
-                        </span>
-                      ),
-                    }))}
-                    onValueChange={(value) =>
-                      setDraftDateFormat(value as DateFormat)
-                    }
-                    ariaLabel="Date format"
-                    className="field-input w-full p-0"
-                    itemClassName="px-4"
-                  />
-                ) : (
-                  <Select
-                    value={draftDateFormat}
-                    onValueChange={(value) =>
-                      setDraftDateFormat(value as DateFormat)
-                    }
-                  >
-                    <SelectTrigger
-                      id="settings-date-format-select"
-                      aria-label="Date format"
-                      className="w-full"
-                    >
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent align="start" sideOffset={8} className="z-[90] p-1.5">
-                      {DATE_FORMAT_OPTIONS.map((option) => (
-                        <SelectItem key={option.value} value={option.value}>
-                          {option.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                )}
+                <TouchWheelPicker
+                  id="settings-date-format-select"
+                  value={draftDateFormat}
+                  options={DATE_FORMAT_OPTIONS.map((option) => ({
+                    value: option.value,
+                    ariaLabel: option.label,
+                    content: (
+                      <span className="block truncate font-semibold text-text-primary">
+                        {option.label}
+                      </span>
+                    ),
+                  }))}
+                  onValueChange={(value) =>
+                    setDraftDateFormat(value as DateFormat)
+                  }
+                  ariaLabel="Date format"
+                  className="field-input w-full p-0"
+                  itemClassName="px-4"
+                />
               </FinanceFormField>
             </FinanceModalBody>
             <FinanceModalFooter>
