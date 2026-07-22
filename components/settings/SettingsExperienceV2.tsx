@@ -6,9 +6,9 @@ import CategorySettingsSection from "@/components/settings/CategorySettingsSecti
 import type { PersistentSettingsCategory } from "@/components/settings/CategoryManagementExperience";
 import ProfileCustomizationSection from "@/components/settings/ProfileCustomizationSection";
 import SettingsAnimationPreviewControl from "@/components/settings/SettingsAnimationPreviewControl";
+import SettingsDataTransferSection from "@/components/settings/SettingsDataTransferSection";
 import {
   SettingsAppearanceSection,
-  SettingsDataSection,
   SettingsProfileSecuritySection,
   type SettingsReferenceStats,
 } from "@/components/settings/SettingsReferenceSections";
@@ -88,12 +88,9 @@ export default function SettingsExperienceV2(props: SettingsExperienceV2Props) {
           />
         </section>
 
-        <SettingsDataSection
+        <SettingsDataTransferSection
           email={props.email}
           displayName={props.displayName}
-          categories={props.categories}
-          categoriesAvailable={props.categoriesAvailable}
-          stats={props.stats}
         />
       </div>
     </div>
