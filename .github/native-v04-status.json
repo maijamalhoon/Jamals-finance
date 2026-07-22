@@ -1,5 +1,5 @@
 {
-  "status": "failure",
+  "status": "success",
   "runId": "29950122969",
   "commit": "3fe3aabf15e46c615e1a7ca0c830430967cda074",
   "workflow": "native-v04-verify"
