@@ -126,6 +126,24 @@ function enhancePayablesSearch(input: HTMLInputElement) {
   };
 }
 
+function keepTransactionActionsAvailable() {
+  const searchControl = document.querySelector<HTMLElement>(
+    "#transaction-filter-controls .jf-transaction-search",
+  );
+  const actions = searchControl?.nextElementSibling;
+  if (!(actions instanceof HTMLElement)) return;
+
+  if (actions.hasAttribute("aria-hidden")) {
+    actions.removeAttribute("aria-hidden");
+  }
+
+  actions.querySelectorAll<HTMLButtonElement>('button[tabindex="-1"]').forEach(
+    (button) => {
+      button.removeAttribute("tabindex");
+    },
+  );
+}
+
 export default function UnifiedSearchBehavior() {
   useEffect(() => {
     const cleanups = new Map<HTMLFormElement, () => void>();
@@ -142,15 +160,23 @@ export default function UnifiedSearchBehavior() {
       ) as HTMLInputElement | null;
       const form = input?.closest<HTMLFormElement>("form") ?? null;
 
-      if (!input || !form || cleanups.has(form)) return;
-      const cleanup = enhancePayablesSearch(input);
-      if (cleanup) cleanups.set(form, cleanup);
+      if (input && form && !cleanups.has(form)) {
+        const cleanup = enhancePayablesSearch(input);
+        if (cleanup) cleanups.set(form, cleanup);
+      }
+
+      keepTransactionActionsAvailable();
     };
 
     scan();
 
     const observer = new MutationObserver(scan);
-    observer.observe(document.body, { childList: true, subtree: true });
+    observer.observe(document.body, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      attributeFilter: ["aria-hidden", "tabindex", "data-open"],
+    });
 
     return () => {
       observer.disconnect();
