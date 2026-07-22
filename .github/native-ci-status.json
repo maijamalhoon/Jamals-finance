@@ -1,6 +1,6 @@
 {
-  "status": "failure",
-  "runId": "29922593669",
-  "commit": "1d688d816cac9ce75639df21d368b1296ae06fd5",
+  "status": "success",
+  "runId": "29922960155",
+  "commit": "bc72a6612c8e954a64180c9af940252c1bbba17c",
   "workflow": "native-foundation-ci"
 }
