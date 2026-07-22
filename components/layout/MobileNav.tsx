@@ -4,13 +4,7 @@ import Link from "next/link";
 import { motion, useReducedMotion } from "framer-motion";
 import { CircleDollarSign, X } from "lucide-react";
 import { usePathname } from "next/navigation";
-import {
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-  type ReactNode,
-} from "react";
+import { useEffect, useState, type ReactNode } from "react";
 
 import JamalMenu from "@/components/layout/JamalMenu";
 import MobileHeaderSearch from "@/components/layout/MobileHeaderSearch";
@@ -29,72 +23,8 @@ type MobileNavProps = {
   notificationSlot: ReactNode;
 };
 
-type TapGesture = {
-  pointerId: number;
-  startX: number;
-  startY: number;
-  startScrollTop: number;
-  moved: boolean;
-};
-
-type ScrollDirection = "up" | "down" | null;
-
-const AUTO_HIDE_DELAY = 2_000;
-const SCROLL_IDLE_DELAY = 140;
-const SCROLL_DIRECTION_THRESHOLD = 1;
-const TAP_MOVE_TOLERANCE = 10;
+const TOP_VISIBILITY_THRESHOLD = 8;
 const CONTROL_EASE = [0.22, 1, 0.36, 1] as const;
-
-const INTERACTIVE_TAP_SELECTOR = [
-  "a[href]",
-  "button",
-  "input",
-  "textarea",
-  "select",
-  "option",
-  "label",
-  "summary",
-  "form",
-  '[role="button"]',
-  '[role="link"]',
-  '[role="menu"]',
-  '[role="menuitem"]',
-  '[role="tab"]',
-  '[role="checkbox"]',
-  '[role="radio"]',
-  '[role="switch"]',
-  '[role="combobox"]',
-  '[role="listbox"]',
-  '[role="option"]',
-  '[role="dialog"]',
-  '[aria-haspopup]',
-  '[contenteditable="true"]',
-  '[data-slot$="-trigger"]',
-  '[data-slot="dialog-content"]',
-  '[data-slot="sheet-content"]',
-  '[data-slot="dropdown-menu-content"]',
-  '[data-slot="popover-content"]',
-  '[tabindex]:not([tabindex="-1"])',
-].join(",");
-
-const BLOCKING_SURFACE_SELECTOR = [
-  '[data-slot="dialog-content"]',
-  '[data-slot="sheet-content"]',
-  '[data-slot="dropdown-menu-content"]',
-  '[data-slot="popover-content"]',
-  '[role="dialog"]',
-  '[aria-modal="true"]',
-].join(",");
-
-function isInteractiveTapTarget(target: EventTarget | null) {
-  return target instanceof Element
-    ? Boolean(target.closest(INTERACTIVE_TAP_SELECTOR))
-    : false;
-}
-
-function hasBlockingSurface() {
-  return Boolean(document.querySelector(BLOCKING_SURFACE_SELECTOR));
-}
 
 export default function MobileNav({ notificationSlot }: MobileNavProps) {
   const pathname = usePathname();
@@ -102,41 +32,7 @@ export default function MobileNav({ notificationSlot }: MobileNavProps) {
   const [open, setOpen] = useState(false);
   const [portalOpen, setPortalOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
-  const [controlsVisible, setControlsVisible] = useState(false);
-  const hideTimerRef = useRef<number | null>(null);
-  const tapRevealTimerRef = useRef<number | null>(null);
-  const scrollIdleTimerRef = useRef<number | null>(null);
-  const tapGestureRef = useRef<TapGesture | null>(null);
-  const lastScrollTopRef = useRef(0);
-  const lastScrollDirectionRef = useRef<ScrollDirection>(null);
-  const interactionWasOpenRef = useRef(false);
-
-  const clearHideTimer = useCallback(() => {
-    if (hideTimerRef.current === null) return;
-    window.clearTimeout(hideTimerRef.current);
-    hideTimerRef.current = null;
-  }, []);
-
-  const clearTapRevealTimer = useCallback(() => {
-    if (tapRevealTimerRef.current === null) return;
-    window.clearTimeout(tapRevealTimerRef.current);
-    tapRevealTimerRef.current = null;
-  }, []);
-
-  const clearScrollIdleTimer = useCallback(() => {
-    if (scrollIdleTimerRef.current === null) return;
-    window.clearTimeout(scrollIdleTimerRef.current);
-    scrollIdleTimerRef.current = null;
-  }, []);
-
-  const showControlsForMoment = useCallback(() => {
-    clearHideTimer();
-    setControlsVisible(true);
-    hideTimerRef.current = window.setTimeout(() => {
-      setControlsVisible(false);
-      hideTimerRef.current = null;
-    }, AUTO_HIDE_DELAY);
-  }, [clearHideTimer]);
+  const [controlsVisible, setControlsVisible] = useState(true);
 
   const interactionOpen = open || portalOpen || searchOpen;
 
@@ -158,7 +54,6 @@ export default function MobileNav({ notificationSlot }: MobileNavProps) {
     };
 
     updatePortalState();
-
     const observer = new MutationObserver(updatePortalState);
     observer.observe(document.body, {
       attributes: true,
@@ -171,163 +66,26 @@ export default function MobileNav({ notificationSlot }: MobileNavProps) {
   }, []);
 
   useEffect(() => {
-    const wasOpen = interactionWasOpenRef.current;
-    interactionWasOpenRef.current = interactionOpen;
-
-    if (interactionOpen) {
-      clearHideTimer();
-      setControlsVisible(true);
-      return;
-    }
-
-    if (wasOpen) showControlsForMoment();
-  }, [clearHideTimer, interactionOpen, showControlsForMoment]);
-
-  useEffect(() => {
-    const scrollContainer = document.querySelector<HTMLElement>(
-      "[data-dashboard-scroll]",
-    );
-    const getScrollTop = () => scrollContainer?.scrollTop ?? window.scrollY;
-
-    const handlePointerDown = (event: PointerEvent) => {
-      clearTapRevealTimer();
-
-      if (
-        !event.isPrimary ||
-        event.button !== 0 ||
-        interactionOpen ||
-        isInteractiveTapTarget(event.target)
-      ) {
-        tapGestureRef.current = null;
-        return;
-      }
-
-      tapGestureRef.current = {
-        pointerId: event.pointerId,
-        startX: event.clientX,
-        startY: event.clientY,
-        startScrollTop: getScrollTop(),
-        moved: false,
-      };
-    };
-
-    const handlePointerMove = (event: PointerEvent) => {
-      const gesture = tapGestureRef.current;
-      if (!gesture || gesture.pointerId !== event.pointerId) return;
-
-      const movedX = Math.abs(event.clientX - gesture.startX);
-      const movedY = Math.abs(event.clientY - gesture.startY);
-      if (movedX > TAP_MOVE_TOLERANCE || movedY > TAP_MOVE_TOLERANCE) {
-        gesture.moved = true;
-      }
-    };
-
-    const handlePointerUp = (event: PointerEvent) => {
-      const gesture = tapGestureRef.current;
-      if (!gesture || gesture.pointerId !== event.pointerId) return;
-
-      tapGestureRef.current = null;
-      if (interactionOpen || isInteractiveTapTarget(event.target)) return;
-
-      const scrollDistance = Math.abs(getScrollTop() - gesture.startScrollTop);
-      if (gesture.moved || scrollDistance > 2) return;
-
-      tapRevealTimerRef.current = window.setTimeout(() => {
-        tapRevealTimerRef.current = null;
-        if (hasBlockingSurface()) return;
-        showControlsForMoment();
-      }, 0);
-    };
-
-    const handlePointerCancel = (event: PointerEvent) => {
-      if (tapGestureRef.current?.pointerId === event.pointerId) {
-        tapGestureRef.current = null;
-      }
-    };
-
-    document.addEventListener("pointerdown", handlePointerDown, {
-      capture: true,
-      passive: true,
-    });
-    document.addEventListener("pointermove", handlePointerMove, {
-      capture: true,
-      passive: true,
-    });
-    document.addEventListener("pointerup", handlePointerUp, {
-      capture: true,
-      passive: true,
-    });
-    document.addEventListener("pointercancel", handlePointerCancel, {
-      capture: true,
-      passive: true,
-    });
-
-    return () => {
-      document.removeEventListener("pointerdown", handlePointerDown, true);
-      document.removeEventListener("pointermove", handlePointerMove, true);
-      document.removeEventListener("pointerup", handlePointerUp, true);
-      document.removeEventListener("pointercancel", handlePointerCancel, true);
-    };
-  }, [clearTapRevealTimer, interactionOpen, showControlsForMoment]);
-
-  useEffect(() => {
     const scrollContainer = document.querySelector<HTMLElement>(
       "[data-dashboard-scroll]",
     );
     if (!scrollContainer) return;
 
-    lastScrollTopRef.current = Math.max(0, scrollContainer.scrollTop);
-
-    const handleScroll = () => {
-      clearHideTimer();
-      clearTapRevealTimer();
-      clearScrollIdleTimer();
-
-      if (tapGestureRef.current) tapGestureRef.current.moved = true;
-
-      const nextScrollTop = Math.max(0, scrollContainer.scrollTop);
-      const scrollDelta = nextScrollTop - lastScrollTopRef.current;
-
-      if (Math.abs(scrollDelta) >= SCROLL_DIRECTION_THRESHOLD) {
-        lastScrollDirectionRef.current = scrollDelta < 0 ? "up" : "down";
-        lastScrollTopRef.current = nextScrollTop;
-      }
-
-      if (!interactionOpen) setControlsVisible(false);
-
-      scrollIdleTimerRef.current = window.setTimeout(() => {
-        scrollIdleTimerRef.current = null;
-
-        if (interactionOpen || lastScrollDirectionRef.current !== "up") {
-          return;
-        }
-
-        showControlsForMoment();
-      }, SCROLL_IDLE_DELAY);
+    const updateControlsVisibility = () => {
+      const atPageTop =
+        Math.max(0, scrollContainer.scrollTop) <= TOP_VISIBILITY_THRESHOLD;
+      setControlsVisible(interactionOpen || atPageTop);
     };
 
-    scrollContainer.addEventListener("scroll", handleScroll, { passive: true });
+    updateControlsVisibility();
+    scrollContainer.addEventListener("scroll", updateControlsVisibility, {
+      passive: true,
+    });
 
     return () => {
-      scrollContainer.removeEventListener("scroll", handleScroll);
-      clearScrollIdleTimer();
+      scrollContainer.removeEventListener("scroll", updateControlsVisibility);
     };
-  }, [
-    clearHideTimer,
-    clearScrollIdleTimer,
-    clearTapRevealTimer,
-    interactionOpen,
-    showControlsForMoment,
-  ]);
-
-  useEffect(() => {
-    return () => {
-      clearHideTimer();
-      clearTapRevealTimer();
-      clearScrollIdleTimer();
-      tapGestureRef.current = null;
-    };
-  }, [clearHideTimer, clearScrollIdleTimer, clearTapRevealTimer]);
+  }, [interactionOpen]);
 
   const controlTransition = reduceMotion
     ? { duration: 0.01 }
