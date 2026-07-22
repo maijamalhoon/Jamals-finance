@@ -5,7 +5,7 @@ on:
     branches:
       - agent/banking-reconciliation-build-verify
     paths-ignore:
-      - .vercel/banking-github-build-result.txt
+      - banking-github-build-result.txt
   workflow_dispatch:
 
 permissions:
@@ -54,11 +54,11 @@ jobs:
             echo "verified_at=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
             echo "--- build log tail ---"
             tail -n 160 banking-build.log 2>/dev/null || true
-          } > report/.vercel/banking-github-build-result.txt
+          } > report/banking-github-build-result.txt
           cd report
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add .vercel/banking-github-build-result.txt
+          git add banking-github-build-result.txt
           if ! git diff --cached --quiet; then
             git commit -m "ci(banking): record latest main build result"
             git push origin HEAD:agent/banking-reconciliation-build-verify
