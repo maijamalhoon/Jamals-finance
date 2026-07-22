@@ -1,0 +1,32 @@
+import { Handshake } from "lucide-react";
+
+export default function BusinessCrmLoading() {
+  return (
+    <main className="min-h-dvh bg-background px-4 py-5 text-foreground sm:px-6 sm:py-7 lg:px-8 lg:py-8">
+      <div className="mx-auto w-full max-w-[1600px] animate-pulse">
+        <div className="h-10 w-48 rounded-[var(--radius-button)] bg-surface-secondary" />
+        <div className="mt-7 flex items-start gap-3">
+          <span className="inline-flex size-11 items-center justify-center rounded-[var(--radius-button)] bg-primary-soft text-primary">
+            <Handshake className="size-5" aria-hidden="true" />
+          </span>
+          <div className="flex-1">
+            <div className="h-3 w-40 rounded-full bg-surface-secondary" />
+            <div className="mt-3 h-8 w-72 max-w-full rounded-full bg-surface-secondary" />
+            <div className="mt-4 h-4 w-full max-w-3xl rounded-full bg-surface-secondary" />
+          </div>
+        </div>
+        <div className="mt-7 grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
+          {Array.from({ length: 5 }).map((_, index) => (
+            <div key={index} className="h-28 rounded-[var(--radius-card)] bg-surface shadow-[var(--shadow-sm)]" />
+          ))}
+        </div>
+        <div className="mt-8 h-[34rem] rounded-[var(--radius-card)] bg-surface shadow-[var(--shadow-sm)]" />
+        <div className="mt-8 grid min-h-[28rem] grid-cols-1 gap-4 xl:grid-cols-3">
+          {Array.from({ length: 3 }).map((_, index) => (
+            <div key={index} className="rounded-[var(--radius-card)] bg-surface shadow-[var(--shadow-sm)]" />
+          ))}
+        </div>
+      </div>
+    </main>
+  );
+}
