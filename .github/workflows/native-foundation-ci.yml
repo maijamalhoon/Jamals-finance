@@ -1,6 +1,6 @@
 name: Native foundation CI
 
-# Verification marker: goals-and-payables-milestone
+# Verification marker: goals-and-payables-v0.3.0
 on:
   push:
     branches: [main]
@@ -63,7 +63,7 @@ jobs:
         if: steps.native_build.outputs.exit_code == '0'
         uses: actions/upload-artifact@v4
         with:
-          name: jamals-finance-native-accounts-transactions-debug
+          name: jamals-finance-native-goals-payables-v0.3.0-debug
           path: native/androidApp/build/outputs/apk/debug/androidApp-debug.apk
           if-no-files-found: error
           retention-days: 7
