@@ -1,2 +1,3 @@
 Banking and reconciliation verification branch.
 No production alias, UI behavior, financial data, or business logic is changed by this file.
+Retry after the Vercel build-rate window reopened on 2026-07-22.
