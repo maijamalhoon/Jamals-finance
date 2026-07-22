@@ -8,6 +8,7 @@ export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Accept Business Invitation",
+  referrer: "no-referrer",
   robots: { index: false, follow: false },
 };
 
