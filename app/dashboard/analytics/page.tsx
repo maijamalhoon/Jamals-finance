@@ -1,4 +1,5 @@
 import AnalyticsClient from "@/components/analytics/AnalyticsClient";
+import type { AnalyticsTransferData } from "@/lib/analytics/account-activity";
 import {
   calculateInvestmentMetrics,
   getCombinedQueryRange,
@@ -42,6 +43,15 @@ interface RawAccount {
   type?: string | null;
 }
 
+interface RawTransfer {
+  id?: string | null;
+  amount?: number | string | null;
+  transfer_date?: string | null;
+  deleted_at?: string | null;
+  from_account?: RawAccount | RawAccount[] | null;
+  to_account?: RawAccount | RawAccount[] | null;
+}
+
 interface RawInvestment {
   id?: string | null;
   name?: string | null;
@@ -70,6 +80,10 @@ function titleCase(value: string) {
     .replace(/_/g, " ")
     .replace(/-/g, " ")
     .replace(/\b\w/g, (char) => char.toUpperCase());
+}
+
+function firstRelation<T>(value: T | T[] | null | undefined): T | null {
+  return Array.isArray(value) ? (value[0] ?? null) : (value ?? null);
 }
 
 function getCategoryDetail(
@@ -129,6 +143,41 @@ function sanitizeTransactions(
   });
 }
 
+function sanitizeTransfers(rows: RawTransfer[]) {
+  return rows.flatMap<AnalyticsTransferData>((transfer) => {
+    const id = transfer.id?.trim();
+    const date = parseDateKey(transfer.transfer_date);
+    const amount = toFiniteNumber(transfer.amount);
+    const from = firstRelation(transfer.from_account);
+    const to = firstRelation(transfer.to_account);
+    const fromAccountId = from?.id?.trim() || null;
+    const toAccountId = to?.id?.trim() || null;
+
+    if (
+      transfer.deleted_at ||
+      !id ||
+      !date ||
+      amount === null ||
+      amount <= 0 ||
+      (!fromAccountId && !toAccountId)
+    ) {
+      return [];
+    }
+
+    return [
+      {
+        id,
+        amount,
+        date: formatDateKey(date.year, date.month, date.day),
+        fromAccountId,
+        fromAccountName: from?.name?.trim() || null,
+        toAccountId,
+        toAccountName: to?.name?.trim() || null,
+      },
+    ];
+  });
+}
+
 export default async function AnalyticsPage({
   searchParams,
 }: {
@@ -139,33 +188,52 @@ export default async function AnalyticsPage({
   const parsedSearch = parseAnalyticsSearchParams((await searchParams) ?? {}, now);
   const queryRange = getCombinedQueryRange(parsedSearch.selection);
 
-  const [transactionsResult, investmentsResult, transactionCountResult] =
-    await Promise.all([
-      supabase
-        .from("transactions")
-        .select(
-          "id, amount, date, type, category_id, account_id, source_name, person_name, item_name, deleted_at, categories(id, name, color)",
-        )
-        .is("deleted_at", null)
-        .gte("date", queryRange.start)
-        .lte("date", queryRange.end)
-        .order("date", { ascending: true })
-        .order("id", { ascending: true }),
-      supabase
-        .from("investments")
-        .select(
-          "id, name, symbol, type, quantity, purchase_price, current_price, created_at",
-        )
-        .order("created_at", { ascending: false }),
-      supabase
-        .from("transactions")
-        .select("id", { count: "exact", head: true })
-        .is("deleted_at", null),
-    ]);
+  const [
+    transactionsResult,
+    transfersResult,
+    investmentsResult,
+    transactionCountResult,
+  ] = await Promise.all([
+    supabase
+      .from("transactions")
+      .select(
+        "id, amount, date, type, category_id, account_id, source_name, person_name, item_name, deleted_at, categories(id, name, color)",
+      )
+      .is("deleted_at", null)
+      .gte("date", queryRange.start)
+      .lte("date", queryRange.end)
+      .order("date", { ascending: true })
+      .order("id", { ascending: true }),
+    supabase
+      .from("account_transfers")
+      .select(
+        "id, amount, transfer_date, deleted_at, from_account:from_account_id(id, name, type), to_account:to_account_id(id, name, type)",
+      )
+      .is("deleted_at", null)
+      .gte("transfer_date", queryRange.start)
+      .lte("transfer_date", queryRange.end)
+      .order("transfer_date", { ascending: true })
+      .order("id", { ascending: true }),
+    supabase
+      .from("investments")
+      .select(
+        "id, name, symbol, type, quantity, purchase_price, current_price, created_at",
+      )
+      .order("created_at", { ascending: false }),
+    supabase
+      .from("transactions")
+      .select("id", { count: "exact", head: true })
+      .is("deleted_at", null),
+  ]);
 
   if (transactionsResult.error) {
     console.error("[analytics] Transactions query failed", {
       code: transactionsResult.error.code,
+    });
+  }
+  if (transfersResult.error) {
+    console.error("[analytics] Transfers query failed", {
+      code: transfersResult.error.code,
     });
   }
   if (investmentsResult.error) {
@@ -222,6 +290,9 @@ export default async function AnalyticsPage({
   );
 
   const transactions = sanitizeTransactions(rawTransactions, accountLookup);
+  const transfers = transfersResult.error
+    ? []
+    : sanitizeTransfers((transfersResult.data ?? []) as RawTransfer[]);
   const investments = (
     (investmentsResult.data ?? []) as RawInvestment[]
   ).flatMap<AnalyticsInvestmentData>((investment) => {
@@ -249,8 +320,10 @@ export default async function AnalyticsPage({
   return (
     <AnalyticsClient
       transactions={transactions}
+      transfers={transfers}
       investments={investments}
       transactionsStatus={transactionsResult.error ? "error" : "available"}
+      transfersStatus={transfersResult.error ? "error" : "available"}
       accountsStatus={accountStatus}
       investmentsStatus={investmentsResult.error ? "error" : "available"}
       hasAnyTransactions={
