@@ -16,7 +16,7 @@ There is no Chrome, WebView, Trusted Web Activity, or website rendering in this 
 
 ## Safety decision
 
-The development app uses `com.jamalsfinance.app.native.dev`, so it cannot overwrite the currently working TWA app. The production package will switch to `com.jamalsfinance.app` only after feature parity, data-isolation tests, signing-key verification, and migration testing pass.
+The development app uses `com.jamalsfinance.app.native.dev`, so it cannot overwrite the currently working TWA app. The production package will switch to `com.jamalsfinance.app` only after feature parity, data-isolation tests, signing-key verification, migration testing, and final visual-parity acceptance pass.
 
 ## Public client configuration
 
@@ -36,12 +36,20 @@ gradle :shared:testAndroidHostTest :androidApp:assembleDebug
 
 The same command runs in `Native foundation CI`. A successful run publishes a development-only debug APK artifact for validation.
 
-## Current milestone
+## Current milestone: v0.3.0
 
 - KMP module with Android and iOS targets
 - Typed Supabase email/password auth over Ktor
 - Refresh-token restoration
 - Secure Android Keystore session persistence
-- Native Compose login/signup shell
-- Native SwiftUI iOS shell
-- No finance feature parity claimed yet
+- Native Compose login/signup and module launcher
+- Accounts: load, create, edit, archive, restore and balance ordering
+- Transactions: income, expense, transfers, search, filters and deleted history
+- Goals: create, edit, delete, contributions, progress and contribution history
+- Payables: create, edit, delete, payment recording, repayment history and due status
+- Original-currency metadata with PKR canonical values
+- Existing database RLS, secure RPCs and financial triggers reused
+
+## Not complete yet
+
+This development milestone is not the final Play Store replacement and does not claim complete finance-feature parity or final 1:1 website visual parity. Investments, analytics, reports, AI, business modules, notifications, remaining platform integrations, release hardening and dedicated visual-parity work remain future milestones.
