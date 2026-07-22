@@ -27,8 +27,10 @@ Copy `local.properties.example` to `local.properties` and enter only the public 
 Use JDK 17, Gradle 9.3.1, Android SDK 36 and Build Tools 36.0.0.
 
 ```bash
-gradle :shared:allTests :androidApp:assembleDebug
+gradle :shared:testAndroidHostTest :androidApp:assembleDebug
 ```
+
+The same command runs in `Native foundation CI`. A successful run publishes a development-only debug APK artifact for validation.
 
 ## Current milestone
 
