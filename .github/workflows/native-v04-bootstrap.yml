@@ -1,0 +1,86 @@
+name: Native v0.4 Bootstrap
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/native-v04-bootstrap.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  materialize-and-build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - name: Checkout isolated native branch
+        uses: actions/checkout@v4
+        with:
+          ref: native-investments-analytics-v0.4
+          fetch-depth: 0
+
+      - name: Verify and materialize native sources
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat .github/native-bootstrap-v04/chunks/chunk.* > /tmp/native-v04.b64
+          test "$(wc -c < /tmp/native-v04.b64)" = "35948"
+          echo "47765719e921945d3843660f9f1be2407ef8b5d575d67f8b1916039bc6fdfd60  /tmp/native-v04.b64" | sha256sum -c -
+          base64 --decode /tmp/native-v04.b64 > /tmp/native-v04.tar.gz
+          echo "86f7c894ac3f13c5edc07de871028dec919f2cec1f22b928255f54215b9ba48d  /tmp/native-v04.tar.gz" | sha256sum -c -
+          mkdir -p /tmp/native-v04
+          tar -xzf /tmp/native-v04.tar.gz -C /tmp/native-v04
+
+          mkdir -p native/shared/src/commonMain/kotlin/com/jamalsfinance/shared/investments
+          mkdir -p native/shared/src/commonTest/kotlin/com/jamalsfinance/shared/investments
+          cp /tmp/native-v04/InvestmentsAnalyticsRepository.kt native/shared/src/commonMain/kotlin/com/jamalsfinance/shared/investments/InvestmentsAnalyticsRepository.kt
+          cp /tmp/native-v04/InvestmentsAnalyticsModelsTest.kt native/shared/src/commonTest/kotlin/com/jamalsfinance/shared/investments/InvestmentsAnalyticsModelsTest.kt
+          cp /tmp/native-v04/InvestmentsAnalyticsDashboard.kt native/androidApp/src/main/kotlin/com/jamalsfinance/nativeapp/ui/InvestmentsAnalyticsDashboard.kt
+          cp /tmp/native-v04/MainActivity.kt native/androidApp/src/main/kotlin/com/jamalsfinance/nativeapp/MainActivity.kt
+          cp /tmp/native-v04/JamalsFinanceNativeApp.kt native/androidApp/src/main/kotlin/com/jamalsfinance/nativeapp/ui/JamalsFinanceNativeApp.kt
+          cp /tmp/native-v04/NativeModuleRoot.kt native/androidApp/src/main/kotlin/com/jamalsfinance/nativeapp/ui/NativeModuleRoot.kt
+
+          python - <<'PY'
+          from pathlib import Path
+          path = Path("native/androidApp/build.gradle.kts")
+          text = path.read_text(encoding="utf-8")
+          import re
+          text = re.sub(r"versionCode\s*=\s*\d+", "versionCode = 4", text, count=1)
+          text = re.sub(r'versionName\s*=\s*"[^"]+"', 'versionName = "0.4.0-investments-analytics"', text, count=1)
+          path.write_text(text, encoding="utf-8")
+          PY
+
+          rm -rf .github/native-bootstrap-v04
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add native .github/native-bootstrap-v04
+          git commit -m "feat(native): add investments and analytics milestone"
+          git push origin HEAD:native-investments-analytics-v0.4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - uses: android-actions/setup-android@v3
+
+      - name: Install Android SDK 36
+        run: sdkmanager "platforms;android-36" "build-tools;36.0.0" "platform-tools"
+
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: "9.3.1"
+
+      - name: Run shared tests and compile Android
+        working-directory: native
+        run: gradle :shared:testAndroidHostTest :androidApp:assembleDebug --stacktrace
+
+      - name: Upload native v0.4 debug APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: jamals-finance-native-investments-analytics-v0.4.0-branch-debug
+          path: native/androidApp/build/outputs/apk/debug/androidApp-debug.apk
+          if-no-files-found: error
+          retention-days: 7
