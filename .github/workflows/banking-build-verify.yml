@@ -34,8 +34,7 @@ jobs:
           path = Path("source/components/business/BusinessTeamManager.tsx")
           source = path.read_text()
           if 'label: "Banking"' not in source:
-              marker = '''  {
-                label: "Contacts & sales",'''.replace('                ', '')
+              marker = '  {\n    label: "Contacts & sales",'
               banking = '''  {
     label: "Banking",
     permissions: [
@@ -47,16 +46,14 @@ jobs:
               if marker not in source:
                   raise SystemExit("Banking permission insertion marker not found")
               source = source.replace(marker, banking + marker, 1)
-          source = source.replace(
-              'if (role === "accountant") return ["accounting.manage", "purchases.manage", "purchases.pay", "reports.view"];',
-              'if (role === "accountant") return ["accounting.manage", "banking.manage", "purchases.manage", "purchases.pay", "reports.view"];',
-              1,
-          )
-          source = source.replace(
-              'if (role === "viewer") return ["accounting.view", "reports.view"];',
-              'if (role === "viewer") return ["accounting.view", "banking.view", "reports.view"];',
-              1,
-          )
+          accountant_old = 'if (role === "accountant") return ["accounting.manage", "purchases.manage", "purchases.pay", "reports.view"];'
+          accountant_new = 'if (role === "accountant") return ["accounting.manage", "banking.manage", "purchases.manage", "purchases.pay", "reports.view"];'
+          viewer_old = 'if (role === "viewer") return ["accounting.view", "reports.view"];'
+          viewer_new = 'if (role === "viewer") return ["accounting.view", "banking.view", "reports.view"];'
+          if accountant_old in source:
+              source = source.replace(accountant_old, accountant_new, 1)
+          if viewer_old in source:
+              source = source.replace(viewer_old, viewer_new, 1)
           path.write_text(source)
           PY
           cd source
