@@ -35,6 +35,9 @@ export default function AdminLayout({
       data-admin-shell
       className="min-h-dvh bg-background text-foreground"
     >
+      <a className="jf-skip-link" href="#admin-main">
+        Skip to admin content
+      </a>
       <header className="sticky top-0 z-40 border-b border-border/70 bg-background/88 backdrop-blur-xl">
         <div className="mx-auto flex h-16 w-full max-w-[1500px] items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
           <Link
@@ -75,7 +78,12 @@ export default function AdminLayout({
         </div>
       </header>
 
-      <main className="px-4 py-5 sm:px-6 sm:py-7 lg:px-8 lg:py-8">
+      <main
+        id="admin-main"
+        tabIndex={-1}
+        aria-label="Admin control center content"
+        className="px-4 py-5 sm:px-6 sm:py-7 lg:px-8 lg:py-8"
+      >
         {children}
       </main>
     </div>

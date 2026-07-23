@@ -1,5 +1,11 @@
 import type { Metadata } from "next";
 
+import "../auth-clean.css";
+import "../auth-clean-fixes.css";
+import "../auth-control-alignment.css";
+import "../auth-responsive-architecture.css";
+import "../auth-adornment-alignment-fix.css";
+
 export const metadata: Metadata = {
   title: "Account access",
   description: "Sign in, create an account, or recover access to Jamal's Finance.",
