@@ -11,7 +11,7 @@
 
 ## Regional pricing
 
-The application resolves every ISO country code to one of five commercial pricing tiers. Unlisted countries fall back to Tier A. These tiers are a launch pricing policy, not an official economic classification.
+The application resolves every ISO country code to one of five commercial pricing tiers. Unlisted countries fall back to the middle Tier C so a missing override does not accidentally charge the highest price. These tiers are a launch pricing policy, not an official economic classification.
 
 The UI displays a USD-equivalent preview. Paddle should remain the checkout source of truth and use automatic currency conversion plus country-specific price overrides. Billing country must be taken from the provider transaction/customer record, not trusted from a client-supplied IP or dropdown.
 
