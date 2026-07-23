@@ -1,3 +1,5 @@
+import type { AppLanguage } from "@/lib/i18n/config";
+import { resolveRequestLanguage } from "@/lib/i18n/request-language";
 import { NextRequest, NextResponse } from "next/server";
 
 import { GET as getLegacyInsights } from "../route";
@@ -5,6 +7,37 @@ import { GET as getLegacyInsights } from "../route";
 export const dynamic = "force-dynamic";
 
 type UnknownRecord = Record<string, unknown>;
+
+const COPY: Record<
+  AppLanguage,
+  { authRequired: string; emptyMessage: string }
+> = {
+  en: {
+    authRequired: "Please log in before using AI insights.",
+    emptyMessage:
+      "Add or refresh finance records to build your personalized briefing.",
+  },
+  ur: {
+    authRequired: "AI Insights استعمال کرنے سے پہلے لاگ اِن کریں۔",
+    emptyMessage:
+      "اپنی ذاتی مالی بریفنگ بنانے کے لیے مالی ریکارڈ شامل یا تازہ کریں۔",
+  },
+  ar: {
+    authRequired: "يرجى تسجيل الدخول قبل استخدام AI Insights.",
+    emptyMessage:
+      "أضف السجلات المالية أو حدّثها لإنشاء موجزك المالي المخصص.",
+  },
+  hi: {
+    authRequired: "AI Insights उपयोग करने से पहले लॉग इन करें।",
+    emptyMessage:
+      "अपनी व्यक्तिगत वित्तीय ब्रीफिंग बनाने के लिए वित्त रिकॉर्ड जोड़ें या रीफ्रेश करें।",
+  },
+  es: {
+    authRequired: "Inicia sesión antes de usar AI Insights.",
+    emptyMessage:
+      "Añade o actualiza registros financieros para crear tu informe personalizado.",
+  },
+};
 
 function isRecord(value: unknown): value is UnknownRecord {
   return typeof value === "object" && value !== null;
@@ -73,11 +106,10 @@ function emptyFinanceSummary() {
   };
 }
 
-function gracefulBriefingFallback() {
+function gracefulBriefingFallback(language: AppLanguage) {
   return safeJson({
     empty: true,
-    message:
-      "Your finance workspace is available. Add or refresh finance records to build a personalized briefing.",
+    message: COPY[language].emptyMessage,
     provider: "local-calculator",
     model: "finance-briefing-fallback-v1",
     aiAvailable: true,
@@ -91,6 +123,9 @@ function gracefulBriefingFallback() {
 }
 
 export async function GET(request: NextRequest) {
+  const language = resolveRequestLanguage(request);
+  const copy = COPY[language.code];
+
   try {
     const legacyResponse = await getLegacyInsights(request);
     const payload = (await legacyResponse.json().catch(() => null)) as unknown;
@@ -100,13 +135,13 @@ export async function GET(request: NextRequest) {
         return safeJson(
           {
             error: "authentication_required",
-            message: "Please log in before using AI insights.",
+            message: copy.authRequired,
           },
           401,
         );
       }
 
-      return gracefulBriefingFallback();
+      return gracefulBriefingFallback(language.code);
     }
 
     const providerAvailable = payload.aiAvailable === true;
@@ -118,7 +153,11 @@ export async function GET(request: NextRequest) {
         : "local-calculation",
     };
 
-    delete sanitized.message;
+    if (payload.empty === true) {
+      sanitized.message = copy.emptyMessage;
+    } else {
+      delete sanitized.message;
+    }
 
     return safeJson(sanitized);
   } catch (error) {
@@ -127,6 +166,6 @@ export async function GET(request: NextRequest) {
       message: error instanceof Error ? error.message : undefined,
     });
 
-    return gracefulBriefingFallback();
+    return gracefulBriefingFallback(language.code);
   }
 }
