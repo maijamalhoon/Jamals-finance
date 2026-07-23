@@ -65,30 +65,12 @@ const contentSecurityPolicy = [
 ].join("; ");
 
 const securityHeaders = [
-  {
-    key: "X-DNS-Prefetch-Control",
-    value: "on",
-  },
-  {
-    key: "X-Content-Type-Options",
-    value: "nosniff",
-  },
-  {
-    key: "Referrer-Policy",
-    value: "strict-origin-when-cross-origin",
-  },
-  {
-    key: "X-Frame-Options",
-    value: "DENY",
-  },
-  {
-    key: "Cross-Origin-Opener-Policy",
-    value: "same-origin-allow-popups",
-  },
-  {
-    key: "Cross-Origin-Resource-Policy",
-    value: "same-site",
-  },
+  { key: "X-DNS-Prefetch-Control", value: "on" },
+  { key: "X-Content-Type-Options", value: "nosniff" },
+  { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+  { key: "X-Frame-Options", value: "DENY" },
+  { key: "Cross-Origin-Opener-Policy", value: "same-origin-allow-popups" },
+  { key: "Cross-Origin-Resource-Policy", value: "same-site" },
   {
     key: "Permissions-Policy",
     value:
@@ -98,40 +80,19 @@ const securityHeaders = [
     key: "Strict-Transport-Security",
     value: "max-age=63072000; includeSubDomains; preload",
   },
-  {
-    key: "Content-Security-Policy",
-    value: contentSecurityPolicy,
-  },
+  { key: "Content-Security-Policy", value: contentSecurityPolicy },
 ];
 
 const privateNoStoreHeaders = [
-  {
-    key: "Cache-Control",
-    value: "private, no-store, max-age=0, must-revalidate",
-  },
-  {
-    key: "CDN-Cache-Control",
-    value: "no-store",
-  },
-  {
-    key: "Vercel-CDN-Cache-Control",
-    value: "no-store",
-  },
-  {
-    key: "Pragma",
-    value: "no-cache",
-  },
-  {
-    key: "Expires",
-    value: "0",
-  },
+  { key: "Cache-Control", value: "private, no-store, max-age=0, must-revalidate" },
+  { key: "CDN-Cache-Control", value: "no-store" },
+  { key: "Vercel-CDN-Cache-Control", value: "no-store" },
+  { key: "Pragma", value: "no-cache" },
+  { key: "Expires", value: "0" },
 ];
 
 const assetSearchCacheHeaders = [
-  {
-    key: "Cache-Control",
-    value: "public, max-age=0, must-revalidate",
-  },
+  { key: "Cache-Control", value: "public, max-age=0, must-revalidate" },
   {
     key: "CDN-Cache-Control",
     value: "public, s-maxage=300, stale-while-revalidate=1800",
@@ -143,10 +104,7 @@ const assetSearchCacheHeaders = [
 ];
 
 const stockMarketCacheHeaders = [
-  {
-    key: "Cache-Control",
-    value: "public, max-age=0, must-revalidate",
-  },
+  { key: "Cache-Control", value: "public, max-age=0, must-revalidate" },
   {
     key: "CDN-Cache-Control",
     value: "public, s-maxage=60, stale-while-revalidate=300",
@@ -158,10 +116,7 @@ const stockMarketCacheHeaders = [
 ];
 
 const forexMarketCacheHeaders = [
-  {
-    key: "Cache-Control",
-    value: "public, max-age=0, must-revalidate",
-  },
+  { key: "Cache-Control", value: "public, max-age=0, must-revalidate" },
   {
     key: "CDN-Cache-Control",
     value: "public, s-maxage=60, stale-while-revalidate=300",
@@ -185,6 +140,11 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  turbopack: {
+    resolveAlias: {
+      "lucide-react": jalvoroLucideRuntime,
+    },
+  },
   webpack(config) {
     config.resolve = config.resolve ?? {};
     config.resolve.alias = {
@@ -199,48 +159,18 @@ const nextConfig: NextConfig = {
         source: "/sw.js",
         headers: [
           ...securityHeaders,
-          {
-            key: "Cache-Control",
-            value: "public, max-age=0, must-revalidate",
-          },
-          {
-            key: "Service-Worker-Allowed",
-            value: "/",
-          },
+          { key: "Cache-Control", value: "public, max-age=0, must-revalidate" },
+          { key: "Service-Worker-Allowed", value: "/" },
         ],
       },
-      {
-        source: "/dashboard/:path*",
-        headers: privateNoStoreHeaders,
-      },
-      {
-        source: "/api/:path*",
-        headers: privateNoStoreHeaders,
-      },
-      {
-        source: "/api/market/asset-search",
-        headers: assetSearchCacheHeaders,
-      },
-      {
-        source: "/api/market/stock-prices",
-        headers: stockMarketCacheHeaders,
-      },
-      {
-        source: "/api/market/forex-prices",
-        headers: forexMarketCacheHeaders,
-      },
-      {
-        source: "/onboarding",
-        headers: privateNoStoreHeaders,
-      },
-      {
-        source: "/reset-password",
-        headers: privateNoStoreHeaders,
-      },
-      {
-        source: "/:path*",
-        headers: securityHeaders,
-      },
+      { source: "/dashboard/:path*", headers: privateNoStoreHeaders },
+      { source: "/api/:path*", headers: privateNoStoreHeaders },
+      { source: "/api/market/asset-search", headers: assetSearchCacheHeaders },
+      { source: "/api/market/stock-prices", headers: stockMarketCacheHeaders },
+      { source: "/api/market/forex-prices", headers: forexMarketCacheHeaders },
+      { source: "/onboarding", headers: privateNoStoreHeaders },
+      { source: "/reset-password", headers: privateNoStoreHeaders },
+      { source: "/:path*", headers: securityHeaders },
     ];
   },
 };
