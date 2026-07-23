@@ -86,7 +86,7 @@ export default function PWARegister() {
   useEffect(() => {
     let cancelled = false;
     let idleHandle: number | null = null;
-    let fallbackHandle: ReturnType<typeof window.setTimeout> | null = null;
+    let fallbackHandle: number | null = null;
 
     const enableDeferredRuntime = () => {
       idleHandle = null;
