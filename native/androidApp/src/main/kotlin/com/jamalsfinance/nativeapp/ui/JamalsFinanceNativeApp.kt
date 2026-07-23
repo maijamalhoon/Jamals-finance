@@ -36,6 +36,7 @@ import com.jamalsfinance.shared.auth.AuthState
 import com.jamalsfinance.shared.finance.FinanceRepository
 import com.jamalsfinance.shared.goals.GoalsPayablesRepository
 import com.jamalsfinance.shared.investments.InvestmentsAnalyticsRepository
+import com.jamalsfinance.shared.personal.PersonalPlatformRepository
 import com.jamalsfinance.shared.reports.ReportsInsightsRepository
 import kotlinx.coroutines.launch
 
@@ -46,15 +47,19 @@ fun JamalsFinanceNativeApp(
     goalsPayablesRepository: GoalsPayablesRepository?,
     investmentsAnalyticsRepository: InvestmentsAnalyticsRepository?,
     reportsInsightsRepository: ReportsInsightsRepository?,
+    personalPlatformRepository: PersonalPlatformRepository?,
+    nativePreferences: AndroidNativePreferences,
 ) {
-    JamalsFinanceTheme {
+    val localPreferences by nativePreferences.state.collectAsStateWithLifecycle()
+    JamalsFinanceTheme(themeMode = localPreferences.themeMode) {
         Surface(modifier = Modifier.fillMaxSize()) {
             if (
                 authRepository == null ||
                 financeRepository == null ||
                 goalsPayablesRepository == null ||
                 investmentsAnalyticsRepository == null ||
-                reportsInsightsRepository == null
+                reportsInsightsRepository == null ||
+                personalPlatformRepository == null
             ) {
                 ConfigurationRequired()
             } else {
@@ -69,6 +74,8 @@ fun JamalsFinanceNativeApp(
                         goalsPayablesRepository = goalsPayablesRepository,
                         investmentsAnalyticsRepository = investmentsAnalyticsRepository,
                         reportsInsightsRepository = reportsInsightsRepository,
+                        personalPlatformRepository = personalPlatformRepository,
+                        nativePreferences = nativePreferences,
                         onSignOut = { authRepository.signOut() },
                     )
                     is AuthState.Failure -> LoginScreen(authRepository, current.message)
@@ -93,7 +100,7 @@ private fun LoginScreen(repository: AuthRepository, initialMessage: String? = nu
         ) {
             Text("Jamal's Finance", style = MaterialTheme.typography.headlineMedium)
             Text(
-                "True native finance",
+                "True native personal finance",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
