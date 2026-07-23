@@ -32,12 +32,12 @@ Calculating task graph as no cached configuration is available for tasks: :share
 > Task :androidApp:extractDeepLinksDebug FROM-CACHE
 > Task :shared:processAndroidMainManifest FROM-CACHE
 > Task :androidApp:mergeDebugResources FROM-CACHE
+> Task :androidApp:processDebugMainManifest
 > Task :androidApp:checkDebugDuplicateClasses
 > Task :androidApp:mergeDebugJniLibFolders
 > Task :shared:mergeAndroidMainJniLibFolders
 > Task :shared:mergeAndroidMainNativeLibs NO-SOURCE
 > Task :shared:copyAndroidMainJniLibsProjectOnly
-> Task :androidApp:processDebugMainManifest
 > Task :androidApp:processDebugManifest
 > Task :androidApp:processDebugManifestForPackage
 > Task :androidApp:mergeDebugNativeLibs
@@ -73,11 +73,11 @@ w: file:///home/runner/work/Jamals-finance/Jamals-finance/native/androidApp/src/
 > Task :androidApp:packageDebug
 > Task :androidApp:assembleDebug
 > Task :androidApp:createDebugApkListingFileRedirect
-gradle/actions: Writing build results to /home/runner/work/_temp/.gradle-actions/build-results/native_build-1784793329908.json
+gradle/actions: Writing build results to /home/runner/work/_temp/.gradle-actions/build-results/native_build-1784795963653.json
 
 [Incubating] Problems report is available at: file:///home/runner/work/Jamals-finance/Jamals-finance/native/build/reports/problems/problems-report.html
 
-BUILD SUCCESSFUL in 1m 26s
+BUILD SUCCESSFUL in 1m 27s
 51 actionable tasks: 38 executed, 13 from cache
 Configuration cache entry stored.
 
@@ -113,12 +113,12 @@ Calculating task graph as no cached configuration is available for tasks: :share
 > Task :androidApp:extractDeepLinksDebug FROM-CACHE
 > Task :shared:processAndroidMainManifest FROM-CACHE
 > Task :androidApp:mergeDebugResources FROM-CACHE
+> Task :androidApp:processDebugMainManifest
 > Task :androidApp:checkDebugDuplicateClasses
 > Task :androidApp:mergeDebugJniLibFolders
 > Task :shared:mergeAndroidMainJniLibFolders
 > Task :shared:mergeAndroidMainNativeLibs NO-SOURCE
 > Task :shared:copyAndroidMainJniLibsProjectOnly
-> Task :androidApp:processDebugMainManifest
 > Task :androidApp:processDebugManifest
 > Task :androidApp:processDebugManifestForPackage
 > Task :androidApp:mergeDebugNativeLibs
@@ -154,10 +154,10 @@ w: file:///home/runner/work/Jamals-finance/Jamals-finance/native/androidApp/src/
 > Task :androidApp:packageDebug
 > Task :androidApp:assembleDebug
 > Task :androidApp:createDebugApkListingFileRedirect
-gradle/actions: Writing build results to /home/runner/work/_temp/.gradle-actions/build-results/native_build-1784793329908.json
+gradle/actions: Writing build results to /home/runner/work/_temp/.gradle-actions/build-results/native_build-1784795963653.json
 
 [Incubating] Problems report is available at: file:///home/runner/work/Jamals-finance/Jamals-finance/native/build/reports/problems/problems-report.html
 
-BUILD SUCCESSFUL in 1m 26s
+BUILD SUCCESSFUL in 1m 27s
 51 actionable tasks: 38 executed, 13 from cache
 Configuration cache entry stored.
