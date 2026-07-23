@@ -12,8 +12,9 @@ export type SubscriptionStatus =
   | "active"
   | "past_due"
   | "paused"
-  | "canceled"
-  | "expired";
+  | "cancelled"
+  | "expired"
+  | "incomplete";
 
 export type FeatureKey =
   | "core_tracking"
