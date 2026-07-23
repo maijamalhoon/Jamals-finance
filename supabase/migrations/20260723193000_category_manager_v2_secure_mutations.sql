@@ -9,7 +9,7 @@ create table if not exists public.category_mutation_requests (
   user_id uuid not null references auth.users(id) on delete cascade,
   request_key uuid not null,
   operation text not null check (operation in ('create', 'update', 'archive', 'delete')),
-  category_id uuid null references public.categories(id) on delete set null,
+  category_id uuid null,
   created_at timestamptz not null default now(),
   primary key (user_id, request_key)
 );
@@ -34,6 +34,7 @@ declare
   v_user_id uuid := auth.uid();
   v_name text := btrim(coalesce(p_name, ''));
   v_existing_id uuid;
+  v_existing_operation text;
   v_category public.categories;
 begin
   if v_user_id is null then
@@ -58,12 +59,15 @@ begin
 
   perform pg_advisory_xact_lock(hashtextextended(v_user_id::text || ':' || p_request_key::text, 0));
 
-  select request.category_id
-    into v_existing_id
+  select request.operation, request.category_id
+    into v_existing_operation, v_existing_id
   from public.category_mutation_requests request
   where request.user_id = v_user_id
-    and request.request_key = p_request_key
-    and request.operation = 'create';
+    and request.request_key = p_request_key;
+
+  if found and v_existing_operation <> 'create' then
+    raise exception 'Mutation request key was already used.' using errcode = '23505';
+  end if;
 
   if v_existing_id is not null then
     select category.* into v_category
@@ -159,6 +163,8 @@ declare
   v_updated public.categories;
   v_usage_count bigint;
   v_child_count bigint;
+  v_existing_operation text;
+  v_existing_id uuid;
 begin
   if v_user_id is null then
     raise exception 'Authentication required.' using errcode = '42501';
@@ -182,6 +188,27 @@ begin
 
   perform pg_advisory_xact_lock(hashtextextended(v_user_id::text || ':' || p_request_key::text, 0));
 
+  select request.operation, request.category_id
+    into v_existing_operation, v_existing_id
+  from public.category_mutation_requests request
+  where request.user_id = v_user_id
+    and request.request_key = p_request_key;
+
+  if found then
+    if v_existing_operation <> 'update' then
+      raise exception 'Mutation request key was already used.' using errcode = '23505';
+    end if;
+
+    select category.* into v_updated
+    from public.categories category
+    where category.id = v_existing_id
+      and category.user_id = v_user_id;
+
+    if found then
+      return v_updated;
+    end if;
+  end if;
+
   select category.* into v_current
   from public.categories category
   where category.id = p_category_id
@@ -194,9 +221,9 @@ begin
   end if;
 
   select count(*) into v_usage_count
-  from public.transactions transaction
-  where transaction.user_id = v_user_id
-    and transaction.category_id = p_category_id;
+  from public.transactions txn
+  where txn.user_id = v_user_id
+    and txn.category_id = p_category_id;
 
   select count(*) into v_child_count
   from public.categories child
@@ -269,12 +296,27 @@ as $$
 declare
   v_user_id uuid := auth.uid();
   v_category_id uuid;
+  v_existing_operation text;
+  v_existing_id uuid;
 begin
   if v_user_id is null then
     raise exception 'Authentication required.' using errcode = '42501';
   end if;
 
   perform pg_advisory_xact_lock(hashtextextended(v_user_id::text || ':' || p_request_key::text, 0));
+
+  select request.operation, request.category_id
+    into v_existing_operation, v_existing_id
+  from public.category_mutation_requests request
+  where request.user_id = v_user_id
+    and request.request_key = p_request_key;
+
+  if found then
+    if v_existing_operation <> 'archive' then
+      raise exception 'Mutation request key was already used.' using errcode = '23505';
+    end if;
+    return v_existing_id;
+  end if;
 
   update public.categories category
   set archived_at = coalesce(category.archived_at, now())
@@ -319,12 +361,27 @@ declare
   v_category_id uuid;
   v_usage_count bigint;
   v_child_count bigint;
+  v_existing_operation text;
+  v_existing_id uuid;
 begin
   if v_user_id is null then
     raise exception 'Authentication required.' using errcode = '42501';
   end if;
 
   perform pg_advisory_xact_lock(hashtextextended(v_user_id::text || ':' || p_request_key::text, 0));
+
+  select request.operation, request.category_id
+    into v_existing_operation, v_existing_id
+  from public.category_mutation_requests request
+  where request.user_id = v_user_id
+    and request.request_key = p_request_key;
+
+  if found then
+    if v_existing_operation <> 'delete' then
+      raise exception 'Mutation request key was already used.' using errcode = '23505';
+    end if;
+    return v_existing_id;
+  end if;
 
   select category.id into v_category_id
   from public.categories category
@@ -337,9 +394,9 @@ begin
   end if;
 
   select count(*) into v_usage_count
-  from public.transactions transaction
-  where transaction.user_id = v_user_id
-    and transaction.category_id = p_category_id;
+  from public.transactions txn
+  where txn.user_id = v_user_id
+    and txn.category_id = p_category_id;
 
   select count(*) into v_child_count
   from public.categories child
@@ -364,7 +421,7 @@ begin
     operation,
     category_id
   )
-  values (v_user_id, p_request_key, 'delete', null)
+  values (v_user_id, p_request_key, 'delete', v_category_id)
   on conflict (user_id, request_key) do nothing;
 
   return v_category_id;
