@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 96" role="img" aria-label="JALVORO temporary wordmark">
+  <rect width="96" height="96" rx="24" fill="#07365F"/>
+  <path d="M27 26v27c0 12 8 18 21 18s21-6 21-18V26" fill="none" stroke="#FFFFFF" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M33 46l15 15 15-15" fill="none" stroke="#7DD3FC" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="122" y="63" font-family="Arial, Helvetica, sans-serif" font-size="48" font-weight="800" letter-spacing="4" fill="#07365F">JALVORO</text>
+</svg>
