@@ -1,0 +1,2 @@
+Isolated staging preview retry for the safe load-test branch.
+Production data, production environment variables, and production routes are not targeted.
