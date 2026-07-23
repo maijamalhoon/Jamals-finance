@@ -1,7 +1,17 @@
 "use client";
 
 import type { CSSProperties, ReactNode } from "react";
-import { useLayoutEffect, useRef, useState } from "react";
+import {
+  Children,
+  cloneElement,
+  isValidElement,
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from "react";
+import { Pie } from "recharts";
 
 type ChartSize = {
   width: number;
@@ -17,8 +27,16 @@ type ChartFrameProps = {
   tone?: string;
 };
 
+type ChartElementProps = {
+  children?: ReactNode;
+  isAnimationActive?: boolean;
+  onAnimationEnd?: () => void;
+};
+
 const MIN_RENDER_WIDTH = 32;
 const MIN_RENDER_HEIGHT = 32;
+const LIVE_PORTFOLIO_FRAME_TOKEN = "!overflow-visible";
+const PIE_ANIMATION_SAFETY_MS = 850;
 
 function getElementSize(element: HTMLDivElement | null): ChartSize {
   if (!element) {
@@ -40,6 +58,45 @@ function isRenderableSize(size: ChartSize) {
   return size.width >= MIN_RENDER_WIDTH && size.height >= MIN_RENDER_HEIGHT;
 }
 
+function stabilizePieAnimation(
+  node: ReactNode,
+  animationActive: boolean,
+  completeAnimation: () => void,
+): ReactNode {
+  return Children.map(node, (child) => {
+    if (!isValidElement<ChartElementProps>(child)) return child;
+
+    const nestedChildren =
+      child.props.children === undefined ?
+        child.props.children
+      : stabilizePieAnimation(
+          child.props.children,
+          animationActive,
+          completeAnimation,
+        );
+
+    if (child.type === Pie) {
+      const originalAnimationEnd = child.props.onAnimationEnd;
+
+      return cloneElement(child, {
+        children: nestedChildren,
+        isAnimationActive:
+          child.props.isAnimationActive !== false && animationActive,
+        onAnimationEnd: () => {
+          originalAnimationEnd?.();
+          completeAnimation();
+        },
+      });
+    }
+
+    if (nestedChildren !== child.props.children) {
+      return cloneElement(child, { children: nestedChildren });
+    }
+
+    return child;
+  });
+}
+
 export default function ChartFrame({
   children,
   className = "",
@@ -48,11 +105,19 @@ export default function ChartFrame({
 }: ChartFrameProps) {
   const frameRef = useRef<HTMLDivElement | null>(null);
   const resizeFrameRef = useRef<number | null>(null);
+  const shouldStabilizeLivePortfolioPie = className.includes(
+    LIVE_PORTFOLIO_FRAME_TOKEN,
+  );
+  const [pieAnimationComplete, setPieAnimationComplete] = useState(false);
 
   const [size, setSize] = useState<ChartSize>({
     width: 0,
     height: 0,
   });
+
+  const completePieAnimation = useCallback(() => {
+    setPieAnimationComplete(true);
+  }, []);
 
   useLayoutEffect(() => {
     const element = frameRef.current;
@@ -114,10 +179,42 @@ export default function ChartFrame({
 
   const isReady = isRenderableSize(size);
 
+  useEffect(() => {
+    if (
+      !shouldStabilizeLivePortfolioPie ||
+      !isReady ||
+      pieAnimationComplete
+    ) {
+      return;
+    }
+
+    // A live price can arrive before Recharts reports animation completion.
+    // This fixed window prevents those updates from restarting the entrance
+    // animation indefinitely while preserving the authored first animation.
+    const timer = window.setTimeout(
+      completePieAnimation,
+      PIE_ANIMATION_SAFETY_MS,
+    );
+    return () => window.clearTimeout(timer);
+  }, [
+    completePieAnimation,
+    isReady,
+    pieAnimationComplete,
+    shouldStabilizeLivePortfolioPie,
+  ]);
+
   let content: ReactNode = null;
 
   if (isReady) {
     content = typeof children === "function" ? children(size) : children;
+
+    if (shouldStabilizeLivePortfolioPie) {
+      content = stabilizePieAnimation(
+        content,
+        !pieAnimationComplete,
+        completePieAnimation,
+      );
+    }
   }
 
   return (
