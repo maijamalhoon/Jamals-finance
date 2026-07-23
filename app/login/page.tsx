@@ -29,6 +29,11 @@ import {
 } from "@/components/auth/AuthControls";
 import AuthShell from "@/components/auth/AuthShell";
 import { Button } from "@/components/ui/button";
+import { checkPasswordProtection } from "@/lib/auth/password-protection";
+import {
+  PASSWORD_MIN_LENGTH,
+  validatePasswordPolicy,
+} from "@/lib/auth/password-policy";
 import { createClient } from "@/lib/supabase/client";
 import {
   normalizeLoginReason,
@@ -479,14 +484,22 @@ export default function LoginPage() {
     const nextEmail = validateEmailAddress();
     if (!nextEmail) return;
 
-    if (!password || password.length < 6) {
-      setFieldError("password", "Use at least 6 characters.");
+    const passwordPolicy = validatePasswordPolicy(password);
+    if (!passwordPolicy.ok) {
+      setFieldError("password", passwordPolicy.error);
       return;
     }
 
     if (!ensureOnline() || !beginAction("creating")) return;
 
     try {
+      const passwordProtection = await checkPasswordProtection(password);
+      if (!passwordProtection.ok) {
+        endAction();
+        setFieldError("password", passwordProtection.error);
+        return;
+      }
+
       const { data, error: signUpError } = await supabase.auth.signUp({
         email: nextEmail,
         password,
@@ -968,12 +981,15 @@ export default function LoginPage() {
               autoComplete="new-password"
               disabled={isLoading}
               error={fieldErrors.password}
-              helper="Use at least 6 characters. Additional account policy is checked when you submit."
+              helper={`Use at least ${PASSWORD_MIN_LENGTH} characters with a letter and a number or symbol. Known breached passwords are rejected on submit.`}
               inputRef={passwordRef}
               icon={<LockKeyhole className="h-4 w-4" />}
             />
 
-            <AuthPasswordRequirements password={password} minimumLength={6} />
+            <AuthPasswordRequirements
+              password={password}
+              minimumLength={PASSWORD_MIN_LENGTH}
+            />
 
             {formErrorFeedback}
 

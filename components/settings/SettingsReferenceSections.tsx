@@ -27,6 +27,7 @@ import { toast } from "sonner";
 import { useCurrency } from "@/components/currency/CurrencyProvider";
 import type { PersistentSettingsCategory } from "@/components/settings/CategoryManagementExperience";
 import { Button } from "@/components/ui/button";
+import { checkPasswordProtection } from "@/lib/auth/password-protection";
 import {
   Dialog,
   DialogContent,
@@ -438,6 +439,19 @@ function AccountSecurityDialog({ email }: { email: string }) {
 
     setIsUpdatingPassword(true);
     setPasswordFeedback(null);
+
+    const passwordProtection = await checkPasswordProtection(
+      validation.value.newPassword,
+    );
+    if (!passwordProtection.ok) {
+      setIsUpdatingPassword(false);
+      setPasswordFeedback({
+        tone: "error",
+        message: passwordProtection.error,
+      });
+      return;
+    }
+
     const { error } = await supabase.auth.updateUser({
       password: validation.value.newPassword,
       nonce: validation.value.verificationCode,
@@ -550,7 +564,7 @@ function AccountSecurityDialog({ email }: { email: string }) {
                       autoComplete="new-password"
                       value={newPassword}
                       onChange={(event) => setNewPassword(event.target.value)}
-                      placeholder="Minimum 8 characters"
+                      placeholder="Minimum 12 characters"
                       className="pr-12"
                     />
                     <button
