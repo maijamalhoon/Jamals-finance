@@ -1,3 +1,4 @@
+import AIConsentGate from "@/components/ai-insights/AIConsentGate";
 import InsightsPanel from "@/components/ai-insights/InsightsPanel";
 
 export const dynamic = "force-dynamic";
@@ -8,7 +9,9 @@ export default function AIInsightsPage() {
       data-ai-insights-page
       className="mx-auto w-full max-w-[1600px] min-w-0 pb-8"
     >
-      <InsightsPanel />
+      <AIConsentGate>
+        <InsightsPanel />
+      </AIConsentGate>
     </div>
   );
 }
