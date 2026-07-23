@@ -12,12 +12,18 @@ import {
   UserRound,
   Users,
 } from "lucide-react";
-import { useEffect, useMemo, useState, type ChangeEvent } from "react";
+import {
+  useEffect,
+  useMemo,
+  useState,
+  type ChangeEvent,
+  type ReactNode,
+} from "react";
 
 import {
-  BUSINESS_MODULES,
   BUSINESS_PLAN_ORDER,
   BUSINESS_PLANS,
+  BUSINESS_SYSTEMS,
   BUSINESS_TRIAL_LENGTH_DAYS,
   getBusinessAnnualSavingsPercent,
   getBusinessPlanPrice,
@@ -46,20 +52,20 @@ const PERSONAL_FEATURE_COPY: Record<string, string> = {
   csv_export: "CSV data export",
   advanced_reports: "Advanced reports",
   advanced_analytics: "Advanced analytics",
-  ai_insights: "Monthly AI insight allowance",
+  ai_insights: "Monthly personal AI insight allowance",
   forecasting: "Financial forecasting",
   priority_support: "Priority support",
 };
 
 const BUSINESS_FEATURE_COPY: Record<string, string> = {
-  business_core: "Core business finance and operations",
+  business_core: "Nature-specific business system",
   invoicing: "Invoices and sales records",
   expenses: "Business expenses and purchases",
   contacts: "Customers and suppliers",
   basic_reports: "Essential business reports",
-  advanced_reports: "Advanced reporting",
-  inventory_ready: "Inventory module ready",
-  crm_ready: "CRM module ready",
+  advanced_reports: "Advanced business reporting",
+  inventory_ready: "Inventory workflows where relevant",
+  crm_ready: "CRM workflows where relevant",
   branch_management: "Multiple branches",
   department_controls: "Departments and operating controls",
   approval_workflows: "Approval workflows",
@@ -67,10 +73,13 @@ const BUSINESS_FEATURE_COPY: Record<string, string> = {
   api_access: "API access",
   consolidated_reporting: "Group-level consolidated reporting",
   priority_support: "Priority support",
-  ai_insights: "Monthly business AI allowance",
 };
 
 const SUPPORTED_COUNTRIES = new Set<string>(SUPPORTED_COUNTRY_CODES);
+
+type RegionalPricingProps = {
+  initialCountryCode?: string | null;
+};
 
 function normalizeCountryCode(value?: string | null): string | null {
   const normalized = value?.trim().toUpperCase();
@@ -85,25 +94,21 @@ function detectBrowserCountry(): string | null {
       const region = normalizeCountryCode(new Intl.Locale(locale).region);
       if (region) return region;
     } catch {
-      // Continue through the browser's remaining locale preferences.
+      // Continue through the browser locale list.
     }
   }
 
   return null;
 }
 
-type RegionalPricingProps = {
-  initialCountryCode?: string | null;
-};
-
-function PricingButton({
+function ChoiceButton({
   href,
   featured,
   children,
 }: {
   href: string;
   featured?: boolean;
-  children: React.ReactNode;
+  children: ReactNode;
 }) {
   return (
     <Link
@@ -119,7 +124,41 @@ function PricingButton({
   );
 }
 
-function PersonalPlanCards({
+function FeatureList({
+  features,
+  copy,
+}: {
+  features: Record<string, boolean | number | undefined>;
+  copy: Record<string, string>;
+}) {
+  return (
+    <ul className="mb-6 flex-1 space-y-3 text-sm text-text-secondary">
+      {Object.entries(features)
+        .filter(
+          ([, allowance]) =>
+            allowance === true ||
+            (typeof allowance === "number" && allowance > 0),
+        )
+        .slice(0, 9)
+        .map(([feature, allowance]) => (
+          <li key={feature} className="flex gap-2">
+            <Check
+              className="mt-0.5 size-4 shrink-0 text-success"
+              aria-hidden="true"
+            />
+            <span>
+              {copy[feature] ?? feature}
+              {typeof allowance === "number"
+                ? ` (${allowance}/month)`
+                : ""}
+            </span>
+          </li>
+        ))}
+    </ul>
+  );
+}
+
+function PersonalPricing({
   countryCode,
   billingCycle,
 }: {
@@ -196,41 +235,19 @@ function PersonalPlanCards({
                     /{billingCycle === "annual" ? "year" : "month"}
                   </span>
                 </div>
-                {billingCycle === "annual" && paidPlanKey ? (
-                  <p className="mt-1 text-xs font-semibold text-success">
-                    Save about {savings}% annually
-                  </p>
-                ) : (
-                  <p className="mt-1 text-xs text-text-muted">
-                    Taxes shown before payment
-                  </p>
-                )}
+                <p className="mt-1 text-xs text-text-muted">
+                  {billingCycle === "annual" && paidPlanKey
+                    ? `Save about ${savings}% annually`
+                    : "Taxes shown before payment"}
+                </p>
               </div>
 
-              <ul className="mb-6 flex-1 space-y-3 text-sm text-text-secondary">
-                {Object.entries(plan.features)
-                  .filter(
-                    ([, allowance]) =>
-                      allowance === true ||
-                      (typeof allowance === "number" && allowance > 0),
-                  )
-                  .map(([feature, allowance]) => (
-                    <li key={feature} className="flex gap-2">
-                      <Check
-                        className="mt-0.5 size-4 shrink-0 text-success"
-                        aria-hidden="true"
-                      />
-                      <span>
-                        {PERSONAL_FEATURE_COPY[feature] ?? feature}
-                        {typeof allowance === "number"
-                          ? ` (${allowance}/month)`
-                          : ""}
-                      </span>
-                    </li>
-                  ))}
-              </ul>
+              <FeatureList
+                features={plan.features}
+                copy={PERSONAL_FEATURE_COPY}
+              />
 
-              <PricingButton
+              <ChoiceButton
                 href={
                   planKey === "free"
                     ? "/login?mode=signup"
@@ -239,26 +256,25 @@ function PersonalPlanCards({
                 featured={plan.recommended}
               >
                 {planKey === "free"
-                  ? "Start free"
+                  ? "Continue Free"
                   : planKey === "pro"
                     ? `Try Pro for ${TRIAL_LENGTH_DAYS} days`
                     : `Choose ${plan.name}`}
-              </PricingButton>
+              </ChoiceButton>
             </article>
           );
         })}
       </section>
 
       <p className="mx-auto max-w-3xl text-center text-sm leading-6 text-text-muted">
-        Personal and business money stay in separate workspaces. The personal
-        trial needs no card and never charges automatically. Student pricing
-        requires verification and renews yearly.
+        AI is available only inside the personal universe. Personal and business
+        records always remain separate.
       </p>
     </>
   );
 }
 
-function BusinessPlanIcon({ planKey }: { planKey: BusinessPlanKey }) {
+function BusinessIcon({ planKey }: { planKey: BusinessPlanKey }) {
   if (planKey === "business_free" || planKey === "solo") {
     return <UserRound className="size-5 text-success" aria-hidden="true" />;
   }
@@ -274,7 +290,133 @@ function BusinessPlanIcon({ planKey }: { planKey: BusinessPlanKey }) {
   return <Layers3 className="size-5 text-payables" aria-hidden="true" />;
 }
 
-function BusinessPlanCards({
+export function BusinessPlanGrid({
+  countryCode,
+  billingCycle,
+  businessId,
+  freeHref,
+}: {
+  countryCode: string;
+  billingCycle: BillingCycle;
+  businessId?: string;
+  freeHref?: string;
+}) {
+  return (
+    <section
+      className="grid gap-4 lg:grid-cols-3 2xl:grid-cols-6"
+      aria-label="Business subscription plans"
+    >
+      {BUSINESS_PLAN_ORDER.map((planKey) => {
+        const plan = BUSINESS_PLANS[planKey];
+        const pricedPlanKey =
+          planKey === "business_free" || planKey === "enterprise"
+            ? null
+            : (planKey as PricedBusinessPlanKey);
+        const price = pricedPlanKey
+          ? getBusinessPlanPrice(pricedPlanKey, countryCode, billingCycle)
+          : 0;
+        const savings = pricedPlanKey
+          ? getBusinessAnnualSavingsPercent(pricedPlanKey, countryCode)
+          : 0;
+        const intent = businessId
+          ? `&businessId=${encodeURIComponent(businessId)}`
+          : "";
+
+        return (
+          <article
+            key={plan.key}
+            className={`relative flex min-h-full flex-col rounded-3xl border bg-surface p-5 shadow-soft ${
+              plan.recommended
+                ? "border-primary shadow-premium"
+                : "border-border"
+            }`}
+          >
+            {plan.recommended ? (
+              <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-primary px-3 py-1 text-xs font-bold text-primary-foreground">
+                Best for growth
+              </span>
+            ) : null}
+
+            <div className="mb-5">
+              <div className="mb-3 flex items-center gap-2">
+                <BusinessIcon planKey={planKey} />
+                <h2 className="text-xl font-bold text-text-primary">
+                  {plan.name}
+                </h2>
+              </div>
+              <p className="min-h-20 text-sm leading-6 text-text-muted">
+                {plan.description}
+              </p>
+            </div>
+
+            <div className="mb-5">
+              {plan.customPricing ? (
+                <strong className="text-3xl font-extrabold text-text-primary">
+                  Custom
+                </strong>
+              ) : (
+                <div className="flex items-end gap-1">
+                  <strong className="text-3xl font-extrabold tracking-tight text-text-primary">
+                    {formatUsdPrice(price)}
+                  </strong>
+                  <span className="pb-1 text-sm text-text-muted">
+                    /{billingCycle === "annual" ? "year" : "month"}
+                  </span>
+                </div>
+              )}
+              <p className="mt-1 text-xs text-text-muted">
+                {plan.customPricing
+                  ? "Annual contract and consolidated billing"
+                  : billingCycle === "annual" && pricedPlanKey
+                    ? `Save about ${savings}% annually`
+                    : "Base workspace price"}
+              </p>
+            </div>
+
+            <div className="mb-4 grid grid-cols-2 gap-2 text-xs font-semibold text-text-secondary">
+              <span className="rounded-lg bg-surface-inset px-2 py-2">
+                {plan.includedSeats === null
+                  ? "Custom seats"
+                  : `${plan.includedSeats} seat${plan.includedSeats === 1 ? "" : "s"}`}
+              </span>
+              <span className="rounded-lg bg-surface-inset px-2 py-2">
+                {plan.includedBranches === null
+                  ? "Custom branches"
+                  : `${plan.includedBranches} branch${plan.includedBranches === 1 ? "" : "es"}`}
+              </span>
+            </div>
+
+            <FeatureList
+              features={plan.features}
+              copy={BUSINESS_FEATURE_COPY}
+            />
+
+            <ChoiceButton
+              href={
+                planKey === "business_free"
+                  ? freeHref ?? "/login?mode=signup&workspace=business"
+                  : planKey === "enterprise"
+                    ? `/login?mode=signup&workspace=business&intent=enterprise${intent}`
+                    : `/login?mode=signup&workspace=business&intent=upgrade&plan=${planKey}${intent}`
+              }
+              featured={plan.recommended}
+            >
+              {planKey === "enterprise"
+                ? "Plan enterprise rollout"
+                : planKey === "business_free"
+                  ? "Continue Free"
+                  : planKey === "growth"
+                    ? `Try Growth for ${BUSINESS_TRIAL_LENGTH_DAYS} days`
+                    : `Choose ${plan.name}`}
+            </ChoiceButton>
+          </article>
+        );
+      })}
+    </section>
+  );
+}
+
+function BusinessPricing({
   countryCode,
   billingCycle,
 }: {
@@ -283,171 +425,36 @@ function BusinessPlanCards({
 }) {
   return (
     <>
-      <section
-        className="grid gap-4 lg:grid-cols-3 2xl:grid-cols-6"
-        aria-label="Business subscription plans"
-      >
-        {BUSINESS_PLAN_ORDER.map((planKey) => {
-          const plan = BUSINESS_PLANS[planKey];
-          const pricedPlanKey =
-            planKey === "business_free" || planKey === "enterprise"
-              ? null
-              : (planKey as PricedBusinessPlanKey);
-          const price = pricedPlanKey
-            ? getBusinessPlanPrice(
-                pricedPlanKey,
-                countryCode,
-                billingCycle,
-              )
-            : 0;
-          const savings = pricedPlanKey
-            ? getBusinessAnnualSavingsPercent(pricedPlanKey, countryCode)
-            : 0;
-
-          return (
-            <article
-              key={plan.key}
-              className={`relative flex min-h-full flex-col rounded-3xl border bg-surface p-5 shadow-soft ${
-                plan.recommended
-                  ? "border-primary shadow-premium"
-                  : "border-border"
-              }`}
-            >
-              {plan.recommended ? (
-                <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-primary px-3 py-1 text-xs font-bold text-primary-foreground">
-                  Best for growth
-                </span>
-              ) : null}
-
-              <div className="mb-5">
-                <div className="mb-3 flex items-center gap-2">
-                  <BusinessPlanIcon planKey={planKey} />
-                  <h2 className="text-xl font-bold text-text-primary">
-                    {plan.name}
-                  </h2>
-                </div>
-                <p className="min-h-20 text-sm leading-6 text-text-muted">
-                  {plan.description}
-                </p>
-              </div>
-
-              <div className="mb-5">
-                {plan.customPricing ? (
-                  <>
-                    <strong className="text-3xl font-extrabold tracking-tight text-text-primary">
-                      Custom
-                    </strong>
-                    <p className="mt-1 text-xs text-text-muted">
-                      Annual contract and consolidated billing
-                    </p>
-                  </>
-                ) : (
-                  <>
-                    <div className="flex items-end gap-1">
-                      <strong className="text-3xl font-extrabold tracking-tight text-text-primary">
-                        {formatUsdPrice(price)}
-                      </strong>
-                      <span className="pb-1 text-sm text-text-muted">
-                        /{billingCycle === "annual" ? "year" : "month"}
-                      </span>
-                    </div>
-                    {billingCycle === "annual" && pricedPlanKey ? (
-                      <p className="mt-1 text-xs font-semibold text-success">
-                        Save about {savings}% annually
-                      </p>
-                    ) : (
-                      <p className="mt-1 text-xs text-text-muted">
-                        Base workspace price
-                      </p>
-                    )}
-                  </>
-                )}
-              </div>
-
-              <div className="mb-4 grid grid-cols-2 gap-2 text-xs font-semibold text-text-secondary">
-                <span className="rounded-lg bg-surface-inset px-2 py-2">
-                  {plan.includedSeats === null
-                    ? "Custom seats"
-                    : `${plan.includedSeats} seat${plan.includedSeats === 1 ? "" : "s"}`}
-                </span>
-                <span className="rounded-lg bg-surface-inset px-2 py-2">
-                  {plan.includedBranches === null
-                    ? "Custom branches"
-                    : `${plan.includedBranches} branch${plan.includedBranches === 1 ? "" : "es"}`}
-                </span>
-              </div>
-
-              <ul className="mb-6 flex-1 space-y-3 text-sm text-text-secondary">
-                {Object.entries(plan.features)
-                  .filter(
-                    ([, allowance]) =>
-                      allowance === true ||
-                      (typeof allowance === "number" && allowance > 0),
-                  )
-                  .slice(0, 8)
-                  .map(([feature, allowance]) => (
-                    <li key={feature} className="flex gap-2">
-                      <Check
-                        className="mt-0.5 size-4 shrink-0 text-success"
-                        aria-hidden="true"
-                      />
-                      <span>
-                        {BUSINESS_FEATURE_COPY[feature] ?? feature}
-                        {typeof allowance === "number"
-                          ? ` (${allowance}/month)`
-                          : ""}
-                      </span>
-                    </li>
-                  ))}
-              </ul>
-
-              <PricingButton
-                href={
-                  planKey === "enterprise"
-                    ? "/login?mode=signup&workspace=business&intent=enterprise"
-                    : planKey === "business_free"
-                      ? "/login?mode=signup&workspace=business"
-                      : `/login?mode=signup&workspace=business&intent=upgrade&plan=${planKey}`
-                }
-                featured={plan.recommended}
-              >
-                {planKey === "enterprise"
-                  ? "Plan enterprise rollout"
-                  : planKey === "business_free"
-                    ? "Create business workspace"
-                    : planKey === "growth"
-                      ? `Try Growth for ${BUSINESS_TRIAL_LENGTH_DAYS} days`
-                      : `Choose ${plan.name}`}
-              </PricingButton>
-            </article>
-          );
-        })}
-      </section>
+      <BusinessPlanGrid
+        countryCode={countryCode}
+        billingCycle={billingCycle}
+      />
 
       <section className="rounded-3xl border border-border bg-surface p-5 shadow-soft sm:p-7">
-        <div className="mb-5 max-w-3xl">
+        <div className="mb-5 max-w-4xl">
           <p className="text-sm font-bold uppercase tracking-[0.16em] text-primary">
-            Industry modules
+            Nature-specific systems
           </p>
           <h2 className="mt-2 text-2xl font-extrabold text-text-primary">
-            Choose business capabilities without changing your company plan.
+            Every business nature gets its own operating system.
           </h2>
           <p className="mt-2 text-sm leading-6 text-text-muted">
-            Dealership, POS, construction, manufacturing, payroll, CRM, and
-            other industries are optional modules—not separate subscription
-            universes.
+            POS, dealership, restaurant, construction, manufacturing, service
+            business, and enterprise workflows may reuse verified accounting
+            primitives, but their screens, roles, conditions, and operations
+            remain purpose-built.
           </p>
         </div>
 
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {BUSINESS_MODULES.map((module) => (
+          {BUSINESS_SYSTEMS.map((system) => (
             <article
-              key={module.code}
+              key={system.code}
               className="rounded-2xl border border-border bg-surface-inset p-4"
             >
-              <h3 className="font-bold text-text-primary">{module.name}</h3>
+              <h3 className="font-bold text-text-primary">{system.name}</h3>
               <p className="mt-1 text-sm leading-6 text-text-muted">
-                {module.description}
+                {system.description}
               </p>
             </article>
           ))}
@@ -455,10 +462,8 @@ function BusinessPlanCards({
       </section>
 
       <p className="mx-auto max-w-4xl text-center text-sm leading-6 text-text-muted">
-        Each company receives a separate workspace, subscription, team,
-        modules, and invoice. Extra seats, branches, and optional modules are
-        billed to that business account. Enterprise groups can connect multiple
-        companies under consolidated billing.
+        Business and enterprise plans contain no AI entitlement. Each company
+        keeps separate users, roles, permissions, subscription, and invoice.
       </p>
     </>
   );
@@ -495,7 +500,7 @@ export default function RegionalPricing({
 
   return (
     <div className="space-y-8">
-      <section className="mx-auto grid max-w-5xl gap-4 rounded-3xl border border-border bg-surface p-4 shadow-soft lg:grid-cols-[1fr_auto_auto] lg:items-end lg:p-6">
+      <section className="mx-auto grid max-w-5xl gap-4 rounded-3xl border border-border bg-surface p-4 shadow-soft lg:grid-cols-[auto_1fr_auto] lg:items-end lg:p-6">
         <div
           className="grid grid-cols-2 rounded-xl border border-border bg-surface-inset p-1"
           aria-label="Product universe"
@@ -561,12 +566,12 @@ export default function RegionalPricing({
       </section>
 
       {universe === "personal" ? (
-        <PersonalPlanCards
+        <PersonalPricing
           countryCode={countryCode}
           billingCycle={billingCycle}
         />
       ) : (
-        <BusinessPlanCards
+        <BusinessPricing
           countryCode={countryCode}
           billingCycle={billingCycle}
         />
