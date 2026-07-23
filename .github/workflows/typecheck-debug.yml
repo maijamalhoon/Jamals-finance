@@ -1,9 +1,9 @@
 name: Typecheck diagnostics
 
 on:
-  push:
+  pull_request:
     branches:
-      - feat/airdrop-style-import-animation
+      - main
 
 permissions:
   contents: read
