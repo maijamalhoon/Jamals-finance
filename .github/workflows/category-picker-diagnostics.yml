@@ -1,0 +1,39 @@
+name: Category picker diagnostics
+
+on:
+  push:
+    branches: [feature/category-visual-picker]
+    paths:
+      - "components/settings/CategoryManagementExperience.tsx"
+      - ".github/workflows/category-picker-diagnostics.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  lint-report:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24.x"
+          cache: npm
+      - run: npm ci
+      - name: Capture category lint report
+        shell: bash
+        run: |
+          set +e
+          npx eslint components/settings/CategoryManagementExperience.tsx --format json > category-lint.json 2>&1
+          code=$?
+          echo "${code}" > category-lint-exit-code.txt
+          exit 0
+      - uses: actions/upload-artifact@v4
+        with:
+          name: category-picker-lint-report
+          path: |
+            category-lint.json
+            category-lint-exit-code.txt
+          if-no-files-found: error
+          retention-days: 1
