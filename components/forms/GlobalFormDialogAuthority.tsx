@@ -99,6 +99,11 @@ function syncDialogCenters() {
   getDialogs().forEach(centerDialog);
 }
 
+function containsDialog(node: Node) {
+  if (!(node instanceof Element)) return false;
+  return node.matches(DIALOG_SELECTOR) || Boolean(node.querySelector(DIALOG_SELECTOR));
+}
+
 function clearDialogCenter(dialog: HTMLElement) {
   dialog.removeAttribute(CENTERED_ATTRIBUTE);
 
@@ -129,27 +134,39 @@ export default function GlobalFormDialogAuthority() {
       });
     };
 
+    const scheduleViewportSync = () => {
+      if (!document.querySelector(DIALOG_SELECTOR)) return;
+      scheduleSync();
+    };
+
     syncDialogCenters();
 
-    const observer = new MutationObserver(scheduleSync);
+    const observer = new MutationObserver((mutations) => {
+      const dialogAdded = mutations.some((mutation) =>
+        Array.from(mutation.addedNodes).some(containsDialog),
+      );
+      if (dialogAdded) scheduleSync();
+    });
     observer.observe(document.body, {
       childList: true,
       subtree: true,
     });
 
     const viewport = window.visualViewport;
-    window.addEventListener("resize", scheduleSync, { passive: true });
-    window.addEventListener("orientationchange", scheduleSync, { passive: true });
-    viewport?.addEventListener("resize", scheduleSync, { passive: true });
-    viewport?.addEventListener("scroll", scheduleSync, { passive: true });
+    window.addEventListener("resize", scheduleViewportSync, { passive: true });
+    window.addEventListener("orientationchange", scheduleViewportSync, {
+      passive: true,
+    });
+    viewport?.addEventListener("resize", scheduleViewportSync, { passive: true });
+    viewport?.addEventListener("scroll", scheduleViewportSync, { passive: true });
 
     return () => {
       observer.disconnect();
       if (frame !== null) window.cancelAnimationFrame(frame);
-      window.removeEventListener("resize", scheduleSync);
-      window.removeEventListener("orientationchange", scheduleSync);
-      viewport?.removeEventListener("resize", scheduleSync);
-      viewport?.removeEventListener("scroll", scheduleSync);
+      window.removeEventListener("resize", scheduleViewportSync);
+      window.removeEventListener("orientationchange", scheduleViewportSync);
+      viewport?.removeEventListener("resize", scheduleViewportSync);
+      viewport?.removeEventListener("scroll", scheduleViewportSync);
 
       document
         .querySelectorAll<HTMLElement>(`[${CENTERED_ATTRIBUTE}="true"]`)
