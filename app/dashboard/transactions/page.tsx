@@ -164,54 +164,16 @@ export default async function TransactionsPage({
         ? type
         : undefined;
 
-  const [rawTransactions, categoriesResult, accountsResult] = await Promise.all([
-    loadTransactions(supabase, {
-      type: requestedDatabaseType,
-      from,
-      to,
-      category,
-      account,
-      minAmount,
-      maxAmount,
-      includeDeleted: true,
-    }),
-    supabase
-      .from("categories")
-      .select("id, name, parent_id")
-      .order("name", { ascending: true }),
-    supabase
-      .from("accounts")
-      .select("id, name")
-      .order("name", { ascending: true }),
-  ]);
-
-  if (categoriesResult.error) {
-    console.error("[transactions] Category filters unavailable", {
-      code: categoriesResult.error.code ?? "unknown",
-    });
-  }
-
-  if (accountsResult.error) {
-    console.error("[transactions] Account filters unavailable", {
-      code: accountsResult.error.code ?? "unknown",
-    });
-  }
-
-  const categoryRows = categoriesResult.data ?? [];
-  const categoryById = new Map(
-    categoryRows.map((row) => [row.id, row.name?.trim() || "Other"]),
-  );
-  const categoryOptions = categoryRows.map((row) => ({
-    value: row.id,
-    label:
-      row.parent_id && categoryById.has(row.parent_id)
-        ? `${categoryById.get(row.parent_id)} / ${row.name}`
-        : row.name,
-  }));
-  const accountOptions = (accountsResult.data ?? []).map((row) => ({
-    value: row.id,
-    label: row.name,
-  }));
+  const rawTransactions = await loadTransactions(supabase, {
+    type: requestedDatabaseType,
+    from,
+    to,
+    category,
+    account,
+    minAmount,
+    maxAmount,
+    includeDeleted: true,
+  });
 
   const transactions = ((rawTransactions ?? []) as TransactionListRow[])
     .filter(Boolean)
@@ -370,10 +332,7 @@ export default async function TransactionsPage({
       <div className={styles.filtersShell}>
         <Suspense fallback={<div className="h-10 sm:mb-5 sm:h-12" />}>
           <>
-            <TransactionFilters
-              categories={categoryOptions}
-              accounts={accountOptions}
-            />
+            <TransactionFilters />
             <TransactionSearchAutoClose />
           </>
         </Suspense>
