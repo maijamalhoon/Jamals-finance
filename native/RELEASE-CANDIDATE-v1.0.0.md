@@ -80,4 +80,4 @@ gradle :shared:testAndroidHostTest :androidApp:lintDebug :androidApp:lintRelease
 bash scripts/verify-release-artifacts.sh
 ```
 
-The release candidate is accepted only when both commands pass from the same commit and the downloadable artifacts come from that successful GitHub Actions run. Clean integration verification uses the latest `main` tree and excludes temporary branch status or log commits.
+The release candidate is accepted only when both commands pass from the same commit and the downloadable artifacts come from that successful GitHub Actions run. Clean integration verification uses the latest `main` tree and excludes temporary branch status or log commits. The final release-candidate artifact is authoritative only after this default-branch gate succeeds.
