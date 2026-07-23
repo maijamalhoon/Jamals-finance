@@ -73,7 +73,7 @@ describe("business fixed asset contracts", () => {
 
   it("indexes the depreciation account foreign keys", () => {
     const indexes = read(
-      "supabase/migrations/20260723115400_index_fixed_asset_depreciation_account_foreign_keys.sql",
+      "supabase/migrations/20260723120430_index_fixed_asset_depreciation_account_foreign_keys.sql",
     );
 
     expect(indexes).toContain("business_asset_depreciation_lines_expense_idx");
