@@ -41,7 +41,8 @@ const METRIC_NAMES = new Set<string>(TELEMETRY_METRIC_NAMES);
 const RESULTS = new Set<string>(TELEMETRY_RESULTS);
 const SAFE_FEATURE = /^[a-z0-9_]{1,64}$/;
 const SAFE_ERROR_CODE = /^[A-Z0-9_]{1,64}$/;
-const UUID_SEGMENT = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+const UUID_SEGMENT =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const LONG_NUMBER_SEGMENT = /^\d{5,}$/;
 const SAFE_ROUTE_SEGMENT = /^[a-z0-9._~-]{1,48}$/i;
 
@@ -73,8 +74,12 @@ export function normalizeTelemetryRoute(value: string | null | undefined) {
       const previous = allSegments[index - 1]?.toLowerCase();
 
       if (previous === "business") return ":workspace";
-      if (UUID_SEGMENT.test(decoded) || LONG_NUMBER_SEGMENT.test(decoded)) return ":id";
-      if (decoded.includes("@") || !SAFE_ROUTE_SEGMENT.test(decoded)) return ":dynamic";
+      if (UUID_SEGMENT.test(decoded) || LONG_NUMBER_SEGMENT.test(decoded)) {
+        return ":id";
+      }
+      if (decoded.includes("@") || !SAFE_ROUTE_SEGMENT.test(decoded)) {
+        return ":dynamic";
+      }
       return decoded.toLowerCase();
     });
 
@@ -103,7 +108,10 @@ export function parseTelemetryPayload(value: unknown): TelemetryPayload | null {
 
   if (
     durationMs !== undefined &&
-    (!Number.isInteger(durationMs) || durationMs < 0 || durationMs > 120_000)
+    (typeof durationMs !== "number" ||
+      !Number.isInteger(durationMs) ||
+      durationMs < 0 ||
+      durationMs > 120_000)
   ) {
     return null;
   }
