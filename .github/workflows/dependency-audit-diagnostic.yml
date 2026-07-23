@@ -11,7 +11,13 @@ permissions:
 jobs:
   audit:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 30
+    env:
+      CI: "true"
+      NEXT_TELEMETRY_DISABLED: "1"
+      NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: ci-build-placeholder
+      NEXT_PUBLIC_ENABLE_GOOGLE_AUTH: "false"
     steps:
       - name: Check out repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -26,20 +32,38 @@ jobs:
           cache: npm
           package-manager-cache: true
 
-      - name: Install dependencies
-        run: npm ci --silent
+      - name: Regenerate and safely repair lockfile
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm install --package-lock-only --ignore-scripts
+          npm audit fix --package-lock-only --ignore-scripts || true
+          npm install --package-lock-only --ignore-scripts
 
-      - name: Capture dependency audit
+      - name: Install repaired dependency graph
+        run: npm ci
+
+      - name: Capture final dependency audit
         shell: bash
         run: |
           set +e
           npm audit --json > audit.json
-          exit 0
+          audit_exit=$?
+          node -e "const a=require('./audit.json'); console.log(JSON.stringify(a.metadata?.vulnerabilities || {}))"
+          exit "${audit_exit}"
 
-      - name: Upload dependency audit
+      - name: Validate application
+        run: |
+          npm run check
+          npm run build
+
+      - name: Upload repaired lockfile and audit
+        if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: dependency-audit-json
-          path: audit.json
+          name: dependency-hardening-output
+          path: |
+            package-lock.json
+            audit.json
           if-no-files-found: error
           retention-days: 1
