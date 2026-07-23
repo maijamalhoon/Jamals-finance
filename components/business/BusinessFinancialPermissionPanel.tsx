@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { BadgeCheck, FileArchive, Landmark, MapPinned, Save, ShieldCheck, TrendingUp } from "lucide-react";
+import { BadgeCheck, ClipboardCheck, FileArchive, Landmark, MapPinned, Save, ShieldCheck, TrendingUp } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
@@ -36,6 +36,10 @@ const PROTECTED_PERMISSIONS = [
   { value: "documents.manage", label: "Manage records", icon: FileArchive },
   { value: "branches.view", label: "View branches", icon: MapPinned },
   { value: "branches.manage", label: "Manage branch scope", icon: MapPinned },
+  { value: "approvals.view", label: "View approvals", icon: ClipboardCheck },
+  { value: "approvals.request", label: "Request approval", icon: ClipboardCheck },
+  { value: "approvals.decide", label: "Approve or reject", icon: BadgeCheck },
+  { value: "approvals.manage", label: "Manage controls", icon: ClipboardCheck },
 ] as const;
 
 export default function BusinessFinancialPermissionPanel({
@@ -58,7 +62,7 @@ export default function BusinessFinancialPermissionPanel({
         <div>
           <h2 className="text-base font-black text-text-primary sm:text-lg">Protected workspace access</h2>
           <p className="mt-1 text-sm leading-6 text-text-secondary">
-            Banking, planning, company-record, and branch permissions are tenant-scoped. Saving here preserves every unrelated CRM, sales, inventory, shop, and team permission.
+            Banking, planning, company-record, branch, and approval permissions are tenant-scoped. Saving here preserves every unrelated CRM, sales, inventory, shop, and team permission.
           </p>
         </div>
       </div>
@@ -77,7 +81,7 @@ export default function BusinessFinancialPermissionPanel({
         </div>
       ) : (
         <div className="mt-5 rounded-[var(--radius-button)] bg-surface-secondary px-5 py-8 text-center text-sm text-text-secondary">
-          Add another team member to configure Banking, Budgeting, Documents, or Branches access.
+          Add another team member to configure Banking, Budgeting, Documents, Branches, or Approvals access.
         </div>
       )}
     </section>
