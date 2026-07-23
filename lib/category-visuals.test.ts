@@ -31,19 +31,32 @@ describe("category visual intelligence", () => {
     expect(getSemanticCategoryIconKey("rent", "expense")).toBe("home");
   });
 
-  it("preserves a saved emoji and color instead of re-inferring the visual", () => {
-    expect(isValidCategoryIconKey("emoji:🧪")).toBe(true);
+  it("keeps saved colors but replaces legacy emoji presentation with a custom icon", () => {
+    expect(isValidCategoryIconKey("emoji:🧪")).toBe(false);
     expect(
       getCategoryVisual({
         id: "category-1",
-        name: "Laboratory",
+        name: "Medicine",
         type: "expense",
         color: "#123abc",
         icon_key: "emoji:🧪",
       }),
     ).toEqual({
       color: "#123ABC",
-      iconKey: "emoji:🧪",
+      iconKey: "medical",
     });
+  });
+
+  it("keeps valid saved custom icon keys", () => {
+    expect(isValidCategoryIconKey("salary")).toBe(true);
+    expect(
+      getCategoryVisual({
+        id: "category-2",
+        name: "Monthly pay",
+        type: "income",
+        color: "#2563EB",
+        icon_key: "briefcase",
+      }).iconKey,
+    ).toBe("briefcase");
   });
 });
