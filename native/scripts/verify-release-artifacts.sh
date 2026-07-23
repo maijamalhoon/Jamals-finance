@@ -31,7 +31,9 @@ if [ -x "$APKSIGNER" ]; then
 fi
 
 AAB_SIGNED=false
-if jarsigner -verify "$RELEASE_AAB" >/tmp/jamals-aab-signature.log 2>&1; then
+if jarsigner -verify -strict "$RELEASE_AAB" >/tmp/jamals-aab-signature.log 2>&1 && \
+   grep -qi 'jar verified' /tmp/jamals-aab-signature.log && \
+   ! grep -qi 'jar is unsigned' /tmp/jamals-aab-signature.log; then
   AAB_SIGNED=true
 fi
 
