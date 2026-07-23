@@ -21,10 +21,10 @@ const scriptSources =
     ? productionScriptSources
     : [...productionScriptSources, "'unsafe-eval'"];
 const jalvoroLucideRuntime =
-  "./components/icons/jalvoro/lucide-runtime.cjs";
+  "./components/icons/jalvoro/lucide-runtime.generated.tsx";
 const jalvoroLucideRuntimeAbsolute = path.resolve(
   process.cwd(),
-  "components/icons/jalvoro/lucide-runtime.cjs",
+  "components/icons/jalvoro/lucide-runtime.generated.tsx",
 );
 
 const contentSecurityPolicy = [
