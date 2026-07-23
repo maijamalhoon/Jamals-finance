@@ -192,9 +192,7 @@ export default function TransactionRow({ tx }: { tx: Transaction }) {
         data-transaction-row
         data-deleted={isDeleted || undefined}
         className={`group grid min-w-0 grid-cols-[40px_minmax(0,1fr)_auto] items-center gap-x-3 gap-y-2 border-b border-border/55 px-2 py-3.5 last:border-b-0 sm:px-3 md:grid-cols-[40px_minmax(0,1fr)_minmax(110px,auto)_auto] md:gap-x-4 ${
-          isTransactionsPage
-            ? "cursor-pointer transform-gpu transition-transform duration-200 ease-out hover:-translate-y-px active:translate-y-0 active:scale-[0.99] motion-reduce:transform-none motion-reduce:transition-none"
-            : ""
+          isTransactionsPage ? "cursor-pointer" : ""
         } ${
           isDeleted
             ? "bg-black/[0.035] opacity-60 grayscale-[0.45] dark:bg-black/20"
@@ -274,7 +272,7 @@ export default function TransactionRow({ tx }: { tx: Transaction }) {
           {canEdit ? (
             <button
               onClick={() => setEditOpen(true)}
-              className="finance-focus grid size-9 place-items-center rounded-full text-text-secondary transition-colors hover:bg-hover hover:text-active"
+              className="finance-focus grid size-9 place-items-center rounded-full text-text-secondary transition-[color,background-color,transform] duration-150 hover:bg-hover hover:text-active active:scale-90 motion-reduce:transform-none"
               aria-label={`Edit ${categoryLabel}`}
               title="Edit"
               type="button"
@@ -287,7 +285,7 @@ export default function TransactionRow({ tx }: { tx: Transaction }) {
             <button
               onClick={() => void handleDelete()}
               disabled={deleting}
-              className="finance-focus grid size-9 place-items-center rounded-full text-text-secondary transition-colors hover:bg-danger/10 hover:text-danger disabled:cursor-not-allowed disabled:opacity-45"
+              className="finance-focus grid size-9 place-items-center rounded-full text-text-secondary transition-[color,background-color,transform] duration-150 hover:bg-danger/10 hover:text-danger active:scale-90 motion-reduce:transform-none disabled:cursor-not-allowed disabled:opacity-45"
               aria-label={`Delete ${categoryLabel}`}
               title="Delete"
               type="button"
