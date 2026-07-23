@@ -1,9 +1,6 @@
 name: Category picker diagnostics
 
 on:
-  push:
-    branches:
-      - feat/category-visual-memory-picker
   pull_request:
     branches:
       - main
@@ -12,16 +9,20 @@ permissions:
   contents: read
 
 jobs:
-  lint-diagnostics:
+  head-validation:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 30
     env:
       CI: "true"
       NEXT_TELEMETRY_DISABLED: "1"
+      NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: ci-build-placeholder
+      NEXT_PUBLIC_ENABLE_GOOGLE_AUTH: "false"
     steps:
-      - name: Check out repository
+      - name: Check out feature branch head
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with:
+          ref: ${{ github.event.pull_request.head.sha }}
           persist-credentials: false
           show-progress: false
 
@@ -35,25 +36,55 @@ jobs:
       - name: Install dependencies
         run: npm ci --silent
 
-      - name: Capture lint output
-        id: lint
+      - name: Validate feature branch head
+        id: validate
         shell: bash
         run: |
           set +e
+
           npm run lint > category-picker-lint.txt 2>&1
-          status=$?
-          echo "exit_code=${status}" >> "${GITHUB_OUTPUT}"
+          lint_status=$?
+
+          npm run typecheck > category-picker-typecheck.txt 2>&1
+          typecheck_status=$?
+
+          npm test > category-picker-tests.txt 2>&1
+          test_status=$?
+
+          npm run build > category-picker-build.txt 2>&1
+          build_status=$?
+
+          {
+            echo "lint=${lint_status}"
+            echo "typecheck=${typecheck_status}"
+            echo "tests=${test_status}"
+            echo "build=${build_status}"
+          } > category-picker-status.txt
+
+          if [ "${lint_status}" = "0" ] && \
+             [ "${typecheck_status}" = "0" ] && \
+             [ "${test_status}" = "0" ] && \
+             [ "${build_status}" = "0" ]; then
+            echo "exit_code=0" >> "${GITHUB_OUTPUT}"
+          else
+            echo "exit_code=1" >> "${GITHUB_OUTPUT}"
+          fi
           exit 0
 
-      - name: Upload lint diagnostics
+      - name: Upload validation diagnostics
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: category-picker-lint
-          path: category-picker-lint.txt
+          name: category-picker-head-validation
+          path: |
+            category-picker-status.txt
+            category-picker-lint.txt
+            category-picker-typecheck.txt
+            category-picker-tests.txt
+            category-picker-build.txt
           if-no-files-found: error
           retention-days: 1
 
-      - name: Fail when lint failed
-        if: steps.lint.outputs.exit_code != '0'
+      - name: Fail when head validation failed
+        if: steps.validate.outputs.exit_code != '0'
         run: exit 1
