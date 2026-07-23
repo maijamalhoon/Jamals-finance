@@ -31,12 +31,12 @@ describe("normalizeMultilingualFinanceQuestion", () => {
     );
   });
 
-  it("repairs common finance spelling mistakes", () => {
+  it("repairs spelling and converts terms to parser vocabulary", () => {
     expect(normalizeMultilingualFinanceQuestion("my expences this mont")).toBe(
-      "my expenses this month",
+      "my spending this month",
     );
     expect(normalizeMultilingualFinanceQuestion("profitt on investmnt")).toBe(
-      "profit on investments",
+      "profit on assets",
     );
   });
 });
