@@ -1,6 +1,7 @@
 package com.jamalsfinance.nativeapp
 
 import android.os.Bundle
+import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import com.jamalsfinance.nativeapp.security.AndroidKeystoreSessionStore
@@ -29,6 +30,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         val nativePreferences = AndroidNativePreferences(applicationContext)
+        setSecureWindow(nativePreferences.state.value.blockScreenshots)
         val configured = BuildConfig.SUPABASE_URL.isNotBlank() &&
             BuildConfig.SUPABASE_PUBLISHABLE_KEY.isNotBlank()
 
@@ -84,7 +86,16 @@ class MainActivity : ComponentActivity() {
                 reportsInsightsRepository = repositories?.reportsInsights,
                 personalPlatformRepository = repositories?.personalPlatform,
                 nativePreferences = nativePreferences,
+                onSecureWindowChanged = ::setSecureWindow,
             )
+        }
+    }
+
+    private fun setSecureWindow(enabled: Boolean) {
+        if (enabled) {
+            window.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
+        } else {
+            window.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
         }
     }
 }
