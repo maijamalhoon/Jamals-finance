@@ -106,6 +106,64 @@
   }
 }
 
+/* Keep the balance and quick actions centered on tablet, matching mobile. */
+@media (min-width: 640px) and (max-width: 899px) {
+  [data-dashboard-scroll]
+    .dashboard-overview
+    .dashboard-balance-copy {
+    display: flex;
+    width: 100%;
+    min-width: 0;
+    flex-direction: column;
+    align-items: center;
+    padding-inline: 0.75rem;
+    overflow: visible;
+    box-sizing: border-box;
+    text-align: center !important;
+  }
+
+  [data-dashboard-scroll]
+    .dashboard-overview
+    .dashboard-balance-heading-row {
+    width: 100%;
+    justify-content: center;
+  }
+
+  [data-dashboard-scroll]
+    .dashboard-overview
+    .dashboard-balance-amount {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    margin-inline: auto;
+    text-align: center;
+    text-wrap: nowrap;
+  }
+
+  [data-dashboard-scroll]
+    .dashboard-overview
+    .dashboard-balance-amount > span {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    text-align: center;
+  }
+
+  [data-dashboard-scroll]
+    .dashboard-overview
+    .dashboard-balance-actions {
+    position: relative !important;
+    left: auto !important;
+    width: min(100%, 32rem) !important;
+    max-width: 32rem !important;
+    margin-inline: auto !important;
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+    align-items: center !important;
+    justify-items: center !important;
+    transform: none !important;
+  }
+}
+
 /* Keep every glyph edge visible; earlier overview rules intentionally clip other amounts. */
 [data-dashboard-scroll] .dashboard-overview .dashboard-balance-copy,
 [data-dashboard-scroll] .dashboard-overview .dashboard-balance-amount,
