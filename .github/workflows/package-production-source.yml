@@ -1,15 +1,16 @@
 name: Package production source
 
 on:
-  push:
+  pull_request:
     branches:
-      - ops/production-deploy-package
+      - main
 
 permissions:
   contents: read
 
 jobs:
   package:
+    if: github.head_ref == 'ops/production-deploy-package'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
