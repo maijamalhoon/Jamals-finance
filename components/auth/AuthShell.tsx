@@ -83,7 +83,7 @@ export default function AuthShell({
       {minimal ? (
         <footer className="jf-auth-footer">
           <span>Secure account access</span>
-          <Link href="/#privacy" className="finance-focus">
+          <Link href="/privacy" className="finance-focus">
             Privacy
           </Link>
         </footer>
