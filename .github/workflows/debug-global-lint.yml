@@ -1,0 +1,25 @@
+name: Debug global lint
+
+on:
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  lint-errors:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Print only lint errors
+        shell: bash
+        run: |
+          set +e
+          git clone --quiet --depth 1 --branch "$GITHUB_HEAD_REF" https://github.com/maijamalhoon/Jamals-finance.git repo
+          cd repo || exit 1
+          npm ci --silent
+          npm run lint > /tmp/lint.log 2>&1
+          status=$?
+          sed -n '/^\/home\/runner\/.*\.[cm]\?[jt]sx\?$/p; /  [0-9].*  error  /p; /✖/p' /tmp/lint.log
+          exit "$status"
