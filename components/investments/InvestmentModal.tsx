@@ -66,6 +66,14 @@ export default function InvestmentModal(props: InvestmentModalProps) {
         investment={normalizedInvestment}
       />
       <style jsx global>{`
+        #investment-asset-results
+          [role="option"]
+          > :nth-child(2)
+          > :last-child
+          > :nth-child(n + 4) {
+          display: none !important;
+        }
+
         @media (max-width: 639px) {
           #investment-asset-results {
             max-height: min(18rem, 40dvh);
