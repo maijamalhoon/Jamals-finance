@@ -1,6 +1,7 @@
 import { readFile } from "node:fs/promises";
 
 const filesThatMustUseTheBrandSystem = [
+  "app/layout.tsx",
   "app/page.tsx",
   "app/manifest.ts",
   "app/opengraph-image.tsx",
