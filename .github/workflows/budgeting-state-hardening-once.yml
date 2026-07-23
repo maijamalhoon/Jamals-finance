@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - .github/workflows/budgeting-state-hardening-once.yml
+  workflow_dispatch:
 
 permissions:
   contents: write
