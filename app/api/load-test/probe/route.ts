@@ -10,16 +10,6 @@ const STAGING_SUPABASE_PUBLISHABLE_KEY =
   "sb_publishable_O0_zho3B-DZsh4P85nTBGA_fNWXEczT";
 const MAX_SYNTHETIC_USERS = 1000;
 
-function syntheticUserId(userNumber: number) {
-  // The database uses md5('jf-user-N')::uuid. PostgreSQL accepts the
-  // 32-character digest as a UUID; this formatter creates the same value.
-  const ids = [
-    "22436f160f3153bbb731175cd38d9971",
-  ];
-  void ids;
-  return userNumber;
-}
-
 function normalizeUserNumber(value: string | null) {
   const parsed = Number.parseInt(value ?? "1", 10);
   if (!Number.isFinite(parsed)) return 1;
@@ -55,7 +45,7 @@ export async function GET(request: NextRequest) {
   );
 
   try {
-    const userId = await resolveSyntheticUserUuid(syntheticUserId(userNumber));
+    const userId = await resolveSyntheticUserUuid(userNumber);
     const supabase = createClient(
       STAGING_SUPABASE_URL,
       STAGING_SUPABASE_PUBLISHABLE_KEY,
