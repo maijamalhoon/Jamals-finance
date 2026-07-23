@@ -55,7 +55,22 @@ jobs:
         run: npx vitest run lib/security-hardening.test.ts
 
       - name: Run complete application suite
-        run: npm test
+        shell: bash
+        run: |
+          set +e
+          npm test > test-report.txt 2>&1
+          status=$?
+          cat test-report.txt
+          exit "$status"
+
+      - name: Upload test diagnostics
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: test-report
+          path: test-report.txt
+          if-no-files-found: error
+          retention-days: 1
 
       - name: Build production application
         run: npm run build
