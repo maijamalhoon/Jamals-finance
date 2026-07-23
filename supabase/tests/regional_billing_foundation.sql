@@ -1,5 +1,5 @@
 -- Run only against a disposable local/test Supabase database after migrations.
--- The transaction rolls back every test identity and billing mutation.
+-- The transaction rolls back every test identity, business, and billing mutation.
 begin;
 
 insert into auth.users (
@@ -31,12 +31,16 @@ values (
 
 do $$
 begin
-  if (select count(*) from billing.plans where is_active) < 9 then
-    raise exception 'Plan seed failure: expected Free plus eight paid interval plans.';
+  if (select count(*) from billing.plans where is_active) < 19 then
+    raise exception 'Plan seed failure: expected personal, business, and enterprise plans.';
   end if;
 
-  if (select count(*) from billing.regional_prices) <> 40 then
-    raise exception 'Regional price seed failure: expected 40 tier-plan rows.';
+  if (select count(*) from billing.regional_prices) <> 80 then
+    raise exception 'Regional price seed failure: expected 80 personal and business tier rows.';
+  end if;
+
+  if (select count(*) from billing.business_systems where is_active) < 13 then
+    raise exception 'Business system seed failure.';
   end if;
 
   if not exists (
@@ -48,6 +52,26 @@ begin
       and monthly_allowance = 25
   ) then
     raise exception 'Student entitlement seed failure.';
+  end if;
+
+  if exists (
+    select 1
+    from billing.plan_features
+    where plan_family in (
+      'business_free', 'solo', 'starter', 'growth', 'scale', 'enterprise'
+    )
+      and feature_key = 'ai_insights'
+  ) then
+    raise exception 'Privacy failure: a business plan received an AI entitlement.';
+  end if;
+
+  if not exists (
+    select 1
+    from billing.accounts
+    where account_kind = 'personal'
+      and owner_user_id = '33333333-3333-4333-8333-333333333333'
+  ) then
+    raise exception 'Personal billing account was not initialized.';
   end if;
 end;
 $$;
@@ -62,37 +86,96 @@ select set_config('request.jwt.claim.role', 'authenticated', true);
 
 do $$
 declare
-  result jsonb;
-  snapshot jsonb;
-  duplicate_rejected boolean := false;
+  personal_result jsonb;
+  personal_snapshot jsonb;
+  business_result jsonb;
+  business_snapshot jsonb;
+  created_business_id uuid;
+  personal_duplicate_rejected boolean := false;
+  business_duplicate_rejected boolean := false;
 begin
-  result := public.claim_my_pro_trial();
+  personal_result := public.claim_my_pro_trial();
 
-  if result->>'planKey' <> 'pro'
-     or result->>'status' <> 'trialing'
-     or result->>'planCode' <> 'pro_month' then
-    raise exception 'Trial claim contract failure.';
+  if personal_result->>'planKey' <> 'pro'
+     or personal_result->>'status' <> 'trialing'
+     or personal_result->>'planCode' <> 'pro_month' then
+    raise exception 'Personal trial claim contract failure.';
   end if;
 
   begin
     perform public.claim_my_pro_trial();
   exception when others then
-    duplicate_rejected := true;
+    personal_duplicate_rejected := true;
   end;
 
-  if not duplicate_rejected then
-    raise exception 'Trial replay failure: a second claim was accepted.';
+  if not personal_duplicate_rejected then
+    raise exception 'Personal trial replay failure.';
   end if;
 
-  snapshot := public.get_my_billing_snapshot();
-  if snapshot->>'status' <> 'trialing'
-     or snapshot->>'planCode' <> 'pro_month' then
-    raise exception 'Authenticated billing snapshot did not reflect the trial.';
+  personal_snapshot := public.get_my_billing_snapshot();
+  if personal_snapshot->>'status' <> 'trialing'
+     or personal_snapshot->>'planCode' <> 'pro_month'
+     or personal_snapshot->>'accountKind' <> 'personal'
+     or personal_snapshot->>'productUniverse' <> 'personal' then
+    raise exception 'Personal billing snapshot did not reflect the scoped trial.';
+  end if;
+
+  created_business_id := public.create_business_workspace_with_mode(
+    'Regional Billing Test Company',
+    'services',
+    'advanced_company',
+    'PK',
+    'PKR',
+    'UTC'
+  );
+
+  business_snapshot := public.get_business_billing_snapshot(created_business_id);
+  if business_snapshot->>'planCode' <> 'business_free'
+     or business_snapshot->>'status' <> 'free'
+     or business_snapshot->>'accountKind' <> 'business'
+     or business_snapshot->>'productUniverse' <> 'business'
+     or business_snapshot->>'businessSystemCode' <> 'service_business'
+     or (business_snapshot->>'aiEnabled')::boolean <> false then
+    raise exception 'Business Free scoped billing initialization failed.';
+  end if;
+
+  business_result := public.claim_my_business_growth_trial(created_business_id);
+  if business_result->>'planKey' <> 'growth'
+     or business_result->>'status' <> 'trialing'
+     or business_result->>'planCode' <> 'growth_month'
+     or (business_result->>'aiEnabled')::boolean <> false then
+    raise exception 'Business Growth trial contract failure.';
   end if;
 
   begin
-    perform 1 from billing.regional_prices;
-    raise exception 'Security failure: authenticated role read private regional prices.';
+    perform public.claim_my_business_growth_trial(created_business_id);
+  exception when others then
+    business_duplicate_rejected := true;
+  end;
+
+  if not business_duplicate_rejected then
+    raise exception 'Business trial replay failure.';
+  end if;
+
+  business_snapshot := public.get_business_billing_snapshot(created_business_id);
+  if business_snapshot->>'status' <> 'trialing'
+     or business_snapshot->>'planCode' <> 'growth_month'
+     or business_snapshot->>'seatQuantity' <> '15'
+     or business_snapshot->>'branchQuantity' <> '3' then
+    raise exception 'Business billing snapshot did not reflect the Growth trial.';
+  end if;
+
+  if (
+    select count(*)
+    from billing.accounts
+    where owner_user_id = '33333333-3333-4333-8333-333333333333'
+  ) <> 2 then
+    raise exception 'Multiverse isolation failure: expected personal plus one business account.';
+  end if;
+
+  begin
+    perform 1 from billing.accounts;
+    raise exception 'Security failure: authenticated role read private billing accounts.';
   exception
     when insufficient_privilege then
       null;
