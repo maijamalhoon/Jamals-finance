@@ -52,34 +52,6 @@ begin
 end;
 $$;
 
-set local role service_role;
-
-do $$
-declare
-  result jsonb;
-  duplicate_rejected boolean := false;
-begin
-  result := public.claim_pro_trial('33333333-3333-4333-8333-333333333333');
-
-  if result->>'planKey' <> 'pro'
-     or result->>'status' <> 'trialing'
-     or result->>'planCode' <> 'pro_month' then
-    raise exception 'Trial claim contract failure.';
-  end if;
-
-  begin
-    perform public.claim_pro_trial('33333333-3333-4333-8333-333333333333');
-  exception when others then
-    duplicate_rejected := true;
-  end;
-
-  if not duplicate_rejected then
-    raise exception 'Trial replay failure: a second claim was accepted.';
-  end if;
-end;
-$$;
-
-reset role;
 set local role authenticated;
 select set_config(
   'request.jwt.claim.sub',
@@ -90,8 +62,29 @@ select set_config('request.jwt.claim.role', 'authenticated', true);
 
 do $$
 declare
-  snapshot jsonb := public.get_my_billing_snapshot();
+  result jsonb;
+  snapshot jsonb;
+  duplicate_rejected boolean := false;
 begin
+  result := public.claim_my_pro_trial();
+
+  if result->>'planKey' <> 'pro'
+     or result->>'status' <> 'trialing'
+     or result->>'planCode' <> 'pro_month' then
+    raise exception 'Trial claim contract failure.';
+  end if;
+
+  begin
+    perform public.claim_my_pro_trial();
+  exception when others then
+    duplicate_rejected := true;
+  end;
+
+  if not duplicate_rejected then
+    raise exception 'Trial replay failure: a second claim was accepted.';
+  end if;
+
+  snapshot := public.get_my_billing_snapshot();
   if snapshot->>'status' <> 'trialing'
      or snapshot->>'planCode' <> 'pro_month' then
     raise exception 'Authenticated billing snapshot did not reflect the trial.';
