@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { Check, GraduationCap, ShieldCheck, Sparkles } from "lucide-react";
-import { useMemo, useState, type ChangeEvent } from "react";
+import { useEffect, useMemo, useState, type ChangeEvent } from "react";
 
 import {
   SUPPORTED_COUNTRY_CODES,
@@ -28,10 +28,45 @@ const FEATURE_COPY: Record<string, string> = {
   priority_support: "Priority support",
 };
 
-export default function RegionalPricing() {
-  const [countryCode, setCountryCode] = useState("PK");
+const SUPPORTED_COUNTRIES = new Set<string>(SUPPORTED_COUNTRY_CODES);
+
+function normalizeCountryCode(value?: string | null): string | null {
+  const normalized = value?.trim().toUpperCase();
+  return normalized && SUPPORTED_COUNTRIES.has(normalized) ? normalized : null;
+}
+
+function detectBrowserCountry(): string | null {
+  if (typeof navigator === "undefined") return null;
+
+  for (const locale of navigator.languages) {
+    try {
+      const region = normalizeCountryCode(new Intl.Locale(locale).region);
+      if (region) return region;
+    } catch {
+      // Continue through the browser's remaining locale preferences.
+    }
+  }
+
+  return null;
+}
+
+type RegionalPricingProps = {
+  initialCountryCode?: string | null;
+};
+
+export default function RegionalPricing({
+  initialCountryCode,
+}: RegionalPricingProps) {
+  const serverCountry = normalizeCountryCode(initialCountryCode);
+  const [countryCode, setCountryCode] = useState(serverCountry ?? "US");
   const [billingCycle, setBillingCycle] = useState<BillingCycle>("annual");
   const tier = getPricingTier(countryCode);
+
+  useEffect(() => {
+    if (serverCountry) return;
+    const browserCountry = detectBrowserCountry();
+    if (browserCountry) setCountryCode(browserCountry);
+  }, [serverCountry]);
 
   const countryNames = useMemo(
     () => new Intl.DisplayNames(["en"], { type: "region" }),
