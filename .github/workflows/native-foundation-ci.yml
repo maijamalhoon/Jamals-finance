@@ -1,6 +1,7 @@
 name: Native release candidate CI
 
 # Verification marker: release-candidate-v1.0.0-rc1-main
+# Default-branch final release gate
 on:
   push:
     branches: [main]
