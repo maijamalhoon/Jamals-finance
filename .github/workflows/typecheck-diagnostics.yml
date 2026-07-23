@@ -1,4 +1,4 @@
-name: Typecheck diagnostics
+name: Mutation diagnostics
 
 on:
   pull_request:
@@ -34,13 +34,20 @@ jobs:
       - name: Install dependencies
         run: npm ci --silent
 
-      - name: Capture typecheck output
-        run: npm run typecheck > typecheck-output.txt 2>&1 || true
+      - name: Capture targeted mutation tests
+        shell: bash
+        run: |
+          set +e
+          npx vitest run lib/supabase/client.test.ts > mutation-test-output.txt 2>&1
+          echo "$?" > mutation-test-exit-code.txt
+          exit 0
 
-      - name: Upload typecheck output
+      - name: Upload mutation test output
         uses: actions/upload-artifact@v4
         with:
-          name: typecheck-output
-          path: typecheck-output.txt
+          name: mutation-test-output
+          path: |
+            mutation-test-output.txt
+            mutation-test-exit-code.txt
           if-no-files-found: error
           retention-days: 1
