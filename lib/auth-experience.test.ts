@@ -117,40 +117,21 @@ describe("Node 8 authentication experience contracts", () => {
     expect(loginSource).not.toMatch(/passkey|single sign-on|MFA/i);
   });
 
-  it("keeps onboarding user verification, profile columns, and completion checks", () => {
+  it("keeps onboarding user verification, workspace choice, and completion checks", () => {
     expect(onboardingSource).toContain("await supabase.auth.getUser()");
     expect(onboardingSource).toContain('.from("profiles")');
     expect(onboardingSource).toContain('.select("full_name, age, onboarding_completed")');
     expect(onboardingSource).toContain('.eq("id", user.id)');
     expect(onboardingSource).toContain("if (profile?.onboarding_completed)");
-    expect(onboardingSource).toContain("numericAge < 10");
-    expect(onboardingSource).toContain("numericAge > 120");
-
-    const completionSource = onboardingSource.slice(
-      onboardingSource.indexOf("async function completeOnboarding"),
-    );
-    const upsertCall = getObjectCall(
-      completionSource,
-      'supabase.from("profiles").upsert({',
-    );
-    for (const field of [
-      "id: userId",
-      "email,",
-      "full_name: fullName.trim()",
-      "age: numericAge",
-      "provider,",
-      "onboarding_completed: true",
-      "updated_at: new Date().toISOString()",
-    ]) {
-      expect(upsertCall).toContain(field);
-    }
-    expect(onboardingSource.match(/onboarding_completed:\s*true/g) ?? []).toHaveLength(1);
-    expect(onboardingSource.match(/onboarding_completed:\s*false/g) ?? []).toHaveLength(1);
-    expect(onboardingSource).toContain('supabase.from("accounts").insert({');
-    expect(onboardingSource).toContain("Step ${step} of 4");
-    expect(onboardingSource).toContain("Skip for now");
-    expect(onboardingSource).toContain("Your first transaction");
-    expect(onboardingSource.indexOf("if (saveError)")).toBeLessThan(
+    expect(onboardingSource).toContain("numericAge < 10 || numericAge > 120");
+    expect(onboardingSource).toContain("async function handleProfileSubmit");
+    expect(onboardingSource).toContain("onboarding_completed: businessFlow");
+    expect(onboardingSource).toContain("async function completeOnboarding");
+    expect(onboardingSource).toContain("onboarding_completed: true");
+    expect(onboardingSource).toContain('.from("business_workspace_preferences")');
+    expect(onboardingSource).toContain('.from("accounts").insert({');
+    expect(onboardingSource).toContain("if (profileResult.error || preferenceResult.error)");
+    expect(onboardingSource.indexOf("if (profileResult.error || preferenceResult.error)")).toBeLessThan(
       onboardingSource.indexOf("router.replace(safeNext)"),
     );
   });

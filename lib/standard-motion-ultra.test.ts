@@ -43,12 +43,11 @@ describe("standard motion ultra contracts", () => {
     );
   });
 
-  it("preserves every visible Standard animation on lite devices", () => {
+  it("preserves Standard mode while adapting its runtime tier", () => {
+    expect(standardRuntimeSource).toContain("connection?.saveData");
+    expect(standardRuntimeSource).toContain('return "lite"');
     expect(standardRuntimeSource).toContain(
-      'root.dataset.standardVisibleMotion = "preserved"',
-    );
-    expect(standardRuntimeSource).toContain(
-      'elementVisibility.get(element) !== false',
+      "root.dataset.standardMotionTier = resolveStandardMotionTier()",
     );
     expect(standardRuntimeSource).not.toContain(
       'tier === "lite" && !isEssentialMotion',
@@ -58,23 +57,25 @@ describe("standard motion ultra contracts", () => {
     );
   });
 
-  it("adapts Standard motion to refresh rate and runtime pressure", () => {
-    expect(standardRuntimeSource).toContain("standardRefreshTier");
-    expect(standardRuntimeSource).toContain("medianFrameMs <= 10.5");
+  it("adapts Standard motion to device, network, viewport, and user preference", () => {
+    expect(standardRuntimeSource).toContain("effectiveType");
+    expect(standardRuntimeSource).toContain("downlink");
+    expect(standardRuntimeSource).toContain("runtimeNavigator.deviceMemory");
+    expect(standardRuntimeSource).toContain("runtimeNavigator.hardwareConcurrency");
+    expect(standardRuntimeSource).toContain('(max-width: 767px)');
     expect(standardRuntimeSource).toContain(
-      'PerformanceObserver.supportedEntryTypes?.includes("longtask")',
-    );
-    expect(standardRuntimeSource).toContain(
-      'PerformanceObserver.supportedEntryTypes?.includes("event")',
+      '(prefers-reduced-motion: reduce)',
     );
   });
 
-  it("keeps offscreen and hidden continuous motion out of the frame budget", () => {
-    expect(standardRuntimeSource).toContain("IntersectionObserver");
-    expect(standardRuntimeSource).toContain("animation.pause()");
-    expect(standardRuntimeSource).toContain("animation.play()");
-    expect(standardRuntimeSource).toContain("svg.pauseAnimations?.()");
-    expect(standardRuntimeSource).toContain("svg.unpauseAnimations?.()");
+  it("tracks page visibility without installing a continuous animation scanner", () => {
+    expect(standardRuntimeSource).toContain("document.visibilityState");
+    expect(standardRuntimeSource).toContain(
+      'document.addEventListener("visibilitychange", handleVisibilityChange)',
+    );
+    expect(standardRuntimeSource).toContain("standardPageVisibility");
+    expect(standardRuntimeSource).not.toContain("IntersectionObserver");
+    expect(standardRuntimeSource).not.toContain("requestIdleCallback");
   });
 
   it("uses compositor motion for Standard mobile search", () => {

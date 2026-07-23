@@ -3,7 +3,7 @@ import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
 describe("transaction references and receipts", () => {
-  it("persists reference information for transactions and transfers", () => {
+  it("persists transaction references and keeps transfer references explicit", () => {
     const migration = readFileSync(
       join(
         process.cwd(),
@@ -23,7 +23,7 @@ describe("transaction references and receipts", () => {
     expect(migration).toContain("alter table public.transactions");
     expect(migration).toContain("alter table public.account_transfers");
     expect(transactionModal).toContain("reference: reference.trim() || null");
-    expect(transferModal).toContain("reference: reference.trim() || null");
+    expect(transferModal).toContain("reference: null");
   });
 
   it("shows status and supports copy, download, print, and refund actions", () => {

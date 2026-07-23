@@ -46,7 +46,10 @@ describe("business approval control contracts", () => {
     const panel = read("components/business/BusinessFinancialPermissionPanel.tsx");
 
     expect(dashboard).toContain('key: "approvals"');
-    expect(dashboard).toContain("canViewApprovals");
+    expect(dashboard).toContain("approvals:");
+    expect(dashboard).toContain(
+      'hasAny("approvals.view", "approvals.request", "approvals.decide", "approvals.manage")',
+    );
     expect(page).toContain("get_business_approvals_snapshot");
     expect(panel).toContain('value: "approvals.request"');
     expect(panel).toContain('value: "approvals.decide"');

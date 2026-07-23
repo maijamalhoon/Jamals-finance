@@ -18,8 +18,11 @@ describe("liability payment ledger", () => {
       "utf8",
     );
 
-    expect(modal).toContain('supabase.rpc(\n        "record_liability_payment"');
-    expect(modal).not.toContain('.from("transactions")\n        .insert');
+    expect(modal).toContain("await supabase.auth.getUser()");
+    expect(modal).toContain('"record_liability_payment_currency"');
+    expect(modal).toContain("p_amount_original: parsedAmount");
+    expect(modal).not.toContain('.from("transactions")
+        .insert');
     expect(migration).toContain("for update;");
     expect(migration).toContain("insert into public.transactions");
     expect(migration).toContain("insert into public.liability_payments");

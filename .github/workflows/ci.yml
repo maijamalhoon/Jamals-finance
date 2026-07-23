@@ -1,560 +1,61 @@
-name: Repair stale validation contracts
+name: CI
 
 on:
   workflow_dispatch:
   pull_request:
+  push:
+    branches:
+      - main
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
-  group: repair-contracts-${{ github.ref }}
+  group: ci-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  repair:
+  validate:
+    name: Validate
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 30
+    env:
+      CI: "true"
+      NEXT_TELEMETRY_DISABLED: "1"
+      NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: ci-build-placeholder
+      NEXT_PUBLIC_ENABLE_GOOGLE_AUTH: "false"
     steps:
-      - name: Check out validation branch
+      - name: Check out repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
-          ref: validation-staging
-          fetch-depth: 0
-          persist-credentials: true
+          persist-credentials: false
           show-progress: false
 
-      - name: Replace obsolete source-text contracts
-        shell: bash
-        run: |
-          python - <<'PY'
-          from pathlib import Path
-          import json
-          import re
+      - name: Set up Node.js
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        with:
+          node-version: 24
+          cache: npm
+          package-manager-cache: true
 
-          def replace_test(path: str, old_name: str, block: str) -> None:
-              file_path = Path(path)
-              source = file_path.read_text(encoding="utf-8")
-              marker = f'  it({json.dumps(old_name)}, () => {{'
-              start = source.find(marker)
-              if start < 0:
-                  raise SystemExit(f"Missing test marker in {path}: {old_name}")
-              match = re.search(r'^  \}\);', source[start:], flags=re.MULTILINE)
-              if not match:
-                  raise SystemExit(f"Missing test end in {path}: {old_name}")
-              end = start + match.end()
-              source = source[:start] + block.rstrip() + source[end:]
-              file_path.write_text(source, encoding="utf-8")
+      - name: Install dependencies
+        run: npm ci --silent
 
-          replace_test(
-              "lib/account-integrity.test.ts",
-              "uses an account type accepted by the live wallet constraint",
-              '''  it("uses an account type accepted by the live wallet constraint", () => {
-              expect(source).toContain("getAutomaticAccountVisual");
-              expect(source).toContain("type: visual.legacyType");
-              expect(source).not.toContain('"other_wallet"');
-            });''',
-          )
-          replace_test(
-              "lib/account-integrity.test.ts",
-              "does not overwrite a derived balance while editing account details",
-              '''  it("does not overwrite a derived balance while editing account details", () => {
-              expect(source).toContain("disabled={isEditing}");
-              expect(source).toContain('.from("accounts")');
-              expect(source).toContain(".update(accountDetails)");
-              expect(source).toContain('.eq("id", account!.id)');
-              expect(source).toContain("balance: openingBalance");
-            });''',
-          )
+      - name: Audit production dependencies
+        run: npm audit --omit=dev --audit-level=critical
 
-          replace_test(
-              "lib/animation-preference.test.ts",
-              "keeps the locked standard controller independent",
-              '''  it("keeps the adaptive standard controller independent", () => {
-              expect(motionProviderSource).toContain("<StandardMotionPerformance />");
-              expect(standardPerformanceSource).toContain("standardMotionTier");
-              expect(standardPerformanceSource).toContain("connection?.saveData");
-              expect(standardPerformanceSource).toContain("runtimeNavigator.deviceMemory");
-              expect(standardPerformanceSource).toContain("runtimeNavigator.hardwareConcurrency");
-              expect(standardPerformanceSource).toContain(
-                "root.dataset.standardMotionTier = resolveStandardMotionTier()",
-              );
-              expect(standardPerformanceSource).toContain(
-                "root.dataset.standardPageVisibility = document.visibilityState",
-              );
-              expect(standardPerformanceSource).toContain(
-                "window.addEventListener(ANIMATION_MODE_CHANGE_EVENT",
-              );
-              expect(acceleratedPerformanceSource).not.toContain("standardMotionTier");
-            });''',
-          )
-          replace_test(
-              "lib/animation-preference.test.ts",
-              "mounts accelerated performance globally without changing UI",
-              '''  it("mounts accelerated performance globally without changing UI", () => {
-              expect(pwaRuntimeSource).toContain("const AcceleratedMotionPerformance = dynamic(");
-              expect(pwaRuntimeSource).toContain(
-                'import("@/components/performance/AcceleratedMotionPerformance")',
-              );
-              expect(pwaRuntimeSource).toContain("deferredRuntimeReady");
-              expect(pwaRuntimeSource).toContain("<AcceleratedMotionPerformance />");
-            });''',
-          )
+      - name: Lint
+        run: npm run lint
 
-          replace_test(
-              "lib/auth-experience.test.ts",
-              "keeps onboarding user verification, profile columns, and completion checks",
-              '''  it("keeps onboarding user verification, workspace choice, and completion checks", () => {
-              expect(onboardingSource).toContain("await supabase.auth.getUser()");
-              expect(onboardingSource).toContain('.from("profiles")');
-              expect(onboardingSource).toContain('.select("full_name, age, onboarding_completed")');
-              expect(onboardingSource).toContain('.eq("id", user.id)');
-              expect(onboardingSource).toContain("if (profile?.onboarding_completed)");
-              expect(onboardingSource).toContain("numericAge < 10 || numericAge > 120");
-              expect(onboardingSource).toContain("async function handleProfileSubmit");
-              expect(onboardingSource).toContain("onboarding_completed: businessFlow");
-              expect(onboardingSource).toContain("async function completeOnboarding");
-              expect(onboardingSource).toContain("onboarding_completed: true");
-              expect(onboardingSource).toContain('.from("business_workspace_preferences")');
-              expect(onboardingSource).toContain('.from("accounts").insert({');
-              expect(onboardingSource).toContain("if (profileResult.error || preferenceResult.error)");
-              expect(onboardingSource.indexOf("if (profileResult.error || preferenceResult.error)")).toBeLessThan(
-                onboardingSource.indexOf("router.replace(safeNext)"),
-              );
-            });''',
-          )
+      - name: Typecheck
+        run: npm run typecheck
 
-          replace_test(
-              "lib/business-approvals.test.ts",
-              "keeps the workspace connected to the dashboard and protected permissions",
-              '''  it("keeps the workspace connected to the dashboard and protected permissions", () => {
-              const dashboard = read("app/business/[businessSlug]/page.tsx");
-              const page = read("app/business/[businessSlug]/approvals/page.tsx");
-              const panel = read("components/business/BusinessFinancialPermissionPanel.tsx");
+      - name: Run security contract tests
+        run: npx vitest run lib/security-hardening.test.ts
 
-              expect(dashboard).toContain('key: "approvals"');
-              expect(dashboard).toContain("approvals:");
-              expect(dashboard).toContain(
-                'hasAny("approvals.view", "approvals.request", "approvals.decide", "approvals.manage")',
-              );
-              expect(page).toContain("get_business_approvals_snapshot");
-              expect(panel).toContain('value: "approvals.request"');
-              expect(panel).toContain('value: "approvals.decide"');
-              expect(panel).toContain('value: "approvals.manage"');
-            });''',
-          )
+      - name: Run complete application suite
+        run: npm test
 
-          replace_test(
-              "lib/finance-modal-responsive.test.ts",
-              "enforces one real rendered field footprint instead of relying on CSS modules",
-              '''  it("enforces one real rendered field footprint instead of relying on CSS modules", () => {
-              expect(fieldAuthoritySource).toContain("MANAGED_CONTROL_SELECTOR");
-              expect(fieldAuthoritySource).toContain('"width", "100%", "important"');
-              expect(fieldAuthoritySource).toContain(
-                '"height", GLOBAL_FIELD_HEIGHT, "important"',
-              );
-              expect(fieldAuthoritySource).toContain("MutationObserver");
-              expect(fieldAuthoritySource).toContain("window.requestAnimationFrame");
-              expect(fieldAuthoritySource).toContain("collectManagedRoots");
-            });''',
-          )
-
-          replace_test(
-              "lib/goal-contributions.test.ts",
-              "changes progress atomically without creating an expense or changing account cash",
-              '''  it("changes progress atomically without creating an expense or changing account cash", () => {
-              const migration = readFileSync(
-                join(
-                  process.cwd(),
-                  "supabase/migrations/20260716123747_goal_contributions.sql",
-                ),
-                "utf8",
-              );
-              const modal = readFileSync(
-                join(process.cwd(), "components/goals/GoalContributionModal.tsx"),
-                "utf8",
-              );
-
-              expect(migration).toContain("create table if not exists public.goal_contributions");
-              expect(migration).toContain("for update;");
-              expect(migration).toContain("set current_amount = current_amount + p_amount");
-              expect(migration).toContain("set current_amount = greatest(current_amount - contribution_row.amount, 0)");
-              expect(migration).not.toContain("insert into public.transactions");
-              expect(migration).not.toContain("update public.accounts");
-              expect(modal).toContain('"record_goal_contribution_currency"');
-              expect(modal).toContain("p_amount_original: parsedAmount");
-              expect(modal).toContain("p_exchange_rate_to_pkr: exchangeRateToPkr");
-              expect(modal).toContain("Savings allocation only; linked account balance stays unchanged.");
-            });''',
-          )
-
-          replace_test(
-              "lib/investment-ledger.test.ts",
-              "keeps linked contributions out of generic edit and delete actions",
-              '''  it("keeps linked contributions out of generic edit and delete actions", () => {
-              expect(transactionRowSource).toContain('type === "investment"');
-              expect(transactionRowSource).toContain(
-                'const canDelete = !isDeleted && type !== "investment"',
-              );
-              expect(transactionRowSource).toContain(
-                '(type === "income" || type === "expense")',
-              );
-              expect(transactionRowSource).toContain(
-                'return tx.item_name || tx.categories?.name || "Investment"',
-              );
-            });''',
-          )
-          replace_test(
-              "lib/investment-ledger.test.ts",
-              "renders investment receipts with their own neutral identity",
-              '''  it("renders investment receipts with their own neutral identity", () => {
-              expect(receiptSource).toContain('type ReceiptType =');
-              expect(receiptSource).toContain('| "investment"');
-              expect(receiptSource).toContain('| "goal"');
-              expect(receiptSource).toContain('label: "Investment contribution"');
-              expect(receiptSource).toContain('accent: "var(--investment)"');
-            });''',
-          )
-
-          replace_test(
-              "lib/liability-ledger.test.ts",
-              "records the expense and payment through one authenticated RPC",
-              '''  it("records the expense and payment through one authenticated RPC", () => {
-              const modal = readFileSync(
-                join(root, "components/payables/PaymentModal.tsx"),
-                "utf8",
-              );
-              const migration = readFileSync(
-                join(
-                  root,
-                  "supabase/migrations/20260716120300_record_liability_payment_atomically.sql",
-                ),
-                "utf8",
-              );
-
-              expect(modal).toContain("await supabase.auth.getUser()");
-              expect(modal).toContain('"record_liability_payment_currency"');
-              expect(modal).toContain("p_amount_original: parsedAmount");
-              expect(modal).not.toContain('.from("transactions")\n        .insert');
-              expect(migration).toContain("for update;");
-              expect(migration).toContain("insert into public.transactions");
-              expect(migration).toContain("insert into public.liability_payments");
-              expect(migration).toContain("to authenticated;");
-              expect(migration).toContain("from public, anon;");
-            });''',
-          )
-
-          replace_test(
-              "lib/navigation.test.ts",
-              "uses one minimal mobile header with a complete left navigation drawer",
-              '''  it("uses one minimal mobile header with a complete left navigation drawer", () => {
-              expect(layoutSource).not.toContain("<MobileNav />");
-              expect(mobileHeaderSource).toContain(
-                "<MobileNav notificationSlot={notificationSlot} />",
-              );
-              expect(mobileHeaderSource).toContain("<MobileNavSwipeGestures />");
-              expect(mobileNavSource).toContain("data-mobile-navigation-drawer");
-              expect(mobileNavSource).toContain('side="left"');
-              expect(mobileNavSource).toContain("NAV_GROUPS.map");
-              expect(mobileNavSource).toContain('aria-label="Open navigation menu"');
-              expect(mobileNavSource).toContain('aria-label="Close navigation menu"');
-            });''',
-          )
-          replace_test(
-              "lib/navigation.test.ts",
-              "guarantees a 44px notification loading and Retry target",
-              '''  it("guarantees a 44px notification loading target", () => {
-              expect(notificationCenterSource).toContain(
-                'aria-label="Loading current alerts"',
-              );
-              expect(notificationCenterSource).toContain(
-                '"finance-focus relative grid h-11 w-11',
-              );
-              expect(notificationCenterSource).toContain("notificationTriggerClassName");
-            });''',
-          )
-          replace_test(
-              "lib/navigation.test.ts",
-              "uses accessible primitives for More and the profile menu",
-              '''  it("uses accessible primitives for mobile navigation and the profile menu", () => {
-              expect(mobileNavSource).toContain("<Sheet");
-              expect(mobileNavSource).not.toContain("AnimatePresence");
-              expect(headerSource).toContain("<JamalMenu");
-              expect(jamalMenuSource).toContain("<DropdownMenu");
-              expect(jamalMenuSource).toContain("<DropdownMenuTrigger");
-              expect(jamalMenuSource).toContain("<DropdownMenuContent");
-              expect(jamalMenuSource).not.toContain('role="dialog"');
-            });''',
-          )
-          replace_test(
-              "lib/navigation.test.ts",
-              "keeps the profile identity label inside a valid dropdown group",
-              '''  it("keeps the profile identity label inside a valid dropdown group", () => {
-              const identityGroup = jamalMenuSource.match(
-                /<DropdownMenuGroup>\s*<DropdownMenuLabel[\s\S]*?<\/DropdownMenuLabel>\s*<\/DropdownMenuGroup>/,
-              );
-
-              expect(jamalMenuSource).toContain("DropdownMenuGroup,");
-              expect(identityGroup).not.toBeNull();
-              expect(jamalMenuSource).not.toContain('role="dialog"');
-              expect(jamalMenuSource).not.toContain("AnimatePresence");
-              expect(jamalMenuSource).toContain('router.push("/dashboard/settings")');
-              expect(jamalMenuSource).toContain("Settings");
-              expect(jamalMenuSource).toContain("Sign out");
-              expect(jamalMenuSource).toMatch(
-                /<DropdownMenuItem\s+variant="destructive"[\s\S]*?Sign out[\s\S]*?<\/DropdownMenuItem>/,
-              );
-            });''',
-          )
-          replace_test(
-              "lib/navigation.test.ts",
-              "uses accessible desktop menus and one transaction search control",
-              '''  it("uses accessible desktop navigation and one transaction search control", () => {
-              expect(headerSource).toContain("DESKTOP_HEADER_NAV_ITEMS.map");
-              expect(headerSource).toContain(
-                'aria-label="Desktop dashboard navigation"',
-              );
-              expect(headerSource).toContain(
-                'id="desktop-inline-transaction-search"',
-              );
-              expect(headerSource).toContain('"Open transaction search"');
-              expect(headerSource).toContain('"Close transaction search"');
-              expect(headerSource).toContain('aria-label="Search transactions"');
-              expect(headerSource).toContain('<JamalMenu align="right"');
-              expect(headerSource).not.toContain(">Pages<");
-            });''',
-          )
-
-          replace_test(
-              "lib/notification-persistence.test.ts",
-              "uses owner-scoped persisted state and real preferences",
-              '''  it("uses owner-scoped persisted state and real preferences", () => {
-              const migration = readFileSync(
-                join(
-                  process.cwd(),
-                  "supabase/migrations/20260716122942_persist_notification_state.sql",
-                ),
-                "utf8",
-              );
-              const center = readFileSync(
-                join(process.cwd(), "components/layout/NotificationCenter.tsx"),
-                "utf8",
-              );
-
-              expect(migration).toContain("create table if not exists public.notification_states");
-              expect(migration).toContain("create table if not exists public.notification_preferences");
-              expect(migration).toContain("(select auth.uid()) = user_id");
-              expect(center).toContain('.from("notification_states").upsert(');
-              expect(center).toContain("user_id: user.id");
-              expect(center).toContain("notification_id: alert.id");
-              expect(center).toContain("read_at: new Date().toISOString()");
-              expect(center).toContain('{ onConflict: "user_id,notification_id" }');
-              expect(center).toContain("router.push(alert.href)");
-            });''',
-          )
-
-          replace_test(
-              "lib/standard-motion-ultra.test.ts",
-              "preserves every visible Standard animation on lite devices",
-              '''  it("preserves Standard mode while adapting its runtime tier", () => {
-              expect(standardRuntimeSource).toContain("connection?.saveData");
-              expect(standardRuntimeSource).toContain('return "lite"');
-              expect(standardRuntimeSource).toContain(
-                "root.dataset.standardMotionTier = resolveStandardMotionTier()",
-              );
-              expect(standardRuntimeSource).not.toContain(
-                'tier === "lite" && !isEssentialMotion',
-              );
-              expect(standardRuntimeSource).not.toContain(
-                'tier !== "lite" || isEssentialMotion',
-              );
-            });''',
-          )
-          replace_test(
-              "lib/standard-motion-ultra.test.ts",
-              "adapts Standard motion to refresh rate and runtime pressure",
-              '''  it("adapts Standard motion to device, network, viewport, and user preference", () => {
-              expect(standardRuntimeSource).toContain("effectiveType");
-              expect(standardRuntimeSource).toContain("downlink");
-              expect(standardRuntimeSource).toContain("runtimeNavigator.deviceMemory");
-              expect(standardRuntimeSource).toContain("runtimeNavigator.hardwareConcurrency");
-              expect(standardRuntimeSource).toContain('(max-width: 767px)');
-              expect(standardRuntimeSource).toContain(
-                '(prefers-reduced-motion: reduce)',
-              );
-            });''',
-          )
-          replace_test(
-              "lib/standard-motion-ultra.test.ts",
-              "keeps offscreen and hidden continuous motion out of the frame budget",
-              '''  it("tracks page visibility without installing a continuous animation scanner", () => {
-              expect(standardRuntimeSource).toContain("document.visibilityState");
-              expect(standardRuntimeSource).toContain(
-                'document.addEventListener("visibilitychange", handleVisibilityChange)',
-              );
-              expect(standardRuntimeSource).toContain("standardPageVisibility");
-              expect(standardRuntimeSource).not.toContain("IntersectionObserver");
-              expect(standardRuntimeSource).not.toContain("requestIdleCallback");
-            });''',
-          )
-
-          replace_test(
-              "lib/transaction-filters.test.ts",
-              "exposes type, category, account, date, amount, and sort controls",
-              '''  it("exposes search, type, period, and sort controls", () => {
-              const filters = readFileSync(
-                join(process.cwd(), "components/transactions/TransactionFilters.tsx"),
-                "utf8",
-              );
-
-              expect(filters).toContain("TYPE_OPTIONS");
-              expect(filters).toContain("PERIOD_OPTIONS");
-              expect(filters).toContain("SORT_OPTIONS");
-              expect(filters).toContain('searchParams.get("search")');
-              expect(filters).toContain('searchParams.get("type")');
-              expect(filters).toContain('searchParams.get("period")');
-              expect(filters).toContain('searchParams.get("sort")');
-              expect(filters).toContain('value: "investment"');
-              expect(filters).toContain('value: "transfer"');
-            });''',
-          )
-
-          replace_test(
-              "lib/transaction-reference.test.ts",
-              "persists reference information for transactions and transfers",
-              '''  it("persists transaction references and keeps transfer references explicit", () => {
-              const migration = readFileSync(
-                join(
-                  process.cwd(),
-                  "supabase/migrations/20260716131728_add_transaction_references.sql",
-                ),
-                "utf8",
-              );
-              const transactionModal = readFileSync(
-                join(process.cwd(), "components/dashboard/TransactionModal.tsx"),
-                "utf8",
-              );
-              const transferModal = readFileSync(
-                join(process.cwd(), "components/accounts/TransferModal.tsx"),
-                "utf8",
-              );
-
-              expect(migration).toContain("alter table public.transactions");
-              expect(migration).toContain("alter table public.account_transfers");
-              expect(transactionModal).toContain("reference: reference.trim() || null");
-              expect(transferModal).toContain("reference: null");
-            });''',
-          )
-
-          replace_test(
-              "lib/transfer-ledger.test.ts",
-              "loads account transfers into the transaction list without treating them as cash flow",
-              '''  it("loads account transfers into the transaction list without treating them as cash flow", () => {
-              const source = readFileSync(join(process.cwd(), "lib/transactions.ts"), "utf8");
-              const page = readFileSync(
-                join(process.cwd(), "app/dashboard/transactions/page.tsx"),
-                "utf8",
-              );
-
-              expect(source).toContain('.from("account_transfers")');
-              expect(source).toContain('type: "transfer",');
-              expect(source).toContain("from_account:from_account_id(name)");
-              expect(source).toContain("to_account:to_account_id(name)");
-              expect(source).toContain("mapAccountTransfer");
-              expect(page).toContain('type === "transfer"');
-            });''',
-          )
-
-          replace_test(
-              "lib/market/central-crypto-prices.test.ts",
-              "keeps browsers on one shared poller instead of direct Binance sockets",
-              '''  it("keeps direct Binance sockets bounded, batched, and visibility-aware", () => {
-              expect(clientSource).toContain("const SOCKET_BASES = [");
-              expect(clientSource).toContain("wss://stream.binance.com:9443/stream?streams=");
-              expect(clientSource).toContain("wss://data-stream.binance.vision/stream?streams=");
-              expect(clientSource).toContain("const FLUSH_INTERVAL_MS = 1_000");
-              expect(clientSource).toContain("const MAX_RETRY_MS = 30_000");
-              expect(clientSource).toContain("const STREAMS_PER_SOCKET = 80");
-              expect(clientSource).toContain("chunkPairs(normalizedPairs)");
-              expect(clientSource).toContain('document.visibilityState === "hidden"');
-              expect(clientSource).toContain('document.addEventListener("visibilitychange"');
-            });''',
-          )
-          PY
-
-      - name: Restore standard CI workflow
-        shell: bash
-        run: |
-          cat > .github/workflows/ci.yml <<'YAML'
-          name: CI
-
-          on:
-            workflow_dispatch:
-            pull_request:
-            push:
-              branches:
-                - main
-
-          permissions:
-            contents: read
-
-          concurrency:
-            group: ci-${{ github.workflow }}-${{ github.ref }}
-            cancel-in-progress: true
-
-          jobs:
-            validate:
-              name: Validate
-              runs-on: ubuntu-latest
-              timeout-minutes: 30
-              env:
-                CI: "true"
-                NEXT_TELEMETRY_DISABLED: "1"
-                NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
-                NEXT_PUBLIC_SUPABASE_ANON_KEY: ci-build-placeholder
-                NEXT_PUBLIC_ENABLE_GOOGLE_AUTH: "false"
-              steps:
-                - name: Check out repository
-                  uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-                  with:
-                    persist-credentials: false
-                    show-progress: false
-
-                - name: Set up Node.js
-                  uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
-                  with:
-                    node-version: 24
-                    cache: npm
-                    package-manager-cache: true
-
-                - name: Install dependencies
-                  run: npm ci --silent
-
-                - name: Audit production dependencies
-                  run: npm audit --omit=dev --audit-level=critical
-
-                - name: Lint
-                  run: npm run lint
-
-                - name: Typecheck
-                  run: npm run typecheck
-
-                - name: Run security contract tests
-                  run: npx vitest run lib/security-hardening.test.ts
-
-                - name: Run complete application suite
-                  run: npm test
-
-                - name: Build production application
-                  run: npm run build
-          YAML
-
-      - name: Commit repaired contracts
-        shell: bash
-        run: |
-          git config user.name "Jamal's Finance Validation"
-          git config user.email "actions@users.noreply.github.com"
-          git add lib .github/workflows/ci.yml
-          git diff --cached --check
-          git commit -m "test(validation): align source contracts with current architecture"
-          git push origin HEAD:validation-staging
+      - name: Build production application
+        run: npm run build

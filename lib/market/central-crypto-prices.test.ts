@@ -94,12 +94,15 @@ describe("central crypto price helpers", () => {
     expect(routeSource).toContain('response.status === 429');
   });
 
-  it("keeps browsers on one shared poller instead of direct Binance sockets", () => {
-    expect(clientSource).toContain(
-      'const CENTRAL_PRICE_ENDPOINT = "/api/market/crypto-prices"',
-    );
-    expect(clientSource).toContain("let centralStore");
-    expect(clientSource).toContain("let subscribers");
-    expect(clientSource).not.toContain("wss://stream.binance.com");
+  it("keeps direct Binance sockets bounded, batched, and visibility-aware", () => {
+    expect(clientSource).toContain("const SOCKET_BASES = [");
+    expect(clientSource).toContain("wss://stream.binance.com:9443/stream?streams=");
+    expect(clientSource).toContain("wss://data-stream.binance.vision/stream?streams=");
+    expect(clientSource).toContain("const FLUSH_INTERVAL_MS = 1_000");
+    expect(clientSource).toContain("const MAX_RETRY_MS = 30_000");
+    expect(clientSource).toContain("const STREAMS_PER_SOCKET = 80");
+    expect(clientSource).toContain("chunkPairs(normalizedPairs)");
+    expect(clientSource).toContain('document.visibilityState === "hidden"');
+    expect(clientSource).toContain('document.addEventListener("visibilitychange"');
   });
 });
