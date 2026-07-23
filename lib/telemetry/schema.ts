@@ -48,6 +48,7 @@ export const TELEMETRY_METRIC_NAMES = [
   "FCP",
   "LCP",
   "CLS",
+  "INP",
   "LOAD",
   "LONG_TASK",
 ] as const;
