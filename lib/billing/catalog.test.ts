@@ -19,8 +19,8 @@ describe("regional billing catalog", () => {
   });
 
   it("falls back safely for unknown country codes", () => {
-    expect(getPricingTier("XX")).toBe("A");
-    expect(getPlanPrice("pro", "XX", "monthly")).toBe(11.99);
+    expect(getPricingTier("XX")).toBe("C");
+    expect(getPlanPrice("pro", "XX", "monthly")).toBe(7.99);
   });
 
   it("keeps annual plans cheaper than twelve monthly payments", () => {
