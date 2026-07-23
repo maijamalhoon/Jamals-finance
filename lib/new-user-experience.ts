@@ -19,6 +19,19 @@ export type NewUserExperienceState = {
   counts: NewUserExperienceCounts;
 };
 
+type NewUserExperienceCountRow = {
+  accounts?: number | string | null;
+  income_transactions?: number | string | null;
+  expense_transactions?: number | string | null;
+  total_transactions?: number | string | null;
+  transfers?: number | string | null;
+  income_categories?: number | string | null;
+  expense_categories?: number | string | null;
+  goals?: number | string | null;
+  investments?: number | string | null;
+  payables?: number | string | null;
+};
+
 export const EMPTY_NEW_USER_EXPERIENCE_STATE: NewUserExperienceState = {
   available: false,
   setupActive: false,
@@ -36,8 +49,13 @@ export const EMPTY_NEW_USER_EXPERIENCE_STATE: NewUserExperienceState = {
   },
 };
 
+function normalizeCount(value: unknown) {
+  const count = Number(value ?? 0);
+  return Number.isFinite(count) ? Math.max(0, count) : 0;
+}
+
 function countOf(result: { count: number | null }) {
-  return Math.max(0, Number(result.count ?? 0));
+  return normalizeCount(result.count);
 }
 
 function reportErrors(
@@ -54,11 +72,49 @@ function reportErrors(
   return true;
 }
 
-export async function loadNewUserExperienceState(
+function buildStateFromCountRow(
+  row: NewUserExperienceCountRow,
+): NewUserExperienceState {
+  const coreCounts = {
+    accounts: normalizeCount(row.accounts),
+    incomeTransactions: normalizeCount(row.income_transactions),
+    expenseTransactions: normalizeCount(row.expense_transactions),
+  };
+  const setupActive =
+    coreCounts.accounts === 0 ||
+    coreCounts.incomeTransactions === 0 ||
+    coreCounts.expenseTransactions === 0;
+
+  if (!setupActive) {
+    return {
+      available: true,
+      setupActive: false,
+      counts: {
+        ...EMPTY_NEW_USER_EXPERIENCE_STATE.counts,
+        ...coreCounts,
+      },
+    };
+  }
+
+  return {
+    available: true,
+    setupActive: true,
+    counts: {
+      ...coreCounts,
+      totalTransactions: normalizeCount(row.total_transactions),
+      transfers: normalizeCount(row.transfers),
+      incomeCategories: normalizeCount(row.income_categories),
+      expenseCategories: normalizeCount(row.expense_categories),
+      goals: normalizeCount(row.goals),
+      investments: normalizeCount(row.investments),
+      payables: normalizeCount(row.payables),
+    },
+  };
+}
+
+async function loadLegacyNewUserExperienceState(
   supabase: SupabaseClient,
 ): Promise<NewUserExperienceState> {
-  // Existing users only need these three lightweight count checks. The wider
-  // setup snapshot is loaded only while the guided experience is still active.
   const [accountsResult, incomeResult, expensesResult] = await Promise.all([
     supabase.from("accounts").select("id", { count: "exact", head: true }),
     supabase
@@ -119,7 +175,7 @@ export async function loadNewUserExperienceState(
       .eq("type", "expense"),
     supabase.from("goals").select("id", { count: "exact", head: true }),
     supabase.from("investments").select("id", { count: "exact", head: true }),
-    supabase.from("payables").select("id", { count: "exact", head: true }),
+    supabase.from("liabilities").select("id", { count: "exact", head: true }),
   ]);
 
   if (
@@ -150,4 +206,23 @@ export async function loadNewUserExperienceState(
       payables: countOf(payablesResult),
     },
   };
+}
+
+export async function loadNewUserExperienceState(
+  supabase: SupabaseClient,
+): Promise<NewUserExperienceState> {
+  const result = await supabase
+    .rpc("get_new_user_experience_counts")
+    .maybeSingle();
+
+  if (!result.error && result.data) {
+    return buildStateFromCountRow(result.data as NewUserExperienceCountRow);
+  }
+
+  console.warn(
+    "[new-user-experience] Consolidated counts unavailable; using fallback.",
+    { code: result.error?.code ?? "missing-data" },
+  );
+
+  return loadLegacyNewUserExperienceState(supabase);
 }
