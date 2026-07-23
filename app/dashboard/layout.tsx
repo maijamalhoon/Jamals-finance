@@ -112,6 +112,8 @@ import "./unified-search-controls.css";
 import "./mobile-search-inline-stability.css";
 // Full-screen finance backup transfer feedback stays isolated and GPU-friendly.
 import "./data-transfer-overlay.css";
+// Final proximity-style motion layer is presentation-only and must win over the legacy water effect.
+import "./data-transfer-airdrop-polish.css";
 // Physical left-edge lock stays absolutely last so generic sheet/dialog rules cannot recenter the drawer.
 import "./mobile-sidebar-edge-lock.css";
 
