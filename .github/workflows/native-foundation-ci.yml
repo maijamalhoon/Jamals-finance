@@ -1,9 +1,9 @@
 name: Native release candidate CI
 
-# Verification marker: release-candidate-v1.0.0-rc1-gate-3
+# Verification marker: release-candidate-v1.0.0-rc1-integration
 on:
   push:
-    branches: [main, native-personal-v1.0-rc]
+    branches: [main, native-personal-v1.0-rc-integration]
     paths:
       - "native/**"
       - ".github/workflows/native-foundation-ci.yml"
