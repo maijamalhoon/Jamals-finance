@@ -1,5 +1,7 @@
 "use client";
 
+import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { usePathname } from "next/navigation";
 
 import FloatingActions from "@/components/layout/FloatingActions";
@@ -13,10 +15,53 @@ function isSettingsRoute(pathname: string) {
 
 export default function GlobalFloatingActions() {
   const pathname = usePathname();
+  const [mounted, setMounted] = useState(false);
+  const [pageLoaded, setPageLoaded] = useState(false);
 
-  if (isSettingsRoute(pathname)) return null;
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
-  return (
+  useEffect(() => {
+    setPageLoaded(false);
+
+    let cancelled = false;
+    let firstFrame = 0;
+    let secondFrame = 0;
+    let revealTimer = 0;
+
+    const revealAfterPageSettles = () => {
+      firstFrame = window.requestAnimationFrame(() => {
+        secondFrame = window.requestAnimationFrame(() => {
+          revealTimer = window.setTimeout(() => {
+            if (!cancelled) setPageLoaded(true);
+          }, 500);
+        });
+      });
+    };
+
+    const handleWindowLoad = () => {
+      revealAfterPageSettles();
+    };
+
+    if (document.readyState === "complete") {
+      revealAfterPageSettles();
+    } else {
+      window.addEventListener("load", handleWindowLoad, { once: true });
+    }
+
+    return () => {
+      cancelled = true;
+      window.removeEventListener("load", handleWindowLoad);
+      window.cancelAnimationFrame(firstFrame);
+      window.cancelAnimationFrame(secondFrame);
+      window.clearTimeout(revealTimer);
+    };
+  }, [pathname]);
+
+  if (!mounted || !pageLoaded || isSettingsRoute(pathname)) return null;
+
+  return createPortal(
     <>
       <FloatingActions />
       <style jsx global>{`
@@ -29,6 +74,7 @@ export default function GlobalFloatingActions() {
           pointer-events: auto;
         }
       `}</style>
-    </>
+    </>,
+    document.body,
   );
 }
