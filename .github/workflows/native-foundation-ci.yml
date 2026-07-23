@@ -1,6 +1,6 @@
 name: Native release candidate CI
 
-# Verification marker: release-candidate-v1.0.0-rc1
+# Verification marker: release-candidate-v1.0.0-rc1-gate-2
 on:
   push:
     branches: [main, native-personal-v1.0-rc]
