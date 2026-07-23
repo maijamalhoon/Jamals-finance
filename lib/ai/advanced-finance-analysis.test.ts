@@ -7,6 +7,7 @@ import {
   parseAdvancedFinanceIntent,
   projectSavings,
 } from "@/lib/ai/advanced-finance-analysis";
+import { normalizeMultilingualFinanceQuestion } from "@/lib/ai/multilingual-finance-normalizer";
 
 describe("advanced finance intent parsing", () => {
   it("understands Roman Urdu projections and averages", () => {
@@ -18,12 +19,16 @@ describe("advanced finance intent parsing", () => {
     ).toEqual({ kind: "monthly_average" });
   });
 
-  it("detects peak spending and flow mapping", () => {
+  it("detects peak spending and normalized flow mapping", () => {
     expect(
       parseAdvancedFinanceIntent("Which month had the highest spending?"),
     ).toEqual({ kind: "peak_spending", dimension: "month" });
     expect(
-      parseAdvancedFinanceIntent("Where did my money come from and where was it spent?"),
+      parseAdvancedFinanceIntent(
+        normalizeMultilingualFinanceQuestion(
+          "Where did my money come from and where was it spent?",
+        ),
+      ),
     ).toEqual({ kind: "flow_map", direction: "both" });
   });
 
