@@ -1,31 +1,36 @@
 "use client";
 
-import type {
-  ChangeEvent,
-  KeyboardEvent,
-  PointerEvent as ReactPointerEvent,
-} from "react";
-import { useMemo, useRef, useState } from "react";
-import { Check, ChevronDown, Copy, Search, X } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { Check, ChevronRight, Palette, Search, X } from "lucide-react";
 
-import { getCategoryIconOptions } from "@/lib/category-icon-catalog";
+import {
+  CATEGORY_ICON_CATALOG,
+  CATEGORY_ICON_GROUPS,
+  getCategoryIconOptions,
+  type CategoryIconGroup,
+} from "@/lib/category-icon-catalog";
 import {
   CATEGORY_VISUAL_COLORS,
+  CategoryColorDot,
   CategoryVisualIcon,
+  getSemanticCategoryIconKey,
   isValidCategoryColor,
   normalizeCategoryColor,
   type CategoryKind,
   type CategoryVisual,
   type NamedCategoryIconKey,
 } from "@/lib/category-visuals";
+import { Button } from "@/components/ui/button";
+import {
+  Sheet,
+  SheetContent,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
 
 const QUICK_COLORS = CATEGORY_VISUAL_COLORS.slice(0, 10);
-
-type HsvColor = {
-  h: number;
-  s: number;
-  v: number;
-};
+const RECENT_ICON_STORAGE_KEY = "jamals-category-recent-icons";
 
 type Props = {
   id: string;
@@ -40,71 +45,82 @@ type Props = {
   ariaLabel?: string;
 };
 
-function clamp(value: number, min: number, max: number) {
-  return Math.min(max, Math.max(min, value));
+type IconFilter = CategoryIconGroup | "all";
+
+function formatIconLabel(iconKey: string) {
+  return iconKey
+    .replace(/([a-z])([A-Z])/g, "$1 $2")
+    .replace(/[-_]/g, " ")
+    .replace(/^./, (letter) => letter.toUpperCase());
 }
 
-function hexToRgb(hex: string) {
-  const normalized = normalizeCategoryColor(hex).replace("#", "");
-  return {
-    r: Number.parseInt(normalized.slice(0, 2), 16),
-    g: Number.parseInt(normalized.slice(2, 4), 16),
-    b: Number.parseInt(normalized.slice(4, 6), 16),
-  };
+function getIconLabel(iconKey: NamedCategoryIconKey) {
+  return (
+    CATEGORY_ICON_CATALOG.find((entry) => entry.iconKey === iconKey)?.label ??
+    formatIconLabel(iconKey)
+  );
 }
 
-function rgbToHex(r: number, g: number, b: number) {
-  return `#${[r, g, b]
-    .map((channel) => Math.round(channel).toString(16).padStart(2, "0"))
-    .join("")}`.toUpperCase();
-}
-
-function hexToHsv(hex: string): HsvColor {
-  const { r, g, b } = hexToRgb(hex);
-  const red = r / 255;
-  const green = g / 255;
-  const blue = b / 255;
-  const max = Math.max(red, green, blue);
-  const min = Math.min(red, green, blue);
-  const delta = max - min;
-  let hue = 0;
-
-  if (delta !== 0) {
-    if (max === red) hue = 60 * (((green - blue) / delta) % 6);
-    else if (max === green) hue = 60 * ((blue - red) / delta + 2);
-    else hue = 60 * ((red - green) / delta + 4);
+function readRecentIcons() {
+  if (typeof window === "undefined") return [] as NamedCategoryIconKey[];
+  try {
+    const parsed = JSON.parse(
+      window.localStorage.getItem(RECENT_ICON_STORAGE_KEY) ?? "[]",
+    ) as unknown;
+    if (!Array.isArray(parsed)) return [];
+    const valid = new Set(CATEGORY_ICON_CATALOG.map((entry) => entry.iconKey));
+    return parsed
+      .filter(
+        (value): value is NamedCategoryIconKey =>
+          typeof value === "string" &&
+          valid.has(value as NamedCategoryIconKey),
+      )
+      .slice(0, 6);
+  } catch {
+    return [];
   }
-
-  if (hue < 0) hue += 360;
-
-  return {
-    h: Math.round(hue),
-    s: max === 0 ? 0 : Math.round((delta / max) * 100),
-    v: Math.round(max * 100),
-  };
 }
 
-function hsvToHex({ h, s, v }: HsvColor) {
-  const saturation = s / 100;
-  const value = v / 100;
-  const chroma = value * saturation;
-  const x = chroma * (1 - Math.abs(((h / 60) % 2) - 1));
-  const match = value - chroma;
-  let red = 0;
-  let green = 0;
-  let blue = 0;
-
-  if (h < 60) [red, green, blue] = [chroma, x, 0];
-  else if (h < 120) [red, green, blue] = [x, chroma, 0];
-  else if (h < 180) [red, green, blue] = [0, chroma, x];
-  else if (h < 240) [red, green, blue] = [0, x, chroma];
-  else if (h < 300) [red, green, blue] = [x, 0, chroma];
-  else [red, green, blue] = [chroma, 0, x];
-
-  return rgbToHex(
-    (red + match) * 255,
-    (green + match) * 255,
-    (blue + match) * 255,
+function IconButton({
+  iconKey,
+  label,
+  color,
+  selected,
+  onClick,
+}: {
+  iconKey: NamedCategoryIconKey;
+  label: string;
+  color: string;
+  selected: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-label={`Use ${label} icon`}
+      aria-pressed={selected}
+      className={`finance-focus relative flex min-w-0 flex-col items-center justify-center gap-1.5 rounded-[16px] border px-1.5 py-3 transition-colors ${
+        selected
+          ? "border-active/55 bg-active/10"
+          : "border-border bg-surface-secondary hover:border-active/25 hover:bg-hover"
+      }`}
+    >
+      <CategoryVisualIcon
+        color={color}
+        iconKey={iconKey}
+        label={label}
+        size="sm"
+      />
+      <span className="w-full truncate text-center text-[10px] font-semibold leading-4 text-text-secondary sm:text-[11px]">
+        {label}
+      </span>
+      {selected ? (
+        <span className="absolute right-1.5 top-1.5 grid size-4 place-items-center rounded-full bg-active text-white">
+          <Check size={10} strokeWidth={3} />
+        </span>
+      ) : null}
+    </button>
   );
 }
 
@@ -121,124 +137,81 @@ export default function CategoryVisualField({
   ariaLabel,
 }: Props) {
   const [pickerOpen, setPickerOpen] = useState(false);
-  const [customColorOpen, setCustomColorOpen] = useState(false);
-  const [iconQuery, setIconQuery] = useState("");
-  const [hsv, setHsv] = useState<HsvColor>(() => hexToHsv(visual.color));
-  const [hexDraft, setHexDraft] = useState(() =>
-    normalizeCategoryColor(visual.color),
-  );
-  const colorPlaneRef = useRef<HTMLDivElement>(null);
-  const nameInputRef = useRef<HTMLInputElement>(null);
+  const [query, setQuery] = useState("");
+  const [filter, setFilter] = useState<IconFilter>("all");
+  const [pendingVisual, setPendingVisual] = useState<CategoryVisual>(visual);
+  const [hexDraft, setHexDraft] = useState(normalizeCategoryColor(visual.color));
+  const [recentIcons, setRecentIcons] = useState<NamedCategoryIconKey[]>([]);
 
-  const iconOptions = useMemo(
-    () => getCategoryIconOptions(type, iconQuery),
-    [iconQuery, type],
+  const suggestedIcon = getSemanticCategoryIconKey(name, type);
+  const options = useMemo(
+    () => getCategoryIconOptions(type, query, filter),
+    [filter, query, type],
   );
+  const selectedLabel = getIconLabel(visual.iconKey);
 
-  function togglePicker() {
-    const nextOpen = !pickerOpen;
-    if (nextOpen && isValidCategoryColor(visual.color)) {
-      const normalized = normalizeCategoryColor(visual.color);
-      setHsv(hexToHsv(normalized));
-      setHexDraft(normalized);
-      setIconQuery("");
-      nameInputRef.current?.blur();
-    }
-    setPickerOpen(nextOpen);
+  useEffect(() => {
+    if (!pickerOpen) return;
+    setPendingVisual(visual);
+    setHexDraft(normalizeCategoryColor(visual.color));
+    setQuery("");
+    setFilter("all");
+    setRecentIcons(readRecentIcons());
+  }, [pickerOpen, visual]);
+
+  function chooseIcon(iconKey: NamedCategoryIconKey) {
+    setPendingVisual((current) => ({ ...current, iconKey }));
   }
 
-  function updateColor(color: string) {
+  function chooseColor(color: string) {
     if (!isValidCategoryColor(color)) return;
     const normalized = normalizeCategoryColor(color);
-    setHsv(hexToHsv(normalized));
+    setPendingVisual((current) => ({ ...current, color: normalized }));
     setHexDraft(normalized);
-    onVisualChange({
-      ...visual,
-      color: normalized,
-    });
   }
 
-  function updateHsv(next: HsvColor) {
-    const normalized = {
-      h: clamp(next.h, 0, 359),
-      s: clamp(next.s, 0, 100),
-      v: clamp(next.v, 0, 100),
-    };
-    const color = hsvToHex(normalized);
-    setHsv(normalized);
-    setHexDraft(color);
-    onVisualChange({ ...visual, color });
+  function handleHexChange(value: string) {
+    const draft = value.toUpperCase();
+    setHexDraft(draft);
+    const candidate = draft.startsWith("#") ? draft : `#${draft}`;
+    if (isValidCategoryColor(candidate)) chooseColor(candidate);
   }
 
-  function updateColorPlane(clientX: number, clientY: number) {
-    const bounds = colorPlaneRef.current?.getBoundingClientRect();
-    if (!bounds) return;
-    const saturation = ((clientX - bounds.left) / bounds.width) * 100;
-    const value = 100 - ((clientY - bounds.top) / bounds.height) * 100;
-    updateHsv({ ...hsv, s: saturation, v: value });
-  }
-
-  function handleColorPointerDown(event: ReactPointerEvent<HTMLDivElement>) {
-    event.currentTarget.setPointerCapture(event.pointerId);
-    updateColorPlane(event.clientX, event.clientY);
-  }
-
-  function handleColorPointerMove(event: ReactPointerEvent<HTMLDivElement>) {
-    if (!event.currentTarget.hasPointerCapture(event.pointerId)) return;
-    updateColorPlane(event.clientX, event.clientY);
-  }
-
-  function handleColorKeyDown(event: KeyboardEvent<HTMLDivElement>) {
-    const step = event.shiftKey ? 10 : 2;
-    const next = { ...hsv };
-
-    if (event.key === "ArrowLeft") next.s -= step;
-    else if (event.key === "ArrowRight") next.s += step;
-    else if (event.key === "ArrowUp") next.v += step;
-    else if (event.key === "ArrowDown") next.v -= step;
-    else return;
-
-    event.preventDefault();
-    updateHsv(next);
-  }
-
-  function selectIcon(iconKey: NamedCategoryIconKey) {
-    onVisualChange({ ...visual, iconKey });
-  }
-
-  function handleHexChange(event: ChangeEvent<HTMLInputElement>) {
-    const raw = event.target.value.toUpperCase();
-    setHexDraft(raw);
-    const candidate = raw.startsWith("#") ? raw : `#${raw}`;
-    if (!isValidCategoryColor(candidate)) return;
-
-    const normalized = normalizeCategoryColor(candidate);
-    setHsv(hexToHsv(normalized));
-    onVisualChange({ ...visual, color: normalized });
-  }
-
-  async function copyHex() {
+  function applyAppearance() {
+    onVisualChange(pendingVisual);
+    const nextRecent = [
+      pendingVisual.iconKey,
+      ...recentIcons.filter((item) => item !== pendingVisual.iconKey),
+    ].slice(0, 6);
+    setRecentIcons(nextRecent);
     try {
-      await navigator.clipboard.writeText(visual.color);
+      window.localStorage.setItem(
+        RECENT_ICON_STORAGE_KEY,
+        JSON.stringify(nextRecent),
+      );
     } catch {
-      // The visible field remains selectable when clipboard access is blocked.
+      // Appearance still applies when browser storage is unavailable.
     }
+    setPickerOpen(false);
   }
+
+  const featuredKeys = Array.from(
+    new Set([suggestedIcon, ...recentIcons]),
+  ).filter((iconKey) =>
+    CATEGORY_ICON_CATALOG.some(
+      (entry) => entry.iconKey === iconKey && entry.types.includes(type),
+    ),
+  );
 
   return (
     <div className="min-w-0" data-category-visual-field="true">
-      <div
-        className={`flex min-h-12 min-w-0 items-center rounded-[14px] border bg-card px-2.5 transition-colors focus-within:border-active focus-within:ring-3 focus-within:ring-active/15 ${
-          pickerOpen ? "border-active/55" : "border-border"
-        }`}
-      >
+      <div className="flex min-h-12 min-w-0 items-center rounded-[15px] border border-border bg-card px-2.5 transition-colors focus-within:border-active focus-within:ring-3 focus-within:ring-active/15">
         <button
           type="button"
-          onClick={togglePicker}
+          onClick={() => setPickerOpen(true)}
           disabled={disabled}
-          aria-label="Choose category icon and color"
-          aria-expanded={pickerOpen}
-          className="finance-focus grid size-9 shrink-0 place-items-center rounded-[10px] transition-colors hover:bg-hover disabled:cursor-not-allowed disabled:opacity-50"
+          aria-label="Change category icon and color"
+          className="finance-focus grid size-10 shrink-0 place-items-center rounded-[11px] hover:bg-hover disabled:cursor-not-allowed disabled:opacity-50"
         >
           <CategoryVisualIcon
             color={visual.color}
@@ -249,7 +222,6 @@ export default function CategoryVisualField({
         </button>
         <span aria-hidden="true" className="mx-1.5 h-7 w-px shrink-0 bg-border" />
         <input
-          ref={nameInputRef}
           id={id}
           value={name}
           onChange={(event) => onNameChange(event.target.value)}
@@ -262,214 +234,228 @@ export default function CategoryVisualField({
         />
       </div>
 
-      {pickerOpen ? (
-        <section
-          aria-label="Category icon and color picker"
-          className="mt-2 w-full min-w-0 overflow-hidden rounded-[18px] border border-border bg-card shadow-[var(--shadow-lg)]"
+      <button
+        type="button"
+        onClick={() => setPickerOpen(true)}
+        disabled={disabled}
+        className="finance-focus mt-2.5 flex min-h-14 w-full min-w-0 items-center gap-3 rounded-[15px] border border-border bg-surface-secondary px-3.5 text-left transition-colors hover:border-active/25 hover:bg-hover disabled:cursor-not-allowed disabled:opacity-55"
+      >
+        <span className="grid size-9 shrink-0 place-items-center rounded-[11px] bg-card">
+          <CategoryVisualIcon
+            color={visual.color}
+            iconKey={visual.iconKey}
+            label={selectedLabel}
+            size="xs"
+          />
+        </span>
+        <span className="min-w-0 flex-1">
+          <span className="block text-xs font-bold text-text-primary">
+            Appearance
+          </span>
+          <span className="mt-0.5 flex items-center gap-1.5 text-[11px] text-text-secondary">
+            <CategoryColorDot color={visual.color} className="size-2" />
+            <span className="truncate">{selectedLabel}</span>
+          </span>
+        </span>
+        <span className="inline-flex shrink-0 items-center gap-1 text-xs font-bold text-active">
+          Change <ChevronRight size={15} />
+        </span>
+      </button>
+
+      <Sheet open={pickerOpen} onOpenChange={setPickerOpen}>
+        <SheetContent
+          side="bottom"
+          showCloseButton={false}
+          className="max-h-[92dvh] gap-0 overflow-hidden rounded-t-[28px] border-border bg-card p-0 sm:inset-x-auto sm:bottom-5 sm:left-1/2 sm:w-[min(40rem,calc(100vw-2rem))] sm:-translate-x-1/2 sm:rounded-[28px] sm:border"
         >
-          <div className="flex items-center justify-between border-b border-border px-3 py-2.5 sm:px-4">
-            <div className="min-w-0">
-              <p className="text-sm font-bold text-text-primary">Icon and color</p>
-              <p className="truncate text-[11px] text-text-secondary">
-                Custom marker icons for {type} categories
-              </p>
-            </div>
-            <button
-              type="button"
-              onClick={() => setPickerOpen(false)}
-              className="finance-focus grid size-9 shrink-0 place-items-center rounded-[10px] text-text-secondary hover:bg-hover hover:text-text-primary"
-              aria-label="Close icon picker"
-            >
-              <X size={17} />
-            </button>
-          </div>
-
-          <div className="space-y-3 p-3 sm:p-4">
-            <div
-              className="grid grid-cols-5 gap-2 sm:grid-cols-10"
-              aria-label="Quick category colors"
-            >
-              {QUICK_COLORS.map((color) => {
-                const selected = normalizeCategoryColor(visual.color) === color;
-                return (
-                  <button
-                    key={color}
-                    type="button"
-                    onClick={() => updateColor(color)}
-                    className="finance-focus grid aspect-square min-h-9 place-items-center rounded-full border border-black/5 transition-transform hover:scale-105 sm:min-h-8"
-                    style={{ backgroundColor: color }}
-                    aria-label={`Use color ${color}`}
-                    aria-pressed={selected}
-                  >
-                    {selected ? (
-                      <Check
-                        size={15}
-                        strokeWidth={3}
-                        className="text-white drop-shadow"
-                      />
-                    ) : null}
-                  </button>
-                );
-              })}
-            </div>
-
-            <button
-              type="button"
-              onClick={() => setCustomColorOpen((current) => !current)}
-              className="finance-focus flex min-h-10 w-full items-center justify-between rounded-[11px] border border-border bg-surface-secondary px-3 text-left text-xs font-bold text-text-primary hover:bg-hover"
-              aria-expanded={customColorOpen}
-            >
-              <span className="flex items-center gap-2">
-                <span
-                  className="size-4 rounded-full border border-border"
-                  style={{ backgroundColor: visual.color }}
+          <SheetHeader className="border-b border-border px-4 pb-3 pt-4 sm:px-5">
+            <div className="flex items-start gap-3">
+              <span className="grid size-11 shrink-0 place-items-center rounded-[14px] bg-surface-secondary">
+                <CategoryVisualIcon
+                  color={pendingVisual.color}
+                  iconKey={pendingVisual.iconKey}
+                  label={getIconLabel(pendingVisual.iconKey)}
+                  size="sm"
                 />
-                Custom color
               </span>
-              <ChevronDown
-                size={15}
-                className={`transition-transform ${customColorOpen ? "rotate-180" : ""}`}
-              />
-            </button>
-
-            {customColorOpen ? (
-              <div className="grid gap-3 rounded-[13px] border border-border bg-surface-secondary p-3 sm:grid-cols-[minmax(0,1fr)_minmax(12rem,0.72fr)]">
-                <div
-                  ref={colorPlaneRef}
-                  role="slider"
-                  aria-label="Color saturation and brightness"
-                  aria-valuemin={0}
-                  aria-valuemax={100}
-                  aria-valuenow={Math.round(hsv.s)}
-                  aria-valuetext={`${Math.round(hsv.s)}% saturation, ${Math.round(hsv.v)}% brightness`}
-                  tabIndex={0}
-                  onPointerDown={handleColorPointerDown}
-                  onPointerMove={handleColorPointerMove}
-                  onKeyDown={handleColorKeyDown}
-                  className="relative h-32 w-full touch-none cursor-crosshair overflow-hidden rounded-[11px] border border-border sm:h-36"
-                  style={{
-                    backgroundColor: `hsl(${hsv.h} 100% 50%)`,
-                    backgroundImage:
-                      "linear-gradient(to top, #000 0%, transparent 100%), linear-gradient(to right, #fff 0%, transparent 100%)",
-                  }}
-                >
-                  <span
-                    aria-hidden="true"
-                    className="absolute size-3 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white shadow-md"
-                    style={{ left: `${hsv.s}%`, top: `${100 - hsv.v}%` }}
-                  />
-                </div>
-                <div className="flex min-w-0 flex-col justify-center gap-3">
-                  <input
-                    type="range"
-                    min={0}
-                    max={359}
-                    value={hsv.h}
-                    onChange={(event) =>
-                      updateHsv({ ...hsv, h: Number(event.target.value) })
-                    }
-                    aria-label="Color hue"
-                    className="h-2 w-full cursor-pointer appearance-none rounded-full"
-                    style={{
-                      background:
-                        "linear-gradient(to right, #ff0000, #ffff00, #00ff00, #00ffff, #0000ff, #ff00ff, #ff0000)",
-                    }}
-                  />
-                  <div className="grid grid-cols-[2.5rem_minmax(0,1fr)_2.5rem] items-center gap-2">
-                    <span className="text-[11px] font-semibold text-text-secondary">
-                      Hex
-                    </span>
-                    <input
-                      value={hexDraft}
-                      onChange={handleHexChange}
-                      onBlur={() =>
-                        setHexDraft(normalizeCategoryColor(visual.color))
-                      }
-                      aria-label="Hex color"
-                      className="min-h-9 min-w-0 rounded-[9px] border border-border bg-card px-2 text-xs font-semibold uppercase text-text-primary outline-none focus:border-active"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => void copyHex()}
-                      className="finance-focus grid size-9 place-items-center rounded-[9px] border border-border bg-card text-text-secondary hover:bg-hover hover:text-text-primary"
-                      aria-label="Copy hex color"
-                    >
-                      <Copy size={14} />
-                    </button>
-                  </div>
-                </div>
+              <div className="min-w-0 flex-1">
+                <SheetTitle className="text-base font-bold text-text-primary">
+                  Category appearance
+                </SheetTitle>
+                <p className="mt-0.5 text-xs leading-5 text-text-secondary">
+                  Pick one clear icon and color. Financial data stays unchanged.
+                </p>
               </div>
-            ) : null}
+              <button
+                type="button"
+                onClick={() => setPickerOpen(false)}
+                className="finance-focus grid size-9 shrink-0 place-items-center rounded-[11px] text-text-secondary hover:bg-hover hover:text-text-primary"
+                aria-label="Close appearance picker"
+              >
+                <X size={18} />
+              </button>
+            </div>
+          </SheetHeader>
 
+          <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 py-4 sm:px-5">
             <div className="relative">
               <Search
-                size={15}
+                size={16}
+                className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-text-tertiary"
                 aria-hidden="true"
-                className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-text-tertiary"
               />
               <input
-                value={iconQuery}
-                onChange={(event) => setIconQuery(event.target.value)}
+                value={query}
+                onChange={(event) => setQuery(event.target.value)}
                 placeholder={`Search ${type} icons`}
                 aria-label={`Search ${type} category icons`}
-                className="min-h-11 w-full rounded-[11px] border border-border bg-surface-secondary pl-9 pr-3 text-sm text-text-primary outline-none placeholder:text-text-tertiary focus:border-active"
+                className="min-h-11 w-full rounded-[14px] border border-border bg-surface-secondary pl-10 pr-3 text-sm font-medium text-text-primary outline-none placeholder:text-text-tertiary focus:border-active"
               />
             </div>
 
-            <div className="max-h-[min(42dvh,20rem)] overflow-y-auto overscroll-contain pr-1 [scrollbar-width:thin]">
-              <div
-                className="grid grid-cols-5 gap-2 min-[390px]:grid-cols-6 sm:grid-cols-8"
-                role="listbox"
-                aria-label="Category marker icons"
+            <div className="-mx-1 mt-3 flex gap-2 overflow-x-auto px-1 pb-1 [scrollbar-width:none]">
+              <button
+                type="button"
+                onClick={() => setFilter("all")}
+                aria-pressed={filter === "all"}
+                className={`finance-focus shrink-0 rounded-full px-3 py-1.5 text-xs font-bold ${
+                  filter === "all"
+                    ? "bg-active text-white"
+                    : "border border-border bg-surface-secondary text-text-secondary hover:bg-hover"
+                }`}
               >
-                {iconOptions.map((entry) => {
-                  const selected = visual.iconKey === entry.iconKey;
+                All
+              </button>
+              {CATEGORY_ICON_GROUPS.map((group) => (
+                <button
+                  key={group.value}
+                  type="button"
+                  onClick={() => setFilter(group.value)}
+                  aria-pressed={filter === group.value}
+                  className={`finance-focus shrink-0 rounded-full px-3 py-1.5 text-xs font-bold ${
+                    filter === group.value
+                      ? "bg-active text-white"
+                      : "border border-border bg-surface-secondary text-text-secondary hover:bg-hover"
+                  }`}
+                >
+                  {group.label}
+                </button>
+              ))}
+            </div>
+
+            {!query && filter === "all" && featuredKeys.length > 0 ? (
+              <section className="mt-4">
+                <p className="mb-2 text-[11px] font-bold uppercase tracking-[0.14em] text-text-secondary">
+                  Suggested and recent
+                </p>
+                <div className="grid grid-cols-4 gap-2 sm:grid-cols-6">
+                  {featuredKeys.map((iconKey) => (
+                    <IconButton
+                      key={iconKey}
+                      iconKey={iconKey}
+                      label={getIconLabel(iconKey)}
+                      color={pendingVisual.color}
+                      selected={pendingVisual.iconKey === iconKey}
+                      onClick={() => chooseIcon(iconKey)}
+                    />
+                  ))}
+                </div>
+              </section>
+            ) : null}
+
+            <section className="mt-4">
+              <p className="mb-2 text-[11px] font-bold uppercase tracking-[0.14em] text-text-secondary">
+                {query ? "Search results" : "Icons"}
+              </p>
+              {options.length > 0 ? (
+                <div className="grid grid-cols-4 gap-2 sm:grid-cols-6">
+                  {options.map((entry) => (
+                    <IconButton
+                      key={entry.iconKey}
+                      iconKey={entry.iconKey}
+                      label={entry.label}
+                      color={pendingVisual.color}
+                      selected={pendingVisual.iconKey === entry.iconKey}
+                      onClick={() => chooseIcon(entry.iconKey)}
+                    />
+                  ))}
+                </div>
+              ) : (
+                <div className="rounded-[16px] border border-dashed border-border px-4 py-8 text-center">
+                  <p className="text-sm font-bold text-text-primary">
+                    No matching icons
+                  </p>
+                  <p className="mt-1 text-xs text-text-secondary">
+                    Try another word or icon group.
+                  </p>
+                </div>
+              )}
+            </section>
+
+            <section className="mt-5 border-t border-border pt-4">
+              <div className="mb-3 flex items-center gap-2">
+                <Palette size={16} className="text-text-secondary" />
+                <p className="text-sm font-bold text-text-primary">Color</p>
+              </div>
+              <div className="grid grid-cols-5 gap-2 sm:grid-cols-10">
+                {QUICK_COLORS.map((color) => {
+                  const selected =
+                    normalizeCategoryColor(pendingVisual.color) === color;
                   return (
                     <button
-                      key={`${entry.iconKey}-${entry.label}`}
+                      key={color}
                       type="button"
-                      onClick={() => selectIcon(entry.iconKey)}
-                      aria-label={entry.label}
-                      aria-selected={selected}
-                      role="option"
-                      className={`finance-focus group grid min-h-16 min-w-0 place-items-center gap-1 rounded-[12px] border px-1.5 py-2 text-center transition-colors ${
-                        selected
-                          ? "border-active bg-active/10 ring-1 ring-inset ring-active/40"
-                          : "border-transparent bg-surface-secondary hover:border-border hover:bg-hover"
-                      }`}
+                      onClick={() => chooseColor(color)}
+                      aria-label={`Use color ${color}`}
+                      aria-pressed={selected}
+                      className="finance-focus grid aspect-square min-h-10 place-items-center rounded-full border border-black/5 transition-transform hover:scale-105 sm:min-h-9"
+                      style={{ backgroundColor: color }}
                     >
-                      <CategoryVisualIcon
-                        color={visual.color}
-                        iconKey={entry.iconKey}
-                        label={entry.label}
-                        size="xs"
-                      />
-                      <span className="w-full truncate text-[9px] font-semibold leading-3 text-text-secondary group-hover:text-text-primary sm:text-[10px]">
-                        {entry.label}
-                      </span>
+                      {selected ? (
+                        <Check
+                          size={15}
+                          strokeWidth={3}
+                          className="text-white drop-shadow"
+                        />
+                      ) : null}
                     </button>
                   );
                 })}
               </div>
-              {iconOptions.length === 0 ? (
-                <p className="py-7 text-center text-xs text-text-secondary">
-                  No matching custom icon found.
-                </p>
-              ) : null}
-            </div>
+              <div className="mt-3 grid grid-cols-[3rem_minmax(0,1fr)] gap-2">
+                <label className="finance-focus relative grid size-11 cursor-pointer place-items-center overflow-hidden rounded-[13px] border border-border bg-surface-secondary">
+                  <input
+                    type="color"
+                    value={normalizeCategoryColor(pendingVisual.color)}
+                    onChange={(event) => chooseColor(event.target.value)}
+                    className="absolute inset-0 size-full cursor-pointer opacity-0"
+                    aria-label="Choose custom category color"
+                  />
+                  <CategoryColorDot
+                    color={pendingVisual.color}
+                    className="size-6 border border-black/10"
+                  />
+                </label>
+                <input
+                  value={hexDraft}
+                  onChange={(event) => handleHexChange(event.target.value)}
+                  onBlur={() =>
+                    setHexDraft(normalizeCategoryColor(pendingVisual.color))
+                  }
+                  aria-label="Category color hex value"
+                  className="min-h-11 min-w-0 rounded-[13px] border border-border bg-surface-secondary px-3 text-sm font-bold uppercase text-text-primary outline-none focus:border-active"
+                />
+              </div>
+            </section>
           </div>
 
-          <div className="border-t border-border bg-surface-secondary p-2.5 sm:p-3">
-            <button
-              type="button"
-              onClick={() => setPickerOpen(false)}
-              className="finance-focus min-h-11 w-full rounded-[11px] bg-card px-3 text-center text-sm font-bold text-text-primary shadow-[var(--shadow-xs)] hover:bg-hover"
-            >
-              Done
-            </button>
-          </div>
-        </section>
-      ) : null}
+          <SheetFooter className="border-t border-border bg-card px-4 pb-[calc(1rem+env(safe-area-inset-bottom))] pt-3 sm:px-5">
+            <Button type="button" size="lg" onClick={applyAppearance}>
+              Apply appearance
+            </Button>
+          </SheetFooter>
+        </SheetContent>
+      </Sheet>
     </div>
   );
 }

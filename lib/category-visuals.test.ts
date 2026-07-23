@@ -28,7 +28,16 @@ describe("category visual intelligence", () => {
 
   it("uses the category type to distinguish rent income from rent expense", () => {
     expect(getSemanticCategoryIconKey("rent", "income")).toBe("building");
-    expect(getSemanticCategoryIconKey("rent", "expense")).toBe("home");
+    expect(getSemanticCategoryIconKey("rent", "expense")).toBe("rent");
+  });
+
+
+  it("uses distinct semantic icons for common categories instead of generic tags", () => {
+    expect(getSemanticCategoryIconKey("Bills", "expense")).toBe("bills");
+    expect(getSemanticCategoryIconKey("Help", "expense")).toBe("help");
+    expect(getSemanticCategoryIconKey("Investments", "expense")).toBe("investments");
+    expect(getSemanticCategoryIconKey("Charity", "expense")).toBe("charity");
+    expect(getSemanticCategoryIconKey("Insurance", "expense")).toBe("insurance");
   });
 
   it("keeps saved colors but replaces legacy emoji presentation with a custom icon", () => {

@@ -4,17 +4,18 @@ import type { FormEvent, ReactNode } from "react";
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
+  Archive,
   Check,
   ChevronRight,
   Eye,
   LayoutGrid,
-  Lightbulb,
   Loader2,
+  MoreHorizontal,
   Pencil,
   Plus,
-  Save,
+  Search,
+  SlidersHorizontal,
   Trash2,
-  X,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -29,11 +30,25 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
   FinanceFormField,
   FinanceModalBody,
   FinanceModalHeader,
   financeModalContentClass,
 } from "@/components/ui/finance-modal";
+import {
+  Sheet,
+  SheetContent,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   CategoryVisualIcon,
@@ -46,15 +61,23 @@ import {
   CATEGORY_DELETE_VERIFICATION_ERROR,
   validateCategoryDeleteReadiness,
 } from "@/lib/settings/security";
-import { createClient } from "@/lib/supabase/client";
 
-type CategoryDialogMode = "create" | "view" | null;
+type CategoryDialogMode = "create" | "manage" | null;
+type SortMode = "az" | "used" | "newest";
 
 type Props = {
   initialCategories: PersistentSettingsCategory[];
   initialUsage: Record<string, number>;
   userId: string;
   available: boolean;
+};
+
+type CategoryMutationAction = "create" | "update" | "archive" | "delete";
+
+type CategoryMutationResponse = {
+  category?: PersistentSettingsCategory;
+  error?: string;
+  code?: string;
 };
 
 const EMPTY_VISUAL: CategoryVisual = {
@@ -115,7 +138,7 @@ function TypeSelector({
 }) {
   return (
     <div
-      className="grid grid-cols-2 rounded-[16px] border border-border bg-surface-secondary p-1"
+      className="grid grid-cols-2 rounded-[15px] border border-border bg-surface-secondary p-1"
       role="radiogroup"
       aria-label="Category type"
     >
@@ -129,11 +152,11 @@ function TypeSelector({
             aria-checked={active}
             disabled={disabled}
             onClick={() => onChange(type)}
-            className={`finance-focus inline-flex min-h-11 items-center justify-center gap-2 rounded-[12px] px-3 text-sm font-bold capitalize transition-colors disabled:cursor-not-allowed disabled:opacity-60 ${
+            className={`finance-focus inline-flex min-h-11 items-center justify-center gap-2 rounded-[11px] px-3 text-sm font-bold capitalize transition-colors disabled:cursor-not-allowed disabled:opacity-60 ${
               active
                 ? type === "income"
-                  ? "bg-success text-[var(--status-foreground)] shadow-sm"
-                  : "bg-danger text-[var(--status-foreground)] shadow-sm"
+                  ? "bg-success text-[var(--status-foreground)]"
+                  : "bg-danger text-[var(--status-foreground)]"
                 : "text-text-secondary hover:bg-hover hover:text-text-primary"
             }`}
           >
@@ -146,30 +169,61 @@ function TypeSelector({
   );
 }
 
+function createRequestKey() {
+  if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
+    return crypto.randomUUID();
+  }
+  return `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+}
+
+async function mutateCategory(
+  action: CategoryMutationAction,
+  payload: Record<string, unknown>,
+) {
+  const response = await fetch("/api/categories", {
+    method: "POST",
+    credentials: "same-origin",
+    headers: {
+      "Content-Type": "application/json",
+      "X-Category-Request-Key": createRequestKey(),
+    },
+    body: JSON.stringify({ action, ...payload }),
+  });
+  const result = (await response.json().catch(() => ({}))) as CategoryMutationResponse;
+  if (!response.ok) {
+    throw new Error(result.error || "Category change could not be completed.");
+  }
+  return result.category ?? null;
+}
+
 export default function CategorySettingsSection({
   initialCategories,
   initialUsage,
-  userId,
+  userId: _userId,
   available,
 }: Props) {
   const router = useRouter();
-  const supabase = useMemo(() => createClient(), []);
   const [dialogMode, setDialogMode] = useState<CategoryDialogMode>(null);
   const [categories, setCategories] = useState(initialCategories);
   const [usage, setUsage] = useState(initialUsage);
   const [activeTab, setActiveTab] = useState<CategoryKind>("income");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [sortMode, setSortMode] = useState<SortMode>("az");
 
   const [draftName, setDraftName] = useState("");
   const [draftType, setDraftType] = useState<CategoryKind>("income");
+  const [draftParentId, setDraftParentId] = useState<string | null>(null);
   const [draftVisual, setDraftVisual] = useState<CategoryVisual>(EMPTY_VISUAL);
   const [draftVisualTouched, setDraftVisualTouched] = useState(false);
 
-  const [savingId, setSavingId] = useState<string | null>(null);
-  const [editingId, setEditingId] = useState<string | null>(null);
+  const [selectedCategory, setSelectedCategory] =
+    useState<PersistentSettingsCategory | null>(null);
   const [editName, setEditName] = useState("");
   const [editType, setEditType] = useState<CategoryKind>("income");
+  const [editParentId, setEditParentId] = useState<string | null>(null);
   const [editVisual, setEditVisual] = useState<CategoryVisual>(EMPTY_VISUAL);
 
+  const [savingId, setSavingId] = useState<string | null>(null);
   const [pendingDelete, setPendingDelete] =
     useState<PersistentSettingsCategory | null>(null);
   const [deleteFeedback, setDeleteFeedback] = useState<string | null>(null);
@@ -178,11 +232,14 @@ export default function CategorySettingsSection({
   useEffect(() => setCategories(initialCategories), [initialCategories]);
   useEffect(() => setUsage(initialUsage), [initialUsage]);
 
+  const originalIndex = useMemo(
+    () => new Map(categories.map((category, index) => [category.id, index])),
+    [categories],
+  );
   const categoryById = useMemo(
     () => new Map(categories.map((category) => [category.id, category])),
     [categories],
   );
-
   const childCountByParent = useMemo(
     () =>
       categories.reduce<Record<string, number>>((counts, category) => {
@@ -194,6 +251,19 @@ export default function CategorySettingsSection({
     [categories],
   );
 
+  const parentOptions = useMemo(
+    () =>
+      categories
+        .filter(
+          (category) =>
+            category.type === "expense" &&
+            !category.parent_id &&
+            category.id !== selectedCategory?.id,
+        )
+        .sort((left, right) => left.name.localeCompare(right.name)),
+    [categories, selectedCategory?.id],
+  );
+
   const suggestedDraftVisual = useMemo(
     () => getNextCategoryVisual(categories, draftName || "Category", draftType),
     [categories, draftName, draftType],
@@ -202,141 +272,123 @@ export default function CategorySettingsSection({
     ? draftVisual
     : suggestedDraftVisual;
 
-  function openCreateDialog() {
-    const type: CategoryKind = "income";
+  function resetCreate(type: CategoryKind = "income") {
     setDraftName("");
     setDraftType(type);
+    setDraftParentId(null);
     setDraftVisual(getNextCategoryVisual(categories, "Category", type));
     setDraftVisualTouched(false);
-    setEditingId(null);
+  }
+
+  function openCreateDialog(type: CategoryKind = "income") {
+    resetCreate(type);
     setDialogMode("create");
   }
 
-  function openViewDialog() {
-    setEditingId(null);
-    setDialogMode("view");
+  function openManageDialog() {
+    setSearchQuery("");
+    setSelectedCategory(null);
+    setDialogMode("manage");
   }
 
   function closeMainDialog() {
     setDialogMode(null);
-    setEditingId(null);
-    setDraftName("");
-    setDraftVisualTouched(false);
+    setSelectedCategory(null);
+    resetCreate();
   }
 
-  function hasDuplicateName(
-    name: string,
-    type: CategoryKind,
-    excludeId?: string,
-  ) {
-    const normalized = name.trim().toLowerCase();
-    return categories.some(
-      (category) =>
-        category.id !== excludeId &&
-        category.type === type &&
-        category.name.trim().toLowerCase() === normalized,
-    );
+  function openCategoryDetails(category: PersistentSettingsCategory) {
+    setSelectedCategory(category);
+    setEditName(category.name);
+    setEditType(category.type);
+    setEditParentId(category.parent_id);
+    setEditVisual(getCategoryVisual(category));
   }
 
   async function addCategory(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const name = draftName.trim();
-
     if (!name) {
       toast.error("Enter a category name.");
       return;
     }
-    if (hasDuplicateName(name, draftType)) {
-      toast.error(`${name} already exists in ${draftType} categories.`);
-      return;
-    }
 
     setSavingId("new");
-    const { data, error } = await supabase
-      .from("categories")
-      .insert({
-        user_id: userId,
+    try {
+      const created = await mutateCategory("create", {
         name,
         type: draftType,
         color: resolvedDraftVisual.color,
-        icon_key: resolvedDraftVisual.iconKey,
-        parent_id: null,
-      })
-      .select("id, name, type, color, icon_key, parent_id")
-      .single();
-    setSavingId(null);
+        iconKey: resolvedDraftVisual.iconKey,
+        parentId: draftType === "expense" ? draftParentId : null,
+      });
+      if (!created) throw new Error("The category was not returned.");
+      setCategories((current) => [...current, created]);
+      setUsage((current) => ({ ...current, [created.id]: 0 }));
+      setActiveTab(created.type);
+      setDialogMode("manage");
+      resetCreate(created.type);
+      toast.success(`${created.name} created.`);
+      router.refresh();
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Could not create category.");
+    } finally {
+      setSavingId(null);
+    }
+  }
 
-    if (error || !data) {
-      toast.error("Could not create category. Please try again.");
+  async function updateCategory() {
+    const category = selectedCategory;
+    if (!category) return;
+    const name = editName.trim();
+    if (!name) {
+      toast.error("Enter a category name.");
       return;
     }
 
-    const created = data as PersistentSettingsCategory;
-    setCategories((current) => [...current, created]);
-    setUsage((current) => ({ ...current, [created.id]: 0 }));
-    setActiveTab(created.type);
-    closeMainDialog();
-    toast.success(`${name} created with its saved emoji and color.`);
-    router.refresh();
-  }
-
-  function startEdit(category: PersistentSettingsCategory) {
-    setEditingId(category.id);
-    setEditName(category.name);
-    setEditType(category.type);
-    setEditVisual(getCategoryVisual(category));
-  }
-
-  function cancelEdit() {
-    setEditingId(null);
-    setEditName("");
-  }
-
-  async function updateCategory(category: PersistentSettingsCategory) {
-    const name = editName.trim();
     const usageCount = usage[category.id] ?? 0;
     const childCount = childCountByParent[category.id] ?? 0;
     const canChangeType = usageCount === 0 && childCount === 0;
     const nextType = canChangeType ? editType : category.type;
 
-    if (!name) {
-      toast.error("Enter a category name.");
-      return;
-    }
-    if (hasDuplicateName(name, nextType, category.id)) {
-      toast.error(`${name} already exists in ${nextType} categories.`);
-      return;
-    }
-
     setSavingId(category.id);
-    const { data, error } = await supabase
-      .from("categories")
-      .update({
+    try {
+      const updated = await mutateCategory("update", {
+        categoryId: category.id,
         name,
         type: nextType,
         color: editVisual.color,
-        icon_key: editVisual.iconKey,
-        parent_id: nextType === "income" ? null : category.parent_id,
-      })
-      .eq("id", category.id)
-      .eq("user_id", userId)
-      .select("id, name, type, color, icon_key, parent_id")
-      .single();
-    setSavingId(null);
-
-    if (error || !data) {
-      toast.error("Could not update category. Please try again.");
-      return;
+        iconKey: editVisual.iconKey,
+        parentId: nextType === "expense" ? editParentId : null,
+      });
+      if (!updated) throw new Error("The updated category was not returned.");
+      setCategories((current) =>
+        current.map((item) => (item.id === updated.id ? updated : item)),
+      );
+      setActiveTab(updated.type);
+      setSelectedCategory(null);
+      toast.success(`${updated.name} updated.`);
+      router.refresh();
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Could not update category.");
+    } finally {
+      setSavingId(null);
     }
+  }
 
-    const updated = data as PersistentSettingsCategory;
-    setCategories((current) =>
-      current.map((item) => (item.id === updated.id ? updated : item)),
-    );
-    setActiveTab(updated.type);
-    cancelEdit();
-    toast.success(`${name} and its visual memory were updated.`);
-    router.refresh();
+  async function archiveCategory(category: PersistentSettingsCategory) {
+    setSavingId(category.id);
+    try {
+      await mutateCategory("archive", { categoryId: category.id });
+      setCategories((current) => current.filter((item) => item.id !== category.id));
+      setSelectedCategory(null);
+      toast.success(`${category.name} archived.`);
+      router.refresh();
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Could not archive category.");
+    } finally {
+      setSavingId(null);
+    }
   }
 
   function requestCategoryDelete(category: PersistentSettingsCategory) {
@@ -344,12 +396,10 @@ export default function CategorySettingsSection({
       usageCount: usage[category.id] ?? 0,
       childCount: childCountByParent[category.id] ?? 0,
     });
-
     if (!readiness.ok) {
       toast.error(readiness.error);
       return;
     }
-
     setDeleteFeedback(null);
     setPendingDelete(category);
   }
@@ -357,202 +407,145 @@ export default function CategorySettingsSection({
   async function confirmCategoryDelete() {
     const category = pendingDelete;
     if (!category || isDeletingCategory) return;
-
     setIsDeletingCategory(true);
     setDeleteFeedback(null);
 
     try {
-      const [usageResult, childResult] = await Promise.all([
-        supabase
-          .from("transactions")
-          .select("id", { count: "exact", head: true })
-          .eq("user_id", userId)
-          .eq("category_id", category.id),
-        supabase
-          .from("categories")
-          .select("id", { count: "exact", head: true })
-          .eq("user_id", userId)
-          .eq("parent_id", category.id),
-      ]);
-
-      const readiness = validateCategoryDeleteReadiness({
-        usageCount: usageResult.error ? null : usageResult.count,
-        childCount: childResult.error ? null : childResult.count,
-      });
-
-      if (!readiness.ok) {
-        if (readiness.error === CATEGORY_DELETE_VERIFICATION_ERROR) {
-          setDeleteFeedback(CATEGORY_DELETE_VERIFICATION_ERROR);
-          return;
-        }
-        toast.error(readiness.error);
-        setPendingDelete(null);
-        router.refresh();
-        return;
-      }
-
-      const { data: deletedCategory, error: deleteError } = await supabase
-        .from("categories")
-        .delete()
-        .eq("id", category.id)
-        .eq("user_id", userId)
-        .select("id")
-        .maybeSingle();
-
-      if (deleteError || !deletedCategory) {
-        setDeleteFeedback("Could not delete category. Please try again.");
-        return;
-      }
-
-      setCategories((current) =>
-        current.filter((item) => item.id !== category.id),
-      );
+      await mutateCategory("delete", { categoryId: category.id });
+      setCategories((current) => current.filter((item) => item.id !== category.id));
       setUsage((current) => {
         const next = { ...current };
         delete next[category.id];
         return next;
       });
+      setSelectedCategory(null);
       setPendingDelete(null);
-      toast.success(`${category.name} removed.`);
+      toast.success(`${category.name} permanently deleted.`);
       router.refresh();
-    } catch {
-      setDeleteFeedback("Could not verify or delete category. Please try again.");
+    } catch (error) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : CATEGORY_DELETE_VERIFICATION_ERROR;
+      setDeleteFeedback(message);
     } finally {
       setIsDeletingCategory(false);
     }
   }
 
-  function CategoryList({ type }: { type: CategoryKind }) {
-    const items = categories
-      .filter((category) => category.type === type)
-      .sort((left, right) => left.name.localeCompare(right.name));
+  function visibleCategories(type: CategoryKind) {
+    const query = searchQuery.trim().toLowerCase();
+    const items = categories.filter(
+      (category) =>
+        category.type === type &&
+        (!query || category.name.toLowerCase().includes(query)),
+    );
 
+    return [...items].sort((left, right) => {
+      if (sortMode === "used") {
+        const usageDifference = (usage[right.id] ?? 0) - (usage[left.id] ?? 0);
+        if (usageDifference !== 0) return usageDifference;
+      }
+      if (sortMode === "newest") {
+        return (originalIndex.get(right.id) ?? 0) - (originalIndex.get(left.id) ?? 0);
+      }
+      return left.name.localeCompare(right.name);
+    });
+  }
+
+  function CategoryList({ type }: { type: CategoryKind }) {
+    const items = visibleCategories(type);
     if (items.length === 0) {
       return (
-        <div className="rounded-[20px] border border-dashed border-border bg-surface-secondary px-5 py-8 text-center">
+        <div className="rounded-[18px] border border-dashed border-border px-5 py-10 text-center">
           <p className="text-sm font-bold text-text-primary">
-            No {type} categories yet
+            {searchQuery ? "No matching categories" : `No ${type} categories yet`}
           </p>
           <p className="mt-1 text-xs leading-5 text-text-secondary">
-            Categories of this type will appear here.
+            {searchQuery
+              ? "Try a different search word."
+              : "Create one to organize future transactions."}
           </p>
         </div>
       );
     }
 
     return (
-      <div className="space-y-2">
-        {items.map((category) => {
+      <div className="overflow-hidden rounded-[18px] border border-border bg-card">
+        {items.map((category, index) => {
           const usageCount = usage[category.id] ?? 0;
-          const childCount = childCountByParent[category.id] ?? 0;
           const parent = category.parent_id
             ? categoryById.get(category.parent_id)
             : null;
-          const canChangeType = usageCount === 0 && childCount === 0;
-
-          if (editingId === category.id) {
-            return (
-              <div
-                key={category.id}
-                className="rounded-[20px] border border-active/30 bg-surface-secondary p-3 sm:p-4"
-              >
-                <CategoryVisualField
-                  id={`edit-category-${category.id}`}
-                  name={editName}
-                  type={editType}
-                  visual={editVisual}
-                  onNameChange={setEditName}
-                  onVisualChange={setEditVisual}
-                  placeholder="Category name"
-                  ariaLabel={`Edit ${category.name} name`}
-                  disabled={savingId === category.id}
-                />
-                <div className="mt-3">
-                  <TypeSelector
-                    value={editType}
-                    onChange={setEditType}
-                    disabled={!canChangeType || savingId === category.id}
-                  />
-                </div>
-                {!canChangeType ? (
-                  <p className="mt-2 text-xs leading-5 text-text-secondary">
-                    Type cannot change while this category is in use. Its name,
-                    emoji and color can still be updated without affecting data.
-                  </p>
-                ) : null}
-                <div className="mt-3 flex justify-end gap-2">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={cancelEdit}
-                    disabled={savingId === category.id}
-                  >
-                    <X size={14} /> Cancel
-                  </Button>
-                  <Button
-                    type="button"
-                    size="sm"
-                    onClick={() => void updateCategory(category)}
-                    disabled={savingId === category.id || !editName.trim()}
-                  >
-                    {savingId === category.id ? (
-                      <Loader2 size={14} className="animate-spin" />
-                    ) : (
-                      <Save size={14} />
-                    )}
-                    Save
-                  </Button>
-                </div>
-              </div>
-            );
-          }
-
           return (
             <div
               key={category.id}
-              className="rounded-[20px] border border-border bg-card p-3 transition-colors hover:border-active/25 hover:bg-hover sm:px-4"
+              className={`flex min-w-0 items-center gap-2 px-3 py-2.5 sm:px-4 ${
+                index > 0 ? "border-t border-border" : ""
+              }`}
             >
-              <div className="flex min-w-0 items-center gap-3">
+              <button
+                type="button"
+                onClick={() => openCategoryDetails(category)}
+                className="finance-focus flex min-w-0 flex-1 items-center gap-3 rounded-[13px] px-1 py-1.5 text-left hover:bg-hover"
+              >
                 <CategoryVisualIcon category={category} size="sm" />
-                <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-bold text-text-primary">
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate text-sm font-bold text-text-primary">
                     {category.name}
-                  </p>
-                  <p className="mt-1 truncate text-[11px] leading-4 text-text-secondary">
-                    {parent ? `Under ${parent.name}` : "Top level"}
-                    {` · ${usageCount} ${usageCount === 1 ? "transaction" : "transactions"}`}
-                    {childCount > 0 ? ` · ${childCount} subcategories` : ""}
-                  </p>
-                </div>
-                <div className="flex shrink-0 items-center gap-1">
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon-sm"
-                    onClick={() => startEdit(category)}
-                    aria-label={`Edit ${category.name}`}
+                  </span>
+                  <span className="mt-0.5 block truncate text-[11px] text-text-secondary">
+                    {usageCount} {usageCount === 1 ? "transaction" : "transactions"}
+                    {parent ? ` · Under ${parent.name}` : " · Top level"}
+                  </span>
+                </span>
+              </button>
+
+              <DropdownMenu>
+                <DropdownMenuTrigger
+                  aria-label={`Actions for ${category.name}`}
+                  className="finance-focus grid size-10 shrink-0 place-items-center rounded-[12px] text-text-secondary hover:bg-hover hover:text-text-primary"
+                >
+                  <MoreHorizontal size={18} />
+                </DropdownMenuTrigger>
+                <DropdownMenuContent
+                  align="end"
+                  className="w-44 rounded-[13px] border border-border bg-card p-1.5"
+                >
+                  <DropdownMenuItem
+                    onClick={() => openCategoryDetails(category)}
+                    className="min-h-9 rounded-[9px] px-2.5"
                   >
-                    <Pencil size={14} />
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon-sm"
+                    <Pencil size={15} /> Edit details
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => void archiveCategory(category)}
+                    className="min-h-9 rounded-[9px] px-2.5"
+                  >
+                    <Archive size={15} /> Archive
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    variant="destructive"
                     onClick={() => requestCategoryDelete(category)}
-                    aria-label={`Delete ${category.name}`}
-                    className="text-danger hover:text-danger"
+                    className="min-h-9 rounded-[9px] px-2.5"
                   >
-                    <Trash2 size={14} />
-                  </Button>
-                </div>
-              </div>
+                    <Trash2 size={15} /> Delete permanently
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           );
         })}
       </div>
     );
   }
+
+  const selectedUsage = selectedCategory ? usage[selectedCategory.id] ?? 0 : 0;
+  const selectedChildCount = selectedCategory
+    ? childCountByParent[selectedCategory.id] ?? 0
+    : 0;
+  const canChangeSelectedType = selectedUsage === 0 && selectedChildCount === 0;
 
   return (
     <>
@@ -570,10 +563,10 @@ export default function CategorySettingsSection({
             title="Create Category"
             description={
               available
-                ? "Add a new income or expense category"
+                ? "Add a clean income or expense category"
                 : "Category data is currently unavailable"
             }
-            onClick={openCreateDialog}
+            onClick={() => openCreateDialog()}
             disabled={!available}
           />
           <div className="ml-[76px] h-px bg-border" />
@@ -586,10 +579,10 @@ export default function CategorySettingsSection({
             title="View Categories"
             description={
               available
-                ? "View, edit, or delete saved categories"
+                ? "Search, edit, archive, or delete categories"
                 : "Category data is currently unavailable"
             }
-            onClick={openViewDialog}
+            onClick={openManageDialog}
             disabled={!available}
           />
         </div>
@@ -603,25 +596,35 @@ export default function CategorySettingsSection({
       >
         <DialogContent
           className={`${financeModalContentClass} w-[calc(100vw-1rem)] ${
-            dialogMode === "view"
-              ? "sm:[--finance-modal-max-width:46rem]"
-              : "sm:[--finance-modal-max-width:36rem]"
+            dialogMode === "manage"
+              ? "sm:[--finance-modal-max-width:42rem]"
+              : "sm:[--finance-modal-max-width:34rem]"
           }`}
         >
           <FinanceModalHeader
             title={dialogMode === "create" ? "Create category" : "Categories"}
             description={
-              dialogMode === "view"
-                ? "View, edit, or delete income and expense categories."
+              dialogMode === "manage"
+                ? "A clean manager for income and expense categories."
                 : undefined
             }
-            icon={dialogMode === "view" ? LayoutGrid : undefined}
+            icon={dialogMode === "manage" ? LayoutGrid : undefined}
             tone="info"
           />
 
           <FinanceModalBody>
             {dialogMode === "create" ? (
               <form onSubmit={addCategory} className="space-y-4">
+                <FinanceFormField label="Category type">
+                  <TypeSelector
+                    value={draftType}
+                    onChange={(type) => {
+                      setDraftType(type);
+                      setDraftParentId(null);
+                    }}
+                  />
+                </FinanceFormField>
+
                 <FinanceFormField
                   label="Category name"
                   htmlFor="settings-category-name"
@@ -640,23 +643,26 @@ export default function CategorySettingsSection({
                   />
                 </FinanceFormField>
 
-                <div className="flex gap-3 rounded-[16px] border border-border bg-surface-secondary px-4 py-3.5">
-                  <Lightbulb
-                    size={20}
-                    className="mt-0.5 shrink-0 text-text-secondary"
-                    aria-hidden="true"
-                  />
-                  <p className="text-xs leading-5 text-text-secondary sm:text-sm sm:leading-6">
-                    Custom marker icons and colors stay with each category across
-                    transactions and reports without changing existing financial data.
-                  </p>
-                </div>
+                {draftType === "expense" ? (
+                  <FinanceFormField label="Parent category (optional)">
+                    <select
+                      value={draftParentId ?? ""}
+                      onChange={(event) =>
+                        setDraftParentId(event.target.value || null)
+                      }
+                      className="min-h-12 w-full rounded-[15px] border border-border bg-card px-3 text-sm font-semibold text-text-primary outline-none focus:border-active"
+                    >
+                      <option value="">Top level</option>
+                      {parentOptions.map((category) => (
+                        <option key={category.id} value={category.id}>
+                          {category.name}
+                        </option>
+                      ))}
+                    </select>
+                  </FinanceFormField>
+                ) : null}
 
-                <FinanceFormField label="Category type">
-                  <TypeSelector value={draftType} onChange={setDraftType} />
-                </FinanceFormField>
-
-                <div className="border-t border-border pt-4">
+                <div className="sticky bottom-0 z-10 -mx-1 border-t border-border bg-card/95 px-1 pb-1 pt-3 backdrop-blur-sm">
                   <Button
                     type="submit"
                     size="lg"
@@ -673,34 +679,216 @@ export default function CategorySettingsSection({
                 </div>
               </form>
             ) : (
-              <Tabs
-                value={activeTab}
-                onValueChange={(value: string) => {
-                  setActiveTab(value as CategoryKind);
-                  cancelEdit();
-                }}
-              >
-                <TabsList className="grid w-full grid-cols-2">
-                  <TabsTrigger value="income">
-                    Income ({categories.filter((item) => item.type === "income").length})
-                  </TabsTrigger>
-                  <TabsTrigger value="expense">
-                    Expense ({categories.filter((item) => item.type === "expense").length})
-                  </TabsTrigger>
-                </TabsList>
-                <div className="mt-3 max-h-[min(62dvh,36rem)] overflow-y-auto overscroll-contain pr-1">
-                  <TabsContent value="income" className="mt-0">
-                    <CategoryList type="income" />
-                  </TabsContent>
-                  <TabsContent value="expense" className="mt-0">
-                    <CategoryList type="expense" />
-                  </TabsContent>
+              <div className="min-h-0">
+                <div className="sticky top-0 z-10 bg-card pb-3">
+                  <div className="flex gap-2">
+                    <div className="relative min-w-0 flex-1">
+                      <Search
+                        size={16}
+                        className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-text-tertiary"
+                        aria-hidden="true"
+                      />
+                      <input
+                        value={searchQuery}
+                        onChange={(event) => setSearchQuery(event.target.value)}
+                        placeholder="Search categories"
+                        aria-label="Search categories"
+                        className="min-h-11 w-full rounded-[14px] border border-border bg-surface-secondary pl-10 pr-3 text-sm font-medium text-text-primary outline-none placeholder:text-text-tertiary focus:border-active"
+                      />
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => openCreateDialog(activeTab)}
+                      className="finance-focus grid size-11 shrink-0 place-items-center rounded-[14px] bg-active text-white hover:opacity-90"
+                      aria-label={`Create ${activeTab} category`}
+                    >
+                      <Plus size={19} />
+                    </button>
+                  </div>
+
+                  <div className="mt-2 flex items-center justify-between gap-3">
+                    <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-text-secondary">
+                      <SlidersHorizontal size={13} /> Sort
+                    </span>
+                    <select
+                      value={sortMode}
+                      onChange={(event) =>
+                        setSortMode(event.target.value as SortMode)
+                      }
+                      aria-label="Sort categories"
+                      className="min-h-9 rounded-[11px] border border-border bg-surface-secondary px-2.5 text-xs font-bold text-text-primary outline-none focus:border-active"
+                    >
+                      <option value="az">A–Z</option>
+                      <option value="used">Most used</option>
+                      <option value="newest">Newest</option>
+                    </select>
+                  </div>
                 </div>
-              </Tabs>
+
+                <Tabs
+                  value={activeTab}
+                  onValueChange={(value: string) =>
+                    setActiveTab(value as CategoryKind)
+                  }
+                >
+                  <TabsList className="grid w-full grid-cols-2">
+                    <TabsTrigger value="income">
+                      Income ({categories.filter((item) => item.type === "income").length})
+                    </TabsTrigger>
+                    <TabsTrigger value="expense">
+                      Expense ({categories.filter((item) => item.type === "expense").length})
+                    </TabsTrigger>
+                  </TabsList>
+                  <div className="mt-3 max-h-[min(58dvh,35rem)] overflow-y-auto overscroll-contain pr-1">
+                    <TabsContent value="income" className="mt-0">
+                      <CategoryList type="income" />
+                    </TabsContent>
+                    <TabsContent value="expense" className="mt-0">
+                      <CategoryList type="expense" />
+                    </TabsContent>
+                  </div>
+                </Tabs>
+              </div>
             )}
           </FinanceModalBody>
         </DialogContent>
       </Dialog>
+
+      <Sheet
+        open={selectedCategory !== null}
+        onOpenChange={(open) => {
+          if (!open && !savingId) setSelectedCategory(null);
+        }}
+      >
+        <SheetContent
+          side="bottom"
+          showCloseButton
+          className="max-h-[92dvh] gap-0 overflow-hidden rounded-t-[28px] border-border bg-card p-0 sm:inset-x-auto sm:bottom-5 sm:left-1/2 sm:w-[min(36rem,calc(100vw-2rem))] sm:-translate-x-1/2 sm:rounded-[28px] sm:border"
+        >
+          <SheetHeader className="border-b border-border px-4 pb-3 pt-4 sm:px-5">
+            <SheetTitle className="text-base font-bold text-text-primary">
+              Category details
+            </SheetTitle>
+            <p className="text-xs leading-5 text-text-secondary">
+              Edit its identity without changing linked transactions.
+            </p>
+          </SheetHeader>
+
+          {selectedCategory ? (
+            <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 py-4 sm:px-5">
+              <div className="mb-4 grid grid-cols-2 gap-2 rounded-[16px] border border-border bg-surface-secondary p-3 text-center">
+                <div>
+                  <p className="text-lg font-bold text-text-primary">
+                    {selectedUsage}
+                  </p>
+                  <p className="text-[11px] text-text-secondary">Transactions</p>
+                </div>
+                <div className="border-l border-border">
+                  <p className="text-lg font-bold text-text-primary">
+                    {selectedChildCount}
+                  </p>
+                  <p className="text-[11px] text-text-secondary">Subcategories</p>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <FinanceFormField label="Category name">
+                  <CategoryVisualField
+                    id={`edit-category-${selectedCategory.id}`}
+                    name={editName}
+                    type={editType}
+                    visual={editVisual}
+                    onNameChange={setEditName}
+                    onVisualChange={setEditVisual}
+                    placeholder="Category name"
+                    ariaLabel={`Edit ${selectedCategory.name} name`}
+                    disabled={savingId === selectedCategory.id}
+                  />
+                </FinanceFormField>
+
+                <FinanceFormField label="Category type">
+                  <TypeSelector
+                    value={editType}
+                    onChange={(type) => {
+                      setEditType(type);
+                      if (type === "income") setEditParentId(null);
+                    }}
+                    disabled={
+                      !canChangeSelectedType ||
+                      savingId === selectedCategory.id
+                    }
+                  />
+                  {!canChangeSelectedType ? (
+                    <p className="mt-2 text-xs leading-5 text-text-secondary">
+                      Type is locked because this category is already in use. Name,
+                      icon, color, and parent can still be managed safely.
+                    </p>
+                  ) : null}
+                </FinanceFormField>
+
+                {editType === "expense" ? (
+                  <FinanceFormField label="Parent category (optional)">
+                    <select
+                      value={editParentId ?? ""}
+                      onChange={(event) =>
+                        setEditParentId(event.target.value || null)
+                      }
+                      disabled={savingId === selectedCategory.id}
+                      className="min-h-12 w-full rounded-[15px] border border-border bg-card px-3 text-sm font-semibold text-text-primary outline-none focus:border-active disabled:opacity-55"
+                    >
+                      <option value="">Top level</option>
+                      {parentOptions.map((category) => (
+                        <option key={category.id} value={category.id}>
+                          {category.name}
+                        </option>
+                      ))}
+                    </select>
+                  </FinanceFormField>
+                ) : null}
+              </div>
+
+              <div className="mt-5 border-t border-border pt-4">
+                <button
+                  type="button"
+                  onClick={() => void archiveCategory(selectedCategory)}
+                  disabled={savingId === selectedCategory.id}
+                  className="finance-focus flex min-h-11 w-full items-center gap-3 rounded-[13px] px-3 text-left text-sm font-bold text-text-secondary hover:bg-hover hover:text-text-primary disabled:opacity-55"
+                >
+                  <Archive size={17} /> Archive category
+                </button>
+                <button
+                  type="button"
+                  onClick={() => requestCategoryDelete(selectedCategory)}
+                  disabled={savingId === selectedCategory.id}
+                  className="finance-focus mt-1 flex min-h-11 w-full items-center gap-3 rounded-[13px] px-3 text-left text-sm font-bold text-danger hover:bg-danger/10 disabled:opacity-55"
+                >
+                  <Trash2 size={17} /> Delete permanently
+                </button>
+              </div>
+            </div>
+          ) : null}
+
+          <SheetFooter className="border-t border-border bg-card px-4 pb-[calc(1rem+env(safe-area-inset-bottom))] pt-3 sm:px-5">
+            <Button
+              type="button"
+              size="lg"
+              onClick={() => void updateCategory()}
+              disabled={
+                !selectedCategory ||
+                !editName.trim() ||
+                savingId === selectedCategory?.id
+              }
+            >
+              {savingId === selectedCategory?.id ? (
+                <Loader2 size={17} className="animate-spin" />
+              ) : (
+                <Check size={17} />
+              )}
+              {savingId === selectedCategory?.id ? "Saving..." : "Save changes"}
+            </Button>
+          </SheetFooter>
+        </SheetContent>
+      </Sheet>
 
       <Dialog
         open={pendingDelete !== null}
@@ -715,7 +903,8 @@ export default function CategorySettingsSection({
           <DialogHeader>
             <DialogTitle>Delete {pendingDelete?.name}?</DialogTitle>
             <DialogDescription>
-              Deletion is allowed only when no transaction or subcategory uses it.
+              Permanent deletion is allowed only when no transaction or
+              subcategory uses it. Archiving is safer for old categories.
             </DialogDescription>
           </DialogHeader>
           {deleteFeedback ? (
@@ -746,7 +935,7 @@ export default function CategorySettingsSection({
               ) : (
                 <Trash2 size={16} />
               )}
-              {isDeletingCategory ? "Verifying..." : "Delete"}
+              {isDeletingCategory ? "Verifying..." : "Delete permanently"}
             </Button>
           </div>
         </DialogContent>
