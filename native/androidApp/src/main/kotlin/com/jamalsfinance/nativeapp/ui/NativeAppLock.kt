@@ -45,6 +45,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import java.util.concurrent.atomic.AtomicBoolean
 
 private data class NativeAuthenticator(
@@ -60,7 +61,7 @@ internal fun NativeAppLockGate(
     preferences: AndroidNativePreferences,
     content: @Composable () -> Unit,
 ) {
-    val localPreferences by preferences.state.collectAsStateWithLifecycleCompat()
+    val localPreferences by preferences.state.collectAsStateWithLifecycle()
     val lifecycleOwner = LocalLifecycleOwner.current
     val authenticator = rememberNativeAuthenticator()
     var unlocked by rememberSaveable(localPreferences.appLockEnabled) {
@@ -73,6 +74,7 @@ internal fun NativeAppLockGate(
         preferences.lockRequests.collect {
             if (preferences.state.value.appLockEnabled) {
                 unlocked = false
+                unlocking = false
                 message = null
             }
         }
@@ -89,6 +91,7 @@ internal fun NativeAppLockGate(
                 Lifecycle.Event.ON_START -> {
                     if (preferences.shouldLockOnResume()) {
                         unlocked = false
+                        unlocking = false
                         message = null
                     }
                 }
@@ -101,30 +104,29 @@ internal fun NativeAppLockGate(
 
     if (!localPreferences.appLockEnabled || unlocked) {
         content()
-        return
+    } else {
+        NativeAppLockScreen(
+            available = authenticator.available,
+            unlocking = unlocking,
+            message = message,
+            onUnlock = unlock@{
+                if (unlocking) return@unlock
+                unlocking = true
+                message = null
+                authenticator.authenticate(
+                    onSuccess = {
+                        preferences.clearBackgroundTimestamp()
+                        unlocking = false
+                        unlocked = true
+                    },
+                    onFailure = {
+                        unlocking = false
+                        message = it
+                    },
+                )
+            },
+        )
     }
-
-    NativeAppLockScreen(
-        available = authenticator.available,
-        unlocking = unlocking,
-        message = message,
-        onUnlock = {
-            if (unlocking) return@NativeAppLockScreen
-            unlocking = true
-            message = null
-            authenticator.authenticate(
-                onSuccess = {
-                    preferences.clearBackgroundTimestamp()
-                    unlocking = false
-                    unlocked = true
-                },
-                onFailure = {
-                    unlocking = false
-                    message = it
-                },
-            )
-        },
-    )
 }
 
 @Composable
@@ -233,18 +235,17 @@ private fun rememberNativeAuthenticator(): NativeAuthenticator {
             failure?.invoke("Unlock cancelled. Your finance data remains locked.")
         }
     }
-
     val available = activity != null && keyguard?.isDeviceSecure == true
 
     return remember(activity, keyguard, available, credentialLauncher) {
         NativeAuthenticator(
             available = available,
-            authenticate = { onSuccess, onFailure ->
+            authenticate = authenticate@{ onSuccess, onFailure ->
                 val currentActivity = activity
                 val currentKeyguard = keyguard
                 if (currentActivity == null || currentKeyguard?.isDeviceSecure != true) {
                     onFailure("A secure Android screen lock is required.")
-                    return@NativeAuthenticator
+                    return@authenticate
                 }
 
                 fun launchCredential() {
@@ -292,7 +293,7 @@ private fun authenticateApi30(
     onSuccess: () -> Unit,
     onFailure: (String) -> Unit,
 ) {
-    val prompt = BiometricPrompt.Builder(activity)
+    BiometricPrompt.Builder(activity)
         .setTitle("Unlock Jamal's Finance")
         .setSubtitle("Use biometrics or your device screen lock")
         .setAllowedAuthenticators(
@@ -300,11 +301,11 @@ private fun authenticateApi30(
                 BiometricManager.Authenticators.DEVICE_CREDENTIAL,
         )
         .build()
-    prompt.authenticate(
-        CancellationSignal(),
-        activity.mainExecutor,
-        nativeAuthenticationCallback(onSuccess, onFailure),
-    )
+        .authenticate(
+            CancellationSignal(),
+            activity.mainExecutor,
+            nativeAuthenticationCallback(onSuccess, onFailure),
+        )
 }
 
 @RequiresApi(Build.VERSION_CODES.Q)
@@ -313,16 +314,16 @@ private fun authenticateApi29(
     onSuccess: () -> Unit,
     onFailure: (String) -> Unit,
 ) {
-    val prompt = BiometricPrompt.Builder(activity)
+    BiometricPrompt.Builder(activity)
         .setTitle("Unlock Jamal's Finance")
         .setSubtitle("Use biometrics or your device screen lock")
         .setDeviceCredentialAllowed(true)
         .build()
-    prompt.authenticate(
-        CancellationSignal(),
-        activity.mainExecutor,
-        nativeAuthenticationCallback(onSuccess, onFailure),
-    )
+        .authenticate(
+            CancellationSignal(),
+            activity.mainExecutor,
+            nativeAuthenticationCallback(onSuccess, onFailure),
+        )
 }
 
 @RequiresApi(Build.VERSION_CODES.P)
@@ -333,7 +334,7 @@ private fun authenticateApi28(
     onCredentialFallback: () -> Unit,
 ) {
     val fallbackRequested = AtomicBoolean(false)
-    val prompt = BiometricPrompt.Builder(activity)
+    BiometricPrompt.Builder(activity)
         .setTitle("Unlock Jamal's Finance")
         .setSubtitle("Verify your identity to continue")
         .setNegativeButton("Use device PIN", activity.mainExecutor) { _, _ ->
@@ -341,22 +342,22 @@ private fun authenticateApi28(
             onCredentialFallback()
         }
         .build()
-    prompt.authenticate(
-        CancellationSignal(),
-        activity.mainExecutor,
-        object : BiometricPrompt.AuthenticationCallback() {
-            override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult?) {
-                onSuccess()
-            }
-
-            override fun onAuthenticationError(errorCode: Int, errString: CharSequence?) {
-                if (!fallbackRequested.get()) {
-                    onFailure(errString?.toString()?.takeIf { it.isNotBlank() }
-                        ?: "Identity verification failed.")
+        .authenticate(
+            CancellationSignal(),
+            activity.mainExecutor,
+            object : BiometricPrompt.AuthenticationCallback() {
+                override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult) {
+                    onSuccess()
                 }
-            }
-        },
-    )
+
+                override fun onAuthenticationError(errorCode: Int, errString: CharSequence) {
+                    if (!fallbackRequested.get()) {
+                        onFailure(errString.toString().takeIf { it.isNotBlank() }
+                            ?: "Identity verification failed.")
+                    }
+                }
+            },
+        )
 }
 
 @RequiresApi(Build.VERSION_CODES.P)
@@ -370,13 +371,13 @@ private fun nativeAuthenticationCallback(
     onSuccess: () -> Unit,
     onFailure: (String) -> Unit,
 ): BiometricPrompt.AuthenticationCallback = object : BiometricPrompt.AuthenticationCallback() {
-    override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult?) {
+    override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult) {
         onSuccess()
     }
 
-    override fun onAuthenticationError(errorCode: Int, errString: CharSequence?) {
+    override fun onAuthenticationError(errorCode: Int, errString: CharSequence) {
         onFailure(
-            errString?.toString()?.takeIf { it.isNotBlank() }
+            errString.toString().takeIf { it.isNotBlank() }
                 ?: "Identity verification failed.",
         )
     }
@@ -390,7 +391,3 @@ private fun Context.findComponentActivity(): ComponentActivity? {
     }
     return current as? ComponentActivity
 }
-
-@Composable
-private fun <T> kotlinx.coroutines.flow.StateFlow<T>.collectAsStateWithLifecycleCompat() =
-    androidx.lifecycle.compose.collectAsStateWithLifecycle()
