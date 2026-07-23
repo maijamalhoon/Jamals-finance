@@ -1,4 +1,9 @@
 const PHRASE_REPLACEMENTS: readonly [RegExp, string][] = [
+  // Natural English finance wording.
+  [/\bwhere\s+did\s+(?:my\s+)?money\s+come\s+from\b/giu, "where money came from"],
+  [/\bwhere\s+was\s+(?:my\s+money|it)\s+spent\b/giu, "where money went"],
+  [/\bwhere\s+did\s+(?:my\s+)?money\s+go\b/giu, "where money went"],
+
   // Roman Urdu / Urdu mixed wording.
   [/\bkitna\s+(?:paisa\s+)?(?:kharch|kharach|spend)(?:\s+hua|\s+hoa|\s+kiya)?\b/giu, "how much did i spend"],
   [/\b(?:kharch|kharach|expense|expenses)\b/giu, "spending"],
