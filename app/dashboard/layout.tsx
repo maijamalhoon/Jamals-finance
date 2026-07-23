@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import { Suspense } from "react";
 
+import ChartTooltipAutoDismiss from "@/components/charts/ChartTooltipAutoDismiss";
 import { CurrencyProvider } from "@/components/currency/CurrencyProvider";
 import FinanceDataTransfer from "@/components/data/FinanceDataTransfer";
 import ConnectionStatus from "@/components/layout/ConnectionStatus";
@@ -16,6 +17,7 @@ import DashboardScrollRestoration from "@/components/motion/DashboardScrollResto
 import NewUserExperienceGate from "@/components/setup/NewUserExperienceGate";
 import TransactionReceiptViewportFit from "@/components/transactions/TransactionReceiptViewportFit";
 import DateFormatDisplaySync from "@/components/ui/DateFormatDisplaySync";
+import GlobalConfirmDialog from "@/components/ui/global-confirm-dialog";
 import {
   BASE_CURRENCY,
   CURRENCY_STORAGE_KEY,
@@ -217,6 +219,8 @@ export default async function DashboardLayout({
           </main>
         </div>
       </div>
+      <GlobalConfirmDialog />
+      <ChartTooltipAutoDismiss />
     </CurrencyProvider>
   );
 }
