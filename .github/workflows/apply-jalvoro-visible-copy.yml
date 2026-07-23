@@ -19,29 +19,28 @@ jobs:
           ref: agent/finish-jalvoro-visible-copy
           fetch-depth: 1
 
-      - name: Diagnose centralized brand patch
+      - name: Apply centralized brand patch
         shell: bash
         run: |
-          set +e
-          base64 --decode .github/jalvoro-visible-copy.patch.gz.b64 | gzip -d > /tmp/jalvoro-visible-copy.patch
-          decode_status=$?
-          if [[ $decode_status -ne 0 ]]; then
-            echo "Patch decode failed with status $decode_status" > patch-diagnostic.txt
-            echo "$decode_status" > patch-status.txt
-            exit 0
-          fi
-          git apply --check --verbose /tmp/jalvoro-visible-copy.patch > patch-diagnostic.txt 2>&1
-          echo $? > patch-status.txt
-          cat patch-diagnostic.txt
-          exit 0
+          set -euo pipefail
+          cat .github/jalvoro-visible-copy.part* > /tmp/jalvoro-visible-copy.b64
+          test "$(wc -c < /tmp/jalvoro-visible-copy.b64)" -eq 14824
+          base64 --decode /tmp/jalvoro-visible-copy.b64 | gzip -d > /tmp/jalvoro-visible-copy.patch
+          test "$(wc -c < /tmp/jalvoro-visible-copy.patch)" -eq 38303
+          git apply --check /tmp/jalvoro-visible-copy.patch
+          git apply /tmp/jalvoro-visible-copy.patch
 
-      - name: Upload patch diagnostic
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: jalvoro-patch-diagnostic
-          path: |
-            patch-diagnostic.txt
-            patch-status.txt
-          if-no-files-found: error
-          retention-days: 1
+          rm -f .github/jalvoro-visible-copy.patch.gz.b64
+          rm -f .github/jalvoro-visible-copy.part*
+          rm -f .github/workflows/scan-jalvoro-visible-copy.yml
+          rm -f .github/workflows/apply-jalvoro-visible-copy.yml
+
+      - name: Commit migration
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "JALVORO CI"
+          git config user.email "actions@users.noreply.github.com"
+          git add -A
+          git commit -m "fix: centralize all remaining JALVORO public copy"
+          git push origin HEAD:agent/finish-jalvoro-visible-copy
