@@ -1,0 +1,4 @@
+"use client";
+import { AlertTriangle, RotateCcw } from "lucide-react";
+import { Button } from "@/components/ui/button";
+export default function ProjectsError({ reset }: { error: Error & { digest?: string }; reset: () => void }) { return <main className="grid min-h-dvh place-items-center bg-background px-4"><div className="w-full max-w-lg rounded-[var(--radius-card)] bg-surface p-7 text-center shadow-[var(--shadow-md)]"><AlertTriangle className="mx-auto size-10 text-warning" aria-hidden="true" /><h1 className="mt-4 text-xl font-black text-text-primary">Project workspace could not load</h1><p className="mt-2 text-sm leading-6 text-text-secondary">No project data was changed. Retry the protected workspace request.</p><Button className="mt-5" onClick={reset}><RotateCcw aria-hidden="true" /> Retry</Button></div></main>; }
