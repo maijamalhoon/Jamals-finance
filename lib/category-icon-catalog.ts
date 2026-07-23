@@ -91,12 +91,15 @@ export const CATEGORY_ICON_CATALOG: readonly CategoryIconEntry[] = [
 
 export function getCategoryIconOptions(type: CategoryKind, query = "") {
   const normalized = query.trim().toLowerCase();
-
-  return CATEGORY_ICON_CATALOG.filter((entry) => {
+  const matches = CATEGORY_ICON_CATALOG.filter((entry) => {
     if (!entry.types.includes(type)) return false;
     if (!normalized) return true;
     return [entry.label, ...entry.keywords].some((value) =>
       value.toLowerCase().includes(normalized),
     );
   });
+
+  return Array.from(
+    new Map(matches.map((entry) => [entry.iconKey, entry])).values(),
+  );
 }
