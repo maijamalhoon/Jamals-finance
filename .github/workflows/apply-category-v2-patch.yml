@@ -1,0 +1,38 @@
+name: Apply category manager v2 patch
+
+on:
+  push:
+    branches:
+      - feat/category-manager-v2
+    paths:
+      - ".automation/category-v2.part04"
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out feature branch
+        uses: actions/checkout@v4
+        with:
+          ref: feat/category-manager-v2
+          fetch-depth: 0
+
+      - name: Apply prepared patch
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat .automation/category-v2.part0* > /tmp/category-v2.patch.gz.b64
+          base64 --decode /tmp/category-v2.patch.gz.b64 > /tmp/category-v2.patch.gz
+          gzip --decompress --stdout /tmp/category-v2.patch.gz > /tmp/category-v2.patch
+          git apply --index --3way /tmp/category-v2.patch
+          rm -f .automation/category-v2.part0*
+          rm -f .github/workflows/apply-category-v2-patch.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "feat(categories): rebuild clean manager and secure mutations"
+          git push origin HEAD:feat/category-manager-v2
