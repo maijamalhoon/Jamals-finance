@@ -101,7 +101,8 @@ export type TelemetryGeo = {
 
 const UUID_PATTERN =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-const CONTROL_CHARACTER_PATTERN = /[\u0000-\u001f\u007f]/g;
+const CONTROL_CHARACTER_TEST_PATTERN = /[\u0000-\u001f\u007f]/;
+const CONTROL_CHARACTER_REPLACE_PATTERN = /[\u0000-\u001f\u007f]/g;
 const UUID_PATH_SEGMENT_PATTERN =
   /\/[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}(?=\/|$)/gi;
 const NUMERIC_PATH_SEGMENT_PATTERN = /\/\d{1,20}(?=\/|$)/g;
@@ -135,7 +136,7 @@ export function normalizeTelemetryRoute(value: unknown): string | null {
     !trimmed.startsWith("/") ||
     trimmed.includes("?") ||
     trimmed.includes("#") ||
-    CONTROL_CHARACTER_PATTERN.test(trimmed)
+    CONTROL_CHARACTER_TEST_PATTERN.test(trimmed)
   ) {
     return null;
   }
@@ -246,7 +247,7 @@ function cleanHeaderValue(value: string | null, maxLength: number) {
   } catch {}
 
   const cleaned = decoded
-    .replace(CONTROL_CHARACTER_PATTERN, "")
+    .replace(CONTROL_CHARACTER_REPLACE_PATTERN, "")
     .trim()
     .slice(0, maxLength);
 
