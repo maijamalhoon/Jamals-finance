@@ -5,6 +5,8 @@ import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
+import { APP_NAME } from "@/lib/brand";
+
 type InstallChoice = {
   outcome: "accepted" | "dismissed";
   platform: string;
@@ -108,8 +110,7 @@ export default function WindowsAppManager() {
   const downloadForWindows = async () => {
     if (!installEvent) {
       toast.info("Use your browser's app install option.", {
-        description:
-          "In Microsoft Edge choose Apps → Install Jamal's Finance, or use the install icon in the address bar.",
+        description: `In Microsoft Edge choose Apps → Install ${APP_NAME}, or use the install icon in the address bar.`,
         duration: 12_000,
       });
       return;
@@ -165,7 +166,7 @@ export default function WindowsAppManager() {
               className="mt-1 text-xl font-bold tracking-tight text-text-primary"
               id="windows-app-title"
             >
-              Get Jamal&apos;s Finance
+              Get {APP_NAME}
             </h2>
             <p
               className="mt-2 text-sm leading-6 text-text-secondary"
