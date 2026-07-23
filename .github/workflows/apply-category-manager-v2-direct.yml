@@ -13,7 +13,6 @@ permissions:
 
 jobs:
   apply:
-    if: github.actor != 'github-actions[bot]'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -23,20 +22,33 @@ jobs:
           ref: feat/category-manager-v2-direct
           fetch-depth: 0
 
-      - name: Apply verified source bundle
+      - name: Diagnose xz source bundle
         shell: bash
         run: |
-          set -euo pipefail
-          cat .automation/category-v2.bundle.part* > /tmp/category-v2-files.tar.xz.b64
-          base64 --decode /tmp/category-v2-files.tar.xz.b64 > /tmp/category-v2-files.tar.xz
-          echo "15ef6d27f1d02b2b6a909d7c89783abff7b583e515a9e104fa7f732dd63f3ae3  /tmp/category-v2-files.tar.xz" | sha256sum --check
-          tar --extract --xz --file /tmp/category-v2-files.tar.xz --directory .
-          rm -f .automation/category-v2.bundle.part*
-          rm -f .automation/category-v2.bundle.ready
-          rm -f .automation/category-v2-bundle-diagnostics.txt
-          rm -f .github/workflows/apply-category-manager-v2-direct.yml
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -A
-          git commit -m "feat(categories): rebuild clean manager and secure backend"
-          git push origin HEAD:feat/category-manager-v2-direct
+          set +e
+          {
+            echo "HEAD=$(git rev-parse HEAD)"
+            ls -la .automation
+            wc -c .automation/category-v2.bundle.part* || true
+            cat .automation/category-v2.bundle.part* > /tmp/category-v2-files.tar.xz.b64
+            echo "cat_status=$?"
+            wc -c /tmp/category-v2-files.tar.xz.b64
+            base64 --decode /tmp/category-v2-files.tar.xz.b64 > /tmp/category-v2-files.tar.xz
+            echo "decode_status=$?"
+            wc -c /tmp/category-v2-files.tar.xz
+            sha256sum /tmp/category-v2-files.tar.xz
+            echo "15ef6d27f1d02b2b6a909d7c89783abff7b583e515a9e104fa7f732dd63f3ae3  /tmp/category-v2-files.tar.xz" | sha256sum --check
+            echo "checksum_status=$?"
+            tar --list --xz --file /tmp/category-v2-files.tar.xz
+            echo "tar_status=$?"
+          } > /tmp/category-v2-xz-diagnostics.txt 2>&1
+          exit 0
+
+      - name: Upload diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: category-v2-xz-diagnostics
+          path: /tmp/category-v2-xz-diagnostics.txt
+          if-no-files-found: error
+          retention-days: 1
