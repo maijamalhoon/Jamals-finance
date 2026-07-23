@@ -1,0 +1,61 @@
+name: Apply category marker polish
+
+on:
+  push:
+    branches:
+      - feat/responsive-marker-category-icons
+
+permissions:
+  contents: write
+
+jobs:
+  polish:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out feature branch
+        uses: actions/checkout@v4
+        with:
+          ref: feat/responsive-marker-category-icons
+
+      - name: Polish category modal copy and responsive action
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          path = Path("components/settings/CategorySettingsSection.tsx")
+          text = path.read_text()
+
+          replacements = [
+              (
+                  'sm:[--finance-modal-max-width:40rem]',
+                  'sm:[--finance-modal-max-width:36rem]',
+              ),
+              (
+                  '''Categories keep transactions, reports, emoji and color together.\n                    The selected visual is remembered everywhere without changing\n                    any existing financial data.''',
+                  '''Custom marker icons and colors stay with each category across\n                    transactions and reports without changing existing financial data.''',
+              ),
+              (
+                  '''<div className="flex flex-col gap-3 border-t border-border pt-4 sm:flex-row sm:items-center sm:justify-between">\n                  <p className="text-xs font-semibold text-text-secondary">\n                    Permanent category memory\n                  </p>\n                  <Button\n                    type="submit"\n                    size="lg"\n                    disabled={!draftName.trim() || savingId === "new"}\n                    className="w-full sm:w-auto"\n                  >''',
+                  '''<div className="border-t border-border pt-4">\n                  <Button\n                    type="submit"\n                    size="lg"\n                    disabled={!draftName.trim() || savingId === "new"}\n                    className="w-full"\n                  >''',
+              ),
+          ]
+
+          for old, new in replacements:
+              if old not in text:
+                  raise SystemExit(f"Expected category modal block not found: {old[:80]!r}")
+              text = text.replace(old, new, 1)
+
+          path.write_text(text)
+          PY
+
+      - name: Remove one-time workflow and commit
+        shell: bash
+        run: |
+          rm .github/workflows/category-marker-polish.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add components/settings/CategorySettingsSection.tsx .github/workflows/category-marker-polish.yml
+          git commit -m "Polish responsive category marker modal"
+          git push origin HEAD:feat/responsive-marker-category-icons
