@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - feat/responsive-marker-category-icons
+  pull_request:
+    branches:
+      - main
 
 permissions:
   contents: read
@@ -13,10 +16,9 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
-      - name: Check out feature branch
+      - name: Check out tested commit
         uses: actions/checkout@v4
         with:
-          ref: feat/responsive-marker-category-icons
           persist-credentials: false
 
       - name: Set up Node.js
