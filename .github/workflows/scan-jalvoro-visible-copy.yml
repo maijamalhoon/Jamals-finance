@@ -1,0 +1,51 @@
+name: Scan JALVORO visible copy
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          persist-credentials: false
+          show-progress: false
+
+      - name: Find remaining legacy public copy
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+          import re
+
+          roots = [Path("app"), Path("components"), Path("public")]
+          patterns = [
+              re.compile(r"Jamal(?:'|’|&apos;|&#x27;)s Finance", re.I),
+              re.compile(r"Jamals Finance", re.I),
+          ]
+          allowed_suffixes = {".ts", ".tsx", ".js", ".jsx", ".html", ".json", ".svg"}
+          findings = []
+
+          for root in roots:
+              for path in root.rglob("*"):
+                  if not path.is_file() or path.suffix.lower() not in allowed_suffixes:
+                      continue
+                  if ".test." in path.name or ".spec." in path.name:
+                      continue
+                  text = path.read_text(errors="ignore")
+                  for line_number, line in enumerate(text.splitlines(), 1):
+                      if any(pattern.search(line) for pattern in patterns):
+                          findings.append(f"{path}:{line_number}:{line.strip()}")
+
+          print("\n".join(findings) if findings else "No legacy public brand copy found.")
+          if findings:
+              raise SystemExit(1)
+          PY
