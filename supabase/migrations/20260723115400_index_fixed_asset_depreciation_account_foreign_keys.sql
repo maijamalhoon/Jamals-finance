@@ -1,5 +1,0 @@
-create index business_asset_depreciation_lines_expense_idx
-  on public.business_asset_depreciation_lines(business_id,expense_account_id);
-
-create index business_asset_depreciation_lines_accumulated_idx
-  on public.business_asset_depreciation_lines(business_id,accumulated_depreciation_account_id);
