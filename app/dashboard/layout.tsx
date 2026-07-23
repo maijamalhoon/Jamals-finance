@@ -188,6 +188,9 @@ export default async function DashboardLayout({
         accountPreference !== null || storedPreference !== null
       }
     >
+      <a className="jf-skip-link" href="#dashboard-main">
+        Skip to main content
+      </a>
       <div
         data-dashboard-shell
         className="relative flex h-dvh min-w-0 overflow-hidden bg-background text-foreground"
@@ -212,6 +215,9 @@ export default async function DashboardLayout({
           <FinanceDataTransfer />
 
           <main
+            id="dashboard-main"
+            tabIndex={-1}
+            aria-label="Finance workspace content"
             data-dashboard-scroll
             className="jf-dashboard-scroll relative flex-1 overflow-y-auto overscroll-contain px-3 pb-[var(--jf-mobile-content-bottom)] pt-[5rem] sm:px-5 sm:pb-[calc(var(--jf-mobile-content-bottom)+0.5rem)] sm:pt-[5.25rem] lg:px-6 lg:pb-10 lg:pt-6 xl:px-7"
           >
