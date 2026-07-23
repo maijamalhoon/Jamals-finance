@@ -1,11 +1,10 @@
 === ACTIONABLE ERROR LINES ===
 56:e: file:///home/runner/work/Jamals-finance/Jamals-finance/native/androidApp/src/main/kotlin/com/jamalsfinance/nativeapp/ui/NativeAppLock.kt:117:21 Named arguments are prohibited for function types.
 57:e: file:///home/runner/work/Jamals-finance/Jamals-finance/native/androidApp/src/main/kotlin/com/jamalsfinance/nativeapp/ui/NativeAppLock.kt:122:21 Named arguments are prohibited for function types.
-58:e: file:///home/runner/work/Jamals-finance/Jamals-finance/native/androidApp/src/main/kotlin/com/jamalsfinance/nativeapp/ui/PersonalPrivacyCard.kt:30:5 Cannot access 'fun PersonalPanel(content: ComposableFunction0<Unit>): Unit': it is private in file.
-59:e: file:///home/runner/work/Jamals-finance/Jamals-finance/native/androidApp/src/main/kotlin/com/jamalsfinance/nativeapp/ui/PrivacySecurityDashboard.kt:100:17 Cannot access 'fun PersonalPanel(content: ComposableFunction0<Unit>): Unit': it is private in file.
-66:FAILURE: Build failed with an exception.
-68:* What went wrong:
-78:* Exception is:
+58:e: file:///home/runner/work/Jamals-finance/Jamals-finance/native/androidApp/src/main/kotlin/com/jamalsfinance/nativeapp/ui/PrivacySecurityDashboard.kt:100:17 Cannot access 'fun PersonalPanel(content: ComposableFunction0<Unit>): Unit': it is private in file.
+65:FAILURE: Build failed with an exception.
+67:* What went wrong:
+77:* Exception is:
 
 === FIRST FAILURE CONTEXT ===
 > Task :androidApp:mapDebugSourceSetPaths
@@ -19,11 +18,11 @@
 > Task :shared:mergeAndroidMainJniLibFolders
 > Task :shared:mergeAndroidMainNativeLibs NO-SOURCE
 > Task :shared:copyAndroidMainJniLibsProjectOnly
-> Task :androidApp:mergeDebugNativeLibs
 > Task :androidApp:processDebugMainManifest
+> Task :androidApp:mergeDebugNativeLibs
 > Task :androidApp:processDebugManifest
-> Task :androidApp:processDebugManifestForPackage
 > Task :androidApp:stripDebugDebugSymbols
+> Task :androidApp:processDebugManifestForPackage
 > Task :androidApp:desugarDebugFileDependencies FROM-CACHE
 > Task :androidApp:mergeExtDexDebug FROM-CACHE
 > Task :androidApp:writeDebugAppMetadata
@@ -40,11 +39,10 @@
 > Task :androidApp:compileDebugKotlin
 e: file:///home/runner/work/Jamals-finance/Jamals-finance/native/androidApp/src/main/kotlin/com/jamalsfinance/nativeapp/ui/NativeAppLock.kt:117:21 Named arguments are prohibited for function types.
 e: file:///home/runner/work/Jamals-finance/Jamals-finance/native/androidApp/src/main/kotlin/com/jamalsfinance/nativeapp/ui/NativeAppLock.kt:122:21 Named arguments are prohibited for function types.
-e: file:///home/runner/work/Jamals-finance/Jamals-finance/native/androidApp/src/main/kotlin/com/jamalsfinance/nativeapp/ui/PersonalPrivacyCard.kt:30:5 Cannot access 'fun PersonalPanel(content: ComposableFunction0<Unit>): Unit': it is private in file.
 e: file:///home/runner/work/Jamals-finance/Jamals-finance/native/androidApp/src/main/kotlin/com/jamalsfinance/nativeapp/ui/PrivacySecurityDashboard.kt:100:17 Cannot access 'fun PersonalPanel(content: ComposableFunction0<Unit>): Unit': it is private in file.
 
 > Task :androidApp:compileDebugKotlin FAILED
-gradle/actions: Writing build results to /home/runner/work/_temp/.gradle-actions/build-results/native_build-1784792399478.json
+gradle/actions: Writing build results to /home/runner/work/_temp/.gradle-actions/build-results/native_build-1784792607816.json
 
 [Incubating] Problems report is available at: file:///home/runner/work/Jamals-finance/Jamals-finance/native/build/reports/problems/problems-report.html
 
@@ -129,6 +127,7 @@ Caused by: org.gradle.workers.internal.DefaultWorkerExecutor$WorkExecutionExcept
 	at org.gradle.internal.operations.DefaultBuildOperationRunner$2.execute(DefaultBuildOperationRunner.java:66)
 	at org.gradle.internal.operations.DefaultBuildOperationRunner$2.execute(DefaultBuildOperationRunner.java:59)
 	at org.gradle.internal.operations.DefaultBuildOperationRunner.execute(DefaultBuildOperationRunner.java:166)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner.execute(DefaultBuildOperationRunner.java:59)
 
 === FINAL 80 LINES ===
 	at org.gradle.internal.execution.steps.SkipUpToDateStep.executeBecause(SkipUpToDateStep.java:75)
@@ -208,6 +207,6 @@ Caused by: org.jetbrains.kotlin.gradle.tasks.CompilationErrorException: Compilat
 	... 2 more
 
 
-BUILD FAILED in 1m 9s
+BUILD FAILED in 1m 8s
 42 actionable tasks: 29 executed, 13 from cache
 Configuration cache entry stored.
