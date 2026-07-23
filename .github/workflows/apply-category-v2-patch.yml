@@ -4,14 +4,17 @@ on:
   push:
     branches:
       - feat/category-manager-v2
-    paths:
-      - ".automation/category-v2.part04"
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
 
 permissions:
   contents: write
 
 jobs:
   apply:
+    if: github.actor != 'github-actions[bot]'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
