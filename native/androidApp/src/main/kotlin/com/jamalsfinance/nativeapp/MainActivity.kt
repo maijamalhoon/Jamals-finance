@@ -4,6 +4,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import com.jamalsfinance.nativeapp.security.AndroidKeystoreSessionStore
+import com.jamalsfinance.nativeapp.ui.AndroidNativePreferences
 import com.jamalsfinance.nativeapp.ui.JamalsFinanceNativeApp
 import com.jamalsfinance.shared.auth.SupabaseAuthRepository
 import com.jamalsfinance.shared.core.AppConfig
@@ -11,6 +12,7 @@ import com.jamalsfinance.shared.finance.SupabaseFinanceRepository
 import com.jamalsfinance.shared.goals.SupabaseGoalsPayablesRepository
 import com.jamalsfinance.shared.investments.SupabaseInvestmentsAnalyticsRepository
 import com.jamalsfinance.shared.network.platformHttpClient
+import com.jamalsfinance.shared.personal.SupabasePersonalPlatformRepository
 import com.jamalsfinance.shared.reports.SupabaseReportsInsightsRepository
 
 private data class NativeRepositories(
@@ -19,12 +21,14 @@ private data class NativeRepositories(
     val goalsPayables: SupabaseGoalsPayablesRepository,
     val investmentsAnalytics: SupabaseInvestmentsAnalyticsRepository,
     val reportsInsights: SupabaseReportsInsightsRepository,
+    val personalPlatform: SupabasePersonalPlatformRepository,
 )
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        val nativePreferences = AndroidNativePreferences(applicationContext)
         val configured = BuildConfig.SUPABASE_URL.isNotBlank() &&
             BuildConfig.SUPABASE_PUBLISHABLE_KEY.isNotBlank()
 
@@ -61,6 +65,11 @@ class MainActivity : ComponentActivity() {
                     config = config,
                     authRepository = authRepository,
                 ),
+                personalPlatform = SupabasePersonalPlatformRepository(
+                    baseClient = baseClient,
+                    config = config,
+                    authRepository = authRepository,
+                ),
             )
         } else {
             null
@@ -73,6 +82,8 @@ class MainActivity : ComponentActivity() {
                 goalsPayablesRepository = repositories?.goalsPayables,
                 investmentsAnalyticsRepository = repositories?.investmentsAnalytics,
                 reportsInsightsRepository = repositories?.reportsInsights,
+                personalPlatformRepository = repositories?.personalPlatform,
+                nativePreferences = nativePreferences,
             )
         }
     }
