@@ -48,8 +48,12 @@ export default function PrivacyPage() {
           <li>Business-workspace records when business features are used, including workspace membership and records entered into those modules.</li>
           <li>Preferences stored for the experience, such as currency, date format, theme, animation, notification, and setup choices.</li>
           <li>Security and operational information such as request metadata, authentication events, rate-limit counters, error details, and device or browser information needed to operate and protect the Service.</li>
+          <li>Privacy-minimised product telemetry when enabled, such as a random subject identifier, temporary session identifier, route template, approved feature event, performance timing, approximate country, region and city derived from the network request, and broad device, operating-system and browser family.</li>
           <li>Questions submitted to AI insights and summarized financial metrics generated to answer those questions.</li>
         </LegalList>
+        <p>
+          Custom product telemetry is designed not to store raw IP addresses, exact coordinates, exact device models, URL query strings, typed content, screenshots, session recordings, account balances, transaction values, notes, passwords, or authentication tokens.
+        </p>
         <p>
           The Service does not ask for online-banking passwords, payment-card security codes, or brokerage login credentials. Do not place those secrets in notes, chat questions, support messages, or uploaded files.
         </p>
@@ -60,6 +64,7 @@ export default function PrivacyPage() {
           <li>To create and secure your account and keep protected routes private.</li>
           <li>To save, calculate, display, search, export, import, and restore the finance records you request.</li>
           <li>To produce dashboards, reports, cash-flow views, goal progress, payable status, investment calculations, and other requested features.</li>
+          <li>To measure page and operation performance, find slow or failed experiences, understand broad feature usage, and improve reliability without inspecting financial content.</li>
           <li>To prevent abuse, investigate failures, enforce request limits, and maintain service reliability.</li>
           <li>To provide AI-assisted insights when you choose to use that feature.</li>
           <li>To meet legal obligations, respond to valid legal process, protect users, and enforce the Terms.</li>
@@ -71,9 +76,9 @@ export default function PrivacyPage() {
           Information is shared only as needed to operate requested features, secure the Service, comply with law, or protect users. The current technical providers include:
         </p>
         <LegalList>
-          <li>Supabase for authentication, database, storage, and related backend services.</li>
-          <li>Vercel for hosting, delivery, serverless execution, and operational logs.</li>
-          <li>Sentry for error and performance monitoring when production monitoring is configured. The application is configured not to send default personal information and to remove sensitive request details.</li>
+          <li>Supabase for authentication, database, storage, and related backend services, including the private storage of approved telemetry events when that system is enabled.</li>
+          <li>Vercel for hosting, delivery, serverless execution, operational logs, and approximate country, region, and city headers derived from an incoming network request. The custom telemetry database does not retain the raw IP address.</li>
+          <li>Sentry for error and performance monitoring when production monitoring is configured. The application is configured not to send default personal information, to disable session replay, and to remove sensitive request details.</li>
           <li>Google authentication when Google sign-in is enabled and selected.</li>
           <li>Google Gemini when an AI insight requires an external model. The Service sends the user&apos;s question and a summarized finance context that can include totals, category names, goal progress, investment totals, payable totals, and recent trends. Passwords and authentication secrets are not included.</li>
           <li>Market-data providers listed on the Disclosures page. Requests normally contain asset identifiers, symbols, or currency pairs rather than your identity or complete finance ledger.</li>
@@ -97,6 +102,9 @@ export default function PrivacyPage() {
           Account and finance records are generally retained while the account is active so the Service can provide the requested workspace. Operational logs and security records may be retained for shorter periods set by provider configuration, incident needs, or legal requirements.
         </p>
         <p>
+          Detailed custom product and performance telemetry is designed for a 30-day retention period. Longer-lived reporting should use aggregated statistics that no longer contain a session-level event trail. A private account-to-random-subject mapping is removed when the associated account is deleted.
+        </p>
+        <p>
           When an account-deletion request is completed, active production records are removed or de-identified as applicable. Limited copies can remain temporarily in backups, security evidence, or records required by law until their normal retention cycle ends.
         </p>
       </LegalSection>
@@ -111,7 +119,7 @@ export default function PrivacyPage() {
           <li>Sign out locally or revoke other sessions through account security controls.</li>
         </LegalList>
         <p>
-          Additional rights may apply based on where you live, including rights to access, correct, delete, restrict, object, receive a portable copy, or complain to a supervisory authority. Identity verification may be required before fulfilling a request.
+          Where applicable law requires consent for optional analytics, the Service will request that choice before enabling the related collection. Additional rights may apply based on where you live, including rights to access, correct, delete, restrict, object, receive a portable copy, or complain to a supervisory authority. Identity verification may be required before fulfilling a request.
         </p>
       </LegalSection>
 
