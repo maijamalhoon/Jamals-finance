@@ -23,7 +23,8 @@ export const BUSINESS_PLANS: Record<BusinessPlanKey, BusinessPlanDefinition> = {
   business_free: {
     key: "business_free",
     name: "Business Free",
-    description: "Create one business workspace and prepare its core records before upgrading.",
+    description:
+      "Use the selected business system with essential records and one operating seat.",
     includedSeats: 1,
     includedBranches: 1,
     features: {
@@ -32,13 +33,13 @@ export const BUSINESS_PLANS: Record<BusinessPlanKey, BusinessPlanDefinition> = {
       expenses: true,
       contacts: true,
       basic_reports: true,
-      ai_insights: 0,
     },
   },
   solo: {
     key: "solo",
     name: "Solo",
-    description: "For a one-person business, freelancer, shop owner, or independent professional.",
+    description:
+      "For a one-person business, freelancer, shop owner, or independent professional.",
     includedSeats: 2,
     includedBranches: 1,
     features: {
@@ -47,16 +48,15 @@ export const BUSINESS_PLANS: Record<BusinessPlanKey, BusinessPlanDefinition> = {
       expenses: true,
       contacts: true,
       basic_reports: true,
-      advanced_reports: false,
       inventory_ready: true,
       crm_ready: true,
-      ai_insights: 20,
     },
   },
   starter: {
     key: "starter",
     name: "Starter",
-    description: "For a small team that needs shared operations, controls, and optional industry modules.",
+    description:
+      "For a small team using its own nature-specific workflow, permissions, and controls.",
     includedSeats: 5,
     includedBranches: 1,
     features: {
@@ -69,13 +69,13 @@ export const BUSINESS_PLANS: Record<BusinessPlanKey, BusinessPlanDefinition> = {
       inventory_ready: true,
       crm_ready: true,
       approval_workflows: true,
-      ai_insights: 50,
     },
   },
   growth: {
     key: "growth",
     name: "Growth",
-    description: "For a growing company with departments, branches, automation, and deeper reporting.",
+    description:
+      "For a growing company with departments, branches, approvals, and deeper reporting.",
     includedSeats: 15,
     includedBranches: 3,
     recommended: true,
@@ -92,13 +92,13 @@ export const BUSINESS_PLANS: Record<BusinessPlanKey, BusinessPlanDefinition> = {
       department_controls: true,
       approval_workflows: true,
       audit_log: true,
-      ai_insights: 150,
     },
   },
   scale: {
     key: "scale",
     name: "Scale",
-    description: "For a large company that needs stronger governance, API access, and many operating teams.",
+    description:
+      "For a large company requiring governance, integrations, and many operating teams.",
     includedSeats: 50,
     includedBranches: 10,
     features: {
@@ -116,13 +116,13 @@ export const BUSINESS_PLANS: Record<BusinessPlanKey, BusinessPlanDefinition> = {
       audit_log: true,
       api_access: true,
       priority_support: true,
-      ai_insights: 500,
     },
   },
   enterprise: {
     key: "enterprise",
     name: "Enterprise",
-    description: "For groups of companies requiring custom seats, consolidated billing, and contract controls.",
+    description:
+      "For groups of companies requiring custom seats, consolidated billing, and contract controls.",
     includedSeats: null,
     includedBranches: null,
     customPricing: true,
@@ -142,7 +142,6 @@ export const BUSINESS_PLANS: Record<BusinessPlanKey, BusinessPlanDefinition> = {
       api_access: true,
       consolidated_reporting: true,
       priority_support: true,
-      ai_insights: 2000,
     },
   },
 };
@@ -183,55 +182,101 @@ export const BUSINESS_REGIONAL_PRICES: Record<
   },
 };
 
-export const BUSINESS_MODULES = [
+export const BUSINESS_SYSTEMS = [
+  {
+    code: "simple_shop",
+    name: "Simple Shop",
+    category: "small_business",
+    description:
+      "Fast sales, purchases, stock, cash, returns, expenses, and daily profit.",
+  },
   {
     code: "retail_pos",
     name: "Retail & POS",
-    description: "Point-of-sale workflows for shops and retail operations.",
+    category: "retail",
+    description:
+      "Dedicated point-of-sale, cashier roles, shifts, stock, receipts, and returns.",
+  },
+  {
+    code: "restaurant",
+    name: "Restaurant",
+    category: "hospitality",
+    description:
+      "Tables, orders, kitchen flow, recipes, wastage, shifts, and restaurant accounting.",
   },
   {
     code: "dealership",
     name: "Dealership",
-    description: "Stock units, deals, commissions, and dealership operations.",
+    category: "dealership",
+    description:
+      "Units, deals, commissions, financing records, inventory, and dealership controls.",
   },
   {
-    code: "inventory",
-    name: "Advanced Inventory",
-    description: "Warehouses, stock controls, purchasing, and movement history.",
+    code: "wholesale_distribution",
+    name: "Wholesale & Distribution",
+    category: "wholesale",
+    description:
+      "Bulk sales, price levels, warehouses, purchasing, dispatch, and receivables.",
   },
   {
-    code: "crm",
-    name: "CRM",
-    description: "Leads, customers, opportunities, and follow-up workflows.",
+    code: "ecommerce",
+    name: "E-commerce",
+    category: "commerce",
+    description:
+      "Orders, channels, fulfilment, returns, inventory, settlements, and profitability.",
   },
   {
-    code: "payroll",
-    name: "Payroll",
-    description: "Employees, pay cycles, allowances, and payroll controls.",
+    code: "service_business",
+    name: "Service Business",
+    category: "services",
+    description:
+      "Clients, jobs, appointments, quotations, invoices, staff, and service delivery.",
   },
   {
-    code: "manufacturing",
-    name: "Manufacturing",
-    description: "Production, materials, work orders, and costing foundations.",
+    code: "professional_services",
+    name: "Professional Services",
+    category: "services",
+    description:
+      "Projects, retainers, time, expenses, billing, approvals, and client reporting.",
   },
   {
     code: "construction",
     name: "Construction",
-    description: "Projects, sites, contractors, budgets, and progress tracking.",
+    category: "construction",
+    description:
+      "Projects, sites, contractors, budgets, materials, billing, and progress tracking.",
   },
   {
-    code: "advanced_accounting",
-    name: "Advanced Accounting",
-    description: "Stronger controls, closing workflows, and advanced statements.",
+    code: "manufacturing",
+    name: "Manufacturing",
+    category: "manufacturing",
+    description:
+      "Materials, production, work orders, costing, quality, warehouses, and sales.",
   },
   {
-    code: "consolidated_reporting",
-    name: "Consolidated Reporting",
-    description: "Group-level reporting across connected companies.",
+    code: "general_company",
+    name: "General Company",
+    category: "company",
+    description:
+      "Full company foundation with departments, roles, accounting, CRM, and reporting.",
+  },
+  {
+    code: "enterprise_group",
+    name: "Enterprise Group",
+    category: "enterprise",
+    description:
+      "Multiple companies, central administration, consolidated billing, and group reporting.",
+  },
+  {
+    code: "custom_business",
+    name: "Custom Business",
+    category: "custom",
+    description:
+      "A controlled starting point for a nature-specific system that needs custom configuration.",
   },
 ] as const;
 
-export type BusinessModuleCode = (typeof BUSINESS_MODULES)[number]["code"];
+export type BusinessSystemCode = (typeof BUSINESS_SYSTEMS)[number]["code"];
 
 export function businessPlanKeyFromPlanCode(
   planCode: string,
