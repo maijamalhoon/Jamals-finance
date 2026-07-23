@@ -1,4 +1,4 @@
-import { readFileSync, readdirSync, statSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import path from "node:path";
 
 import { describe, expect, it } from "vitest";
@@ -6,9 +6,14 @@ import { describe, expect, it } from "vitest";
 const root = process.cwd();
 const runtimePath = path.join(
   root,
-  "components/icons/jalvoro/lucide-runtime.cjs",
+  "components/icons/jalvoro/lucide-runtime.generated.tsx",
+);
+const generatorPath = path.join(
+  root,
+  "scripts/generate-jalvoro-lucide-runtime.mjs",
 );
 const runtimeSource = readFileSync(runtimePath, "utf8");
+const generatorSource = readFileSync(generatorPath, "utf8");
 const nextConfigSource = readFileSync(path.join(root, "next.config.ts"), "utf8");
 const packageJson = JSON.parse(
   readFileSync(path.join(root, "package.json"), "utf8"),
@@ -32,38 +37,44 @@ function sourceFiles(directory: string): string[] {
 }
 
 describe("JALVORO full-workspace icon runtime", () => {
-  it("aliases the complete lucide package for Turbopack and webpack", () => {
+  it("generates and aliases the complete workspace module", () => {
+    expect(existsSync(runtimePath)).toBe(true);
     expect(nextConfigSource).toContain("turbopack:");
     expect(nextConfigSource).toContain("resolveAlias:");
     expect(nextConfigSource).toContain('"lucide-react": jalvoroLucideRuntime');
     expect(nextConfigSource).toContain(
-      '"components/icons/jalvoro/lucide-runtime.cjs"',
+      '"components/icons/jalvoro/lucide-runtime.generated.tsx"',
     );
+    expect(packageJson.scripts["generate:icons"]).toContain(
+      "generate-jalvoro-lucide-runtime.mjs",
+    );
+    expect(packageJson.scripts.postinstall).toBe("npm run generate:icons");
+    expect(packageJson.scripts.predev).toBe("npm run generate:icons");
+    expect(packageJson.scripts.prebuild).toBe("npm run generate:icons");
     expect(packageJson.scripts.dev).toBe("next dev");
     expect(packageJson.scripts.build).toBe("next build");
   });
 
   it("preserves caller-controlled dimensions, stroke, class and color props", () => {
     expect(runtimeSource).toContain("...props");
-    expect(runtimeSource).toContain("color,");
     expect(runtimeSource).not.toMatch(/size:\s*\d/);
     expect(runtimeSource).not.toMatch(/strokeWidth:\s*\d/);
     expect(runtimeSource).not.toMatch(/color:\s*["'`]/);
-    expect(runtimeSource).toContain('"data-jalvoro-source-name": name');
+    expect(runtimeSource).toContain("data-jalvoro-source-name={sourceName}");
   });
 
-  it("routes representative workspace semantics to first-party icons", () => {
+  it("contains stable semantic mappings for representative workspace icons", () => {
     for (const expected of [
-      "Search: Icons.JalvoroSearchIcon",
-      "Trash2: Icons.JalvoroDeleteIcon",
-      "Pencil: Icons.JalvoroPencilIcon",
-      "Wallet: Icons.JalvoroWalletIcon",
-      "Bell: Icons.JalvoroBellIcon",
-      "Settings2: Icons.JalvoroSettingsIcon",
-      "BrainCircuit: Icons.JalvoroAiInsightsIcon",
-      "BarChart3: Icons.JalvoroAnalyticsIcon",
+      'Search: "JalvoroSearchIcon"',
+      'Trash2: "JalvoroDeleteIcon"',
+      'Pencil: "JalvoroPencilIcon"',
+      'Wallet: "JalvoroWalletIcon"',
+      'Bell: "JalvoroBellIcon"',
+      'Settings2: "JalvoroSettingsIcon"',
+      'BrainCircuit: "JalvoroAiInsightsIcon"',
+      'BarChart3: "JalvoroAnalyticsIcon"',
     ]) {
-      expect(runtimeSource).toContain(expected);
+      expect(generatorSource).toContain(expected);
     }
   });
 
