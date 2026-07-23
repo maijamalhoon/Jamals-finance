@@ -33,3 +33,14 @@ This native milestone is intentionally limited to personal finance. Business ERP
 - Version name: `0.6.0-personal-platform`
 - Minimum Android: API 23
 - Target / compile Android: API 36
+
+## Verification gate
+
+The milestone is accepted only when both commands pass in the existing hardened native workflow:
+
+```text
+gradle :shared:testAndroidHostTest
+gradle :androidApp:assembleDebug
+```
+
+The uploaded debug APK must come from the same successful workflow run.
