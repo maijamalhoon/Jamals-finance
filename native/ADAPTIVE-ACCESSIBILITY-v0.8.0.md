@@ -16,6 +16,7 @@ This milestone improves the personal-finance native app for phones, tablets, lar
 - Device-local Accessibility & Display workspace
 - Direct shortcut to Android accessibility settings
 - Existing compact spacing preference exposed in the accessibility workspace
+- Explicit resizable-activity and keyboard-adjustment support
 
 ## Data boundary
 
@@ -38,4 +39,4 @@ gradle :shared:testAndroidHostTest
 gradle :androidApp:assembleDebug
 ```
 
-The downloadable APK must be produced by that successful GitHub Actions run.
+The downloadable APK must be produced by that successful GitHub Actions run. The integration verification is based on the latest main tree and preserves concurrent dashboard and business-software commits.
