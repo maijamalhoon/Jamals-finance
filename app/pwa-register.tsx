@@ -40,13 +40,6 @@ declare global {
   }
 }
 
-const EDITABLE_TEXT_SELECTOR = [
-  'input:not([type="button"]):not([type="submit"]):not([type="reset"]):not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="range"]):not([type="color"])',
-  "textarea",
-  '[contenteditable="true"]',
-  '[contenteditable="plaintext-only"]',
-].join(",");
-
 function canUseServiceWorker() {
   if (!("serviceWorker" in navigator)) return false;
 
@@ -57,32 +50,14 @@ function canUseServiceWorker() {
   return window.location.protocol === "https:" || isLocalhost;
 }
 
+function needsFinanceFormRuntime(pathname: string) {
+  return pathname.startsWith("/dashboard") || pathname.startsWith("/business");
+}
+
 export default function PWARegister() {
   const pathname = usePathname();
   const [deferredRuntimeReady, setDeferredRuntimeReady] = useState(false);
-  const needsFormRuntime = pathname !== "/";
-
-  useEffect(() => {
-    const allowTextSelection = (event: Event) => {
-      event.stopPropagation();
-    };
-
-    const allowEditableContextMenu = (event: Event) => {
-      const target = event.target;
-      if (!(target instanceof Element)) return;
-      if (!target.closest(EDITABLE_TEXT_SELECTOR)) return;
-
-      event.stopPropagation();
-    };
-
-    window.addEventListener("selectstart", allowTextSelection, true);
-    window.addEventListener("contextmenu", allowEditableContextMenu, true);
-
-    return () => {
-      window.removeEventListener("selectstart", allowTextSelection, true);
-      window.removeEventListener("contextmenu", allowEditableContextMenu, true);
-    };
-  }, []);
+  const needsFormRuntime = needsFinanceFormRuntime(pathname);
 
   useEffect(() => {
     let cancelled = false;
@@ -126,9 +101,10 @@ export default function PWARegister() {
     if (!canUseServiceWorker()) return;
     if (window.__jamalsFinancePwaRegistered) return;
 
-    window.__jamalsFinancePwaRegistered = true;
-
+    let cancelled = false;
     let refreshing = false;
+    let idleHandle: number | null = null;
+    let fallbackHandle: number | null = null;
 
     const onControllerChange = () => {
       if (refreshing) return;
@@ -137,6 +113,12 @@ export default function PWARegister() {
     };
 
     const registerServiceWorker = async () => {
+      idleHandle = null;
+      fallbackHandle = null;
+      if (cancelled || window.__jamalsFinancePwaRegistered) return;
+
+      window.__jamalsFinancePwaRegistered = true;
+
       try {
         const registration = await navigator.serviceWorker.register("/sw.js", {
           scope: "/",
@@ -167,14 +149,36 @@ export default function PWARegister() {
           onControllerChange,
         );
       } catch (error) {
+        window.__jamalsFinancePwaRegistered = false;
         console.warn("PWA service worker registration failed:", error);
       }
     };
 
-    window.addEventListener("load", registerServiceWorker, { once: true });
+    const scheduleRegistration = () => {
+      if (typeof window.requestIdleCallback === "function") {
+        idleHandle = window.requestIdleCallback(
+          () => void registerServiceWorker(),
+          { timeout: 3_000 },
+        );
+        return;
+      }
+
+      fallbackHandle = window.setTimeout(
+        () => void registerServiceWorker(),
+        500,
+      );
+    };
+
+    if (document.readyState === "complete") scheduleRegistration();
+    else window.addEventListener("load", scheduleRegistration, { once: true });
 
     return () => {
-      window.removeEventListener("load", registerServiceWorker);
+      cancelled = true;
+      window.removeEventListener("load", scheduleRegistration);
+      if (idleHandle !== null && typeof window.cancelIdleCallback === "function") {
+        window.cancelIdleCallback(idleHandle);
+      }
+      if (fallbackHandle !== null) window.clearTimeout(fallbackHandle);
       navigator.serviceWorker?.removeEventListener(
         "controllerchange",
         onControllerChange,

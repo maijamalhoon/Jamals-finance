@@ -24,7 +24,7 @@ import "./standard-motion-ultra.css";
 import "./global-ux-foundation.css";
 import { Toaster } from "sonner";
 import LanguageProvider from "@/components/i18n/LanguageProvider";
-import DesktopOverscrollBounce from "@/components/motion/DesktopOverscrollBounce";
+import DeferredDesktopOverscrollBounce from "@/components/motion/DeferredDesktopOverscrollBounce";
 import MotionProvider from "@/components/motion/MotionProvider";
 import {
   CURRENCY_STORAGE_KEY,
@@ -286,7 +286,7 @@ export default function RootLayout({
         <LanguageProvider>
           <MotionProvider>
             {children}
-            <DesktopOverscrollBounce />
+            <DeferredDesktopOverscrollBounce />
             <PWARegister />
             <Toaster
               position="top-right"

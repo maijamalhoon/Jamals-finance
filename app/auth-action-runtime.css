@@ -1,0 +1,41 @@
+:root {
+  --jf-auth-action-height: clamp(3rem, calc(2.95rem + 0.2vw), 3.125rem);
+  --jf-auth-action-width: 88%;
+  --jf-auth-action-max-width: 28rem;
+  --jf-auth-action-radius: 1.3rem;
+  --jf-auth-action-bottom-space: clamp(0.3rem, 0.75vw, 0.45rem);
+}
+
+:is(
+    .auth-primary-action,
+    .auth-step button.w-full:not(.auth-provider-action),
+    .jf-auth-card button.w-full:not(.auth-provider-action)
+  ) {
+  box-sizing: border-box !important;
+  width: var(--jf-auth-action-width) !important;
+  min-width: 0 !important;
+  max-width: var(--jf-auth-action-max-width) !important;
+  height: var(--jf-auth-action-height) !important;
+  min-height: var(--jf-auth-action-height) !important;
+  max-height: var(--jf-auth-action-height) !important;
+  margin-inline: auto !important;
+  justify-self: center !important;
+  border-radius: var(--jf-auth-action-radius) !important;
+  overflow: hidden !important;
+}
+
+:is(
+    .auth-primary-action,
+    .auth-step button.w-full:not(.auth-provider-action),
+    .jf-auth-card button.w-full:not(.auth-provider-action)
+  ) svg {
+  display: none !important;
+}
+
+:is(
+    .auth-primary-action,
+    .auth-step button.w-full:not(.auth-provider-action),
+    .jf-auth-card button.w-full:not(.auth-provider-action)
+  ):last-child {
+  margin-bottom: var(--jf-auth-action-bottom-space) !important;
+}
