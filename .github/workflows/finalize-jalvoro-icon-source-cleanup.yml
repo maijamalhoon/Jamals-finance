@@ -49,6 +49,31 @@ jobs:
       - name: Rewrite source imports and remove temporary runtime
         run: node scripts/finalize-jalvoro-icon-source-cleanup.mjs
 
+      - name: Make the zero-LUCIDE contract self-safe
+        run: |
+          node <<'NODE'
+          const fs = require('node:fs');
+          const file = 'components/icons/jalvoro/source-cleanup.test.ts';
+          let source = fs.readFileSync(file, 'utf8');
+          source = source.replace(
+            'const root = process.cwd();',
+            'const root = process.cwd();\nconst legacyPackage = ["lucide", "react"].join("-");\nconst legacySpecifier = new RegExp(`["\\\']${legacyPackage}(?:/[^"\\\']*)?["\\\']`);\nconst legacyAlias = `"${legacyPackage}":`;',
+          );
+          source = source.replace(
+            '/["\']lucide-react(?:\\/[^"\']*)?["\']/.test(readFileSync(file, "utf8"))',
+            'legacySpecifier.test(readFileSync(file, "utf8"))',
+          );
+          source = source.replace(
+            'packageJson.dependencies?.["lucide-react"]',
+            'packageJson.dependencies?.[legacyPackage]',
+          );
+          source = source.replace(
+            'nextConfig).not.toContain(\'"lucide-react":\')',
+            'nextConfig).not.toContain(legacyAlias)',
+          );
+          fs.writeFileSync(file, source, 'utf8');
+          NODE
+
       - name: Refresh dependency lockfile without lifecycle scripts
         run: npm install --package-lock-only --ignore-scripts --silent
 
@@ -68,6 +93,8 @@ jobs:
           const path = require('node:path');
           const ignored = new Set(['.git', '.next', '.vercel', 'build', 'coverage', 'design of  UI', 'node_modules', 'out']);
           const extensions = new Set(['.js', '.jsx', '.mjs', '.cjs', '.ts', '.tsx']);
+          const legacyPackage = ['lucide', 'react'].join('-');
+          const legacySpecifier = new RegExp(`["']${legacyPackage}(?:/[^"']*)?["']`);
           const offenders = [];
           function walk(directory) {
             for (const entry of fs.readdirSync(directory)) {
@@ -77,7 +104,7 @@ jobs:
               if (stat.isDirectory()) walk(absolute);
               else if (extensions.has(path.extname(entry))) {
                 const source = fs.readFileSync(absolute, 'utf8');
-                if (/["']lucide-react(?:\/[^"']*)?["']/.test(source)) {
+                if (legacySpecifier.test(source)) {
                   offenders.push(path.relative(process.cwd(), absolute));
                 }
               }
@@ -85,13 +112,13 @@ jobs:
           }
           walk(process.cwd());
           if (offenders.length) {
-            console.error('Lucide module specifiers remain:', offenders);
+            console.error('Third-party icon module specifiers remain:', offenders);
             process.exit(1);
           }
           const packageJson = JSON.parse(fs.readFileSync('package.json', 'utf8'));
           const packageLock = fs.readFileSync('package-lock.json', 'utf8');
-          if (packageJson.dependencies?.['lucide-react'] || packageLock.includes('node_modules/lucide-react')) {
-            console.error('Lucide dependency remains in package metadata.');
+          if (packageJson.dependencies?.[legacyPackage] || packageLock.includes(`node_modules/${legacyPackage}`)) {
+            console.error('Third-party icon dependency remains in package metadata.');
             process.exit(1);
           }
           NODE
