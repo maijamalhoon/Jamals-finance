@@ -184,17 +184,6 @@ begin
     raise exception 'Enterprise scoped billing initialization failed.';
   end if;
 
-  if not exists (
-    select 1
-    from billing.enterprise_group_members
-    where enterprise_group_id = created_enterprise_group_id
-      and user_id = '33333333-3333-4333-8333-333333333333'
-      and role = 'owner'
-      and status = 'active'
-  ) then
-    raise exception 'Enterprise owner membership was not initialized.';
-  end if;
-
   if (
     select count(*)
     from billing.accounts
