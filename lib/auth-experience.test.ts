@@ -219,7 +219,10 @@ describe("Node 8 authentication experience contracts", () => {
       expect(source).toContain("<AuthShell");
       expect(source).not.toMatch(/ThemeSelector|theme selector|jamal-theme|setTheme/i);
     }
-    expect(authShellSource).toContain("Jamal&apos;s Finance");
+    expect(authShellSource).toContain('import { APP_NAME, brand } from "@/lib/brand"');
+    expect(authShellSource).toContain("<span>{APP_NAME}</span>");
+    expect(authShellSource).toContain("src={brand.assets.logoMark}");
+    expect(authShellSource).not.toContain("Jamal&apos;s Finance");
     expect(authShellSource).toContain("data-auth-root");
     expect(loginSource).toContain("minimal");
     expect(resetPasswordSource).toContain("minimal");
