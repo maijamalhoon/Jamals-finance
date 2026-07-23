@@ -40,7 +40,7 @@ gradle :shared:testAndroidHostTest :androidApp:assembleDebug
 
 The same command runs in native CI. A successful run publishes a development-only debug APK artifact from the exact tested commit.
 
-## Current milestone: v0.6.0 Personal Platform
+## Current milestone: v0.7.0 Privacy & App Lock
 
 - KMP module with Android and iOS targets
 - Typed Supabase email/password authentication over Ktor
@@ -66,13 +66,22 @@ The same command runs in native CI. A successful run publishes a development-onl
 - Secure password update and sign-out
 - Complete `.jfinance` export with 25 MB / 100,000-record validation limits
 - Duplicate-safe authenticated `.jfinance` restore through the existing import RPC
+- Device App Lock using biometrics or Android screen credentials
+- Auto-lock timing: immediate, 1, 5, 15 or 30 minutes
+- Manual Lock Now control
+- Screenshot and recent-app preview protection through Android secure-window flags
+- Shared KMP privacy timing policy prepared for future iPhone parity
 - Existing RLS, financial triggers and secure RPC boundaries reused
+
+## Privacy boundary
+
+App Lock preferences contain only local protection choices and timing state. They do not contain the user's password, Supabase tokens, finance records, backup contents, or biometric data. Biometric templates and device credentials remain owned and verified by Android.
 
 ## Build identity
 
 - Package: `com.jamalsfinance.app.native.dev`
-- Version code: `6`
-- Version name: `0.6.0-personal-platform`
+- Version code: `7`
+- Version name: `0.7.0-privacy-app-lock`
 - Minimum Android: API 23
 - Target / compile Android: API 36
 

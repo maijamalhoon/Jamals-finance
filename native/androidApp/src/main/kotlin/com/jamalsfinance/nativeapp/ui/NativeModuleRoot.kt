@@ -22,10 +22,10 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -44,6 +44,7 @@ private enum class NativeWorkspace {
     InvestmentsAnalytics,
     ReportsInsights,
     PersonalPlatform,
+    PrivacySecurity,
 }
 
 @Composable
@@ -70,6 +71,7 @@ fun NativeModuleRootShell(
             onInvestmentsAnalytics = { workspace = NativeWorkspace.InvestmentsAnalytics },
             onReportsInsights = { workspace = NativeWorkspace.ReportsInsights },
             onPersonalPlatform = { workspace = NativeWorkspace.PersonalPlatform },
+            onPrivacySecurity = { workspace = NativeWorkspace.PrivacySecurity },
             onSignOut = onSignOut,
         )
         NativeWorkspace.AccountsTransactions -> NativeDashboardShell(
@@ -95,6 +97,10 @@ fun NativeModuleRootShell(
             onBack = { workspace = NativeWorkspace.Launcher },
             onSignOut = onSignOut,
         )
+        NativeWorkspace.PrivacySecurity -> PrivacySecurityDashboard(
+            preferences = nativePreferences,
+            onBack = { workspace = NativeWorkspace.Launcher },
+        )
     }
 }
 
@@ -107,6 +113,7 @@ private fun NativeModuleLauncher(
     onInvestmentsAnalytics: () -> Unit,
     onReportsInsights: () -> Unit,
     onPersonalPlatform: () -> Unit,
+    onPrivacySecurity: () -> Unit,
     onSignOut: suspend () -> Unit,
 ) {
     val scope = rememberCoroutineScope()
@@ -179,6 +186,14 @@ private fun NativeModuleLauncher(
                     description = "Profile image and name, currency, theme, deadline alerts, password and complete backup/restore.",
                     action = "Open personal settings",
                     onClick = onPersonalPlatform,
+                )
+            }
+            item {
+                ModuleCard(
+                    title = "Privacy & App Lock",
+                    description = "Biometric or device-credential lock, auto-lock timing, secure screenshots and recent-app protection.",
+                    action = "Open privacy protection",
+                    onClick = onPrivacySecurity,
                 )
             }
             item {
