@@ -1,0 +1,56 @@
+name: Category picker diagnostics
+
+on:
+  push:
+    branches:
+      - feat/category-visual-memory-picker
+
+permissions:
+  contents: read
+
+jobs:
+  lint-diagnostics:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      CI: "true"
+      NEXT_TELEMETRY_DISABLED: "1"
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          persist-credentials: false
+          show-progress: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
+        with:
+          node-version: 24
+          cache: npm
+          package-manager-cache: true
+
+      - name: Install dependencies
+        run: npm ci --silent
+
+      - name: Capture lint output
+        id: lint
+        shell: bash
+        run: |
+          set +e
+          npm run lint > category-picker-lint.txt 2>&1
+          status=$?
+          echo "exit_code=${status}" >> "${GITHUB_OUTPUT}"
+          exit 0
+
+      - name: Upload lint diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: category-picker-lint
+          path: category-picker-lint.txt
+          if-no-files-found: error
+          retention-days: 1
+
+      - name: Fail when lint failed
+        if: steps.lint.outputs.exit_code != '0'
+        run: exit 1
