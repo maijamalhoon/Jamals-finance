@@ -178,13 +178,6 @@ export default function CategorySettingsSection({
   useEffect(() => setCategories(initialCategories), [initialCategories]);
   useEffect(() => setUsage(initialUsage), [initialUsage]);
 
-  useEffect(() => {
-    if (dialogMode !== "create" || draftVisualTouched) return;
-    setDraftVisual(
-      getNextCategoryVisual(categories, draftName || "Category", draftType),
-    );
-  }, [categories, dialogMode, draftName, draftType, draftVisualTouched]);
-
   const categoryById = useMemo(
     () => new Map(categories.map((category) => [category.id, category])),
     [categories],
@@ -200,6 +193,14 @@ export default function CategorySettingsSection({
       }, {}),
     [categories],
   );
+
+  const suggestedDraftVisual = useMemo(
+    () => getNextCategoryVisual(categories, draftName || "Category", draftType),
+    [categories, draftName, draftType],
+  );
+  const resolvedDraftVisual = draftVisualTouched
+    ? draftVisual
+    : suggestedDraftVisual;
 
   function openCreateDialog() {
     const type: CategoryKind = "income";
@@ -257,8 +258,8 @@ export default function CategorySettingsSection({
         user_id: userId,
         name,
         type: draftType,
-        color: draftVisual.color,
-        icon_key: draftVisual.iconKey,
+        color: resolvedDraftVisual.color,
+        icon_key: resolvedDraftVisual.iconKey,
         parent_id: null,
       })
       .select("id, name, type, color, icon_key, parent_id")
@@ -629,7 +630,7 @@ export default function CategorySettingsSection({
                     id="settings-category-name"
                     name={draftName}
                     type={draftType}
-                    visual={draftVisual}
+                    visual={resolvedDraftVisual}
                     onNameChange={setDraftName}
                     onVisualChange={(visual) => {
                       setDraftVisual(visual);
