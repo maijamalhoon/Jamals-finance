@@ -21,10 +21,19 @@ export async function POST() {
     });
 
     if (error) {
-      const alreadyUsed = error.message.toLowerCase().includes("trial_already_used");
+      const message = error.message.toLowerCase();
+      const alreadyUsed = message.includes("trial_already_used");
+      const alreadySubscribed = message.includes("subscription_already_active");
+
       return NextResponse.json(
-        { error: alreadyUsed ? "This account has already used its free trial." : "The trial could not be started." },
-        { status: alreadyUsed ? 409 : 500 },
+        {
+          error: alreadyUsed
+            ? "This account has already used its free trial."
+            : alreadySubscribed
+              ? "This account already has subscription access."
+              : "The trial could not be started.",
+        },
+        { status: alreadyUsed || alreadySubscribed ? 409 : 500 },
       );
     }
 
