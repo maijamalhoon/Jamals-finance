@@ -40,51 +40,35 @@ gradle :shared:testAndroidHostTest :androidApp:assembleDebug
 
 The same command runs in native CI. A successful run publishes a development-only debug APK artifact from the exact tested commit.
 
-## Current milestone: v0.7.0 Privacy & App Lock
+## Current milestone: v0.8.0 Adaptive Accessibility
 
-- KMP module with Android and iOS targets
-- Typed Supabase email/password authentication over Ktor
-- Refresh-token restoration and Android Keystore session persistence
-- Native Compose login, signup and personal module launcher
-- Accounts: load, create, edit, archive, restore and balance ordering
-- Transactions: income, expense, transfers, search, filters and deleted history
-- Goals: create, edit, delete, contributions, progress and contribution history
-- Payables: create, edit, delete, payment recording, repayment history and due status
-- Investments: load, search, create, edit, delete, cash out and aggregate repeated purchases
-- Live prices for supported crypto, stock and forex assets with safe saved/manual fallback
-- Analytics: date presets, previous-period comparisons, refunds, cash flow, categories, accounts and portfolio metrics
-- Reports: date ranges, cash flow, categories, sources, account activity, goals, payables and investments
-- Native UTF-8 CSV report export through Android's document picker
-- AI Insights: financial health, summary cards, suggested actions and authenticated finance chat
-- Gemini remains server-side; deterministic finance intelligence is available as fallback
-- Native profile name and private profile image
-- Account-level preferred currency: PKR, USD, INR, EUR, GBP, JPY and CNY
-- Device-level System, Light and Dark themes
-- Device-level date format and compact spacing preference
-- Goal deadline and payable due alerts using existing personal finance records
-- Persistent alert preferences and notification read state
-- Secure password update and sign-out
-- Complete `.jfinance` export with 25 MB / 100,000-record validation limits
-- Duplicate-safe authenticated `.jfinance` restore through the existing import RPC
-- Device App Lock using biometrics or Android screen credentials
-- Auto-lock timing: immediate, 1, 5, 15 or 30 minutes
-- Manual Lock Now control
-- Screenshot and recent-app preview protection through Android secure-window flags
-- Shared KMP privacy timing policy prepared for future iPhone parity
+- Complete personal finance workspaces from v0.1 through v0.7
+- Device App Lock, secure-window protection and local privacy controls
+- Shared KMP adaptive layout policy with host tests
+- Single-column phone launcher
+- Two-column tablet and large-window launcher
+- Automatic one-column fallback above 125% Android font scaling
+- Full-card workspace touch targets
+- TalkBack grouped module descriptions and heading semantics
+- Live announcements for login errors, configuration errors and session restoration
+- Opt-in high-contrast light and dark themes
+- Device-local Accessibility & Display workspace
+- Android accessibility settings shortcut
+- Existing compact spacing preference available from the accessibility workspace
 - Existing RLS, financial triggers and secure RPC boundaries reused
 
-## Privacy boundary
+## Accessibility and data boundary
 
-App Lock preferences contain only local protection choices and timing state. They do not contain the user's password, Supabase tokens, finance records, backup contents, or biometric data. Biometric templates and device credentials remain owned and verified by Android.
+Accessibility and display choices stay on the Android device. They do not contain passwords, Supabase tokens, finance records, backup contents, biometric data, or business data. Android remains responsible for TalkBack, font scaling, screen credentials and accessibility services.
 
 ## Build identity
 
 - Package: `com.jamalsfinance.app.native.dev`
-- Version code: `7`
-- Version name: `0.7.0-privacy-app-lock`
+- Version code: `8`
+- Version name: `0.8.0-adaptive-accessibility`
 - Minimum Android: API 23
 - Target / compile Android: API 36
 
 ## Remaining before production replacement
 
-This is a tested development milestone, not the final Play Store release. Remaining work includes final 1:1 personal-finance visual parity, exhaustive real-device regression testing, accessibility and performance hardening, permanent production signing, package migration validation, release AAB generation, and Play Store release checks.
+This is a tested development milestone, not the final Play Store release. Remaining work includes final 1:1 personal-finance visual parity, exhaustive real-device regression testing, performance hardening, permanent production signing, package migration validation, release AAB generation, and Play Store release checks.

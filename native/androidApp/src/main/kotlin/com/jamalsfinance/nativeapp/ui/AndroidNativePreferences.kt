@@ -39,6 +39,7 @@ data class NativeLocalPreferences(
     val themeMode: NativeThemeMode = NativeThemeMode.System,
     val dateFormat: NativeDateFormat = NativeDateFormat.MonthFirst,
     val compactMode: Boolean = false,
+    val highContrast: Boolean = false,
     val appLockEnabled: Boolean = false,
     val autoLockTimeout: PrivacyLockTimeout = PrivacyLockTimeout.Immediate,
     val blockScreenshots: Boolean = true,
@@ -73,6 +74,11 @@ class AndroidNativePreferences(context: Context) {
     fun setCompactMode(value: Boolean) {
         storage.edit().putBoolean(KEY_COMPACT, value).apply()
         mutableState.value = mutableState.value.copy(compactMode = value)
+    }
+
+    fun setHighContrast(value: Boolean) {
+        storage.edit().putBoolean(KEY_HIGH_CONTRAST, value).apply()
+        mutableState.value = mutableState.value.copy(highContrast = value)
     }
 
     fun setAppLockEnabled(value: Boolean) {
@@ -127,6 +133,7 @@ class AndroidNativePreferences(context: Context) {
         themeMode = NativeThemeMode.fromStorage(storage.getString(KEY_THEME, null)),
         dateFormat = NativeDateFormat.fromStorage(storage.getString(KEY_DATE_FORMAT, null)),
         compactMode = storage.getBoolean(KEY_COMPACT, false),
+        highContrast = storage.getBoolean(KEY_HIGH_CONTRAST, false),
         appLockEnabled = storage.getBoolean(KEY_APP_LOCK, false),
         autoLockTimeout = PrivacyLockTimeout.fromStorage(
             storage.getString(KEY_AUTO_LOCK_TIMEOUT, null),
@@ -138,6 +145,7 @@ class AndroidNativePreferences(context: Context) {
         const val KEY_THEME = "theme-mode"
         const val KEY_DATE_FORMAT = "date-format"
         const val KEY_COMPACT = "compact-mode"
+        const val KEY_HIGH_CONTRAST = "high-contrast"
         const val KEY_APP_LOCK = "app-lock-enabled"
         const val KEY_AUTO_LOCK_TIMEOUT = "auto-lock-timeout"
         const val KEY_BLOCK_SCREENSHOTS = "block-screenshots"
