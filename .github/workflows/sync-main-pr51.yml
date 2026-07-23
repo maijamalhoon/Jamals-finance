@@ -1,0 +1,36 @@
+name: Sync password protection branch with main
+
+on:
+  push:
+    branches:
+      - security/free-leaked-password-protection
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out feature branch
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          ref: security/free-leaked-password-protection
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Merge current main and push
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git fetch origin main
+          if git merge-base --is-ancestor origin/main HEAD; then
+            echo "Branch already contains current main."
+            exit 0
+          fi
+          git merge --no-edit origin/main
+          git push origin HEAD:security/free-leaked-password-protection
