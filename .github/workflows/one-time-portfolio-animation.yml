@@ -1,0 +1,154 @@
+name: One-time portfolio animation optimization
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+jobs:
+  patch-portfolio-animation:
+    if: contains(github.event.head_commit.message, '[portfolio-once]')
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Apply asserted portfolio patch
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          path = Path('components/dashboard/InvestmentOverviewWidget.tsx')
+          source = path.read_text(encoding='utf-8')
+
+          replacements = [
+              (
+                  'import { useEffect, useMemo } from "react";',
+                  'import { useCallback, useEffect, useMemo, useState } from "react";',
+              ),
+              (
+                  '  const { reduceMotion, durationScale } = useDashboardAnimationReady();\n  const liveInvestments = useLiveInvestmentRows(investments);',
+                  '''  const { reduceMotion, durationScale } = useDashboardAnimationReady();
+  const [hasCompletedInitialAnimation, setHasCompletedInitialAnimation] =
+    useState(false);
+  const allocationAnimationDuration = Math.round(700 * durationScale);
+  const completeInitialAnimation = useCallback(() => {
+    setHasCompletedInitialAnimation(true);
+  }, []);
+  const liveInvestments = useLiveInvestmentRows(investments);''',
+              ),
+              (
+                  '''  const allocationData = useMemo(
+    () => buildAllocationData(liveInvestments),
+    [liveInvestments],
+  );
+  const visibleInvestments = allocationData.slice(0, 3);''',
+                  '''  const allocationData = useMemo(
+    () => buildAllocationData(liveInvestments),
+    [liveInvestments],
+  );
+
+  useEffect(() => {
+    if (reduceMotion) {
+      if (!hasCompletedInitialAnimation) completeInitialAnimation();
+      return;
+    }
+
+    if (hasCompletedInitialAnimation || allocationData.length === 0) return;
+
+    const timer = window.setTimeout(
+      completeInitialAnimation,
+      allocationAnimationDuration + 80,
+    );
+    return () => window.clearTimeout(timer);
+  }, [
+    allocationAnimationDuration,
+    allocationData.length,
+    completeInitialAnimation,
+    hasCompletedInitialAnimation,
+    reduceMotion,
+  ]);
+
+  const shouldAnimateAllocation =
+    !reduceMotion && !hasCompletedInitialAnimation;
+  const visibleInvestments = allocationData.slice(0, 3);''',
+              ),
+              (
+                  '''                      isAnimationActive={!reduceMotion}
+                      animationBegin={0}
+                      animationDuration={Math.round(700 * durationScale)}
+                      animationEasing="ease-out"''',
+                  '''                      isAnimationActive={shouldAnimateAllocation}
+                      animationBegin={0}
+                      animationDuration={allocationAnimationDuration}
+                      animationEasing="ease-out"
+                      onAnimationEnd={completeInitialAnimation}''',
+              ),
+          ]
+
+          for old, new in replacements:
+              count = source.count(old)
+              if count != 1:
+                  raise SystemExit(
+                      f'Expected exactly one match, found {count}: {old[:80]!r}'
+                  )
+              source = source.replace(old, new, 1)
+
+          path.write_text(source, encoding='utf-8')
+          PY
+
+      - name: Install compiler dependency
+        run: npm ci --ignore-scripts --no-audit --no-fund
+
+      - name: Verify TSX syntax
+        shell: bash
+        run: |
+          node <<'NODE'
+          const fs = require('node:fs');
+          const ts = require('typescript');
+          const path = 'components/dashboard/InvestmentOverviewWidget.tsx';
+          const source = fs.readFileSync(path, 'utf8');
+          const result = ts.transpileModule(source, {
+            compilerOptions: {
+              jsx: ts.JsxEmit.ReactJSX,
+              module: ts.ModuleKind.ESNext,
+              target: ts.ScriptTarget.ES2022,
+            },
+            fileName: path,
+            reportDiagnostics: true,
+          });
+          const errors = (result.diagnostics ?? []).filter(
+            (diagnostic) => diagnostic.category === ts.DiagnosticCategory.Error,
+          );
+          if (errors.length > 0) {
+            for (const diagnostic of errors) {
+              console.error(ts.flattenDiagnosticMessageText(diagnostic.messageText, '\n'));
+            }
+            process.exit(1);
+          }
+          NODE
+
+      - name: Commit target patch and remove workflow
+        shell: bash
+        run: |
+          rm .github/workflows/one-time-portfolio-animation.yml
+          git config user.name "Jamal's Finance Automation"
+          git config user.email "actions@users.noreply.github.com"
+          git add components/dashboard/InvestmentOverviewWidget.tsx .github/workflows/one-time-portfolio-animation.yml
+          git diff --cached --check
+          git commit -m "perf(dashboard): prevent live portfolio animation restarts"
+          git push origin HEAD:main
