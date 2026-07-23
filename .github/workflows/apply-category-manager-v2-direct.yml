@@ -13,7 +13,6 @@ permissions:
 
 jobs:
   apply:
-    if: github.actor != 'github-actions[bot]'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -42,9 +41,14 @@ jobs:
             echo "checksum_status=$?"
             tar --list --gzip --file /tmp/category-v2-files.tar.gz
             echo "tar_status=$?"
-          } > .automation/category-v2-bundle-diagnostics.txt 2>&1
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add .automation/category-v2-bundle-diagnostics.txt
-          git commit -m "chore: capture category bundle diagnostics"
-          git push origin HEAD:feat/category-manager-v2-direct
+          } > /tmp/category-v2-bundle-diagnostics.txt 2>&1
+          exit 0
+
+      - name: Upload diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: category-v2-bundle-diagnostics
+          path: /tmp/category-v2-bundle-diagnostics.txt
+          if-no-files-found: error
+          retention-days: 1
