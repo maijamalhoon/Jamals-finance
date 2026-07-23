@@ -5,6 +5,8 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
+import { APP_NAME } from "@/lib/brand";
+
 // Keep route-irrelevant runtime authorities outside the initial page bundle.
 const GlobalAccountAmountMaxAuthority = dynamic(
   () => import("@/components/forms/GlobalAccountAmountMaxAuthority"),
@@ -151,7 +153,7 @@ export default function PWARegister() {
               newWorker.state === "installed" &&
               navigator.serviceWorker.controller
             ) {
-              toast.info("New Jamal's Finance update is ready.", {
+              toast.info(`New ${APP_NAME} update is ready.`, {
                 description: "Update to use the latest version.",
                 action: {
                   label: "Update",
