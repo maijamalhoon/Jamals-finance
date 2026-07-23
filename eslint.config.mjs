@@ -24,9 +24,9 @@ const eslintConfig = defineConfig([
     "build/**",
     "design of  UI/**",
     "next-env.d.ts",
-    // The CommonJS compatibility bridge is validated by a focused contract
-    // test and the production webpack build instead of TypeScript ESLint.
-    "components/icons/jalvoro/lucide-runtime.cjs",
+    // Generated source is validated by its generator contract, TypeScript,
+    // the complete test suite, and the production Turbopack build.
+    "components/icons/jalvoro/lucide-runtime.generated.tsx",
   ]),
 ]);
 
