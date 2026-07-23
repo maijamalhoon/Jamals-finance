@@ -102,7 +102,7 @@ const TYPO_REPLACEMENTS: readonly [RegExp, string][] = [
   [/\binvestmnt(?:s)?\b/giu, "investments"],
   [/\bacount(?:s)?\b/giu, "accounts"],
   [/\byestarday\b/giu, "yesterday"],
-  [/\bmont?h\b/giu, "month"],
+  [/\b(?:mont|month)\b/giu, "month"],
 ];
 
 export function normalizeMultilingualFinanceQuestion(question: string) {
