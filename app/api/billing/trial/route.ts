@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 
-import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 
 export async function POST() {
@@ -14,34 +13,24 @@ export async function POST() {
     return NextResponse.json({ error: "Authentication required." }, { status: 401 });
   }
 
-  try {
-    const admin = createAdminClient();
-    const { data, error } = await admin.rpc("claim_pro_trial", {
-      target_user_id: user.id,
-    });
+  const { data, error } = await supabase.rpc("claim_my_pro_trial");
 
-    if (error) {
-      const message = error.message.toLowerCase();
-      const alreadyUsed = message.includes("trial_already_used");
-      const alreadySubscribed = message.includes("subscription_already_active");
+  if (error) {
+    const message = error.message.toLowerCase();
+    const alreadyUsed = message.includes("trial_already_used");
+    const alreadySubscribed = message.includes("subscription_already_active");
 
-      return NextResponse.json(
-        {
-          error: alreadyUsed
-            ? "This account has already used its free trial."
-            : alreadySubscribed
-              ? "This account already has subscription access."
-              : "The trial could not be started.",
-        },
-        { status: alreadyUsed || alreadySubscribed ? 409 : 500 },
-      );
-    }
-
-    return NextResponse.json({ subscription: data });
-  } catch {
     return NextResponse.json(
-      { error: "Billing is not configured on this environment." },
-      { status: 503 },
+      {
+        error: alreadyUsed
+          ? "This account has already used its free trial."
+          : alreadySubscribed
+            ? "This account already has subscription access."
+            : "The trial could not be started.",
+      },
+      { status: alreadyUsed || alreadySubscribed ? 409 : 500 },
     );
   }
+
+  return NextResponse.json({ subscription: data });
 }
