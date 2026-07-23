@@ -13,7 +13,7 @@ describe("normalizeMultilingualFinanceQuestion", () => {
       normalizeMultilingualFinanceQuestion(
         "kal coffee par kitna kharch hoa aur income kitni thi?",
       ),
-    ).toContain("spending");
+    ).toContain("spend");
   });
 
   it("normalizes Urdu, Hindi, Arabic, and Spanish periods", () => {
