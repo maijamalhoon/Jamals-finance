@@ -22,7 +22,8 @@ The RC package deliberately does not claim the existing `com.jamalsfinance.app` 
 - Android backup remains disabled
 - Debug-only StrictMode diagnostics for disk, network and resource leaks
 - Debug APK signature validation
-- Release AAB archive, size and optional JAR-signature validation
+- Release AAB archive, size and strict JAR-signature validation
+- Expected permanent certificate fingerprint validation
 - SHA-256 manifest for APK, AAB and R8 mapping file
 - Lint, shared KMP tests, debug APK and release AAB built from one commit
 
@@ -37,7 +38,11 @@ The project never commits a keystore or passwords. Release signing activates onl
 
 GitHub Actions may construct the keystore path from the encrypted `JAMALS_ANDROID_KEYSTORE_BASE64` secret. If those secrets are unavailable, CI still produces an unsigned RC AAB for compile, R8, lint and bundle validation. It must not be uploaded to Play Console as a production release.
 
-Do not generate a replacement signing identity merely to make CI green. The certificate used for earlier permanent-signing milestones must be recovered and verified first.
+Expected permanent upload certificate SHA-256:
+
+`2F:7F:D9:B0:1F:59:F7:FB:A0:93:3F:55:AA:F2:AF:FB:8A:B2:72:1E:B3:97:02:17:B8:5F:66:8E:9A:CD:AE:40`
+
+A signed RC with any other certificate fails artifact verification. Do not generate a replacement signing identity merely to make CI green.
 
 ## Required device matrix before production migration
 
@@ -62,7 +67,7 @@ Do not generate a replacement signing identity merely to make CI green. The cert
 The canonical package migration is approved only after:
 
 1. The permanent signing certificate fingerprint matches the expected certificate.
-2. A signed RC AAB passes `jarsigner -verify`.
+2. A signed RC AAB passes `jarsigner -verify -strict` and the certificate check.
 3. All personal workspaces pass the device matrix without data loss.
 4. Play Console pre-launch report has no blocking crashes, ANRs or security findings.
 5. TWA replacement and user migration behavior are explicitly accepted.
