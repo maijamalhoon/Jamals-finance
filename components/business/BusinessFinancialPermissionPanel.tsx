@@ -93,16 +93,17 @@ function FinancialMemberRow({
 }) {
   const router = useRouter();
   const supabase = useMemo(() => createClient(), []);
-  const [permissions, setPermissions] = useState(member.permissions.filter((permission) => permission !== "*"));
+  const [permissions, setPermissions] = useState(member.permissions);
   const [saving, setSaving] = useState(false);
   const isSelf = member.user_id === currentUserId;
+  const hasWildcard = permissions.includes("*");
 
   useEffect(() => {
-    setPermissions(member.permissions.filter((permission) => permission !== "*"));
+    setPermissions(member.permissions);
   }, [member.permissions]);
 
   function toggle(permission: string) {
-    if (!permissionCatalog.includes(permission)) return;
+    if (hasWildcard || !permissionCatalog.includes(permission)) return;
     setPermissions((current) =>
       current.includes(permission)
         ? current.filter((value) => value !== permission)
@@ -111,7 +112,7 @@ function FinancialMemberRow({
   }
 
   async function save() {
-    if (saving) return;
+    if (saving || hasWildcard) return;
     setSaving(true);
     const { error } = await supabase.rpc("update_business_team_member", {
       p_business_id: businessId,
@@ -140,6 +141,7 @@ function FinancialMemberRow({
             <strong className="truncate text-sm text-text-primary">{member.name}</strong>
             <span className="rounded-full bg-surface px-2 py-0.5 text-[11px] font-black text-text-secondary">{member.role.replace(/_/g, " ")}</span>
             {isSelf ? <span className="rounded-full bg-primary-soft px-2 py-0.5 text-[11px] font-black text-primary">You</span> : null}
+            {hasWildcard ? <span className="rounded-full bg-success-soft px-2 py-0.5 text-[11px] font-black text-success">Full access</span> : null}
           </div>
           <p className="mt-1 truncate text-xs text-text-secondary">{member.email ?? member.user_id}</p>
         </div>
@@ -147,19 +149,19 @@ function FinancialMemberRow({
         <div className="flex flex-1 flex-wrap gap-2 xl:justify-end">
           {FINANCIAL_PERMISSIONS.map(({ value, label, icon: Icon }) => {
             const available = permissionCatalog.includes(value);
-            const checked = permissions.includes(value);
+            const checked = hasWildcard || permissions.includes(value);
             return (
               <label
                 key={value}
                 className={`flex min-h-9 items-center gap-2 rounded-[var(--radius-button)] px-3 text-xs font-bold transition-colors ${
                   checked ? "bg-primary-soft text-primary" : "bg-surface text-text-secondary"
-                } ${available ? "cursor-pointer" : "opacity-40"}`}
+                } ${available && !hasWildcard ? "cursor-pointer" : "opacity-40"}`}
               >
                 <input
                   type="checkbox"
                   className="size-4 accent-current"
                   checked={checked}
-                  disabled={!available || saving}
+                  disabled={!available || saving || hasWildcard}
                   onChange={() => toggle(value)}
                 />
                 <Icon className="size-3.5" aria-hidden="true" />
@@ -167,7 +169,7 @@ function FinancialMemberRow({
               </label>
             );
           })}
-          <Button type="button" size="sm" loading={saving} loadingLabel="Saving…" onClick={() => void save()}>
+          <Button type="button" size="sm" disabled={hasWildcard} loading={saving} loadingLabel="Saving…" onClick={() => void save()}>
             <Save aria-hidden="true" /> Save
           </Button>
         </div>
