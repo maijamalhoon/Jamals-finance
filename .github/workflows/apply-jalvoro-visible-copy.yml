@@ -22,11 +22,18 @@ jobs:
       - name: Diagnose centralized brand patch
         shell: bash
         run: |
-          set -u
+          set +e
           base64 --decode .github/jalvoro-visible-copy.patch.gz.b64 | gzip -d > /tmp/jalvoro-visible-copy.patch
+          decode_status=$?
+          if [[ $decode_status -ne 0 ]]; then
+            echo "Patch decode failed with status $decode_status" > patch-diagnostic.txt
+            echo "$decode_status" > patch-status.txt
+            exit 0
+          fi
           git apply --check --verbose /tmp/jalvoro-visible-copy.patch > patch-diagnostic.txt 2>&1
           echo $? > patch-status.txt
           cat patch-diagnostic.txt
+          exit 0
 
       - name: Upload patch diagnostic
         if: always()
