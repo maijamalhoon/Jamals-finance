@@ -4,13 +4,13 @@ import {
   getAnnualSavingsPercent,
   getPlanPrice,
   getPricingTier,
+  planKeyFromPlanCode,
 } from "./catalog";
 import {
   canUseFeature,
   getRemainingUsage,
   resolveAccessPlan,
 } from "./entitlements";
-import { planKeyFromPlanCode } from "./server-access";
 
 describe("regional billing catalog", () => {
   it("maps Pakistan and India to the accessible pricing tier", () => {
