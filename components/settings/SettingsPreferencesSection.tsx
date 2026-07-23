@@ -5,11 +5,13 @@ import {
   CalendarDays,
   ChevronRight,
   CircleDollarSign,
+  Languages,
   Loader2,
   Save,
   SlidersHorizontal,
 } from "lucide-react";
 import { toast } from "sonner";
+import { useLanguage } from "@/components/i18n/LanguageProvider";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -27,6 +29,7 @@ import {
   useCurrency,
   type Currency,
 } from "@/components/currency/CurrencyProvider";
+import type { AppLanguage } from "@/lib/i18n/config";
 import { createClient } from "@/lib/supabase/client";
 
 const CURRENCY_OPTIONS = [
@@ -89,6 +92,11 @@ const preferenceLayoutCss = `
   background: var(--border);
 }
 
+[dir="rtl"] .settings-page-polish .settings-preferences-slot .settings-preferences-divider {
+  margin-left: 0;
+  margin-right: 4.75rem;
+}
+
 @media (min-width: 64rem) {
   .settings-page-polish .settings-preferences-slot {
     grid-column: 7 / -1;
@@ -103,6 +111,11 @@ const preferenceLayoutCss = `
 
   .settings-page-polish .settings-preferences-slot .settings-preferences-divider {
     margin-left: 4.2rem;
+  }
+
+  [dir="rtl"] .settings-page-polish .settings-preferences-slot .settings-preferences-divider {
+    margin-left: 0;
+    margin-right: 4.2rem;
   }
 }
 `;
@@ -137,7 +150,7 @@ function PreferenceRow({
     <button
       type="button"
       onClick={onClick}
-      className="finance-focus flex w-full min-w-0 items-center gap-3 px-4 py-4 text-left transition-colors hover:bg-hover focus-visible:bg-hover sm:px-5"
+      className="finance-focus flex w-full min-w-0 items-center gap-3 px-4 py-4 text-start transition-colors hover:bg-hover focus-visible:bg-hover sm:px-5"
     >
       {icon}
       <span className="min-w-0 flex-1">
@@ -149,7 +162,10 @@ function PreferenceRow({
         </span>
       </span>
       {value ? <span className="finance-state-pill hidden sm:inline-flex">{value}</span> : null}
-      <ChevronRight size={18} className="shrink-0 text-text-secondary" />
+      <ChevronRight
+        size={18}
+        className="shrink-0 text-text-secondary rtl:rotate-180"
+      />
     </button>
   );
 }
@@ -159,10 +175,18 @@ export default function SettingsPreferencesSection({
 }: SettingsPreferencesSectionProps) {
   const supabase = createClient();
   const { currency, rateLabel, setCurrency } = useCurrency();
+  const {
+    language,
+    option: languageOption,
+    options: languageOptions,
+    setLanguage,
+  } = useLanguage();
   const [dateFormat, setDateFormat] = useState<DateFormat>("MMM d, yyyy");
   const [currencyOpen, setCurrencyOpen] = useState(false);
+  const [languageOpen, setLanguageOpen] = useState(false);
   const [dateOpen, setDateOpen] = useState(false);
   const [draftCurrency, setDraftCurrency] = useState<Currency>(currency);
+  const [draftLanguage, setDraftLanguage] = useState<AppLanguage>(language);
   const [draftDateFormat, setDraftDateFormat] =
     useState<DateFormat>("MMM d, yyyy");
   const [savingCurrency, setSavingCurrency] = useState(false);
@@ -176,6 +200,10 @@ export default function SettingsPreferencesSection({
   useEffect(() => {
     if (currencyOpen) setDraftCurrency(currency);
   }, [currency, currencyOpen]);
+
+  useEffect(() => {
+    if (languageOpen) setDraftLanguage(language);
+  }, [language, languageOpen]);
 
   useEffect(() => {
     if (dateOpen) setDraftDateFormat(readStoredDateFormat());
@@ -220,6 +248,18 @@ export default function SettingsPreferencesSection({
     onPreferenceSaved?.();
   }
 
+  function handleLanguageSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setLanguage(draftLanguage);
+    setLanguageOpen(false);
+
+    const selected = languageOptions.find(
+      (option) => option.code === draftLanguage,
+    );
+    toast.success(`Language set to ${selected?.name ?? "English"} on this device.`);
+    onPreferenceSaved?.();
+  }
+
   function handleDateSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     window.localStorage.setItem("jamal-date-format", draftDateFormat);
@@ -256,7 +296,7 @@ export default function SettingsPreferencesSection({
                 Preferences
               </span>
               <span className="mt-0.5 block text-xs leading-5 text-text-secondary">
-                Currency follows your account; date format stays on this device
+                Currency follows your account; language and date format stay on this device
               </span>
             </span>
           </div>
@@ -273,6 +313,20 @@ export default function SettingsPreferencesSection({
             description="Choose the default currency for this account on every device"
             value={currency}
             onClick={() => setCurrencyOpen(true)}
+          />
+
+          <div className="settings-preferences-divider" />
+
+          <PreferenceRow
+            icon={
+              <IconBubble>
+                <Languages size={21} aria-hidden="true" />
+              </IconBubble>
+            }
+            title="Language"
+            description="Choose the website and Jamals Finance AI language for this device"
+            value={languageOption.nativeName}
+            onClick={() => setLanguageOpen(true)}
           />
 
           <div className="settings-preferences-divider" />
@@ -349,6 +403,69 @@ export default function SettingsPreferencesSection({
                   <Save size={16} aria-hidden="true" />
                 )}
                 {savingCurrency ? "Saving..." : "Set Currency"}
+              </Button>
+            </FinanceModalFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={languageOpen} onOpenChange={setLanguageOpen}>
+        <DialogContent className={financeModalContentClass}>
+          <form
+            onSubmit={handleLanguageSubmit}
+            className="flex min-h-0 flex-1 flex-col"
+          >
+            <FinanceModalHeader
+              title="Language"
+              description="This language is used by the website and Jamals Finance AI on this device."
+              icon={Languages}
+              tone="info"
+            />
+            <FinanceModalBody>
+              <FinanceFormField
+                label="Language"
+                htmlFor="settings-language-select"
+                hint="A different device starts in English"
+              >
+                <TouchWheelPicker
+                  id="settings-language-select"
+                  value={draftLanguage}
+                  options={languageOptions.map((option) => ({
+                    value: option.code,
+                    ariaLabel: `${option.name} · ${option.nativeName}`,
+                    content: (
+                      <span className="flex min-w-0 items-center justify-between gap-3">
+                        <span
+                          dir={option.direction}
+                          className="min-w-0 truncate font-semibold text-text-primary"
+                        >
+                          {option.nativeName}
+                        </span>
+                        {option.nativeName !== option.name ? (
+                          <span className="shrink-0 text-xs text-text-secondary">
+                            {option.name}
+                          </span>
+                        ) : null}
+                      </span>
+                    ),
+                  }))}
+                  onValueChange={(value) =>
+                    setDraftLanguage(value as AppLanguage)
+                  }
+                  ariaLabel="Language"
+                  className="field-input w-full p-0"
+                  itemClassName="px-4"
+                />
+              </FinanceFormField>
+            </FinanceModalBody>
+            <FinanceModalFooter>
+              <Button
+                type="submit"
+                size="lg"
+                className="min-h-[var(--oneui-control-height-lg)] w-full"
+              >
+                <Save size={16} aria-hidden="true" />
+                Set Language
               </Button>
             </FinanceModalFooter>
           </form>
