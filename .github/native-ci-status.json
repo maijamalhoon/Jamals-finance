@@ -1,8 +1,8 @@
 {
   "status": "success",
-  "runId": "29988197105",
-  "commit": "de107d85592e1ec8df935661720b096d4586182d",
-  "branch": "main",
+  "runId": "29989499195",
+  "commit": "9a76da15bfcac242f802479405ed293d76f495e1",
+  "branch": "native-personal-v0.7-integrate",
   "workflow": "native-foundation-ci",
-  "milestone": "personal-platform-v0.6.0"
+  "milestone": "privacy-app-lock-v0.7.0"
 }
