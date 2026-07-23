@@ -68,6 +68,10 @@ jobs:
             '): JalvoroIconComponent {',
             '): CompatibleIconComponent {',
           );
+          compat = compat.replace(
+            /export type ([A-Za-z_$][\w$]*) = JalvoroIconComponent;/g,
+            'export type $1 = CompatibleIconComponent;',
+          );
           fs.writeFileSync(compatFile, compat, 'utf8');
 
           const testFile = 'components/icons/jalvoro/source-cleanup.test.ts';
