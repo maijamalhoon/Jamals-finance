@@ -41,21 +41,22 @@ jobs:
               source = source.replace(old, new, 1)
 
           rule_anchor = 'const CATEGORY_ICON_RULES: readonly CategoryIconRule[] = [\n'
-          distinct_rules = '''const CATEGORY_ICON_RULES: readonly CategoryIconRule[] = [
-  {
-    iconKey: "investments",
-    aliases: ["investment", "investments", "stock", "stocks", "shares", "portfolio", "mutual fund"],
-  },
-  {
-    iconKey: "bills",
-    aliases: ["bill", "bills", "invoice", "monthly bill"],
-  },
-  {
-    iconKey: "rent",
-    type: "expense",
-    aliases: ["rent", "kiraya", "lease payment"],
-  },
-'''
+          distinct_rules = '\n'.join([
+              'const CATEGORY_ICON_RULES: readonly CategoryIconRule[] = [',
+              '  {',
+              '    iconKey: "investments",',
+              '    aliases: ["investment", "investments", "stock", "stocks", "shares", "portfolio", "mutual fund"],',
+              '  },',
+              '  {',
+              '    iconKey: "bills",',
+              '    aliases: ["bill", "bills", "invoice", "monthly bill"],',
+              '  },',
+              '  {',
+              '    iconKey: "rent",',
+              '    type: "expense",',
+              '    aliases: ["rent", "kiraya", "lease payment"],',
+              '  },',
+          ]) + '\n'
           if rule_anchor not in source:
               raise SystemExit('missing category rule anchor')
           source = source.replace(rule_anchor, distinct_rules, 1)
