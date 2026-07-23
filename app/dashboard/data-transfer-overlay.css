@@ -1,3 +1,81 @@
+.settings-data-upload-launch {
+  display: grid;
+  place-items: center;
+  padding: 1.15rem 1rem 1.35rem;
+}
+
+.settings-data-upload-button {
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  width: 4.1rem;
+  height: 4.1rem;
+  place-items: center;
+  border: 0;
+  border-radius: 1.4rem;
+  color: var(--primary);
+  background: color-mix(
+    in srgb,
+    var(--primary) 10%,
+    var(--surface-primary)
+  );
+  box-shadow:
+    0 12px 30px color-mix(in srgb, var(--primary) 13%, transparent),
+    inset 0 0 0 1px color-mix(in srgb, var(--primary) 14%, transparent);
+  cursor: pointer;
+  transition:
+    transform 180ms ease,
+    background 180ms ease,
+    box-shadow 180ms ease;
+}
+
+.settings-data-upload-button:hover:not(:disabled) {
+  transform: translateY(-2px) scale(1.035);
+  background: color-mix(
+    in srgb,
+    var(--primary) 15%,
+    var(--surface-primary)
+  );
+  box-shadow:
+    0 16px 38px color-mix(in srgb, var(--primary) 18%, transparent),
+    inset 0 0 0 1px color-mix(in srgb, var(--primary) 20%, transparent);
+}
+
+.settings-data-upload-button:active:not(:disabled) {
+  transform: translateY(0) scale(0.96);
+}
+
+.settings-data-upload-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.settings-data-upload-button > svg {
+  position: relative;
+  z-index: 2;
+  animation: settings-data-upload-float 1500ms ease-in-out infinite;
+}
+
+.settings-data-upload-pulse,
+.settings-data-upload-orbit {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  border-radius: inherit;
+  pointer-events: none;
+}
+
+.settings-data-upload-pulse {
+  border: 1px solid color-mix(in srgb, var(--primary) 32%, transparent);
+  animation: settings-data-upload-pulse 1800ms ease-out infinite;
+}
+
+.settings-data-upload-orbit {
+  inset: 0.42rem;
+  border: 1px dashed color-mix(in srgb, var(--primary) 35%, transparent);
+  animation: settings-data-upload-orbit 5600ms linear infinite;
+}
+
 .finance-transfer-overlay {
   position: fixed;
   inset: 0;
@@ -9,12 +87,17 @@
   pointer-events: none;
   visibility: hidden;
   opacity: 0;
-  background: color-mix(in srgb, var(--background) 72%, transparent);
-  backdrop-filter: blur(14px) saturate(112%);
-  -webkit-backdrop-filter: blur(14px) saturate(112%);
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--background) 58%, transparent),
+      color-mix(in srgb, var(--background) 76%, transparent)
+    );
+  backdrop-filter: blur(12px) saturate(118%);
+  -webkit-backdrop-filter: blur(12px) saturate(118%);
   transition:
-    opacity 160ms ease,
-    visibility 0s linear 160ms;
+    opacity 180ms ease,
+    visibility 0s linear 180ms;
   contain: strict;
 }
 
@@ -24,71 +107,118 @@
   transition-delay: 0s;
 }
 
-.finance-transfer-ambient,
-.finance-transfer-sweep {
+.finance-transfer-water {
   position: absolute;
-  inset: -20%;
+  inset: -18%;
+  overflow: hidden;
   pointer-events: none;
+  opacity: 0.26;
+  transform: translate3d(0, 0, 0);
+  transition: opacity 260ms ease;
+}
+
+.finance-transfer-water::before,
+.finance-transfer-water::after {
+  position: absolute;
+  content: "";
+  pointer-events: none;
+}
+
+.finance-transfer-water::before {
+  inset: 4%;
+  border-radius: 50%;
+  background:
+    radial-gradient(
+      circle at 50% 48%,
+      color-mix(in srgb, var(--primary) 30%, transparent) 0 8%,
+      color-mix(in srgb, var(--success) 18%, transparent) 18%,
+      transparent 54%
+    );
+  filter: blur(2px);
+  transform: scale(0.45);
+  opacity: 0;
+}
+
+.finance-transfer-water::after {
+  inset: -12%;
+  background:
+    radial-gradient(
+      circle at 22% 24%,
+      color-mix(in srgb, var(--primary) 25%, transparent),
+      transparent 24%
+    ),
+    radial-gradient(
+      circle at 76% 70%,
+      color-mix(in srgb, var(--success) 22%, transparent),
+      transparent 29%
+    ),
+    linear-gradient(
+      145deg,
+      transparent 30%,
+      color-mix(in srgb, var(--primary) 14%, transparent) 48%,
+      transparent 67%
+    );
+  filter: blur(10px);
+  transform: translate3d(-2%, -1%, 0) scale(1.04);
+  animation: finance-water-ambient 2200ms ease-in-out infinite alternate;
+}
+
+.finance-transfer-wave {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 145vmax;
+  height: 145vmax;
+  border-radius: 42% 46% 44% 48%;
+  background: color-mix(in srgb, var(--primary) 14%, transparent);
+  transform-origin: 50% 50%;
   will-change: transform, opacity;
 }
 
-.finance-transfer-ambient {
-  background:
-    radial-gradient(
-      circle at 24% 30%,
-      color-mix(in srgb, var(--primary) 24%, transparent),
-      transparent 34%
-    ),
-    radial-gradient(
-      circle at 76% 68%,
-      color-mix(in srgb, var(--success) 18%, transparent),
-      transparent 38%
-    );
-  opacity: 0.78;
-  transform: translate3d(0, 0, 0) scale(1.02);
-  animation: finance-transfer-breathe 1800ms ease-in-out infinite alternate;
+.finance-transfer-wave-one {
+  transform: translate3d(-50%, -38%, 0) rotate(0deg) scale(0.48);
 }
 
-.finance-transfer-sweep {
-  inset: -45%;
-  background: linear-gradient(
-    115deg,
-    transparent 37%,
-    color-mix(in srgb, var(--primary) 18%, transparent) 47%,
-    color-mix(in srgb, var(--foreground) 9%, transparent) 50%,
-    transparent 61%
-  );
+.finance-transfer-wave-two {
+  background: color-mix(in srgb, var(--success) 11%, transparent);
+  transform: translate3d(-50%, -35%, 0) rotate(54deg) scale(0.56);
+}
+
+.finance-transfer-wave-three {
+  background: color-mix(in srgb, var(--foreground) 6%, transparent);
+  transform: translate3d(-50%, -32%, 0) rotate(110deg) scale(0.64);
+}
+
+.finance-transfer-ripple {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 8rem;
+  height: 8rem;
+  border: 2px solid color-mix(in srgb, var(--primary) 45%, transparent);
+  border-radius: 50%;
   opacity: 0;
-  transform: translate3d(-48%, 0, 0);
+  transform: translate3d(-50%, -50%, 0) scale(0.1);
+  will-change: transform, opacity;
 }
 
-.finance-transfer-overlay[data-phase="validating"] .finance-transfer-sweep,
-.finance-transfer-overlay[data-phase="importing"] .finance-transfer-sweep {
-  opacity: 1;
-  animation: finance-transfer-sweep 920ms cubic-bezier(0.25, 0.75, 0.35, 1)
-    infinite;
+.finance-transfer-ripple-two {
+  border-color: color-mix(in srgb, var(--success) 38%, transparent);
 }
 
 .finance-transfer-panel {
   position: relative;
+  z-index: 3;
   display: flex;
-  width: min(31rem, 100%);
-  min-height: 18rem;
+  width: min(32rem, 100%);
+  min-height: 17rem;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 0.75rem;
   padding: 2rem 1.5rem;
-  border-radius: 2rem;
-  background: color-mix(
-    in srgb,
-    var(--surface-secondary) 91%,
-    transparent
-  );
-  box-shadow: 0 22px 75px
-    color-mix(in srgb, var(--foreground) 14%, transparent);
   text-align: center;
-  transform: translate3d(0, 18px, 0) scale(0.965);
+  transform: translate3d(0, 14px, 0) scale(0.97);
   opacity: 0;
   will-change: transform, opacity;
 }
@@ -97,63 +227,180 @@
   opacity: 1;
   transform: translate3d(0, 0, 0) scale(1);
   transition:
-    transform 240ms cubic-bezier(0.2, 0.9, 0.28, 1.18),
-    opacity 170ms ease;
+    transform 260ms cubic-bezier(0.2, 0.9, 0.28, 1.12),
+    opacity 180ms ease;
 }
 
 .finance-transfer-icon {
+  position: relative;
   display: grid;
-  width: 5.6rem;
-  height: 5.6rem;
+  width: 6rem;
+  height: 6rem;
   place-items: center;
-  border-radius: 1.75rem;
+  border-radius: 2rem;
   color: var(--primary);
   background: color-mix(
     in srgb,
-    var(--primary) 14%,
-    var(--surface-primary)
+    var(--surface-primary) 84%,
+    transparent
   );
+  box-shadow:
+    0 24px 65px color-mix(in srgb, var(--primary) 18%, transparent),
+    inset 0 0 0 1px color-mix(in srgb, var(--primary) 18%, transparent);
+  backdrop-filter: blur(16px) saturate(125%);
+  -webkit-backdrop-filter: blur(16px) saturate(125%);
   transform: translateZ(0);
 }
 
+.finance-transfer-icon::after {
+  position: absolute;
+  inset: -0.55rem;
+  border: 1px solid color-mix(in srgb, var(--primary) 26%, transparent);
+  border-radius: 2.35rem;
+  content: "";
+  opacity: 0.7;
+}
+
+.finance-transfer-overlay[data-phase="dragging"] .finance-transfer-water {
+  opacity: 0.48;
+}
+
 .finance-transfer-overlay[data-phase="dragging"] .finance-transfer-icon {
-  animation: finance-transfer-drop 720ms cubic-bezier(0.2, 0.8, 0.25, 1)
+  animation: finance-transfer-drop 760ms cubic-bezier(0.2, 0.8, 0.25, 1)
     infinite alternate;
+}
+
+.finance-transfer-overlay[data-phase="dragging"] .finance-transfer-icon::after {
+  animation: finance-transfer-icon-pulse 1100ms ease-out infinite;
+}
+
+.finance-transfer-overlay[data-phase="validating"] .finance-transfer-water,
+.finance-transfer-overlay[data-phase="importing"] .finance-transfer-water {
+  opacity: 0.52;
+}
+
+.finance-transfer-overlay[data-phase="validating"] .finance-transfer-wave-one,
+.finance-transfer-overlay[data-phase="importing"] .finance-transfer-wave-one {
+  animation: finance-water-turn-one 3600ms linear infinite;
+}
+
+.finance-transfer-overlay[data-phase="validating"] .finance-transfer-wave-two,
+.finance-transfer-overlay[data-phase="importing"] .finance-transfer-wave-two {
+  animation: finance-water-turn-two 4600ms linear infinite reverse;
+}
+
+.finance-transfer-overlay[data-phase="validating"] .finance-transfer-wave-three,
+.finance-transfer-overlay[data-phase="importing"] .finance-transfer-wave-three {
+  animation: finance-water-turn-three 5400ms linear infinite;
+}
+
+.finance-transfer-overlay[data-phase="revealing"] {
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--primary) 12%, var(--background)),
+      color-mix(in srgb, var(--success) 8%, var(--background))
+    );
+  backdrop-filter: blur(18px) saturate(138%);
+  -webkit-backdrop-filter: blur(18px) saturate(138%);
+}
+
+.finance-transfer-overlay[data-phase="revealing"] .finance-transfer-water {
+  opacity: 1;
+}
+
+.finance-transfer-overlay[data-phase="revealing"] .finance-transfer-water::before {
+  animation: finance-water-impact 4000ms cubic-bezier(0.12, 0.72, 0.18, 1)
+    both;
+}
+
+.finance-transfer-overlay[data-phase="revealing"] .finance-transfer-water::after {
+  animation:
+    finance-water-ambient 1400ms ease-in-out infinite alternate,
+    finance-water-flash 4000ms ease-out both;
+}
+
+.finance-transfer-overlay[data-phase="revealing"] .finance-transfer-wave-one {
+  animation: finance-water-reveal-one 4000ms cubic-bezier(0.1, 0.7, 0.2, 1)
+    both;
+}
+
+.finance-transfer-overlay[data-phase="revealing"] .finance-transfer-wave-two {
+  animation: finance-water-reveal-two 4000ms cubic-bezier(0.12, 0.72, 0.2, 1)
+    both;
+}
+
+.finance-transfer-overlay[data-phase="revealing"] .finance-transfer-wave-three {
+  animation: finance-water-reveal-three 4000ms cubic-bezier(0.14, 0.74, 0.2, 1)
+    both;
+}
+
+.finance-transfer-overlay[data-phase="revealing"] .finance-transfer-ripple-one {
+  animation: finance-water-ripple 2200ms 120ms ease-out both;
+}
+
+.finance-transfer-overlay[data-phase="revealing"] .finance-transfer-ripple-two {
+  animation: finance-water-ripple 2500ms 620ms ease-out both;
+}
+
+.finance-transfer-overlay[data-phase="revealing"] .finance-transfer-icon {
+  color: var(--primary);
+  animation: finance-water-icon-float 4000ms ease-in-out both;
+}
+
+.finance-transfer-overlay[data-phase="revealing"] .finance-transfer-panel {
+  animation: finance-water-copy-breathe 4000ms ease-in-out both;
+}
+
+.finance-transfer-overlay[data-phase="success"] .finance-transfer-water {
+  opacity: 0.38;
 }
 
 .finance-transfer-overlay[data-phase="success"] .finance-transfer-icon {
   color: var(--success);
   background: color-mix(
     in srgb,
-    var(--success) 16%,
+    var(--success) 14%,
     var(--surface-primary)
   );
   animation: finance-transfer-success 520ms
     cubic-bezier(0.17, 0.89, 0.32, 1.3) both;
 }
 
+.finance-transfer-overlay[data-phase="success"] .finance-transfer-icon::after {
+  border-color: color-mix(in srgb, var(--success) 30%, transparent);
+}
+
+.finance-transfer-overlay[data-phase="error"] .finance-transfer-water {
+  opacity: 0.2;
+}
+
 .finance-transfer-overlay[data-phase="error"] .finance-transfer-icon {
   color: var(--danger);
   background: color-mix(
     in srgb,
-    var(--danger) 15%,
+    var(--danger) 12%,
     var(--surface-primary)
   );
   animation: finance-transfer-error 360ms ease both;
 }
 
+.finance-transfer-overlay[data-phase="error"] .finance-transfer-icon::after {
+  border-color: color-mix(in srgb, var(--danger) 28%, transparent);
+}
+
 .finance-transfer-title {
-  max-width: 26rem;
+  max-width: 27rem;
   color: var(--foreground);
-  font-size: clamp(1.2rem, 3vw, 1.55rem);
-  line-height: 1.2;
-  letter-spacing: -0.025em;
+  font-size: clamp(1.28rem, 3vw, 1.65rem);
+  line-height: 1.18;
+  letter-spacing: -0.03em;
 }
 
 .finance-transfer-message {
-  max-width: 27rem;
+  max-width: 28rem;
   color: var(--text-secondary);
-  font-size: 0.94rem;
+  font-size: 0.95rem;
   line-height: 1.55;
 }
 
@@ -167,48 +414,214 @@
   white-space: nowrap;
 }
 
-.finance-transfer-progress {
-  position: relative;
-  width: min(17rem, 76%);
-  height: 0.3rem;
-  margin-top: 0.55rem;
-  overflow: hidden;
-  border-radius: 999px;
-  background: color-mix(in srgb, var(--foreground) 9%, transparent);
-}
-
-.finance-transfer-progress > span {
-  position: absolute;
-  inset-block: 0;
-  left: -42%;
-  width: 42%;
-  border-radius: inherit;
-  background: var(--primary);
-  transform: translate3d(0, 0, 0);
-  animation: finance-transfer-progress 880ms cubic-bezier(0.5, 0, 0.5, 1)
-    infinite;
-  will-change: transform;
-}
-
 .finance-transfer-spin {
   animation: finance-transfer-spin 720ms linear infinite;
 }
 
-@keyframes finance-transfer-breathe {
-  from {
-    transform: translate3d(-1%, -1%, 0) scale(1.01);
+[data-dashboard-shell].is-finance-water-impact {
+  transform-origin: 50% 50%;
+  animation: finance-water-screen-shake 4000ms
+    cubic-bezier(0.18, 0.72, 0.2, 1) both;
+  will-change: transform;
+}
+
+@keyframes settings-data-upload-float {
+  0%,
+  100% {
+    transform: translate3d(0, 2px, 0);
   }
-  to {
-    transform: translate3d(1%, 1%, 0) scale(1.06);
+  50% {
+    transform: translate3d(0, -3px, 0);
   }
 }
 
-@keyframes finance-transfer-sweep {
+@keyframes settings-data-upload-pulse {
+  0% {
+    opacity: 0.65;
+    transform: scale(0.86);
+  }
+  78%,
+  100% {
+    opacity: 0;
+    transform: scale(1.32);
+  }
+}
+
+@keyframes settings-data-upload-orbit {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes finance-water-ambient {
   from {
-    transform: translate3d(-48%, 0, 0);
+    transform: translate3d(-2%, -1%, 0) scale(1.02) rotate(-1deg);
   }
   to {
-    transform: translate3d(48%, 0, 0);
+    transform: translate3d(2%, 1%, 0) scale(1.08) rotate(2deg);
+  }
+}
+
+@keyframes finance-water-turn-one {
+  to {
+    transform: translate3d(-50%, -38%, 0) rotate(360deg) scale(0.48);
+  }
+}
+
+@keyframes finance-water-turn-two {
+  to {
+    transform: translate3d(-50%, -35%, 0) rotate(414deg) scale(0.56);
+  }
+}
+
+@keyframes finance-water-turn-three {
+  to {
+    transform: translate3d(-50%, -32%, 0) rotate(470deg) scale(0.64);
+  }
+}
+
+@keyframes finance-water-impact {
+  0% {
+    opacity: 0;
+    transform: scale(0.2);
+  }
+  14% {
+    opacity: 1;
+    transform: scale(0.72);
+  }
+  58% {
+    opacity: 0.86;
+    transform: scale(1.18);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.65);
+  }
+}
+
+@keyframes finance-water-flash {
+  0% {
+    opacity: 0.3;
+  }
+  10% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.52;
+  }
+}
+
+@keyframes finance-water-reveal-one {
+  0% {
+    opacity: 0.3;
+    transform: translate3d(-50%, 34%, 0) rotate(-18deg) scale(0.24);
+  }
+  28% {
+    opacity: 0.92;
+  }
+  100% {
+    opacity: 0.38;
+    transform: translate3d(-50%, -40%, 0) rotate(238deg) scale(0.72);
+  }
+}
+
+@keyframes finance-water-reveal-two {
+  0% {
+    opacity: 0.2;
+    transform: translate3d(-50%, 42%, 0) rotate(28deg) scale(0.3);
+  }
+  34% {
+    opacity: 0.82;
+  }
+  100% {
+    opacity: 0.32;
+    transform: translate3d(-50%, -34%, 0) rotate(-205deg) scale(0.82);
+  }
+}
+
+@keyframes finance-water-reveal-three {
+  0% {
+    opacity: 0.16;
+    transform: translate3d(-50%, 50%, 0) rotate(76deg) scale(0.36);
+  }
+  40% {
+    opacity: 0.65;
+  }
+  100% {
+    opacity: 0.24;
+    transform: translate3d(-50%, -27%, 0) rotate(315deg) scale(0.9);
+  }
+}
+
+@keyframes finance-water-ripple {
+  0% {
+    opacity: 0.75;
+    transform: translate3d(-50%, -50%, 0) scale(0.12);
+  }
+  100% {
+    opacity: 0;
+    transform: translate3d(-50%, -50%, 0) scale(8.8);
+  }
+}
+
+@keyframes finance-water-icon-float {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, 16px, 0) scale(0.84);
+  }
+  12% {
+    opacity: 1;
+  }
+  40% {
+    transform: translate3d(0, -8px, 0) scale(1.04);
+  }
+  72% {
+    transform: translate3d(0, 3px, 0) scale(0.98);
+  }
+  100% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+}
+
+@keyframes finance-water-copy-breathe {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, 10px, 0);
+  }
+  12%,
+  84% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.96;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes finance-water-screen-shake {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) rotate(0);
+  }
+  5% {
+    transform: translate3d(-2px, 1px, 0) rotate(-0.08deg);
+  }
+  9% {
+    transform: translate3d(2px, -1px, 0) rotate(0.08deg);
+  }
+  14% {
+    transform: translate3d(-1.5px, -1px, 0) rotate(-0.05deg);
+  }
+  20% {
+    transform: translate3d(1px, 1px, 0) rotate(0.04deg);
+  }
+  30% {
+    transform: translate3d(-0.7px, 0, 0) rotate(-0.02deg);
+  }
+  46%,
+  76% {
+    transform: translate3d(0, 0, 0) rotate(0);
   }
 }
 
@@ -218,6 +631,17 @@
   }
   to {
     transform: translate3d(0, 5px, 0) scale(1.02);
+  }
+}
+
+@keyframes finance-transfer-icon-pulse {
+  0% {
+    opacity: 0.68;
+    transform: scale(0.9);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.2);
   }
 }
 
@@ -249,15 +673,6 @@
   }
 }
 
-@keyframes finance-transfer-progress {
-  from {
-    transform: translate3d(0, 0, 0);
-  }
-  to {
-    transform: translate3d(340%, 0, 0);
-  }
-}
-
 @keyframes finance-transfer-spin {
   to {
     transform: rotate(360deg);
@@ -265,34 +680,51 @@
 }
 
 @media (max-width: 640px) {
+  .settings-data-upload-launch {
+    padding-block: 1rem 1.2rem;
+  }
+
+  .settings-data-upload-button {
+    width: 3.8rem;
+    height: 3.8rem;
+    border-radius: 1.25rem;
+  }
+
   .finance-transfer-overlay {
     padding: 0.85rem;
   }
 
   .finance-transfer-panel {
-    min-height: 16rem;
-    border-radius: 1.65rem;
-    padding: 1.6rem 1.15rem;
+    min-height: 15rem;
+    padding: 1.5rem 1rem;
   }
 
   .finance-transfer-icon {
-    width: 4.9rem;
-    height: 4.9rem;
-    border-radius: 1.5rem;
+    width: 5.2rem;
+    height: 5.2rem;
+    border-radius: 1.7rem;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .settings-data-upload-button,
   .finance-transfer-overlay,
   .finance-transfer-panel {
     transition-duration: 1ms !important;
   }
 
-  .finance-transfer-ambient,
-  .finance-transfer-sweep,
+  .settings-data-upload-button > svg,
+  .settings-data-upload-pulse,
+  .settings-data-upload-orbit,
+  .finance-transfer-water::before,
+  .finance-transfer-water::after,
+  .finance-transfer-wave,
+  .finance-transfer-ripple,
   .finance-transfer-icon,
-  .finance-transfer-progress > span,
-  .finance-transfer-spin {
-    animation: none !important;
+  .finance-transfer-panel,
+  .finance-transfer-spin,
+  [data-dashboard-shell].is-finance-water-impact {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
   }
 }
