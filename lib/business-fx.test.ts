@@ -69,7 +69,10 @@ describe("business multi-currency and FX contracts", () => {
   it("connects the responsive company-wide FX workspace", () => {
     const dashboard = read("app/business/[businessSlug]/page.tsx");
     const page = read("app/business/[businessSlug]/fx/page.tsx");
-    const workspace = read("components/business/BusinessFxWorkspace.tsx");
+    const workspace = [
+      read("components/business/BusinessFxWorkspace.tsx"),
+      read("components/business/BusinessFxWorkspaceParts.tsx"),
+    ].join("\n");
     const panel = read("components/business/BusinessFinancialPermissionPanel.tsx");
 
     expect(dashboard).toContain('key: "fx"');
