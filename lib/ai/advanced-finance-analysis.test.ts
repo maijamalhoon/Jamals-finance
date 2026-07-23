@@ -112,7 +112,7 @@ describe("advanced finance calculations", () => {
       inflationPct: 5,
     });
     expect(projection.nominal).toBe(130000);
-    expect(projection.real).toBeCloseTo(79810.72, 1);
+    expect(projection.real).toBeCloseTo(79808.72, 1);
     expect(
       inflationAdjustedValue({ amount: 100000, years: 10, inflationPct: 5 }),
     ).toBeCloseTo(61391.33, 1);
