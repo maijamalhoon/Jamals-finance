@@ -1,3 +1,5 @@
+@import "./dashboard-overview-layout.css";
+
 /*
  * Final mobile/tablet navigation drawer position authority.
  * This file must stay last in the dashboard CSS import order so generic
