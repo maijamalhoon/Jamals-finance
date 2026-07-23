@@ -1,0 +1,103 @@
+name: Isolated Staging Load Test
+
+on:
+  push:
+    branches:
+      - load-test-staging
+    paths:
+      - "app/api/load-test/**"
+      - "scripts/load-test/**"
+      - ".github/workflows/isolated-staging-load-test.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: isolated-staging-load-test
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  load-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      NEXT_PUBLIC_SUPABASE_URL: https://zqhdwjivyfzeoqvahjme.supabase.co
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: sb_publishable_O0_zho3B-DZsh4P85nTBGA_fNWXEczT
+      NEXT_PUBLIC_APP_URL: http://127.0.0.1:3000
+      NEXT_PUBLIC_ENABLE_GOOGLE_AUTH: "false"
+      TARGET_URL: http://127.0.0.1:3000
+
+    steps:
+      - name: Checkout staging branch
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build production copy
+        run: npm run build
+
+      - name: Start isolated production server
+        run: |
+          npm run start -- -H 127.0.0.1 -p 3000 > next-server.log 2>&1 &
+          echo $! > next-server.pid
+
+      - name: Verify isolated staging probe
+        run: |
+          for attempt in {1..60}; do
+            if curl --fail --silent --show-error \
+              "${TARGET_URL}/api/load-test/probe?user=1" \
+              | tee probe-response.json \
+              | grep -q '"ok":true'; then
+              exit 0
+            fi
+            sleep 2
+          done
+          cat next-server.log
+          exit 1
+
+      - name: Set up k6
+        uses: grafana/setup-k6-action@v1
+
+      - name: Run 100 concurrent users
+        run: k6 run -e VUS=100 -e TARGET_URL="${TARGET_URL}" scripts/load-test/isolated-staging.js
+
+      - name: Cool down after 100 users
+        run: sleep 15
+
+      - name: Run 500 concurrent users
+        run: k6 run -e VUS=500 -e TARGET_URL="${TARGET_URL}" scripts/load-test/isolated-staging.js
+
+      - name: Cool down after 500 users
+        run: sleep 30
+
+      - name: Run 1000 concurrent users
+        run: k6 run -e VUS=1000 -e TARGET_URL="${TARGET_URL}" scripts/load-test/isolated-staging.js
+
+      - name: Upload load-test evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: isolated-staging-load-test-results
+          path: |
+            load-test-100.json
+            load-test-500.json
+            load-test-1000.json
+            probe-response.json
+            next-server.log
+          if-no-files-found: warn
+          retention-days: 7
+
+      - name: Stop isolated server
+        if: always()
+        run: |
+          if [ -f next-server.pid ]; then
+            kill "$(cat next-server.pid)" || true
+          fi
