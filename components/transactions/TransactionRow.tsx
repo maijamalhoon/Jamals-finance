@@ -1,13 +1,12 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import dynamic from "next/dynamic";
 import { usePathname, useRouter } from "next/navigation";
+import { useState } from "react";
 import { Eye, Pencil, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
-import TransactionModal, {
-  ExistingTransaction,
-} from "@/components/dashboard/TransactionModal";
+import type { ExistingTransaction } from "@/components/dashboard/TransactionModal";
 import { useCurrency } from "@/components/currency/CurrencyProvider";
 import { createClient } from "@/lib/supabase/client";
 import {
@@ -15,6 +14,11 @@ import {
   getTransactionPrefix,
   getTransactionToneClass,
 } from "@/lib/transaction-icons";
+
+const TransactionModal = dynamic(
+  () => import("@/components/dashboard/TransactionModal"),
+  { ssr: false },
+);
 
 type TransactionType =
   | "income"
@@ -83,7 +87,6 @@ function getCategoryLabel(tx: Transaction, type: TransactionType) {
 export default function TransactionRow({ tx }: { tx: Transaction }) {
   const router = useRouter();
   const pathname = usePathname();
-  const supabase = useMemo(() => createClient(), []);
   const { formatCurrency } = useCurrency();
 
   const [editOpen, setEditOpen] = useState(false);
@@ -122,14 +125,14 @@ export default function TransactionRow({ tx }: { tx: Transaction }) {
       throw new Error("This goal contribution is missing its ledger link.");
     }
 
-    const { error } = await supabase.rpc("delete_goal_contribution", {
+    const { error } = await createClient().rpc("delete_goal_contribution", {
       p_contribution_id: tx.goal_contribution_id,
     });
     if (error) throw error;
   }
 
   async function deletePayablePayment() {
-    const { error } = await supabase.rpc(
+    const { error } = await createClient().rpc(
       "delete_liability_payment_transaction",
       {
         p_transaction_id: tx.id,
@@ -140,7 +143,7 @@ export default function TransactionRow({ tx }: { tx: Transaction }) {
 
   async function softDeleteLedgerRow() {
     const tableName = type === "transfer" ? "account_transfers" : "transactions";
-    const { error } = await supabase
+    const { error } = await createClient()
       .from(tableName)
       .update({ deleted_at: new Date().toISOString() })
       .eq("id", tx.id)
@@ -296,9 +299,9 @@ export default function TransactionRow({ tx }: { tx: Transaction }) {
         </div>
       </article>
 
-      {canEdit ? (
+      {canEdit && editOpen ? (
         <TransactionModal
-          open={editOpen}
+          open
           defaultType={type as "income" | "expense"}
           transaction={tx as ExistingTransaction}
           onClose={() => setEditOpen(false)}
