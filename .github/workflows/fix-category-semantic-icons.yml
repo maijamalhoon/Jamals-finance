@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - feat/category-manager-v2-direct
+  pull_request:
+    branches:
+      - main
 
 permissions:
   contents: write
