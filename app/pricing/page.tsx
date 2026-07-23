@@ -1,32 +1,24 @@
 import type { Metadata } from "next";
-import { headers } from "next/headers";
 import Link from "next/link";
 import { ArrowLeft, Globe2, LockKeyhole } from "lucide-react";
+import { headers } from "next/headers";
 
 import RegionalPricing from "@/components/billing/RegionalPricing";
-import { SUPPORTED_COUNTRY_CODES } from "@/lib/billing/catalog";
 
 export const metadata: Metadata = {
   title: "Regional pricing",
-  description: "Affordable regional plans for the Jamal's Finance personal-finance workspace.",
+  description:
+    "Affordable regional plans for personal finance, businesses, and enterprise groups in Jamal's Finance.",
   alternates: { canonical: "/pricing" },
 };
 
-const SUPPORTED_COUNTRIES = new Set<string>(SUPPORTED_COUNTRY_CODES);
-
 export default async function PricingPage() {
   const requestHeaders = await headers();
-  const requestCountry = requestHeaders
-    .get("x-vercel-ip-country")
-    ?.trim()
-    .toUpperCase();
-  const initialCountryCode = requestCountry && SUPPORTED_COUNTRIES.has(requestCountry)
-    ? requestCountry
-    : null;
+  const countryCode = requestHeaders.get("x-vercel-ip-country");
 
   return (
     <main className="min-h-screen bg-background px-[var(--space-page)] py-8 sm:py-12">
-      <div className="mx-auto max-w-[92rem]">
+      <div className="mx-auto max-w-[96rem]">
         <header className="mb-10 flex flex-wrap items-center justify-between gap-4">
           <Link
             href="/"
@@ -36,22 +28,32 @@ export default async function PricingPage() {
             Back to home
           </Link>
           <div className="flex items-center gap-4 text-xs font-semibold text-text-muted">
-            <span className="inline-flex items-center gap-1.5"><Globe2 className="size-4" aria-hidden="true" />Regional pricing</span>
-            <span className="inline-flex items-center gap-1.5"><LockKeyhole className="size-4" aria-hidden="true" />Secure provider checkout</span>
+            <span className="inline-flex items-center gap-1.5">
+              <Globe2 className="size-4" aria-hidden="true" />
+              Regional pricing
+            </span>
+            <span className="inline-flex items-center gap-1.5">
+              <LockKeyhole className="size-4" aria-hidden="true" />
+              Secure provider checkout
+            </span>
           </div>
         </header>
 
-        <section className="mx-auto mb-10 max-w-4xl text-center">
-          <p className="mb-3 text-sm font-bold uppercase tracking-[0.18em] text-primary">Simple and accessible</p>
+        <section className="mx-auto mb-10 max-w-5xl text-center">
+          <p className="mb-3 text-sm font-bold uppercase tracking-[0.18em] text-primary">
+            One account. Two universes.
+          </p>
           <h1 className="text-balance text-4xl font-extrabold tracking-tight text-text-primary sm:text-6xl">
-            Fair pricing for every country.
+            Personal clarity and business scale—without mixing the data.
           </h1>
-          <p className="mx-auto mt-5 max-w-2xl text-pretty text-base leading-7 text-text-muted sm:text-lg">
-            Start free, try every advanced Pro feature for 14 days without a card, and pay a regional price when the product earns your trust.
+          <p className="mx-auto mt-5 max-w-3xl text-pretty text-base leading-7 text-text-muted sm:text-lg">
+            Use one JALVORO identity for personal finance, independent
+            companies, and enterprise groups. Every business keeps its own
+            subscription, team, modules, and invoice.
           </p>
         </section>
 
-        <RegionalPricing initialCountryCode={initialCountryCode} />
+        <RegionalPricing initialCountryCode={countryCode} />
       </div>
     </main>
   );
