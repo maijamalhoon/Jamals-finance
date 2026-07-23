@@ -10,7 +10,16 @@ import {
   sanitizeInternalRedirect,
 } from "@/lib/supabase/session";
 
-const PUBLIC_PAGE_ROUTES = ["/", "/login", "/reset-password", "/auth/callback"];
+const PUBLIC_PAGE_ROUTES = [
+  "/",
+  "/login",
+  "/reset-password",
+  "/auth/callback",
+  "/privacy",
+  "/terms",
+  "/disclosures",
+  "/support",
+];
 const AUTH_ONLY_PAGE_ROUTES = ["/", "/login"];
 const PUBLIC_ASSET_ROUTES = [
   "/manifest.webmanifest",
