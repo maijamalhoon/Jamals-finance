@@ -19,6 +19,7 @@ const fxSql = [
   "supabase/migrations/20260723134448_split_fx_revaluation_calculation_source.sql",
   "supabase/migrations/20260723134532_split_fx_revaluation_post_reverse_source.sql",
   "supabase/migrations/20260723134553_split_fx_revaluation_cancel_source.sql",
+  "supabase/migrations/20260723135429_index_fx_lifecycle_foreign_keys.sql",
 ].map(read).join("\n");
 
 describe("business multi-currency and FX contracts", () => {
@@ -50,15 +51,19 @@ describe("business multi-currency and FX contracts", () => {
   });
 
   it("uses protected FX permissions and dedicated gain-loss accounts", () => {
-    for (const permission of ["fx.view", "fx.manage", "fx.revalue"]) {
-      expect(fxSql).toContain(`'${permission}'`);
-    }
-    for (const key of ["realized_fx_gain", "realized_fx_loss", "unrealized_fx_gain", "unrealized_fx_loss"]) {
-      expect(fxSql).toContain(key);
-    }
-    for (const code of ["4920-FX", "4930-FX", "6920-FX", "6930-FX"]) {
-      expect(fxSql).toContain(code);
-    }
+    for (const permission of ["fx.view", "fx.manage", "fx.revalue"]) expect(fxSql).toContain(`'${permission}'`);
+    for (const key of ["realized_fx_gain", "realized_fx_loss", "unrealized_fx_gain", "unrealized_fx_loss"]) expect(fxSql).toContain(key);
+    for (const code of ["4920-FX", "4930-FX", "6920-FX", "6930-FX"]) expect(fxSql).toContain(code);
+  });
+
+  it("indexes FX lifecycle foreign keys", () => {
+    for (const index of [
+      "business_fx_settings_updated_by_idx",
+      "business_fx_runs_created_by_idx",
+      "business_fx_runs_posted_by_idx",
+      "business_fx_runs_reversed_by_idx",
+      "business_fx_runs_cancelled_by_idx",
+    ]) expect(fxSql).toContain(index);
   });
 
   it("connects the responsive company-wide FX workspace", () => {
