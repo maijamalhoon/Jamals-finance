@@ -46,16 +46,7 @@ jobs:
         run: npm audit --omit=dev --audit-level=critical
 
       - name: Lint
-        run: npm run lint -- --format json --output-file eslint-report.json
-
-      - name: Upload lint diagnostics
-        if: always()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
-        with:
-          name: eslint-report
-          path: eslint-report.json
-          if-no-files-found: error
-          retention-days: 1
+        run: npm run lint
 
       - name: Typecheck
         run: npm run typecheck
