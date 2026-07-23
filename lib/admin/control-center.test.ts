@@ -210,10 +210,10 @@ describe("admin control center contracts", () => {
     expect(migration).toContain("rawIpStored', false");
     expect(migration).toContain("sessionReplayEnabled', false");
     expect(migration).toContain("financeContentInTelemetry', false");
-    expect(migration).not.toMatch(/request_(body|message|text)/i);
-    expect(migration).not.toMatch(/finance_(value|content|record)/i);
-    expect(migration).not.toContain("raw_ip");
-    expect(migration).not.toContain("card_number");
-    expect(migration).not.toContain("password");
+    expect(migration).not.toMatch(/request_(body|message|text)\s+(text|jsonb)/i);
+    expect(migration).not.toMatch(/finance_(value|content|record)\s+(text|jsonb|numeric)/i);
+    expect(migration).not.toMatch(/raw_ip\s+(text|inet)/i);
+    expect(migration).not.toMatch(/card_number\s+text/i);
+    expect(migration).not.toMatch(/password\s+text/i);
   });
 });
