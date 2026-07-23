@@ -10,6 +10,7 @@ import {
   getRemainingUsage,
   resolveAccessPlan,
 } from "./entitlements";
+import { planKeyFromPlanCode } from "./server-access";
 
 describe("regional billing catalog", () => {
   it("maps Pakistan and India to the accessible pricing tier", () => {
@@ -21,6 +22,12 @@ describe("regional billing catalog", () => {
   it("falls back safely for unknown country codes", () => {
     expect(getPricingTier("XX")).toBe("C");
     expect(getPlanPrice("pro", "XX", "monthly")).toBe(7.99);
+  });
+
+  it("maps database plan codes to product families", () => {
+    expect(planKeyFromPlanCode("student_year")).toBe("student");
+    expect(planKeyFromPlanCode("pro_month")).toBe("pro");
+    expect(planKeyFromPlanCode("unknown_plan")).toBeNull();
   });
 
   it("keeps annual plans cheaper than twelve monthly payments", () => {
@@ -45,6 +52,13 @@ describe("billing entitlements", () => {
       planKey: "pro",
       status: "trialing",
       trialEndsAt: "2026-07-20T00:00:00.000Z",
+    }, now)).toBe("free");
+  });
+
+  it("ends access for an incomplete subscription", () => {
+    expect(resolveAccessPlan({
+      planKey: "plus",
+      status: "incomplete",
     }, now)).toBe("free");
   });
 
