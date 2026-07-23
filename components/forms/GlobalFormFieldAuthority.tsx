@@ -34,6 +34,8 @@ const MANAGED_FORM_MARKER_SELECTOR = [
 ].join(",");
 
 const MANAGED_GROUP_SELECTOR = '[role="radiogroup"], [role="group"]';
+const FINANCE_ROOT_SELECTOR =
+  '.finance-modal-content, [data-slot="dialog-content"].finance-modal-content';
 const GLOBAL_FIELD_HEIGHT = "var(--jf-global-form-control-height, 3rem)";
 const RUNTIME_FIELD_ATTRIBUTE = "data-jf-global-field-height";
 const RUNTIME_GROUP_ATTRIBUTE = "data-jf-global-field-group";
@@ -48,9 +50,7 @@ function getManagedRoots() {
   const roots = new Set<HTMLElement>();
 
   document
-    .querySelectorAll<HTMLElement>(
-      '.finance-modal-content, [data-slot="dialog-content"].finance-modal-content',
-    )
+    .querySelectorAll<HTMLElement>(FINANCE_ROOT_SELECTOR)
     .forEach((root) => roots.add(root));
 
   document.querySelectorAll<HTMLFormElement>("form").forEach((form) => {
@@ -72,7 +72,8 @@ function hasDirectButton(
 function isManagedChoiceGroup(group: HTMLElement) {
   return hasDirectButton(
     group,
-    (button) => button.getAttribute("role") === "radio" || button.hasAttribute("aria-pressed"),
+    (button) =>
+      button.getAttribute("role") === "radio" || button.hasAttribute("aria-pressed"),
   );
 }
 
@@ -124,7 +125,10 @@ function setExactGroupFootprint(group: HTMLElement) {
 
   Array.from(group.children).forEach((child) => {
     if (!(child instanceof HTMLButtonElement)) return;
-    if (child.getAttribute("role") !== "radio" && !child.hasAttribute("aria-pressed")) {
+    if (
+      child.getAttribute("role") !== "radio" &&
+      !child.hasAttribute("aria-pressed")
+    ) {
       return;
     }
     child.style.setProperty("height", "100%", "important");
@@ -133,39 +137,74 @@ function setExactGroupFootprint(group: HTMLElement) {
   });
 }
 
-function syncAllFormFieldFootprints() {
-  getManagedRoots().forEach((root) => {
-    root
-      .querySelectorAll<HTMLElement>(MANAGED_CONTROL_SELECTOR)
-      .forEach(setExactFieldFootprint);
+function syncManagedRoot(root: HTMLElement) {
+  if (root instanceof HTMLFormElement && !isManagedForm(root)) return;
 
+  root
+    .querySelectorAll<HTMLElement>(MANAGED_CONTROL_SELECTOR)
+    .forEach(setExactFieldFootprint);
+
+  root
+    .querySelectorAll<HTMLElement>(MANAGED_GROUP_SELECTOR)
+    .forEach(setExactGroupFootprint);
+
+  if (root.matches(".finance-modal-content")) {
     root
-      .querySelectorAll<HTMLElement>(MANAGED_GROUP_SELECTOR)
+      .querySelectorAll<HTMLElement>(".finance-modal-body > div")
       .forEach(setExactGroupFootprint);
+  }
+}
 
-    if (root.matches(".finance-modal-content")) {
-      root
-        .querySelectorAll<HTMLElement>(".finance-modal-body > div")
-        .forEach(setExactGroupFootprint);
-    }
+function syncAllFormFieldFootprints() {
+  getManagedRoots().forEach(syncManagedRoot);
+}
+
+function collectManagedRoots(node: Node, roots: Set<HTMLElement>) {
+  if (!(node instanceof Element)) return;
+
+  const nearestFinanceRoot = node.closest<HTMLElement>(FINANCE_ROOT_SELECTOR);
+  if (nearestFinanceRoot) roots.add(nearestFinanceRoot);
+
+  const nearestForm = node.closest<HTMLFormElement>("form");
+  if (nearestForm && isManagedForm(nearestForm)) roots.add(nearestForm);
+
+  if (node.matches(FINANCE_ROOT_SELECTOR)) roots.add(node as HTMLElement);
+  if (node instanceof HTMLFormElement && isManagedForm(node)) roots.add(node);
+
+  node.querySelectorAll<HTMLElement>(FINANCE_ROOT_SELECTOR).forEach((root) => {
+    roots.add(root);
+  });
+  node.querySelectorAll<HTMLFormElement>("form").forEach((form) => {
+    if (isManagedForm(form)) roots.add(form);
   });
 }
 
 export default function GlobalFormFieldAuthority() {
   useEffect(() => {
     let syncFrame: number | null = null;
+    const pendingRoots = new Set<HTMLElement>();
+
+    const flushPendingRoots = () => {
+      syncFrame = null;
+      const roots = Array.from(pendingRoots).filter((root) => root.isConnected);
+      pendingRoots.clear();
+      roots.forEach(syncManagedRoot);
+    };
 
     const scheduleSync = () => {
-      if (syncFrame !== null) return;
-      syncFrame = window.requestAnimationFrame(() => {
-        syncFrame = null;
-        syncAllFormFieldFootprints();
-      });
+      if (syncFrame !== null || pendingRoots.size === 0) return;
+      syncFrame = window.requestAnimationFrame(flushPendingRoots);
     };
 
     syncAllFormFieldFootprints();
 
-    const observer = new MutationObserver(scheduleSync);
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        collectManagedRoots(mutation.target, pendingRoots);
+        mutation.addedNodes.forEach((node) => collectManagedRoots(node, pendingRoots));
+      });
+      scheduleSync();
+    });
     observer.observe(document.body, {
       childList: true,
       subtree: true,
@@ -173,17 +212,10 @@ export default function GlobalFormFieldAuthority() {
       attributeFilter: ["class", "data-slot", "role", "aria-haspopup"],
     });
 
-    const visualViewport = window.visualViewport;
-    window.addEventListener("resize", scheduleSync, { passive: true });
-    window.addEventListener("orientationchange", scheduleSync, { passive: true });
-    visualViewport?.addEventListener("resize", scheduleSync, { passive: true });
-
     return () => {
       observer.disconnect();
+      pendingRoots.clear();
       if (syncFrame !== null) window.cancelAnimationFrame(syncFrame);
-      window.removeEventListener("resize", scheduleSync);
-      window.removeEventListener("orientationchange", scheduleSync);
-      visualViewport?.removeEventListener("resize", scheduleSync);
     };
   }, []);
 
