@@ -16,9 +16,9 @@ permissions:
   contents: read
 
 jobs:
-  lint-report:
+  validation-report:
     runs-on: ubuntu-latest
-    timeout-minutes: 12
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -26,19 +26,22 @@ jobs:
           node-version: "24.x"
           cache: npm
       - run: npm ci
-      - name: Capture repository lint report
+      - name: Capture targeted lint and full typecheck reports
         shell: bash
         run: |
           set +e
-          npx eslint . --format json > repository-lint.json 2>&1
-          code=$?
-          echo "${code}" > repository-lint-exit-code.txt
+          npx eslint components/settings/CategoryManagementExperience.tsx --format json > category-lint.json 2>&1
+          echo "$?" > category-lint-exit-code.txt
+          npx tsc --noEmit --pretty false > typecheck.txt 2>&1
+          echo "$?" > typecheck-exit-code.txt
           exit 0
       - uses: actions/upload-artifact@v4
         with:
-          name: category-picker-lint-report
+          name: category-picker-validation-report
           path: |
-            repository-lint.json
-            repository-lint-exit-code.txt
+            category-lint.json
+            category-lint-exit-code.txt
+            typecheck.txt
+            typecheck-exit-code.txt
           if-no-files-found: error
           retention-days: 1
