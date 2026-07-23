@@ -110,6 +110,9 @@ export default async function BusinessBudgetingPage({
     throw new Error("Budgeting and forecasting data could not be loaded.");
   }
 
+  const snapshot = (snapshotResult.data ?? {}) as BusinessBudgetingSnapshot;
+  const workspaceKey = snapshot.selected_scenario_id ?? "no-scenario";
+
   return (
     <>
       <div className="bg-background px-4 pt-4 sm:px-6 lg:px-8">
@@ -124,6 +127,7 @@ export default async function BusinessBudgetingPage({
         </div>
       </div>
       <BusinessBudgetingWorkspace
+        key={workspaceKey}
         businessId={business.id}
         businessName={business.name}
         businessSlug={business.slug}
@@ -131,7 +135,7 @@ export default async function BusinessBudgetingPage({
         defaultStartsOn={range.startsOn}
         defaultEndsOn={range.endsOn}
         today={today}
-        snapshot={(snapshotResult.data ?? {}) as BusinessBudgetingSnapshot}
+        snapshot={snapshot}
       />
     </>
   );
