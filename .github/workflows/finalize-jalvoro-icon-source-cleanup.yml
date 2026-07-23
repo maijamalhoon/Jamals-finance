@@ -104,9 +104,7 @@ jobs:
               if (stat.isDirectory()) walk(absolute);
               else if (extensions.has(path.extname(entry))) {
                 const source = fs.readFileSync(absolute, 'utf8');
-                if (legacySpecifier.test(source)) {
-                  offenders.push(path.relative(process.cwd(), absolute));
-                }
+                if (legacySpecifier.test(source)) offenders.push(path.relative(process.cwd(), absolute));
               }
             }
           }
@@ -129,8 +127,28 @@ jobs:
       - name: Lint
         run: npm run lint
 
-      - name: Typecheck
-        run: npm run typecheck
+      - name: Typecheck with diagnostics
+        id: typecheck
+        shell: bash
+        run: |
+          set +e
+          npm run typecheck 2>&1 | tee /tmp/jalvoro-typecheck.log
+          exit_code=${PIPESTATUS[0]}
+          echo "exit_code=${exit_code}" >> "${GITHUB_OUTPUT}"
+          exit 0
+
+      - name: Upload typecheck diagnostics
+        if: steps.typecheck.outputs.exit_code != '0'
+        uses: actions/upload-artifact@v4
+        with:
+          name: jalvoro-source-cleanup-typecheck
+          path: /tmp/jalvoro-typecheck.log
+          if-no-files-found: error
+          retention-days: 1
+
+      - name: Fail when typecheck failed
+        if: steps.typecheck.outputs.exit_code != '0'
+        run: exit 1
 
       - name: Run complete application suite
         run: npm test
