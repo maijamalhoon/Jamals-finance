@@ -285,23 +285,23 @@ function addNamedBindings(bindings, names) {
 
 function collectWithFallbackParser(sourceText, names) {
   const namespaceBindings = new Set();
-  const importPattern = /^\s*import\s+(?!type\b)(\{[\s\S]*?\}|\*\s+as\s+[A-Za-z_$][\w$]*|[A-Za-z_$][\w$]*(?:\s*,\s*(?:\{[\s\S]*?\}|\*\s+as\s+[A-Za-z_$][\w$]*))?)\s+from\s+["']lucide-react["']\s*;?/gm;
+  const importPattern = /^[\t ]*import[\t ]+(?!type\b)(\{[^}]*\}|\*[\t ]+as[\t ]+[A-Za-z_$][\w$]*|[A-Za-z_$][\w$]*(?:[\t ]*,[\t ]*(?:\{[^}]*\}|\*[\t ]+as[\t ]+[A-Za-z_$][\w$]*))?)[\t \r\n]+from[\t ]+["']lucide-react["'][\t ]*;?/gm;
   // The current TypeScript parser intentionally includes declaration-level
   // `export type { Name }` bindings because ExportSpecifier.isTypeOnly is false
   // in that syntax. Preserve that established generated output for parity.
-  const exportPattern = /^\s*export\s+(?:type\s+)?\{([\s\S]*?)\}\s*from\s*["']lucide-react["']\s*;?/gm;
+  const exportPattern = /^[\t ]*export[\t ]+(?:type[\t ]+)?\{([^}]*)\}[\t \r\n]*from[\t ]*["']lucide-react["'][\t ]*;?/gm;
 
   for (const match of sourceText.matchAll(importPattern)) {
     const clause = match[1].trim();
-    const namedBindings = clause.match(/\{([\s\S]*?)\}/)?.[1];
+    const namedBindings = clause.match(/\{([^}]*)\}/)?.[1];
     if (namedBindings) addNamedBindings(namedBindings, names);
 
     const namespaceBinding = clause.match(
-      /\*\s+as\s+([A-Za-z_$][\w$]*)/,
+      /\*[\t ]+as[\t ]+([A-Za-z_$][\w$]*)/,
     )?.[1];
     if (namespaceBinding) namespaceBindings.add(namespaceBinding);
 
-    const defaultBinding = clause.match(/^([A-Za-z_$][\w$]*)\s*(?:,|$)/)?.[1];
+    const defaultBinding = clause.match(/^([A-Za-z_$][\w$]*)[\t ]*(?:,|$)/)?.[1];
     if (defaultBinding) namespaceBindings.add(defaultBinding);
   }
 
