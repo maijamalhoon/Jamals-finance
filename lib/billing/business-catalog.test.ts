@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest";
 
 import {
-  BUSINESS_MODULES,
   BUSINESS_PLAN_ORDER,
   BUSINESS_PLANS,
+  BUSINESS_SYSTEMS,
   businessPlanKeyFromPlanCode,
   getBusinessAnnualSavingsPercent,
   getBusinessPlanPrice,
@@ -46,12 +46,20 @@ describe("business billing catalog", () => {
     expect(BUSINESS_PLANS.enterprise.includedSeats).toBeNull();
   });
 
-  it("models industries as optional modules rather than plans", () => {
-    const codes = BUSINESS_MODULES.map((module) => module.code);
+  it("keeps AI out of every business plan", () => {
+    for (const plan of Object.values(BUSINESS_PLANS)) {
+      expect("ai_insights" in plan.features).toBe(false);
+    }
+  });
+
+  it("models business natures as distinct operating systems", () => {
+    const codes = BUSINESS_SYSTEMS.map((system) => system.code);
     expect(new Set(codes).size).toBe(codes.length);
     expect(codes).toContain("dealership");
     expect(codes).toContain("retail_pos");
+    expect(codes).toContain("restaurant");
     expect(codes).toContain("construction");
+    expect(codes).toContain("manufacturing");
     expect(BUSINESS_PLAN_ORDER).not.toContain("dealership");
   });
 });
