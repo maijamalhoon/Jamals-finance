@@ -1,18 +1,24 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { updateSession } from "@/lib/supabase/proxy";
 
+function getAIRewritePath(request: NextRequest) {
+  if (request.nextUrl.pathname !== "/api/ai-insights") return null;
+  if (request.method === "POST") return "/api/ai-insights/exact";
+  if (request.method === "GET") return "/api/ai-insights/overview";
+  return null;
+}
+
 export async function proxy(request: NextRequest) {
   const sessionResponse = await updateSession(request);
-
-  const shouldRewriteAIChat =
-    request.method === "POST" &&
-    request.nextUrl.pathname === "/api/ai-insights" &&
+  const rewritePath = getAIRewritePath(request);
+  const canRewrite =
+    rewritePath !== null &&
     sessionResponse.headers.get("x-middleware-next") === "1";
 
-  if (!shouldRewriteAIChat) return sessionResponse;
+  if (!canRewrite) return sessionResponse;
 
   const destination = request.nextUrl.clone();
-  destination.pathname = "/api/ai-insights/exact";
+  destination.pathname = rewritePath;
 
   const rewriteResponse = NextResponse.rewrite(destination);
 
