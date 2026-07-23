@@ -10,6 +10,7 @@ import {
   BookOpenCheck,
   Boxes,
   Building2,
+  ClipboardCheck,
   ContactRound,
   FileArchive,
   Handshake,
@@ -86,6 +87,13 @@ const MODULES = [
     description: "Operational locations, primary branch control, managers, member scope, and immutable access history.",
     icon: MapPinned,
     route: "branches",
+  },
+  {
+    key: "approvals",
+    label: "Approvals & controls",
+    description: "Maker–checker policies, branch-aware authority, independent decisions, assignments, and immutable control history.",
+    icon: ClipboardCheck,
+    route: "approvals",
   },
   {
     key: "contacts",
@@ -198,38 +206,39 @@ export default async function BusinessWorkspacePage({
   const enabledModules = business.module_config ?? {};
   const role = membershipResult.data.role;
   const permissions = membershipResult.data.permissions ?? [];
+  const wildcard = permissions.includes("*");
   const canViewReports =
     ["owner", "admin", "accountant", "manager", "viewer"].includes(role) ||
-    permissions.includes("*") ||
+    wildcard ||
     permissions.includes("reports.view") ||
     permissions.includes("accounting.view");
   const canViewCrm =
     ["owner", "admin", "accountant", "manager", "sales", "viewer"].includes(role) ||
-    permissions.includes("*") ||
+    wildcard ||
     permissions.includes("crm.view") ||
     permissions.includes("crm.manage");
   const canViewTeam =
     ["owner", "admin", "accountant", "manager", "viewer"].includes(role) ||
-    permissions.includes("*") ||
+    wildcard ||
     permissions.includes("team.view") ||
     permissions.includes("team.manage");
   const canViewTax =
     ["owner", "admin", "accountant", "manager", "viewer"].includes(role) ||
-    permissions.includes("*") ||
+    wildcard ||
     permissions.includes("tax.view") ||
     permissions.includes("tax.manage") ||
     permissions.includes("accounting.view") ||
     permissions.includes("reports.view");
   const canViewBanking =
     ["owner", "admin", "accountant", "manager", "viewer"].includes(role) ||
-    permissions.includes("*") ||
+    wildcard ||
     permissions.includes("banking.view") ||
     permissions.includes("banking.manage") ||
     permissions.includes("accounting.view") ||
     permissions.includes("accounting.manage");
   const canViewBudgeting =
     ["owner", "admin", "accountant", "manager", "viewer"].includes(role) ||
-    permissions.includes("*") ||
+    wildcard ||
     permissions.includes("budget.view") ||
     permissions.includes("budget.manage") ||
     permissions.includes("budget.approve") ||
@@ -238,14 +247,21 @@ export default async function BusinessWorkspacePage({
     permissions.includes("reports.view");
   const canViewDocuments =
     ["owner", "admin", "accountant", "manager", "sales", "inventory", "viewer"].includes(role) ||
-    permissions.includes("*") ||
+    wildcard ||
     permissions.includes("documents.view") ||
     permissions.includes("documents.manage");
   const canViewBranches =
     ["owner", "admin", "accountant", "manager", "sales", "cashier", "inventory", "viewer"].includes(role) ||
-    permissions.includes("*") ||
+    wildcard ||
     permissions.includes("branches.view") ||
     permissions.includes("branches.manage");
+  const canViewApprovals =
+    ["owner", "admin", "accountant", "manager", "sales", "cashier", "inventory", "viewer"].includes(role) ||
+    wildcard ||
+    permissions.includes("approvals.view") ||
+    permissions.includes("approvals.request") ||
+    permissions.includes("approvals.decide") ||
+    permissions.includes("approvals.manage");
 
   const notificationsResult = await supabase.rpc("get_business_notifications_snapshot", {
     p_business_id: business.id,
@@ -333,14 +349,14 @@ export default async function BusinessWorkspacePage({
               Modules selected for this business
             </h2>
             <p className="mt-2 max-w-3xl text-sm leading-6 text-text-secondary">
-              Modules are configured from the nature of business. Every operational module uses the same verified accounting, banking, budgeting, documents, branches, tax, permission, notification, and reporting source of truth.
+              Modules are configured from the nature of business. Every operational module uses the same verified accounting, banking, budgeting, documents, branches, approvals, tax, permission, notification, and reporting source of truth.
             </p>
           </div>
 
           <div className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
             {MODULES.map((module) => {
               const Icon = module.icon;
-              const enabled = ["banking", "budgeting", "documents", "branches", "team", "notifications", "tax-closing"].includes(module.key)
+              const enabled = ["banking", "budgeting", "documents", "branches", "approvals", "team", "notifications", "tax-closing"].includes(module.key)
                 ? true
                 : enabledModules[module.key] === true;
               const accessible =
@@ -360,7 +376,9 @@ export default async function BusinessWorkspacePage({
                               ? canViewDocuments
                               : module.key === "branches"
                                 ? canViewBranches
-                                : true;
+                                : module.key === "approvals"
+                                  ? canViewApprovals
+                                  : true;
               const openable = enabled && accessible;
               const content = (
                 <>
@@ -420,9 +438,9 @@ export default async function BusinessWorkspacePage({
           <div className="flex items-start gap-3">
             <BookOpenCheck aria-hidden="true" className="mt-0.5 size-5 shrink-0" />
             <div>
-              <h2 className="font-black">Accounting, banking, budgeting, documents, branches, tax, access control, and alerts are active</h2>
+              <h2 className="font-black">Accounting, banking, budgeting, documents, branches, approvals, tax, access control, and alerts are active</h2>
               <p className="mt-1 text-sm leading-6 opacity-80">
-                Balanced journals, bank reconciliation locks, approved budgets, private versioned records, protected branch scopes, rolling forecasts, fiscal periods, tax returns, retained-earnings close, immutable posting, team audit history, CRM conversions, verified reports, and role-filtered alerts are available. Operational modules do not calculate financial results independently.
+                Balanced journals, bank reconciliation locks, approved budgets, private versioned records, protected branch scopes, maker–checker approvals, rolling forecasts, fiscal periods, tax returns, retained-earnings close, immutable posting, team audit history, CRM conversions, verified reports, and role-filtered alerts are available. Operational modules do not calculate financial results independently.
               </p>
             </div>
           </div>
