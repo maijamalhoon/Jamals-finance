@@ -286,7 +286,10 @@ function addNamedBindings(bindings, names) {
 function collectWithFallbackParser(sourceText, names) {
   const namespaceBindings = new Set();
   const importPattern = /^\s*import\s+(?!type\b)(\{[\s\S]*?\}|\*\s+as\s+[A-Za-z_$][\w$]*|[A-Za-z_$][\w$]*(?:\s*,\s*(?:\{[\s\S]*?\}|\*\s+as\s+[A-Za-z_$][\w$]*))?)\s+from\s+["']lucide-react["']\s*;?/gm;
-  const exportPattern = /^\s*export\s*\{([\s\S]*?)\}\s*from\s*["']lucide-react["']\s*;?/gm;
+  // The current TypeScript parser intentionally includes declaration-level
+  // `export type { Name }` bindings because ExportSpecifier.isTypeOnly is false
+  // in that syntax. Preserve that established generated output for parity.
+  const exportPattern = /^\s*export\s+(?:type\s+)?\{([\s\S]*?)\}\s*from\s*["']lucide-react["']\s*;?/gm;
 
   for (const match of sourceText.matchAll(importPattern)) {
     const clause = match[1].trim();
