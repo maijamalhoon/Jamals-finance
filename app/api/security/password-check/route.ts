@@ -10,6 +10,7 @@ export const maxDuration = 10;
 const MAX_REQUEST_BYTES = 2_048;
 const RATE_WINDOW_MS = 60_000;
 const MAX_CHECKS_PER_WINDOW = 30;
+const MAX_RATE_BUCKETS = 10_000;
 
 const rateBuckets = new Map<string, { count: number; resetAt: number }>();
 
@@ -33,12 +34,28 @@ function getClientKey(request: Request) {
   return forwarded || request.headers.get("x-real-ip")?.trim() || "unknown";
 }
 
+function pruneRateBuckets(now: number) {
+  if (rateBuckets.size < MAX_RATE_BUCKETS) return;
+
+  for (const [key, bucket] of rateBuckets) {
+    if (bucket.resetAt <= now) rateBuckets.delete(key);
+  }
+
+  while (rateBuckets.size >= MAX_RATE_BUCKETS) {
+    const oldestKey = rateBuckets.keys().next().value as string | undefined;
+    if (!oldestKey) break;
+    rateBuckets.delete(oldestKey);
+  }
+}
+
 function consumeRateLimit(request: Request) {
   const now = Date.now();
   const key = getClientKey(request);
   const current = rateBuckets.get(key);
 
   if (!current || current.resetAt <= now) {
+    pruneRateBuckets(now);
+    rateBuckets.delete(key);
     rateBuckets.set(key, { count: 1, resetAt: now + RATE_WINDOW_MS });
     return { allowed: true, retryAfterSeconds: 0 };
   }
