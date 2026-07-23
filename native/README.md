@@ -2,6 +2,8 @@
 
 Native-first mobile workspace isolated from the existing Next.js website.
 
+<!-- v0.5 verification trigger -->
+
 ## Locked stack
 
 - Android: Kotlin, Jetpack Compose, native Android APIs
