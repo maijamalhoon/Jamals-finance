@@ -159,41 +159,68 @@ export default function AccountCard({
           </p>
         </div>
 
-        <div className="relative mt-4 grid min-w-0 flex-1 grid-cols-[minmax(0,1fr)_minmax(6.75rem,0.76fr)] items-stretch gap-3 p-3">
+        <div className="relative mt-4 grid min-w-0 flex-1 grid-cols-[minmax(0,1fr)_minmax(6.75rem,0.76fr)] items-stretch overflow-hidden">
           <div
-            className={`flex min-w-0 flex-col ${
+            className={`relative flex min-w-0 flex-col px-3 py-3.5 ${
               investmentValue > 0 ? "justify-start" : "justify-center"
             }`}
           >
-            <p className="text-[10px] font-semibold uppercase tracking-[0.13em] text-text-secondary">
+            <span
+              aria-hidden="true"
+              className="absolute inset-y-3 left-0 w-0.5 rounded-full bg-[var(--account-accent)] opacity-70"
+            />
+
+            <p className="pl-2 text-[10px] font-semibold uppercase tracking-[0.13em] text-text-secondary">
               Balance
             </p>
 
-            <p className="finance-amount mt-1 break-words text-xl font-black tracking-normal text-text-primary [overflow-wrap:anywhere]">
+            <p className="finance-amount mt-1 break-words pl-2 text-xl font-black tracking-normal text-text-primary [overflow-wrap:anywhere]">
               {formatCurrency(Number(account.balance ?? 0))}
             </p>
+
             {investmentValue > 0 ? (
-              <p className="mt-1 break-words text-[10px] font-semibold text-investment [overflow-wrap:anywhere]">
-                Live investments {formatCurrency(investmentValue)}
+              <p className="mt-1.5 inline-flex min-w-0 items-center gap-1.5 break-words pl-2 text-[10px] font-semibold text-investment [overflow-wrap:anywhere]">
+                <span
+                  aria-hidden="true"
+                  className="h-1.5 w-1.5 shrink-0 rounded-full bg-investment"
+                />
+                <span>Live investments {formatCurrency(investmentValue)}</span>
               </p>
             ) : null}
           </div>
 
-          <div className="flex min-w-0 flex-col justify-center gap-2">
-            <div className="min-w-0 rounded-xl bg-[color-mix(in_srgb,var(--success),transparent_90%)] px-2.5 py-2">
-              <p className="text-left text-[9px] font-bold tracking-[0.12em] text-success">
-                TOTAL IN
-              </p>
-              <p className="finance-amount mt-1 break-words text-center text-[11px] font-normal leading-4 text-success [overflow-wrap:anywhere]">
+          <div className="flex min-w-0 flex-col border-l border-[color-mix(in_srgb,var(--border)_62%,transparent)]">
+            <div className="flex min-w-0 flex-1 flex-col justify-center px-3 py-2.5">
+              <div className="flex min-w-0 items-center gap-2">
+                <span
+                  aria-hidden="true"
+                  className="h-1.5 w-1.5 shrink-0 rounded-full bg-success"
+                />
+                <p className="text-[9px] font-bold uppercase tracking-[0.12em] text-success">
+                  Total in
+                </p>
+              </div>
+              <p className="finance-amount mt-1 break-words text-left text-[11px] font-semibold leading-4 text-success [overflow-wrap:anywhere]">
                 {formatCurrency(Number(account.inflow ?? 0))}
               </p>
             </div>
 
-            <div className="min-w-0 rounded-xl bg-[color-mix(in_srgb,var(--danger),transparent_90%)] px-2.5 py-2">
-              <p className="text-left text-[9px] font-bold tracking-[0.12em] text-danger">
-                TOTAL OUT
-              </p>
-              <p className="finance-amount mt-1 break-words text-center text-[11px] font-normal leading-4 text-danger [overflow-wrap:anywhere]">
+            <div
+              aria-hidden="true"
+              className="h-px bg-[color-mix(in_srgb,var(--border)_62%,transparent)]"
+            />
+
+            <div className="flex min-w-0 flex-1 flex-col justify-center px-3 py-2.5">
+              <div className="flex min-w-0 items-center gap-2">
+                <span
+                  aria-hidden="true"
+                  className="h-1.5 w-1.5 shrink-0 rounded-full bg-danger"
+                />
+                <p className="text-[9px] font-bold uppercase tracking-[0.12em] text-danger">
+                  Total out
+                </p>
+              </div>
+              <p className="finance-amount mt-1 break-words text-left text-[11px] font-semibold leading-4 text-danger [overflow-wrap:anywhere]">
                 {formatCurrency(Number(account.outflow ?? 0))}
               </p>
             </div>
@@ -202,15 +229,23 @@ export default function AccountCard({
 
         <Link
           href={`/dashboard/accounts/${account.id}`}
-          className="finance-focus relative mt-3 inline-flex min-h-10 items-center justify-center gap-2 rounded-xl border border-border bg-surface-secondary px-3 text-[11px] font-bold text-text-primary hover:bg-hover"
+          className="finance-focus group/history relative mt-3 inline-flex min-h-10 items-center justify-between rounded-xl border border-border bg-surface-secondary px-3 text-[11px] font-bold text-text-primary hover:bg-hover"
         >
-          <Clock3
-            size={18}
-            strokeWidth={2.5}
-            absoluteStrokeWidth
+          <span className="inline-flex items-center gap-2">
+            <Clock3
+              size={18}
+              strokeWidth={2.5}
+              absoluteStrokeWidth
+              aria-hidden="true"
+            />
+            <span>View history</span>
+          </span>
+          <span
             aria-hidden="true"
-          />
-          View history
+            className="text-sm text-text-secondary transition-transform duration-200 group-hover/history:translate-x-0.5"
+          >
+            →
+          </span>
         </Link>
       </article>
 
