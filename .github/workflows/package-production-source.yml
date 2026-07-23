@@ -25,12 +25,14 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          archive="${RUNNER_TEMP}/jamals-finance-production-source.tar.gz"
           tar \
             --exclude='.git' \
             --exclude='node_modules' \
             --exclude='.next' \
             --exclude='.vercel' \
-            -czf jamals-finance-production-source.tar.gz .
+            -czf "${archive}" .
+          cp "${archive}" ./jamals-finance-production-source.tar.gz
 
       - name: Upload source archive
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
