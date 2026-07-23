@@ -9,7 +9,7 @@ Production icon system for the JALVORO workspace.
 - optional `wave`, `zigzag`, or `subtle` micro-accent
 - `currentColor` only; no hard-coded brand color
 - central registry, typed name API, context stroke tokens, and metadata
-- complete workspace routing through the JALVORO compatibility runtime
+- complete workspace routing through an auto-generated compatibility module
 
 ## Use
 
@@ -23,9 +23,11 @@ import { JalvoroSearchIcon } from "@/components/icons/jalvoro/components/actions
 
 ## Full-workspace routing
 
-Legacy imports from `lucide-react` are intercepted by the webpack alias in `next.config.ts` and rendered through `lucide-runtime.cjs`. This preserves every existing caller-controlled `size`, `width`, `height`, `strokeWidth`, `className`, color, fill, accessibility prop, and ref while replacing the SVG implementation with JALVORO.
+Legacy imports from `lucide-react` are scanned before install completion, development, and production build. The generator emits static named exports in `lucide-runtime.generated.tsx`, and `next.config.ts` aliases the package to that generated JALVORO module for Turbopack and webpack.
 
-New first-party code should prefer direct category imports. The compatibility runtime exists to make the existing workspace atomic and regression-safe while long-tail source imports are cleaned up over time.
+This preserves every existing caller-controlled `size`, `width`, `height`, `strokeWidth`, `className`, color, fill, accessibility prop, transform, animation class, and ref while replacing the SVG implementation with JALVORO.
+
+New first-party code should prefer direct category imports. The generated compatibility module keeps the existing workspace atomic and regression-safe while long-tail source imports are cleaned up over time.
 
 ## Context weights
 
@@ -47,11 +49,11 @@ A vector change automatically reaches direct imports and all compatibility mappi
 
 ## Change a compatibility mapping
 
-1. Open `lucide-runtime.cjs`.
-2. Use `EXACT` for a specific semantic name.
-3. Use ordered `RULES` for a related long-tail family.
-4. Never set a fixed size, stroke, class, or color in the compatibility layer.
-5. Run the complete CI pipeline because the runtime covers every application surface.
+1. Open `scripts/generate-jalvoro-lucide-runtime.mjs`.
+2. Use `exact` for a specific semantic name.
+3. Use ordered `rules` for a related long-tail family.
+4. Never set a fixed size, stroke, class, or color in the generated wrapper.
+5. Run `npm run generate:icons` and the complete CI pipeline.
 
 ## Add one icon
 
@@ -59,10 +61,10 @@ A vector change automatically reaches direct imports and all compatibility mappi
 2. Export a component in the matching file under `components/`.
 3. Add the name to `manifest.ts`.
 4. Register the component and definition in `registry.ts`.
-5. Add migration documentation if it replaces an existing icon.
+5. Add or refine a generator mapping when it replaces a legacy semantic name.
 
 The registry test intentionally fails when these files drift apart.
 
 ## Bundle guidance
 
-Use category imports for ordinary new UI so only the required category is loaded. Use the name-based `JalvoroIcon` registry for icon pickers, documentation, or genuinely dynamic icon names. Existing legacy imports are bundled through the compatibility runtime until the final source-cleanup phase.
+Use category imports for ordinary new UI so only the required category is loaded. Use the name-based `JalvoroIcon` registry for icon pickers, documentation, or genuinely dynamic icon names. Existing legacy imports are statically generated and routed through JALVORO until the final source-cleanup phase.
