@@ -1,7 +1,0 @@
-{
-  "status": "success",
-  "runId": "29982844104",
-  "commit": "544b6f3c23c91ae003c59cc09d56be75849491ae",
-  "workflow": "ci-native-v05-main",
-  "nativeBuild": "0"
-}
