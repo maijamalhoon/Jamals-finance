@@ -6,6 +6,11 @@ on:
     paths:
       - "components/settings/CategoryManagementExperience.tsx"
       - ".github/workflows/category-picker-diagnostics.yml"
+  pull_request:
+    branches: [main]
+    paths:
+      - "components/settings/CategoryManagementExperience.tsx"
+      - ".github/workflows/category-picker-diagnostics.yml"
 
 permissions:
   contents: read
