@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { LucideIcon } from "lucide-react";
 import {
   Banknote,
@@ -58,6 +58,15 @@ const loadedLogoUrls = new Set<string>();
 
 type LogoState = "loading" | "ready" | "failed";
 
+type SharedLogoEntry = {
+  state: LogoState;
+  attempt: number;
+  retryTimer: ReturnType<typeof setTimeout> | null;
+  listeners: Set<() => void>;
+};
+
+const sharedLogoEntries = new Map<string, SharedLogoEntry>();
+
 type AccountIdentityIconProps = {
   name?: string | null;
   iconKey?: string | null;
@@ -66,6 +75,53 @@ type AccountIdentityIconProps = {
   className?: string;
   forceLucide?: boolean;
 };
+
+function getSharedLogoEntry(logoUrl: string) {
+  const existing = sharedLogoEntries.get(logoUrl);
+  if (existing) return existing;
+
+  const entry: SharedLogoEntry = {
+    state: loadedLogoUrls.has(logoUrl) ? "ready" : "loading",
+    attempt: 0,
+    retryTimer: null,
+    listeners: new Set(),
+  };
+  sharedLogoEntries.set(logoUrl, entry);
+  return entry;
+}
+
+function notifyLogoEntry(entry: SharedLogoEntry) {
+  entry.listeners.forEach((listener) => listener());
+}
+
+function markLogoReady(logoUrl: string) {
+  const entry = getSharedLogoEntry(logoUrl);
+  if (entry.retryTimer) clearTimeout(entry.retryTimer);
+  entry.retryTimer = null;
+  entry.state = "ready";
+  loadedLogoUrls.add(logoUrl);
+  notifyLogoEntry(entry);
+}
+
+function markLogoError(logoUrl: string) {
+  const entry = getSharedLogoEntry(logoUrl);
+  if (entry.state === "ready" || entry.retryTimer) return;
+
+  if (entry.attempt >= LOGO_RETRY_DELAYS.length) {
+    entry.state = "failed";
+    notifyLogoEntry(entry);
+    return;
+  }
+
+  entry.state = "loading";
+  const delay = LOGO_RETRY_DELAYS[entry.attempt];
+  entry.retryTimer = setTimeout(() => {
+    entry.retryTimer = null;
+    entry.attempt += 1;
+    entry.state = "loading";
+    notifyLogoEntry(entry);
+  }, delay);
+}
 
 function getLogoLookupName(name?: string | null, iconKey?: string | null) {
   if (iconKey?.startsWith("lookup:")) {
@@ -112,7 +168,6 @@ export default function AccountIdentityIcon({
   className,
   forceLucide = false,
 }: AccountIdentityIconProps) {
-  const retryTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const logoLookupName = getLogoLookupName(name, iconKey);
   const shouldLoadLogo =
     !forceLucide &&
@@ -124,20 +179,15 @@ export default function AccountIdentityIcon({
         : null,
     [iconKey, logoLookupName, shouldLoadLogo, type],
   );
-  const [retryCount, setRetryCount] = useState(0);
-  const [logoState, setLogoState] = useState<LogoState>(() =>
-    logoUrl && loadedLogoUrls.has(logoUrl) ? "ready" : "loading",
-  );
+  const [, rerender] = useState(0);
 
   useEffect(() => {
-    if (retryTimerRef.current) clearTimeout(retryTimerRef.current);
-    setRetryCount(0);
-    setLogoState(
-      logoUrl && loadedLogoUrls.has(logoUrl) ? "ready" : "loading",
-    );
-
+    if (!logoUrl) return;
+    const entry = getSharedLogoEntry(logoUrl);
+    const listener = () => rerender((value) => value + 1);
+    entry.listeners.add(listener);
     return () => {
-      if (retryTimerRef.current) clearTimeout(retryTimerRef.current);
+      entry.listeners.delete(listener);
     };
   }, [logoUrl]);
 
@@ -151,11 +201,12 @@ export default function AccountIdentityIcon({
   );
 
   if (logoUrl) {
-    const logoSrc = `${logoUrl}&attempt=${retryCount}`;
+    const entry = getSharedLogoEntry(logoUrl);
+    const logoSrc = `${logoUrl}&attempt=${entry.attempt}`;
 
     return (
       <span className={wrapperClass} title={name ?? "Account"}>
-        {logoState === "failed" && initials ? (
+        {entry.state === "failed" && initials ? (
           <span
             className={cn(
               "select-none font-black tracking-[-0.04em] text-text-secondary",
@@ -175,26 +226,13 @@ export default function AccountIdentityIcon({
           className={cn(
             "absolute inset-0 block h-full w-full rounded-[24%] object-contain",
             LOGO_PADDING_CLASSES[size],
-            logoState === "ready" ? "opacity-100" : "opacity-0",
+            entry.state === "ready" ? "opacity-100" : "opacity-0",
           )}
           loading="eager"
           decoding="async"
           referrerPolicy="no-referrer"
-          onLoad={() => {
-            loadedLogoUrls.add(logoUrl);
-            setLogoState("ready");
-          }}
-          onError={() => {
-            if (retryCount < LOGO_RETRY_DELAYS.length) {
-              setLogoState("loading");
-              retryTimerRef.current = setTimeout(() => {
-                setRetryCount((current) => current + 1);
-              }, LOGO_RETRY_DELAYS[retryCount]);
-              return;
-            }
-
-            setLogoState("failed");
-          }}
+          onLoad={() => markLogoReady(logoUrl)}
+          onError={() => markLogoError(logoUrl)}
         />
       </span>
     );
