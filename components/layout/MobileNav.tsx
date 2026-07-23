@@ -1,5 +1,6 @@
 "use client";
 
+import { APP_NAME } from "@/lib/brand";
 import Link from "next/link";
 import { motion, useReducedMotion } from "framer-motion";
 import { CircleDollarSign, X } from "lucide-react";
@@ -145,7 +146,7 @@ export default function MobileNav({ notificationSlot }: MobileNavProps) {
                 </span>
                 <div className="min-w-0">
                   <SheetTitle className="truncate text-[16px] font-black tracking-[-0.02em] text-text-primary">
-                    Jamal&apos;s Finance
+                    {APP_NAME}
                   </SheetTitle>
                   <SheetDescription className="mt-0.5 truncate text-[9.5px] font-bold uppercase tracking-[0.15em] text-text-tertiary">
                     Personal workspace

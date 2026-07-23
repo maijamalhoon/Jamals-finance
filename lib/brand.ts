@@ -18,6 +18,7 @@ export const APP_NAME = BRAND.name;
 export const APP_SHORT_NAME = BRAND.shortName;
 export const APP_TAGLINE = BRAND.tagline;
 export const APP_DESCRIPTION = BRAND.description;
+export const APP_AI_NAME = `${APP_NAME} AI`;
 export const APP_URL = normalizeOrigin(process.env.NEXT_PUBLIC_APP_URL);
 export const SUPPORT_EMAIL =
   process.env.NEXT_PUBLIC_SUPPORT_EMAIL?.trim() || "support@jalvoro.com";

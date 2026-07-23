@@ -1,3 +1,4 @@
+import { brand } from "@/lib/brand";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
@@ -109,7 +110,7 @@ export default async function BusinessWorkspacesPage() {
             </span>
             <div>
               <p className="text-xs font-black uppercase tracking-[0.16em] text-primary">
-                Jamal&apos;s Finance Business
+                {brand.productFamily.business}
               </p>
               <h1 className="mt-1 text-2xl font-black tracking-tight text-text-primary sm:text-3xl">
                 Business workspaces

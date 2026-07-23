@@ -13,6 +13,24 @@ const filesThatMustUseTheBrandSystem = [
   "components/landing/PremiumLandingPage.tsx",
   "components/pwa/AppUpdateManager.tsx",
   "components/pwa/WindowsAppManager.tsx",
+  "app/business/page.tsx",
+  "app/disclosures/page.tsx",
+  "app/onboarding/page.tsx",
+  "app/support/page.tsx",
+  "app/dashboard/transactions/[id]/page.tsx",
+  "components/ai-insights/AIConsentGate.tsx",
+  "components/ai-insights/AIInsightsOnboarding.tsx",
+  "components/data/FinanceDataTransfer.tsx",
+  "components/layout/JamalMenu.tsx",
+  "components/layout/MobileNav.tsx",
+  "components/legal/LegalPageShell.tsx",
+  "components/pwa/AndroidAppManager.tsx",
+  "components/settings/ProfileCustomizationSection.tsx",
+  "components/settings/SettingsDataTransferSection.tsx",
+  "components/settings/SettingsOneUI.tsx",
+  "components/settings/SettingsPreferencesSection.tsx",
+  "components/settings/SettingsReferenceSections.tsx",
+  "components/settings/SignOutButton.tsx",
   "lib/constants.ts",
 ];
 
@@ -20,15 +38,19 @@ const generatedPublicFiles = [
   "public/manifest.json",
   "public/offline.html",
   "public/icons/icon.svg",
+  "public/readme/jamals-finance-hero.svg",
 ];
 
-const forbiddenLiteral = "Jamal's Finance";
+const forbiddenPatterns = [
+  /Jamal(?:'|’|&apos;|&#x27;)s Finance/i,
+  /Jamals Finance/i,
+];
 const failures = [];
 
 for (const file of [...filesThatMustUseTheBrandSystem, ...generatedPublicFiles]) {
   const source = await readFile(new URL(`../${file}`, import.meta.url), "utf8");
-  if (source.includes(forbiddenLiteral)) {
-    failures.push(`${file} still contains the legacy public brand literal.`);
+  if (forbiddenPatterns.some((pattern) => pattern.test(source))) {
+    failures.push(`${file} still contains legacy public brand copy.`);
   }
 }
 

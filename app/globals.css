@@ -2315,7 +2315,7 @@ textarea:focus {
 }
 
 /* -------------------------------------------------------------------------- */
-/* Jamal's Finance — Premium Design System Foundation                         */
+/* JALVORO — Premium Design System Foundation                         */
 /* Safe additive layer: reusable UI/UX classes for landing + app screens       */
 /* -------------------------------------------------------------------------- */
 
@@ -2960,7 +2960,7 @@ textarea:focus {
     transition-duration: 1ms !important;
   }
 }
-/* Jamal's Finance — Safe Forms / Modals / Tables Polish
+/* JALVORO — Safe Forms / Modals / Tables Polish
    Append this at the very end of app/globals.css.
    Scope: inputs, buttons inside forms, dialogs/modals, tables, empty/loading states.
    This patch intentionally avoids dashboard chart containers and Recharts classes. */

@@ -1,3 +1,4 @@
+import { APP_NAME } from "@/lib/brand";
 import type { Metadata } from "next";
 import LegalPageShell, {
   LegalList,
@@ -7,7 +8,7 @@ import LegalPageShell, {
 export const metadata: Metadata = {
   title: "Finance and Provider Disclosures",
   description:
-    "Important disclosures about calculations, market prices, exchange rates, AI insights, and third-party providers used by Jamal's Finance.",
+    `Important disclosures about calculations, market prices, exchange rates, AI insights, and third-party providers used by ${APP_NAME}.`,
   alternates: { canonical: "/disclosures" },
 };
 
@@ -18,12 +19,12 @@ export default function DisclosuresPage() {
     <LegalPageShell
       eyebrow="Service disclosures"
       title="Know what each number means"
-      summary="Jamal's Finance combines user-entered records, local calculations, reference rates, market providers, and optional AI output. These disclosures explain the limits of those sources."
+      summary={`${APP_NAME} combines user-entered records, local calculations, reference rates, market providers, and optional AI output. These disclosures explain the limits of those sources.`}
       effectiveDate={effectiveDate}
     >
       <LegalSection id="not-advice" title="1. Information, not professional advice">
         <p>
-          Jamal&apos;s Finance is a tracking and information tool. Nothing in the Service is financial, investment, tax, accounting, credit, insurance, legal, or other regulated professional advice. The Service does not recommend that you buy, sell, hold, borrow, lend, insure, or enter any transaction.
+          {APP_NAME} is a tracking and information tool. Nothing in the Service is financial, investment, tax, accounting, credit, insurance, legal, or other regulated professional advice. The Service does not recommend that you buy, sell, hold, borrow, lend, insure, or enter any transaction.
         </p>
       </LegalSection>
 
