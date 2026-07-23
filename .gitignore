@@ -20,6 +20,9 @@
 /build-output.txt
 /qa-screenshots/
 
+# Generated JALVORO compatibility module
+/components/icons/jalvoro/lucide-runtime.generated.tsx
+
 # Environment files
 .env*
 !.env.example
