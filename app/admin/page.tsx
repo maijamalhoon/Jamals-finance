@@ -1,6 +1,7 @@
 import { notFound, redirect } from "next/navigation";
 
 import AdminControlCenter from "@/components/admin/AdminControlCenter";
+import PrivacyGovernancePanel from "@/components/admin/PrivacyGovernancePanel";
 import { parseAdminControlCenterSnapshot } from "@/lib/admin/control-center";
 import { createClient } from "@/lib/supabase/server";
 
@@ -32,5 +33,10 @@ export default async function AdminPage() {
     throw new Error("Admin snapshot returned an invalid contract.");
   }
 
-  return <AdminControlCenter snapshot={snapshot} />;
+  return (
+    <>
+      <AdminControlCenter snapshot={snapshot} />
+      <PrivacyGovernancePanel privacy={snapshot.privacy} />
+    </>
+  );
 }
