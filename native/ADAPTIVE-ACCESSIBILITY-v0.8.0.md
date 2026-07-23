@@ -39,4 +39,4 @@ gradle :shared:testAndroidHostTest
 gradle :androidApp:assembleDebug
 ```
 
-The downloadable APK must be produced by that successful GitHub Actions run. The integration verification is based on the latest main tree and preserves concurrent dashboard and business-software commits.
+The downloadable APK must be produced by that successful GitHub Actions run. The final verification commit runs on the latest main tree and preserves concurrent dashboard, onboarding, approvals, and business-software commits.
