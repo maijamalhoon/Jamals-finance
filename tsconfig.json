@@ -19,6 +19,9 @@
       }
     ],
     "paths": {
+      "@/components/investments/useInvestmentMarketPrices": [
+        "./components/investments/useInvestmentMarketPricesRuntime.ts"
+      ],
       "@/lib/market/investment-asset-catalog": [
         "./lib/market/investment-asset-catalog-runtime.ts"
       ],
