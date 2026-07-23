@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 
 function IconButton({
   label,
-  title = label,
+  title,
   ...props
 }: ComponentProps<typeof Button> & { label: string }) {
   return (
