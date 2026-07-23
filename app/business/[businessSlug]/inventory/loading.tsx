@@ -1,4 +1,4 @@
-import { Boxes } from "lucide-react";
+import { Boxes } from "@/components/icons/jalvoro/compat";
 
 export default function BusinessInventoryLoading() {
   return (

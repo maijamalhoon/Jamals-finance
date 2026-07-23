@@ -2,7 +2,7 @@
 
 import type { KeyboardEvent, ReactNode } from "react";
 import { useEffect, useState } from "react";
-import { FastForward, Play, Square } from "lucide-react";
+import { FastForward, Play, Square } from "@/components/icons/jalvoro/compat";
 import {
   applyAnimationMode,
   getStoredAnimationMode,

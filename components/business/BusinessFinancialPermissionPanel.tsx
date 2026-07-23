@@ -13,7 +13,7 @@ import {
   ShieldCheck,
   TrendingUp,
   WalletCards,
-} from "lucide-react";
+} from "@/components/icons/jalvoro/compat";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 

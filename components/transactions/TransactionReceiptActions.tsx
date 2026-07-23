@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Check, Copy, Download, Printer, RotateCcw } from "lucide-react";
+import { Check, Copy, Download, Printer, RotateCcw } from "@/components/icons/jalvoro/compat";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";

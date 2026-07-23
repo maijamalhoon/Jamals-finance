@@ -8,7 +8,7 @@ import {
   CircleDollarSign,
   Scale,
   ShieldCheck,
-} from "lucide-react";
+} from "@/components/icons/jalvoro/compat";
 
 import CreateJournalEntryForm from "@/components/business/CreateJournalEntryForm";
 import { createClient } from "@/lib/supabase/server";

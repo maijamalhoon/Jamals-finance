@@ -60,14 +60,5 @@ jobs:
       - name: Run complete application suite
         run: npm test
 
-      - name: Upload icon parser diagnostics
-        if: failure()
-        uses: actions/upload-artifact@v4
-        with:
-          name: jalvoro-icon-parser-diagnostics
-          path: build/jalvoro-icon-parser-diff.json
-          if-no-files-found: ignore
-          retention-days: 3
-
       - name: Build production application
         run: npm run build

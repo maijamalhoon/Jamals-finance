@@ -2,7 +2,7 @@
 
 import { type CSSProperties, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowUpDown } from "lucide-react";
+import { ArrowUpDown } from "@/components/icons/jalvoro/compat";
 import { toast } from "sonner";
 
 import { createClient } from "@/lib/supabase/client";

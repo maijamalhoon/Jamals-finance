@@ -1,4 +1,4 @@
-import { ArrowUpRight, ArrowDownRight, LucideIcon } from "lucide-react";
+import { ArrowUpRight, ArrowDownRight, LucideIcon } from "@/components/icons/jalvoro/compat";
 import CountedAmount from "@/components/motion/CountedAmount";
 
 interface StatCardProps {

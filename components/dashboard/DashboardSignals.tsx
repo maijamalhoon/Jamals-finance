@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Activity, CalendarCheck, Flame } from "lucide-react";
+import { Activity, CalendarCheck, Flame } from "@/components/icons/jalvoro/compat";
 import {
   motionEase,
 } from "@/components/motion/animation-config";

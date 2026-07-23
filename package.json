@@ -17,11 +17,8 @@
     "node": "24.x"
   },
   "scripts": {
-    "generate:icons": "node scripts/generate-jalvoro-lucide-runtime.mjs",
-    "postinstall": "npm run generate:icons",
-    "predev": "npm run generate:icons",
     "dev": "next dev",
-    "prebuild": "npm run generate:icons && npm run brand:sync",
+    "prebuild": "npm run brand:sync",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
@@ -46,7 +43,6 @@
     "clsx": "^2.1.1",
     "flatpickr": "^4.6.13",
     "framer-motion": "^12.41.0",
-    "lucide-react": "^1.23.0",
     "motion": "^12.42.2",
     "next": "16.2.11",
     "radix-ui": "^1.5.0",

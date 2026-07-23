@@ -9,7 +9,7 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import { DollarSign } from "lucide-react";
+import { DollarSign } from "@/components/icons/jalvoro/compat";
 
 import { useCurrency } from "@/components/currency/CurrencyProvider";
 import { chartMotion } from "@/components/motion/animation-config";

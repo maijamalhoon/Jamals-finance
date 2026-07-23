@@ -10,7 +10,7 @@ import {
   ReceiptText,
   RotateCcw,
   ShieldCheck,
-} from "lucide-react";
+} from "@/components/icons/jalvoro/compat";
 
 import CreateSalesInvoiceForm from "@/components/business/CreateSalesInvoiceForm";
 import RecordSalesPaymentForm from "@/components/business/RecordSalesPaymentForm";

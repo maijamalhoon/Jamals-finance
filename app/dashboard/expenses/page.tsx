@@ -6,7 +6,7 @@ import { getPaginationState } from "@/lib/pagination";
 import { createClient } from "@/lib/supabase/server";
 import { buildTransactionPageSummary } from "@/lib/transaction-page-summary";
 import { loadTransactions, type LoadedTransaction } from "@/lib/transactions";
-import { TrendingDown } from "lucide-react";
+import { TrendingDown } from "@/components/icons/jalvoro/compat";
 
 export const dynamic = "force-dynamic";
 

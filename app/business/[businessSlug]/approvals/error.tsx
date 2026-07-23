@@ -1,6 +1,6 @@
 "use client";
 
-import { ClipboardX, RefreshCcw } from "lucide-react";
+import { ClipboardX, RefreshCcw } from "@/components/icons/jalvoro/compat";
 
 import { Button } from "@/components/ui/button";
 

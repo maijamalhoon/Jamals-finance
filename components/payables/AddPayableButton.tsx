@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Plus } from "lucide-react";
+import { Plus } from "@/components/icons/jalvoro/compat";
 import PageHeadingActionPortal from "@/components/layout/PageHeadingActionPortal";
 import PayableModal from "./PayableModal";
 

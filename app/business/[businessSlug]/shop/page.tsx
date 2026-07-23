@@ -17,7 +17,7 @@ import {
   Store,
   TrendingUp,
   WalletCards,
-} from "lucide-react";
+} from "@/components/icons/jalvoro/compat";
 
 import InventoryCatalogForms from "@/components/business/InventoryCatalogForms";
 import InventoryOperationsForms from "@/components/business/InventoryOperationsForms";

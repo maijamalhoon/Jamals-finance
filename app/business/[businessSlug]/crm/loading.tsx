@@ -1,4 +1,4 @@
-import { Handshake } from "lucide-react";
+import { Handshake } from "@/components/icons/jalvoro/compat";
 
 export default function BusinessCrmLoading() {
   return (

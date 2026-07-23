@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Plus } from "lucide-react";
+import { Plus } from "@/components/icons/jalvoro/compat";
 import PageHeadingActionPortal from "@/components/layout/PageHeadingActionPortal";
 import AccountModal from "./AccountModal";
 

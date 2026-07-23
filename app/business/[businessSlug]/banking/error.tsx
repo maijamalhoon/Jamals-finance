@@ -1,6 +1,6 @@
 "use client";
 
-import { AlertTriangle, RefreshCcw } from "lucide-react";
+import { AlertTriangle, RefreshCcw } from "@/components/icons/jalvoro/compat";
 
 import { Button } from "@/components/ui/button";
 

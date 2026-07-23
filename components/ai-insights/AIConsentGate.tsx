@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { BrainCircuit, ShieldCheck, X } from "lucide-react";
+import { BrainCircuit, ShieldCheck, X } from "@/components/icons/jalvoro/compat";
 import type { ReactNode } from "react";
 import { useEffect, useState } from "react";
 

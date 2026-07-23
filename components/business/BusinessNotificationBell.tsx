@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo } from "react";
-import { Bell } from "lucide-react";
+import { Bell } from "@/components/icons/jalvoro/compat";
 
 import { createClient } from "@/lib/supabase/client";
 

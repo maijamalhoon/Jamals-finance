@@ -32,7 +32,7 @@ import { formatAppMonthYear, getAppDateKey, getAppDateParts, getDaysInMonth } fr
 import { refreshInvestmentMarketPrices } from "@/lib/investments/pricing";
 import { createClient } from "@/lib/supabase/server";
 import { sortTransactionsNewestFirst } from "@/lib/transactions";
-import { AlertTriangle } from "lucide-react";
+import { AlertTriangle } from "@/components/icons/jalvoro/compat";
 
 export const dynamic = "force-dynamic";
 

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
-import { Loader2, Save, Settings2 } from "lucide-react";
+import { Loader2, Save, Settings2 } from "@/components/icons/jalvoro/compat";
 import { toast } from "sonner";
 
 import { useLanguage } from "@/components/i18n/LanguageProvider";

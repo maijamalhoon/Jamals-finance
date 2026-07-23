@@ -10,7 +10,7 @@ import {
   Pencil,
   ReceiptText,
   Trash2,
-} from "lucide-react";
+} from "@/components/icons/jalvoro/compat";
 import CountedAmount from "@/components/motion/CountedAmount";
 import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";

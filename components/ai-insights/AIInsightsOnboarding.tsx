@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { BrainCircuit, Calculator, ChartNoAxesCombined, ShieldCheck, X } from "lucide-react";
+import { BrainCircuit, Calculator, ChartNoAxesCombined, ShieldCheck, X } from "@/components/icons/jalvoro/compat";
 
 import { useLanguage } from "@/components/i18n/LanguageProvider";
 import type { AppLanguage } from "@/lib/i18n/config";

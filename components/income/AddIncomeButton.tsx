@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Plus, TrendingUp } from "lucide-react";
+import { Plus, TrendingUp } from "@/components/icons/jalvoro/compat";
 import TransactionModal from "@/components/dashboard/TransactionModal";
 import PageHeadingActionPortal from "@/components/layout/PageHeadingActionPortal";
 

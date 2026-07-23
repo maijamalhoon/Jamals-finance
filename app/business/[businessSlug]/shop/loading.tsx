@@ -1,4 +1,4 @@
-import { Store } from "lucide-react";
+import { Store } from "@/components/icons/jalvoro/compat";
 
 export default function SimpleShopLoading() {
   return (

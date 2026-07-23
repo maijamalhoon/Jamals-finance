@@ -13,7 +13,7 @@ import {
   Target,
   TrendingUp,
   UserRound,
-} from "lucide-react";
+} from "@/components/icons/jalvoro/compat";
 
 import BusinessCrmForms, {
   type CrmContactOption,

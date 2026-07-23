@@ -11,7 +11,7 @@ import {
 } from "react";
 import { createPortal } from "react-dom";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { ArrowUpDown, ChevronRight, Filter, Search, X } from "lucide-react";
+import { ArrowUpDown, ChevronRight, Filter, Search, X } from "@/components/icons/jalvoro/compat";
 
 import { BackgroundRefreshStatus } from "@/components/loading/LoadingPrimitives";
 import { FEATURE_COLOR_CSS } from "@/lib/theme-colors";

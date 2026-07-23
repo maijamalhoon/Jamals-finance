@@ -17,7 +17,7 @@ import {
   LockKeyhole,
   RefreshCw,
   XCircle,
-} from "lucide-react";
+} from "@/components/icons/jalvoro/compat";
 import {
   AuthFeedback,
   AuthPasswordField,

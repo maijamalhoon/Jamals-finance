@@ -1,7 +1,7 @@
 "use client";
 
 import { type CSSProperties, useEffect, useMemo, useState } from "react";
-import { ReceiptText } from "lucide-react";
+import { ReceiptText } from "@/components/icons/jalvoro/compat";
 
 import DashboardCardViewLink from "@/components/dashboard/DashboardCardViewLink";
 import AddIncomeButton from "@/components/income/AddIncomeButton";

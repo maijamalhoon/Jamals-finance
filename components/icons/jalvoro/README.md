@@ -9,7 +9,7 @@ Production icon system for the JALVORO workspace.
 - optional `wave`, `zigzag`, or `subtle` micro-accent
 - `currentColor` only; no hard-coded brand color
 - central registry, typed name API, context stroke tokens, and metadata
-- complete workspace routing through an auto-generated compatibility module
+- complete workspace source imports through a first-party JALVORO compatibility module
 
 ## Use
 
@@ -23,11 +23,7 @@ import { JalvoroSearchIcon } from "@/components/icons/jalvoro/components/actions
 
 ## Full-workspace routing
 
-Legacy imports from `lucide-react` are scanned before install completion, development, and production build. The generator emits static named exports in `lucide-runtime.generated.tsx`, and `next.config.ts` aliases the package to that generated JALVORO module for Turbopack and webpack.
-
-This preserves every existing caller-controlled `size`, `width`, `height`, `strokeWidth`, `className`, color, fill, accessibility prop, transform, animation class, and ref while replacing the SVG implementation with JALVORO.
-
-New first-party code should prefer direct category imports. The generated compatibility module keeps the existing workspace atomic and regression-safe while long-tail source imports are cleaned up over time.
+All application source files now import first-party JALVORO modules directly. The `compat.tsx` surface retains familiar semantic component names while every SVG is rendered by JALVORO. Existing caller-controlled size, width, height, strokeWidth, className, color, fill, accessibility props, transform, animation class, and ref behavior remains unchanged. New product code should prefer direct category imports, while `compat.tsx` is reserved for stable legacy semantic names.
 
 ## Context weights
 
@@ -49,11 +45,10 @@ A vector change automatically reaches direct imports and all compatibility mappi
 
 ## Change a compatibility mapping
 
-1. Open `scripts/generate-jalvoro-lucide-runtime.mjs`.
-2. Use `exact` for a specific semantic name.
-3. Use ordered `rules` for a related long-tail family.
-4. Never set a fixed size, stroke, class, or color in the generated wrapper.
-5. Run `npm run generate:icons` and the complete CI pipeline.
+1. Open `components/icons/jalvoro/compat.tsx`.
+2. Change only the JALVORO component assigned to the semantic export.
+3. Never set a fixed size, stroke, class, or color in the wrapper.
+4. Run the complete CI pipeline because this surface covers the whole workspace.
 
 ## Add one icon
 
@@ -67,4 +62,4 @@ The registry test intentionally fails when these files drift apart.
 
 ## Bundle guidance
 
-Use category imports for ordinary new UI so only the required category is loaded. Use the name-based `JalvoroIcon` registry for icon pickers, documentation, or genuinely dynamic icon names. Existing legacy imports are statically generated and routed through JALVORO until the final source-cleanup phase.
+Use category imports for ordinary new UI so only the required category is loaded. Use the name-based `JalvoroIcon` registry for icon pickers, documentation, or genuinely dynamic icon names. Existing semantic imports are first-party JALVORO source imports; no third-party icon runtime or resolver alias remains.

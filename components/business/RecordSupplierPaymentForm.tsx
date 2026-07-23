@@ -2,7 +2,7 @@
 
 import { type FormEvent, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Banknote, ShieldCheck } from "lucide-react";
+import { Banknote, ShieldCheck } from "@/components/icons/jalvoro/compat";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";

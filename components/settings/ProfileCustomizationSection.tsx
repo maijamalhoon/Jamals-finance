@@ -7,7 +7,7 @@ import {
   Pencil,
   Save,
   UserRound,
-} from "lucide-react";
+} from "@/components/icons/jalvoro/compat";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { toast } from "sonner";

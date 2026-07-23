@@ -14,7 +14,7 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import { Activity, BarChart3 } from "lucide-react";
+import { Activity, BarChart3 } from "@/components/icons/jalvoro/compat";
 
 import { useCurrency } from "@/components/currency/CurrencyProvider";
 import ChartFrame from "@/components/ui/chart-frame";

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { WalletCards } from "lucide-react";
+import { WalletCards } from "@/components/icons/jalvoro/compat";
 import {
   Select,
   SelectContent,

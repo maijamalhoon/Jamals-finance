@@ -24,7 +24,7 @@ import {
   TrendingUp,
   WalletCards,
   type LucideIcon,
-} from "lucide-react";
+} from "@/components/icons/jalvoro/compat";
 
 import {
   APP_DESCRIPTION,

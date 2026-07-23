@@ -11,7 +11,7 @@ import {
   ShieldCheck,
   Store,
   UsersRound,
-} from "lucide-react";
+} from "@/components/icons/jalvoro/compat";
 
 import CreateBusinessContactForm from "@/components/business/CreateBusinessContactForm";
 import { createClient } from "@/lib/supabase/server";

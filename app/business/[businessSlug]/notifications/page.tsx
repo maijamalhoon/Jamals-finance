@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
-import { ArrowLeft, BellRing, ShieldCheck } from "lucide-react";
+import { ArrowLeft, BellRing, ShieldCheck } from "@/components/icons/jalvoro/compat";
 
 import BusinessNotificationsWorkspace, {
   type BusinessNotificationsSnapshot,

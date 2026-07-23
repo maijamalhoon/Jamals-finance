@@ -21,7 +21,7 @@ import {
   Smartphone,
   Sun,
   UserRound,
-} from "lucide-react";
+} from "@/components/icons/jalvoro/compat";
 import { toast } from "sonner";
 
 import { useCurrency } from "@/components/currency/CurrencyProvider";
