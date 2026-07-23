@@ -1,4 +1,4 @@
-import FloatingActions from "@/components/layout/FloatingActions";
+import GlobalFloatingActions from "@/components/layout/GlobalFloatingActions";
 import PageTransition from "@/components/motion/PageTransition";
 
 export default function DashboardTemplate({
@@ -9,7 +9,7 @@ export default function DashboardTemplate({
   return (
     <>
       <PageTransition>{children}</PageTransition>
-      <FloatingActions />
+      <GlobalFloatingActions />
     </>
   );
 }
