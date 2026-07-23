@@ -43,7 +43,7 @@ declare
   v_plan billing.plans%rowtype;
   v_subscription billing.subscriptions%rowtype;
   v_status text;
-  v_inserted boolean := false;
+  v_existing_event_status text;
   v_event_supported boolean;
 begin
   if p_event_id is null or p_event_id !~ '^evt_[a-z0-9]{26}$' then
@@ -93,9 +93,23 @@ begin
   )
   on conflict (provider, provider_event_id) do nothing;
 
-  get diagnostics v_inserted = row_count;
-  if not v_inserted then
-    return jsonb_build_object('result', 'duplicate', 'eventId', p_event_id);
+  if not found then
+    select processing_status into v_existing_event_status
+    from billing.webhook_events
+    where provider = 'paddle' and provider_event_id = p_event_id
+    for update;
+
+    if v_existing_event_status <> 'failed' then
+      return jsonb_build_object('result', 'duplicate', 'eventId', p_event_id);
+    end if;
+
+    update billing.webhook_events
+    set processing_status = 'received',
+        error_code = null,
+        processed_at = null,
+        received_at = now(),
+        payload_sha256 = p_payload_sha256
+    where provider = 'paddle' and provider_event_id = p_event_id;
   end if;
 
   v_event_supported := p_event_type in (
@@ -145,7 +159,7 @@ begin
         error_code = 'ACCOUNT_NOT_RESOLVED',
         processed_at = now()
     where provider = 'paddle' and provider_event_id = p_event_id;
-    raise exception 'billing_account_not_resolved' using errcode = 'P0001';
+    return jsonb_build_object('result', 'failed', 'reason', 'account_not_resolved');
   end if;
 
   if p_provider_price_id is not null then
@@ -167,7 +181,7 @@ begin
         error_code = 'SUBSCRIPTION_NOT_INITIALIZED',
         processed_at = now()
     where provider = 'paddle' and provider_event_id = p_event_id;
-    raise exception 'subscription_not_initialized' using errcode = 'P0001';
+    return jsonb_build_object('result', 'failed', 'reason', 'subscription_not_initialized');
   end if;
 
   if v_subscription.provider_event_occurred_at is not null
@@ -186,7 +200,7 @@ begin
         error_code = 'UNKNOWN_PRICE',
         processed_at = now()
     where provider = 'paddle' and provider_event_id = p_event_id;
-    raise exception 'unknown_provider_price' using errcode = 'P0001';
+    return jsonb_build_object('result', 'failed', 'reason', 'unknown_provider_price');
   end if;
 
   if v_plan.code is not null and (
@@ -199,7 +213,7 @@ begin
         error_code = 'PLAN_SCOPE_MISMATCH',
         processed_at = now()
     where provider = 'paddle' and provider_event_id = p_event_id;
-    raise exception 'plan_scope_mismatch' using errcode = 'P0001';
+    return jsonb_build_object('result', 'failed', 'reason', 'plan_scope_mismatch');
   end if;
 
   v_status := case p_status
@@ -209,7 +223,6 @@ begin
     when 'paused' then 'paused'
     when 'canceled' then 'cancelled'
     when 'cancelled' then 'cancelled'
-    when 'completed' then 'active'
     else null
   end;
 
@@ -248,7 +261,10 @@ begin
       ),
       current_period_start = coalesce(p_period_start, current_period_start),
       current_period_end = coalesce(p_period_end, current_period_end),
-      cancel_at_period_end = p_cancel_at_period_end,
+      cancel_at_period_end = case
+        when p_event_type like 'subscription.%' then p_cancel_at_period_end
+        else cancel_at_period_end
+      end,
       billing_country = coalesce(p_billing_country, billing_country),
       provider_event_occurred_at = p_occurred_at,
       seat_quantity = coalesce(v_plan.included_seats, seat_quantity),
@@ -281,7 +297,7 @@ exception
         error_code = coalesce(error_code, 'PROCESSING_ERROR'),
         processed_at = now()
     where provider = 'paddle' and provider_event_id = p_event_id;
-    raise;
+    return jsonb_build_object('result', 'failed', 'reason', 'processing_error');
 end;
 $$;
 
