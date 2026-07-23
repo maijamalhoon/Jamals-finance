@@ -90,7 +90,7 @@ export const jalvoroIconRegistry = {
 
 export const jalvoroIconDefinitions = Object.fromEntries(
   JALVORO_ICON_DEFINITIONS.map((definition) => [definition.name, definition]),
-) as Readonly<Record<JalvoroIconName, JalvoroIconDefinition>>;
+) as unknown as Readonly<Record<JalvoroIconName, JalvoroIconDefinition>>;
 
 const jalvoroIconNameSet = new Set<string>(JALVORO_ICON_NAMES);
 
