@@ -21,6 +21,7 @@ import {
   ShoppingCart,
   TrendingUp,
   UsersRound,
+  WalletCards,
 } from "lucide-react";
 
 import BusinessNotificationBell from "@/components/business/BusinessNotificationBell";
@@ -73,6 +74,13 @@ const MODULES = [
     description: "Monthly budgets, rolling forecasts, actual variance, runway, approvals, and locked baselines.",
     icon: TrendingUp,
     route: "budgeting",
+  },
+  {
+    key: "payroll",
+    label: "Employee payroll",
+    description: "Employee register, recurring pay components, approval-controlled runs, balanced accruals, and salary payments.",
+    icon: WalletCards,
+    route: "payroll",
   },
   {
     key: "documents",
@@ -160,6 +168,8 @@ const MODULES = [
   },
 ] as const;
 
+type ModuleKey = (typeof MODULES)[number]["key"];
+
 function formatLabel(value: string) {
   return value.replace(/_/g, " ").replace(/\b\w/g, (character) => character.toUpperCase());
 }
@@ -207,61 +217,40 @@ export default async function BusinessWorkspacePage({
   const role = membershipResult.data.role;
   const permissions = membershipResult.data.permissions ?? [];
   const wildcard = permissions.includes("*");
-  const canViewReports =
-    ["owner", "admin", "accountant", "manager", "viewer"].includes(role) ||
-    wildcard ||
-    permissions.includes("reports.view") ||
-    permissions.includes("accounting.view");
-  const canViewCrm =
-    ["owner", "admin", "accountant", "manager", "sales", "viewer"].includes(role) ||
-    wildcard ||
-    permissions.includes("crm.view") ||
-    permissions.includes("crm.manage");
-  const canViewTeam =
-    ["owner", "admin", "accountant", "manager", "viewer"].includes(role) ||
-    wildcard ||
-    permissions.includes("team.view") ||
-    permissions.includes("team.manage");
-  const canViewTax =
-    ["owner", "admin", "accountant", "manager", "viewer"].includes(role) ||
-    wildcard ||
-    permissions.includes("tax.view") ||
-    permissions.includes("tax.manage") ||
-    permissions.includes("accounting.view") ||
-    permissions.includes("reports.view");
-  const canViewBanking =
-    ["owner", "admin", "accountant", "manager", "viewer"].includes(role) ||
-    wildcard ||
-    permissions.includes("banking.view") ||
-    permissions.includes("banking.manage") ||
-    permissions.includes("accounting.view") ||
-    permissions.includes("accounting.manage");
-  const canViewBudgeting =
-    ["owner", "admin", "accountant", "manager", "viewer"].includes(role) ||
-    wildcard ||
-    permissions.includes("budget.view") ||
-    permissions.includes("budget.manage") ||
-    permissions.includes("budget.approve") ||
-    permissions.includes("accounting.view") ||
-    permissions.includes("accounting.manage") ||
-    permissions.includes("reports.view");
-  const canViewDocuments =
-    ["owner", "admin", "accountant", "manager", "sales", "inventory", "viewer"].includes(role) ||
-    wildcard ||
-    permissions.includes("documents.view") ||
-    permissions.includes("documents.manage");
-  const canViewBranches =
-    ["owner", "admin", "accountant", "manager", "sales", "cashier", "inventory", "viewer"].includes(role) ||
-    wildcard ||
-    permissions.includes("branches.view") ||
-    permissions.includes("branches.manage");
-  const canViewApprovals =
-    ["owner", "admin", "accountant", "manager", "sales", "cashier", "inventory", "viewer"].includes(role) ||
-    wildcard ||
-    permissions.includes("approvals.view") ||
-    permissions.includes("approvals.request") ||
-    permissions.includes("approvals.decide") ||
-    permissions.includes("approvals.manage");
+  const hasAny = (...values: string[]) => wildcard || values.some((value) => permissions.includes(value));
+
+  const access: Partial<Record<ModuleKey, boolean>> = {
+    reports:
+      ["owner", "admin", "accountant", "manager", "viewer"].includes(role) ||
+      hasAny("reports.view", "accounting.view"),
+    crm:
+      ["owner", "admin", "accountant", "manager", "sales", "viewer"].includes(role) ||
+      hasAny("crm.view", "crm.manage"),
+    team:
+      ["owner", "admin", "accountant", "manager", "viewer"].includes(role) ||
+      hasAny("team.view", "team.manage"),
+    "tax-closing":
+      ["owner", "admin", "accountant", "manager", "viewer"].includes(role) ||
+      hasAny("tax.view", "tax.manage", "accounting.view", "reports.view"),
+    banking:
+      ["owner", "admin", "accountant", "manager", "viewer"].includes(role) ||
+      hasAny("banking.view", "banking.manage", "accounting.view", "accounting.manage"),
+    budgeting:
+      ["owner", "admin", "accountant", "manager", "viewer"].includes(role) ||
+      hasAny("budget.view", "budget.manage", "budget.approve", "accounting.view", "accounting.manage", "reports.view"),
+    payroll:
+      ["owner", "admin", "accountant"].includes(role) ||
+      hasAny("payroll.view", "payroll.manage", "payroll.process", "payroll.pay"),
+    documents:
+      ["owner", "admin", "accountant", "manager", "sales", "inventory", "viewer"].includes(role) ||
+      hasAny("documents.view", "documents.manage"),
+    branches:
+      ["owner", "admin", "accountant", "manager", "sales", "cashier", "inventory", "viewer"].includes(role) ||
+      hasAny("branches.view", "branches.manage"),
+    approvals:
+      ["owner", "admin", "accountant", "manager", "sales", "cashier", "inventory", "viewer"].includes(role) ||
+      hasAny("approvals.view", "approvals.request", "approvals.decide", "approvals.manage"),
+  };
 
   const notificationsResult = await supabase.rpc("get_business_notifications_snapshot", {
     p_business_id: business.id,
@@ -274,6 +263,18 @@ export default async function BusinessWorkspacePage({
   const unreadNotifications = Number(notificationSnapshot.summary?.unread ?? 0);
   const criticalNotifications = Number(notificationSnapshot.summary?.critical ?? 0);
   const realtimeNotifications = notificationSnapshot.preferences?.realtime_enabled !== false;
+
+  const alwaysEnabled = new Set<ModuleKey>([
+    "banking",
+    "budgeting",
+    "payroll",
+    "documents",
+    "branches",
+    "approvals",
+    "team",
+    "notifications",
+    "tax-closing",
+  ]);
 
   return (
     <main className="min-h-dvh bg-background px-4 py-5 text-foreground sm:px-6 sm:py-7 lg:px-8 lg:py-8">
@@ -349,36 +350,15 @@ export default async function BusinessWorkspacePage({
               Modules selected for this business
             </h2>
             <p className="mt-2 max-w-3xl text-sm leading-6 text-text-secondary">
-              Modules are configured from the nature of business. Every operational module uses the same verified accounting, banking, budgeting, documents, branches, approvals, tax, permission, notification, and reporting source of truth.
+              Modules are configured from the nature of business. Every operational module uses the same verified accounting, banking, budgeting, payroll, documents, branches, approvals, tax, permission, notification, and reporting source of truth.
             </p>
           </div>
 
           <div className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
             {MODULES.map((module) => {
               const Icon = module.icon;
-              const enabled = ["banking", "budgeting", "documents", "branches", "approvals", "team", "notifications", "tax-closing"].includes(module.key)
-                ? true
-                : enabledModules[module.key] === true;
-              const accessible =
-                module.key === "reports"
-                  ? canViewReports
-                  : module.key === "crm"
-                    ? canViewCrm
-                    : module.key === "team"
-                      ? canViewTeam
-                      : module.key === "tax-closing"
-                        ? canViewTax
-                        : module.key === "banking"
-                          ? canViewBanking
-                          : module.key === "budgeting"
-                            ? canViewBudgeting
-                            : module.key === "documents"
-                              ? canViewDocuments
-                              : module.key === "branches"
-                                ? canViewBranches
-                                : module.key === "approvals"
-                                  ? canViewApprovals
-                                  : true;
+              const enabled = alwaysEnabled.has(module.key) || enabledModules[module.key] === true;
+              const accessible = access[module.key] ?? true;
               const openable = enabled && accessible;
               const content = (
                 <>
@@ -438,9 +418,9 @@ export default async function BusinessWorkspacePage({
           <div className="flex items-start gap-3">
             <BookOpenCheck aria-hidden="true" className="mt-0.5 size-5 shrink-0" />
             <div>
-              <h2 className="font-black">Accounting, banking, budgeting, documents, branches, approvals, tax, access control, and alerts are active</h2>
+              <h2 className="font-black">Accounting, banking, budgeting, payroll, documents, branches, approvals, tax, access control, and alerts are active</h2>
               <p className="mt-1 text-sm leading-6 opacity-80">
-                Balanced journals, bank reconciliation locks, approved budgets, private versioned records, protected branch scopes, maker–checker approvals, rolling forecasts, fiscal periods, tax returns, retained-earnings close, immutable posting, team audit history, CRM conversions, verified reports, and role-filtered alerts are available. Operational modules do not calculate financial results independently.
+                Balanced journals, reconciliation locks, approved budgets, approval-controlled payroll accruals and salary payments, private versioned records, protected branch scopes, maker–checker approvals, fiscal periods, tax returns, retained-earnings close, immutable posting, team audit history, CRM conversions, verified reports, and role-filtered alerts share one financial source of truth.
               </p>
             </div>
           </div>
