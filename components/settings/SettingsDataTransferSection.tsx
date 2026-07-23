@@ -18,6 +18,7 @@ import {
   OPEN_FINANCE_DATA_IMPORT_EVENT,
   isRecord,
   validateFinanceBackup,
+  withFinanceBackupManifest,
 } from "@/lib/data-backup";
 import { mapAuthError } from "@/lib/settings/security";
 import { createClient } from "@/lib/supabase/client";
@@ -133,7 +134,11 @@ export default function SettingsDataTransferSection({
       const validation = validateFinanceBackup(payload);
       if (!validation.ok) throw new Error(validation.error);
 
-      const serialized = JSON.stringify(validation.value, null, 2);
+      const completeBackup = withFinanceBackupManifest(validation.value);
+      const integrityCheck = validateFinanceBackup(completeBackup);
+      if (!integrityCheck.ok) throw new Error(integrityCheck.error);
+
+      const serialized = JSON.stringify(integrityCheck.value, null, 2);
       const blob = new Blob([serialized], {
         type: "application/vnd.jamals-finance.backup+json",
       });
@@ -158,7 +163,7 @@ export default function SettingsDataTransferSection({
         window.URL.revokeObjectURL(url);
       }
 
-      toast.success("Complete finance backup downloaded.");
+      toast.success("Complete finance backup downloaded and verified.");
     } catch (error) {
       const message =
         error instanceof Error && error.message
@@ -192,6 +197,8 @@ export default function SettingsDataTransferSection({
     router.refresh();
   }
 
+  const dataActionsDisabled = isExporting || isSigningOut;
+
   return (
     <section className="settings-reference-section settings-reference-data">
       <h2 className="settings-reference-section-heading">
@@ -210,18 +217,29 @@ export default function SettingsDataTransferSection({
               <Download size={21} strokeWidth={2.35} />
             )
           }
-          title={isExporting ? "Preparing Backup…" : "Export Data"}
-          description="Download all accounts, transactions and connected finance records"
+          title={isExporting ? "Verifying Complete Backup…" : "Export Data"}
+          description="Download every account, goal, payable, investment, transaction and linked record"
           onClick={() => void handleExport()}
-          disabled={isExporting || isSigningOut}
+          disabled={dataActionsDisabled}
         />
-        <DataActionRow
-          icon={<Upload size={21} strokeWidth={2.35} />}
-          title="Upload Data"
-          description="Import a backup and safely add it to this account"
+      </div>
+
+      <div className="settings-data-upload-launch">
+        <button
+          type="button"
           onClick={handleUpload}
-          disabled={isExporting || isSigningOut}
-        />
+          disabled={dataActionsDisabled}
+          className="finance-focus settings-data-upload-button"
+          aria-label="Import a Jamal’s Finance backup"
+          title="Import data"
+        >
+          <span className="settings-data-upload-pulse" aria-hidden="true" />
+          <span className="settings-data-upload-orbit" aria-hidden="true" />
+          <Upload size={25} strokeWidth={2.3} aria-hidden="true" />
+        </button>
+        <span className="sr-only">
+          Choose a backup file, or drag and drop it anywhere on this screen.
+        </span>
       </div>
 
       <button

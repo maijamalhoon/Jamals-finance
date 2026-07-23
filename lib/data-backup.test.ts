@@ -4,12 +4,14 @@ import {
   FINANCE_BACKUP_DATA_KEYS,
   FINANCE_BACKUP_FORMAT,
   FINANCE_BACKUP_VERSION,
+  type FinanceBackup,
   getBackupRecordCount,
   parseFinanceImportResult,
   validateFinanceBackup,
+  withFinanceBackupManifest,
 } from "./data-backup";
 
-function makeBackup() {
+function makeBackup(): FinanceBackup {
   return {
     format: FINANCE_BACKUP_FORMAT,
     version: FINANCE_BACKUP_VERSION,
@@ -19,7 +21,9 @@ function makeBackup() {
       ownerId: "22222222-2222-2222-2222-222222222222",
       app: "jamals-finance",
     },
-    data: Object.fromEntries(FINANCE_BACKUP_DATA_KEYS.map((key) => [key, []])),
+    data: Object.fromEntries(
+      FINANCE_BACKUP_DATA_KEYS.map((key) => [key, [] as unknown[]]),
+    ) as FinanceBackup["data"],
   };
 }
 
@@ -48,6 +52,37 @@ describe("finance backup validation", () => {
     if (validation.ok) expect(getBackupRecordCount(validation.value)).toBe(3);
   });
 
+  it("adds and validates a complete-data manifest", () => {
+    const validation = validateFinanceBackup(makeBackup());
+    expect(validation.ok).toBe(true);
+    if (!validation.ok) return;
+
+    validation.value.data.accounts.push({ id: "one" });
+    validation.value.data.goals.push({ id: "two" });
+
+    const backup = withFinanceBackupManifest(validation.value);
+    expect(backup.manifest).toMatchObject({
+      totalRecords: 2,
+      recordCounts: { accounts: 1, goals: 1 },
+    });
+    expect(validateFinanceBackup(backup).ok).toBe(true);
+  });
+
+  it("rejects a backup whose manifest no longer matches its data", () => {
+    const validation = validateFinanceBackup(makeBackup());
+    expect(validation.ok).toBe(true);
+    if (!validation.ok) return;
+
+    const backup = withFinanceBackupManifest(validation.value);
+    backup.data.transactions.push({ id: "added-after-export" });
+
+    expect(validateFinanceBackup(backup)).toEqual({
+      ok: false,
+      error:
+        "The transactions section did not pass the backup integrity check.",
+    });
+  });
+
   it("normalizes the import RPC response", () => {
     expect(
       parseFinanceImportResult({
@@ -56,11 +91,13 @@ describe("finance backup validation", () => {
         totalAdded: "3",
         added: { accounts: 1, transactions: "2" },
         skipped: { accounts: 0 },
+        restored: { notificationPreferences: "1" },
       }),
     ).toMatchObject({
       totalAdded: 3,
       added: { accounts: 1, transactions: 2 },
       skipped: { accounts: 0 },
+      restored: { notificationPreferences: 1 },
     });
   });
 });

@@ -21,6 +21,11 @@ type BackupDataKey = (typeof FINANCE_BACKUP_DATA_KEYS)[number];
 
 type JsonRecord = Record<string, unknown>;
 
+export type FinanceBackupManifest = {
+  totalRecords: number;
+  recordCounts: Record<BackupDataKey, number>;
+};
+
 export type FinanceBackup = JsonRecord & {
   format: typeof FINANCE_BACKUP_FORMAT;
   version: typeof FINANCE_BACKUP_VERSION;
@@ -30,6 +35,7 @@ export type FinanceBackup = JsonRecord & {
     ownerId: string;
   };
   data: Record<BackupDataKey, unknown[]>;
+  manifest?: FinanceBackupManifest;
 };
 
 export type FinanceImportResult = {
@@ -39,6 +45,7 @@ export type FinanceImportResult = {
   totalAdded: number;
   added: Record<string, number>;
   skipped: Record<string, number>;
+  restored?: Record<string, number>;
 };
 
 export type BackupValidationResult =
@@ -50,6 +57,70 @@ const UUID_PATTERN =
 
 export function isRecord(value: unknown): value is JsonRecord {
   return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function normalizeNonNegativeInteger(value: unknown) {
+  const count = Number(value);
+  return Number.isInteger(count) && count >= 0 ? count : null;
+}
+
+export function getBackupRecordCount(backup: FinanceBackup) {
+  return FINANCE_BACKUP_DATA_KEYS.reduce(
+    (total, key) => total + backup.data[key].length,
+    0,
+  );
+}
+
+export function withFinanceBackupManifest(
+  backup: FinanceBackup,
+): FinanceBackup {
+  const recordCounts = Object.fromEntries(
+    FINANCE_BACKUP_DATA_KEYS.map((key) => [key, backup.data[key].length]),
+  ) as Record<BackupDataKey, number>;
+
+  return {
+    ...backup,
+    manifest: {
+      totalRecords: Object.values(recordCounts).reduce(
+        (total, count) => total + count,
+        0,
+      ),
+      recordCounts,
+    },
+  };
+}
+
+function validateManifest(
+  value: JsonRecord,
+  data: Record<BackupDataKey, unknown[]>,
+): string | null {
+  if (value.manifest === undefined) return null;
+  if (!isRecord(value.manifest) || !isRecord(value.manifest.recordCounts)) {
+    return "This backup file is missing its integrity summary.";
+  }
+
+  for (const key of FINANCE_BACKUP_DATA_KEYS) {
+    const expected = normalizeNonNegativeInteger(
+      value.manifest.recordCounts[key],
+    );
+    if (expected === null || expected !== data[key].length) {
+      return `The ${key} section did not pass the backup integrity check.`;
+    }
+  }
+
+  const totalRecords = normalizeNonNegativeInteger(
+    value.manifest.totalRecords,
+  );
+  const actualTotal = FINANCE_BACKUP_DATA_KEYS.reduce(
+    (total, key) => total + data[key].length,
+    0,
+  );
+
+  if (totalRecords === null || totalRecords !== actualTotal) {
+    return "This backup file did not pass the complete-data integrity check.";
+  }
+
+  return null;
 }
 
 export function validateFinanceBackup(value: unknown): BackupValidationResult {
@@ -100,14 +171,11 @@ export function validateFinanceBackup(value: unknown): BackupValidationResult {
     }
   }
 
-  return { ok: true, value: value as FinanceBackup };
-}
+  const data = value.data as Record<BackupDataKey, unknown[]>;
+  const manifestError = validateManifest(value, data);
+  if (manifestError) return { ok: false, error: manifestError };
 
-export function getBackupRecordCount(backup: FinanceBackup) {
-  return FINANCE_BACKUP_DATA_KEYS.reduce(
-    (total, key) => total + backup.data[key].length,
-    0,
-  );
+  return { ok: true, value: value as FinanceBackup };
 }
 
 export function parseFinanceImportResult(value: unknown): FinanceImportResult | null {
@@ -115,6 +183,7 @@ export function parseFinanceImportResult(value: unknown): FinanceImportResult | 
 
   const added = isRecord(value.added) ? value.added : {};
   const skipped = isRecord(value.skipped) ? value.skipped : {};
+  const restored = isRecord(value.restored) ? value.restored : {};
 
   const normalizeCounts = (counts: JsonRecord) =>
     Object.fromEntries(
@@ -136,5 +205,6 @@ export function parseFinanceImportResult(value: unknown): FinanceImportResult | 
       : Object.values(parsedAdded).reduce((sum, count) => sum + count, 0),
     added: parsedAdded,
     skipped: normalizeCounts(skipped),
+    restored: normalizeCounts(restored),
   };
 }
