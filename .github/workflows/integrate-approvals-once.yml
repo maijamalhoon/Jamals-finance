@@ -1,0 +1,185 @@
+name: Integrate approvals once
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/integrate-approvals-once.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: integrate-approvals-once
+  cancel-in-progress: false
+
+jobs:
+  integrate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Connect approvals workspace
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          def replace_once(path: Path, old: str, new: str) -> None:
+              text = path.read_text()
+              if new in text:
+                  return
+              count = text.count(old)
+              if count != 1:
+                  raise SystemExit(f"Expected exactly one match in {path}, found {count}: {old[:100]!r}")
+              path.write_text(text.replace(old, new, 1))
+
+          workspace = Path("components/business/BusinessApprovalsWorkspace.tsx")
+          replace_once(
+              workspace,
+              'import { useMemo, useState } from "react";',
+              'import type { ReactNode } from "react";\nimport { useMemo, useState } from "react";',
+          )
+          replace_once(workspace, "children: React.ReactNode", "children: ReactNode")
+
+          dashboard = Path("app/business/[businessSlug]/page.tsx")
+          replace_once(dashboard, "  Building2,\n  ContactRound,", "  Building2,\n  ClipboardCheck,\n  ContactRound,")
+          replace_once(
+              dashboard,
+              '''  {
+              key: "branches",
+              label: "Branches & locations",
+              description: "Operational locations, primary branch control, managers, member scope, and immutable access history.",
+              icon: MapPinned,
+              route: "branches",
+            },
+            {
+              key: "contacts",'''.replace("            ", ""),
+              '''  {
+              key: "branches",
+              label: "Branches & locations",
+              description: "Operational locations, primary branch control, managers, member scope, and immutable access history.",
+              icon: MapPinned,
+              route: "branches",
+            },
+            {
+              key: "approvals",
+              label: "Approvals & controls",
+              description: "Maker–checker policies, branch-aware authority, independent decisions, assignments, and immutable control history.",
+              icon: ClipboardCheck,
+              route: "approvals",
+            },
+            {
+              key: "contacts",'''.replace("            ", ""),
+          )
+          replace_once(
+              dashboard,
+              '''  const canViewBranches =
+              ["owner", "admin", "accountant", "manager", "sales", "cashier", "inventory", "viewer"].includes(role) ||
+              permissions.includes("*") ||
+              permissions.includes("branches.view") ||
+              permissions.includes("branches.manage");'''.replace("              ", "    "),
+              '''  const canViewBranches =
+              ["owner", "admin", "accountant", "manager", "sales", "cashier", "inventory", "viewer"].includes(role) ||
+              permissions.includes("*") ||
+              permissions.includes("branches.view") ||
+              permissions.includes("branches.manage");
+            const canViewApprovals =
+              ["owner", "admin", "accountant", "manager", "sales", "cashier", "inventory", "viewer"].includes(role) ||
+              permissions.includes("*") ||
+              permissions.includes("approvals.view") ||
+              permissions.includes("approvals.request") ||
+              permissions.includes("approvals.decide") ||
+              permissions.includes("approvals.manage");'''.replace("              ", "    "),
+          )
+          replace_once(
+              dashboard,
+              "accounting, banking, budgeting, documents, branches, tax, permission, notification, and reporting source of truth.",
+              "accounting, banking, budgeting, documents, branches, approvals, tax, permission, notification, and reporting source of truth.",
+          )
+          replace_once(
+              dashboard,
+              '["banking", "budgeting", "documents", "branches", "team", "notifications", "tax-closing"]',
+              '["banking", "budgeting", "documents", "branches", "approvals", "team", "notifications", "tax-closing"]',
+          )
+          replace_once(
+              dashboard,
+              ''': module.key === "branches"
+                                        ? canViewBranches
+                                        : true;''',
+              ''': module.key === "branches"
+                                        ? canViewBranches
+                                        : module.key === "approvals"
+                                          ? canViewApprovals
+                                          : true;''',
+          )
+          replace_once(
+              dashboard,
+              "Accounting, banking, budgeting, documents, branches, tax, access control, and alerts are active",
+              "Accounting, banking, budgeting, documents, branches, approvals, tax, access control, and alerts are active",
+          )
+          replace_once(
+              dashboard,
+              "private versioned records, protected branch scopes, rolling forecasts",
+              "private versioned records, protected branch scopes, maker–checker approvals, rolling forecasts",
+          )
+
+          panel = Path("components/business/BusinessFinancialPermissionPanel.tsx")
+          replace_once(
+              panel,
+              'import { BadgeCheck, FileArchive, Landmark, MapPinned, Save, ShieldCheck, TrendingUp } from "lucide-react";',
+              'import { BadgeCheck, ClipboardCheck, FileArchive, Landmark, MapPinned, Save, ShieldCheck, TrendingUp } from "lucide-react";',
+          )
+          replace_once(
+              panel,
+              '''  { value: "branches.view", label: "View branches", icon: MapPinned },
+            { value: "branches.manage", label: "Manage branch scope", icon: MapPinned },
+          ] as const;'''.replace("            ", "  "),
+              '''  { value: "branches.view", label: "View branches", icon: MapPinned },
+            { value: "branches.manage", label: "Manage branch scope", icon: MapPinned },
+            { value: "approvals.view", label: "View approvals", icon: ClipboardCheck },
+            { value: "approvals.request", label: "Request approval", icon: ClipboardCheck },
+            { value: "approvals.decide", label: "Approve or reject", icon: BadgeCheck },
+            { value: "approvals.manage", label: "Manage controls", icon: ClipboardCheck },
+          ] as const;'''.replace("            ", "  "),
+          )
+          replace_once(
+              panel,
+              "Banking, planning, company-record, and branch permissions are tenant-scoped.",
+              "Banking, planning, company-record, branch, and approval permissions are tenant-scoped.",
+          )
+          replace_once(
+              panel,
+              "Add another team member to configure Banking, Budgeting, Documents, or Branches access.",
+              "Add another team member to configure Banking, Budgeting, Documents, Branches, or Approvals access.",
+          )
+          PY
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Production build
+        run: npm run build
+
+      - name: Commit verified integration and remove workflow
+        shell: bash
+        run: |
+          rm .github/workflows/integrate-approvals-once.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add app/business/'[businessSlug]'/page.tsx components/business/BusinessFinancialPermissionPanel.tsx components/business/BusinessApprovalsWorkspace.tsx .github/workflows/integrate-approvals-once.yml
+          git commit -m "feat(approvals): connect verified controls workspace"
+          git pull --rebase origin main
+          git push origin HEAD:main
