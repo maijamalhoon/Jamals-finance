@@ -1,0 +1,41 @@
+name: Apply JALVORO visible copy migration
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    if: github.head_ref == 'agent/finish-jalvoro-visible-copy'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out migration branch
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          ref: agent/finish-jalvoro-visible-copy
+          fetch-depth: 1
+
+      - name: Apply centralized brand patch
+        shell: bash
+        run: |
+          set -euo pipefail
+          base64 --decode .github/jalvoro-visible-copy.patch.gz.b64 | gzip -d > /tmp/jalvoro-visible-copy.patch
+          git apply --check /tmp/jalvoro-visible-copy.patch
+          git apply /tmp/jalvoro-visible-copy.patch
+          rm -f .github/jalvoro-visible-copy.patch.gz.b64
+          rm -f .github/workflows/scan-jalvoro-visible-copy.yml
+          rm -f .github/workflows/apply-jalvoro-visible-copy.yml
+
+      - name: Commit migration
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "JALVORO CI"
+          git config user.email "actions@users.noreply.github.com"
+          git add -A
+          git commit -m "fix: centralize all remaining JALVORO public copy"
+          git push origin HEAD:agent/finish-jalvoro-visible-copy
