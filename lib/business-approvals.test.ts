@@ -25,6 +25,21 @@ describe("business approval control contracts", () => {
     expect(multiStageFix).toContain("assigned_to=case when approvals_total>=required_approvals");
   });
 
+  it("limits the approver directory and decision authority", () => {
+    const directoryLimit = read(
+      "supabase/migrations/20260723080653_limit_approval_member_directory.sql",
+    );
+    const authorityLock = read(
+      "supabase/migrations/20260723081417_lock_approval_authority_permission.sql",
+    );
+
+    expect(directoryLimit).toContain("'members', case when can_manage");
+    expect(directoryLimit).toContain("case when can_manage then policy.approver_user_id else null end");
+    expect(authorityLock).toContain("approver_permission = 'approvals.decide'");
+    expect(authorityLock).toContain("required_permission = 'approvals.decide'");
+    expect(authorityLock).toContain("Approval policies must use approvals.decide authority.");
+  });
+
   it("keeps the workspace connected to the dashboard and protected permissions", () => {
     const dashboard = read("app/business/[businessSlug]/page.tsx");
     const page = read("app/business/[businessSlug]/approvals/page.tsx");
@@ -32,7 +47,7 @@ describe("business approval control contracts", () => {
 
     expect(dashboard).toContain('key: "approvals"');
     expect(dashboard).toContain("canViewApprovals");
-    expect(page).toContain('get_business_approvals_snapshot');
+    expect(page).toContain("get_business_approvals_snapshot");
     expect(panel).toContain('value: "approvals.request"');
     expect(panel).toContain('value: "approvals.decide"');
     expect(panel).toContain('value: "approvals.manage"');
@@ -42,9 +57,9 @@ describe("business approval control contracts", () => {
     const workspace = read("components/business/BusinessApprovalsWorkspace.tsx");
 
     expect(workspace).toContain("They do not post journals, move stock, pay suppliers");
-    expect(workspace).toContain('create_business_approval_request');
-    expect(workspace).toContain('decide_business_approval_request');
-    expect(workspace).toContain('assign_business_approval_request');
-    expect(workspace).toContain('cancel_business_approval_request');
+    expect(workspace).toContain("create_business_approval_request");
+    expect(workspace).toContain("decide_business_approval_request");
+    expect(workspace).toContain("assign_business_approval_request");
+    expect(workspace).toContain("cancel_business_approval_request");
   });
 });
