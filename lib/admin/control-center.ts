@@ -49,6 +49,23 @@ export type AdminControlCenterSnapshot = {
     topRoutes: AdminRouteBreakdown[];
     slowRoutes: AdminRouteBreakdown[];
   };
+  privacy: {
+    openRequests: number;
+    overdueRequests: number;
+    completedRequests30d: number;
+    adminViews30d: number;
+    telemetryEventsStored: number;
+    telemetrySubjectsStored: number;
+    expiredTelemetryPending: number;
+    expiredAdminAuditPending: number;
+    lastRetentionRunAt: string | null;
+    lastRetentionRowsDeleted: number;
+    telemetryRetentionDays: number;
+    adminAuditRetentionMonths: number;
+    rawIpStored: false;
+    sessionReplayEnabled: false;
+    financeContentInTelemetry: false;
+  };
 };
 
 const ADMIN_ROLES = new Set<PlatformAdminRole>([
@@ -73,6 +90,12 @@ function readString(value: unknown, maximumLength = 160) {
   return normalized.length > 0 && normalized.length <= maximumLength
     ? normalized
     : null;
+}
+
+function readNullableDate(value: unknown) {
+  if (value === null) return null;
+  const parsed = readString(value, 64);
+  return parsed && !Number.isNaN(Date.parse(parsed)) ? parsed : undefined;
 }
 
 function readCountBreakdown(
@@ -144,6 +167,7 @@ export function parseAdminControlCenterSnapshot(
   const users = value.users;
   const billing = value.billing;
   const telemetry = value.telemetry;
+  const privacy = value.privacy;
 
   if (
     !generatedAt ||
@@ -153,7 +177,8 @@ export function parseAdminControlCenterSnapshot(
     value.featurePolicy !== "unlimited" ||
     !isRecord(users) ||
     !isRecord(billing) ||
-    !isRecord(telemetry)
+    !isRecord(telemetry) ||
+    !isRecord(privacy)
   ) {
     return null;
   }
@@ -181,6 +206,21 @@ export function parseAdminControlCenterSnapshot(
   const topRoutes = readRouteBreakdown(telemetry.topRoutes, "events");
   const slowRoutes = readRouteBreakdown(telemetry.slowRoutes, "signals");
 
+  const openRequests = readCount(privacy.openRequests);
+  const overdueRequests = readCount(privacy.overdueRequests);
+  const completedRequests30d = readCount(privacy.completedRequests30d);
+  const adminViews30d = readCount(privacy.adminViews30d);
+  const telemetryEventsStored = readCount(privacy.telemetryEventsStored);
+  const telemetrySubjectsStored = readCount(privacy.telemetrySubjectsStored);
+  const expiredTelemetryPending = readCount(privacy.expiredTelemetryPending);
+  const expiredAdminAuditPending = readCount(privacy.expiredAdminAuditPending);
+  const lastRetentionRowsDeleted = readCount(privacy.lastRetentionRowsDeleted);
+  const telemetryRetentionDays = readCount(privacy.telemetryRetentionDays);
+  const adminAuditRetentionMonths = readCount(
+    privacy.adminAuditRetentionMonths,
+  );
+  const lastRetentionRunAt = readNullableDate(privacy.lastRetentionRunAt);
+
   if (
     [
       total,
@@ -198,13 +238,28 @@ export function parseAdminControlCenterSnapshot(
       events24h,
       failedOperations7d,
       poorPerformanceSignals7d,
+      openRequests,
+      overdueRequests,
+      completedRequests30d,
+      adminViews30d,
+      telemetryEventsStored,
+      telemetrySubjectsStored,
+      expiredTelemetryPending,
+      expiredAdminAuditPending,
+      lastRetentionRowsDeleted,
+      telemetryRetentionDays,
+      adminAuditRetentionMonths,
     ].some((count) => count === null) ||
     typeof billing.providerConnected !== "boolean" ||
     !plans ||
     !devices ||
     !countries ||
     !topRoutes ||
-    !slowRoutes
+    !slowRoutes ||
+    lastRetentionRunAt === undefined ||
+    privacy.rawIpStored !== false ||
+    privacy.sessionReplayEnabled !== false ||
+    privacy.financeContentInTelemetry !== false
   ) {
     return null;
   }
@@ -239,6 +294,23 @@ export function parseAdminControlCenterSnapshot(
       countries,
       topRoutes,
       slowRoutes,
+    },
+    privacy: {
+      openRequests: openRequests!,
+      overdueRequests: overdueRequests!,
+      completedRequests30d: completedRequests30d!,
+      adminViews30d: adminViews30d!,
+      telemetryEventsStored: telemetryEventsStored!,
+      telemetrySubjectsStored: telemetrySubjectsStored!,
+      expiredTelemetryPending: expiredTelemetryPending!,
+      expiredAdminAuditPending: expiredAdminAuditPending!,
+      lastRetentionRunAt,
+      lastRetentionRowsDeleted: lastRetentionRowsDeleted!,
+      telemetryRetentionDays: telemetryRetentionDays!,
+      adminAuditRetentionMonths: adminAuditRetentionMonths!,
+      rawIpStored: false,
+      sessionReplayEnabled: false,
+      financeContentInTelemetry: false,
     },
   };
 }
