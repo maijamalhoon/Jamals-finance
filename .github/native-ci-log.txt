@@ -1,8 +1,8 @@
 === ACTIONABLE ERROR LINES ===
 56:e: file:///home/runner/work/Jamals-finance/Jamals-finance/native/androidApp/src/main/kotlin/com/jamalsfinance/nativeapp/ui/JamalsFinanceNativeApp.kt:11:43 Cannot access 'val RowColumnParentData?.weight: Float': it is internal in file.
-61:FAILURE: Build failed with an exception.
-63:* What went wrong:
-73:* Exception is:
+63:FAILURE: Build failed with an exception.
+65:* What went wrong:
+75:* Exception is:
 
 === FIRST FAILURE CONTEXT ===
 > Task :androidApp:mapDebugSourceSetPaths
@@ -13,20 +13,20 @@
 > Task :shared:processAndroidMainManifest FROM-CACHE
 > Task :androidApp:checkDebugDuplicateClasses
 > Task :androidApp:mergeDebugJniLibFolders
+> Task :androidApp:processDebugMainManifest
 > Task :shared:mergeAndroidMainJniLibFolders
 > Task :shared:mergeAndroidMainNativeLibs NO-SOURCE
-> Task :shared:copyAndroidMainJniLibsProjectOnly
-> Task :androidApp:processDebugMainManifest
-> Task :androidApp:mergeDebugNativeLibs
 > Task :androidApp:desugarDebugFileDependencies FROM-CACHE
 > Task :androidApp:processDebugManifest
-> Task :androidApp:stripDebugDebugSymbols
-> Task :androidApp:mergeExtDexDebug FROM-CACHE
+> Task :shared:copyAndroidMainJniLibsProjectOnly
+> Task :androidApp:mergeDebugNativeLibs
 > Task :androidApp:processDebugManifestForPackage
+> Task :androidApp:mergeExtDexDebug FROM-CACHE
+> Task :androidApp:stripDebugDebugSymbols
 > Task :androidApp:writeDebugAppMetadata
 > Task :androidApp:writeDebugSigningConfigVersions
-> Task :androidApp:processDebugResources
 > Task :androidApp:validateSigningDebug
+> Task :androidApp:processDebugResources
 > Task :shared:compileAndroidMain
 > Task :shared:processAndroidMainJavaRes
 > Task :shared:bundleAndroidMainClassesToCompileJar
@@ -34,9 +34,11 @@
 > Task :shared:compileAndroidHostTest
 > Task :shared:testAndroidHostTest
 
-> Task :androidApp:compileDebugKotlin FAILED
+> Task :androidApp:compileDebugKotlin
 e: file:///home/runner/work/Jamals-finance/Jamals-finance/native/androidApp/src/main/kotlin/com/jamalsfinance/nativeapp/ui/JamalsFinanceNativeApp.kt:11:43 Cannot access 'val RowColumnParentData?.weight: Float': it is internal in file.
-gradle/actions: Writing build results to /home/runner/work/_temp/.gradle-actions/build-results/native_build-1784798046642.json
+
+> Task :androidApp:compileDebugKotlin FAILED
+gradle/actions: Writing build results to /home/runner/work/_temp/.gradle-actions/build-results/native_build-1784798199241.json
 
 [Incubating] Problems report is available at: file:///home/runner/work/Jamals-finance/Jamals-finance/native/build/reports/problems/problems-report.html
 
@@ -124,8 +126,6 @@ Caused by: org.gradle.workers.internal.DefaultWorkerExecutor$WorkExecutionExcept
 	at org.gradle.internal.operations.DefaultBuildOperationRunner.execute(DefaultBuildOperationRunner.java:59)
 	at org.gradle.internal.operations.DefaultBuildOperationRunner.call(DefaultBuildOperationRunner.java:53)
 	at org.gradle.internal.execution.steps.ExecuteStep.execute(ExecuteStep.java:61)
-	at org.gradle.internal.execution.steps.ExecuteStep.execute(ExecuteStep.java:47)
-	at org.gradle.internal.execution.steps.CancelExecutionStep.execute(CancelExecutionStep.java:42)
 
 === FINAL 80 LINES ===
 	at org.gradle.internal.execution.steps.SkipUpToDateStep.executeBecause(SkipUpToDateStep.java:75)
@@ -205,6 +205,6 @@ Caused by: org.jetbrains.kotlin.gradle.tasks.CompilationErrorException: Compilat
 	... 2 more
 
 
-BUILD FAILED in 1m 9s
+BUILD FAILED in 1m 7s
 42 actionable tasks: 29 executed, 13 from cache
 Configuration cache entry stored.
