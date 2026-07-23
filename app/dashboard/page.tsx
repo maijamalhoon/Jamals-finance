@@ -102,6 +102,16 @@ type DashboardGoal = {
   icon: string | null;
 };
 
+type DashboardSetupCountRow = {
+  accounts?: number | string | null;
+  income_transactions?: number | string | null;
+  expense_transactions?: number | string | null;
+  income_categories?: number | string | null;
+  expense_categories?: number | string | null;
+  goals?: number | string | null;
+  investments?: number | string | null;
+};
+
 type QueryError = { code?: string | null } | null;
 
 function firstRelation<T>(value: T | T[] | null | undefined): T | null {
@@ -125,6 +135,11 @@ function toTransactionInput(row: DashboardTransaction): DashboardTransactionInpu
     personName: row.person_name,
     itemName: row.item_name,
   };
+}
+
+function normalizeCount(value: number | string | null | undefined) {
+  const count = Number(value);
+  return Number.isFinite(count) && count >= 0 ? count : null;
 }
 
 function logQueryFailure(area: string, error: QueryError) {
@@ -154,13 +169,7 @@ export default async function DashboardPage() {
     investmentsResult,
     goalsResult,
     accountsResult,
-    setupAccountsResult,
-    setupIncomeResult,
-    setupExpenseResult,
-    setupIncomeCategoriesResult,
-    setupExpenseCategoriesResult,
-    setupGoalsResult,
-    setupInvestmentsResult,
+    setupCountsResult,
   ] = await Promise.all([
     supabase
       .from("transactions")
@@ -195,28 +204,7 @@ export default async function DashboardPage() {
       .order("created_at", { ascending: false }),
     supabase.from("goals").select("*").order("created_at").limit(6),
     supabase.from("accounts").select("id, balance").eq("status", "active"),
-    supabase
-      .from("accounts")
-      .select("id", { count: "exact", head: true })
-      .eq("status", "active"),
-    supabase
-      .from("transactions")
-      .select("id", { count: "exact", head: true })
-      .eq("type", "income"),
-    supabase
-      .from("transactions")
-      .select("id", { count: "exact", head: true })
-      .eq("type", "expense"),
-    supabase
-      .from("categories")
-      .select("id", { count: "exact", head: true })
-      .eq("type", "income"),
-    supabase
-      .from("categories")
-      .select("id", { count: "exact", head: true })
-      .eq("type", "expense"),
-    supabase.from("goals").select("id", { count: "exact", head: true }),
-    supabase.from("investments").select("id", { count: "exact", head: true }),
+    supabase.rpc("get_dashboard_setup_counts").maybeSingle(),
   ]);
 
   const queryFailures: Array<[string, QueryError]> = [
@@ -226,13 +214,7 @@ export default async function DashboardPage() {
     ["investments", investmentsResult.error],
     ["goals", goalsResult.error],
     ["accounts", accountsResult.error],
-    ["setup-accounts", setupAccountsResult.error],
-    ["setup-income", setupIncomeResult.error],
-    ["setup-expenses", setupExpenseResult.error],
-    ["setup-income-categories", setupIncomeCategoriesResult.error],
-    ["setup-expense-categories", setupExpenseCategoriesResult.error],
-    ["setup-goals", setupGoalsResult.error],
-    ["setup-investments", setupInvestmentsResult.error],
+    ["setup-counts", setupCountsResult.error],
   ];
   queryFailures.forEach(([area, error]) => logQueryFailure(area, error));
 
@@ -343,25 +325,17 @@ export default async function DashboardPage() {
     },
   });
 
-  const setupResults = [
-    setupAccountsResult,
-    setupIncomeResult,
-    setupExpenseResult,
-    setupIncomeCategoriesResult,
-    setupExpenseCategoriesResult,
-    setupGoalsResult,
-    setupInvestmentsResult,
-  ];
+  const setupCountRow = setupCountsResult.data as DashboardSetupCountRow | null;
   const setupStatus: DashboardAvailability =
-    setupResults.some((result) => result.error) ? "unavailable" : "available";
+    setupCountsResult.error || !setupCountRow ? "unavailable" : "available";
   const setupCounts = resolveDashboardSetupCounts(setupStatus, {
-    accounts: setupAccountsResult.count,
-    incomeTransactions: setupIncomeResult.count,
-    expenseTransactions: setupExpenseResult.count,
-    incomeCategories: setupIncomeCategoriesResult.count,
-    expenseCategories: setupExpenseCategoriesResult.count,
-    goals: setupGoalsResult.count,
-    investments: setupInvestmentsResult.count,
+    accounts: normalizeCount(setupCountRow?.accounts),
+    incomeTransactions: normalizeCount(setupCountRow?.income_transactions),
+    expenseTransactions: normalizeCount(setupCountRow?.expense_transactions),
+    incomeCategories: normalizeCount(setupCountRow?.income_categories),
+    expenseCategories: normalizeCount(setupCountRow?.expense_categories),
+    goals: normalizeCount(setupCountRow?.goals),
+    investments: normalizeCount(setupCountRow?.investments),
   });
 
   const recentTransactionRows = (
