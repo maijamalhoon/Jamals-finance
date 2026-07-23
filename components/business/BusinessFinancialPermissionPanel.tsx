@@ -1,7 +1,17 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { BadgeCheck, ClipboardCheck, FileArchive, Landmark, MapPinned, Save, ShieldCheck, TrendingUp } from "lucide-react";
+import {
+  BadgeCheck,
+  ClipboardCheck,
+  FileArchive,
+  Landmark,
+  MapPinned,
+  Save,
+  ShieldCheck,
+  TrendingUp,
+  WalletCards,
+} from "lucide-react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
@@ -32,6 +42,10 @@ const PROTECTED_PERMISSIONS = [
   { value: "budget.view", label: "View budgets", icon: TrendingUp },
   { value: "budget.manage", label: "Manage draft plans", icon: TrendingUp },
   { value: "budget.approve", label: "Approve and lock", icon: BadgeCheck },
+  { value: "payroll.view", label: "View payroll", icon: WalletCards },
+  { value: "payroll.manage", label: "Manage employees & pay rules", icon: WalletCards },
+  { value: "payroll.process", label: "Calculate & post payroll", icon: BadgeCheck },
+  { value: "payroll.pay", label: "Pay salaries", icon: WalletCards },
   { value: "documents.view", label: "View records", icon: FileArchive },
   { value: "documents.manage", label: "Manage records", icon: FileArchive },
   { value: "branches.view", label: "View branches", icon: MapPinned },
@@ -62,7 +76,7 @@ export default function BusinessFinancialPermissionPanel({
         <div>
           <h2 className="text-base font-black text-text-primary sm:text-lg">Protected workspace access</h2>
           <p className="mt-1 text-sm leading-6 text-text-secondary">
-            Banking, planning, company-record, branch, and approval permissions are tenant-scoped. Saving here preserves every unrelated CRM, sales, inventory, shop, and team permission.
+            Banking, planning, payroll, company-record, branch, and approval permissions are tenant-scoped. Saving here preserves every unrelated CRM, sales, inventory, shop, and team permission.
           </p>
         </div>
       </div>
@@ -81,7 +95,7 @@ export default function BusinessFinancialPermissionPanel({
         </div>
       ) : (
         <div className="mt-5 rounded-[var(--radius-button)] bg-surface-secondary px-5 py-8 text-center text-sm text-text-secondary">
-          Add another team member to configure Banking, Budgeting, Documents, Branches, or Approvals access.
+          Add another team member to configure Banking, Budgeting, Payroll, Documents, Branches, or Approvals access.
         </div>
       )}
     </section>
@@ -133,7 +147,11 @@ function ProtectedMemberRow({
 
     if (error) {
       console.error("Protected team permissions update failed", { code: error.code });
-      toast.error(error.code === "42501" ? "The primary owner must approve this protected access change." : "Protected workspace access could not be updated.");
+      toast.error(
+        error.code === "42501"
+          ? "The primary owner must approve this protected access change."
+          : "Protected workspace access could not be updated.",
+      );
       return;
     }
 
@@ -147,9 +165,15 @@ function ProtectedMemberRow({
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
             <strong className="truncate text-sm text-text-primary">{member.name}</strong>
-            <span className="rounded-full bg-surface px-2 py-0.5 text-[11px] font-black text-text-secondary">{member.role.replace(/_/g, " ")}</span>
-            {isSelf ? <span className="rounded-full bg-primary-soft px-2 py-0.5 text-[11px] font-black text-primary">You</span> : null}
-            {hasWildcard ? <span className="rounded-full bg-success-soft px-2 py-0.5 text-[11px] font-black text-success">Full access</span> : null}
+            <span className="rounded-full bg-surface px-2 py-0.5 text-[11px] font-black text-text-secondary">
+              {member.role.replace(/_/g, " ")}
+            </span>
+            {isSelf ? (
+              <span className="rounded-full bg-primary-soft px-2 py-0.5 text-[11px] font-black text-primary">You</span>
+            ) : null}
+            {hasWildcard ? (
+              <span className="rounded-full bg-success-soft px-2 py-0.5 text-[11px] font-black text-success">Full access</span>
+            ) : null}
           </div>
           <p className="mt-1 truncate text-xs text-text-secondary">{member.email ?? member.user_id}</p>
         </div>
@@ -177,7 +201,14 @@ function ProtectedMemberRow({
               </label>
             );
           })}
-          <Button type="button" size="sm" disabled={hasWildcard} loading={saving} loadingLabel="Saving…" onClick={() => void save()}>
+          <Button
+            type="button"
+            size="sm"
+            disabled={hasWildcard}
+            loading={saving}
+            loadingLabel="Saving…"
+            onClick={() => void save()}
+          >
             <Save aria-hidden="true" /> Save
           </Button>
         </div>
