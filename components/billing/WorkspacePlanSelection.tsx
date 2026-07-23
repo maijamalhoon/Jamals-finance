@@ -1,10 +1,25 @@
 "use client";
 
-import { Building2, LockKeyhole, ShieldCheck } from "lucide-react";
+import Link from "next/link";
+import {
+  Building2,
+  Check,
+  LockKeyhole,
+  ShieldCheck,
+} from "lucide-react";
 import { useState } from "react";
 
-import { BusinessPlanGrid } from "@/components/billing/RegionalPricing";
-import type { BillingCycle } from "@/lib/billing/types";
+import {
+  BUSINESS_PLAN_ORDER,
+  BUSINESS_PLANS,
+  getBusinessAnnualSavingsPercent,
+  getBusinessPlanPrice,
+} from "@/lib/billing/business-catalog";
+import { formatUsdPrice } from "@/lib/billing/catalog";
+import type {
+  BillingCycle,
+  PricedBusinessPlanKey,
+} from "@/lib/billing/types";
 
 type WorkspacePlanSelectionProps = {
   businessId: string;
@@ -12,6 +27,24 @@ type WorkspacePlanSelectionProps = {
   businessSystemName: string;
   countryCode: string;
   freeHref: string;
+};
+
+const FEATURE_COPY: Record<string, string> = {
+  business_core: "Your nature-specific business system",
+  invoicing: "Invoices and sales records",
+  expenses: "Expenses and purchases",
+  contacts: "Customers and suppliers",
+  basic_reports: "Essential business reports",
+  advanced_reports: "Advanced reporting",
+  inventory_ready: "Inventory workflows where relevant",
+  crm_ready: "CRM workflows where relevant",
+  branch_management: "Multiple branches",
+  department_controls: "Departments and operating controls",
+  approval_workflows: "Approval workflows",
+  audit_log: "Audit history",
+  api_access: "API access",
+  consolidated_reporting: "Group-level consolidated reporting",
+  priority_support: "Priority support",
 };
 
 export default function WorkspacePlanSelection({
@@ -36,9 +69,9 @@ export default function WorkspacePlanSelection({
               Choose the plan for {businessName}.
             </h1>
             <p className="mt-3 text-sm leading-6 text-text-muted sm:text-base">
-              The company name, selected system, team, permissions, subscription,
-              and invoice remain scoped to this workspace. Continue Free is
-              always available.
+              The company name, system, users, permissions, subscription, and
+              invoice stay scoped to this workspace. Continue Free is always
+              available.
             </p>
           </div>
 
@@ -76,16 +109,124 @@ export default function WorkspacePlanSelection({
         </div>
       </section>
 
-      <BusinessPlanGrid
-        countryCode={countryCode}
-        billingCycle={billingCycle}
-        businessId={businessId}
-        freeHref={freeHref}
-      />
+      <section
+        className="grid gap-4 lg:grid-cols-3 2xl:grid-cols-6"
+        aria-label={`Plans for ${businessName}`}
+      >
+        {BUSINESS_PLAN_ORDER.map((planKey) => {
+          const plan = BUSINESS_PLANS[planKey];
+          const pricedPlan =
+            planKey === "business_free" || planKey === "enterprise"
+              ? null
+              : (planKey as PricedBusinessPlanKey);
+          const price = pricedPlan
+            ? getBusinessPlanPrice(pricedPlan, countryCode, billingCycle)
+            : 0;
+          const savings = pricedPlan
+            ? getBusinessAnnualSavingsPercent(pricedPlan, countryCode)
+            : 0;
+          const checkoutHref = `/billing/checkout?businessId=${encodeURIComponent(
+            businessId,
+          )}&plan=${encodeURIComponent(planKey)}&cycle=${billingCycle}`;
+
+          return (
+            <article
+              key={planKey}
+              className={`relative flex min-h-full flex-col rounded-3xl border bg-surface p-5 shadow-soft ${
+                plan.recommended
+                  ? "border-primary shadow-premium"
+                  : "border-border"
+              }`}
+            >
+              {plan.recommended ? (
+                <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-primary px-3 py-1 text-xs font-bold text-primary-foreground">
+                  Best for growth
+                </span>
+              ) : null}
+
+              <h2 className="text-xl font-bold text-text-primary">
+                {plan.name}
+              </h2>
+              <p className="mt-2 min-h-20 text-sm leading-6 text-text-muted">
+                {plan.description}
+              </p>
+
+              <div className="my-5">
+                {plan.customPricing ? (
+                  <strong className="text-3xl font-extrabold text-text-primary">
+                    Custom
+                  </strong>
+                ) : (
+                  <div className="flex items-end gap-1">
+                    <strong className="text-3xl font-extrabold text-text-primary">
+                      {formatUsdPrice(price)}
+                    </strong>
+                    <span className="pb-1 text-sm text-text-muted">
+                      /{billingCycle === "annual" ? "year" : "month"}
+                    </span>
+                  </div>
+                )}
+                <p className="mt-1 text-xs text-text-muted">
+                  {plan.customPricing
+                    ? "Contract pricing"
+                    : billingCycle === "annual" && pricedPlan
+                      ? `Save about ${savings}% annually`
+                      : "Base workspace price"}
+                </p>
+              </div>
+
+              <div className="mb-4 grid grid-cols-2 gap-2 text-xs font-semibold text-text-secondary">
+                <span className="rounded-lg bg-surface-inset px-2 py-2">
+                  {plan.includedSeats === null
+                    ? "Custom seats"
+                    : `${plan.includedSeats} seats`}
+                </span>
+                <span className="rounded-lg bg-surface-inset px-2 py-2">
+                  {plan.includedBranches === null
+                    ? "Custom branches"
+                    : `${plan.includedBranches} branches`}
+                </span>
+              </div>
+
+              <ul className="mb-6 flex-1 space-y-3 text-sm text-text-secondary">
+                {Object.entries(plan.features)
+                  .filter(([, enabled]) => enabled === true)
+                  .slice(0, 8)
+                  .map(([feature]) => (
+                    <li key={feature} className="flex gap-2">
+                      <Check
+                        className="mt-0.5 size-4 shrink-0 text-success"
+                        aria-hidden="true"
+                      />
+                      <span>{FEATURE_COPY[feature] ?? feature}</span>
+                    </li>
+                  ))}
+              </ul>
+
+              <Link
+                href={
+                  planKey === "business_free" ? freeHref : checkoutHref
+                }
+                className={`inline-flex min-h-11 items-center justify-center rounded-xl px-4 text-sm font-bold transition focus-visible:shadow-[var(--focus-ring)] ${
+                  plan.recommended
+                    ? "bg-primary text-primary-foreground hover:bg-primary-hover"
+                    : "border border-border bg-surface-inset text-text-primary hover:border-border-strong"
+                }`}
+              >
+                {planKey === "business_free"
+                  ? "Continue Free"
+                  : planKey === "enterprise"
+                    ? "Review enterprise setup"
+                    : `Choose ${plan.name}`}
+              </Link>
+            </article>
+          );
+        })}
+      </section>
 
       <p className="mx-auto max-w-4xl text-center text-sm leading-6 text-text-muted">
-        Paid checkout will use the verified billing country and provider-hosted
-        payment screen. Card details will never be stored by JALVORO.
+        Paid checkout uses the verified billing country and a provider-hosted
+        payment screen. Card details are never stored by JALVORO.
       </p>
     </div>
   );
