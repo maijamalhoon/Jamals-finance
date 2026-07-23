@@ -1,3 +1,4 @@
+# Validates every main release candidate before deployment.
 name: CI
 
 on:
