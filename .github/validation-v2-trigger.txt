@@ -1,2 +1,3 @@
 Trigger the isolated v2 contract repair and full quality gate.
 Date: 2026-07-23
+Lint diagnostics trigger: 1
