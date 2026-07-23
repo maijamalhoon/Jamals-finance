@@ -6,15 +6,13 @@ on:
   push:
     branches:
       - main
-    paths-ignore:
-      - ".github/native-v05-main-status.json"
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
   group: ci-${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   validate:
@@ -61,80 +59,3 @@ jobs:
 
       - name: Build production application
         run: npm run build
-
-  native-v05-main:
-    name: Native v0.5 Reports and AI
-    if: github.ref == 'refs/heads/main'
-    runs-on: ubuntu-latest
-    timeout-minutes: 35
-    steps:
-      - name: Check out current main
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-        with:
-          persist-credentials: true
-          fetch-depth: 0
-          show-progress: false
-
-      - name: Set up Java 17
-        uses: actions/setup-java@c1e323688fd81a25caa38c78aa6df2d33d3e20d9 # v4
-        with:
-          distribution: temurin
-          java-version: "17"
-
-      - name: Set up Android
-        uses: android-actions/setup-android@9fc6c4e9069bf8d3d10b2204b1fb8f6ef7065407 # v3
-
-      - name: Install Android SDK 36
-        run: sdkmanager "platforms;android-36" "build-tools;36.0.0" "platform-tools"
-
-      - name: Set up Gradle
-        uses: gradle/actions/setup-gradle@ed408507eac070d1f99cc633dbcf757c94c7933a # v4
-        with:
-          gradle-version: "9.3.1"
-
-      - name: Run shared tests and compile Android
-        id: native_build
-        working-directory: native
-        shell: bash
-        run: |
-          set +e
-          gradle :shared:testAndroidHostTest :androidApp:assembleDebug --stacktrace 2>&1 | tee /tmp/native-v05-main.log
-          code=${PIPESTATUS[0]}
-          echo "exit_code=${code}" >> "$GITHUB_OUTPUT"
-          exit 0
-
-      - name: Upload v0.5 debug APK
-        if: steps.native_build.outputs.exit_code == '0'
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with:
-          name: jamals-finance-native-reports-ai-insights-v0.5.0-main-debug
-          path: native/androidApp/build/outputs/apk/debug/androidApp-debug.apk
-          if-no-files-found: error
-          retention-days: 7
-
-      - name: Record final native build status
-        if: always()
-        env:
-          BUILD_EXIT_CODE: ${{ steps.native_build.outputs.exit_code }}
-        shell: bash
-        run: |
-          if [ "${BUILD_EXIT_CODE}" = "0" ]; then result="success"; else result="failure"; fi
-          cat > .github/native-v05-main-status.json <<JSON
-          {
-            "status": "${result}",
-            "runId": "${GITHUB_RUN_ID}",
-            "commit": "${GITHUB_SHA}",
-            "workflow": "ci-native-v05-main",
-            "nativeBuild": "${BUILD_EXIT_CODE:-not-run}"
-          }
-          JSON
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add .github/native-v05-main-status.json
-          git commit -m "chore(native): record v0.5 main build ${result}" || exit 0
-          git pull --rebase origin main
-          git push origin HEAD:main
-
-      - name: Fail when native build failed
-        if: steps.native_build.outputs.exit_code != '0'
-        run: exit 1
