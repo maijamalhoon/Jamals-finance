@@ -43,4 +43,4 @@ gradle :shared:testAndroidHostTest
 gradle :androidApp:assembleDebug
 ```
 
-The APK artifact must be produced by that successful GitHub Actions run. The integration verification is based on the latest main tree and preserves all concurrent dashboard, approvals, and business software commits.
+The APK artifact must be produced by that successful GitHub Actions run. The final verification runs on `main` after preserving all concurrent dashboard, approvals, and business software commits.
