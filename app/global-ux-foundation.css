@@ -1,0 +1,89 @@
+/*
+ * Cross-route UI/UX foundation
+ *
+ * These rules are deliberately small and structural. They improve keyboard
+ * access, viewport stability and long-content resilience without changing any
+ * finance calculations, data flows, colors or component-specific layouts.
+ */
+
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  scrollbar-gutter: stable;
+}
+
+body {
+  min-width: 20rem;
+}
+
+:where(h1, h2, h3, h4, h5, h6, p, dd, dt) {
+  overflow-wrap: anywhere;
+}
+
+:where(
+    a,
+    button,
+    input,
+    select,
+    textarea,
+    summary,
+    [role="button"],
+    [role="link"],
+    [tabindex]:not([tabindex="-1"])
+  ):not(.finance-focus):focus-visible {
+  outline: 2px solid var(--brand-accent, var(--ring));
+  outline-offset: 3px;
+}
+
+:where(a, button, summary, [role="button"], [role="link"]) {
+  touch-action: manipulation;
+}
+
+[data-dashboard-scroll],
+[data-admin-shell] main {
+  scrollbar-gutter: stable;
+}
+
+.jf-skip-link {
+  position: fixed;
+  inset-block-start: max(0.75rem, env(safe-area-inset-top));
+  inset-inline-start: max(0.75rem, env(safe-area-inset-left));
+  z-index: 1000;
+  display: inline-flex;
+  min-height: 2.75rem;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border);
+  border-radius: 0.875rem;
+  background: var(--card);
+  color: var(--text-primary);
+  padding: 0.65rem 0.9rem;
+  font-size: 0.875rem;
+  font-weight: 800;
+  box-shadow: var(--shadow-lg);
+  transform: translateY(calc(-100% - max(1rem, env(safe-area-inset-top))));
+  transition: transform 160ms ease;
+}
+
+.jf-skip-link:focus-visible {
+  transform: translateY(0);
+  outline: 2px solid var(--brand-accent, var(--ring));
+  outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html,
+  html[data-scroll-behavior="smooth"] {
+    scroll-behavior: auto !important;
+  }
+
+  .jf-skip-link {
+    transition: none;
+  }
+}
+
+@media print {
+  .jf-skip-link {
+    display: none !important;
+  }
+}
