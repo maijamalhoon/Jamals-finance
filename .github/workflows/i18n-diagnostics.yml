@@ -1,6 +1,9 @@
 name: I18n diagnostics
 
 on:
+  pull_request:
+    branches:
+      - main
   push:
     branches:
       - feat/device-language-foundation
