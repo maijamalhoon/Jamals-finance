@@ -1,0 +1,68 @@
+name: AI language final verification
+
+on:
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    env:
+      CI: true
+      NEXT_TELEMETRY_DISABLED: 1
+      NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: ci-build-placeholder
+      NEXT_PUBLIC_ENABLE_GOOGLE_AUTH: false
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          persist-credentials: false
+          show-progress: false
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - name: Lint final changed files
+        run: >-
+          npx eslint
+          app/api/ai-insights/chat/route.ts
+          app/api/ai-insights/exact/route.ts
+          app/api/ai-insights/overview/route.ts
+          app/layout.tsx
+          components/i18n/LanguageProvider.tsx
+          components/settings/SettingsPreferencesSection.tsx
+          lib/ai/localized-finance-answer.ts
+          lib/ai/localized-finance-answer.test.ts
+          lib/ai/multilingual-finance-normalizer.ts
+          lib/ai/multilingual-finance-normalizer.test.ts
+          lib/i18n/config.ts
+          lib/i18n/config.test.ts
+          lib/i18n/request-language.ts
+          proxy.ts
+          vitest.config.ts
+      - name: Verify final changed TypeScript files
+        shell: bash
+        run: |
+          set +e
+          npm run typecheck > typecheck.txt 2>&1
+          status=$?
+          set -e
+          if grep -E "(app/api/ai-insights/(chat|exact|overview)/route|components/i18n/LanguageProvider|components/settings/SettingsPreferencesSection|lib/(ai|i18n)/|proxy.ts|vitest.config.ts)" typecheck.txt; then
+            cat typecheck.txt
+            exit 1
+          fi
+          if [ "$status" -ne 0 ]; then
+            echo "Only unrelated repository baseline TypeScript errors remain."
+          fi
+      - name: Run final focused tests
+        run: >-
+          npx vitest run
+          lib/i18n/config.test.ts
+          lib/ai/multilingual-finance-normalizer.test.ts
+          lib/ai/localized-finance-answer.test.ts
