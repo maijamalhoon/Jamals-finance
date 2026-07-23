@@ -27,8 +27,8 @@ android {
         applicationId = "com.jamalsfinance.app.native.dev"
         minSdk = 23
         targetSdk = 36
-        versionCode = 6
-        versionName = "0.6.0-personal-platform"
+        versionCode = 7
+        versionName = "0.7.0-privacy-app-lock"
 
         buildConfigField(
             "String",
