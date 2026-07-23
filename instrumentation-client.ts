@@ -1,8 +1,13 @@
-// This file configures the initialization of Sentry on the client.
-// The added config here will be used whenever a users loads a page in their browser.
-// https://docs.sentry.io/platforms/javascript/guides/nextjs/
+// This file configures client monitoring before React hydration.
+// Keep all initialization lightweight and fail-open so observability can never
+// block the finance experience.
 
 import * as Sentry from "@sentry/nextjs";
+
+import {
+  initializePrivacyTelemetry,
+  reportTelemetryRouterTransition,
+} from "./lib/telemetry/client";
 import { beforeSend, tracesSampleRate } from "./sentry.shared.config";
 
 Sentry.init({
@@ -16,4 +21,12 @@ Sentry.init({
   replaysOnErrorSampleRate: 0,
 });
 
-export const onRouterTransitionStart = Sentry.captureRouterTransitionStart;
+initializePrivacyTelemetry();
+
+export function onRouterTransitionStart(
+  url: string,
+  navigationType: "push" | "replace" | "traverse",
+) {
+  Sentry.captureRouterTransitionStart(url, navigationType);
+  reportTelemetryRouterTransition(url, navigationType);
+}
