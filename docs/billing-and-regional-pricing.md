@@ -46,7 +46,7 @@ Status behavior:
 
 The `billing` schema remains server-only. Browser roles receive no direct table privileges. The public billing snapshot RPC remains the narrow authenticated read surface.
 
-`claim_pro_trial(uuid)` is a `SECURITY INVOKER` function executable only by `service_role`. The API route authenticates the user first and passes that authenticated user ID. The database atomically prevents duplicate trial claims and rejects accounts that already moved beyond Free.
+`private.claim_my_pro_trial()` is a `SECURITY DEFINER` implementation that resolves the account exclusively from `auth.uid()`. The authenticated API calls the no-argument `public.claim_my_pro_trial()` wrapper, so no user ID or privileged database key is accepted from application code. The database atomically prevents duplicate trial claims and rejects accounts that already moved beyond Free.
 
 Webhook audit continues to use the existing `billing.webhook_events` table, which stores a payload hash instead of raw payment payloads.
 
