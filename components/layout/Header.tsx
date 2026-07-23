@@ -12,29 +12,15 @@ import {
 } from "react";
 
 import JamalMenu from "@/components/layout/JamalMenu";
-import { NAV_ITEMS, isNavItemActive, type NavItem } from "@/lib/navigation";
+import { NAV_ITEMS, isNavItemActive } from "@/lib/navigation";
 
 type HeaderProps = {
   notificationSlot: ReactNode;
 };
 
-const DESKTOP_HEADER_HREFS = [
-  "/dashboard",
-  "/dashboard/transactions",
-  "/dashboard/accounts",
-  "/dashboard/analytics",
-  "/dashboard/income",
-  "/dashboard/expenses",
-  "/dashboard/investments",
-  "/dashboard/goals",
-  "/dashboard/payables",
-  "/dashboard/ai-insights",
-  "/dashboard/reports",
-] as const;
-
-const DESKTOP_HEADER_NAV_ITEMS = DESKTOP_HEADER_HREFS.map((href) =>
-  NAV_ITEMS.find((item) => item.href === href),
-).filter((item): item is NavItem => Boolean(item));
+const DESKTOP_HEADER_NAV_ITEMS = NAV_ITEMS.filter(
+  (item) => item.href !== "/dashboard/settings",
+);
 
 const desktopNavItemBaseClass =
   "finance-focus relative grid h-10 w-full max-w-11 min-w-0 place-items-center justify-self-center rounded-[14px] border transition-[background-color,border-color,color,transform] duration-150 min-[1180px]:h-11 min-[1180px]:max-w-12 2xl:h-12 2xl:max-w-14";
