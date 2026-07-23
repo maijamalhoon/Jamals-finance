@@ -7,8 +7,11 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -27,7 +30,7 @@ internal fun PersonalPrivacyCard(
     onScreenshotsChanged: (Boolean) -> Unit,
     onLockNow: () -> Unit,
 ) {
-    PersonalPanel {
+    PrivacyPanel {
         Column(modifier = Modifier.fillMaxWidth()) {
             PrivacyToggleRow(
                 title = "App Lock",
@@ -57,17 +60,17 @@ internal fun PersonalPrivacyCard(
                     Text("Auto-lock", fontWeight = FontWeight.SemiBold)
                     Text(
                         "Lock after the app leaves the foreground",
-                        style = androidx.compose.material3.MaterialTheme.typography.bodySmall,
-                        color = androidx.compose.material3.MaterialTheme.colorScheme.onSurfaceVariant,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
                 Text(
                     local.autoLockTimeout.label,
-                    style = androidx.compose.material3.MaterialTheme.typography.labelMedium,
+                    style = MaterialTheme.typography.labelMedium,
                     color = if (local.appLockEnabled) {
-                        androidx.compose.material3.MaterialTheme.colorScheme.primary
+                        MaterialTheme.colorScheme.primary
                     } else {
-                        androidx.compose.material3.MaterialTheme.colorScheme.onSurfaceVariant
+                        MaterialTheme.colorScheme.onSurfaceVariant
                     },
                 )
             }
@@ -87,8 +90,8 @@ internal fun PersonalPrivacyCard(
                 Column(modifier = Modifier.fillMaxWidth().padding(18.dp)) {
                     Text(
                         "App Lock is active on this device.",
-                        style = androidx.compose.material3.MaterialTheme.typography.bodySmall,
-                        color = androidx.compose.material3.MaterialTheme.colorScheme.onSurfaceVariant,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                     Spacer(Modifier.height(10.dp))
                     OutlinedButton(
@@ -101,6 +104,17 @@ internal fun PersonalPrivacyCard(
                 }
             }
         }
+    }
+}
+
+@Composable
+internal fun PrivacyPanel(content: @Composable () -> Unit) {
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(24.dp),
+        color = MaterialTheme.colorScheme.surfaceContainer,
+    ) {
+        content()
     }
 }
 
@@ -120,8 +134,8 @@ private fun PrivacyToggleRow(
             Text(title, fontWeight = FontWeight.SemiBold)
             Text(
                 description,
-                style = androidx.compose.material3.MaterialTheme.typography.bodySmall,
-                color = androidx.compose.material3.MaterialTheme.colorScheme.onSurfaceVariant,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
         Switch(
