@@ -1,0 +1,60 @@
+name: Deploy JALVORO production
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    name: Deploy validated main to Vercel
+    if: github.head_ref == 'agent/deploy-jalvoro-production'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      VERCEL_TOKEN_PRIMARY: ${{ secrets.VERCEL_TOKEN }}
+      VERCEL_TOKEN_ALTERNATE: ${{ secrets.VERCEL_ACCESS_TOKEN }}
+      VERCEL_ORG_ID: team_c7vX4XXpBVznnjgxQbnwezXa
+      VERCEL_PROJECT_ID: prj_uY7uXNCNGT0ilaasTYstt2y44a8G
+    steps:
+      - name: Check out validated source
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          persist-credentials: false
+          show-progress: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
+        with:
+          node-version: 24
+          cache: npm
+          package-manager-cache: true
+
+      - name: Deploy production
+        shell: bash
+        run: |
+          set -euo pipefail
+          token="${VERCEL_TOKEN_PRIMARY:-${VERCEL_TOKEN_ALTERNATE:-}}"
+          if [[ -z "$token" ]]; then
+            echo "No VERCEL_TOKEN or VERCEL_ACCESS_TOKEN repository secret is configured."
+            exit 1
+          fi
+
+          mkdir -p .vercel
+          printf '%s\n' '{"orgId":"team_c7vX4XXpBVznnjgxQbnwezXa","projectId":"prj_uY7uXNCNGT0ilaasTYstt2y44a8G","projectName":"jamals-finance"}' > .vercel/project.json
+
+          npx --yes vercel@50.28.0 deploy \
+            --prod \
+            --yes \
+            --force \
+            --scope jamal-s-projects18 \
+            --token "$token" | tee deployment.log
+
+          deployment_url=$(grep -Eo 'https://[^ ]+\.vercel\.app' deployment.log | tail -n 1)
+          if [[ -z "$deployment_url" ]]; then
+            echo "Vercel deployment completed without a detectable deployment URL."
+            exit 1
+          fi
+          echo "Production deployment: $deployment_url"
