@@ -1,0 +1,3 @@
+Exact current main quality-gate trigger.
+No application code difference.
+Date: 2026-07-23
