@@ -6,6 +6,11 @@ on:
       - feat/category-manager-v2-direct
     paths:
       - ".automation/category-v2.bundle.ready"
+  pull_request:
+    branches:
+      - main
+    paths:
+      - ".automation/category-v2.bundle.ready"
 
 permissions:
   contents: write
