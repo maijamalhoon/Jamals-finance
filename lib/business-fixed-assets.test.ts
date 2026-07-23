@@ -8,38 +8,43 @@ function read(path: string) {
   return readFileSync(join(root, path), "utf8");
 }
 
+const fixedAssetSql = [
+  "supabase/migrations/20260723111742_business_fixed_assets_depreciation_engine.sql",
+  "supabase/migrations/20260723122228_fixed_asset_controls_and_initialization.sql",
+  "supabase/migrations/20260723122341_fixed_asset_registration_and_capitalization_operations.sql",
+  "supabase/migrations/20260723122501_fixed_asset_depreciation_and_disposal_operations.sql",
+  "supabase/migrations/20260723122616_fixed_asset_api_snapshot_and_rls.sql",
+  "supabase/migrations/20260723122723_finalize_fixed_asset_branch_scope_after_api.sql",
+].map(read).join("\n");
+
 describe("business fixed asset contracts", () => {
   it("keeps fixed asset accounting in the canonical immutable ledger", () => {
-    const foundation = read(
-      "supabase/migrations/20260723111742_business_fixed_assets_depreciation_engine.sql",
-    );
-
-    expect(foundation).toContain("account_subtype='contra_asset' and normal_balance='credit'");
-    expect(foundation).toContain("Direct fixed asset writes are not allowed.");
-    expect(foundation).toContain("asset_capitalization");
-    expect(foundation).toContain("asset_depreciation");
-    expect(foundation).toContain("asset_disposal");
-    expect(foundation).toContain("business_asset_journal_source_idx");
-    expect(foundation).toContain("No open fiscal period contains the fixed asset journal date.");
+    expect(fixedAssetSql).toContain("account_subtype='contra_asset' and normal_balance='credit'");
+    expect(fixedAssetSql).toContain("Direct fixed asset writes are not allowed.");
+    expect(fixedAssetSql).toContain("asset_capitalization");
+    expect(fixedAssetSql).toContain("asset_depreciation");
+    expect(fixedAssetSql).toContain("asset_disposal");
+    expect(fixedAssetSql).toContain("business_asset_journal_source_idx");
+    expect(fixedAssetSql).toContain("No open fiscal period contains the fixed asset journal date.");
   });
 
   it("enforces sequential monthly straight-line depreciation", () => {
-    const foundation = read(
-      "supabase/migrations/20260723111742_business_fixed_assets_depreciation_engine.sql",
-    );
-
-    expect(foundation).toContain("depreciation_method='straight_line'");
-    expect(foundation).toContain("full_month");
-    expect(foundation).toContain("next_month");
-    expect(foundation).toContain("expected_period<>run_record.period_start");
-    expect(foundation).toContain("book_value>asset.residual_value");
-    expect(foundation).toContain("least(monthly_amount,remaining_amount)");
+    expect(fixedAssetSql).toContain("depreciation_method='straight_line'");
+    expect(fixedAssetSql).toContain("full_month");
+    expect(fixedAssetSql).toContain("next_month");
+    expect(fixedAssetSql).toContain("expected_period<>run_record.period_start");
+    expect(fixedAssetSql).toContain("book_value>asset.residual_value");
+    expect(fixedAssetSql).toContain("least(monthly_amount,remaining_amount)");
   });
 
   it("locks branch scope and capitalized category accounts", () => {
-    const hardening = read(
+    const bootstrap = read(
       "supabase/migrations/20260723111949_harden_fixed_asset_branch_scope_and_category_accounts.sql",
     );
+    const finalHardening = read(
+      "supabase/migrations/20260723122723_finalize_fixed_asset_branch_scope_after_api.sql",
+    );
+    const hardening = `${bootstrap}\n${finalHardening}`;
 
     expect(hardening).toContain("private.has_business_asset_scope");
     expect(hardening).toContain("All-branch access is required for a company-wide fixed asset record.");
@@ -48,14 +53,14 @@ describe("business fixed asset contracts", () => {
   });
 
   it("reuses canonical chart accounts without repurposing rent or utilities", () => {
-    const foundation = read(
-      "supabase/migrations/20260723111742_business_fixed_assets_depreciation_engine.sql",
+    const controls = read(
+      "supabase/migrations/20260723122228_fixed_asset_controls_and_initialization.sql",
     );
     const canonicalFix = read(
       "supabase/migrations/20260723112920_reuse_canonical_fixed_asset_accounts.sql",
     );
 
-    for (const source of [foundation, canonicalFix]) {
+    for (const source of [controls, canonicalFix]) {
       expect(source).toContain("system_key='fixed_assets'");
       expect(source).toContain("system_key='depreciation_expense'");
       expect(source).toContain("1590-FA");
@@ -64,6 +69,15 @@ describe("business fixed asset contracts", () => {
       expect(source).not.toContain("'6200','Depreciation expense'");
       expect(source).not.toContain("'6300','Loss on disposal of assets'");
     }
+  });
+
+  it("indexes the depreciation account foreign keys", () => {
+    const indexes = read(
+      "supabase/migrations/20260723115400_index_fixed_asset_depreciation_account_foreign_keys.sql",
+    );
+
+    expect(indexes).toContain("business_asset_depreciation_lines_expense_idx");
+    expect(indexes).toContain("business_asset_depreciation_lines_accumulated_idx");
   });
 
   it("connects the protected responsive workspace", () => {
