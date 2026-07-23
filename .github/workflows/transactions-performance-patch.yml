@@ -1,0 +1,204 @@
+name: Transactions performance patch
+
+on:
+  workflow_dispatch:
+  pull_request:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: transactions-performance-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  patch-and-verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    env:
+      CI: "true"
+      NEXT_TELEMETRY_DISABLED: "1"
+      NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: ci-build-placeholder
+      NEXT_PUBLIC_ENABLE_GOOGLE_AUTH: "false"
+    steps:
+      - name: Check out staging branch
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          ref: transactions-performance-staging
+          fetch-depth: 0
+          persist-credentials: true
+          show-progress: false
+
+      - name: Apply asserted rendering patch
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          def replace_once(path: str, old: str, new: str) -> None:
+              file_path = Path(path)
+              source = file_path.read_text(encoding="utf-8")
+              count = source.count(old)
+              if count != 1:
+                  raise SystemExit(f"Expected one match in {path}, found {count}: {old[:100]!r}")
+              file_path.write_text(source.replace(old, new, 1), encoding="utf-8")
+
+          page = "app/dashboard/transactions/page.tsx"
+          replace_once(
+              page,
+              '''  const [rawTransactions, categoriesResult, accountsResult] = await Promise.all([
+              loadTransactions(supabase, {
+                type: requestedDatabaseType,
+                from,
+                to,
+                category,
+                account,
+                minAmount,
+                maxAmount,
+                includeDeleted: true,
+              }),
+              supabase
+                .from("categories")
+                .select("id, name, parent_id")
+                .order("name", { ascending: true }),
+              supabase
+                .from("accounts")
+                .select("id, name")
+                .order("name", { ascending: true }),
+            ]);''',
+              '''  const rawTransactions = await loadTransactions(supabase, {
+              type: requestedDatabaseType,
+              from,
+              to,
+              category,
+              account,
+              minAmount,
+              maxAmount,
+              includeDeleted: true,
+            });''',
+          )
+          replace_once(
+              page,
+              '''
+            if (categoriesResult.error) {
+              console.error("[transactions] Category filters unavailable", {
+                code: categoriesResult.error.code ?? "unknown",
+              });
+            }
+
+            if (accountsResult.error) {
+              console.error("[transactions] Account filters unavailable", {
+                code: accountsResult.error.code ?? "unknown",
+              });
+            }
+
+            const categoryRows = categoriesResult.data ?? [];
+            const categoryById = new Map(
+              categoryRows.map((row) => [row.id, row.name?.trim() || "Other"]),
+            );
+            const categoryOptions = categoryRows.map((row) => ({
+              value: row.id,
+              label:
+                row.parent_id && categoryById.has(row.parent_id)
+                  ? `${categoryById.get(row.parent_id)} / ${row.name}`
+                  : row.name,
+            }));
+            const accountOptions = (accountsResult.data ?? []).map((row) => ({
+              value: row.id,
+              label: row.name,
+            }));
+            ''',
+              '''
+            ''',
+          )
+          replace_once(
+              page,
+              '''            <TransactionFilters
+              categories={categoryOptions}
+              accounts={accountOptions}
+            />''',
+              '''            <TransactionFilters />''',
+          )
+
+          row = "components/transactions/TransactionRow.tsx"
+          replace_once(
+              row,
+              'import { useMemo, useState } from "react";\nimport { usePathname, useRouter } from "next/navigation";',
+              'import { useState } from "react";\nimport dynamic from "next/dynamic";\nimport { usePathname, useRouter } from "next/navigation";',
+          )
+          replace_once(
+              row,
+              '''import TransactionModal, {
+              ExistingTransaction,
+            } from "@/components/dashboard/TransactionModal";''',
+              '''import type { ExistingTransaction } from "@/components/dashboard/TransactionModal";''',
+          )
+          replace_once(
+              row,
+              '''} from "@/lib/transaction-icons";
+
+            type TransactionType =''',
+              '''} from "@/lib/transaction-icons";
+
+            const TransactionModal = dynamic(
+              () => import("@/components/dashboard/TransactionModal"),
+              { ssr: false },
+            );
+
+            type TransactionType =''',
+          )
+          replace_once(
+              row,
+              '  const supabase = useMemo(() => createClient(), []);\n',
+              '',
+          )
+          replace_once(
+              row,
+              '    const { error } = await supabase.rpc("delete_goal_contribution", {',
+              '    const { error } = await createClient().rpc("delete_goal_contribution", {',
+          )
+          replace_once(
+              row,
+              '''    const { error } = await supabase.rpc(
+              "delete_liability_payment_transaction",''',
+              '''    const { error } = await createClient().rpc(
+              "delete_liability_payment_transaction",''',
+          )
+          replace_once(
+              row,
+              '''    const { error } = await supabase
+              .from(tableName)''',
+              '''    const { error } = await createClient()
+              .from(tableName)''',
+          )
+          replace_once(
+              row,
+              '''      {canEdit ? (
+              <TransactionModal
+                open={editOpen}''',
+              '''      {canEdit && editOpen ? (
+              <TransactionModal
+                open''',
+          )
+          PY
+
+      - name: Install dependencies
+        run: npm ci --silent
+
+      - name: Run complete quality gate
+        run: npm run check
+
+      - name: Build production application
+        run: npm run build
+
+      - name: Commit verified patch and remove workflow
+        shell: bash
+        run: |
+          rm .github/workflows/transactions-performance-patch.yml
+          git config user.name "Jamal's Finance Performance"
+          git config user.email "actions@users.noreply.github.com"
+          git add app/dashboard/transactions/page.tsx components/transactions/TransactionRow.tsx .github/workflows/transactions-performance-patch.yml
+          git diff --cached --check
+          git commit -m "perf(transactions): remove unused reads and lazy-load editor"
+          git push origin HEAD:transactions-performance-staging
