@@ -1,5 +1,3 @@
-import type { createClient } from "@/lib/supabase/server";
-
 export type AIResponseLength = "short" | "balanced" | "detailed";
 export type AITone = "simple" | "professional" | "friendly";
 export type AIRiskStyle = "conservative" | "balanced" | "growth";
@@ -18,7 +16,18 @@ export const DEFAULT_AI_PREFERENCES: AIPreferences = {
   customInstructions: "",
 };
 
-type ServerSupabaseClient = Awaited<ReturnType<typeof createClient>>;
+type AIPreferencesClient = {
+  from: (table: "ai_preferences") => {
+    select: (columns: string) => {
+      eq: (column: "user_id", value: string) => {
+        maybeSingle: () => PromiseLike<{
+          data: Record<string, unknown> | null;
+          error: { code?: string; message?: string } | null;
+        }>;
+      };
+    };
+  };
+};
 
 function isResponseLength(value: unknown): value is AIResponseLength {
   return value === "short" || value === "balanced" || value === "detailed";
@@ -42,9 +51,10 @@ export function sanitizeCustomInstructions(value: unknown) {
 }
 
 export async function loadAIPreferences(
-  supabase: ServerSupabaseClient,
+  client: unknown,
   userId: string,
 ): Promise<AIPreferences> {
+  const supabase = client as AIPreferencesClient;
   const { data, error } = await supabase
     .from("ai_preferences")
     .select("response_length, tone, risk_style, custom_instructions")
