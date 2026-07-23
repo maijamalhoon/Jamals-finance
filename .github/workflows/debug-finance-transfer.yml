@@ -1,9 +1,9 @@
 name: Debug finance transfer
 
 on:
-  push:
+  pull_request:
     branches:
-      - agent/complete-finance-data-transfer
+      - main
 
 permissions:
   contents: read
