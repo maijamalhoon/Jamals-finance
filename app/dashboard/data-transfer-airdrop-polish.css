@@ -213,9 +213,16 @@
   -webkit-backdrop-filter: blur(24px) saturate(132%);
 }
 
-.finance-transfer-overlay[data-phase="revealing"] .finance-transfer-water::before,
+.finance-transfer-overlay[data-phase="revealing"] .finance-transfer-water::before {
+  animation: jf-transfer-glow-breathe 2400ms ease-in-out infinite;
+}
+
 .finance-transfer-overlay[data-phase="revealing"] .finance-transfer-water::after {
-  animation-duration: 2400ms, 9200ms;
+  animation: jf-transfer-satellite-orbit 9200ms linear infinite;
+}
+
+.finance-transfer-overlay[data-phase="revealing"] .finance-transfer-panel {
+  animation: none;
 }
 
 .finance-transfer-panel {
