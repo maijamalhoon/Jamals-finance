@@ -1,0 +1,136 @@
+/*
+ * Language dialog: match the compact, plain Currency dialog treatment.
+ * The purple accent is exclusive to Language and is shared by the side marker
+ * and primary action so the dialog keeps one clear visual identity.
+ */
+.finance-modal-content:has(#settings-language-select) {
+  --settings-language-dialog-accent: #7c3aed;
+  position: fixed !important;
+  top: 50% !important;
+  right: auto !important;
+  bottom: auto !important;
+  left: 50% !important;
+  width: min(calc(100vw - 1rem), var(--finance-modal-max-width, 32rem)) !important;
+  height: max-content !important;
+  max-height: calc(
+    100dvh - 1rem - env(safe-area-inset-top) - env(safe-area-inset-bottom)
+  ) !important;
+  margin: 0 !important;
+  transform: translate3d(-50%, -50%, 0) !important;
+  border: 0 !important;
+  background: var(--card) !important;
+  box-shadow: 0 14px 34px rgb(0 0 0 / 0.2) !important;
+  overflow-x: hidden !important;
+}
+
+.finance-modal-content:has(#settings-language-select)::before {
+  content: "";
+  position: absolute;
+  z-index: 4;
+  top: 0.8rem;
+  left: 0;
+  width: 0.28rem;
+  height: 2.7rem;
+  border-radius: 0 999px 999px 0;
+  background: var(--settings-language-dialog-accent) !important;
+  pointer-events: none;
+}
+
+.finance-modal-content:has(#settings-language-select) .finance-modal-header {
+  min-height: 4.25rem !important;
+  padding: 1rem 3.75rem 0.9rem 1.25rem !important;
+  border: 0 !important;
+  background: var(--card) !important;
+  box-shadow: none !important;
+}
+
+.finance-modal-content:has(#settings-language-select)
+  .finance-modal-header
+  .finance-icon-container,
+.finance-modal-content:has(#settings-language-select)
+  .finance-modal-header
+  [data-slot="dialog-description"] {
+  display: none !important;
+}
+
+.finance-modal-content:has(#settings-language-select) .finance-modal-header > div {
+  gap: 0 !important;
+}
+
+.finance-modal-content:has(#settings-language-select)
+  .finance-modal-header
+  [data-slot="dialog-title"] {
+  font-size: 1.15rem !important;
+  line-height: 1.4rem !important;
+}
+
+.finance-modal-content:has(#settings-language-select) .finance-modal-body {
+  flex: 0 1 auto !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  border: 0 !important;
+  background: var(--card) !important;
+  box-shadow: none !important;
+  overflow-x: hidden !important;
+}
+
+.finance-modal-content:has(#settings-language-select) .finance-modal-footer {
+  border: 0 !important;
+  background: var(--card) !important;
+  box-shadow: none !important;
+}
+
+.finance-modal-content:has(#settings-language-select)
+  .finance-modal-footer
+  button[type="submit"] {
+  border: 0 !important;
+  background: var(--settings-language-dialog-accent) !important;
+  color: var(--text-inverse) !important;
+  box-shadow: none !important;
+}
+
+.finance-modal-content:has(#settings-language-select)
+  .finance-modal-footer
+  button[type="submit"]
+  > svg:not(.animate-spin) {
+  display: none !important;
+}
+
+.dark .finance-modal-content:has(#settings-language-select) {
+  --settings-language-dialog-accent: #8b5cf6;
+  box-shadow: 0 14px 34px rgb(0 0 0 / 0.28) !important;
+}
+
+@media (max-width: 1023px) {
+  [data-slot="dialog-content"].finance-modal-content:has(
+      #settings-language-select
+    ) {
+    top: 50svh !important;
+    left: 50vw !important;
+    width: min(
+      calc(
+        100vw - 1rem - env(safe-area-inset-left) -
+          env(safe-area-inset-right)
+      ),
+      32rem
+    ) !important;
+    max-width: calc(
+      100vw - 1rem - env(safe-area-inset-left) -
+        env(safe-area-inset-right)
+    ) !important;
+    max-height: calc(
+      100svh - 1rem - env(safe-area-inset-top) -
+        env(safe-area-inset-bottom)
+    ) !important;
+    translate: -50% -50% !important;
+    transform: none !important;
+  }
+
+  [data-slot="dialog-content"].finance-modal-content:has(
+      #settings-language-select
+    ) :is(form, .finance-modal-body) {
+    min-width: 0 !important;
+    max-width: 100% !important;
+    overflow-x: hidden !important;
+  }
+}
