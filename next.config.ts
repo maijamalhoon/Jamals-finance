@@ -20,7 +20,9 @@ const scriptSources =
   process.env.NODE_ENV === "production"
     ? productionScriptSources
     : [...productionScriptSources, "'unsafe-eval'"];
-const jalvoroLucideRuntime = path.resolve(
+const jalvoroLucideRuntime =
+  "./components/icons/jalvoro/lucide-runtime.cjs";
+const jalvoroLucideRuntimeAbsolute = path.resolve(
   process.cwd(),
   "components/icons/jalvoro/lucide-runtime.cjs",
 );
@@ -149,7 +151,7 @@ const nextConfig: NextConfig = {
     config.resolve = config.resolve ?? {};
     config.resolve.alias = {
       ...(config.resolve.alias ?? {}),
-      "lucide-react": jalvoroLucideRuntime,
+      "lucide-react": jalvoroLucideRuntimeAbsolute,
     };
     return config;
   },
