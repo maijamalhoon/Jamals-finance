@@ -3,7 +3,7 @@ import { updateSession } from "@/lib/supabase/proxy";
 
 function getAIRewritePath(request: NextRequest) {
   if (request.nextUrl.pathname !== "/api/ai-insights") return null;
-  if (request.method === "POST") return "/api/ai-insights/exact";
+  if (request.method === "POST") return "/api/ai-insights/advanced";
   if (request.method === "GET") return "/api/ai-insights/overview";
   return null;
 }
