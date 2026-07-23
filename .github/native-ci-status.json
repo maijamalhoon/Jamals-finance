@@ -1,8 +1,8 @@
 {
   "status": "success",
-  "runId": "29989618140",
-  "commit": "c30852482de76820b7050531dd1b39655a6b5187",
-  "branch": "main",
+  "runId": "29991446306",
+  "commit": "03e840b77e726bed032b391c7ce91cc177afc6b0",
+  "branch": "native-personal-v0.8-accessibility",
   "workflow": "native-foundation-ci",
-  "milestone": "privacy-app-lock-v0.7.0"
+  "milestone": "adaptive-accessibility-v0.8.0"
 }
