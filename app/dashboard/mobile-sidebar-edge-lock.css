@@ -1,27 +1,57 @@
 /*
  * Final mobile/tablet navigation drawer position authority.
  * This file must stay last in the dashboard CSS import order so generic
- * dialog/sheet centering rules cannot move the drawer away from the viewport edge.
+ * dialog/sheet rules cannot pull the drawer back onto a viewport edge.
  */
 @media (max-width: 1023px) {
   html body
     [data-slot="sheet-portal"]
     [data-mobile-navigation-drawer][data-slot="sheet-content"][data-side="left"] {
+    --jf-mobile-drawer-inline-gap: clamp(1rem, 6vw, 1.5rem);
+    --jf-mobile-drawer-top-gap: max(1rem, env(safe-area-inset-top));
+    --jf-mobile-drawer-bottom-gap: max(1rem, env(safe-area-inset-bottom));
+
     position: fixed !important;
-    inset: 0 auto 0 0 !important;
-    inset-block: 0 !important;
-    inset-inline: 0 auto !important;
-    top: 0 !important;
+    inset:
+      var(--jf-mobile-drawer-top-gap)
+      auto
+      var(--jf-mobile-drawer-bottom-gap)
+      var(--jf-mobile-drawer-inline-gap) !important;
+    inset-block:
+      var(--jf-mobile-drawer-top-gap)
+      var(--jf-mobile-drawer-bottom-gap) !important;
+    inset-inline: var(--jf-mobile-drawer-inline-gap) auto !important;
+    top: var(--jf-mobile-drawer-top-gap) !important;
     right: auto !important;
-    bottom: 0 !important;
-    left: 0 !important;
+    bottom: var(--jf-mobile-drawer-bottom-gap) !important;
+    left: var(--jf-mobile-drawer-inline-gap) !important;
+    width: min(88vw, 23rem) !important;
+    max-width: calc(
+      100vw - var(--jf-mobile-drawer-inline-gap) -
+        var(--jf-mobile-drawer-inline-gap)
+    ) !important;
+    height: auto !important;
+    max-height: calc(
+      100dvh - var(--jf-mobile-drawer-top-gap) -
+        var(--jf-mobile-drawer-bottom-gap)
+    ) !important;
     margin: 0 !important;
     margin-inline: 0 !important;
+    overflow: hidden !important;
+    border: 0 !important;
+    border-radius: 2rem !important;
+    box-shadow: 0 24px 68px rgb(15 23 42 / 0.24) !important;
     translate: 0 0 !important;
     transform: translate3d(0, 0, 0) !important;
     transform-origin: left center !important;
     place-self: stretch auto !important;
     justify-self: start !important;
+  }
+
+  .dark
+    [data-slot="sheet-portal"]
+    [data-mobile-navigation-drawer][data-slot="sheet-content"][data-side="left"] {
+    box-shadow: 0 26px 72px rgb(0 0 0 / 0.56) !important;
   }
 
   html body
@@ -32,5 +62,13 @@
       [data-mobile-navigation-drawer][data-slot="sheet-content"][data-side="left"][data-ending-style] {
     translate: 0 0 !important;
     transform: translate3d(-2.5rem, 0, 0) !important;
+  }
+}
+
+@media (min-width: 640px) and (max-width: 1023px) {
+  html body
+    [data-slot="sheet-portal"]
+    [data-mobile-navigation-drawer][data-slot="sheet-content"][data-side="left"] {
+    width: min(62vw, 23rem) !important;
   }
 }
