@@ -3,10 +3,11 @@ import LegalPageShell, {
   LegalList,
   LegalSection,
 } from "@/components/legal/LegalPageShell";
+import { APP_NAME } from "@/lib/brand";
 
 export const metadata: Metadata = {
   title: "Terms of Service",
-  description: "Terms governing access to and use of Jamal's Finance.",
+  description: `Terms governing access to and use of ${APP_NAME}.`,
   alternates: { canonical: "/terms" },
 };
 
@@ -17,13 +18,13 @@ export default function TermsPage() {
   return (
     <LegalPageShell
       eyebrow="Terms of service"
-      title="Rules for using Jamal's Finance"
-      summary="These Terms describe the current agreement for accessing and using the personal-finance workspace. Please read them before creating an account or relying on the Service."
+      title={`Rules for using ${APP_NAME}`}
+      summary="These Terms describe the current agreement for accessing and using the platform. Please read them before creating an account or relying on the Service."
       effectiveDate={effectiveDate}
     >
       <LegalSection id="agreement" title="1. Agreement">
         <p>
-          By creating an account, signing in, or using Jamal&apos;s Finance, you agree to these Terms and the Privacy Notice. If you do not agree, do not use the Service.
+          By creating an account, signing in, or using {APP_NAME}, you agree to these Terms and the Privacy Notice. If you do not agree, do not use the Service.
         </p>
         <p>
           You must be legally able to enter this agreement in your location. The Service is not intended for people who are below the applicable age of digital or contractual consent.
@@ -32,10 +33,10 @@ export default function TermsPage() {
 
       <LegalSection id="service" title="2. What the Service provides">
         <p>
-          Jamal&apos;s Finance provides tools for recording and reviewing accounts, income, expenses, transfers, goals, payables, investments, reports, backups, and related finance information. Some features can use third-party market data or AI providers.
+          {APP_NAME} provides connected tools for personal records, business workspaces, accounting, sales, purchases, inventory, customer relationships, reports, backups, and related operational information. Some features can use third-party market data or AI providers.
         </p>
         <p>
-          The Service is a record-keeping and information tool. It is not a bank, payment processor, broker, investment adviser, accountant, tax adviser, insurer, lender, or fiduciary. It does not hold or transfer your money or financial assets.
+          The Service is a record-keeping and information tool. It is not a bank, payment processor, broker, investment adviser, accountant, tax adviser, insurer, lender, or fiduciary. Unless a feature explicitly states otherwise, it does not hold or transfer your money or financial assets.
         </p>
       </LegalSection>
 
@@ -45,19 +46,19 @@ export default function TermsPage() {
           <li>Use a strong, unique password and protect access to your email and devices.</li>
           <li>Do not share sessions, verification links, recovery codes, or credentials.</li>
           <li>Notify support promptly if you suspect unauthorized use.</li>
-          <li>Keep independent copies of information that is important to you by using the available export feature.</li>
+          <li>Keep independent copies of important information by using available export features.</li>
         </LegalList>
         <p>
           You are responsible for activity performed through your account unless applicable law provides otherwise.
         </p>
       </LegalSection>
 
-      <LegalSection id="records" title="4. Your finance records">
+      <LegalSection id="records" title="4. Your records">
         <p>
           You retain responsibility for the records, labels, notes, files, and other content you enter. You grant the Service the limited permission needed to store, process, calculate, display, back up, export, and transmit that information solely to operate requested features and protect the Service.
         </p>
         <p>
-          Do not enter information you are not authorized to use. Do not place passwords, payment-card security codes, private keys, government identity documents, or other unnecessary secrets in finance notes or AI questions.
+          Do not enter information you are not authorized to use. Do not place passwords, payment-card security codes, private keys, government identity documents, or other unnecessary secrets in notes or AI questions.
         </p>
       </LegalSection>
 
@@ -90,7 +91,7 @@ export default function TermsPage() {
           Features can change, be limited, or become unavailable because of maintenance, security concerns, provider outages, legal requirements, capacity, or product decisions. We will try to preserve user records and communicate material changes, but uninterrupted or error-free operation is not guaranteed.
         </p>
         <p>
-          Third-party providers can change their services, pricing, coverage, retention, rate limits, or terms. Jamal&apos;s Finance is not responsible for a provider&apos;s independent acts or omissions, but will use reasonable efforts to provide clear fallback and unavailable states.
+          Third-party providers can change their services, pricing, coverage, retention, rate limits, or terms. {APP_NAME} is not responsible for a provider&apos;s independent acts or omissions, but will use reasonable efforts to provide clear fallback and unavailable states.
         </p>
       </LegalSection>
 

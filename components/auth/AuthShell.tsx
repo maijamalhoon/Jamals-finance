@@ -1,13 +1,14 @@
+import Image from "next/image";
 import Link from "next/link";
 import {
   ArrowLeft,
-  CircleDollarSign,
   ShieldCheck,
   type LucideIcon,
 } from "lucide-react";
 import type { ReactNode } from "react";
 
 import MathSymbolField from "@/components/landing/MathSymbolField";
+import { APP_NAME, brand } from "@/lib/brand";
 
 export default function AuthShell({
   children,
@@ -40,18 +41,24 @@ export default function AuthShell({
       <header className="jf-auth-header">
         <Link
           href="/"
-          aria-label="Jamal's Finance home"
+          aria-label={`${APP_NAME} home`}
           className="finance-focus jf-auth-brand"
         >
           <span className="jf-auth-brand-mark">
-            <CircleDollarSign aria-hidden="true" />
+            <Image
+              src={brand.assets.logoMark}
+              alt=""
+              width={36}
+              height={36}
+              aria-hidden="true"
+            />
           </span>
-          <span>Jamal&apos;s Finance</span>
+          <span>{APP_NAME}</span>
         </Link>
 
         <Link
           href="/"
-          aria-label="Return to Jamal's Finance home"
+          aria-label={`Return to ${APP_NAME} home`}
           className="finance-focus jf-auth-home-link"
         >
           <ArrowLeft aria-hidden="true" />

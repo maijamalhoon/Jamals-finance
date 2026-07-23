@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import {
   ArrowLeftRight,
@@ -8,12 +9,15 @@ import {
   CircleDollarSign,
   CreditCard,
   Goal,
+  Handshake,
   Landmark,
   LineChart,
   LockKeyhole,
+  PackageSearch,
   PieChart,
   ReceiptText,
   ShieldCheck,
+  ShoppingCart,
   Sparkles,
   Target,
   TrendingDown,
@@ -21,6 +25,13 @@ import {
   WalletCards,
   type LucideIcon,
 } from "lucide-react";
+
+import {
+  APP_DESCRIPTION,
+  APP_NAME,
+  APP_TAGLINE,
+  brand,
+} from "@/lib/brand";
 
 type Feature = {
   title: string;
@@ -30,7 +41,7 @@ type Feature = {
 };
 
 const navigation = [
-  { label: "Features", href: "#capabilities" },
+  { label: "Platform", href: "#capabilities" },
   { label: "How it works", href: "#workflow" },
   { label: "Insights", href: "#preview" },
   { label: "Privacy", href: "#privacy" },
@@ -38,38 +49,38 @@ const navigation = [
 
 const features: Feature[] = [
   {
-    title: "Income and expenses",
-    copy: "Record daily money movement quickly, with the account, category, date, and note that give it meaning.",
-    icon: ArrowLeftRight,
+    title: brand.productFamily.personal,
+    copy: "Track income, expenses, accounts, goals, payables, investments, and everyday money decisions.",
+    icon: WalletCards,
     tone: "green",
   },
   {
-    title: "Accounts and transfers",
-    copy: "Keep cash, savings, wallets, and transfers connected in one clear view of your total position.",
-    icon: WalletCards,
+    title: brand.productFamily.pos,
+    copy: "Run quick sales, purchases, stock, returns, daily cash, balances, and shop profit in one workflow.",
+    icon: ShoppingCart,
     tone: "blue",
   },
   {
-    title: "Goals and payables",
-    copy: "See progress, remaining amounts, due dates, and obligations before they become surprises.",
-    icon: Target,
+    title: brand.productFamily.erp,
+    copy: "Connect accounting, banking, payroll, assets, branches, approvals, tax controls, and reporting.",
+    icon: Landmark,
     tone: "amber",
   },
   {
-    title: "Investment tracking",
-    copy: "Review investments beside the rest of your finances instead of managing a disconnected picture.",
-    icon: LineChart,
+    title: brand.productFamily.crm,
+    copy: "Keep customers, suppliers, leads, opportunities, follow-ups, and sales ownership connected.",
+    icon: Handshake,
     tone: "violet",
   },
   {
-    title: "Reports and cash flow",
-    copy: "Turn recorded activity into readable category, balance, and cash-flow patterns for faster review.",
-    icon: PieChart,
+    title: "Inventory and operations",
+    copy: "Manage products, warehouses, stock movement, valuation, purchasing, and reorder control.",
+    icon: PackageSearch,
     tone: "cyan",
   },
   {
-    title: "AI-assisted insights",
-    copy: "Use the dedicated insights area for useful observations and prompts when the AI service is available.",
+    title: "Reports and AI insights",
+    copy: "Turn verified activity into readable financial, operational, and decision-support views.",
     icon: BrainCircuit,
     tone: "red",
   },
@@ -85,11 +96,17 @@ const chartBars = [44, 58, 52, 69, 61, 78, 72] as const;
 
 function BrandMark({ compact = false }: { compact?: boolean }) {
   return (
-    <Link href="/" className="finance-focus jf-brand" aria-label="Jamal's Finance home">
+    <Link href="/" className="finance-focus jf-brand" aria-label={`${APP_NAME} home`}>
       <span className="jf-brand-mark" aria-hidden="true">
-        <CircleDollarSign />
+        <Image
+          src={brand.assets.logoMark}
+          alt=""
+          width={40}
+          height={40}
+          className="size-full"
+        />
       </span>
-      <span className={compact ? "sr-only sm:not-sr-only" : ""}>Jamal&apos;s Finance</span>
+      <span className={compact ? "sr-only sm:not-sr-only" : ""}>{APP_NAME}</span>
     </Link>
   );
 }
@@ -136,7 +153,7 @@ function DashboardPreview() {
     <figure className="jf-dashboard-preview" aria-labelledby="dashboard-preview-caption">
       <div className="jf-preview-topbar">
         <div>
-          <p>Dashboard</p>
+          <p>Personal workspace</p>
           <strong>Monthly clarity</strong>
         </div>
         <span className="jf-live-pill"><span />Live preview</span>
@@ -301,11 +318,9 @@ export default function PremiumLandingPage() {
 
       <section className="jf-hero">
         <div className="jf-hero-copy">
-          <p className="jf-hero-badge"><Sparkles aria-hidden="true" /> Daily money clarity</p>
-          <h1>See your money clearly. <span>Act with confidence.</span></h1>
-          <p className="jf-hero-description">
-            Track income, expenses, accounts, goals, payables, and investments in one focused workspace built for everyday decisions.
-          </p>
+          <p className="jf-hero-badge"><Sparkles aria-hidden="true" /> One connected platform</p>
+          <h1>{APP_TAGLINE.split(". ")[0]}. <span>One place.</span></h1>
+          <p className="jf-hero-description">{APP_DESCRIPTION}</p>
 
           <div className="jf-hero-actions">
             <PrimaryButton href="/login?mode=signup">Create your workspace</PrimaryButton>
@@ -313,9 +328,9 @@ export default function PremiumLandingPage() {
           </div>
 
           <div className="jf-hero-proof" aria-label="Product highlights">
-            <span><Check aria-hidden="true" /> Quick daily entries</span>
-            <span><Check aria-hidden="true" /> Clear reports</span>
-            <span><Check aria-hidden="true" /> Private workspace</span>
+            <span><Check aria-hidden="true" /> Personal and business</span>
+            <span><Check aria-hidden="true" /> POS, ERP, and CRM</span>
+            <span><Check aria-hidden="true" /> Privacy by design</span>
           </div>
         </div>
 
@@ -325,9 +340,9 @@ export default function PremiumLandingPage() {
       <section className="jf-value-rail" aria-label="Product values">
         <div>
           {[
-            [ShieldCheck, "Private by design", "Your personal workspace stays behind the existing authentication flow."],
-            [Landmark, "Built for real tracking", "Every summary starts with the finance activity you choose to record."],
-            [WalletCards, "Comfortable everywhere", "Responsive layouts stay useful across phone, tablet, laptop, and large screens."],
+            [ShieldCheck, "Private by design", "Personal and business workspaces remain isolated behind verified access controls."],
+            [Landmark, "One source of truth", "Finance, operations, inventory, customers, and reports stay connected."],
+            [WalletCards, "Available everywhere", "Responsive web and native foundations support phone, tablet, laptop, and desktop."],
           ].map(([Icon, title, copy]) => {
             const ValueIcon = Icon as LucideIcon;
             return (
@@ -343,9 +358,9 @@ export default function PremiumLandingPage() {
       <section id="capabilities" className="jf-section jf-capabilities">
         <div className="jf-reveal">
           <SectionHeading
-            eyebrow="Focused features"
-            title="Everything important, without dashboard clutter."
-            copy="The landing page now highlights the core experience instead of presenting every module as another oversized card."
+            eyebrow="JALVORO platform"
+            title="Start personally. Run a shop. Scale an enterprise."
+            copy="Use the workspace that fits today while keeping a connected foundation for the products and operations you add tomorrow."
           />
         </div>
 
@@ -370,14 +385,14 @@ export default function PremiumLandingPage() {
         <div className="jf-insights-copy jf-reveal">
           <SectionHeading
             eyebrow="Readable insights"
-            title="Charts should explain the pattern—not decorate the page."
-            copy="Clear labels, honest demo states, and restrained motion make financial visuals easier to understand on every screen size."
+            title="Understand the pattern behind every workspace."
+            copy="Clear labels, honest states, and restrained motion make financial and operational information easier to understand on every screen."
           />
 
           <div className="jf-insight-points">
             <span><BarChart3 aria-hidden="true" /><b>Readable trends</b><small>Simple hierarchy keeps the most important movement obvious.</small></span>
-            <span><PieChart aria-hidden="true" /><b>Useful categories</b><small>Spending context stays connected to the entries behind it.</small></span>
-            <span><BrainCircuit aria-hidden="true" /><b>Helpful prompts</b><small>Insights support decisions without inventing financial activity.</small></span>
+            <span><PieChart aria-hidden="true" /><b>Connected reports</b><small>Reports stay tied to the verified activity behind them.</small></span>
+            <span><BrainCircuit aria-hidden="true" /><b>Helpful prompts</b><small>AI supports decisions without inventing business or financial activity.</small></span>
           </div>
         </div>
 
@@ -388,18 +403,18 @@ export default function PremiumLandingPage() {
         <div className="jf-section">
           <div className="jf-reveal">
             <SectionHeading
-              eyebrow="Simple workflow"
-              title="Record. Understand. Adjust."
-              copy="A repeatable three-step rhythm keeps the product useful without adding unnecessary complexity."
+              eyebrow="One platform rhythm"
+              title="Record. Understand. Operate."
+              copy="The same reliable pattern works for personal decisions, daily shop activity, and advanced company operations."
               align="center"
             />
           </div>
 
           <ol className="jf-workflow-list">
             {[
-              ["01", "Record what changed", "Add income, expenses, transfers, goals, payables, and investments as they happen.", ReceiptText],
-              ["02", "Understand the pattern", "Review balances, cash flow, categories, reports, and progress in one connected workspace.", BarChart3],
-              ["03", "Make the next move", "Use the clearer picture to adjust spending, save with purpose, and plan with confidence.", Goal],
+              ["01", "Record what changed", "Capture financial or operational activity with the context that makes it useful.", ReceiptText],
+              ["02", "Understand the full picture", "Review balances, performance, inventory, customers, reports, and progress together.", BarChart3],
+              ["03", "Run the next move", "Act from a clearer source of truth across personal, shop, and company workspaces.", Goal],
             ].map(([number, title, copy, Icon]) => {
               const StepIcon = Icon as LucideIcon;
               return (
@@ -420,16 +435,16 @@ export default function PremiumLandingPage() {
           <span className="jf-privacy-icon"><LockKeyhole aria-hidden="true" /></span>
           <SectionHeading
             eyebrow="Privacy and control"
-            title="Your financial workspace stays yours."
-            copy="The public landing page remains separate from protected finance routes, while the existing authentication and session behavior stays unchanged."
+            title="Your workspace stays yours."
+            copy="Public pages remain separate from protected personal and tenant-isolated business routes while authentication and session controls stay unchanged."
           />
         </div>
 
         <div className="jf-privacy-list">
           {[
-            [ShieldCheck, "Protected workspace", "Personal dashboard content loads after the existing session checks complete."],
-            [CreditCard, "Your entries, your context", "The product works from the accounts, categories, and activity you choose to add."],
-            [BrainCircuit, "Truthful insight states", "Unavailable information is not shown as a fake zero, success, or invented trend."],
+            [ShieldCheck, "Protected workspaces", "Private content loads only after the existing session and membership checks complete."],
+            [CreditCard, "Your data, your context", "The platform works from the accounts, businesses, teams, and activity you choose to add."],
+            [BrainCircuit, "Truthful insight states", "Unavailable information is never presented as a fake zero, success, or invented trend."],
           ].map(([Icon, title, copy]) => {
             const PrivacyIcon = Icon as LucideIcon;
             return (
@@ -446,9 +461,9 @@ export default function PremiumLandingPage() {
         <div className="jf-final-cta jf-reveal">
           <span className="jf-cta-icon"><Goal aria-hidden="true" /></span>
           <div>
-            <p className="jf-eyebrow">Ready when you are</p>
-            <h2>Your next clear money decision starts with one entry.</h2>
-            <p>Open your workspace, add the finance context that matters, and build clarity from there.</p>
+            <p className="jf-eyebrow">Start with the workspace you need</p>
+            <h2>{APP_TAGLINE}</h2>
+            <p>Begin personally or create a business workspace, then grow into the connected tools your work requires.</p>
           </div>
           <PrimaryButton href="/login?mode=signup">Get started</PrimaryButton>
         </div>
@@ -458,13 +473,13 @@ export default function PremiumLandingPage() {
         <div>
           <div className="jf-footer-brand jf-reveal">
             <BrandMark />
-            <p>A focused personal-finance workspace for cleaner tracking and more confident review.</p>
+            <p>{APP_DESCRIPTION}</p>
           </div>
 
           <nav className="jf-footer-nav jf-reveal" aria-label="Footer navigation">
             <div>
-              <strong>Product</strong>
-              <a href="#capabilities">Features</a>
+              <strong>Platform</strong>
+              <a href="#capabilities">Products</a>
               <a href="#workflow">How it works</a>
               <a href="#privacy">Privacy</a>
             </div>
@@ -476,7 +491,7 @@ export default function PremiumLandingPage() {
             </div>
           </nav>
 
-          <p className="jf-footer-bottom jf-reveal">© {year} Jamal&apos;s Finance. Built for clear daily money decisions.</p>
+          <p className="jf-footer-bottom jf-reveal">© {year} {APP_NAME}. {APP_TAGLINE}</p>
         </div>
       </footer>
     </main>

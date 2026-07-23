@@ -3,6 +3,8 @@
 import { useEffect, useRef } from "react";
 import { toast } from "sonner";
 
+import { APP_NAME } from "@/lib/brand";
+
 type AppVersionResponse = {
   version: string;
 };
@@ -50,7 +52,7 @@ export default function AppUpdateManager() {
 
         notifiedVersionRef.current = nextVersion;
         toast.info("App update is ready.", {
-          description: "Update now to load the latest Jamal's Finance version.",
+          description: `Update now to load the latest ${APP_NAME} version.`,
           duration: 20_000,
           action: {
             label: "Update",
