@@ -1,3 +1,4 @@
+import { APP_NAME } from "@/lib/brand";
 import type { Metadata } from "next";
 import Link from "next/link";
 import LegalPageShell, {
@@ -7,7 +8,7 @@ import LegalPageShell, {
 
 export const metadata: Metadata = {
   title: "Support",
-  description: "Account, privacy, data export, and service support for Jamal's Finance.",
+  description: `Account, privacy, data export, and service support for ${APP_NAME}.`,
   alternates: { canonical: "/support" },
 };
 
@@ -43,7 +44,7 @@ export default function SupportPage() {
           <li>Sign in or recover access from the Account Access page.</li>
           <li>Change your password and revoke other sessions from Dashboard → Settings → Account Security.</li>
           <li>Download a complete finance backup from Dashboard → Settings → Data → Export Data.</li>
-          <li>Import a previously downloaded Jamal&apos;s Finance backup from Dashboard → Settings → Data → Upload Data.</li>
+          <li>Import a previously downloaded {APP_NAME} backup from Dashboard → Settings → Data → Upload Data.</li>
           <li>Correct or remove individual records from the relevant finance page.</li>
         </LegalList>
         <div className="flex flex-wrap gap-3 pt-2">

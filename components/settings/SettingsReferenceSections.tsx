@@ -1,5 +1,6 @@
 "use client";
 
+import { APP_NAME } from "@/lib/brand";
 import type { FormEvent, KeyboardEvent, ReactNode } from "react";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -328,7 +329,7 @@ function ProfileDetailsDialog({ email, displayName }: { email: string; displayNa
         <form onSubmit={handleSubmit} className="flex min-h-0 flex-1 flex-col">
           <FinanceModalHeader
             title="Profile Details"
-            description="Update the name shown across Jamal’s Finance."
+            description={`Update the name shown across ${APP_NAME}.`}
             icon={UserRound}
             tone="info"
           />

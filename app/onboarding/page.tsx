@@ -1,5 +1,6 @@
 "use client";
 
+import { APP_NAME } from "@/lib/brand";
 import { type FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
@@ -529,7 +530,7 @@ export default function OnboardingPage() {
       <AuthShell
         eyebrow="Choose workspace"
         progress="One account · two workspaces"
-        title="How will you use Jamal’s Finance?"
+        title={`How will you use ${APP_NAME}?`}
         description="Choose your starting workspace. Personal and business records remain completely separate."
         icon={ShieldCheck}
       >

@@ -1,3 +1,4 @@
+import { APP_NAME, brand } from "@/lib/brand";
 import Link from "next/link";
 import { ArrowLeft, CircleDollarSign, ShieldCheck } from "@/components/icons/jalvoro/compat";
 import type { ReactNode } from "react";
@@ -50,7 +51,7 @@ export default function LegalPageShell({
             <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-active/10 text-active">
               <CircleDollarSign size={20} aria-hidden="true" />
             </span>
-            <span className="truncate">Jamal&apos;s Finance</span>
+            <span className="truncate">{APP_NAME}</span>
           </Link>
 
           <Link
@@ -99,7 +100,7 @@ export default function LegalPageShell({
               Support
             </Link>
           </nav>
-          <p className="mt-5">© {new Date().getFullYear()} Jamal&apos;s Finance.</p>
+          <p className="mt-5">© {new Date().getFullYear()} {brand.legalName}.</p>
         </footer>
       </div>
     </main>

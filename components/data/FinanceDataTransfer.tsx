@@ -1,5 +1,6 @@
 "use client";
 
+import { APP_NAME } from "@/lib/brand";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
@@ -300,7 +301,7 @@ export default function FinanceDataTransfer() {
       if (!hasFiles(event) || busyRef.current) return;
       event.preventDefault();
       dragDepthRef.current += 1;
-      setMessage("Drop your Jamal’s Finance backup anywhere");
+      setMessage(`Drop your ${APP_NAME} backup anywhere`);
       setPhase("dragging");
     }
 
@@ -329,7 +330,7 @@ export default function FinanceDataTransfer() {
       if (busyRef.current) return;
       const files = Array.from(event.dataTransfer?.files ?? []);
       if (files.length !== 1) {
-        const error = "Drop one Jamal’s Finance backup file at a time.";
+        const error = `Drop one ${APP_NAME} backup file at a time.`;
         setMessage(error);
         setPhase("error");
         toast.error(error);

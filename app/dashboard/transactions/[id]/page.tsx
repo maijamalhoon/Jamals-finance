@@ -1,3 +1,4 @@
+import { APP_NAME } from "@/lib/brand";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import {
@@ -181,7 +182,7 @@ function getCategoryText(category: ReceiptCategory | null) {
 
 function buildReceiptText(receipt: Omit<ReceiptData, "receiptText">) {
   return [
-    "Jamal's Finance - Transaction Receipt",
+    `${APP_NAME} - Transaction Receipt`,
     "",
     `Type: ${receipt.typeLabel}`,
     `Amount: ${receipt.amountText}`,
@@ -572,7 +573,7 @@ export default async function TransactionReceiptPage({
                   {receipt.title}
                 </h2>
                 <p className="mt-2 text-sm font-semibold text-text-secondary">
-                  Jamal&apos;s Finance • {receipt.typeLabel}
+                  {APP_NAME} • {receipt.typeLabel}
                 </p>
               </div>
             </div>
