@@ -1,6 +1,10 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { updateSession } from "@/lib/supabase/proxy";
 
+const PUBLIC_SELF_PROTECTED_API_ROUTES = new Set([
+  "/api/security/password-check",
+]);
+
 function getAIRewritePath(request: NextRequest) {
   if (request.nextUrl.pathname !== "/api/ai-insights") return null;
   if (request.method === "POST") return "/api/ai-insights/advanced";
@@ -9,6 +13,10 @@ function getAIRewritePath(request: NextRequest) {
 }
 
 export async function proxy(request: NextRequest) {
+  if (PUBLIC_SELF_PROTECTED_API_ROUTES.has(request.nextUrl.pathname)) {
+    return NextResponse.next();
+  }
+
   const sessionResponse = await updateSession(request);
   const rewritePath = getAIRewritePath(request);
   const canRewrite =
