@@ -6,8 +6,13 @@ const filesThatMustUseTheBrandSystem = [
   "app/manifest.ts",
   "app/opengraph-image.tsx",
   "app/login/layout.tsx",
+  "app/pwa-register.tsx",
+  "app/privacy/page.tsx",
+  "app/terms/page.tsx",
   "components/auth/AuthShell.tsx",
   "components/landing/PremiumLandingPage.tsx",
+  "components/pwa/AppUpdateManager.tsx",
+  "components/pwa/WindowsAppManager.tsx",
   "lib/constants.ts",
 ];
 
