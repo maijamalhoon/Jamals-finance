@@ -14,11 +14,11 @@ Calculating task graph as no cached configuration is available for tasks: :share
 > Task :shared:checkKotlinGradlePluginConfigurationErrors SKIPPED
 > Task :androidApp:generateDebugResources FROM-CACHE
 > Task :shared:androidJar
-> Task :androidApp:generateDebugBuildConfig
 > Task :androidApp:packageDebugResources FROM-CACHE
+> Task :androidApp:generateDebugBuildConfig
 > Task :androidApp:generateDebugAssets UP-TO-DATE
-> Task :shared:generateAndroidMainEmptyResourceFiles
 > Task :androidApp:javaPreCompileDebug FROM-CACHE
+> Task :shared:generateAndroidMainEmptyResourceFiles
 > Task :androidApp:processDebugNavigationResources FROM-CACHE
 > Task :androidApp:mergeDebugAssets
 > Task :androidApp:compressDebugAssets FROM-CACHE
@@ -32,17 +32,17 @@ Calculating task graph as no cached configuration is available for tasks: :share
 > Task :androidApp:createDebugCompatibleScreenManifests
 > Task :androidApp:extractDeepLinksDebug FROM-CACHE
 > Task :shared:processAndroidMainManifest FROM-CACHE
-> Task :androidApp:processDebugMainManifest
 > Task :androidApp:checkDebugDuplicateClasses
 > Task :androidApp:mergeDebugJniLibFolders
+> Task :androidApp:processDebugMainManifest
 > Task :shared:mergeAndroidMainJniLibFolders
 > Task :shared:mergeAndroidMainNativeLibs NO-SOURCE
 > Task :shared:copyAndroidMainJniLibsProjectOnly
-> Task :androidApp:processDebugManifest
-> Task :androidApp:processDebugManifestForPackage
 > Task :androidApp:mergeDebugNativeLibs
-> Task :androidApp:desugarDebugFileDependencies FROM-CACHE
+> Task :androidApp:processDebugManifest
 > Task :androidApp:stripDebugDebugSymbols
+> Task :androidApp:processDebugManifestForPackage
+> Task :androidApp:desugarDebugFileDependencies FROM-CACHE
 > Task :androidApp:mergeExtDexDebug FROM-CACHE
 > Task :androidApp:writeDebugAppMetadata
 > Task :androidApp:writeDebugSigningConfigVersions
@@ -68,11 +68,11 @@ w: file:///home/runner/work/Jamals-finance/Jamals-finance/native/androidApp/src/
 > Task :androidApp:packageDebug
 > Task :androidApp:assembleDebug
 > Task :androidApp:createDebugApkListingFileRedirect
-gradle/actions: Writing build results to /home/runner/work/_temp/.gradle-actions/build-results/native_build-1784753776366.json
+gradle/actions: Writing build results to /home/runner/work/_temp/.gradle-actions/build-results/native_build-1784791188879.json
 
 [Incubating] Problems report is available at: file:///home/runner/work/Jamals-finance/Jamals-finance/native/build/reports/problems/problems-report.html
 
-BUILD SUCCESSFUL in 1m 19s
+BUILD SUCCESSFUL in 1m 23s
 51 actionable tasks: 38 executed, 13 from cache
 Configuration cache entry stored.
 
@@ -90,11 +90,11 @@ Calculating task graph as no cached configuration is available for tasks: :share
 > Task :shared:checkKotlinGradlePluginConfigurationErrors SKIPPED
 > Task :androidApp:generateDebugResources FROM-CACHE
 > Task :shared:androidJar
-> Task :androidApp:generateDebugBuildConfig
 > Task :androidApp:packageDebugResources FROM-CACHE
+> Task :androidApp:generateDebugBuildConfig
 > Task :androidApp:generateDebugAssets UP-TO-DATE
-> Task :shared:generateAndroidMainEmptyResourceFiles
 > Task :androidApp:javaPreCompileDebug FROM-CACHE
+> Task :shared:generateAndroidMainEmptyResourceFiles
 > Task :androidApp:processDebugNavigationResources FROM-CACHE
 > Task :androidApp:mergeDebugAssets
 > Task :androidApp:compressDebugAssets FROM-CACHE
@@ -108,17 +108,17 @@ Calculating task graph as no cached configuration is available for tasks: :share
 > Task :androidApp:createDebugCompatibleScreenManifests
 > Task :androidApp:extractDeepLinksDebug FROM-CACHE
 > Task :shared:processAndroidMainManifest FROM-CACHE
-> Task :androidApp:processDebugMainManifest
 > Task :androidApp:checkDebugDuplicateClasses
 > Task :androidApp:mergeDebugJniLibFolders
+> Task :androidApp:processDebugMainManifest
 > Task :shared:mergeAndroidMainJniLibFolders
 > Task :shared:mergeAndroidMainNativeLibs NO-SOURCE
 > Task :shared:copyAndroidMainJniLibsProjectOnly
-> Task :androidApp:processDebugManifest
-> Task :androidApp:processDebugManifestForPackage
 > Task :androidApp:mergeDebugNativeLibs
-> Task :androidApp:desugarDebugFileDependencies FROM-CACHE
+> Task :androidApp:processDebugManifest
 > Task :androidApp:stripDebugDebugSymbols
+> Task :androidApp:processDebugManifestForPackage
+> Task :androidApp:desugarDebugFileDependencies FROM-CACHE
 > Task :androidApp:mergeExtDexDebug FROM-CACHE
 > Task :androidApp:writeDebugAppMetadata
 > Task :androidApp:writeDebugSigningConfigVersions
@@ -144,10 +144,10 @@ w: file:///home/runner/work/Jamals-finance/Jamals-finance/native/androidApp/src/
 > Task :androidApp:packageDebug
 > Task :androidApp:assembleDebug
 > Task :androidApp:createDebugApkListingFileRedirect
-gradle/actions: Writing build results to /home/runner/work/_temp/.gradle-actions/build-results/native_build-1784753776366.json
+gradle/actions: Writing build results to /home/runner/work/_temp/.gradle-actions/build-results/native_build-1784791188879.json
 
 [Incubating] Problems report is available at: file:///home/runner/work/Jamals-finance/Jamals-finance/native/build/reports/problems/problems-report.html
 
-BUILD SUCCESSFUL in 1m 19s
+BUILD SUCCESSFUL in 1m 23s
 51 actionable tasks: 38 executed, 13 from cache
 Configuration cache entry stored.
