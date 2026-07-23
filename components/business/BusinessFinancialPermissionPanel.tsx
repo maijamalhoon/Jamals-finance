@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { BadgeCheck, Landmark, Save, ShieldCheck, TrendingUp } from "lucide-react";
+import { BadgeCheck, FileArchive, Landmark, Save, ShieldCheck, TrendingUp } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
@@ -26,12 +26,14 @@ type Props = {
   permissionCatalog: string[];
 };
 
-const FINANCIAL_PERMISSIONS = [
+const PROTECTED_PERMISSIONS = [
   { value: "banking.view", label: "View banking", icon: Landmark },
   { value: "banking.manage", label: "Manage reconciliation", icon: Landmark },
   { value: "budget.view", label: "View budgets", icon: TrendingUp },
   { value: "budget.manage", label: "Manage draft plans", icon: TrendingUp },
   { value: "budget.approve", label: "Approve and lock", icon: BadgeCheck },
+  { value: "documents.view", label: "View records", icon: FileArchive },
+  { value: "documents.manage", label: "Manage records", icon: FileArchive },
 ] as const;
 
 export default function BusinessFinancialPermissionPanel({
@@ -52,9 +54,9 @@ export default function BusinessFinancialPermissionPanel({
           <ShieldCheck className="size-5" aria-hidden="true" />
         </span>
         <div>
-          <h2 className="text-base font-black text-text-primary sm:text-lg">Financial access</h2>
+          <h2 className="text-base font-black text-text-primary sm:text-lg">Protected workspace access</h2>
           <p className="mt-1 text-sm leading-6 text-text-secondary">
-            Banking and planning permissions are tenant-scoped. Saving here preserves every unrelated CRM, sales, inventory, shop, and team permission.
+            Banking, planning, and company-record permissions are tenant-scoped. Saving here preserves every unrelated CRM, sales, inventory, shop, and team permission.
           </p>
         </div>
       </div>
@@ -62,7 +64,7 @@ export default function BusinessFinancialPermissionPanel({
       {editableMembers.length ? (
         <div className="mt-5 space-y-3">
           {editableMembers.map((member) => (
-            <FinancialMemberRow
+            <ProtectedMemberRow
               key={member.user_id}
               businessId={businessId}
               currentUserId={currentUserId}
@@ -73,14 +75,14 @@ export default function BusinessFinancialPermissionPanel({
         </div>
       ) : (
         <div className="mt-5 rounded-[var(--radius-button)] bg-surface-secondary px-5 py-8 text-center text-sm text-text-secondary">
-          Add another team member to configure Banking or Budgeting access.
+          Add another team member to configure Banking, Budgeting, or Documents access.
         </div>
       )}
     </section>
   );
 }
 
-function FinancialMemberRow({
+function ProtectedMemberRow({
   businessId,
   currentUserId,
   member,
@@ -124,12 +126,12 @@ function FinancialMemberRow({
     setSaving(false);
 
     if (error) {
-      console.error("Financial team permissions update failed", { code: error.code });
-      toast.error(error.code === "42501" ? "The primary owner must approve this protected access change." : "Financial access could not be updated.");
+      console.error("Protected team permissions update failed", { code: error.code });
+      toast.error(error.code === "42501" ? "The primary owner must approve this protected access change." : "Protected workspace access could not be updated.");
       return;
     }
 
-    toast.success("Financial access updated without changing other permissions.");
+    toast.success("Protected access updated without changing other permissions.");
     router.refresh();
   }
 
@@ -147,7 +149,7 @@ function FinancialMemberRow({
         </div>
 
         <div className="flex flex-1 flex-wrap gap-2 xl:justify-end">
-          {FINANCIAL_PERMISSIONS.map(({ value, label, icon: Icon }) => {
+          {PROTECTED_PERMISSIONS.map(({ value, label, icon: Icon }) => {
             const available = permissionCatalog.includes(value);
             const checked = hasWildcard || permissions.includes(value);
             return (
