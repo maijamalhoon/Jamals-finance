@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - feat/responsive-marker-category-icons
+  pull_request:
+    branches:
+      - main
 
 permissions:
   contents: read
