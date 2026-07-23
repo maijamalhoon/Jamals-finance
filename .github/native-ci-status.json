@@ -1,7 +1,7 @@
 {
-  "status": "failure",
-  "runId": "29998289832",
-  "commit": "02b32e3b2c056aeff869f8483bcb3e5e15b88ee3",
+  "status": "success",
+  "runId": "29998486851",
+  "commit": "f65a75ba188d562a0cb605a400d54af7d85b2a85",
   "branch": "native-personal-v1.0-rc",
   "workflow": "native-foundation-ci",
   "milestone": "release-candidate-v1.0.0-rc1",

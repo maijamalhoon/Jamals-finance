@@ -2,30 +2,50 @@
 false
 
 === ACTIONABLE ERROR LINES ===
-55:/home/runner/.gradle/caches/9.3.1/transforms/5600aac0fcc0a1cf29d67757e6281ce0/transformed/core-1.18.0/res/values/values.xml:89:4: Failed to flatten XML for resource 'app_name' with error: Invalid unicode escape sequence in string
-93:FAILURE: Build failed with an exception.
-95:* What went wrong:
-105:* Exception is:
 
 === FIRST FAILURE CONTEXT ===
-> Task :shared:compileAndroidHostTest FROM-CACHE
-> Task :shared:mergeAndroidMainJavaResource
+Starting a Gradle Daemon (subsequent builds will be faster)
+Calculating task graph as no cached configuration is available for tasks: :shared:testAndroidHostTest :androidApp:lintDebug :androidApp:lintRelease :androidApp:assembleDebug :androidApp:bundleRelease
+> Task :shared:androidPreBuild UP-TO-DATE
+> Task :shared:preAndroidMainBuild UP-TO-DATE
+> Task :shared:preAndroidHostTestBuild UP-TO-DATE
+> Task :shared:processAndroidHostTestJavaRes NO-SOURCE
+> Task :shared:kmpPartiallyResolvedDependenciesChecker
+> Task :shared:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :shared:androidJar
+> Task :shared:checkAndroidMainAarMetadata
+> Task :shared:processAndroidMainManifest FROM-CACHE
+> Task :shared:writeAndroidMainAarMetadata
+> Task :androidApp:preBuild UP-TO-DATE
+> Task :androidApp:preDebugBuild UP-TO-DATE
+> Task :androidApp:generateDebugBuildConfig
+> Task :androidApp:generateDebugResValues
+> Task :androidApp:generateDebugResources FROM-CACHE
+> Task :androidApp:packageDebugResources
 > Task :androidApp:javaPreCompileDebug FROM-CACHE
+> Task :shared:generateAndroidMainEmptyResourceFiles
+> Task :androidApp:processDebugNavigationResources FROM-CACHE
 > Task :androidApp:checkDebugAarMetadata
 > Task :androidApp:mapDebugSourceSetPaths
 > Task :androidApp:compileDebugNavigationResources FROM-CACHE
-> Task :androidApp:packageDebugResources
+> Task :androidApp:parseDebugLocalResources
+> Task :shared:compileAndroidMain FROM-CACHE
+> Task :androidApp:generateDebugRFile
+> Task :shared:bundleAndroidMainClassesToRuntimeJar
+> Task :shared:bundleAndroidMainClassesToCompileJar
+> Task :shared:processAndroidMainJavaRes
+> Task :shared:compileAndroidHostTest FROM-CACHE
+> Task :shared:mergeAndroidMainJavaResource
 > Task :shared:testAndroidHostTest FROM-CACHE
 > Task :androidApp:createDebugCompatibleScreenManifests
 > Task :androidApp:extractDeepLinksDebug FROM-CACHE
-> Task :androidApp:parseDebugLocalResources
-> Task :androidApp:generateDebugRFile
 > Task :androidApp:processDebugMainManifest
 > Task :androidApp:processDebugManifest
 > Task :androidApp:processDebugManifestForPackage
 > Task :androidApp:preDebugAndroidTestBuild SKIPPED
 > Task :androidApp:generateDebugAndroidTestResValues FROM-CACHE
 > Task :shared:createFullJarAndroidMain
+> Task :shared:prepareLintJarForPublish
 > Task :androidApp:extractProguardFiles
 > Task :androidApp:preDebugUnitTestBuild UP-TO-DATE
 > Task :androidApp:preReleaseBuild UP-TO-DATE
@@ -36,15 +56,59 @@ false
 > Task :androidApp:processReleaseNavigationResources
 > Task :androidApp:parseReleaseLocalResources
 > Task :androidApp:generateReleaseRFile FROM-CACHE
-
 > Task :androidApp:mergeDebugResources
-/home/runner/.gradle/caches/9.3.1/transforms/5600aac0fcc0a1cf29d67757e6281ce0/transformed/core-1.18.0/res/values/values.xml:89:4: Failed to flatten XML for resource 'app_name' with error: Invalid unicode escape sequence in string
-"{str}"
-/home/runner/.gradle/caches/9.3.1/transforms/5600aac0fcc0a1cf29d67757e6281ce0/transformed/core-1.18.0/res/values/values.xml:89:4: string/app_name does not contain a valid string resource.
-
-> Task :androidApp:mergeDebugResources FAILED
+> Task :androidApp:processDebugResources
+> Task :androidApp:javaPreCompileRelease FROM-CACHE
+> Task :androidApp:extractDeepLinksRelease
+> Task :androidApp:processReleaseMainManifest
+> Task :androidApp:mergeDebugNativeDebugMetadata NO-SOURCE
+> Task :androidApp:generateDebugAssets UP-TO-DATE
+> Task :androidApp:mergeDebugAssets
+> Task :androidApp:compressDebugAssets FROM-CACHE
+> Task :androidApp:desugarDebugFileDependencies FROM-CACHE
+> Task :androidApp:checkDebugDuplicateClasses
+> Task :androidApp:mergeExtDexDebug FROM-CACHE
+> Task :androidApp:mergeLibDexDebug FROM-CACHE
+> Task :androidApp:mergeDebugJniLibFolders
+> Task :shared:mergeAndroidMainJniLibFolders
+> Task :shared:mergeAndroidMainNativeLibs NO-SOURCE
+> Task :shared:copyAndroidMainJniLibsProjectOnly
+> Task :androidApp:mergeDebugNativeLibs
 > Task :shared:extractAndroidMainAnnotations
+> Task :shared:syncAndroidMainLibJars
+> Task :androidApp:stripDebugDebugSymbols
+> Task :shared:bundleAndroidMainLocalLintAar
+> Task :shared:generateAndroidHostTestLintModel
+> Task :androidApp:validateSigningDebug
+> Task :androidApp:writeDebugAppMetadata
+> Task :androidApp:writeDebugSigningConfigVersions
+> Task :androidApp:extractReleaseVersionControlInfo
+> Task :androidApp:generateReleaseAssets UP-TO-DATE
+> Task :androidApp:mergeReleaseAssets
+> Task :androidApp:checkReleaseDuplicateClasses
+> Task :shared:prepareAndroidMainArtProfile
+> Task :androidApp:mergeReleaseArtProfile
+> Task :androidApp:checkReleaseAarMetadata
+> Task :androidApp:mapReleaseSourceSetPaths
+> Task :androidApp:compileReleaseNavigationResources FROM-CACHE
+> Task :androidApp:mergeReleaseResources
+> Task :androidApp:createReleaseCompatibleScreenManifests
+> Task :androidApp:processReleaseManifest
+> Task :androidApp:processReleaseManifestForPackage
+> Task :androidApp:processReleaseResources
+> Task :androidApp:mergeReleaseStartupProfile
+> Task :androidApp:mergeReleaseJniLibFolders
+> Task :androidApp:mergeReleaseNativeLibs
+> Task :androidApp:stripReleaseDebugSymbols
+> Task :androidApp:writeReleaseAppMetadata
+> Task :androidApp:collectReleaseDependencies
+> Task :androidApp:configureReleaseDependencies
+> Task :androidApp:extractReleaseNativeSymbolTables
+> Task :androidApp:parseReleaseIntegrityConfig
 > Task :androidApp:compileDebugKotlin
+> Task :androidApp:compileReleaseKotlin
+> Task :shared:lintAnalyzeAndroidHostTest
+
 > Task :androidApp:compileReleaseKotlin
 w: file:///home/runner/work/Jamals-finance/Jamals-finance/native/androidApp/src/main/kotlin/com/jamalsfinance/nativeapp/resilience/ResilientRepositories.kt:159:65 Unnecessary non-null assertion (!!) on a non-null receiver of type 'FinanceSnapshot'.
 w: file:///home/runner/work/Jamals-finance/Jamals-finance/native/androidApp/src/main/kotlin/com/jamalsfinance/nativeapp/resilience/ResilientRepositories.kt:168:61 Unnecessary non-null assertion (!!) on a non-null receiver of type 'FinanceSnapshot'.
@@ -72,172 +136,183 @@ w: file:///home/runner/work/Jamals-finance/Jamals-finance/native/androidApp/src/
 w: file:///home/runner/work/Jamals-finance/Jamals-finance/native/androidApp/src/main/kotlin/com/jamalsfinance/nativeapp/ui/NativeAppLock.kt:365:45 'class FingerprintManager : Any' is deprecated. Deprecated in Java.
 w: file:///home/runner/work/Jamals-finance/Jamals-finance/native/androidApp/src/main/kotlin/com/jamalsfinance/nativeapp/ui/NativeAppLock.kt:366:21 'val isHardwareDetected: Boolean' is deprecated. Deprecated in Java.
 w: file:///home/runner/work/Jamals-finance/Jamals-finance/native/androidApp/src/main/kotlin/com/jamalsfinance/nativeapp/ui/NativeAppLock.kt:366:59 'fun hasEnrolledFingerprints(): Boolean' is deprecated. Deprecated in Java.
-gradle/actions: Writing build results to /home/runner/work/_temp/.gradle-actions/build-results/native_build-1784801476420.json
+
+> Task :androidApp:processReleaseJavaRes
+> Task :androidApp:processDebugJavaRes
+> Task :androidApp:mergeReleaseJavaResource
+> Task :androidApp:mergeDebugJavaResource
+> Task :androidApp:compileDebugJavaWithJavac
+> Task :androidApp:compileReleaseJavaWithJavac
+> Task :androidApp:bundleDebugClassesToCompileJar
+> Task :androidApp:generateDebugAndroidTestLintModel
+> Task :androidApp:generateDebugLintReportModel
+> Task :androidApp:generateReleaseLintReportModel
+> Task :androidApp:generateDebugUnitTestLintModel
+> Task :androidApp:lintAnalyzeDebugAndroidTest
+> Task :androidApp:lintAnalyzeDebugUnitTest
+> Task :androidApp:expandReleaseArtProfileWildcards
+> Task :androidApp:mergeReleaseGeneratedProguardFiles
+> Task :androidApp:dexBuilderDebug
+> Task :androidApp:mergeDebugGlobalSynthetics FROM-CACHE
+> Task :androidApp:mergeProjectDexDebug
+> Task :androidApp:packageDebug
+> Task :androidApp:createDebugApkListingFileRedirect
+> Task :androidApp:assembleDebug
+> Task :androidApp:lintAnalyzeDebug
+> Task :androidApp:lintAnalyzeRelease
+> Task :androidApp:produceReleaseComposeMapping
+> Task :androidApp:reportReleaseComposeMappingErrors
+> Task :androidApp:generateReleaseLintVitalReportModel
+> Task :androidApp:minifyReleaseWithR8
+> Task :androidApp:lintVitalAnalyzeRelease
+> Task :androidApp:lintVitalReportRelease SKIPPED
+> Task :androidApp:lintVitalRelease SKIPPED
+
+> Task :androidApp:lintReportDebug
+Wrote HTML report to file:///home/runner/work/Jamals-finance/Jamals-finance/native/androidApp/build/reports/lint-results-debug.html
+
+> Task :androidApp:lintDebug
+
+> Task :androidApp:lintReportRelease
+Wrote HTML report to file:///home/runner/work/Jamals-finance/Jamals-finance/native/androidApp/build/reports/lint-results-release.html
+
+> Task :androidApp:lintRelease
+> Task :androidApp:buildReleasePreBundle
+> Task :androidApp:mergeReleaseComposeMapping
+> Task :androidApp:compileReleaseArtProfile
+> Task :androidApp:packageReleaseBundle
+> Task :androidApp:signReleaseBundle
+> Task :androidApp:bundleRelease
+> Task :androidApp:produceReleaseBundleIdeListingFile
+> Task :androidApp:createReleaseBundleListingFileRedirect
+gradle/actions: Writing build results to /home/runner/work/_temp/.gradle-actions/build-results/native_build-1784801664682.json
 
 [Incubating] Problems report is available at: file:///home/runner/work/Jamals-finance/Jamals-finance/native/build/reports/problems/problems-report.html
 
-FAILURE: Build failed with an exception.
-
-* What went wrong:
-Execution failed for task ':androidApp:mergeDebugResources'.
-> A failure occurred while executing com.android.build.gradle.internal.res.ResourceCompilerRunnable
-   > Resource compilation failed (Failed to compile values resource file /home/runner/work/Jamals-finance/Jamals-finance/native/androidApp/build/intermediates/incremental/debug/mergeDebugResources/merged.dir/values/values.xml. Cause: java.lang.IllegalStateException: Can not extract resource from com.android.aaptcompiler.ParsedResource@6680b1d7.). Check logs for more details.
-
-* Try:
-> Run with --info or --debug option to get more log output.
-> Run with --scan to get full insights from a Build Scan (powered by Develocity).
-> Get more help at https://help.gradle.org.
-
-* Exception is:
-org.gradle.api.tasks.TaskExecutionException: Execution failed for task ':androidApp:mergeDebugResources'.
-	at org.gradle.api.internal.tasks.execution.ExecuteActionsTaskExecuter.lambda$executeIfValid$1(ExecuteActionsTaskExecuter.java:135)
-	at org.gradle.internal.Try$Failure.ifSuccessfulOrElse(Try.java:288)
-	at org.gradle.api.internal.tasks.execution.ExecuteActionsTaskExecuter.executeIfValid(ExecuteActionsTaskExecuter.java:133)
-	at org.gradle.api.internal.tasks.execution.ExecuteActionsTaskExecuter.execute(ExecuteActionsTaskExecuter.java:121)
-	at org.gradle.api.internal.tasks.execution.ProblemsTaskPathTrackingTaskExecuter.execute(ProblemsTaskPathTrackingTaskExecuter.java:41)
-	at org.gradle.api.internal.tasks.execution.FinalizePropertiesTaskExecuter.execute(FinalizePropertiesTaskExecuter.java:46)
-	at org.gradle.api.internal.tasks.execution.ResolveTaskExecutionModeExecuter.execute(ResolveTaskExecutionModeExecuter.java:51)
-	at org.gradle.api.internal.tasks.execution.SkipTaskWithNoActionsExecuter.execute(SkipTaskWithNoActionsExecuter.java:57)
-	at org.gradle.api.internal.tasks.execution.SkipOnlyIfTaskExecuter.execute(SkipOnlyIfTaskExecuter.java:74)
-	at org.gradle.api.internal.tasks.execution.CatchExceptionTaskExecuter.execute(CatchExceptionTaskExecuter.java:36)
-	at org.gradle.api.internal.tasks.execution.EventFiringTaskExecuter$1.executeTask(EventFiringTaskExecuter.java:77)
-	at org.gradle.api.internal.tasks.execution.EventFiringTaskExecuter$1.call(EventFiringTaskExecuter.java:55)
-	at org.gradle.api.internal.tasks.execution.EventFiringTaskExecuter$1.call(EventFiringTaskExecuter.java:52)
-	at org.gradle.internal.operations.DefaultBuildOperationRunner$CallableBuildOperationWorker.execute(DefaultBuildOperationRunner.java:209)
-	at org.gradle.internal.operations.DefaultBuildOperationRunner$CallableBuildOperationWorker.execute(DefaultBuildOperationRunner.java:204)
-	at org.gradle.internal.operations.DefaultBuildOperationRunner$2.execute(DefaultBuildOperationRunner.java:66)
-	at org.gradle.internal.operations.DefaultBuildOperationRunner$2.execute(DefaultBuildOperationRunner.java:59)
-	at org.gradle.internal.operations.DefaultBuildOperationRunner.execute(DefaultBuildOperationRunner.java:166)
-	at org.gradle.internal.operations.DefaultBuildOperationRunner.execute(DefaultBuildOperationRunner.java:59)
-	at org.gradle.internal.operations.DefaultBuildOperationRunner.call(DefaultBuildOperationRunner.java:53)
-	at org.gradle.api.internal.tasks.execution.EventFiringTaskExecuter.execute(EventFiringTaskExecuter.java:52)
-	at org.gradle.execution.plan.DefaultNodeExecutor.executeLocalTaskNode(DefaultNodeExecutor.java:55)
-	at org.gradle.execution.plan.DefaultNodeExecutor.execute(DefaultNodeExecutor.java:34)
-	at org.gradle.execution.taskgraph.DefaultTaskExecutionGraph$InvokeNodeExecutorsAction.execute(DefaultTaskExecutionGraph.java:355)
-	at org.gradle.execution.taskgraph.DefaultTaskExecutionGraph$InvokeNodeExecutorsAction.execute(DefaultTaskExecutionGraph.java:343)
-	at org.gradle.execution.taskgraph.DefaultTaskExecutionGraph$BuildOperationAwareExecutionAction.lambda$execute$0(DefaultTaskExecutionGraph.java:339)
-	at org.gradle.internal.operations.CurrentBuildOperationRef.with(CurrentBuildOperationRef.java:84)
-	at org.gradle.execution.taskgraph.DefaultTaskExecutionGraph$BuildOperationAwareExecutionAction.execute(DefaultTaskExecutionGraph.java:339)
-	at org.gradle.execution.taskgraph.DefaultTaskExecutionGraph$BuildOperationAwareExecutionAction.execute(DefaultTaskExecutionGraph.java:328)
-	at org.gradle.execution.plan.DefaultPlanExecutor$ExecutorWorker.execute(DefaultPlanExecutor.java:459)
-	at org.gradle.execution.plan.DefaultPlanExecutor$ExecutorWorker.run(DefaultPlanExecutor.java:376)
-	at org.gradle.execution.plan.DefaultPlanExecutor.process(DefaultPlanExecutor.java:111)
-	at org.gradle.execution.taskgraph.DefaultTaskExecutionGraph.executeWithServices(DefaultTaskExecutionGraph.java:146)
-	at org.gradle.execution.taskgraph.DefaultTaskExecutionGraph.execute(DefaultTaskExecutionGraph.java:131)
-	at org.gradle.execution.SelectedTaskExecutionAction.execute(SelectedTaskExecutionAction.java:35)
-	at org.gradle.execution.BuildOperationFiringBuildWorkerExecutor$ExecuteTasks.call(BuildOperationFiringBuildWorkerExecutor.java:54)
-	at org.gradle.execution.BuildOperationFiringBuildWorkerExecutor$ExecuteTasks.call(BuildOperationFiringBuildWorkerExecutor.java:43)
-	at org.gradle.internal.operations.DefaultBuildOperationRunner$CallableBuildOperationWorker.execute(DefaultBuildOperationRunner.java:209)
-	at org.gradle.internal.operations.DefaultBuildOperationRunner$CallableBuildOperationWorker.execute(DefaultBuildOperationRunner.java:204)
-	at org.gradle.internal.operations.DefaultBuildOperationRunner$2.execute(DefaultBuildOperationRunner.java:66)
-	at org.gradle.internal.operations.DefaultBuildOperationRunner$2.execute(DefaultBuildOperationRunner.java:59)
-	at org.gradle.internal.operations.DefaultBuildOperationRunner.execute(DefaultBuildOperationRunner.java:166)
-	at org.gradle.internal.operations.DefaultBuildOperationRunner.execute(DefaultBuildOperationRunner.java:59)
-	at org.gradle.internal.operations.DefaultBuildOperationRunner.call(DefaultBuildOperationRunner.java:53)
-	at org.gradle.execution.BuildOperationFiringBuildWorkerExecutor.execute(BuildOperationFiringBuildWorkerExecutor.java:40)
-	at org.gradle.internal.build.DefaultBuildLifecycleController.lambda$executeTasks$10(DefaultBuildLifecycleController.java:313)
-	at org.gradle.internal.model.StateTransitionController.doTransition(StateTransitionController.java:276)
-	at org.gradle.internal.model.StateTransitionController.lambda$tryTransition$8(StateTransitionController.java:187)
-	at org.gradle.internal.work.DefaultSynchronizer.withLock(DefaultSynchronizer.java:45)
+BUILD SUCCESSFUL in 4m 33s
+126 actionable tasks: 107 executed, 19 from cache
+Configuration cache entry stored.
+{
+  "versionName": "1.0.0-rc1",
+  "versionCode": 10,
+  "debugApplicationId": "com.jamalsfinance.app.native.dev",
+  "releaseCandidateApplicationId": "com.jamalsfinance.app.native.rc",
+  "debugApk": {
+    "path": "androidApp/build/outputs/apk/debug/androidApp-debug.apk",
+    "sha256": "f918b107d8f049ed9ba01b1e57def1314fe6ac19c10818da17a3e5e46da9be85"
+  },
+  "releaseAab": {
+    "path": "androidApp/build/outputs/bundle/release/androidApp-release.aab",
+    "sha256": "3a0e39781679acef91ca7e9fcae2d0e98a92a1b6d485fddba3e32786c7d91c89",
+    "sizeBytes": 5500611,
+    "signed": false,
+    "expectedCertificateSha256": "2F:7F:D9:B0:1F:59:F7:FB:A0:93:3F:55:AA:F2:AF:FB:8A:B2:72:1E:B3:97:02:17:B8:5F:66:8E:9A:CD:AE:40",
+    "actualCertificateSha256": ""
+  },
+  "r8Mapping": {
+    "present": true,
+    "sha256": "d1e916a23ca7a3bedfdacdb42c665b54cb93c20107a93c404fd60007a921cdd6"
+  }
+}
 
 === FINAL 100 LINES ===
-	at org.gradle.internal.Either$Left.fold(Either.java:116)
-	at org.gradle.internal.execution.caching.CachingState.fold(CachingState.java:62)
-	at org.gradle.internal.execution.steps.BuildCacheStep.execute(BuildCacheStep.java:74)
-	at org.gradle.internal.execution.steps.BuildCacheStep.execute(BuildCacheStep.java:49)
-	at org.gradle.internal.execution.steps.StoreExecutionStateStep.execute(StoreExecutionStateStep.java:46)
-	at org.gradle.internal.execution.steps.StoreExecutionStateStep.execute(StoreExecutionStateStep.java:35)
-	at org.gradle.internal.execution.steps.SkipUpToDateStep.executeBecause(SkipUpToDateStep.java:75)
-	at org.gradle.internal.execution.steps.SkipUpToDateStep.lambda$execute$2(SkipUpToDateStep.java:53)
-	at org.gradle.internal.execution.steps.SkipUpToDateStep.execute(SkipUpToDateStep.java:53)
-	at org.gradle.internal.execution.steps.SkipUpToDateStep.execute(SkipUpToDateStep.java:35)
-	at org.gradle.internal.execution.steps.legacy.MarkSnapshottingInputsFinishedStep.execute(MarkSnapshottingInputsFinishedStep.java:37)
-	at org.gradle.internal.execution.steps.legacy.MarkSnapshottingInputsFinishedStep.execute(MarkSnapshottingInputsFinishedStep.java:27)
-	at org.gradle.internal.execution.steps.ResolveIncrementalCachingStateStep.executeDelegate(ResolveIncrementalCachingStateStep.java:49)
-	at org.gradle.internal.execution.steps.ResolveIncrementalCachingStateStep.executeDelegate(ResolveIncrementalCachingStateStep.java:27)
-	at org.gradle.internal.execution.steps.AbstractResolveCachingStateStep.execute(AbstractResolveCachingStateStep.java:71)
-	at org.gradle.internal.execution.steps.AbstractResolveCachingStateStep.execute(AbstractResolveCachingStateStep.java:39)
-	at org.gradle.internal.execution.steps.ResolveChangesStep.executeMutable(ResolveChangesStep.java:63)
-	at org.gradle.internal.execution.steps.ResolveChangesStep.executeMutable(ResolveChangesStep.java:34)
-	at org.gradle.internal.execution.steps.MutableStep.execute(MutableStep.java:25)
-	at org.gradle.internal.execution.steps.ValidateStep.execute(ValidateStep.java:64)
-	at org.gradle.internal.execution.steps.ValidateStep.execute(ValidateStep.java:42)
-	at org.gradle.internal.execution.steps.AbstractCaptureStateBeforeExecutionStep.execute(AbstractCaptureStateBeforeExecutionStep.java:77)
-	at org.gradle.internal.execution.steps.AbstractCaptureStateBeforeExecutionStep.execute(AbstractCaptureStateBeforeExecutionStep.java:46)
-	at org.gradle.internal.execution.steps.AbstractSkipEmptyWorkStep.executeWithNonEmptySources(AbstractSkipEmptyWorkStep.java:133)
-	at org.gradle.internal.execution.steps.AbstractSkipEmptyWorkStep.execute(AbstractSkipEmptyWorkStep.java:59)
-	at org.gradle.internal.execution.steps.AbstractSkipEmptyWorkStep.execute(AbstractSkipEmptyWorkStep.java:36)
-	at org.gradle.internal.execution.steps.legacy.MarkSnapshottingInputsStartedStep.execute(MarkSnapshottingInputsStartedStep.java:38)
-	at org.gradle.internal.execution.steps.LoadPreviousExecutionStateStep.execute(LoadPreviousExecutionStateStep.java:36)
-	at org.gradle.internal.execution.steps.LoadPreviousExecutionStateStep.execute(LoadPreviousExecutionStateStep.java:23)
-	at org.gradle.internal.execution.steps.HandleStaleOutputsStep.executeMutable(HandleStaleOutputsStep.java:77)
-	at org.gradle.internal.execution.steps.HandleStaleOutputsStep.executeMutable(HandleStaleOutputsStep.java:43)
-	at org.gradle.internal.execution.steps.MutableStep.execute(MutableStep.java:25)
-	at org.gradle.internal.execution.steps.AssignMutableWorkspaceStep.lambda$execute$0(AssignMutableWorkspaceStep.java:35)
-	at org.gradle.api.internal.tasks.execution.TaskExecution$4.withWorkspace(TaskExecution.java:305)
-	at org.gradle.internal.execution.steps.AssignMutableWorkspaceStep.execute(AssignMutableWorkspaceStep.java:31)
-	at org.gradle.internal.execution.steps.AssignMutableWorkspaceStep.execute(AssignMutableWorkspaceStep.java:22)
-	at org.gradle.internal.execution.steps.ChoosePipelineStep.execute(ChoosePipelineStep.java:40)
-	at org.gradle.internal.execution.steps.ChoosePipelineStep.execute(ChoosePipelineStep.java:23)
-	at org.gradle.internal.execution.steps.ExecuteWorkBuildOperationFiringStep.lambda$execute$2(ExecuteWorkBuildOperationFiringStep.java:67)
-	at org.gradle.internal.execution.steps.ExecuteWorkBuildOperationFiringStep.execute(ExecuteWorkBuildOperationFiringStep.java:67)
-	at org.gradle.internal.execution.steps.ExecuteWorkBuildOperationFiringStep.execute(ExecuteWorkBuildOperationFiringStep.java:39)
-	at org.gradle.internal.execution.steps.IdentityCacheStep.execute(IdentityCacheStep.java:46)
-	at org.gradle.internal.execution.steps.IdentityCacheStep.execute(IdentityCacheStep.java:34)
-	at org.gradle.internal.execution.steps.IdentifyStep.execute(IdentifyStep.java:44)
-	at org.gradle.internal.execution.steps.IdentifyStep.execute(IdentifyStep.java:31)
-	at org.gradle.internal.execution.impl.DefaultExecutionEngine$1.execute(DefaultExecutionEngine.java:68)
-	at org.gradle.api.internal.tasks.execution.ExecuteActionsTaskExecuter.executeIfValid(ExecuteActionsTaskExecuter.java:132)
-	... 61 more
-Caused by: com.android.aaptcompiler.ResourceCompilationException: Resource compilation failed (Failed to compile values resource file /home/runner/work/Jamals-finance/Jamals-finance/native/androidApp/build/intermediates/incremental/debug/mergeDebugResources/merged.dir/values/values.xml. Cause: java.lang.IllegalStateException: Can not extract resource from com.android.aaptcompiler.ParsedResource@6680b1d7.). Check logs for more details.
-	at com.android.aaptcompiler.ResourceCompiler.compileResource(ResourceCompiler.kt:120)
-	at com.android.build.gradle.internal.res.ResourceCompilerRunnable$Companion.compileSingleResource(ResourceCompilerRunnable.kt:33)
-	at com.android.build.gradle.internal.res.ResourceCompilerRunnable.run(ResourceCompilerRunnable.kt:13)
-	at com.android.build.gradle.internal.profile.ProfileAwareWorkAction.execute(ProfileAwareWorkAction.kt:66)
-	at org.gradle.workers.internal.DefaultWorkerServer.execute(DefaultWorkerServer.java:68)
-	at org.gradle.workers.internal.NoIsolationWorkerFactory$1$1.create(NoIsolationWorkerFactory.java:64)
-	at org.gradle.workers.internal.NoIsolationWorkerFactory$1$1.create(NoIsolationWorkerFactory.java:61)
-	at org.gradle.internal.classloader.ClassLoaderUtils.executeInClassloader(ClassLoaderUtils.java:102)
-	at org.gradle.workers.internal.NoIsolationWorkerFactory$1.lambda$execute$0(NoIsolationWorkerFactory.java:61)
-	at org.gradle.workers.internal.AbstractWorker$1.call(AbstractWorker.java:44)
-	at org.gradle.workers.internal.AbstractWorker$1.call(AbstractWorker.java:41)
-	at org.gradle.internal.operations.DefaultBuildOperationRunner$CallableBuildOperationWorker.execute(DefaultBuildOperationRunner.java:209)
-	at org.gradle.internal.operations.DefaultBuildOperationRunner$CallableBuildOperationWorker.execute(DefaultBuildOperationRunner.java:204)
-	at org.gradle.internal.operations.DefaultBuildOperationRunner$2.execute(DefaultBuildOperationRunner.java:66)
-	at org.gradle.internal.operations.DefaultBuildOperationRunner$2.execute(DefaultBuildOperationRunner.java:59)
-	at org.gradle.internal.operations.DefaultBuildOperationRunner.execute(DefaultBuildOperationRunner.java:166)
-	at org.gradle.internal.operations.DefaultBuildOperationRunner.execute(DefaultBuildOperationRunner.java:59)
-	at org.gradle.internal.operations.DefaultBuildOperationRunner.call(DefaultBuildOperationRunner.java:53)
-	at org.gradle.workers.internal.AbstractWorker.executeWrappedInBuildOperation(AbstractWorker.java:41)
-	at org.gradle.workers.internal.NoIsolationWorkerFactory$1.execute(NoIsolationWorkerFactory.java:58)
-	at org.gradle.workers.internal.DefaultWorkerExecutor.lambda$submitWork$0(DefaultWorkerExecutor.java:176)
-	at org.gradle.internal.work.DefaultConditionalExecutionQueue$ExecutionRunner.runExecution(DefaultConditionalExecutionQueue.java:194)
-	at org.gradle.internal.work.DefaultConditionalExecutionQueue$ExecutionRunner.access$700(DefaultConditionalExecutionQueue.java:127)
-	at org.gradle.internal.work.DefaultConditionalExecutionQueue$ExecutionRunner$1.run(DefaultConditionalExecutionQueue.java:169)
-	at org.gradle.internal.Factories$1.create(Factories.java:30)
-	at org.gradle.internal.work.DefaultWorkerLeaseService.lambda$withLocksAcquired$0(DefaultWorkerLeaseService.java:269)
-	at org.gradle.internal.work.ResourceLockStatistics$1.measure(ResourceLockStatistics.java:42)
-	at org.gradle.internal.work.DefaultWorkerLeaseService.withLocksAcquired(DefaultWorkerLeaseService.java:267)
-	at org.gradle.internal.work.DefaultWorkerLeaseService.withLocks(DefaultWorkerLeaseService.java:259)
-	at org.gradle.internal.work.DefaultWorkerLeaseService.runAsWorkerThread(DefaultWorkerLeaseService.java:127)
-	at org.gradle.internal.work.DefaultWorkerLeaseService.runAsWorkerThread(DefaultWorkerLeaseService.java:132)
-	at org.gradle.internal.work.DefaultConditionalExecutionQueue$ExecutionRunner.runBatch(DefaultConditionalExecutionQueue.java:164)
-	at org.gradle.internal.work.DefaultConditionalExecutionQueue$ExecutionRunner.run(DefaultConditionalExecutionQueue.java:133)
-	... 2 more
-Caused by: com.android.aaptcompiler.ResourceCompilationException: Failed to compile values resource file /home/runner/work/Jamals-finance/Jamals-finance/native/androidApp/build/intermediates/incremental/debug/mergeDebugResources/merged.dir/values/values.xml
-	at com.android.aaptcompiler.ResourceCompiler.compileTable(ResourceCompiler.kt:179)
-	at com.android.aaptcompiler.ResourceCompiler.access$compileTable(ResourceCompiler.kt:1)
-	at com.android.aaptcompiler.ResourceCompiler$getCompileMethod$1.invoke(ResourceCompiler.kt:130)
-	at com.android.aaptcompiler.ResourceCompiler$getCompileMethod$1.invoke(ResourceCompiler.kt:130)
-	at com.android.aaptcompiler.ResourceCompiler.compileResource(ResourceCompiler.kt:116)
-	... 34 more
-Caused by: java.lang.IllegalStateException: Can not extract resource from com.android.aaptcompiler.ParsedResource@6680b1d7.
-	at com.android.aaptcompiler.TableExtractor.extractResourceValues(TableExtractor.kt:248)
-	at com.android.aaptcompiler.TableExtractor.extract(TableExtractor.kt:162)
-	at com.android.aaptcompiler.ResourceCompiler.compileTable(ResourceCompiler.kt:175)
-	... 38 more
+w: file:///home/runner/work/Jamals-finance/Jamals-finance/native/androidApp/src/main/kotlin/com/jamalsfinance/nativeapp/resilience/ResilientRepositories.kt:383:78 Unnecessary non-null assertion (!!) on a non-null receiver of type 'InvestmentsAnalyticsSnapshot'.
+w: file:///home/runner/work/Jamals-finance/Jamals-finance/native/androidApp/src/main/kotlin/com/jamalsfinance/nativeapp/resilience/ResilientRepositories.kt:392:74 Unnecessary non-null assertion (!!) on a non-null receiver of type 'InvestmentsAnalyticsSnapshot'.
+w: file:///home/runner/work/Jamals-finance/Jamals-finance/native/androidApp/src/main/kotlin/com/jamalsfinance/nativeapp/ui/GoalsPayablesDashboard.kt:875:81 'constructor(p0: String!, p1: String!): Locale' is deprecated. Deprecated in Java.
+w: file:///home/runner/work/Jamals-finance/Jamals-finance/native/androidApp/src/main/kotlin/com/jamalsfinance/nativeapp/ui/NativeAppLock.kt:252:50 'fun createConfirmDeviceCredentialIntent(p0: CharSequence!, p1: CharSequence!): Intent!' is deprecated. Deprecated in Java.
+w: file:///home/runner/work/Jamals-finance/Jamals-finance/native/androidApp/src/main/kotlin/com/jamalsfinance/nativeapp/ui/NativeAppLock.kt:320:10 'fun setDeviceCredentialAllowed(p0: Boolean): BiometricPrompt.Builder' is deprecated. Deprecated in Java.
+w: file:///home/runner/work/Jamals-finance/Jamals-finance/native/androidApp/src/main/kotlin/com/jamalsfinance/nativeapp/ui/NativeAppLock.kt:365:45 'class FingerprintManager : Any' is deprecated. Deprecated in Java.
+w: file:///home/runner/work/Jamals-finance/Jamals-finance/native/androidApp/src/main/kotlin/com/jamalsfinance/nativeapp/ui/NativeAppLock.kt:366:21 'val isHardwareDetected: Boolean' is deprecated. Deprecated in Java.
+w: file:///home/runner/work/Jamals-finance/Jamals-finance/native/androidApp/src/main/kotlin/com/jamalsfinance/nativeapp/ui/NativeAppLock.kt:366:59 'fun hasEnrolledFingerprints(): Boolean' is deprecated. Deprecated in Java.
 
+> Task :androidApp:compileDebugKotlin
+w: file:///home/runner/work/Jamals-finance/Jamals-finance/native/androidApp/src/main/kotlin/com/jamalsfinance/nativeapp/resilience/ResilientRepositories.kt:159:65 Unnecessary non-null assertion (!!) on a non-null receiver of type 'FinanceSnapshot'.
+w: file:///home/runner/work/Jamals-finance/Jamals-finance/native/androidApp/src/main/kotlin/com/jamalsfinance/nativeapp/resilience/ResilientRepositories.kt:168:61 Unnecessary non-null assertion (!!) on a non-null receiver of type 'FinanceSnapshot'.
+w: file:///home/runner/work/Jamals-finance/Jamals-finance/native/androidApp/src/main/kotlin/com/jamalsfinance/nativeapp/resilience/ResilientRepositories.kt:284:71 Unnecessary non-null assertion (!!) on a non-null receiver of type 'GoalsPayablesSnapshot'.
+w: file:///home/runner/work/Jamals-finance/Jamals-finance/native/androidApp/src/main/kotlin/com/jamalsfinance/nativeapp/resilience/ResilientRepositories.kt:293:67 Unnecessary non-null assertion (!!) on a non-null receiver of type 'GoalsPayablesSnapshot'.
+w: file:///home/runner/work/Jamals-finance/Jamals-finance/native/androidApp/src/main/kotlin/com/jamalsfinance/nativeapp/resilience/ResilientRepositories.kt:383:78 Unnecessary non-null assertion (!!) on a non-null receiver of type 'InvestmentsAnalyticsSnapshot'.
+w: file:///home/runner/work/Jamals-finance/Jamals-finance/native/androidApp/src/main/kotlin/com/jamalsfinance/nativeapp/resilience/ResilientRepositories.kt:392:74 Unnecessary non-null assertion (!!) on a non-null receiver of type 'InvestmentsAnalyticsSnapshot'.
+w: file:///home/runner/work/Jamals-finance/Jamals-finance/native/androidApp/src/main/kotlin/com/jamalsfinance/nativeapp/ui/GoalsPayablesDashboard.kt:875:81 'constructor(p0: String!, p1: String!): Locale' is deprecated. Deprecated in Java.
+w: file:///home/runner/work/Jamals-finance/Jamals-finance/native/androidApp/src/main/kotlin/com/jamalsfinance/nativeapp/ui/NativeAppLock.kt:252:50 'fun createConfirmDeviceCredentialIntent(p0: CharSequence!, p1: CharSequence!): Intent!' is deprecated. Deprecated in Java.
+w: file:///home/runner/work/Jamals-finance/Jamals-finance/native/androidApp/src/main/kotlin/com/jamalsfinance/nativeapp/ui/NativeAppLock.kt:320:10 'fun setDeviceCredentialAllowed(p0: Boolean): BiometricPrompt.Builder' is deprecated. Deprecated in Java.
+w: file:///home/runner/work/Jamals-finance/Jamals-finance/native/androidApp/src/main/kotlin/com/jamalsfinance/nativeapp/ui/NativeAppLock.kt:365:45 'class FingerprintManager : Any' is deprecated. Deprecated in Java.
+w: file:///home/runner/work/Jamals-finance/Jamals-finance/native/androidApp/src/main/kotlin/com/jamalsfinance/nativeapp/ui/NativeAppLock.kt:366:21 'val isHardwareDetected: Boolean' is deprecated. Deprecated in Java.
+w: file:///home/runner/work/Jamals-finance/Jamals-finance/native/androidApp/src/main/kotlin/com/jamalsfinance/nativeapp/ui/NativeAppLock.kt:366:59 'fun hasEnrolledFingerprints(): Boolean' is deprecated. Deprecated in Java.
 
-BUILD FAILED in 1m 8s
-44 actionable tasks: 32 executed, 12 from cache
+> Task :androidApp:processReleaseJavaRes
+> Task :androidApp:processDebugJavaRes
+> Task :androidApp:mergeReleaseJavaResource
+> Task :androidApp:mergeDebugJavaResource
+> Task :androidApp:compileDebugJavaWithJavac
+> Task :androidApp:compileReleaseJavaWithJavac
+> Task :androidApp:bundleDebugClassesToCompileJar
+> Task :androidApp:generateDebugAndroidTestLintModel
+> Task :androidApp:generateDebugLintReportModel
+> Task :androidApp:generateReleaseLintReportModel
+> Task :androidApp:generateDebugUnitTestLintModel
+> Task :androidApp:lintAnalyzeDebugAndroidTest
+> Task :androidApp:lintAnalyzeDebugUnitTest
+> Task :androidApp:expandReleaseArtProfileWildcards
+> Task :androidApp:mergeReleaseGeneratedProguardFiles
+> Task :androidApp:dexBuilderDebug
+> Task :androidApp:mergeDebugGlobalSynthetics FROM-CACHE
+> Task :androidApp:mergeProjectDexDebug
+> Task :androidApp:packageDebug
+> Task :androidApp:createDebugApkListingFileRedirect
+> Task :androidApp:assembleDebug
+> Task :androidApp:lintAnalyzeDebug
+> Task :androidApp:lintAnalyzeRelease
+> Task :androidApp:produceReleaseComposeMapping
+> Task :androidApp:reportReleaseComposeMappingErrors
+> Task :androidApp:generateReleaseLintVitalReportModel
+> Task :androidApp:minifyReleaseWithR8
+> Task :androidApp:lintVitalAnalyzeRelease
+> Task :androidApp:lintVitalReportRelease SKIPPED
+> Task :androidApp:lintVitalRelease SKIPPED
+
+> Task :androidApp:lintReportDebug
+Wrote HTML report to file:///home/runner/work/Jamals-finance/Jamals-finance/native/androidApp/build/reports/lint-results-debug.html
+
+> Task :androidApp:lintDebug
+
+> Task :androidApp:lintReportRelease
+Wrote HTML report to file:///home/runner/work/Jamals-finance/Jamals-finance/native/androidApp/build/reports/lint-results-release.html
+
+> Task :androidApp:lintRelease
+> Task :androidApp:buildReleasePreBundle
+> Task :androidApp:mergeReleaseComposeMapping
+> Task :androidApp:compileReleaseArtProfile
+> Task :androidApp:packageReleaseBundle
+> Task :androidApp:signReleaseBundle
+> Task :androidApp:bundleRelease
+> Task :androidApp:produceReleaseBundleIdeListingFile
+> Task :androidApp:createReleaseBundleListingFileRedirect
+gradle/actions: Writing build results to /home/runner/work/_temp/.gradle-actions/build-results/native_build-1784801664682.json
+
+[Incubating] Problems report is available at: file:///home/runner/work/Jamals-finance/Jamals-finance/native/build/reports/problems/problems-report.html
+
+BUILD SUCCESSFUL in 4m 33s
+126 actionable tasks: 107 executed, 19 from cache
 Configuration cache entry stored.
+{
+  "versionName": "1.0.0-rc1",
+  "versionCode": 10,
+  "debugApplicationId": "com.jamalsfinance.app.native.dev",
+  "releaseCandidateApplicationId": "com.jamalsfinance.app.native.rc",
+  "debugApk": {
+    "path": "androidApp/build/outputs/apk/debug/androidApp-debug.apk",
+    "sha256": "f918b107d8f049ed9ba01b1e57def1314fe6ac19c10818da17a3e5e46da9be85"
+  },
+  "releaseAab": {
+    "path": "androidApp/build/outputs/bundle/release/androidApp-release.aab",
+    "sha256": "3a0e39781679acef91ca7e9fcae2d0e98a92a1b6d485fddba3e32786c7d91c89",
+    "sizeBytes": 5500611,
+    "signed": false,
+    "expectedCertificateSha256": "2F:7F:D9:B0:1F:59:F7:FB:A0:93:3F:55:AA:F2:AF:FB:8A:B2:72:1E:B3:97:02:17:B8:5F:66:8E:9A:CD:AE:40",
+    "actualCertificateSha256": ""
+  },
+  "r8Mapping": {
+    "present": true,
+    "sha256": "d1e916a23ca7a3bedfdacdb42c665b54cb93c20107a93c404fd60007a921cdd6"
+  }
+}
