@@ -4,13 +4,14 @@ import {
   FINANCE_BACKUP_DATA_KEYS,
   FINANCE_BACKUP_FORMAT,
   FINANCE_BACKUP_VERSION,
+  type FinanceBackup,
   getBackupRecordCount,
   parseFinanceImportResult,
   validateFinanceBackup,
   withFinanceBackupManifest,
 } from "./data-backup";
 
-function makeBackup() {
+function makeBackup(): FinanceBackup {
   return {
     format: FINANCE_BACKUP_FORMAT,
     version: FINANCE_BACKUP_VERSION,
@@ -20,7 +21,9 @@ function makeBackup() {
       ownerId: "22222222-2222-2222-2222-222222222222",
       app: "jamals-finance",
     },
-    data: Object.fromEntries(FINANCE_BACKUP_DATA_KEYS.map((key) => [key, []])),
+    data: Object.fromEntries(
+      FINANCE_BACKUP_DATA_KEYS.map((key) => [key, [] as unknown[]]),
+    ) as FinanceBackup["data"],
   };
 }
 
