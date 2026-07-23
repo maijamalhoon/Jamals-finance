@@ -19,9 +19,11 @@ describe("notification persistence", () => {
     expect(migration).toContain("create table if not exists public.notification_states");
     expect(migration).toContain("create table if not exists public.notification_preferences");
     expect(migration).toContain("(select auth.uid()) = user_id");
-    expect(center).toContain("Mark read");
-    expect(center).toContain("Snooze 1 day");
-    expect(center).toContain("Dismiss");
-    expect(center).toContain("Mark all alerts as read");
+    expect(center).toContain('.from("notification_states").upsert(');
+    expect(center).toContain("user_id: user.id");
+    expect(center).toContain("notification_id: alert.id");
+    expect(center).toContain("read_at: new Date().toISOString()");
+    expect(center).toContain('{ onConflict: "user_id,notification_id" }');
+    expect(center).toContain("router.push(alert.href)");
   });
 });

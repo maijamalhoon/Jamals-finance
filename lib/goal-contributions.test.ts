@@ -22,8 +22,9 @@ describe("goal contribution ledger", () => {
     expect(migration).toContain("set current_amount = greatest(current_amount - contribution_row.amount, 0)");
     expect(migration).not.toContain("insert into public.transactions");
     expect(migration).not.toContain("update public.accounts");
-    expect(modal).toContain('supabase.rpc(\n      "record_goal_contribution"');
-    expect(modal).toContain("It does not count as an expense or change the linked account balance.");
-
+    expect(modal).toContain('"record_goal_contribution_currency"');
+    expect(modal).toContain("p_amount_original: parsedAmount");
+    expect(modal).toContain("p_exchange_rate_to_pkr: exchangeRateToPkr");
+    expect(modal).toContain("Savings allocation only; linked account balance stays unchanged.");
   });
 });

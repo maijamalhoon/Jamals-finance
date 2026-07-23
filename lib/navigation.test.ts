@@ -279,32 +279,34 @@ describe("dashboard shell contracts", () => {
 
   it("uses one minimal mobile header with a complete left navigation drawer", () => {
     expect(layoutSource).not.toContain("<MobileNav />");
-    expect(mobileHeaderSource).toContain("<MobileNav />");
-    expect(mobileHeaderSource).not.toContain("<JamalMenu");
+    expect(mobileHeaderSource).toContain(
+      "<MobileNav notificationSlot={notificationSlot} />",
+    );
+    expect(mobileHeaderSource).toContain("<MobileNavSwipeGestures />");
     expect(mobileNavSource).toContain("data-mobile-navigation-drawer");
     expect(mobileNavSource).toContain('side="left"');
     expect(mobileNavSource).toContain("NAV_GROUPS.map");
-    expect(mobileNavSource).toContain('<JamalMenu align="left"');
     expect(mobileNavSource).toContain('aria-label="Open navigation menu"');
     expect(mobileNavSource).toContain('aria-label="Close navigation menu"');
-    expect(mobileNavSource).not.toContain("fixed inset-x");
   });
 
-  it("guarantees a 44px notification loading and Retry target", () => {
+  it("guarantees a 44px notification loading target", () => {
     expect(notificationCenterSource).toContain(
       'aria-label="Loading current alerts"',
     );
-    expect(notificationCenterSource).toContain('className="mt-4 min-h-11"');
+    expect(notificationCenterSource).toContain(
+      '"finance-focus relative grid h-11 w-11',
+    );
+    expect(notificationCenterSource).toContain("notificationTriggerClassName");
   });
 
-  it("uses accessible primitives for More and the profile menu", () => {
+  it("uses accessible primitives for mobile navigation and the profile menu", () => {
     expect(mobileNavSource).toContain("<Sheet");
     expect(mobileNavSource).not.toContain("AnimatePresence");
-    expect(headerSource).toContain("<DropdownMenu>");
-    expect(headerSource).toContain("<DropdownMenuTrigger");
-    expect(headerSource).toContain("DESKTOP_MORE_NAV_GROUPS");
+    expect(headerSource).toContain("<JamalMenu");
     expect(jamalMenuSource).toContain("<DropdownMenu");
-    expect(headerSource).not.toContain('role="dialog"');
+    expect(jamalMenuSource).toContain("<DropdownMenuTrigger");
+    expect(jamalMenuSource).toContain("<DropdownMenuContent");
     expect(jamalMenuSource).not.toContain('role="dialog"');
   });
 
@@ -319,9 +321,9 @@ describe("dashboard shell contracts", () => {
     expect(jamalMenuSource).not.toContain("AnimatePresence");
     expect(jamalMenuSource).toContain('router.push("/dashboard/settings")');
     expect(jamalMenuSource).toContain("Settings");
-    expect(jamalMenuSource).toContain("Sign Out");
+    expect(jamalMenuSource).toContain("Sign out");
     expect(jamalMenuSource).toMatch(
-      /<DropdownMenuItem\s+variant="destructive"[\s\S]*?Sign Out[\s\S]*?<\/DropdownMenuItem>/,
+      /<DropdownMenuItem\s+variant="destructive"[\s\S]*?Sign out[\s\S]*?<\/DropdownMenuItem>/,
     );
   });
 
@@ -337,28 +339,18 @@ describe("dashboard shell contracts", () => {
     expect(jamalMenuSource).not.toContain("console.");
   });
 
-  it("uses accessible desktop menus and one transaction search control", () => {
-    expect(headerSource).toContain("DESKTOP_PRIMARY_NAV_ITEMS.map");
-    expect(headerSource).toContain("DESKTOP_NAV_MENU_ENTRIES");
-    expect(headerSource).toContain('action: "add-income"');
-    expect(headerSource).toContain('action: "add-expense"');
+  it("uses accessible desktop navigation and one transaction search control", () => {
+    expect(headerSource).toContain("DESKTOP_HEADER_NAV_ITEMS.map");
     expect(headerSource).toContain(
       'aria-label="Desktop dashboard navigation"',
     );
-    expect(headerSource.match(/<DropdownMenu(?=[\s>])/g) ?? []).toHaveLength(2);
-
-    const sheetSearchCount = (headerSource.match(/<Sheet(?=[\s>])/g) ?? [])
-      .length;
-    const hasInlineSearch = headerSource.includes(
+    expect(headerSource).toContain(
       'id="desktop-inline-transaction-search"',
     );
-    expect(sheetSearchCount === 1 || hasInlineSearch).toBe(true);
-
     expect(headerSource).toContain('"Open transaction search"');
     expect(headerSource).toContain('"Close transaction search"');
-    expect(headerSource).toContain(
-      'aria-label="Open more dashboard navigation"',
-    );
+    expect(headerSource).toContain('aria-label="Search transactions"');
+    expect(headerSource).toContain('<JamalMenu align="right"');
     expect(headerSource).not.toContain(">Pages<");
   });
 

@@ -11,9 +11,10 @@ describe("transfer activity ledger", () => {
     );
 
     expect(source).toContain('.from("account_transfers")');
-    expect(source).toContain('type: "transfer" as const');
+    expect(source).toContain('type: "transfer",');
     expect(source).toContain("from_account:from_account_id(name)");
     expect(source).toContain("to_account:to_account_id(name)");
+    expect(source).toContain("mapAccountTransfer");
     expect(page).toContain('type === "transfer"');
   });
 });

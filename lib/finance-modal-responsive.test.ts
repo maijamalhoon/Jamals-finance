@@ -65,6 +65,8 @@ describe("global finance form responsive contract", () => {
     expect(fieldAuthoritySource).toContain(
       '"height", GLOBAL_FIELD_HEIGHT, "important"',
     );
-    expect(fieldAuthoritySource).toContain("window.visualViewport");
+    expect(fieldAuthoritySource).toContain("MutationObserver");
+    expect(fieldAuthoritySource).toContain("window.requestAnimationFrame");
+    expect(fieldAuthoritySource).toContain("collectManagedRoots");
   });
 });

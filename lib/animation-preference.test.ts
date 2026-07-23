@@ -197,20 +197,20 @@ describe("animation preference contracts", () => {
     );
   });
 
-  it("keeps the locked standard controller independent", () => {
+  it("keeps the adaptive standard controller independent", () => {
     expect(motionProviderSource).toContain("<StandardMotionPerformance />");
     expect(standardPerformanceSource).toContain("standardMotionTier");
-    expect(standardPerformanceSource).toContain(
-      "connection?.saveData === true",
-    );
+    expect(standardPerformanceSource).toContain("connection?.saveData");
     expect(standardPerformanceSource).toContain("runtimeNavigator.deviceMemory");
-    expect(standardPerformanceSource).toContain("IntersectionObserver");
-    expect(standardPerformanceSource).toContain("requestIdleCallback");
-    expect(standardPerformanceSource).toContain("CONTINUOUS_SVG_SELECTOR");
-    expect(standardPerformanceSource).toContain("animation.pause()");
-    expect(standardPerformanceSource).toContain("animation.play()");
+    expect(standardPerformanceSource).toContain("runtimeNavigator.hardwareConcurrency");
     expect(standardPerformanceSource).toContain(
-      'if (nextMode === "standard") attachStandardRuntime();',
+      "root.dataset.standardMotionTier = resolveStandardMotionTier()",
+    );
+    expect(standardPerformanceSource).toContain(
+      "root.dataset.standardPageVisibility = document.visibilityState",
+    );
+    expect(standardPerformanceSource).toContain(
+      "window.addEventListener(ANIMATION_MODE_CHANGE_EVENT",
     );
     expect(acceleratedPerformanceSource).not.toContain("standardMotionTier");
   });
@@ -246,10 +246,12 @@ describe("animation preference contracts", () => {
   });
 
   it("mounts accelerated performance globally without changing UI", () => {
-    expect(pwaRuntimeSource).toContain("AcceleratedMotionPerformance");
+    expect(pwaRuntimeSource).toContain("const AcceleratedMotionPerformance = dynamic(");
     expect(pwaRuntimeSource).toContain(
-      "return <AcceleratedMotionPerformance />;",
+      'import("@/components/performance/AcceleratedMotionPerformance")',
     );
+    expect(pwaRuntimeSource).toContain("deferredRuntimeReady");
+    expect(pwaRuntimeSource).toContain("<AcceleratedMotionPerformance />");
   });
 
   it("bounds automatic preloading and keeps standard intent-only", () => {

@@ -24,14 +24,22 @@ describe("investment ledger classification", () => {
 
   it("keeps linked contributions out of generic edit and delete actions", () => {
     expect(transactionRowSource).toContain('type === "investment"');
-    expect(transactionRowSource).toContain('const canDelete = type !== "investment"');
-    expect(transactionRowSource).toContain('label: "Investment contribution"');
+    expect(transactionRowSource).toContain(
+      'const canDelete = !isDeleted && type !== "investment"',
+    );
+    expect(transactionRowSource).toContain(
+      '(type === "income" || type === "expense")',
+    );
+    expect(transactionRowSource).toContain(
+      'return tx.item_name || tx.categories?.name || "Investment"',
+    );
   });
 
   it("renders investment receipts with their own neutral identity", () => {
-    expect(receiptSource).toContain(
-      'type ReceiptType = "income" | "expense" | "investment" | "refund" | "transfer"',
-    );
+    expect(receiptSource).toContain('type ReceiptType =');
+    expect(receiptSource).toContain('| "investment"');
+    expect(receiptSource).toContain('| "goal"');
     expect(receiptSource).toContain('label: "Investment contribution"');
+    expect(receiptSource).toContain('accent: "var(--investment)"');
   });
 });
