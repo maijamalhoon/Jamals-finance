@@ -1,5 +1,6 @@
 import "server-only";
 
+import { planKeyFromPlanCode } from "./catalog";
 import { resolveAccessPlan } from "./entitlements";
 import type { PlanKey, SubscriptionStatus } from "./types";
 import { createClient } from "@/lib/supabase/server";
@@ -44,14 +45,6 @@ const SUBSCRIPTION_STATUSES = new Set<SubscriptionStatus>([
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
-}
-
-export function planKeyFromPlanCode(planCode: string): PlanKey | null {
-  if (planCode === "free") return "free";
-  for (const planKey of ["go", "student", "plus", "pro"] as const) {
-    if (planCode === planKey || planCode.startsWith(`${planKey}_`)) return planKey;
-  }
-  return null;
 }
 
 function optionalDate(value: unknown): string | null | undefined {
