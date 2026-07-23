@@ -9,7 +9,7 @@ false
 === FIRST FAILURE CONTEXT ===
 Starting a Gradle Daemon (subsequent builds will be faster)
 Calculating task graph as no cached configuration is available for tasks: :shared:testAndroidHostTest :androidApp:lintDebug :androidApp:lintRelease :androidApp:assembleDebug :androidApp:bundleRelease
-gradle/actions: Writing build results to /home/runner/work/_temp/.gradle-actions/build-results/native_build-1784801255442.json
+gradle/actions: Writing build results to /home/runner/work/_temp/.gradle-actions/build-results/native_build-1784801385160.json
 
 FAILURE: Build failed with an exception.
 
@@ -212,5 +212,5 @@ Caused by: com.android.builder.errors.EvalIssueException: Build Type debug conta
 	... 155 more
 
 
-BUILD FAILED in 11s
+BUILD FAILED in 16s
 Configuration cache entry stored.
