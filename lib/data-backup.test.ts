@@ -19,7 +19,9 @@ function makeBackup() {
       ownerId: "22222222-2222-2222-2222-222222222222",
       app: "jamals-finance",
     },
-    data: Object.fromEntries(FINANCE_BACKUP_DATA_KEYS.map((key) => [key, []])),
+    data: Object.fromEntries(
+      FINANCE_BACKUP_DATA_KEYS.map((key) => [key, [] as unknown[]]),
+    ) as Record<(typeof FINANCE_BACKUP_DATA_KEYS)[number], unknown[]>,
   };
 }
 
