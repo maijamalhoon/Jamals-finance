@@ -130,7 +130,14 @@ export const REGIONAL_PRICES: Record<PricingTierKey, RegionalPlanPrices> = {
 };
 
 // Commercial launch tiers, not an official economic classification. Unlisted
-// countries safely fall back to Tier A until a deliberate override is added.
+// countries safely fall back to the middle Tier C until a deliberate override is added.
+const TIER_A_COUNTRIES = new Set([
+  "AD", "AT", "AU", "BE", "BM", "CA", "CH", "CY", "DE", "DK", "ES",
+  "FI", "FR", "GB", "GG", "HK", "IE", "IL", "IM", "IS", "IT", "JE",
+  "JP", "KR", "KY", "LI", "LU", "MC", "NL", "NO", "NZ", "PR", "SE",
+  "SG", "SM", "US", "VA", "VI",
+]);
+
 const TIER_B_COUNTRIES = new Set([
   "AE", "BH", "BN", "CL", "CN", "CR", "CZ", "EE", "GR", "HR", "HU",
   "KW", "LT", "LV", "MY", "OM", "PA", "PL", "PT", "QA", "RO", "SA",
@@ -167,7 +174,8 @@ export function getPricingTier(countryCode?: string | null): PricingTierKey {
   if (TIER_D_COUNTRIES.has(normalized)) return "D";
   if (TIER_C_COUNTRIES.has(normalized)) return "C";
   if (TIER_B_COUNTRIES.has(normalized)) return "B";
-  return "A";
+  if (TIER_A_COUNTRIES.has(normalized)) return "A";
+  return "C";
 }
 
 export function getPlanPrice(
