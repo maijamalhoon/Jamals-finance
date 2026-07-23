@@ -21,7 +21,7 @@ describe("password policy", () => {
   });
 
   it("requires a letter", () => {
-    expect(validatePasswordPolicy("123456789012!" )).toEqual({
+    expect(validatePasswordPolicy("123456789012!")).toEqual({
       ok: false,
       error: PASSWORD_POLICY_MESSAGE,
     });
