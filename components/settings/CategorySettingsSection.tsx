@@ -605,7 +605,7 @@ export default function CategorySettingsSection({
           className={`${financeModalContentClass} w-[calc(100vw-1rem)] ${
             dialogMode === "view"
               ? "sm:[--finance-modal-max-width:46rem]"
-              : "sm:[--finance-modal-max-width:40rem]"
+              : "sm:[--finance-modal-max-width:36rem]"
           }`}
         >
           <FinanceModalHeader
@@ -647,9 +647,8 @@ export default function CategorySettingsSection({
                     aria-hidden="true"
                   />
                   <p className="text-xs leading-5 text-text-secondary sm:text-sm sm:leading-6">
-                    Categories keep transactions, reports, emoji and color together.
-                    The selected visual is remembered everywhere without changing
-                    any existing financial data.
+                    Custom marker icons and colors stay with each category across
+                    transactions and reports without changing existing financial data.
                   </p>
                 </div>
 
@@ -657,15 +656,12 @@ export default function CategorySettingsSection({
                   <TypeSelector value={draftType} onChange={setDraftType} />
                 </FinanceFormField>
 
-                <div className="flex flex-col gap-3 border-t border-border pt-4 sm:flex-row sm:items-center sm:justify-between">
-                  <p className="text-xs font-semibold text-text-secondary">
-                    Permanent category memory
-                  </p>
+                <div className="border-t border-border pt-4">
                   <Button
                     type="submit"
                     size="lg"
                     disabled={!draftName.trim() || savingId === "new"}
-                    className="w-full sm:w-auto"
+                    className="w-full"
                   >
                     {savingId === "new" ? (
                       <Loader2 size={17} className="animate-spin" />
