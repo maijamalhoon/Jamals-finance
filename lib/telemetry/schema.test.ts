@@ -25,7 +25,15 @@ describe("privacy telemetry contracts", () => {
     expect(normalizeTelemetryRoute(`/${"a".repeat(241)}`)).toBeNull();
   });
 
-  it("accepts a strictly shaped web-vital payload", () => {
+  it("rejects control characters deterministically across repeated calls", () => {
+    expect(normalizeTelemetryRoute("/dashboard\n/private")).toBeNull();
+    expect(normalizeTelemetryRoute("/dashboard\n/private")).toBeNull();
+    expect(normalizeTelemetryRoute("/dashboard/settings")).toBe(
+      "/dashboard/settings",
+    );
+  });
+
+  it("accepts strictly shaped LCP and INP web-vital payloads", () => {
     expect(
       parseTelemetryPayload({
         sessionId,
@@ -45,6 +53,23 @@ describe("privacy telemetry contracts", () => {
       metricName: "LCP",
       metricValue: 1842.4,
       metricRating: "good",
+    });
+
+    expect(
+      parseTelemetryPayload({
+        sessionId,
+        eventName: "web_vital",
+        route: "/dashboard/transactions",
+        metricName: "INP",
+        metricValue: 212,
+        metricRating: "needs-improvement",
+      }),
+    ).toMatchObject({
+      eventName: "web_vital",
+      route: "/dashboard/transactions",
+      metricName: "INP",
+      metricValue: 212,
+      metricRating: "needs-improvement",
     });
   });
 
