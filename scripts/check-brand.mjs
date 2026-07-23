@@ -5,6 +5,7 @@ const filesThatMustUseTheBrandSystem = [
   "app/page.tsx",
   "app/manifest.ts",
   "app/opengraph-image.tsx",
+  "components/landing/PremiumLandingPage.tsx",
   "lib/constants.ts",
 ];
 
