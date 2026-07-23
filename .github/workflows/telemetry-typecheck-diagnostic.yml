@@ -1,9 +1,8 @@
 name: Telemetry typecheck diagnostic
 
 on:
-  push:
-    branches:
-      - agent/privacy-telemetry-foundation
+  pull_request:
+    types: [opened, synchronize, reopened]
 
 permissions:
   contents: read
