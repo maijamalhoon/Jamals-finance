@@ -2,12 +2,16 @@
 
 import type { ChangeEvent, FormEvent } from "react";
 import { useEffect, useMemo, useState } from "react";
+import { Popover } from "@base-ui/react/popover";
 import { useRouter } from "next/navigation";
 import {
   ArrowLeft,
   Check,
+  ChevronDown,
   Eye,
+  Lightbulb,
   Loader2,
+  Palette,
   Pencil,
   Plus,
   Save,
@@ -34,9 +38,13 @@ import {
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
+  CATEGORY_ICON_KEYS,
+  CATEGORY_VISUAL_COLORS,
   CategoryVisualIcon,
+  getCategoryIconComponent,
   getCategoryVisual,
   getNextCategoryVisual,
+  type CategoryIconKey,
   type CategoryKind,
   type CategoryVisualSource,
 } from "@/lib/category-visuals";
@@ -63,6 +71,109 @@ type Props = {
   userId: string;
   available: boolean;
 };
+
+type CategoryVisualValue = {
+  color: string;
+  iconKey: CategoryIconKey;
+};
+
+const QUICK_COLORS = [
+  "#475569",
+  "#DC2626",
+  "#EA580C",
+  "#CA8A04",
+  "#16A34A",
+  "#0891B2",
+  "#2563EB",
+  "#7C3AED",
+  "#DB2777",
+  "#334155",
+] as const;
+
+const INCOME_ICON_ORDER = [
+  "salary",
+  "banknote",
+  "briefcase",
+  "store",
+  "handCoins",
+  "bonus",
+  "growth",
+  "coins",
+  "building",
+  "receipt",
+  "education",
+  "gift",
+  "bank",
+  "cash",
+  "wallet",
+  "transfer",
+  "credit",
+  "tags",
+] as const;
+
+const EXPENSE_ICON_ORDER = [
+  "home",
+  "groceries",
+  "dining",
+  "drink",
+  "utilities",
+  "power",
+  "water",
+  "internet",
+  "phone",
+  "fuel",
+  "car",
+  "bike",
+  "bus",
+  "train",
+  "travel",
+  "ticket",
+  "medical",
+  "health",
+  "education",
+  "books",
+  "children",
+  "pets",
+  "personal",
+  "clothing",
+  "fitness",
+  "games",
+  "laptop",
+  "painting",
+  "repair",
+  "package",
+  "shopping",
+  "gift",
+  "tax",
+  "credit",
+  "savings",
+  "transfer",
+  "wallet",
+  "bank",
+  "receipt",
+  "tags",
+] as const;
+
+function formatIconLabel(iconKey: string) {
+  return iconKey
+    .replace(/([a-z])([A-Z])/g, "$1 $2")
+    .replace(/[-_]/g, " ")
+    .replace(/^./, (letter) => letter.toUpperCase());
+}
+
+function orderedIconKeys(type: CategoryKind) {
+  const preferred = type === "income" ? INCOME_ICON_ORDER : EXPENSE_ICON_ORDER;
+  const preferredSet = new Set<string>(preferred);
+  return [
+    ...preferred,
+    ...CATEGORY_ICON_KEYS.filter((iconKey) => !preferredSet.has(iconKey)),
+  ] as CategoryIconKey[];
+}
+
+function normalizeHex(value: string) {
+  const candidate = value.trim().toUpperCase();
+  return /^#[0-9A-F]{6}$/.test(candidate) ? candidate : null;
+}
 
 function TypeSelector({
   value,
@@ -114,6 +225,227 @@ function ModeBackButton({ onClick }: { onClick: () => void }) {
   );
 }
 
+function ParentCategoryPicker({
+  categories,
+  value,
+  onChange,
+  excludeId,
+}: {
+  categories: PersistentSettingsCategory[];
+  value: string;
+  onChange: (value: string) => void;
+  excludeId?: string;
+}) {
+  const choices = categories
+    .filter(
+      (category) =>
+        category.type === "expense" &&
+        !category.parent_id &&
+        category.id !== excludeId,
+    )
+    .sort((left, right) => left.name.localeCompare(right.name));
+
+  return (
+    <select
+      value={value}
+      onChange={(event) => onChange(event.target.value)}
+      className="finance-focus min-h-11 w-full rounded-[14px] border border-border bg-card px-3 text-sm font-semibold text-text-primary outline-none"
+    >
+      <option value="">Top level category</option>
+      {choices.map((category) => (
+        <option key={category.id} value={category.id}>
+          Under {category.name}
+        </option>
+      ))}
+    </select>
+  );
+}
+
+function CategoryVisualPicker({
+  type,
+  value,
+  onChange,
+  disabled = false,
+}: {
+  type: CategoryKind;
+  value: CategoryVisualValue;
+  onChange: (value: CategoryVisualValue) => void;
+  disabled?: boolean;
+}) {
+  const [open, setOpen] = useState(false);
+  const [hexDraft, setHexDraft] = useState(value.color);
+  const iconKeys = useMemo(() => orderedIconKeys(type), [type]);
+  const SelectedIcon = getCategoryIconComponent(value.iconKey);
+
+  useEffect(() => setHexDraft(value.color), [value.color]);
+
+  function commitHex() {
+    const normalized = normalizeHex(hexDraft);
+    if (!normalized) {
+      setHexDraft(value.color);
+      toast.error("Enter a valid six-digit hex color, for example #2563EB.");
+      return;
+    }
+    onChange({ ...value, color: normalized });
+  }
+
+  return (
+    <Popover.Root open={open} onOpenChange={setOpen}>
+      <Popover.Trigger
+        type="button"
+        disabled={disabled}
+        className="finance-focus group flex h-12 w-[4.25rem] shrink-0 items-center justify-center gap-1 rounded-[14px] border border-border bg-card transition-colors hover:bg-hover disabled:cursor-not-allowed disabled:opacity-60"
+        aria-label="Choose category color and icon"
+      >
+        <SelectedIcon
+          size={24}
+          strokeWidth={2.1}
+          absoluteStrokeWidth
+          style={{ color: value.color }}
+          aria-hidden="true"
+        />
+        <ChevronDown
+          size={13}
+          className={`text-text-tertiary transition-transform ${open ? "rotate-180" : ""}`}
+          aria-hidden="true"
+        />
+      </Popover.Trigger>
+
+      <Popover.Portal>
+        <Popover.Positioner
+          sideOffset={8}
+          align="start"
+          className="z-[200] outline-none"
+        >
+          <Popover.Popup className="max-h-[min(31rem,calc(100dvh-1rem))] w-[19.5rem] max-w-[calc(100vw-1rem)] overflow-y-auto rounded-[16px] border border-border bg-card p-3 text-text-primary shadow-[var(--shadow-premium)] outline-none">
+            <div
+              className="flex flex-wrap gap-2"
+              aria-label="Quick category colors"
+            >
+              {QUICK_COLORS.map((color) => {
+                const selected = value.color.toUpperCase() === color;
+                return (
+                  <button
+                    key={color}
+                    type="button"
+                    onClick={() => onChange({ ...value, color })}
+                    className="finance-focus grid size-7 place-items-center rounded-full border border-white/15 transition-transform hover:scale-110"
+                    style={{ backgroundColor: color }}
+                    aria-label={`Use color ${color}`}
+                  >
+                    {selected ? (
+                      <Check
+                        size={14}
+                        className="text-white drop-shadow"
+                        aria-hidden="true"
+                      />
+                    ) : null}
+                  </button>
+                );
+              })}
+            </div>
+
+            <div className="my-3 h-px bg-border" />
+
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <p className="text-xs font-bold text-text-primary">Custom color</p>
+                <p className="mt-0.5 text-[10px] text-text-tertiary">
+                  Pick any color or enter a hex value.
+                </p>
+              </div>
+              <label
+                className="finance-focus relative grid size-9 cursor-pointer place-items-center overflow-hidden rounded-full border-2 border-card shadow-[0_0_0_1px_var(--border)]"
+                style={{ backgroundColor: value.color }}
+                aria-label="Open custom color picker"
+              >
+                <Palette
+                  size={16}
+                  className="text-white drop-shadow"
+                  aria-hidden="true"
+                />
+                <input
+                  type="color"
+                  value={value.color}
+                  onChange={(event) =>
+                    onChange({ ...value, color: event.target.value.toUpperCase() })
+                  }
+                  className="absolute inset-0 cursor-pointer opacity-0"
+                />
+              </label>
+            </div>
+
+            <div className="mt-2 flex items-center gap-2">
+              <span className="text-[10px] font-bold uppercase tracking-[0.12em] text-text-tertiary">
+                Hex
+              </span>
+              <input
+                value={hexDraft}
+                onChange={(event) => setHexDraft(event.target.value)}
+                onBlur={commitHex}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter") {
+                    event.preventDefault();
+                    commitHex();
+                  }
+                }}
+                maxLength={7}
+                className="finance-focus h-9 min-w-0 flex-1 rounded-[10px] border border-border bg-surface-secondary px-3 font-mono text-xs font-semibold uppercase text-text-primary outline-none"
+                aria-label="Category color hex value"
+              />
+              <span
+                className="size-7 shrink-0 rounded-[8px] border border-border"
+                style={{ backgroundColor: value.color }}
+                aria-hidden="true"
+              />
+            </div>
+
+            <div className="my-3 h-px bg-border" />
+
+            <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.12em] text-text-tertiary">
+              {type === "income" ? "Income" : "Expense"} icons
+            </p>
+            <div className="grid max-h-52 grid-cols-7 gap-1 overflow-y-auto overscroll-contain pr-1">
+              {iconKeys.map((iconKey) => {
+                const Icon = getCategoryIconComponent(iconKey);
+                const selected = value.iconKey === iconKey;
+                const label = formatIconLabel(iconKey);
+                return (
+                  <button
+                    key={iconKey}
+                    type="button"
+                    title={label}
+                    onClick={() => onChange({ ...value, iconKey })}
+                    className={`finance-focus grid size-9 place-items-center rounded-[10px] border transition-colors ${
+                      selected
+                        ? "border-active bg-active/10"
+                        : "border-transparent text-text-secondary hover:border-border hover:bg-hover hover:text-text-primary"
+                    }`}
+                    style={selected ? { color: value.color } : undefined}
+                    aria-label={`Use ${label} icon`}
+                    aria-pressed={selected}
+                  >
+                    <Icon
+                      size={18}
+                      strokeWidth={2}
+                      absoluteStrokeWidth
+                      aria-hidden="true"
+                    />
+                  </button>
+                );
+              })}
+            </div>
+
+            <Popover.Close type="button" className="finance-focus mt-3 w-full rounded-[10px] border border-border bg-surface-secondary px-3 py-2 text-xs font-bold text-text-primary hover:bg-hover">
+              Done
+            </Popover.Close>
+          </Popover.Popup>
+        </Popover.Positioner>
+      </Popover.Portal>
+    </Popover.Root>
+  );
+}
+
 export default function CategoryManagementExperience({
   open,
   onOpenChange,
@@ -128,12 +460,22 @@ export default function CategoryManagementExperience({
   const [categories, setCategories] = useState(initialCategories);
   const [usage, setUsage] = useState(initialUsage);
   const [activeTab, setActiveTab] = useState<CategoryKind>("income");
+
   const [draftName, setDraftName] = useState("");
   const [draftType, setDraftType] = useState<CategoryKind>("income");
+  const [draftColor, setDraftColor] = useState<string>(CATEGORY_VISUAL_COLORS[0]);
+  const [draftIconKey, setDraftIconKey] = useState<CategoryIconKey>("tags");
+  const [draftParentId, setDraftParentId] = useState("");
+  const [draftVisualTouched, setDraftVisualTouched] = useState(false);
+
   const [savingId, setSavingId] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editName, setEditName] = useState("");
   const [editType, setEditType] = useState<CategoryKind>("income");
+  const [editColor, setEditColor] = useState<string>(CATEGORY_VISUAL_COLORS[0]);
+  const [editIconKey, setEditIconKey] = useState<CategoryIconKey>("tags");
+  const [editParentId, setEditParentId] = useState("");
+
   const [pendingDelete, setPendingDelete] =
     useState<PersistentSettingsCategory | null>(null);
   const [deleteFeedback, setDeleteFeedback] = useState<string | null>(null);
@@ -145,10 +487,23 @@ export default function CategoryManagementExperience({
     if (!open) return;
     setMode("home");
     setDraftName("");
+    setDraftParentId("");
+    setDraftVisualTouched(false);
     setEditingId(null);
     setPendingDelete(null);
     setDeleteFeedback(null);
   }, [open]);
+
+  const draftSuggestion = useMemo(
+    () => getNextCategoryVisual(categories, draftName || `New ${draftType}`, draftType),
+    [categories, draftName, draftType],
+  );
+
+  useEffect(() => {
+    if (draftVisualTouched) return;
+    setDraftColor(draftSuggestion.color);
+    setDraftIconKey(draftSuggestion.iconKey);
+  }, [draftSuggestion, draftVisualTouched]);
 
   const categoryById = useMemo(
     () => new Map(categories.map((category) => [category.id, category])),
@@ -164,10 +519,18 @@ export default function CategoryManagementExperience({
       }, {}),
     [categories],
   );
-  const draftVisual = useMemo(
-    () => getNextCategoryVisual(categories, draftName || "Category", draftType),
-    [categories, draftName, draftType],
-  );
+
+  function openCreate(type: CategoryKind) {
+    const visual = getNextCategoryVisual(categories, `New ${type}`, type);
+    setDraftName("");
+    setDraftType(type);
+    setDraftColor(visual.color);
+    setDraftIconKey(visual.iconKey);
+    setDraftParentId("");
+    setDraftVisualTouched(false);
+    setEditingId(null);
+    setMode("create");
+  }
 
   function hasDuplicateName(
     name: string,
@@ -195,7 +558,16 @@ export default function CategoryManagementExperience({
       return;
     }
 
-    const visual = getNextCategoryVisual(categories, name, draftType);
+    const validParent =
+      draftType === "expense" &&
+      draftParentId &&
+      categories.some(
+        (category) =>
+          category.id === draftParentId && category.type === "expense",
+      )
+        ? draftParentId
+        : null;
+
     setSavingId("new");
     const { data, error } = await supabase
       .from("categories")
@@ -203,9 +575,9 @@ export default function CategoryManagementExperience({
         user_id: userId,
         name,
         type: draftType,
-        color: visual.color,
-        icon_key: visual.iconKey,
-        parent_id: null,
+        color: draftColor,
+        icon_key: draftIconKey,
+        parent_id: validParent,
       })
       .select("id, name, type, color, icon_key, parent_id")
       .single();
@@ -222,19 +594,24 @@ export default function CategoryManagementExperience({
     setDraftName("");
     setActiveTab(created.type);
     setMode("view");
-    toast.success(`${name} created with its own color and icon.`);
+    toast.success(`${name} created. Its icon and color are saved permanently.`);
     router.refresh();
   }
 
   function startEdit(category: PersistentSettingsCategory) {
+    const visual = getCategoryVisual(category);
     setEditingId(category.id);
     setEditName(category.name);
     setEditType(category.type);
+    setEditColor(visual.color);
+    setEditIconKey(visual.iconKey);
+    setEditParentId(category.parent_id ?? "");
   }
 
   function cancelEdit() {
     setEditingId(null);
     setEditName("");
+    setEditParentId("");
   }
 
   async function updateCategory(category: PersistentSettingsCategory) {
@@ -253,13 +630,25 @@ export default function CategoryManagementExperience({
       return;
     }
 
+    const validParent =
+      nextType === "expense" &&
+      editParentId &&
+      editParentId !== category.id &&
+      categories.some(
+        (item) => item.id === editParentId && item.type === "expense",
+      )
+        ? editParentId
+        : null;
+
     setSavingId(category.id);
     const { data, error } = await supabase
       .from("categories")
       .update({
         name,
         type: nextType,
-        parent_id: nextType === "income" ? null : category.parent_id,
+        color: editColor,
+        icon_key: editIconKey,
+        parent_id: validParent,
       })
       .eq("id", category.id)
       .eq("user_id", userId)
@@ -278,7 +667,7 @@ export default function CategoryManagementExperience({
     );
     setActiveTab(updated.type);
     cancelEdit();
-    toast.success(`${name} updated. Its color and icon stayed unchanged.`);
+    toast.success(`${name} updated with its saved icon and color.`);
     router.refresh();
   }
 
@@ -377,10 +766,7 @@ export default function CategoryManagementExperience({
             type="button"
             size="sm"
             className="mt-4"
-            onClick={() => {
-              setDraftType(type);
-              setMode("create");
-            }}
+            onClick={() => openCreate(type)}
           >
             <Plus size={15} /> Create category
           </Button>
@@ -405,7 +791,15 @@ export default function CategoryManagementExperience({
                 className="rounded-[22px] border border-active/30 bg-surface-secondary p-3 sm:p-4"
               >
                 <div className="flex min-w-0 items-center gap-3">
-                  <CategoryVisualIcon category={category} size="sm" />
+                  <CategoryVisualPicker
+                    type={editType}
+                    value={{ color: editColor, iconKey: editIconKey }}
+                    onChange={(visual) => {
+                      setEditColor(visual.color);
+                      setEditIconKey(visual.iconKey);
+                    }}
+                    disabled={savingId === category.id}
+                  />
                   <Input
                     value={editName}
                     onChange={(event: ChangeEvent<HTMLInputElement>) =>
@@ -418,8 +812,11 @@ export default function CategoryManagementExperience({
                 <div className="mt-3">
                   <TypeSelector
                     value={editType}
-                    onChange={setEditType}
-                    disabled={!canChangeType}
+                    onChange={(nextType) => {
+                      setEditType(nextType);
+                      if (nextType === "income") setEditParentId("");
+                    }}
+                    disabled={!canChangeType || savingId === category.id}
                   />
                 </div>
                 {!canChangeType ? (
@@ -427,6 +824,19 @@ export default function CategoryManagementExperience({
                     Type remains locked while transactions or subcategories use this category.
                   </p>
                 ) : null}
+                {editType === "expense" ? (
+                  <div className="mt-3">
+                    <ParentCategoryPicker
+                      categories={categories}
+                      value={editParentId}
+                      onChange={setEditParentId}
+                      excludeId={category.id}
+                    />
+                  </div>
+                ) : null}
+                <p className="mt-3 text-xs leading-5 text-text-secondary">
+                  The selected icon and color are remembered everywhere this category appears.
+                </p>
                 <div className="mt-3 flex flex-col gap-2 min-[390px]:flex-row min-[390px]:justify-end">
                   <Button
                     type="button"
@@ -484,7 +894,7 @@ export default function CategoryManagementExperience({
                     {childCount > 0 ? ` · ${childCount} subcategories` : ""}
                   </p>
                   <p className="mt-1 text-[10px] font-semibold uppercase tracking-[0.08em] text-text-tertiary">
-                    Visual locked · {visual.color}
+                    Saved identity · {formatIconLabel(visual.iconKey)} · {visual.color}
                   </p>
                 </div>
                 <div className="flex shrink-0 items-center gap-1">
@@ -524,7 +934,7 @@ export default function CategoryManagementExperience({
         >
           <FinanceModalHeader
             title="Categories"
-            description="Manage saved categories or create a new one with an automatic permanent color and icon."
+            description="Create, organize, and permanently remember every income and expense category visual."
             icon={Tags}
             tone="info"
           />
@@ -552,7 +962,7 @@ export default function CategoryManagementExperience({
                     View Categories
                   </span>
                   <span className="mt-1 block text-sm leading-6 text-text-secondary">
-                    Review all existing income and expense categories, their usage, color, and icon.
+                    See current income and expense categories with their saved icon, color, hierarchy, and usage.
                   </span>
                   <span className="mt-4 block text-xs font-bold text-active">
                     {categories.length} saved categories
@@ -561,7 +971,7 @@ export default function CategoryManagementExperience({
 
                 <button
                   type="button"
-                  onClick={() => setMode("create")}
+                  onClick={() => openCreate(activeTab)}
                   className="finance-focus group rounded-[24px] border border-active/25 bg-active/5 p-5 text-left transition-all hover:-translate-y-0.5 hover:border-active/40 hover:bg-active/10 hover:shadow-[var(--shadow-soft)]"
                 >
                   <span className="finance-icon-bubble h-12 w-12 text-active">
@@ -571,10 +981,10 @@ export default function CategoryManagementExperience({
                     Create Category
                   </span>
                   <span className="mt-1 block text-sm leading-6 text-text-secondary">
-                    Enter a name, choose income or expense, and create. The visual is assigned automatically.
+                    Use the project-style visual picker to choose a permanent color and finance icon.
                   </span>
                   <span className="mt-4 block text-xs font-bold text-active">
-                    Simple three-step creation
+                    Income and expense icon library
                   </span>
                 </button>
               </div>
@@ -583,23 +993,20 @@ export default function CategoryManagementExperience({
                 <ModeBackButton onClick={() => setMode("home")} />
                 <form
                   onSubmit={addCategory}
-                  className="rounded-[24px] border border-active/20 bg-surface-secondary p-4 sm:p-5"
+                  className="rounded-[24px] border border-border bg-card p-4 shadow-[var(--shadow-soft)] sm:p-5"
                 >
-                  <div className="flex min-w-0 items-center gap-3">
-                    <CategoryVisualIcon
-                      color={draftVisual.color}
-                      iconKey={draftVisual.iconKey}
-                      label={draftName || `New ${draftType}`}
-                      size="lg"
-                    />
-                    <div className="min-w-0 flex-1">
-                      <p className="text-base font-extrabold text-text-primary">
-                        Create a category
+                  <div className="flex items-center justify-between gap-3">
+                    <div>
+                      <p className="text-lg font-extrabold text-text-primary">
+                        Create category
                       </p>
                       <p className="mt-1 text-xs leading-5 text-text-secondary">
-                        This color and icon will stay attached to the category everywhere.
+                        Give it a name, type, icon, color, and optional parent.
                       </p>
                     </div>
+                    <span className="rounded-full border border-border bg-surface-secondary px-3 py-1 text-[10px] font-bold uppercase tracking-[0.1em] text-text-tertiary">
+                      Saved memory
+                    </span>
                   </div>
 
                   <div className="mt-5 grid gap-4">
@@ -607,35 +1014,85 @@ export default function CategoryManagementExperience({
                       label="Category name"
                       htmlFor="persistent-category-name"
                     >
-                      <Input
-                        id="persistent-category-name"
-                        value={draftName}
-                        onChange={(event: ChangeEvent<HTMLInputElement>) =>
-                          setDraftName(event.target.value)
-                        }
-                        placeholder="e.g. Salary, Rent, Fuel"
-                        autoComplete="off"
-                      />
+                      <div className="flex min-w-0 items-center gap-2">
+                        <CategoryVisualPicker
+                          type={draftType}
+                          value={{ color: draftColor, iconKey: draftIconKey }}
+                          onChange={(visual) => {
+                            setDraftColor(visual.color);
+                            setDraftIconKey(visual.iconKey);
+                            setDraftVisualTouched(true);
+                          }}
+                          disabled={savingId === "new"}
+                        />
+                        <Input
+                          id="persistent-category-name"
+                          value={draftName}
+                          onChange={(event: ChangeEvent<HTMLInputElement>) =>
+                            setDraftName(event.target.value)
+                          }
+                          placeholder="e.g. Salary, Rent, Fuel"
+                          autoComplete="off"
+                          className="min-w-0 flex-1"
+                          autoFocus
+                        />
+                      </div>
                     </FinanceFormField>
+
+                    <div className="flex items-start gap-3 rounded-[16px] border border-border bg-surface-secondary p-3">
+                      <Lightbulb
+                        size={18}
+                        className="mt-0.5 shrink-0 text-text-tertiary"
+                        aria-hidden="true"
+                      />
+                      <p className="text-xs leading-5 text-text-secondary">
+                        This icon and color stay attached to the category in transactions, reports, budgets, and settings. You can change them later without losing category history.
+                      </p>
+                    </div>
+
                     <FinanceFormField label="Type">
                       <TypeSelector
                         value={draftType}
-                        onChange={setDraftType}
+                        onChange={(nextType) => {
+                          setDraftType(nextType);
+                          setDraftParentId("");
+                          setDraftVisualTouched(false);
+                        }}
+                        disabled={savingId === "new"}
                       />
                     </FinanceFormField>
-                    <Button
-                      type="submit"
-                      size="lg"
-                      disabled={!draftName.trim() || savingId === "new"}
-                      className="w-full"
-                    >
-                      {savingId === "new" ? (
-                        <Loader2 size={17} className="animate-spin" />
-                      ) : (
-                        <Plus size={17} />
-                      )}
-                      {savingId === "new" ? "Creating..." : "Create Category"}
-                    </Button>
+
+                    {draftType === "expense" ? (
+                      <FinanceFormField label="Parent category (optional)">
+                        <ParentCategoryPicker
+                          categories={categories}
+                          value={draftParentId}
+                          onChange={setDraftParentId}
+                        />
+                      </FinanceFormField>
+                    ) : null}
+
+                    <div className="flex flex-col-reverse gap-2 pt-1 min-[420px]:flex-row min-[420px]:justify-end">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => setMode("home")}
+                        disabled={savingId === "new"}
+                      >
+                        Cancel
+                      </Button>
+                      <Button
+                        type="submit"
+                        disabled={!draftName.trim() || savingId === "new"}
+                      >
+                        {savingId === "new" ? (
+                          <Loader2 size={17} className="animate-spin" />
+                        ) : (
+                          <Plus size={17} />
+                        )}
+                        {savingId === "new" ? "Creating..." : "Create category"}
+                      </Button>
+                    </div>
                   </div>
                 </form>
               </div>
@@ -646,10 +1103,7 @@ export default function CategoryManagementExperience({
                   <Button
                     type="button"
                     size="sm"
-                    onClick={() => {
-                      setDraftType(activeTab);
-                      setMode("create");
-                    }}
+                    onClick={() => openCreate(activeTab)}
                   >
                     <Plus size={15} /> Create Category
                   </Button>
