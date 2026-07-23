@@ -16,7 +16,7 @@ a {
  * A few legacy/business forms still use semantic native select and date-like
  * inputs for their existing state and validation logic. Keep that logic intact,
  * but remove browser/OS chrome so every visible control follows the shared
- * Jamal's Finance field language on desktop, tablet, mobile and installed PWA.
+ * JALVORO field language on desktop, tablet, mobile and installed PWA.
  */
 select:not([multiple]) {
   -webkit-appearance: none !important;

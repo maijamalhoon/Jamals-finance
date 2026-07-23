@@ -1,3 +1,4 @@
+import { APP_NAME } from "@/lib/brand";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -935,7 +936,7 @@ function insightPrompt(
   summary: FinanceSummary,
   context: CurrencyContext,
 ) {
-  return `You are the private finance assistant inside Jamal's Finance native app.
+  return `You are the private finance assistant inside ${APP_NAME} native app.
 Use only the summarized data below. Never invent transactions, account names, people, dates, or financial facts.
 Stored values are PKR. Display currency is ${context.currency}. One PKR equals ${context.pkrToDisplayRate} ${context.currency}. ${
     context.rateLive
@@ -966,7 +967,7 @@ function chatPrompt(
   context: CurrencyContext,
   question: string,
 ) {
-  return `You are the private finance assistant inside Jamal's Finance native app.
+  return `You are the private finance assistant inside ${APP_NAME} native app.
 Answer only from the summarized finance data. Do not invent raw transactions, account names, people, references, dates, or categories that are not present.
 Stored values are PKR. Display currency is ${context.currency}. One PKR equals ${context.pkrToDisplayRate} ${context.currency}. ${
     context.rateLive

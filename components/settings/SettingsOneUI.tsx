@@ -1,4 +1,6 @@
 "use client";
+
+import { APP_NAME } from "@/lib/brand";
 import type { FormEvent, KeyboardEvent, ReactNode } from "react";
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
@@ -2255,7 +2257,7 @@ export default function SettingsOneUI({
         </button>
 
         <footer className="pb-3 text-center text-xs leading-6 text-text-secondary">
-          <p>Jamal&apos;s Finance OS - v2.0.0</p>
+          <p>{APP_NAME} OS - v2.0.0</p>
           <p>Theme and controls synced for this device</p>
         </footer>
       </motion.div>

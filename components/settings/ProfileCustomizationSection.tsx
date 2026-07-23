@@ -1,5 +1,6 @@
 "use client";
 
+import { APP_NAME } from "@/lib/brand";
 import {
   Camera,
   ImageUp,
@@ -274,7 +275,7 @@ export default function ProfileCustomizationSection({
           >
             <FinanceModalHeader
               title="Customize Profile"
-              description="Choose your profile image and the name shown across Jamal’s Finance."
+              description={`Choose your profile image and the name shown across ${APP_NAME}.`}
               icon={Camera}
               tone="info"
             />

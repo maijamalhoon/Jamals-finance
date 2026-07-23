@@ -1,5 +1,6 @@
 "use client";
 
+import { APP_NAME } from "@/lib/brand";
 import Link from "next/link";
 import { BrainCircuit, ShieldCheck, X } from "@/components/icons/jalvoro/compat";
 import type { ReactNode } from "react";
@@ -49,7 +50,7 @@ export default function AIConsentGate({ children }: { children: ReactNode }) {
             Choose before using external AI
           </h1>
           <p className="mt-4 text-sm leading-7 text-text-secondary">
-            Jamal&apos;s Finance first tries local, deterministic calculations. When a question or briefing needs Gemini and the provider is configured, the Service may send your question plus a summarized finance context to Google Gemini.
+            {APP_NAME} first tries local, deterministic calculations. When a question or briefing needs Gemini and the provider is configured, the Service may send your question plus a summarized finance context to Google Gemini.
           </p>
 
           <div className="mt-5 rounded-[20px] bg-surface-secondary px-4 py-4 text-sm leading-6 text-text-secondary sm:px-5">

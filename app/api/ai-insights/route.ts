@@ -1,3 +1,4 @@
+import { APP_NAME } from "@/lib/brand";
 import { getAppMonthRange, getDaysInMonth, formatDateKey } from "@/lib/dates";
 import { getPayableStatus } from "@/lib/finance-options";
 import {
@@ -944,7 +945,7 @@ function buildInsightPrompt(
   summary: FinanceSummary,
   context: CurrencyRequestContext,
 ) {
-  return `You are a personal finance assistant for Jamal's Finance.
+  return `You are a personal finance assistant for ${APP_NAME}.
 Use only this summarized finance data. Do not ask for raw transaction rows.
 Stored/base currency is ${summary.baseCurrency}. The user's selected display currency is ${context.currency}.
 Use ${context.currency} for every user-facing money value. Convert stored PKR values with 1 USD = ${context.rate.toFixed(2)} PKR. ${context.live ? "The rate is live." : "The rate is a fallback and should be treated as approximate."}
@@ -972,7 +973,7 @@ function buildChatPrompt(
   question: string,
   context: CurrencyRequestContext,
 ) {
-  return `You are the Gemini finance chat assistant inside Jamal's Finance.
+  return `You are the Gemini finance chat assistant inside ${APP_NAME}.
 Answer the user's question using only the summarized finance data below.
 Do not mention raw transaction access. Do not invent account names, transaction descriptions, or people.
 Stored/base currency is ${summary.baseCurrency}. The user's selected display currency is ${context.currency}.

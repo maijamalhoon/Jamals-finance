@@ -1,5 +1,6 @@
 "use client";
 
+import { APP_NAME } from "@/lib/brand";
 import type { ReactNode } from "react";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -230,7 +231,7 @@ export default function SettingsDataTransferSection({
           onClick={handleUpload}
           disabled={dataActionsDisabled}
           className="finance-focus settings-data-upload-button"
-          aria-label="Import a Jamal’s Finance backup"
+          aria-label={`Import a ${APP_NAME} backup`}
           title="Import data"
         >
           <span className="settings-data-upload-pulse" aria-hidden="true" />

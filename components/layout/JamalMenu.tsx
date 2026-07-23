@@ -1,5 +1,6 @@
 "use client";
 
+import { APP_NAME } from "@/lib/brand";
 import {
   Building2,
   ChevronDown,
@@ -217,7 +218,7 @@ export default function JamalMenu({
   const drawer = variant === "drawer";
   const floating = variant === "floating";
   const headerMenu = compact || floating;
-  const profileSubtitle = email || "Jamal's Finance account";
+  const profileSubtitle = email || `${APP_NAME} account`;
 
   return (
     <DropdownMenu open={menuOpen} onOpenChange={handleMenuOpenChange}>
