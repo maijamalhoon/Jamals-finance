@@ -1,6 +1,6 @@
 # Jamal's Finance Native v0.6.0 — Personal Platform
 
-This native milestone is intentionally limited to personal finance. Business ERP, inventory, sales, purchases, CRM, tax, team, banking, budgeting, and document modules remain outside the native application and will be developed as separate business software later.
+This native milestone is intentionally limited to personal finance. Business ERP, inventory, sales, purchases, CRM, tax, team, banking, budgeting, branches, and document modules remain outside the native application and will be developed as separate business software later.
 
 ## Included
 
@@ -21,7 +21,7 @@ This native milestone is intentionally limited to personal finance. Business ERP
 
 - Uses the current authenticated Supabase session.
 - Uses the existing publishable mobile client key only.
-- Does not include a service-role key, database password, or signing key.
+- Does not include a service-role key, database password, signing key, or Gemini key.
 - Reuses existing RLS-protected tables and authenticated RPC contracts.
 - Backup validation is capped at 25 MB and 100,000 personal finance records.
 - Avatar uploads are limited to JPG, PNG, or WebP up to 3 MB.
@@ -43,4 +43,4 @@ gradle :shared:testAndroidHostTest
 gradle :androidApp:assembleDebug
 ```
 
-The uploaded debug APK must come from the same successful workflow run.
+The uploaded debug APK must come from the same successful workflow run. The final integration is based on the latest protected `main` history so concurrent website and business-software commits remain preserved.
