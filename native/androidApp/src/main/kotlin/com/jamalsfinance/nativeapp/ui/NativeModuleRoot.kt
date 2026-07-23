@@ -33,6 +33,7 @@ import androidx.compose.ui.unit.dp
 import com.jamalsfinance.shared.finance.FinanceRepository
 import com.jamalsfinance.shared.goals.GoalsPayablesRepository
 import com.jamalsfinance.shared.investments.InvestmentsAnalyticsRepository
+import com.jamalsfinance.shared.personal.PersonalPlatformRepository
 import com.jamalsfinance.shared.reports.ReportsInsightsRepository
 import kotlinx.coroutines.launch
 
@@ -42,6 +43,7 @@ private enum class NativeWorkspace {
     GoalsPayables,
     InvestmentsAnalytics,
     ReportsInsights,
+    PersonalPlatform,
 }
 
 @Composable
@@ -51,6 +53,8 @@ fun NativeModuleRootShell(
     goalsPayablesRepository: GoalsPayablesRepository,
     investmentsAnalyticsRepository: InvestmentsAnalyticsRepository,
     reportsInsightsRepository: ReportsInsightsRepository,
+    personalPlatformRepository: PersonalPlatformRepository,
+    nativePreferences: AndroidNativePreferences,
     onSignOut: suspend () -> Unit,
 ) {
     var workspace by remember { mutableStateOf(NativeWorkspace.Launcher) }
@@ -65,6 +69,7 @@ fun NativeModuleRootShell(
             onGoalsPayables = { workspace = NativeWorkspace.GoalsPayables },
             onInvestmentsAnalytics = { workspace = NativeWorkspace.InvestmentsAnalytics },
             onReportsInsights = { workspace = NativeWorkspace.ReportsInsights },
+            onPersonalPlatform = { workspace = NativeWorkspace.PersonalPlatform },
             onSignOut = onSignOut,
         )
         NativeWorkspace.AccountsTransactions -> NativeDashboardShell(
@@ -84,6 +89,12 @@ fun NativeModuleRootShell(
             repository = reportsInsightsRepository,
             onBack = { workspace = NativeWorkspace.Launcher },
         )
+        NativeWorkspace.PersonalPlatform -> PersonalPlatformDashboard(
+            repository = personalPlatformRepository,
+            preferences = nativePreferences,
+            onBack = { workspace = NativeWorkspace.Launcher },
+            onSignOut = onSignOut,
+        )
     }
 }
 
@@ -95,6 +106,7 @@ private fun NativeModuleLauncher(
     onGoalsPayables: () -> Unit,
     onInvestmentsAnalytics: () -> Unit,
     onReportsInsights: () -> Unit,
+    onPersonalPlatform: () -> Unit,
     onSignOut: suspend () -> Unit,
 ) {
     val scope = rememberCoroutineScope()
@@ -105,7 +117,7 @@ private fun NativeModuleLauncher(
                     Column {
                         Text("Jamal's Finance", fontWeight = FontWeight.Bold)
                         Text(
-                            "Native modules",
+                            "Native personal finance",
                             style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
@@ -124,7 +136,7 @@ private fun NativeModuleLauncher(
                 Text(email, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 Spacer(Modifier.height(6.dp))
                 Text(
-                    "Choose a native workspace. Press Android Back inside a workspace to return here.",
+                    "Choose a personal finance workspace. Business software is intentionally separate.",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -162,6 +174,14 @@ private fun NativeModuleLauncher(
                 )
             }
             item {
+                ModuleCard(
+                    title = "Profile, Alerts & Data",
+                    description = "Profile image and name, currency, theme, deadline alerts, password and complete backup/restore.",
+                    action = "Open personal settings",
+                    onClick = onPersonalPlatform,
+                )
+            }
+            item {
                 OutlinedButton(
                     onClick = { scope.launch { onSignOut() } },
                     modifier = Modifier.fillMaxWidth(),
@@ -196,7 +216,11 @@ private fun ModuleCard(
                 style = MaterialTheme.typography.bodyMedium,
             )
             Spacer(Modifier.height(18.dp))
-            Button(onClick = onClick, modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(16.dp)) {
+            Button(
+                onClick = onClick,
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(16.dp),
+            ) {
                 Text(action)
             }
         }
