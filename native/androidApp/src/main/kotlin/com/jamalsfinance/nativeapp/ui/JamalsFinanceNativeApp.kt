@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
@@ -26,6 +27,12 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.liveRegion
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
@@ -57,7 +64,10 @@ fun JamalsFinanceNativeApp(
         onSecureWindowChanged(localPreferences.blockScreenshots)
     }
 
-    JamalsFinanceTheme(themeMode = localPreferences.themeMode) {
+    JamalsFinanceTheme(
+        themeMode = localPreferences.themeMode,
+        highContrast = localPreferences.highContrast,
+    ) {
         Surface(modifier = Modifier.fillMaxSize()) {
             if (
                 authRepository == null ||
@@ -72,7 +82,7 @@ fun JamalsFinanceNativeApp(
                 val state by authRepository.state.collectAsStateWithLifecycle()
                 LaunchedEffect(authRepository) { authRepository.restoreSession() }
                 when (val current = state) {
-                    AuthState.Restoring -> CenteredProgress()
+                    AuthState.Restoring -> CenteredProgress("Restoring your secure session")
                     AuthState.SignedOut -> LoginScreen(authRepository)
                     is AuthState.SignedIn -> NativeAppLockGate(
                         preferences = nativePreferences,
@@ -103,12 +113,16 @@ private fun LoginScreen(repository: AuthRepository, initialMessage: String? = nu
     var loading by remember { mutableStateOf(false) }
     var message by remember(initialMessage) { mutableStateOf(initialMessage) }
 
-    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+    Box(Modifier.fillMaxSize().padding(horizontal = 24.dp), contentAlignment = Alignment.Center) {
         Column(
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 28.dp),
+            modifier = Modifier.fillMaxWidth().widthIn(max = 520.dp),
             verticalArrangement = Arrangement.Center,
         ) {
-            Text("Jamal's Finance", style = MaterialTheme.typography.headlineMedium)
+            Text(
+                "Jamal's Finance",
+                style = MaterialTheme.typography.headlineMedium,
+                modifier = Modifier.semantics { heading() },
+            )
             Text(
                 "True native personal finance",
                 style = MaterialTheme.typography.bodyMedium,
@@ -135,7 +149,11 @@ private fun LoginScreen(repository: AuthRepository, initialMessage: String? = nu
             )
             message?.let {
                 Spacer(Modifier.height(12.dp))
-                Text(it, color = MaterialTheme.colorScheme.error)
+                Text(
+                    it,
+                    color = MaterialTheme.colorScheme.error,
+                    modifier = Modifier.semantics { liveRegion = LiveRegionMode.Assertive },
+                )
             }
             Spacer(Modifier.height(20.dp))
             Button(
@@ -150,12 +168,22 @@ private fun LoginScreen(repository: AuthRepository, initialMessage: String? = nu
                         loading = false
                     }
                 },
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .semantics {
+                        stateDescription = if (loading) "Signing in" else "Ready"
+                    },
                 enabled = !loading,
                 shape = RoundedCornerShape(16.dp),
             ) {
-                if (loading) CircularProgressIndicator(strokeWidth = 2.dp)
-                else Text("Sign in")
+                if (loading) {
+                    CircularProgressIndicator(
+                        strokeWidth = 2.dp,
+                        modifier = Modifier.semantics { contentDescription = "Signing in" },
+                    )
+                } else {
+                    Text("Sign in")
+                }
             }
             TextButton(
                 onClick = {
@@ -182,13 +210,22 @@ private fun ConfigurationRequired() {
         Text(
             "Native configuration is missing. Add JAMALS_SUPABASE_URL and " +
                 "JAMALS_SUPABASE_PUBLISHABLE_KEY to native/local.properties.",
+            modifier = Modifier.semantics { liveRegion = LiveRegionMode.Assertive },
         )
     }
 }
 
 @Composable
-private fun CenteredProgress() {
-    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+private fun CenteredProgress(label: String) {
+    Box(
+        Modifier
+            .fillMaxSize()
+            .semantics {
+                contentDescription = label
+                liveRegion = LiveRegionMode.Polite
+            },
+        contentAlignment = Alignment.Center,
+    ) {
         CircularProgressIndicator()
     }
 }

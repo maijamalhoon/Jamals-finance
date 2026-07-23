@@ -2,6 +2,7 @@ package com.jamalsfinance.nativeapp.ui
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -10,9 +11,10 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -22,14 +24,22 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.jamalsfinance.shared.accessibility.PersonalAdaptiveLayout
+import com.jamalsfinance.shared.accessibility.personalHorizontalPaddingDp
+import com.jamalsfinance.shared.accessibility.selectPersonalAdaptiveLayout
 import com.jamalsfinance.shared.finance.FinanceRepository
 import com.jamalsfinance.shared.goals.GoalsPayablesRepository
 import com.jamalsfinance.shared.investments.InvestmentsAnalyticsRepository
@@ -45,7 +55,15 @@ private enum class NativeWorkspace {
     ReportsInsights,
     PersonalPlatform,
     PrivacySecurity,
+    AccessibilityDisplay,
 }
+
+private data class NativeModuleItem(
+    val title: String,
+    val description: String,
+    val action: String,
+    val onClick: () -> Unit,
+)
 
 @Composable
 fun NativeModuleRootShell(
@@ -72,6 +90,7 @@ fun NativeModuleRootShell(
             onReportsInsights = { workspace = NativeWorkspace.ReportsInsights },
             onPersonalPlatform = { workspace = NativeWorkspace.PersonalPlatform },
             onPrivacySecurity = { workspace = NativeWorkspace.PrivacySecurity },
+            onAccessibilityDisplay = { workspace = NativeWorkspace.AccessibilityDisplay },
             onSignOut = onSignOut,
         )
         NativeWorkspace.AccountsTransactions -> NativeDashboardShell(
@@ -101,6 +120,10 @@ fun NativeModuleRootShell(
             preferences = nativePreferences,
             onBack = { workspace = NativeWorkspace.Launcher },
         )
+        NativeWorkspace.AccessibilityDisplay -> AccessibilityDisplayDashboard(
+            preferences = nativePreferences,
+            onBack = { workspace = NativeWorkspace.Launcher },
+        )
     }
 }
 
@@ -114,15 +137,65 @@ private fun NativeModuleLauncher(
     onReportsInsights: () -> Unit,
     onPersonalPlatform: () -> Unit,
     onPrivacySecurity: () -> Unit,
+    onAccessibilityDisplay: () -> Unit,
     onSignOut: suspend () -> Unit,
 ) {
     val scope = rememberCoroutineScope()
+    val modules = listOf(
+        NativeModuleItem(
+            title = "Accounts & Transactions",
+            description = "Accounts, balances, income, expenses, transfers, search and deleted history.",
+            action = "Open core finance",
+            onClick = onAccountsTransactions,
+        ),
+        NativeModuleItem(
+            title = "Goals & Payables",
+            description = "Savings goals, contribution history, payables, repayments and due-status tracking.",
+            action = "Open goals & payables",
+            onClick = onGoalsPayables,
+        ),
+        NativeModuleItem(
+            title = "Investments & Analytics",
+            description = "Portfolio lots, live market prices, profit/loss, cash out, cash-flow and spending intelligence.",
+            action = "Open investments & analytics",
+            onClick = onInvestmentsAnalytics,
+        ),
+        NativeModuleItem(
+            title = "Reports & AI Insights",
+            description = "Date-range reports, native CSV export, financial health, secure insights and finance chat.",
+            action = "Open reports & AI insights",
+            onClick = onReportsInsights,
+        ),
+        NativeModuleItem(
+            title = "Profile, Alerts & Data",
+            description = "Profile image and name, currency, theme, deadline alerts, password and complete backup/restore.",
+            action = "Open personal settings",
+            onClick = onPersonalPlatform,
+        ),
+        NativeModuleItem(
+            title = "Privacy & App Lock",
+            description = "Biometric or device-credential lock, auto-lock timing, secure screenshots and recent-app protection.",
+            action = "Open privacy protection",
+            onClick = onPrivacySecurity,
+        ),
+        NativeModuleItem(
+            title = "Accessibility & Display",
+            description = "High contrast, adaptive tablet layout, large-text protection and Android accessibility controls.",
+            action = "Open accessibility settings",
+            onClick = onAccessibilityDisplay,
+        ),
+    )
+
     Scaffold(
         topBar = {
             TopAppBar(
                 title = {
                     Column {
-                        Text("Jamal's Finance", fontWeight = FontWeight.Bold)
+                        Text(
+                            "Jamal's Finance",
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.semantics { heading() },
+                        )
                         Text(
                             "Native personal finance",
                             style = MaterialTheme.typography.labelSmall,
@@ -133,76 +206,73 @@ private fun NativeModuleLauncher(
             )
         },
     ) { padding ->
-        LazyColumn(
+        BoxWithConstraints(
             modifier = Modifier.fillMaxSize().padding(padding),
-            contentPadding = PaddingValues(18.dp, 16.dp, 18.dp, 28.dp),
-            verticalArrangement = Arrangement.spacedBy(14.dp),
+            contentAlignment = Alignment.TopCenter,
         ) {
-            item {
-                Text("Signed in as", style = MaterialTheme.typography.labelLarge)
-                Text(email, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                Spacer(Modifier.height(6.dp))
-                Text(
-                    "Choose a personal finance workspace. Business software is intentionally separate.",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
+            val widthDp = maxWidth.value.toInt()
+            val fontScale = LocalDensity.current.fontScale
+            val layout = selectPersonalAdaptiveLayout(widthDp, fontScale)
+            val horizontalPadding = personalHorizontalPaddingDp(widthDp).dp
+            val moduleRows = if (layout == PersonalAdaptiveLayout.TwoColumn) {
+                modules.chunked(2)
+            } else {
+                modules.map(::listOf)
             }
-            item {
-                ModuleCard(
-                    title = "Accounts & Transactions",
-                    description = "Accounts, balances, income, expenses, transfers, search and deleted history.",
-                    action = "Open core finance",
-                    onClick = onAccountsTransactions,
-                )
-            }
-            item {
-                ModuleCard(
-                    title = "Goals & Payables",
-                    description = "Savings goals, contribution history, payables, repayments and due-status tracking.",
-                    action = "Open goals & payables",
-                    onClick = onGoalsPayables,
-                )
-            }
-            item {
-                ModuleCard(
-                    title = "Investments & Analytics",
-                    description = "Portfolio lots, live market prices, profit/loss, cash out, cash-flow and spending intelligence.",
-                    action = "Open investments & analytics",
-                    onClick = onInvestmentsAnalytics,
-                )
-            }
-            item {
-                ModuleCard(
-                    title = "Reports & AI Insights",
-                    description = "Date-range reports, native CSV export, financial health, secure insights and finance chat.",
-                    action = "Open reports & AI insights",
-                    onClick = onReportsInsights,
-                )
-            }
-            item {
-                ModuleCard(
-                    title = "Profile, Alerts & Data",
-                    description = "Profile image and name, currency, theme, deadline alerts, password and complete backup/restore.",
-                    action = "Open personal settings",
-                    onClick = onPersonalPlatform,
-                )
-            }
-            item {
-                ModuleCard(
-                    title = "Privacy & App Lock",
-                    description = "Biometric or device-credential lock, auto-lock timing, secure screenshots and recent-app protection.",
-                    action = "Open privacy protection",
-                    onClick = onPrivacySecurity,
-                )
-            }
-            item {
-                OutlinedButton(
-                    onClick = { scope.launch { onSignOut() } },
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(18.dp),
-                ) {
-                    Text("Sign out")
+
+            LazyColumn(
+                modifier = Modifier.fillMaxSize().widthIn(max = 1_100.dp),
+                contentPadding = PaddingValues(
+                    start = horizontalPadding,
+                    end = horizontalPadding,
+                    top = 16.dp,
+                    bottom = 28.dp,
+                ),
+                verticalArrangement = Arrangement.spacedBy(14.dp),
+            ) {
+                item {
+                    Text("Signed in as", style = MaterialTheme.typography.labelLarge)
+                    Text(
+                        email,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.semantics { contentDescription = "Signed in as $email" },
+                    )
+                    Spacer(Modifier.height(6.dp))
+                    Text(
+                        "Choose a personal finance workspace. Business software is intentionally separate.",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+
+                items(moduleRows, key = { row -> row.joinToString("|") { it.title } }) { row ->
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(14.dp),
+                    ) {
+                        row.forEach { item ->
+                            ModuleCard(
+                                title = item.title,
+                                description = item.description,
+                                action = item.action,
+                                onClick = item.onClick,
+                                modifier = Modifier.weight(1f),
+                            )
+                        }
+                        if (row.size == 1 && layout == PersonalAdaptiveLayout.TwoColumn) {
+                            Spacer(Modifier.weight(1f))
+                        }
+                    }
+                }
+
+                item {
+                    OutlinedButton(
+                        onClick = { scope.launch { onSignOut() } },
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(18.dp),
+                    ) {
+                        Text("Sign out")
+                    }
                 }
             }
         }
@@ -215,15 +285,23 @@ private fun ModuleCard(
     description: String,
     action: String,
     onClick: () -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     Card(
+        onClick = onClick,
+        modifier = modifier.semantics(mergeDescendants = true) {
+            contentDescription = "$title. $description. $action"
+        },
         shape = RoundedCornerShape(26.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
     ) {
         Column(Modifier.fillMaxWidth().padding(20.dp)) {
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                Text(title, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-            }
+            Text(
+                title,
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.semantics { heading() },
+            )
             Spacer(Modifier.height(8.dp))
             Text(
                 description,
@@ -231,13 +309,12 @@ private fun ModuleCard(
                 style = MaterialTheme.typography.bodyMedium,
             )
             Spacer(Modifier.height(18.dp))
-            Button(
-                onClick = onClick,
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(16.dp),
-            ) {
-                Text(action)
-            }
+            Text(
+                action,
+                color = MaterialTheme.colorScheme.primary,
+                style = MaterialTheme.typography.labelLarge,
+                fontWeight = FontWeight.SemiBold,
+            )
         }
     }
 }

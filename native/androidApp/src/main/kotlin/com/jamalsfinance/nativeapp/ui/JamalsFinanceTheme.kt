@@ -39,9 +39,34 @@ private val DarkColors = darkColorScheme(
     outlineVariant = Color(0xFF26374A),
 )
 
+private val LightHighContrastColors = LightColors.copy(
+    background = Color.White,
+    surface = Color.White,
+    surfaceContainer = Color(0xFFF4F6F9),
+    surfaceContainerLow = Color.White,
+    onBackground = Color.Black,
+    onSurface = Color.Black,
+    onSurfaceVariant = Color(0xFF283241),
+    outline = Color(0xFF263547),
+    outlineVariant = Color(0xFF6C7888),
+)
+
+private val DarkHighContrastColors = DarkColors.copy(
+    background = Color.Black,
+    surface = Color.Black,
+    surfaceContainer = Color(0xFF0A1422),
+    surfaceContainerLow = Color.Black,
+    onBackground = Color.White,
+    onSurface = Color.White,
+    onSurfaceVariant = Color(0xFFE4EAF2),
+    outline = Color(0xFFCBD6E5),
+    outlineVariant = Color(0xFF8290A3),
+)
+
 @Composable
 fun JamalsFinanceTheme(
     themeMode: NativeThemeMode = NativeThemeMode.System,
+    highContrast: Boolean = false,
     content: @Composable () -> Unit,
 ) {
     val dark = when (themeMode) {
@@ -49,8 +74,14 @@ fun JamalsFinanceTheme(
         NativeThemeMode.Light -> false
         NativeThemeMode.Dark -> true
     }
+    val colors = when {
+        dark && highContrast -> DarkHighContrastColors
+        dark -> DarkColors
+        highContrast -> LightHighContrastColors
+        else -> LightColors
+    }
     MaterialTheme(
-        colorScheme = if (dark) DarkColors else LightColors,
+        colorScheme = colors,
         content = content,
     )
 }
