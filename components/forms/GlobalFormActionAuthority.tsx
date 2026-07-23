@@ -10,6 +10,8 @@ const AUTH_ACTION_SELECTOR = [
   ".auth-step button.w-full:not(.auth-provider-action)",
   ".jf-auth-card button.w-full:not(.auth-provider-action)",
 ].join(",");
+const ACTION_ROOT_SELECTOR =
+  '.finance-modal-content, [data-slot="dialog-content"]';
 const UNIFIED_ACTION_RADIUS = "var(--jf-global-final-action-radius, 1.3rem)";
 
 function compactText(value: string) {
@@ -25,9 +27,7 @@ function isConfirmationDialog(dialog: HTMLElement) {
 
 function getActionRoots() {
   return Array.from(
-    document.querySelectorAll<HTMLElement>(
-      '.finance-modal-content, [data-slot="dialog-content"]',
-    ),
+    document.querySelectorAll<HTMLElement>(ACTION_ROOT_SELECTOR),
   ).filter(
     (dialog) =>
       dialog.classList.contains("finance-modal-content") ||
@@ -131,6 +131,26 @@ function syncAction(button: HTMLButtonElement, root: HTMLElement) {
   applyUnifiedCurve(button);
 }
 
+function getActionRoot(button: HTMLButtonElement) {
+  const root = button.closest<HTMLElement>(ACTION_ROOT_SELECTOR);
+  if (!root) return null;
+  if (root.classList.contains("finance-modal-content")) return root;
+  return isConfirmationDialog(root) ? root : null;
+}
+
+function syncButton(button: HTMLButtonElement) {
+  const root = getActionRoot(button);
+  if (root) syncAction(button, root);
+  else {
+    delete button.dataset.jfFormAction;
+    delete button.dataset.jfGlobalActionManaged;
+    clearLegacyGeneratedPresentation(button);
+    if (!button.matches(AUTH_ACTION_SELECTOR)) clearUnifiedCurve(button);
+  }
+
+  if (button.matches(AUTH_ACTION_SELECTOR)) applyUnifiedCurve(button);
+}
+
 function syncActions() {
   getActionRoots().forEach((root) => {
     root
@@ -143,21 +163,63 @@ function syncActions() {
     .forEach(applyUnifiedCurve);
 }
 
+function collectButtons(node: Node, buttons: Set<HTMLButtonElement>) {
+  const element =
+    node instanceof Element
+      ? node
+      : node.parentElement instanceof Element
+        ? node.parentElement
+        : null;
+  if (!element) return;
+
+  if (element instanceof HTMLButtonElement) buttons.add(element);
+  element
+    .querySelectorAll<HTMLButtonElement>("button")
+    .forEach((button) => buttons.add(button));
+
+  const closestButton = element.closest<HTMLButtonElement>("button");
+  if (closestButton) buttons.add(closestButton);
+
+  const actionRoot = element.closest<HTMLElement>(ACTION_ROOT_SELECTOR);
+  const titleChanged = Boolean(
+    element.matches('[data-slot="dialog-title"]') ||
+      element.closest('[data-slot="dialog-title"]'),
+  );
+  if (actionRoot && (titleChanged || element === actionRoot)) {
+    actionRoot
+      .querySelectorAll<HTMLButtonElement>("button")
+      .forEach((button) => buttons.add(button));
+  }
+}
+
 export default function GlobalFormActionAuthority() {
   useEffect(() => {
     let frame: number | null = null;
+    const pendingButtons = new Set<HTMLButtonElement>();
+
+    const flush = () => {
+      frame = null;
+      const buttons = Array.from(pendingButtons).filter(
+        (button) => button.isConnected,
+      );
+      pendingButtons.clear();
+      buttons.forEach(syncButton);
+    };
 
     const schedule = () => {
-      if (frame !== null) return;
-      frame = window.requestAnimationFrame(() => {
-        frame = null;
-        syncActions();
-      });
+      if (frame !== null || pendingButtons.size === 0) return;
+      frame = window.requestAnimationFrame(flush);
     };
 
     syncActions();
 
-    const observer = new MutationObserver(schedule);
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        collectButtons(mutation.target, pendingButtons);
+        mutation.addedNodes.forEach((node) => collectButtons(node, pendingButtons));
+      });
+      schedule();
+    });
     observer.observe(document.body, {
       childList: true,
       subtree: true,
@@ -175,6 +237,7 @@ export default function GlobalFormActionAuthority() {
 
     return () => {
       observer.disconnect();
+      pendingButtons.clear();
       if (frame !== null) window.cancelAnimationFrame(frame);
 
       document
