@@ -9,13 +9,15 @@ import {
 
 const TELEMETRY_ENDPOINT = "/api/telemetry";
 const TELEMETRY_SESSION_KEY = "jalvoro-telemetry-session-v1";
-const PERFORMANCE_SAMPLE_RATE = 0.25;
+const PERFORMANCE_SAMPLE_RATE = 0.1;
 const LONG_TASK_MINIMUM_MS = 200;
+const MAX_CLIENT_PAYLOAD_BYTES = 4 * 1024;
 
 let initialized = false;
 let performanceSampled = false;
 let latestLcp = 0;
 let cumulativeLayoutShift = 0;
+let longestInteraction = 0;
 let finalMetricsFlushed = false;
 
 type TelemetryClientPayload = {
@@ -45,13 +47,32 @@ type IdleWindow = Window & {
   ) => number;
 };
 
+type PrivacyAwareNavigator = Navigator & {
+  globalPrivacyControl?: boolean;
+};
+
 type LayoutShiftEntry = PerformanceEntry & {
   value: number;
   hadRecentInput: boolean;
 };
 
+type EventTimingEntry = PerformanceEntry & {
+  duration: number;
+  interactionId?: number;
+};
+
 function telemetryEnabled() {
   return process.env.NEXT_PUBLIC_TELEMETRY_ENABLED === "true";
+}
+
+function privacySignalsAllowTelemetry() {
+  if (typeof navigator === "undefined") return false;
+
+  const privacyNavigator = navigator as PrivacyAwareNavigator;
+  return (
+    privacyNavigator.globalPrivacyControl !== true &&
+    navigator.doNotTrack !== "1"
+  );
 }
 
 function isProtectedProductRoute(route: string) {
@@ -87,11 +108,21 @@ function scheduleTelemetryWork(work: () => void) {
 }
 
 function transmit(payload: TelemetryClientPayload) {
-  if (!telemetryEnabled() || !isProtectedProductRoute(payload.route)) return;
+  if (
+    !telemetryEnabled() ||
+    !privacySignalsAllowTelemetry() ||
+    !isProtectedProductRoute(payload.route)
+  ) {
+    return;
+  }
 
   scheduleTelemetryWork(() => {
     try {
       const body = JSON.stringify(payload);
+      if (new TextEncoder().encode(body).byteLength > MAX_CLIENT_PAYLOAD_BYTES) {
+        return;
+      }
+
       const blob = new Blob([body], { type: "application/json" });
 
       if (navigator.sendBeacon?.(TELEMETRY_ENDPOINT, blob)) return;
@@ -140,6 +171,10 @@ function metricRating(
 
   if (name === "CLS") {
     return value <= 0.1 ? "good" : value <= 0.25 ? "needs-improvement" : "poor";
+  }
+
+  if (name === "INP") {
+    return value <= 200 ? "good" : value <= 500 ? "needs-improvement" : "poor";
   }
 
   return "unrated";
@@ -203,6 +238,19 @@ function installPerformanceObservers() {
     } catch {}
   }
 
+  if (supported.includes("event")) {
+    try {
+      const inpObserver = new PerformanceObserver((list) => {
+        for (const entry of list.getEntries() as EventTimingEntry[]) {
+          if ((entry.interactionId ?? 0) > 0) {
+            longestInteraction = Math.max(longestInteraction, entry.duration);
+          }
+        }
+      });
+      inpObserver.observe({ type: "event", buffered: true });
+    } catch {}
+  }
+
   if (supported.includes("longtask")) {
     try {
       const longTaskObserver = new PerformanceObserver((list) => {
@@ -223,6 +271,7 @@ function flushFinalMetrics() {
 
   if (latestLcp > 0) reportMetric("LCP", latestLcp);
   reportMetric("CLS", cumulativeLayoutShift);
+  if (longestInteraction > 0) reportMetric("INP", longestInteraction);
 }
 
 function startTelemetryAfterLoad() {
@@ -248,7 +297,14 @@ function startTelemetryAfterLoad() {
 }
 
 export function initializePrivacyTelemetry() {
-  if (initialized || !telemetryEnabled() || typeof window === "undefined") return;
+  if (
+    initialized ||
+    typeof window === "undefined" ||
+    !telemetryEnabled() ||
+    !privacySignalsAllowTelemetry()
+  ) {
+    return;
+  }
   initialized = true;
 
   queueMicrotask(() => {
@@ -265,7 +321,13 @@ export function reportTelemetryRouterTransition(
   url: string,
   navigationType: TelemetryNavigationType,
 ) {
-  if (!telemetryEnabled() || typeof window === "undefined") return;
+  if (
+    typeof window === "undefined" ||
+    !telemetryEnabled() ||
+    !privacySignalsAllowTelemetry()
+  ) {
+    return;
+  }
 
   let route: string | null = null;
   try {
@@ -294,6 +356,8 @@ export function trackTelemetryFeature(
     result?: TelemetryResult;
   } = {},
 ) {
+  if (!privacySignalsAllowTelemetry()) return;
+
   send({
     eventName: options.eventName ?? "feature_used",
     feature,
