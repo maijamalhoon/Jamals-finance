@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import {
   BadgeCheck,
   ClipboardCheck,
+  Factory,
   FileArchive,
   Landmark,
   MapPinned,
@@ -46,6 +47,10 @@ const PROTECTED_PERMISSIONS = [
   { value: "payroll.manage", label: "Manage employees & pay rules", icon: WalletCards },
   { value: "payroll.process", label: "Calculate & post payroll", icon: BadgeCheck },
   { value: "payroll.pay", label: "Pay salaries", icon: WalletCards },
+  { value: "assets.view", label: "View fixed assets", icon: Factory },
+  { value: "assets.manage", label: "Manage asset register", icon: Factory },
+  { value: "assets.depreciate", label: "Run depreciation", icon: BadgeCheck },
+  { value: "assets.dispose", label: "Dispose or write off", icon: Factory },
   { value: "documents.view", label: "View records", icon: FileArchive },
   { value: "documents.manage", label: "Manage records", icon: FileArchive },
   { value: "branches.view", label: "View branches", icon: MapPinned },
@@ -76,7 +81,7 @@ export default function BusinessFinancialPermissionPanel({
         <div>
           <h2 className="text-base font-black text-text-primary sm:text-lg">Protected workspace access</h2>
           <p className="mt-1 text-sm leading-6 text-text-secondary">
-            Banking, planning, payroll, company-record, branch, and approval permissions are tenant-scoped. Saving here preserves every unrelated CRM, sales, inventory, shop, and team permission.
+            Banking, planning, payroll, fixed-asset, company-record, branch, and approval permissions are tenant-scoped. Saving here preserves every unrelated CRM, sales, inventory, shop, and team permission.
           </p>
         </div>
       </div>
@@ -95,7 +100,7 @@ export default function BusinessFinancialPermissionPanel({
         </div>
       ) : (
         <div className="mt-5 rounded-[var(--radius-button)] bg-surface-secondary px-5 py-8 text-center text-sm text-text-secondary">
-          Add another team member to configure Banking, Budgeting, Payroll, Documents, Branches, or Approvals access.
+          Add another team member to configure Banking, Budgeting, Payroll, Fixed Assets, Documents, Branches, or Approvals access.
         </div>
       )}
     </section>
