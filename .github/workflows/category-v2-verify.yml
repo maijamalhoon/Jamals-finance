@@ -14,8 +14,9 @@ permissions:
 jobs:
   verify:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 25
     env:
+      CI: "true"
       NEXT_TELEMETRY_DISABLED: "1"
       NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
       NEXT_PUBLIC_SUPABASE_ANON_KEY: ci-build-placeholder
@@ -37,6 +38,15 @@ jobs:
           status=$?
           echo "status=$status" >> "$GITHUB_OUTPUT"
           exit 0
+      - name: Run complete tests and capture output
+        id: tests
+        shell: bash
+        run: |
+          set +e
+          npm test > /tmp/category-v2-tests.log 2>&1
+          status=$?
+          echo "status=$status" >> "$GITHUB_OUTPUT"
+          exit 0
       - name: Run build and capture output
         id: build
         shell: bash
@@ -52,10 +62,12 @@ jobs:
           name: category-v2-verification-logs
           path: |
             /tmp/category-v2-typecheck.log
+            /tmp/category-v2-tests.log
             /tmp/category-v2-build.log
           if-no-files-found: error
           retention-days: 1
       - name: Enforce verification result
         run: |
           test "${{ steps.typecheck.outputs.status }}" = "0"
+          test "${{ steps.tests.outputs.status }}" = "0"
           test "${{ steps.build.outputs.status }}" = "0"
