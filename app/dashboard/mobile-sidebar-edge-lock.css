@@ -2,12 +2,14 @@
 
 /*
  * Final mobile/tablet navigation drawer position authority.
- * This file must stay last in the dashboard CSS import order so generic
- * dialog/sheet rules cannot pull the drawer away from the left viewport edge.
+ * Keep this file last in the dashboard CSS import order so generic dialog/sheet
+ * rules cannot pull the drawer away from the left viewport edge.
+ *
+ * Base UI portals do not guarantee a rendered portal wrapper element, so these
+ * selectors intentionally target the drawer popup itself.
  */
 @media (max-width: 1023px) {
   html body
-    [data-slot="sheet-portal"]
     [data-mobile-navigation-drawer][data-slot="sheet-content"][data-side="left"] {
     --jf-mobile-drawer-top-gap: max(1rem, env(safe-area-inset-top));
     --jf-mobile-drawer-bottom-gap: max(1rem, env(safe-area-inset-bottom));
@@ -22,6 +24,8 @@
       var(--jf-mobile-drawer-top-gap)
       var(--jf-mobile-drawer-bottom-gap) !important;
     inset-inline: 0 auto !important;
+    inset-inline-start: 0 !important;
+    inset-inline-end: auto !important;
     top: var(--jf-mobile-drawer-top-gap) !important;
     right: auto !important;
     bottom: var(--jf-mobile-drawer-bottom-gap) !important;
@@ -35,6 +39,8 @@
     ) !important;
     margin: 0 !important;
     margin-inline: 0 !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
     overflow: hidden !important;
     border: 0 !important;
     border-radius: 0 2rem 2rem 0 !important;
@@ -47,16 +53,13 @@
   }
 
   .dark
-    [data-slot="sheet-portal"]
     [data-mobile-navigation-drawer][data-slot="sheet-content"][data-side="left"] {
     box-shadow: 20px 0 58px rgb(0 0 0 / 0.56) !important;
   }
 
   html body
-      [data-slot="sheet-portal"]
       [data-mobile-navigation-drawer][data-slot="sheet-content"][data-side="left"][data-starting-style],
   html body
-      [data-slot="sheet-portal"]
       [data-mobile-navigation-drawer][data-slot="sheet-content"][data-side="left"][data-ending-style] {
     translate: 0 0 !important;
     transform: translate3d(-2.5rem, 0, 0) !important;
@@ -65,7 +68,6 @@
 
 @media (min-width: 640px) and (max-width: 1023px) {
   html body
-    [data-slot="sheet-portal"]
     [data-mobile-navigation-drawer][data-slot="sheet-content"][data-side="left"] {
     width: min(62vw, 23rem) !important;
   }
