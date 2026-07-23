@@ -28,7 +28,9 @@ class AndroidEncryptedSnapshotStore(context: Context) : OfflineSnapshotStore {
         withContext(Dispatchers.IO) {
             runCatching {
                 val file = cacheFile(namespace, userId)
-                if (!file.isFile || file.length() <= 0L || file.length() > MAX_ENCRYPTED_BYTES) return@runCatching null
+                if (!file.isFile || file.length() <= 0L || file.length() > MAX_ENCRYPTED_BYTES.toLong()) {
+                    return@runCatching null
+                }
                 val bytes = file.readBytes()
                 val ivSize = bytes.firstOrNull()?.toInt()?.and(0xFF) ?: return@runCatching null
                 if (ivSize !in 12..32 || bytes.size <= 1 + ivSize) return@runCatching null
@@ -74,7 +76,7 @@ class AndroidEncryptedSnapshotStore(context: Context) : OfflineSnapshotStore {
     private fun cacheFile(namespace: String, userId: String): File {
         val digest = MessageDigest.getInstance("SHA-256")
             .digest("$namespace|$userId".encodeToByteArray())
-            .joinToString("") { byte -> "%02x".format(byte) }
+            .joinToString("") { byte -> "%02x".format(byte.toInt() and 0xFF) }
         return File(directory, "$digest.cache")
     }
 
@@ -101,6 +103,6 @@ class AndroidEncryptedSnapshotStore(context: Context) : OfflineSnapshotStore {
         const val KEY_ALIAS = "jamals_finance_offline_cache_key_v1"
         const val TRANSFORMATION = "AES/GCM/NoPadding"
         const val MAX_CLEAR_BYTES = 8 * 1024 * 1024
-        const val MAX_ENCRYPTED_BYTES = MAX_CLEAR_BYTES + 64 * 1024L
+        const val MAX_ENCRYPTED_BYTES = MAX_CLEAR_BYTES + 64 * 1024
     }
 }
