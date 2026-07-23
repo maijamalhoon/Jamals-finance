@@ -1,4 +1,8 @@
-import { getAppMonthRange } from "@/lib/dates";
+import {
+  buildAIPreferenceInstruction,
+  loadAIPreferences,
+  type AIPreferences,
+} from "@/lib/ai/ai-preferences";
 import {
   BASE_CURRENCY,
   formatMoney,
@@ -6,11 +10,12 @@ import {
   normalizeUsdToPkrRate,
   type SupportedCurrency,
 } from "@/lib/currency";
+import { getAppMonthRange } from "@/lib/dates";
+import type { AppLanguage, AppLanguageOption } from "@/lib/i18n/config";
 import {
   buildAIResponseLanguageInstruction,
   resolveRequestLanguage,
 } from "@/lib/i18n/request-language";
-import type { AppLanguage, AppLanguageOption } from "@/lib/i18n/config";
 import { createClient } from "@/lib/supabase/server";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -420,12 +425,14 @@ function buildPrompt({
   context,
   language,
   displayName,
+  preferences,
 }: {
   summary: ChatSummary;
   question: string;
   context: CurrencyContext;
   language: AppLanguageOption;
   displayName: string;
+  preferences: AIPreferences;
 }) {
   return `You are Jamals Finance AI, a finance and accounts assistant attached to the authenticated user's financial profile.
 ${buildAIResponseLanguageInstruction(language)}
@@ -436,7 +443,7 @@ For inappropriate or adult content, give one brief warning and do not continue t
 Use only the verified summarized finance data below. Never invent records, names, dates, rates, or calculations.
 Use ${context.currency} for every user-facing money value. Stored values are PKR and 1 USD = ${context.rate.toFixed(2)} PKR. ${context.live ? "The exchange rate is live." : "The exchange rate is approximate."}
 If the requested answer cannot be calculated exactly from this summary, clearly identify the missing data instead of estimating it.
-Keep the default answer short and clear. Give a detailed explanation only when the user explicitly asks for details.
+${buildAIPreferenceInstruction(preferences)}
 
 Verified finance summary:
 ${JSON.stringify(summary, null, 2)}
@@ -446,7 +453,7 @@ ${question}
 
 Return only valid JSON in this exact shape:
 {
-  "answer": "short personalized answer",
+  "answer": "personalized finance answer",
   "followUps": ["short finance follow-up", "short finance follow-up"]
 }`;
 }
@@ -473,11 +480,26 @@ function parseJsonObject(text: string) {
   }
 }
 
-function parseGeminiChat(text: string, displayName: string) {
+function answerLimit(preferences: AIPreferences) {
+  return preferences.responseLength === "detailed"
+    ? 2400
+    : preferences.responseLength === "balanced"
+      ? 1600
+      : 1000;
+}
+
+function parseGeminiChat(
+  text: string,
+  displayName: string,
+  preferences: AIPreferences,
+) {
   const parsed = parseJsonObject(text);
   if (!isRecord(parsed) || typeof parsed.answer !== "string") return null;
 
-  const answer = ensureNamedAnswer(parsed.answer.slice(0, 1400), displayName);
+  const answer = ensureNamedAnswer(
+    parsed.answer.slice(0, answerLimit(preferences)),
+    displayName,
+  );
   if (!answer) return null;
 
   const followUps = Array.isArray(parsed.followUps)
@@ -491,18 +513,28 @@ function parseGeminiChat(text: string, displayName: string) {
   return { answer, followUps };
 }
 
+function outputTokenLimit(preferences: AIPreferences) {
+  return preferences.responseLength === "detailed"
+    ? 1500
+    : preferences.responseLength === "balanced"
+      ? 1000
+      : 650;
+}
+
 async function askGemini({
   summary,
   question,
   context,
   language,
   displayName,
+  preferences,
 }: {
   summary: ChatSummary;
   question: string;
   context: CurrencyContext;
   language: AppLanguageOption;
   displayName: string;
+  preferences: AIPreferences;
 }) {
   const apiKey = process.env.GEMINI_API_KEY?.trim();
   const model =
@@ -527,6 +559,7 @@ async function askGemini({
                   context,
                   language,
                   displayName,
+                  preferences,
                 }),
               },
             ],
@@ -534,7 +567,7 @@ async function askGemini({
         ],
         generationConfig: {
           temperature: 0.15,
-          maxOutputTokens: 900,
+          maxOutputTokens: outputTokenLimit(preferences),
           responseMimeType: "application/json",
         },
       }),
@@ -557,7 +590,7 @@ async function askGemini({
       .join("")
       .trim() ?? "";
 
-  return text ? parseGeminiChat(text, displayName) : null;
+  return text ? parseGeminiChat(text, displayName, preferences) : null;
 }
 
 export async function POST(request: NextRequest) {
@@ -568,6 +601,7 @@ export async function POST(request: NextRequest) {
     isRecord(body) && typeof body.question === "string"
       ? body.question.replace(/\s+/g, " ").trim().slice(0, 500)
       : "";
+  let fallbackName = "Friend";
 
   if (!question) {
     return jsonResponse(
@@ -601,6 +635,7 @@ export async function POST(request: NextRequest) {
             .maybeSingle();
     const displayName =
       profileResult?.data?.full_name?.trim() || metadataName || "Friend";
+    fallbackName = displayName;
 
     if (isUnsafeRequest(question)) {
       return jsonResponse({
@@ -614,8 +649,9 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    const [summary, context] = await Promise.all([
+    const [summary, preferences, context] = await Promise.all([
       getChatSummary(supabase),
+      loadAIPreferences(supabase, user.id),
       Promise.resolve(getCurrencyContext(body)),
     ]);
     const generated = await askGemini({
@@ -624,6 +660,7 @@ export async function POST(request: NextRequest) {
       context,
       language,
       displayName,
+      preferences,
     }).catch((error: unknown) => {
       console.warn("AI chat request failed; using verified local fallback", {
         name: error instanceof Error ? error.name : "UnknownError",
@@ -642,6 +679,7 @@ export async function POST(request: NextRequest) {
         fallback: false,
         deterministic: false,
         language: language.code,
+        preferenceMode: preferences.responseLength,
         ...generated,
       });
     }
@@ -649,11 +687,12 @@ export async function POST(request: NextRequest) {
     const money = moneyFormatter(context);
     return jsonResponse({
       provider: "local-fallback",
-      model: "verified-finance-summary-v2",
+      model: "verified-finance-summary-v3",
       aiAvailable: true,
       fallback: true,
       deterministic: true,
       language: language.code,
+      preferenceMode: preferences.responseLength,
       answer: copy.localFallback(
         displayName,
         money(summary.currentMonth.net),
@@ -674,7 +713,7 @@ export async function POST(request: NextRequest) {
       fallback: true,
       deterministic: true,
       language: language.code,
-      answer: copy.routeFallback("Friend"),
+      answer: copy.routeFallback(fallbackName),
       followUps: copy.followUps,
     });
   }
