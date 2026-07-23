@@ -1,16 +1,16 @@
 name: PR51 dependency repair
 
 on:
-  push:
+  pull_request:
     branches:
-      - security/free-leaked-password-protection
+      - main
 
 permissions:
   contents: write
 
 jobs:
   repair:
-    if: github.actor != 'github-actions[bot]'
+    if: github.head_ref == 'security/free-leaked-password-protection' && github.actor != 'github-actions[bot]'
     runs-on: ubuntu-latest
     timeout-minutes: 30
     env:
