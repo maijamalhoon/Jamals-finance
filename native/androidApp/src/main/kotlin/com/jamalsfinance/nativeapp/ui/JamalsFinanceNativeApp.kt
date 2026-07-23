@@ -49,8 +49,14 @@ fun JamalsFinanceNativeApp(
     reportsInsightsRepository: ReportsInsightsRepository?,
     personalPlatformRepository: PersonalPlatformRepository?,
     nativePreferences: AndroidNativePreferences,
+    onSecureWindowChanged: (Boolean) -> Unit,
 ) {
     val localPreferences by nativePreferences.state.collectAsStateWithLifecycle()
+
+    LaunchedEffect(localPreferences.blockScreenshots, onSecureWindowChanged) {
+        onSecureWindowChanged(localPreferences.blockScreenshots)
+    }
+
     JamalsFinanceTheme(themeMode = localPreferences.themeMode) {
         Surface(modifier = Modifier.fillMaxSize()) {
             if (
@@ -68,16 +74,20 @@ fun JamalsFinanceNativeApp(
                 when (val current = state) {
                     AuthState.Restoring -> CenteredProgress()
                     AuthState.SignedOut -> LoginScreen(authRepository)
-                    is AuthState.SignedIn -> NativeModuleRootShell(
-                        email = current.session.user.email ?: "Signed in",
-                        financeRepository = financeRepository,
-                        goalsPayablesRepository = goalsPayablesRepository,
-                        investmentsAnalyticsRepository = investmentsAnalyticsRepository,
-                        reportsInsightsRepository = reportsInsightsRepository,
-                        personalPlatformRepository = personalPlatformRepository,
-                        nativePreferences = nativePreferences,
-                        onSignOut = { authRepository.signOut() },
-                    )
+                    is AuthState.SignedIn -> NativeAppLockGate(
+                        preferences = nativePreferences,
+                    ) {
+                        NativeModuleRootShell(
+                            email = current.session.user.email ?: "Signed in",
+                            financeRepository = financeRepository,
+                            goalsPayablesRepository = goalsPayablesRepository,
+                            investmentsAnalyticsRepository = investmentsAnalyticsRepository,
+                            reportsInsightsRepository = reportsInsightsRepository,
+                            personalPlatformRepository = personalPlatformRepository,
+                            nativePreferences = nativePreferences,
+                            onSignOut = { authRepository.signOut() },
+                        )
+                    }
                     is AuthState.Failure -> LoginScreen(authRepository, current.message)
                 }
             }
