@@ -62,8 +62,7 @@ export type BusinessFeatureKey =
   | "audit_log"
   | "api_access"
   | "consolidated_reporting"
-  | "priority_support"
-  | "ai_insights";
+  | "priority_support";
 
 export type FeatureAllowance = boolean | number;
 
