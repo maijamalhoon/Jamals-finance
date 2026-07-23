@@ -6,23 +6,23 @@
 74:* Exception is:
 
 === FIRST FAILURE CONTEXT ===
+> Task :androidApp:mapDebugSourceSetPaths
 > Task :androidApp:compileDebugNavigationResources FROM-CACHE
-> Task :androidApp:checkDebugAarMetadata
 > Task :androidApp:createDebugCompatibleScreenManifests
 > Task :androidApp:extractDeepLinksDebug FROM-CACHE
 > Task :shared:processAndroidMainManifest FROM-CACHE
 > Task :androidApp:mergeDebugResources FROM-CACHE
+> Task :androidApp:processDebugMainManifest
 > Task :androidApp:checkDebugDuplicateClasses
 > Task :androidApp:mergeDebugJniLibFolders
 > Task :shared:mergeAndroidMainJniLibFolders
 > Task :shared:mergeAndroidMainNativeLibs NO-SOURCE
 > Task :shared:copyAndroidMainJniLibsProjectOnly
-> Task :androidApp:processDebugMainManifest
-> Task :androidApp:mergeDebugNativeLibs
 > Task :androidApp:processDebugManifest
-> Task :androidApp:desugarDebugFileDependencies FROM-CACHE
-> Task :androidApp:stripDebugDebugSymbols
 > Task :androidApp:processDebugManifestForPackage
+> Task :androidApp:desugarDebugFileDependencies FROM-CACHE
+> Task :androidApp:mergeDebugNativeLibs
+> Task :androidApp:stripDebugDebugSymbols
 > Task :androidApp:mergeExtDexDebug FROM-CACHE
 > Task :androidApp:writeDebugAppMetadata
 > Task :androidApp:writeDebugSigningConfigVersions
@@ -38,7 +38,7 @@
 > Task :androidApp:compileDebugKotlin FAILED
 e: file:///home/runner/work/Jamals-finance/Jamals-finance/native/androidApp/src/main/kotlin/com/jamalsfinance/nativeapp/ui/PersonalPlatformComponents.kt:14:43 Cannot access 'val RowColumnParentData?.weight: Float': it is internal in file.
 e: file:///home/runner/work/Jamals-finance/Jamals-finance/native/androidApp/src/main/kotlin/com/jamalsfinance/nativeapp/ui/PersonalPlatformDialogs.kt:7:43 Cannot access 'val RowColumnParentData?.weight: Float': it is internal in file.
-gradle/actions: Writing build results to /home/runner/work/_temp/.gradle-actions/build-results/native_build-1784789869295.json
+gradle/actions: Writing build results to /home/runner/work/_temp/.gradle-actions/build-results/native_build-1784790009347.json
 
 [Incubating] Problems report is available at: file:///home/runner/work/Jamals-finance/Jamals-finance/native/build/reports/problems/problems-report.html
 
@@ -206,6 +206,6 @@ Caused by: org.jetbrains.kotlin.gradle.tasks.CompilationErrorException: Compilat
 	... 2 more
 
 
-BUILD FAILED in 1m 13s
+BUILD FAILED in 53s
 42 actionable tasks: 29 executed, 13 from cache
 Configuration cache entry stored.
