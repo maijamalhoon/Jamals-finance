@@ -6,6 +6,7 @@ import {
   AlertTriangle,
   CheckCircle2,
   Database,
+  Droplets,
   Loader2,
   Upload,
 } from "lucide-react";
@@ -26,10 +27,12 @@ type TransferPhase =
   | "dragging"
   | "validating"
   | "importing"
+  | "revealing"
   | "success"
   | "error";
 
 const ACCEPTED_FILE_EXTENSIONS = [".jfinance", ".json"];
+const IMPORT_REVEAL_DURATION_MS = 4_000;
 
 function hasFiles(event: DragEvent) {
   return Array.from(event.dataTransfer?.types ?? []).includes("Files");
@@ -51,6 +54,10 @@ function getFriendlyImportError(error: unknown) {
     return "This backup version is not supported.";
   }
 
+  if (/integrity|complete-data|did not pass/i.test(message)) {
+    return "This backup is incomplete or was changed after export. No data was added.";
+  }
+
   if (/relation|reference|foreign key|incomplete/i.test(message)) {
     return "This backup is incomplete or damaged. No data was changed.";
   }
@@ -62,6 +69,12 @@ function getFriendlyImportError(error: unknown) {
   return "This backup file is invalid or damaged. No data was changed.";
 }
 
+function getRevealDelay() {
+  return window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    ? 450
+    : IMPORT_REVEAL_DURATION_MS;
+}
+
 export default function FinanceDataTransfer() {
   const router = useRouter();
   const [supabase] = useState(() => createClient());
@@ -69,15 +82,25 @@ export default function FinanceDataTransfer() {
   const dragDepthRef = useRef(0);
   const busyRef = useRef(false);
   const resetTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const revealTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [phase, setPhase] = useState<TransferPhase>("idle");
   const [message, setMessage] = useState("");
   const [fileName, setFileName] = useState("");
-  const busy = phase === "validating" || phase === "importing";
+  const busy =
+    phase === "validating" ||
+    phase === "importing" ||
+    phase === "revealing";
 
   const clearResetTimer = useCallback(() => {
     if (!resetTimerRef.current) return;
     clearTimeout(resetTimerRef.current);
     resetTimerRef.current = null;
+  }, []);
+
+  const clearRevealTimer = useCallback(() => {
+    if (!revealTimerRef.current) return;
+    clearTimeout(revealTimerRef.current);
+    revealTimerRef.current = null;
   }, []);
 
   const scheduleReset = useCallback(
@@ -93,14 +116,25 @@ export default function FinanceDataTransfer() {
     [clearResetTimer],
   );
 
+  const playReveal = useCallback(async () => {
+    clearRevealTimer();
+    await new Promise<void>((resolve) => {
+      revealTimerRef.current = setTimeout(() => {
+        revealTimerRef.current = null;
+        resolve();
+      }, getRevealDelay());
+    });
+  }, [clearRevealTimer]);
+
   const importFile = useCallback(
     async (file: File) => {
       if (busyRef.current) return;
       busyRef.current = true;
 
       clearResetTimer();
+      clearRevealTimer();
       setFileName(file.name);
-      setMessage("Checking backup file…");
+      setMessage("Checking every section in this backup…");
       setPhase("validating");
 
       const extension = file.name.slice(file.name.lastIndexOf(".")).toLowerCase();
@@ -143,7 +177,7 @@ export default function FinanceDataTransfer() {
         setPhase("error");
         toast.error(validation.error);
         busyRef.current = false;
-        scheduleReset(2200);
+        scheduleReset(2600);
         return;
       }
 
@@ -160,8 +194,8 @@ export default function FinanceDataTransfer() {
 
       setMessage(
         recordCount === 1
-          ? "Securely adding 1 finance record…"
-          : `Securely adding ${recordCount.toLocaleString()} finance records…`,
+          ? "Safely merging 1 finance record…"
+          : `Safely merging ${recordCount.toLocaleString()} finance records…`,
       );
       setPhase("importing");
 
@@ -183,18 +217,35 @@ export default function FinanceDataTransfer() {
           setMessage(successMessage);
           setPhase("success");
           toast.info(successMessage);
-        } else {
-          const successMessage = `Data imported successfully — ${result.totalAdded.toLocaleString()} records added.`;
-          setMessage(successMessage);
-          setPhase("success");
-          toast.success(successMessage);
+          window.dispatchEvent(
+            new CustomEvent(FINANCE_DATA_IMPORTED_EVENT, { detail: result }),
+          );
+          router.refresh();
+          scheduleReset(1800);
+          return;
         }
+
+        setMessage("Your complete finance history is flowing into place…");
+        setPhase("revealing");
+        await playReveal();
+
+        const restoredTotal = Object.values(result.restored ?? {}).reduce(
+          (total, count) => total + count,
+          0,
+        );
+        const successMessage =
+          restoredTotal > 0
+            ? `Import complete — ${result.totalAdded.toLocaleString()} finance records and ${restoredTotal.toLocaleString()} settings restored.`
+            : `Import complete — ${result.totalAdded.toLocaleString()} finance records added.`;
 
         window.dispatchEvent(
           new CustomEvent(FINANCE_DATA_IMPORTED_EVENT, { detail: result }),
         );
         router.refresh();
-        scheduleReset(1800);
+        setMessage(successMessage);
+        setPhase("success");
+        toast.success(successMessage);
+        scheduleReset(1200);
       } catch (error) {
         const friendlyError = getFriendlyImportError(error);
         setMessage(friendlyError);
@@ -205,8 +256,26 @@ export default function FinanceDataTransfer() {
         busyRef.current = false;
       }
     },
-    [clearResetTimer, router, scheduleReset, supabase],
+    [
+      clearResetTimer,
+      clearRevealTimer,
+      playReveal,
+      router,
+      scheduleReset,
+      supabase,
+    ],
   );
+
+  useEffect(() => {
+    const shell = document.querySelector<HTMLElement>("[data-dashboard-shell]");
+    if (phase === "revealing") {
+      shell?.classList.add("is-finance-water-impact");
+    } else {
+      shell?.classList.remove("is-finance-water-impact");
+    }
+
+    return () => shell?.classList.remove("is-finance-water-impact");
+  }, [phase]);
 
   useEffect(() => {
     function openPicker() {
@@ -274,25 +343,33 @@ export default function FinanceDataTransfer() {
       window.removeEventListener("dragleave", handleDragLeave);
       window.removeEventListener("drop", handleDrop);
       clearResetTimer();
+      clearRevealTimer();
     };
-  }, [clearResetTimer, importFile, scheduleReset]);
+  }, [
+    clearResetTimer,
+    clearRevealTimer,
+    importFile,
+    scheduleReset,
+  ]);
 
   const visible = phase !== "idle";
   const icon =
     phase === "success" ? (
-      <CheckCircle2 size={44} strokeWidth={2.2} />
+      <CheckCircle2 size={46} strokeWidth={2.2} />
     ) : phase === "error" ? (
-      <AlertTriangle size={44} strokeWidth={2.2} />
+      <AlertTriangle size={46} strokeWidth={2.2} />
     ) : phase === "validating" || phase === "importing" ? (
       <Loader2
-        size={44}
+        size={46}
         strokeWidth={2.2}
         className="finance-transfer-spin"
       />
+    ) : phase === "revealing" ? (
+      <Droplets size={48} strokeWidth={2.05} />
     ) : phase === "dragging" ? (
-      <Upload size={44} strokeWidth={2.2} />
+      <Upload size={48} strokeWidth={2.2} />
     ) : (
-      <Database size={44} strokeWidth={2.2} />
+      <Database size={46} strokeWidth={2.2} />
     );
 
   return (
@@ -318,30 +395,35 @@ export default function FinanceDataTransfer() {
         aria-live="polite"
         aria-busy={busy}
       >
-        <div className="finance-transfer-ambient" aria-hidden="true" />
-        <div className="finance-transfer-sweep" aria-hidden="true" />
+        <div className="finance-transfer-water" aria-hidden="true">
+          <span className="finance-transfer-wave finance-transfer-wave-one" />
+          <span className="finance-transfer-wave finance-transfer-wave-two" />
+          <span className="finance-transfer-wave finance-transfer-wave-three" />
+          <span className="finance-transfer-ripple finance-transfer-ripple-one" />
+          <span className="finance-transfer-ripple finance-transfer-ripple-two" />
+        </div>
+
         <div className="finance-transfer-panel" role="status">
           <span className="finance-transfer-icon" aria-hidden="true">
             {icon}
           </span>
           <strong className="finance-transfer-title">
             {phase === "dragging"
-              ? "Upload Data"
-              : phase === "success"
-                ? "Import Complete"
-                : phase === "error"
-                  ? "Import Stopped"
-                  : "Updating Finance Data"}
+              ? "Drop to Import"
+              : phase === "revealing"
+                ? "Fresh Water Restore"
+                : phase === "success"
+                  ? "Import Complete"
+                  : phase === "error"
+                    ? "Import Stopped"
+                    : phase === "validating"
+                      ? "Verifying Complete Backup"
+                      : "Merging Finance History"}
           </strong>
           <span className="finance-transfer-message">{message}</span>
           {fileName ? (
             <span className="finance-transfer-file" title={fileName}>
               {fileName}
-            </span>
-          ) : null}
-          {busy ? (
-            <span className="finance-transfer-progress" aria-hidden="true">
-              <span />
             </span>
           ) : null}
         </div>
