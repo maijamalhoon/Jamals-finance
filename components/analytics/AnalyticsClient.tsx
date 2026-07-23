@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { AlertTriangle, WifiOff } from "lucide-react";
+import { AlertTriangle, WifiOff } from "@/components/icons/jalvoro/compat";
 
 import { CashFlowCharts } from "@/components/analytics/AnalyticsCharts";
 import {

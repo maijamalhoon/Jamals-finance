@@ -1,5 +1,3 @@
-import path from "node:path";
-
 import type { NextConfig } from "next";
 
 function safeOrigin(value: string | undefined, fallback: string) {
@@ -20,13 +18,6 @@ const scriptSources =
   process.env.NODE_ENV === "production"
     ? productionScriptSources
     : [...productionScriptSources, "'unsafe-eval'"];
-const jalvoroLucideRuntime =
-  "./components/icons/jalvoro/lucide-runtime.generated.tsx";
-const jalvoroLucideRuntimeAbsolute = path.resolve(
-  process.cwd(),
-  "components/icons/jalvoro/lucide-runtime.generated.tsx",
-);
-
 const contentSecurityPolicy = [
   "default-src 'self'",
   "base-uri 'self'",
@@ -141,19 +132,6 @@ const nextConfig: NextConfig = {
         pathname: "/**",
       },
     ],
-  },
-  turbopack: {
-    resolveAlias: {
-      "lucide-react": jalvoroLucideRuntime,
-    },
-  },
-  webpack(config) {
-    config.resolve = config.resolve ?? {};
-    config.resolve.alias = {
-      ...(config.resolve.alias ?? {}),
-      "lucide-react": jalvoroLucideRuntimeAbsolute,
-    };
-    return config;
   },
   async headers() {
     return [

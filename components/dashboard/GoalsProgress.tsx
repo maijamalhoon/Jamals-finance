@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, type CSSProperties, type ReactNode } from "react";
-import { CheckCircle2, Target } from "lucide-react";
+import { CheckCircle2, Target } from "@/components/icons/jalvoro/compat";
 
 import DashboardCardViewLink from "@/components/dashboard/DashboardCardViewLink";
 import { useCurrency } from "@/components/currency/CurrencyProvider";

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { BellOff, RotateCcw } from "lucide-react";
+import { BellOff, RotateCcw } from "@/components/icons/jalvoro/compat";
 
 import { Button } from "@/components/ui/button";
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { Download, Globe2, Smartphone } from "lucide-react";
+import { Download, Globe2, Smartphone } from "@/components/icons/jalvoro/compat";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";

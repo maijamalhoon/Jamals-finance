@@ -7,7 +7,7 @@ import {
 import type { ExistingGoal, GoalAccount } from "@/components/goals/GoalModal";
 import EmptyState from "@/components/ui/empty-state";
 import { createClient } from "@/lib/supabase/server";
-import { AlertTriangle, Target } from "lucide-react";
+import { AlertTriangle, Target } from "@/components/icons/jalvoro/compat";
 
 interface GoalContributionRow {
   id: string;

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowLeft, CircleDollarSign, ShieldCheck } from "lucide-react";
+import { ArrowLeft, CircleDollarSign, ShieldCheck } from "@/components/icons/jalvoro/compat";
 import type { ReactNode } from "react";
 
 type LegalPageShellProps = {

@@ -4,7 +4,7 @@ import {
   ArrowLeft,
   ShieldCheck,
   type LucideIcon,
-} from "lucide-react";
+} from "@/components/icons/jalvoro/compat";
 import type { ReactNode } from "react";
 
 import MathSymbolField from "@/components/landing/MathSymbolField";

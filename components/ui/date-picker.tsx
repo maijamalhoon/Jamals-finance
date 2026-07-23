@@ -15,7 +15,7 @@ import type {
   WheelEvent as ReactWheelEvent,
 } from "react";
 import { createPortal } from "react-dom";
-import { CalendarDays, ChevronLeft, ChevronRight } from "lucide-react";
+import { CalendarDays, ChevronLeft, ChevronRight } from "@/components/icons/jalvoro/compat";
 
 import { financeFieldErrorClass } from "@/components/ui/finance-modal";
 import { useTouchWheelPickerMode } from "@/components/ui/touch-wheel-picker";

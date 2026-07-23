@@ -9,7 +9,7 @@ import {
   Droplets,
   Loader2,
   Upload,
-} from "lucide-react";
+} from "@/components/icons/jalvoro/compat";
 import { toast } from "sonner";
 
 import {

@@ -6,7 +6,7 @@ import {
   HandCoins,
   Search,
   WalletCards,
-} from "lucide-react";
+} from "@/components/icons/jalvoro/compat";
 
 import Money from "@/components/currency/Money";
 import AddPayableButton from "@/components/payables/AddPayableButton";

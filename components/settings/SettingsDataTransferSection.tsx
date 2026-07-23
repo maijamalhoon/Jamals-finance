@@ -9,7 +9,7 @@ import {
   Loader2,
   LogOut,
   Upload,
-} from "lucide-react";
+} from "@/components/icons/jalvoro/compat";
 import { toast } from "sonner";
 
 import { useCurrency } from "@/components/currency/CurrencyProvider";

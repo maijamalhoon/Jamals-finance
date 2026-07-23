@@ -15,7 +15,7 @@ import {
   ShieldCheck,
   Undo2,
   Warehouse as WarehouseIcon,
-} from "lucide-react";
+} from "@/components/icons/jalvoro/compat";
 
 import InventoryCatalogForms from "@/components/business/InventoryCatalogForms";
 import InventoryOperationsForms from "@/components/business/InventoryOperationsForms";

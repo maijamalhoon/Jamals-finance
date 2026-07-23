@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
-import { ArrowLeft, MapPinned, ShieldCheck } from "lucide-react";
+import { ArrowLeft, MapPinned, ShieldCheck } from "@/components/icons/jalvoro/compat";
 
 import BusinessBranchesWorkspace, { type BranchesSnapshot } from "@/components/business/BusinessBranchesWorkspace";
 import { createClient } from "@/lib/supabase/server";

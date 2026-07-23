@@ -10,7 +10,7 @@ import {
   Plus,
   ShieldCheck,
   Trash2,
-} from "lucide-react";
+} from "@/components/icons/jalvoro/compat";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";

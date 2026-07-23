@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
-import type { LucideIcon } from "lucide-react";
+import type { LucideIcon } from "@/components/icons/jalvoro/compat";
 
 interface EmptyStateProps {
   icon?: LucideIcon;

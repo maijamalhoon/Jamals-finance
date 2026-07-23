@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { motion, useReducedMotion } from "framer-motion";
-import { CircleDollarSign, X } from "lucide-react";
+import { CircleDollarSign, X } from "@/components/icons/jalvoro/compat";
 import { usePathname } from "next/navigation";
 import { useEffect, useState, type ReactNode } from "react";
 

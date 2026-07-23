@@ -26,7 +26,7 @@ import {
   Sparkles,
   TrendingUp,
   WalletCards,
-} from "lucide-react";
+} from "@/components/icons/jalvoro/compat";
 
 import { useCurrency } from "@/components/currency/CurrencyProvider";
 import {

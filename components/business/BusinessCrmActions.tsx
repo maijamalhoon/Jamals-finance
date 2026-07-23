@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowRight, CheckCircle2, FileText, UserRoundCheck } from "lucide-react";
+import { ArrowRight, CheckCircle2, FileText, UserRoundCheck } from "@/components/icons/jalvoro/compat";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";

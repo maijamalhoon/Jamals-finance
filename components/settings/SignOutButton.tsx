@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { LogOut } from "lucide-react";
+import { LogOut } from "@/components/icons/jalvoro/compat";
 import { createClient } from "@/lib/supabase/client";
 
 export default function SignOutButton() {

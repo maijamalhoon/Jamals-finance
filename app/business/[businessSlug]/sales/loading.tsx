@@ -1,4 +1,4 @@
-import { ReceiptText } from "lucide-react";
+import { ReceiptText } from "@/components/icons/jalvoro/compat";
 
 export default function BusinessSalesLoading() {
   return (

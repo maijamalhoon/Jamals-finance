@@ -6,7 +6,7 @@ import {
   RotateCcw,
   Target,
   type LucideIcon,
-} from "lucide-react";
+} from "@/components/icons/jalvoro/compat";
 
 import {
   getCategoryIconComponent,

@@ -1,6 +1,6 @@
 "use client";
 
-import { CircleAlert, RefreshCw } from "lucide-react";
+import { CircleAlert, RefreshCw } from "@/components/icons/jalvoro/compat";
 
 import { Button } from "@/components/ui/button";
 

@@ -11,7 +11,7 @@ import {
   ReceiptText,
   Smartphone,
   Wallet,
-} from "lucide-react";
+} from "@/components/icons/jalvoro/compat";
 import { getAppDateKey } from "@/lib/dates";
 import { formatMoney } from "@/lib/currency";
 

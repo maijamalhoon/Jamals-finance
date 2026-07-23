@@ -8,7 +8,7 @@ import {
   RefreshCw,
   Send,
   TrendingUp,
-} from "lucide-react";
+} from "@/components/icons/jalvoro/compat";
 import { useCurrency } from "@/components/currency/CurrencyProvider";
 
 type InsightType = "positive" | "warning" | "tip";

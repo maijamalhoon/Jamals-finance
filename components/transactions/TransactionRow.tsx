@@ -3,7 +3,7 @@
 import dynamic from "next/dynamic";
 import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
-import { Eye, Pencil, Trash2 } from "lucide-react";
+import { Eye, Pencil, Trash2 } from "@/components/icons/jalvoro/compat";
 import { toast } from "sonner";
 
 import type { ExistingTransaction } from "@/components/dashboard/TransactionModal";

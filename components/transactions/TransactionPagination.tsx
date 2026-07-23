@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "@/components/icons/jalvoro/compat";
 
 import type { PaginationState } from "@/lib/pagination";
 

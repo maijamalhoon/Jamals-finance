@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft } from "@/components/icons/jalvoro/compat";
 
 import BusinessDocumentsWorkspace, { type BusinessDocumentsSnapshot } from "@/components/business/BusinessDocumentsWorkspace";
 import { createClient } from "@/lib/supabase/server";

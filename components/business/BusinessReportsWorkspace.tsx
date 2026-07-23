@@ -17,7 +17,7 @@ import {
   TrendingDown,
   TrendingUp,
   WalletCards,
-} from "lucide-react";
+} from "@/components/icons/jalvoro/compat";
 
 type NumberValue = number | string;
 

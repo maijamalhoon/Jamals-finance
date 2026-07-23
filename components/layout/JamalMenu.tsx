@@ -7,7 +7,7 @@ import {
   LogOut,
   Settings2,
   UserRound,
-} from "lucide-react";
+} from "@/components/icons/jalvoro/compat";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 

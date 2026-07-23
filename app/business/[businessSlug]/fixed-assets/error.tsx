@@ -1,6 +1,6 @@
 "use client";
 
-import { CircleAlert, RotateCcw } from "lucide-react";
+import { CircleAlert, RotateCcw } from "@/components/icons/jalvoro/compat";
 
 import { Button } from "@/components/ui/button";
 

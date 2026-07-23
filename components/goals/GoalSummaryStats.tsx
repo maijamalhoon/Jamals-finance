@@ -1,6 +1,6 @@
 "use client";
 
-import { CheckCircle2, Target, WalletCards } from "lucide-react";
+import { CheckCircle2, Target, WalletCards } from "@/components/icons/jalvoro/compat";
 
 import { useCurrency } from "@/components/currency/CurrencyProvider";
 import {
