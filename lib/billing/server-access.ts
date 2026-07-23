@@ -9,6 +9,7 @@ export type BillingAccessResult =
       state: "ready";
       userId: string;
       planKey: PlanKey;
+      planCode: string;
       subscriptionStatus: SubscriptionStatus;
       currentPeriodEndsAt: string | null;
       trialEndsAt: string | null;
@@ -22,13 +23,73 @@ export type BillingAccessResult =
       planKey: null;
     };
 
-type SubscriptionRow = {
-  plan_key: PlanKey;
+type BillingSnapshot = {
+  planCode: string;
   status: SubscriptionStatus;
-  trial_ends_at: string | null;
-  current_period_ends_at: string | null;
-  grace_period_ends_at: string | null;
+  trialEndsAt: string | null;
+  currentPeriodEnd: string | null;
+  gracePeriodEnd?: string | null;
 };
+
+const SUBSCRIPTION_STATUSES = new Set<SubscriptionStatus>([
+  "free",
+  "trialing",
+  "active",
+  "past_due",
+  "paused",
+  "cancelled",
+  "expired",
+  "incomplete",
+]);
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+export function planKeyFromPlanCode(planCode: string): PlanKey | null {
+  if (planCode === "free") return "free";
+  for (const planKey of ["go", "student", "plus", "pro"] as const) {
+    if (planCode === planKey || planCode.startsWith(`${planKey}_`)) return planKey;
+  }
+  return null;
+}
+
+function optionalDate(value: unknown): string | null | undefined {
+  if (value === null) return null;
+  if (typeof value !== "string" || Number.isNaN(Date.parse(value))) return undefined;
+  return value;
+}
+
+function parseBillingSnapshot(value: unknown): BillingSnapshot | null {
+  if (!isRecord(value)) return null;
+
+  const planCode = typeof value.planCode === "string" ? value.planCode.trim() : "";
+  const status = value.status;
+  const trialEndsAt = optionalDate(value.trialEndsAt);
+  const currentPeriodEnd = optionalDate(value.currentPeriodEnd);
+  const gracePeriodEnd = "gracePeriodEnd" in value
+    ? optionalDate(value.gracePeriodEnd)
+    : null;
+
+  if (
+    !planCode ||
+    typeof status !== "string" ||
+    !SUBSCRIPTION_STATUSES.has(status as SubscriptionStatus) ||
+    trialEndsAt === undefined ||
+    currentPeriodEnd === undefined ||
+    gracePeriodEnd === undefined
+  ) {
+    return null;
+  }
+
+  return {
+    planCode,
+    status: status as SubscriptionStatus,
+    trialEndsAt,
+    currentPeriodEnd,
+    gracePeriodEnd,
+  };
+}
 
 export async function getCurrentBillingAccess(): Promise<BillingAccessResult> {
   const supabase = await createClient();
@@ -41,43 +102,33 @@ export async function getCurrentBillingAccess(): Promise<BillingAccessResult> {
     return { state: "unauthenticated", planKey: "free" };
   }
 
-  const { data, error } = await supabase
-    .from("billing_subscriptions")
-    .select("plan_key,status,trial_ends_at,current_period_ends_at,grace_period_ends_at")
-    .eq("user_id", user.id)
-    .order("created_at", { ascending: false })
-    .limit(1)
-    .maybeSingle();
-
+  const { data, error } = await supabase.rpc("get_my_billing_snapshot");
   if (error) {
     return { state: "unavailable", planKey: null };
   }
 
-  const subscription = data as SubscriptionRow | null;
+  const snapshot = parseBillingSnapshot(data);
+  const subscribedPlanKey = snapshot
+    ? planKeyFromPlanCode(snapshot.planCode)
+    : null;
 
-  if (!subscription) {
-    return {
-      state: "ready",
-      userId: user.id,
-      planKey: "free",
-      subscriptionStatus: "free",
-      currentPeriodEndsAt: null,
-      trialEndsAt: null,
-    };
+  if (!snapshot || !subscribedPlanKey) {
+    return { state: "unavailable", planKey: null };
   }
 
   return {
     state: "ready",
     userId: user.id,
     planKey: resolveAccessPlan({
-      planKey: subscription.plan_key,
-      status: subscription.status,
-      trialEndsAt: subscription.trial_ends_at,
-      currentPeriodEndsAt: subscription.current_period_ends_at,
-      gracePeriodEndsAt: subscription.grace_period_ends_at,
+      planKey: subscribedPlanKey,
+      status: snapshot.status,
+      trialEndsAt: snapshot.trialEndsAt,
+      currentPeriodEndsAt: snapshot.currentPeriodEnd,
+      gracePeriodEndsAt: snapshot.gracePeriodEnd,
     }),
-    subscriptionStatus: subscription.status,
-    currentPeriodEndsAt: subscription.current_period_ends_at,
-    trialEndsAt: subscription.trial_ends_at,
+    planCode: snapshot.planCode,
+    subscriptionStatus: snapshot.status,
+    currentPeriodEndsAt: snapshot.currentPeriodEnd,
+    trialEndsAt: snapshot.trialEndsAt,
   };
 }
