@@ -1,8 +1,9 @@
 {
   "status": "success",
-  "runId": "29995477196",
-  "commit": "7fd5333fb325aaeb970951070365b01faf70974e",
-  "branch": "main",
+  "runId": "29999044780",
+  "commit": "35023d5be44598a6dbfa04de94a80208c1c8abec",
+  "branch": "native-personal-v1.0-rc-integration",
   "workflow": "native-foundation-ci",
-  "milestone": "offline-resilience-v0.9.0"
+  "milestone": "release-candidate-v1.0.0-rc1",
+  "releaseSigningConfigured": "false"
 }
