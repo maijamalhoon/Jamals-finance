@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
+// Keep route-irrelevant runtime authorities outside the initial page bundle.
 const GlobalAccountAmountMaxAuthority = dynamic(
   () => import("@/components/forms/GlobalAccountAmountMaxAuthority"),
 );
