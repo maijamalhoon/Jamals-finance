@@ -1,6 +1,7 @@
 name: Native foundation CI
 
 # Verification marker: adaptive-accessibility-v0.8.0
+# Default branch release gate
 on:
   push:
     branches: [main]
