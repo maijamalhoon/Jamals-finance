@@ -17,7 +17,11 @@
     "node": "24.x"
   },
   "scripts": {
+    "generate:icons": "node scripts/generate-jalvoro-lucide-runtime.mjs",
+    "postinstall": "npm run generate:icons",
+    "predev": "npm run generate:icons",
     "dev": "next dev",
+    "prebuild": "npm run generate:icons",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",

@@ -9,6 +9,7 @@ Production icon system for the JALVORO workspace.
 - optional `wave`, `zigzag`, or `subtle` micro-accent
 - `currentColor` only; no hard-coded brand color
 - central registry, typed name API, context stroke tokens, and metadata
+- complete workspace routing through an auto-generated compatibility module
 
 ## Use
 
@@ -19,6 +20,14 @@ import { JalvoroSearchIcon } from "@/components/icons/jalvoro/components/actions
 <JalvoroIcon name="search" size={20} />
 <JalvoroSearchIcon context="heading" accent="wave" />
 ```
+
+## Full-workspace routing
+
+Legacy imports from `lucide-react` are scanned before install completion, development, and production build. The generator emits static named exports in `lucide-runtime.generated.tsx`, and `next.config.ts` aliases the package to that generated JALVORO module for Turbopack and webpack.
+
+This preserves every existing caller-controlled `size`, `width`, `height`, `strokeWidth`, `className`, color, fill, accessibility prop, transform, animation class, and ref while replacing the SVG implementation with JALVORO.
+
+New first-party code should prefer direct category imports. The generated compatibility module keeps the existing workspace atomic and regression-safe while long-tail source imports are cleaned up over time.
 
 ## Context weights
 
@@ -36,16 +45,26 @@ Explicit `strokeWidth` always overrides the context token for compatibility with
 3. Keep the 24×24 coordinate system and `currentColor` contract.
 4. Run `npm test` and `npm run typecheck`.
 
+A vector change automatically reaches direct imports and all compatibility mappings that resolve to that icon.
+
+## Change a compatibility mapping
+
+1. Open `scripts/generate-jalvoro-lucide-runtime.mjs`.
+2. Use `exact` for a specific semantic name.
+3. Use ordered `rules` for a related long-tail family.
+4. Never set a fixed size, stroke, class, or color in the generated wrapper.
+5. Run `npm run generate:icons` and the complete CI pipeline.
+
 ## Add one icon
 
 1. Add a definition in the correct category file.
 2. Export a component in the matching file under `components/`.
 3. Add the name to `manifest.ts`.
 4. Register the component and definition in `registry.ts`.
-5. Add migration documentation if it replaces an existing icon.
+5. Add or refine a generator mapping when it replaces a legacy semantic name.
 
 The registry test intentionally fails when these files drift apart.
 
 ## Bundle guidance
 
-Use category imports for ordinary UI so only the required category is loaded. Use the name-based `JalvoroIcon` registry for icon pickers, documentation, or genuinely dynamic icon names.
+Use category imports for ordinary new UI so only the required category is loaded. Use the name-based `JalvoroIcon` registry for icon pickers, documentation, or genuinely dynamic icon names. Existing legacy imports are statically generated and routed through JALVORO until the final source-cleanup phase.

@@ -24,6 +24,9 @@ const eslintConfig = defineConfig([
     "build/**",
     "design of  UI/**",
     "next-env.d.ts",
+    // Generated source is validated by its generator contract, TypeScript,
+    // the complete test suite, and the production Turbopack build.
+    "components/icons/jalvoro/lucide-runtime.generated.tsx",
   ]),
 ]);
 
