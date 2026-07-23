@@ -49,12 +49,29 @@ jobs:
       - name: Rewrite source imports and remove temporary runtime
         run: node scripts/finalize-jalvoro-icon-source-cleanup.mjs
 
-      - name: Make the zero-LUCIDE contract self-safe
+      - name: Preserve legacy prop typing and make zero-LUCIDE contract self-safe
         run: |
           node <<'NODE'
           const fs = require('node:fs');
-          const file = 'components/icons/jalvoro/source-cleanup.test.ts';
-          let source = fs.readFileSync(file, 'utf8');
+
+          const compatFile = 'components/icons/jalvoro/compat.tsx';
+          let compat = fs.readFileSync(compatFile, 'utf8');
+          compat = compat.replace(
+            'import { forwardRef } from "react";',
+            'import { forwardRef, type ForwardRefExoticComponent, type RefAttributes } from "react";',
+          );
+          compat = compat.replace(
+            'type CompatibleIconProps = JalvoroIconProps & {\n  absoluteStrokeWidth?: boolean;\n};',
+            'type CompatibleIconProps = JalvoroIconProps & {\n  absoluteStrokeWidth?: boolean;\n};\n\ntype CompatibleIconComponent = ForwardRefExoticComponent<\n  CompatibleIconProps & RefAttributes<SVGSVGElement>\n>;',
+          );
+          compat = compat.replace(
+            '): JalvoroIconComponent {',
+            '): CompatibleIconComponent {',
+          );
+          fs.writeFileSync(compatFile, compat, 'utf8');
+
+          const testFile = 'components/icons/jalvoro/source-cleanup.test.ts';
+          let source = fs.readFileSync(testFile, 'utf8');
           source = source.replace(
             'const root = process.cwd();',
             'const root = process.cwd();\nconst legacyPackage = ["lucide", "react"].join("-");\nconst legacySpecifier = new RegExp(`["\\\']${legacyPackage}(?:/[^"\\\']*)?["\\\']`);\nconst legacyAlias = `"${legacyPackage}":`;',
@@ -71,7 +88,7 @@ jobs:
             'nextConfig).not.toContain(\'"lucide-react":\')',
             'nextConfig).not.toContain(legacyAlias)',
           );
-          fs.writeFileSync(file, source, 'utf8');
+          fs.writeFileSync(testFile, source, 'utf8');
           NODE
 
       - name: Refresh dependency lockfile without lifecycle scripts
