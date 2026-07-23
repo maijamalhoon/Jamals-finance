@@ -1,7 +1,11 @@
 "use client";
 
-import type { ChangeEvent, PointerEvent as ReactPointerEvent } from "react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import type {
+  ChangeEvent,
+  KeyboardEvent,
+  PointerEvent as ReactPointerEvent,
+} from "react";
+import { useMemo, useRef, useState } from "react";
 import { Check, ChevronDown, Copy, Search } from "lucide-react";
 
 import { getCategoryEmojiOptions } from "@/lib/category-emoji-catalog";
@@ -119,29 +123,35 @@ export default function CategoryVisualField({
   const [customColorOpen, setCustomColorOpen] = useState(false);
   const [emojiQuery, setEmojiQuery] = useState("");
   const [hsv, setHsv] = useState<HsvColor>(() => hexToHsv(visual.color));
-  const [hexDraft, setHexDraft] = useState(visual.color);
+  const [hexDraft, setHexDraft] = useState(() =>
+    normalizeCategoryColor(visual.color),
+  );
   const colorPlaneRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (!isValidCategoryColor(visual.color)) return;
-    setHsv(hexToHsv(visual.color));
-    setHexDraft(normalizeCategoryColor(visual.color));
-  }, [visual.color]);
-
-  useEffect(() => {
-    setEmojiQuery("");
-  }, [type]);
 
   const emojiOptions = useMemo(
     () => getCategoryEmojiOptions(type, emojiQuery),
     [emojiQuery, type],
   );
 
+  function togglePicker() {
+    const nextOpen = !pickerOpen;
+    if (nextOpen && isValidCategoryColor(visual.color)) {
+      const normalized = normalizeCategoryColor(visual.color);
+      setHsv(hexToHsv(normalized));
+      setHexDraft(normalized);
+      setEmojiQuery("");
+    }
+    setPickerOpen(nextOpen);
+  }
+
   function updateColor(color: string) {
     if (!isValidCategoryColor(color)) return;
+    const normalized = normalizeCategoryColor(color);
+    setHsv(hexToHsv(normalized));
+    setHexDraft(normalized);
     onVisualChange({
       ...visual,
-      color: normalizeCategoryColor(color),
+      color: normalized,
     });
   }
 
@@ -151,8 +161,10 @@ export default function CategoryVisualField({
       s: clamp(next.s, 0, 100),
       v: clamp(next.v, 0, 100),
     };
+    const color = hsvToHex(normalized);
     setHsv(normalized);
-    updateColor(hsvToHex(normalized));
+    setHexDraft(color);
+    onVisualChange({ ...visual, color });
   }
 
   function updateColorPlane(clientX: number, clientY: number) {
@@ -173,6 +185,20 @@ export default function CategoryVisualField({
     updateColorPlane(event.clientX, event.clientY);
   }
 
+  function handleColorKeyDown(event: KeyboardEvent<HTMLDivElement>) {
+    const step = event.shiftKey ? 10 : 2;
+    const next = { ...hsv };
+
+    if (event.key === "ArrowLeft") next.s -= step;
+    else if (event.key === "ArrowRight") next.s += step;
+    else if (event.key === "ArrowUp") next.v += step;
+    else if (event.key === "ArrowDown") next.v -= step;
+    else return;
+
+    event.preventDefault();
+    updateHsv(next);
+  }
+
   function selectEmoji(emoji: string) {
     onVisualChange({ ...visual, iconKey: `emoji:${emoji}` });
   }
@@ -181,7 +207,11 @@ export default function CategoryVisualField({
     const raw = event.target.value.toUpperCase();
     setHexDraft(raw);
     const candidate = raw.startsWith("#") ? raw : `#${raw}`;
-    if (isValidCategoryColor(candidate)) updateColor(candidate);
+    if (!isValidCategoryColor(candidate)) return;
+
+    const normalized = normalizeCategoryColor(candidate);
+    setHsv(hexToHsv(normalized));
+    onVisualChange({ ...visual, color: normalized });
   }
 
   async function copyHex() {
@@ -202,7 +232,7 @@ export default function CategoryVisualField({
       >
         <button
           type="button"
-          onClick={() => setPickerOpen((current) => !current)}
+          onClick={togglePicker}
           disabled={disabled}
           aria-label="Choose category emoji and color"
           aria-expanded={pickerOpen}
@@ -278,10 +308,14 @@ export default function CategoryVisualField({
                   ref={colorPlaneRef}
                   role="slider"
                   aria-label="Color saturation and brightness"
+                  aria-valuemin={0}
+                  aria-valuemax={100}
+                  aria-valuenow={Math.round(hsv.s)}
                   aria-valuetext={`${Math.round(hsv.s)}% saturation, ${Math.round(hsv.v)}% brightness`}
                   tabIndex={0}
                   onPointerDown={handleColorPointerDown}
                   onPointerMove={handleColorPointerMove}
+                  onKeyDown={handleColorKeyDown}
                   className="relative h-32 w-full touch-none cursor-crosshair overflow-hidden rounded-[10px] border border-border"
                   style={{
                     backgroundColor: `hsl(${hsv.h} 100% 50%)`,
