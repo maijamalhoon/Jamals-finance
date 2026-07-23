@@ -38,6 +38,17 @@ function hasFiles(event: DragEvent) {
   return Array.from(event.dataTransfer?.types ?? []).includes("Files");
 }
 
+function hasAcceptedBackupExtension(fileName: string) {
+  const originalDownloadName = fileName
+    .trim()
+    .replace(/\s*\(\d+\)$/, "")
+    .toLowerCase();
+
+  return ACCEPTED_FILE_EXTENSIONS.some((extension) =>
+    originalDownloadName.endsWith(extension),
+  );
+}
+
 function getFriendlyImportError(error: unknown) {
   const message =
     error instanceof Error
@@ -137,8 +148,7 @@ export default function FinanceDataTransfer() {
       setMessage("Checking every section in this backup…");
       setPhase("validating");
 
-      const extension = file.name.slice(file.name.lastIndexOf(".")).toLowerCase();
-      if (!ACCEPTED_FILE_EXTENSIONS.includes(extension)) {
+      if (!hasAcceptedBackupExtension(file.name)) {
         const error = "Choose a .jfinance backup file.";
         setMessage(error);
         setPhase("error");
