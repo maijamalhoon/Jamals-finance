@@ -158,7 +158,10 @@ export const CATEGORY_ICON_MAP = {
 } satisfies Record<string, LucideIcon>;
 
 export type NamedCategoryIconKey = keyof typeof CATEGORY_ICON_MAP;
-export type CategoryIconKey = NamedCategoryIconKey | `badge:${number}`;
+export type CategoryIconKey =
+  | NamedCategoryIconKey
+  | `badge:${number}`
+  | `emoji:${string}`;
 
 export interface CategoryVisualSource {
   id: string;
@@ -195,224 +198,64 @@ type CategoryIconRule = Readonly<{
 }>;
 
 /**
- * The alias catalogue intentionally covers the most common real-world income
- * and expense categories, common spelling mistakes, and Roman-Urdu wording.
- * It is static, pre-normalized and runs entirely in the browser while typing.
+ * Common category language, spelling variants and Roman-Urdu aliases. The
+ * manual emoji picker covers the long tail while this catalogue keeps smart
+ * defaults fast, deterministic and fully offline.
  */
 const CATEGORY_ICON_RULES: readonly CategoryIconRule[] = [
-  {
-    iconKey: "salary",
-    aliases: ["salary", "salery", "sallery", "payroll", "wage", "tankhwa", "tankha", "maash"],
-  },
-  {
-    iconKey: "banknote",
-    aliases: ["pension", "retirement", "provident", "gratuity", "allowance", "stipend"],
-  },
-  {
-    iconKey: "briefcase",
-    aliases: ["freelance", "freelancing", "client work", "gig", "consulting", "consultancy", "office", "workspace"],
-  },
-  {
-    iconKey: "store",
-    aliases: ["business", "karobar", "dukaan", "shop income", "trade income", "factory", "manufacturing"],
-  },
-  {
-    iconKey: "handCoins",
-    aliases: ["commission", "comission", "brokerage", "tips received", "tip income", "affiliate", "referral income", "partnership", "joint venture"],
-  },
-  {
-    iconKey: "bonus",
-    aliases: ["bonus", "bounus", "incentive", "reward", "eidi", "cashback", "cash back", "rebate"],
-  },
-  {
-    iconKey: "growth",
-    aliases: ["profit", "munafa", "return", "capital gain", "dividend", "investment", "mutual fund", "stock", "stocks", "shares", "portfolio", "farming income", "crop sale", "agriculture income"],
-  },
-  {
-    iconKey: "coins",
-    aliases: ["interest income", "markup received", "yield", "crypto", "bitcoin", "ethereum", "usdt", "blockchain"],
-  },
-  {
-    iconKey: "building",
-    type: "income",
-    aliases: ["rent", "rent income", "rental", "rental income", "property income", "real estate income"],
-  },
-  {
-    iconKey: "receipt",
-    aliases: ["refund", "reimbursement", "money back"],
-  },
-  {
-    iconKey: "education",
-    aliases: ["grant", "scholarship", "education support"],
-  },
-  {
-    iconKey: "gift",
-    aliases: ["donation received", "charity received", "support received"],
-  },
-  {
-    iconKey: "home",
-    aliases: ["house rent", "home rent", "rent", "kiraya", "mortgage", "lease", "property", "plot", "apartment", "flat", "furniture", "sofa", "bed", "table", "chair", "appliance", "washing machine", "fridge", "refrigerator", "oven", "cleaning", "housekeeping", "maid", "domestic help"],
-  },
-  {
-    iconKey: "groceries",
-    aliases: ["grocery", "groceries", "grocries", "grocerries", "rashan", "ration", "supermarket", "fruit", "vegetable", "sabzi", "milk", "dairy", "doodh"],
-  },
-  {
-    iconKey: "drink",
-    aliases: ["drink", "drinks", "beverage", "beverages", "juice", "soft drink", "cold drink", "water bottle", "coffee", "chai", "tea", "cafe"],
-  },
-  {
-    iconKey: "dining",
-    aliases: ["food", "dining", "restaurant", "meal", "khana", "nashta", "breakfast", "lunch", "dinner", "pizza", "burger", "fast food", "takeaway", "bakery"],
-  },
-  {
-    iconKey: "power",
-    aliases: ["electricity", "electric", "bijli", "power bill", "light bill", "solar", "solar panel"],
-  },
-  {
-    iconKey: "water",
-    aliases: ["water", "pani", "water bill"],
-  },
-  {
-    iconKey: "internet",
-    aliases: ["internet", "wifi", "wi fi", "broadband", "fiber", "net bill"],
-  },
-  {
-    iconKey: "phone",
-    aliases: ["mobile", "phone", "cell", "smartphone", "sim", "load", "recharge"],
-  },
-  {
-    iconKey: "utilities",
-    aliases: ["gas bill", "sui gas", "utility bill", "utilities", "kitchen", "cookware", "utensils"],
-  },
-  {
-    iconKey: "fuel",
-    aliases: ["fuel", "petrol", "diesel", "gasoline", "cng"],
-  },
-  {
-    iconKey: "bike",
-    aliases: ["bike", "bicycle", "cycle", "motorbike", "motorcycle"],
-  },
-  {
-    iconKey: "bus",
-    aliases: ["bus", "coach", "public transport"],
-  },
-  {
-    iconKey: "train",
-    aliases: ["train", "rail", "metro", "subway"],
-  },
-  {
-    iconKey: "car",
-    aliases: ["taxi", "cab", "ride", "uber", "careem", "indrive", "rickshaw", "riksha", "transport", "car", "gaari", "gari", "vehicle", "parking", "toll", "motorway"],
-  },
-  {
-    iconKey: "travel",
-    aliases: ["flight", "airline", "air ticket", "plane", "travel", "trip", "tour", "vacation", "holiday", "safar", "hotel", "motel", "hostel", "guest house", "visa", "passport"],
-  },
-  {
-    iconKey: "ticket",
-    aliases: ["ticket", "entry pass", "event pass"],
-  },
-  {
-    iconKey: "medical",
-    aliases: ["medicine", "medication", "pharmacy", "drug", "dawa", "dawai", "tablet"],
-  },
-  {
-    iconKey: "health",
-    aliases: ["medical", "doctor", "health", "hospital", "clinic", "ilaaj", "treatment", "dental", "dentist", "eye", "glasses", "optical", "insurance", "takaful"],
-  },
-  {
-    iconKey: "education",
-    aliases: ["school fee", "college fee", "university fee", "tuition", "academy", "education", "school", "college", "university", "course", "taleem", "training", "language"],
-  },
-  {
-    iconKey: "books",
-    aliases: ["book", "books", "stationery", "notebook", "kitab", "library", "reading"],
-  },
-  {
-    iconKey: "children",
-    aliases: ["baby", "child", "children", "kid", "bacha", "bachay", "daycare", "nursery", "family"],
-  },
-  {
-    iconKey: "pets",
-    aliases: ["pet", "pets", "animal", "vet", "veterinary", "dog", "puppy", "cat", "kitten"],
-  },
-  {
-    iconKey: "personal",
-    aliases: ["personal", "personal care", "self care", "selfcare", "pocket money", "personal spending", "daily use"],
-  },
-  {
-    iconKey: "clothing",
-    aliases: ["cloth", "clothing", "fashion", "shirt", "kapra", "kapray", "dress", "shoe", "footwear", "sneaker", "sandal", "salon", "barber", "haircut", "spa", "grooming", "beauty", "cosmetic", "makeup", "skincare", "perfume"],
-  },
-  {
-    iconKey: "fitness",
-    aliases: ["gym", "fitness", "workout", "exercise", "sport", "cricket", "football", "tennis", "badminton"],
-  },
-  {
-    iconKey: "games",
-    aliases: ["game", "gaming", "playstation", "xbox", "movie", "cinema", "film", "netflix", "music", "spotify", "concert", "subscription", "membership"],
-  },
-  {
-    iconKey: "laptop",
-    aliases: ["software", "app", "saas", "domain", "hosting", "cloud", "laptop", "computer", "desktop", "notebook", "pc", "electronics", "monitor", "screen", "keyboard", "mouse", "printer", "camera"],
-  },
-  {
-    iconKey: "painting",
-    aliases: ["paint", "painting", "paint work", "wall paint", "painter", "decoration", "decorating"],
-  },
-  {
-    iconKey: "repair",
-    aliases: ["home repair", "house repair", "plumber", "electrician", "marammat", "car repair", "bike repair", "mechanic", "workshop", "maintenance", "maintainance", "maintanance", "service", "construction", "renovation", "cement", "mistri", "labour", "labor", "mazdoori", "tool", "hardware", "equipment"],
-  },
-  {
-    iconKey: "growth",
-    aliases: ["garden", "gardening", "plant", "lawn", "farm", "farming", "agriculture", "seed", "fertilizer", "crop"],
-  },
-  {
-    iconKey: "package",
-    aliases: ["delivery", "courier", "shipping", "freight", "parcel", "package", "packaging", "box"],
-  },
-  {
-    iconKey: "shopping",
-    aliases: ["shopping", "shop", "purchase", "mall", "saman", "market", "store", "retail"],
-  },
-  {
-    iconKey: "gift",
-    aliases: ["gift", "present", "tohfa", "birthday", "anniversary", "party", "celebration", "wedding", "shadi", "marriage", "charity", "donation", "sadqa", "sadaqah", "khairat", "zakat"],
-  },
-  {
-    iconKey: "tax",
-    aliases: ["tax", "income tax", "property tax", "sales tax", "bank fee", "bank charge", "atm fee", "service fee"],
-  },
-  {
-    iconKey: "credit",
-    aliases: ["loan", "credit", "debt", "qarz", "udhar", "finance payment", "credit card", "card payment"],
-  },
-  {
-    iconKey: "savings",
-    aliases: ["committee", "saving committee", "bisi", "saving", "savings", "deposit", "reserve", "emergency fund"],
-  },
-  {
-    iconKey: "transfer",
-    aliases: ["transfer", "send money", "remittance"],
-  },
-  {
-    iconKey: "wallet",
-    aliases: ["cash", "wallet", "atm withdrawal"],
-  },
-  {
-    iconKey: "bank",
-    aliases: ["bank", "account", "legal", "lawyer", "advocate", "court", "security", "guard", "cctv", "alarm"],
-  },
-  {
-    iconKey: "receipt",
-    aliases: ["fee", "charge", "expense", "other expense", "misc", "miscellaneous"],
-  },
-  {
-    iconKey: "cash",
-    aliases: ["income", "earning", "earnings", "kamai", "amdani", "other income"],
-  },
+  { iconKey: "salary", aliases: ["salary", "salery", "sallery", "payroll", "wage", "tankhwa", "tankha", "maash"] },
+  { iconKey: "banknote", aliases: ["pension", "retirement", "provident", "gratuity", "allowance", "stipend"] },
+  { iconKey: "briefcase", aliases: ["freelance", "freelancing", "client work", "gig", "consulting", "consultancy", "office", "workspace"] },
+  { iconKey: "store", aliases: ["business", "karobar", "dukaan", "shop income", "trade income", "factory", "manufacturing"] },
+  { iconKey: "handCoins", aliases: ["commission", "comission", "brokerage", "tip income", "affiliate", "referral", "partnership"] },
+  { iconKey: "bonus", aliases: ["bonus", "bounus", "incentive", "reward", "eidi", "cashback", "rebate"] },
+  { iconKey: "growth", aliases: ["profit", "munafa", "return", "capital gain", "dividend", "investment", "mutual fund", "stock", "shares", "portfolio", "agriculture income"] },
+  { iconKey: "coins", aliases: ["interest income", "markup received", "yield", "crypto", "bitcoin", "ethereum", "usdt", "blockchain"] },
+  { iconKey: "building", type: "income", aliases: ["rent", "rent income", "rental", "rental income", "property income", "real estate income"] },
+  { iconKey: "receipt", aliases: ["refund", "reimbursement", "money back"] },
+  { iconKey: "education", aliases: ["grant", "scholarship", "education support"] },
+  { iconKey: "gift", aliases: ["donation received", "charity received", "support received"] },
+  { iconKey: "home", aliases: ["house rent", "home rent", "rent", "kiraya", "mortgage", "lease", "property", "plot", "apartment", "flat", "furniture", "appliance", "cleaning", "housekeeping", "maid"] },
+  { iconKey: "groceries", aliases: ["grocery", "groceries", "grocries", "grocerries", "rashan", "ration", "supermarket", "fruit", "vegetable", "sabzi", "milk", "dairy", "doodh"] },
+  { iconKey: "drink", aliases: ["drink", "drinks", "beverage", "juice", "soft drink", "water bottle", "coffee", "chai", "tea", "cafe"] },
+  { iconKey: "dining", aliases: ["food", "dining", "restaurant", "meal", "khana", "nashta", "breakfast", "lunch", "dinner", "pizza", "burger", "takeaway", "bakery"] },
+  { iconKey: "power", aliases: ["electricity", "electric", "bijli", "power bill", "light bill", "solar"] },
+  { iconKey: "water", aliases: ["water", "pani", "water bill"] },
+  { iconKey: "internet", aliases: ["internet", "wifi", "wi fi", "broadband", "fiber", "net bill"] },
+  { iconKey: "phone", aliases: ["mobile", "phone", "cell", "smartphone", "sim", "load", "recharge"] },
+  { iconKey: "utilities", aliases: ["gas bill", "sui gas", "utility bill", "utilities", "kitchen", "cookware"] },
+  { iconKey: "fuel", aliases: ["fuel", "petrol", "diesel", "gasoline", "cng"] },
+  { iconKey: "bike", aliases: ["bike", "bicycle", "cycle", "motorbike", "motorcycle"] },
+  { iconKey: "bus", aliases: ["bus", "coach", "public transport"] },
+  { iconKey: "train", aliases: ["train", "rail", "metro", "subway"] },
+  { iconKey: "car", aliases: ["taxi", "cab", "ride", "uber", "careem", "indrive", "rickshaw", "transport", "car", "gaari", "gari", "vehicle", "parking", "toll"] },
+  { iconKey: "travel", aliases: ["flight", "airline", "air ticket", "plane", "travel", "trip", "tour", "vacation", "holiday", "safar", "hotel", "visa", "passport"] },
+  { iconKey: "ticket", aliases: ["ticket", "entry pass", "event pass"] },
+  { iconKey: "medical", aliases: ["medicine", "medication", "pharmacy", "drug", "dawa", "dawai", "tablet"] },
+  { iconKey: "health", aliases: ["medical", "doctor", "health", "hospital", "clinic", "ilaaj", "treatment", "dental", "dentist", "eye", "glasses", "insurance", "takaful"] },
+  { iconKey: "education", aliases: ["school fee", "college fee", "university fee", "tuition", "academy", "education", "school", "college", "university", "course", "taleem", "training"] },
+  { iconKey: "books", aliases: ["book", "books", "stationery", "notebook", "kitab", "library", "reading"] },
+  { iconKey: "children", aliases: ["baby", "child", "children", "kid", "bacha", "bachay", "daycare", "nursery", "family"] },
+  { iconKey: "pets", aliases: ["pet", "pets", "animal", "vet", "veterinary", "dog", "puppy", "cat", "kitten"] },
+  { iconKey: "personal", aliases: ["personal", "personal care", "self care", "selfcare", "pocket money", "personal spending", "daily use"] },
+  { iconKey: "clothing", aliases: ["cloth", "clothing", "fashion", "shirt", "kapra", "kapray", "dress", "shoe", "footwear", "salon", "barber", "haircut", "beauty", "cosmetic", "makeup", "skincare", "perfume"] },
+  { iconKey: "fitness", aliases: ["gym", "fitness", "workout", "exercise", "sport", "cricket", "football", "tennis", "badminton"] },
+  { iconKey: "games", aliases: ["game", "gaming", "playstation", "xbox", "movie", "cinema", "film", "netflix", "music", "spotify", "concert", "subscription", "membership"] },
+  { iconKey: "laptop", aliases: ["software", "app", "saas", "domain", "hosting", "cloud", "laptop", "computer", "desktop", "pc", "electronics", "monitor", "keyboard", "mouse", "printer", "camera"] },
+  { iconKey: "painting", aliases: ["paint", "painting", "paint work", "wall paint", "painter", "decoration"] },
+  { iconKey: "repair", aliases: ["home repair", "house repair", "plumber", "electrician", "marammat", "car repair", "bike repair", "mechanic", "workshop", "maintenance", "maintainance", "maintanance", "service", "construction", "renovation", "cement", "mistri", "labour", "labor", "mazdoori", "tool", "hardware", "equipment"] },
+  { iconKey: "growth", aliases: ["garden", "gardening", "plant", "lawn", "farm", "farming", "agriculture", "seed", "fertilizer", "crop"] },
+  { iconKey: "package", aliases: ["delivery", "courier", "shipping", "freight", "parcel", "package", "packaging", "box"] },
+  { iconKey: "shopping", aliases: ["shopping", "shop", "purchase", "mall", "saman", "market", "store", "retail"] },
+  { iconKey: "gift", aliases: ["gift", "present", "tohfa", "birthday", "anniversary", "party", "celebration", "wedding", "shadi", "marriage", "charity", "donation", "sadqa", "sadaqah", "khairat", "zakat"] },
+  { iconKey: "tax", aliases: ["tax", "income tax", "property tax", "sales tax", "bank fee", "bank charge", "atm fee", "service fee"] },
+  { iconKey: "credit", aliases: ["loan", "credit", "debt", "qarz", "udhar", "finance payment", "credit card", "card payment"] },
+  { iconKey: "savings", aliases: ["committee", "saving committee", "bisi", "saving", "savings", "deposit", "reserve", "emergency fund"] },
+  { iconKey: "transfer", aliases: ["transfer", "send money", "remittance"] },
+  { iconKey: "wallet", aliases: ["cash", "wallet", "atm withdrawal"] },
+  { iconKey: "bank", aliases: ["bank", "account", "legal", "lawyer", "advocate", "court", "security", "guard", "cctv", "alarm"] },
+  { iconKey: "receipt", aliases: ["fee", "charge", "expense", "other expense", "misc", "miscellaneous"] },
+  { iconKey: "cash", aliases: ["income", "earning", "earnings", "kamai", "amdani", "other income"] },
 ];
 
 export function normalizeCategoryColor(color: string | null | undefined) {
@@ -430,7 +273,10 @@ export function isValidCategoryIconKey(
 ): iconKey is CategoryIconKey {
   if (!iconKey) return false;
   if (iconKey in CATEGORY_ICON_MAP) return true;
-  return /^badge:\d+$/.test(iconKey);
+  if (/^badge:\d+$/.test(iconKey)) return true;
+  if (!iconKey.startsWith("emoji:")) return false;
+  const emoji = iconKey.slice("emoji:".length).trim();
+  return emoji.length > 0 && emoji.length <= 32 && !/[\u0000-\u001f\u007f]/.test(emoji);
 }
 
 function hashString(value: string) {
@@ -527,9 +373,7 @@ function findCategoryIconRule(value: string, type: CategoryKind) {
         if (Math.abs(value.length - alias.length) > maximumDistance) continue;
         const distance = levenshteinDistance(value, alias);
         if (distance > maximumDistance) continue;
-        if (!best || distance < best.distance) {
-          best = { rule, distance };
-        }
+        if (!best || distance < best.distance) best = { rule, distance };
       }
     }
 
@@ -616,7 +460,9 @@ export function getNextCategoryVisual(
 }
 
 export function getCategoryIconComponent(iconKey: string | null | undefined) {
-  if (!iconKey || iconKey.startsWith("badge:")) return Tags;
+  if (!iconKey || iconKey.startsWith("badge:") || iconKey.startsWith("emoji:")) {
+    return Tags;
+  }
   return CATEGORY_ICON_MAP[iconKey as NamedCategoryIconKey] ?? Tags;
 }
 
@@ -644,13 +490,16 @@ export function CategoryVisualIcon({
         iconKey: isValidCategoryIconKey(iconKey) ? iconKey : "tags",
       };
   const sizes = {
-    xs: { frame: "size-7", icon: 20 },
-    sm: { frame: "size-9", icon: 27 },
-    md: { frame: "size-11", icon: 33 },
-    lg: { frame: "size-12", icon: 38 },
+    xs: { frame: "size-7", icon: 20, emoji: "text-[18px]" },
+    sm: { frame: "size-9", icon: 27, emoji: "text-[24px]" },
+    md: { frame: "size-11", icon: 33, emoji: "text-[30px]" },
+    lg: { frame: "size-12", icon: 38, emoji: "text-[34px]" },
   } as const;
   const selected = sizes[size];
   const accessibleLabel = label ?? category?.name ?? "Category";
+  const emoji = visual.iconKey.startsWith("emoji:")
+    ? visual.iconKey.slice("emoji:".length)
+    : null;
   const Icon = getCategoryIconComponent(visual.iconKey);
 
   return (
@@ -659,14 +508,23 @@ export function CategoryVisualIcon({
       style={{ color: visual.color }}
       aria-label={`${accessibleLabel} category icon`}
     >
-      <Icon
-        size={selected.icon}
-        strokeWidth={2.15}
-        absoluteStrokeWidth
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        aria-hidden="true"
-      />
+      {emoji ? (
+        <span
+          aria-hidden="true"
+          className={`${selected.emoji} leading-none [font-family:Apple_Color_Emoji,Segoe_UI_Emoji,Noto_Color_Emoji,sans-serif]`}
+        >
+          {emoji}
+        </span>
+      ) : (
+        <Icon
+          size={selected.icon}
+          strokeWidth={2.15}
+          absoluteStrokeWidth
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          aria-hidden="true"
+        />
+      )}
     </span>
   );
 }
