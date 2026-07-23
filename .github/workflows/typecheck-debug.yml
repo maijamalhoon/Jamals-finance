@@ -1,0 +1,45 @@
+name: Typecheck diagnostics
+
+on:
+  push:
+    branches:
+      - feat/airdrop-style-import-animation
+
+permissions:
+  contents: read
+
+env:
+  CI: true
+  NEXT_TELEMETRY_DISABLED: 1
+  NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
+  NEXT_PUBLIC_SUPABASE_ANON_KEY: ci-build-placeholder
+  NEXT_PUBLIC_ENABLE_GOOGLE_AUTH: false
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          persist-credentials: false
+          show-progress: false
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
+        with:
+          node-version-file: package.json
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - name: Capture typecheck output
+        shell: bash
+        run: |
+          set +e
+          npm run typecheck > typecheck.log 2>&1
+          status=$?
+          echo "$status" > typecheck-exit-code.txt
+          exit 0
+      - uses: actions/upload-artifact@v4
+        with:
+          name: typecheck-diagnostics
+          path: |
+            typecheck.log
+            typecheck-exit-code.txt
+          if-no-files-found: error
