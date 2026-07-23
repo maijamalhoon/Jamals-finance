@@ -50,14 +50,21 @@ jobs:
           npm audit --json > audit.json
           audit_exit=$?
           node -e "const a=require('./audit.json'); console.log(JSON.stringify(a.metadata?.vulnerabilities || {}))"
-          exit "${audit_exit}"
+          echo "${audit_exit}" > audit-exit-code.txt
+          exit 0
 
-      - name: Validate application
+      - name: Capture validation results
+        shell: bash
         run: |
-          npm run check
-          npm run build
+          set +e
+          npm run check > check.log 2>&1
+          check_exit=$?
+          npm run build > build.log 2>&1
+          build_exit=$?
+          printf '{"check":%s,"build":%s}\n' "${check_exit}" "${build_exit}" > validation-status.json
+          exit 0
 
-      - name: Upload repaired lockfile and audit
+      - name: Upload repaired lockfile, audit, and validation logs
         if: always()
         uses: actions/upload-artifact@v4
         with:
@@ -65,5 +72,20 @@ jobs:
           path: |
             package-lock.json
             audit.json
+            audit-exit-code.txt
+            validation-status.json
+            check.log
+            build.log
           if-no-files-found: error
           retention-days: 1
+
+      - name: Enforce zero-vulnerability and validation gates
+        shell: bash
+        run: |
+          audit_exit="$(cat audit-exit-code.txt)"
+          check_exit="$(node -p "require('./validation-status.json').check")"
+          build_exit="$(node -p "require('./validation-status.json').build")"
+          if [ "${audit_exit}" != "0" ] || [ "${check_exit}" != "0" ] || [ "${build_exit}" != "0" ]; then
+            echo "Dependency hardening failed: audit=${audit_exit}, check=${check_exit}, build=${build_exit}"
+            exit 1
+          fi
