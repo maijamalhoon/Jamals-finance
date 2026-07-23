@@ -38,7 +38,7 @@ export function resolveAccessPlan(
       return periodEnd === null || periodEnd > nowTimestamp
         ? subscription.planKey
         : "free";
-    case "canceled":
+    case "cancelled":
       return periodEnd !== null && periodEnd > nowTimestamp
         ? subscription.planKey
         : "free";
@@ -51,6 +51,7 @@ export function resolveAccessPlan(
     }
     case "paused":
     case "expired":
+    case "incomplete":
     case "free":
       return "free";
   }
