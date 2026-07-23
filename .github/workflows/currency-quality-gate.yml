@@ -22,6 +22,7 @@ on:
       - "supabase/migrations/**"
       - ".github/workflows/currency-quality-gate.yml"
   pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
     paths:
       - "lib/currency.ts"
       - "lib/currency-input.ts"
@@ -50,6 +51,7 @@ concurrency:
 
 jobs:
   check:
+    if: github.event_name != 'pull_request' || github.event.pull_request.draft == false
     runs-on: ubuntu-latest
     timeout-minutes: 20
     env:
