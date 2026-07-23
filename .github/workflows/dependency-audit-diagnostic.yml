@@ -29,26 +29,17 @@ jobs:
       - name: Install dependencies
         run: npm ci --silent
 
-      - name: Print dependency audit details
+      - name: Capture dependency audit
         shell: bash
         run: |
           set +e
           npm audit --json > audit.json
-          node <<'NODE'
-          const fs = require('node:fs');
-          const audit = JSON.parse(fs.readFileSync('audit.json', 'utf8'));
-          console.log('AUDIT_METADATA=' + JSON.stringify(audit.metadata || {}));
-          for (const [name, item] of Object.entries(audit.vulnerabilities || {})) {
-            console.log('AUDIT_ITEM=' + JSON.stringify({
-              name,
-              severity: item.severity,
-              direct: item.isDirect,
-              range: item.range,
-              via: item.via,
-              effects: item.effects,
-              fixAvailable: item.fixAvailable,
-              nodes: item.nodes,
-            }));
-          }
-          NODE
           exit 0
+
+      - name: Upload dependency audit
+        uses: actions/upload-artifact@v4
+        with:
+          name: dependency-audit-json
+          path: audit.json
+          if-no-files-found: error
+          retention-days: 1
