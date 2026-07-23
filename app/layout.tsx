@@ -29,13 +29,11 @@ import "./standard-motion-ultra.css";
 import { Toaster } from "sonner";
 import DesktopOverscrollBounce from "@/components/motion/DesktopOverscrollBounce";
 import MotionProvider from "@/components/motion/MotionProvider";
-import GlobalConfirmDialog from "@/components/ui/global-confirm-dialog";
 import {
   CURRENCY_STORAGE_KEY,
   SUPPORTED_CURRENCIES,
 } from "@/lib/currency";
 import { ANIMATION_BOOTSTRAP_SCRIPT } from "@/lib/animation-preference";
-import ChartTooltipAutoDismiss from "@/components/charts/ChartTooltipAutoDismiss";
 import PWARegister from "./pwa-register";
 import {
   THEME_BOOTSTRAP_SCRIPT,
@@ -320,9 +318,7 @@ export default function RootLayout({
       <body className="bg-background text-foreground antialiased">
         <MotionProvider>
           {children}
-          <GlobalConfirmDialog />
           <DesktopOverscrollBounce />
-          <ChartTooltipAutoDismiss />
           <PWARegister />
           <Toaster
             position="top-right"
