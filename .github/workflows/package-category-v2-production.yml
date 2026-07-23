@@ -1,0 +1,43 @@
+name: Package category v2 production source
+
+on:
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  package:
+    if: github.head_ref == 'ops/category-v2-production-source'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out production main
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          ref: main
+          persist-credentials: false
+          show-progress: false
+
+      - name: Create source archive
+        shell: bash
+        run: |
+          set -euo pipefail
+          archive="${RUNNER_TEMP}/jalvoro-category-v2-production.tar.gz"
+          tar \
+            --exclude='.git' \
+            --exclude='node_modules' \
+            --exclude='.next' \
+            --exclude='.vercel' \
+            -czf "${archive}" .
+          cp "${archive}" ./jalvoro-category-v2-production.tar.gz
+
+      - name: Upload source archive
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: jalvoro-category-v2-production-source
+          path: jalvoro-category-v2-production.tar.gz
+          if-no-files-found: error
+          retention-days: 1
