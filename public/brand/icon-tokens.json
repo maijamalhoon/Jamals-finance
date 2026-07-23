@@ -1,0 +1,11 @@
+{
+  "family": "jalvoro-icons-v1",
+  "status": "foundation",
+  "style": "rounded-monoline",
+  "grid": 24,
+  "strokeWidth": 2.4,
+  "lineCap": "round",
+  "lineJoin": "round",
+  "safeArea": 2,
+  "notes": "The final custom JALVORO logo and product icon set will replace the temporary assets without changing consuming application code."
+}
