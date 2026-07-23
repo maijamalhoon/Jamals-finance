@@ -16,6 +16,19 @@ const eslintConfig = defineConfig([
       "react-hooks/use-memo": "warn",
     },
   },
+  {
+    files: ["components/icons/jalvoro/**/*.cjs"],
+    languageOptions: {
+      sourceType: "commonjs",
+    },
+    rules: {
+      "@typescript-eslint/no-require-imports": "off",
+      "@typescript-eslint/no-unused-vars": [
+        "error",
+        { argsIgnorePattern: "^_" },
+      ],
+    },
+  },
   // Override default ignores of eslint-config-next.
   globalIgnores([
     // Default ignores of eslint-config-next:
