@@ -1,0 +1,27 @@
+HEAD=7e8225cf63b8451d5269dd64951d843c5e5c27b8
+total 44
+drwxr-xr-x  2 runner runner  4096 Jul 23 19:26 .
+drwxr-xr-x 14 runner runner  4096 Jul 23 19:26 ..
+-rw-r--r--  1 runner runner    46 Jul 23 19:26 category-v2-bundle-diagnostics.txt
+-rw-r--r--  1 runner runner 20023 Jul 23 19:26 category-v2.bundle.part00
+-rw-r--r--  1 runner runner  4456 Jul 23 19:26 category-v2.bundle.part01
+-rw-r--r--  1 runner runner     6 Jul 23 19:26 category-v2.bundle.ready
+20023 .automation/category-v2.bundle.part00
+ 4456 .automation/category-v2.bundle.part01
+24479 total
+cat_status=0
+24479 /tmp/category-v2-files.tar.gz.b64
+base64: invalid input
+decode_status=1
+7500 /tmp/category-v2-files.tar.gz
+1ffdac047a79b41db32a9965350573cd7590dd4267a27baa4d5136d4a276a1ce  /tmp/category-v2-files.tar.gz
+/tmp/category-v2-files.tar.gz: FAILED
+sha256sum: WARNING: 1 computed checksum did NOT match
+checksum_status=1
+
+gzip: stdin: unexpected end of file
+components/settings/CategoryAppearancePicker.tsx
+components/settings/CategorySettingsSection.tsx
+tar: Unexpected EOF in archive
+tar: Error is not recoverable: exiting now
+tar_status=2
