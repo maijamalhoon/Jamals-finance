@@ -65,9 +65,29 @@ jobs:
             echo "Repository baseline has unrelated TypeScript errors; no changed AI/language file is implicated."
           fi
 
-      - name: Run focused AI and language tests
-        run: >-
-          npx vitest run
-          lib/i18n/config.test.ts
-          lib/ai/multilingual-finance-normalizer.test.ts
-          lib/ai/localized-finance-answer.test.ts
+      - name: Capture focused AI and language tests
+        id: focused-tests
+        shell: bash
+        run: |
+          set +e
+          npx vitest run \
+            lib/i18n/config.test.ts \
+            lib/ai/multilingual-finance-normalizer.test.ts \
+            lib/ai/localized-finance-answer.test.ts \
+            > focused-tests.txt 2>&1
+          status=$?
+          cat focused-tests.txt
+          echo "status=$status" >> "$GITHUB_OUTPUT"
+          exit 0
+
+      - name: Upload focused test diagnostics
+        uses: actions/upload-artifact@v4
+        with:
+          name: ai-language-focused-tests
+          path: focused-tests.txt
+          if-no-files-found: error
+          retention-days: 1
+
+      - name: Enforce focused test result
+        if: steps.focused-tests.outputs.status != '0'
+        run: exit 1
