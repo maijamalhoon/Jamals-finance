@@ -26,9 +26,38 @@ type NormalizedPayload =
   | { ok: true; payload: unknown }
   | { ok: false; message: string };
 
+type DestructiveMutationOperation = "delete" | "soft delete";
+
 const RATE_ERROR_MESSAGE =
   "Exchange rates are unavailable. Your financial record was not saved, so no incorrect conversion was applied.";
 const PRIVATE_AVATAR_BUCKET = "avatars";
+const MUTATION_NOT_APPLIED_CODE = "JF_MUTATION_NOT_APPLIED";
+const DESTRUCTIVE_FILTER_REQUIRED_CODE = "JF_DESTRUCTIVE_FILTER_REQUIRED";
+const DESTRUCTIVE_FILTER_METHODS = new Set([
+  "containedBy",
+  "contains",
+  "eq",
+  "filter",
+  "gt",
+  "gte",
+  "ilike",
+  "in",
+  "is",
+  "like",
+  "lt",
+  "lte",
+  "match",
+  "neq",
+  "not",
+  "or",
+  "overlaps",
+  "rangeAdjacent",
+  "rangeGt",
+  "rangeGte",
+  "rangeLt",
+  "rangeLte",
+  "textSearch",
+]);
 
 function isUsableCachedSnapshot(value: unknown): value is {
   rates: CurrencyRates;
@@ -331,9 +360,178 @@ function createFailedQuery(message: string) {
   return proxy;
 }
 
+function isDestructiveUpdatePayload(payload: unknown) {
+  if (!payload || typeof payload !== "object" || Array.isArray(payload)) {
+    return false;
+  }
+
+  const deletedAt = (payload as JsonRecord).deleted_at;
+  return typeof deletedAt === "string" && deletedAt.trim().length > 0;
+}
+
+function destructiveFilterRequiredError(
+  table: string,
+  operation: DestructiveMutationOperation,
+) {
+  return {
+    message: `${operation === "delete" ? "Delete" : "Soft delete"} on ${table} requires an explicit filter.`,
+    details: null,
+    hint: "Target destructive mutations with an id or another ownership-safe filter.",
+    code: DESTRUCTIVE_FILTER_REQUIRED_CODE,
+  };
+}
+
+function mutationNotAppliedError(
+  table: string,
+  operation: DestructiveMutationOperation,
+) {
+  return {
+    message: `${operation === "delete" ? "Delete" : "Soft delete"} did not affect any ${table} row.`,
+    details: null,
+    hint: "The record may no longer exist or access may have changed.",
+    code: MUTATION_NOT_APPLIED_CODE,
+  };
+}
+
+export function verifyDestructiveMutationResult(
+  result: unknown,
+  table: string,
+  operation: DestructiveMutationOperation,
+) {
+  if (!result || typeof result !== "object") return result;
+
+  const response = result as {
+    data?: unknown;
+    error?: unknown;
+    [key: string]: unknown;
+  };
+  if (response.error) return result;
+
+  const affected = Array.isArray(response.data)
+    ? response.data.length > 0
+    : response.data !== null && response.data !== undefined;
+  if (affected) return result;
+
+  return {
+    ...response,
+    data: null,
+    error: mutationNotAppliedError(table, operation),
+  };
+}
+
+function addMutationReceipt<T extends object>(builder: T): T {
+  const select = Reflect.get(builder, "select", builder);
+  if (typeof select !== "function") return builder;
+
+  const selected = Reflect.apply(select, builder, ["id"]);
+  return selected && typeof selected === "object" ? (selected as T) : builder;
+}
+
+function resolveVerifiedMutation(
+  table: string,
+  operation: DestructiveMutationOperation,
+  builder: object,
+  hasReceipt: boolean,
+  hasFilter: boolean,
+) {
+  if (!hasFilter) {
+    return Promise.resolve({
+      data: null,
+      error: destructiveFilterRequiredError(table, operation),
+    });
+  }
+
+  const query = hasReceipt ? builder : addMutationReceipt(builder);
+  return Promise.resolve(query as PromiseLike<unknown>).then((result) =>
+    verifyDestructiveMutationResult(result, table, operation),
+  );
+}
+
+function wrapVerifiedMutationQuery<T extends object>(
+  table: string,
+  operation: DestructiveMutationOperation,
+  builder: T,
+  hasReceipt = false,
+  hasFilter = false,
+): T {
+  return new Proxy(builder, {
+    get(target, property, receiver) {
+      if (property === "then") {
+        return (
+          onFulfilled?: (value: unknown) => unknown,
+          onRejected?: (reason: unknown) => unknown,
+        ) =>
+          resolveVerifiedMutation(
+            table,
+            operation,
+            target,
+            hasReceipt,
+            hasFilter,
+          ).then(
+            onFulfilled,
+            onRejected,
+          );
+      }
+
+      if (property === "catch") {
+        return (onRejected?: (reason: unknown) => unknown) =>
+          resolveVerifiedMutation(
+            table,
+            operation,
+            target,
+            hasReceipt,
+            hasFilter,
+          ).catch(onRejected);
+      }
+
+      if (property === "finally") {
+        return (onFinally?: () => void) =>
+          resolveVerifiedMutation(
+            table,
+            operation,
+            target,
+            hasReceipt,
+            hasFilter,
+          ).finally(onFinally);
+      }
+
+      const value = Reflect.get(target, property, receiver);
+      if (typeof value !== "function") return value;
+
+      return (...args: unknown[]) => {
+        const next = Reflect.apply(value, target, args);
+        return next && typeof next === "object"
+          ? wrapVerifiedMutationQuery(
+              table,
+              operation,
+              next as object,
+              hasReceipt || property === "select",
+              hasFilter ||
+                (typeof property === "string" &&
+                  DESTRUCTIVE_FILTER_METHODS.has(property)),
+            )
+          : next;
+      };
+    },
+  });
+}
+
 function wrapTableBuilder<T extends object>(table: string, builder: T): T {
   return new Proxy(builder, {
     get(target, property, receiver) {
+      if (property === "delete") {
+        const method = Reflect.get(target, property, target) as (
+          options?: unknown,
+        ) => object;
+
+        return (options?: unknown) =>
+          wrapVerifiedMutationQuery(
+            table,
+            "delete",
+            method.call(target, options),
+          );
+      }
+
       if (
         property === "insert" ||
         property === "update" ||
@@ -342,12 +540,21 @@ function wrapTableBuilder<T extends object>(table: string, builder: T): T {
         const method = Reflect.get(target, property, target) as (
           payload: unknown,
           options?: unknown,
-        ) => unknown;
+        ) => object;
 
         return (payload: unknown, options?: unknown) => {
           const normalized = normalizePayload(table, payload);
           if (!normalized.ok) return createFailedQuery(normalized.message);
-          return method.call(target, normalized.payload, options);
+
+          const query = method.call(target, normalized.payload, options);
+          if (
+            property === "update" &&
+            isDestructiveUpdatePayload(normalized.payload)
+          ) {
+            return wrapVerifiedMutationQuery(table, "soft delete", query);
+          }
+
+          return query;
         };
       }
 
