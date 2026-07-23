@@ -1,15 +1,16 @@
 name: Export JALVORO source
 
 on:
-  push:
-    branches:
-      - agent/deploy-jalvoro-production
+  pull_request:
+    types: [opened, synchronize, reopened]
 
 permissions:
   contents: read
 
 jobs:
   export:
+    name: Package validated production source
+    if: github.head_ref == 'agent/deploy-jalvoro-production'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
