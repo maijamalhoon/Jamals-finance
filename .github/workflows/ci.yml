@@ -1,6 +1,7 @@
 name: CI
 
 on:
+  workflow_dispatch:
   pull_request:
   push:
     branches:
@@ -17,8 +18,9 @@ jobs:
   validate:
     name: Validate
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 30
     env:
+      CI: "true"
       NEXT_TELEMETRY_DISABLED: "1"
       NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
       NEXT_PUBLIC_SUPABASE_ANON_KEY: ci-build-placeholder
@@ -43,39 +45,17 @@ jobs:
       - name: Audit production dependencies
         run: npm audit --omit=dev --audit-level=critical
 
-      - name: Lint (diagnostic until existing UI hook violations are resolved)
-        id: lint
-        continue-on-error: true
-        run: npm run lint -- --format stylish > lint-report.txt 2>&1
-
-      - name: Upload lint diagnostics
-        if: steps.lint.outcome == 'failure'
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with:
-          name: lint-report
-          path: lint-report.txt
-          if-no-files-found: error
-          retention-days: 2
+      - name: Lint
+        run: npm run lint
 
       - name: Typecheck
         run: npm run typecheck
 
-      - name: Run blocking security contract tests
+      - name: Run security contract tests
         run: npx vitest run lib/security-hardening.test.ts
 
-      - name: Run legacy application suite (diagnostic)
-        id: test
-        continue-on-error: true
-        run: npm test > test-report.txt 2>&1
-
-      - name: Upload legacy test diagnostics
-        if: steps.test.outcome == 'failure'
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with:
-          name: test-report
-          path: test-report.txt
-          if-no-files-found: error
-          retention-days: 2
+      - name: Run complete application suite
+        run: npm test
 
       - name: Build production application
         run: npm run build
