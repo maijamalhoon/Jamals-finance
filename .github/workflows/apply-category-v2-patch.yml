@@ -24,18 +24,22 @@ jobs:
           ref: feat/category-manager-v2
           fetch-depth: 0
 
-      - name: Apply prepared patch
+      - name: Diagnose prepared patch
         shell: bash
         run: |
-          set -euo pipefail
+          set -uo pipefail
           cat .automation/category-v2.part0* > /tmp/category-v2.patch.gz.b64
           base64 --decode /tmp/category-v2.patch.gz.b64 > /tmp/category-v2.patch.gz
           gzip --decompress --stdout /tmp/category-v2.patch.gz > /tmp/category-v2.patch
-          git apply --index --3way /tmp/category-v2.patch
-          rm -f .automation/category-v2.part0*
-          rm -f .github/workflows/apply-category-v2-patch.yml
+          {
+            echo "HEAD=$(git rev-parse HEAD)"
+            wc -c /tmp/category-v2.patch.gz.b64 /tmp/category-v2.patch.gz /tmp/category-v2.patch
+            sha256sum /tmp/category-v2.patch.gz.b64 /tmp/category-v2.patch.gz /tmp/category-v2.patch
+            git apply --check --3way /tmp/category-v2.patch
+            echo "apply_status=$?"
+          } > .automation/category-v2-diagnostics.txt 2>&1
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -A
-          git commit -m "feat(categories): rebuild clean manager and secure mutations"
+          git add .automation/category-v2-diagnostics.txt
+          git commit -m "chore: capture category patch diagnostics"
           git push origin HEAD:feat/category-manager-v2
