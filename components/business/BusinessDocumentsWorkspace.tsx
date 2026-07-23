@@ -235,7 +235,7 @@ export default function BusinessDocumentsWorkspace({
       versionNotes: "",
     });
     setFile(null);
-    document.getElementById("document-upload-panel")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    globalThis.document.getElementById("document-upload-panel")?.scrollIntoView({ behavior: "smooth", block: "start" });
   }
 
   function handleFile(event: ChangeEvent<HTMLInputElement>) {
