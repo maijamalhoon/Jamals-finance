@@ -43,4 +43,4 @@ gradle :shared:testAndroidHostTest
 gradle :androidApp:assembleDebug
 ```
 
-The APK artifact must be produced by that successful GitHub Actions run.
+The APK artifact must be produced by that successful GitHub Actions run. The verification commit includes the corrected positional authentication callbacks and privacy-owned panel surfaces.
