@@ -1,6 +1,6 @@
 "use client";
 
-import type { ChangeEvent, FormEvent, ReactNode } from "react";
+import type { FormEvent, ReactNode } from "react";
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
@@ -8,6 +8,7 @@ import {
   ChevronRight,
   Eye,
   LayoutGrid,
+  Lightbulb,
   Loader2,
   Pencil,
   Plus,
@@ -18,6 +19,7 @@ import {
 import { toast } from "sonner";
 
 import type { PersistentSettingsCategory } from "@/components/settings/CategoryManagementExperience";
+import CategoryVisualField from "@/components/settings/CategoryVisualField";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -32,12 +34,13 @@ import {
   FinanceModalHeader,
   financeModalContentClass,
 } from "@/components/ui/finance-modal";
-import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   CategoryVisualIcon,
+  getCategoryVisual,
   getNextCategoryVisual,
   type CategoryKind,
+  type CategoryVisual,
 } from "@/lib/category-visuals";
 import {
   CATEGORY_DELETE_VERIFICATION_ERROR,
@@ -52,6 +55,11 @@ type Props = {
   initialUsage: Record<string, number>;
   userId: string;
   available: boolean;
+};
+
+const EMPTY_VISUAL: CategoryVisual = {
+  color: "#2563EB",
+  iconKey: "tags",
 };
 
 function IconBubble({ children }: { children: ReactNode }) {
@@ -150,12 +158,18 @@ export default function CategorySettingsSection({
   const [categories, setCategories] = useState(initialCategories);
   const [usage, setUsage] = useState(initialUsage);
   const [activeTab, setActiveTab] = useState<CategoryKind>("income");
+
   const [draftName, setDraftName] = useState("");
   const [draftType, setDraftType] = useState<CategoryKind>("income");
+  const [draftVisual, setDraftVisual] = useState<CategoryVisual>(EMPTY_VISUAL);
+  const [draftVisualTouched, setDraftVisualTouched] = useState(false);
+
   const [savingId, setSavingId] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editName, setEditName] = useState("");
   const [editType, setEditType] = useState<CategoryKind>("income");
+  const [editVisual, setEditVisual] = useState<CategoryVisual>(EMPTY_VISUAL);
+
   const [pendingDelete, setPendingDelete] =
     useState<PersistentSettingsCategory | null>(null);
   const [deleteFeedback, setDeleteFeedback] = useState<string | null>(null);
@@ -163,6 +177,13 @@ export default function CategorySettingsSection({
 
   useEffect(() => setCategories(initialCategories), [initialCategories]);
   useEffect(() => setUsage(initialUsage), [initialUsage]);
+
+  useEffect(() => {
+    if (dialogMode !== "create" || draftVisualTouched) return;
+    setDraftVisual(
+      getNextCategoryVisual(categories, draftName || "Category", draftType),
+    );
+  }, [categories, dialogMode, draftName, draftType, draftVisualTouched]);
 
   const categoryById = useMemo(
     () => new Map(categories.map((category) => [category.id, category])),
@@ -180,14 +201,12 @@ export default function CategorySettingsSection({
     [categories],
   );
 
-  const draftVisual = useMemo(
-    () => getNextCategoryVisual(categories, draftName || "Category", draftType),
-    [categories, draftName, draftType],
-  );
-
   function openCreateDialog() {
+    const type: CategoryKind = "income";
     setDraftName("");
-    setDraftType("income");
+    setDraftType(type);
+    setDraftVisual(getNextCategoryVisual(categories, "Category", type));
+    setDraftVisualTouched(false);
     setEditingId(null);
     setDialogMode("create");
   }
@@ -201,6 +220,7 @@ export default function CategorySettingsSection({
     setDialogMode(null);
     setEditingId(null);
     setDraftName("");
+    setDraftVisualTouched(false);
   }
 
   function hasDuplicateName(
@@ -230,7 +250,6 @@ export default function CategorySettingsSection({
       return;
     }
 
-    const visual = getNextCategoryVisual(categories, name, draftType);
     setSavingId("new");
     const { data, error } = await supabase
       .from("categories")
@@ -238,8 +257,8 @@ export default function CategorySettingsSection({
         user_id: userId,
         name,
         type: draftType,
-        color: visual.color,
-        icon_key: visual.iconKey,
+        color: draftVisual.color,
+        icon_key: draftVisual.iconKey,
         parent_id: null,
       })
       .select("id, name, type, color, icon_key, parent_id")
@@ -255,9 +274,8 @@ export default function CategorySettingsSection({
     setCategories((current) => [...current, created]);
     setUsage((current) => ({ ...current, [created.id]: 0 }));
     setActiveTab(created.type);
-    setDraftName("");
-    setDialogMode(null);
-    toast.success(`${name} created.`);
+    closeMainDialog();
+    toast.success(`${name} created with its saved emoji and color.`);
     router.refresh();
   }
 
@@ -265,6 +283,7 @@ export default function CategorySettingsSection({
     setEditingId(category.id);
     setEditName(category.name);
     setEditType(category.type);
+    setEditVisual(getCategoryVisual(category));
   }
 
   function cancelEdit() {
@@ -294,6 +313,8 @@ export default function CategorySettingsSection({
       .update({
         name,
         type: nextType,
+        color: editVisual.color,
+        icon_key: editVisual.iconKey,
         parent_id: nextType === "income" ? null : category.parent_id,
       })
       .eq("id", category.id)
@@ -313,7 +334,7 @@ export default function CategorySettingsSection({
     );
     setActiveTab(updated.type);
     cancelEdit();
-    toast.success(`${name} updated.`);
+    toast.success(`${name} and its visual memory were updated.`);
     router.refresh();
   }
 
@@ -434,27 +455,28 @@ export default function CategorySettingsSection({
                 key={category.id}
                 className="rounded-[20px] border border-active/30 bg-surface-secondary p-3 sm:p-4"
               >
-                <div className="flex min-w-0 items-center gap-3">
-                  <CategoryVisualIcon category={category} size="sm" />
-                  <Input
-                    value={editName}
-                    onChange={(event: ChangeEvent<HTMLInputElement>) =>
-                      setEditName(event.target.value)
-                    }
-                    aria-label={`Edit ${category.name} name`}
-                    className="min-w-0 flex-1"
-                  />
-                </div>
+                <CategoryVisualField
+                  id={`edit-category-${category.id}`}
+                  name={editName}
+                  type={editType}
+                  visual={editVisual}
+                  onNameChange={setEditName}
+                  onVisualChange={setEditVisual}
+                  placeholder="Category name"
+                  ariaLabel={`Edit ${category.name} name`}
+                  disabled={savingId === category.id}
+                />
                 <div className="mt-3">
                   <TypeSelector
                     value={editType}
                     onChange={setEditType}
-                    disabled={!canChangeType}
+                    disabled={!canChangeType || savingId === category.id}
                   />
                 </div>
                 {!canChangeType ? (
                   <p className="mt-2 text-xs leading-5 text-text-secondary">
-                    Type cannot change while this category is in use.
+                    Type cannot change while this category is in use. Its name,
+                    emoji and color can still be updated without affecting data.
                   </p>
                 ) : null}
                 <div className="mt-3 flex justify-end gap-2">
@@ -582,73 +604,76 @@ export default function CategorySettingsSection({
           className={`${financeModalContentClass} w-[calc(100vw-1rem)] ${
             dialogMode === "view"
               ? "sm:[--finance-modal-max-width:46rem]"
-              : "sm:[--finance-modal-max-width:36rem]"
+              : "sm:[--finance-modal-max-width:40rem]"
           }`}
         >
           <FinanceModalHeader
-            title={dialogMode === "create" ? "Create Category" : "Categories"}
+            title={dialogMode === "create" ? "Create category" : "Categories"}
             description={
-              dialogMode === "create"
-                ? "Add an income or expense category. Its visual is assigned automatically."
-                : "View, edit, or delete income and expense categories."
+              dialogMode === "view"
+                ? "View, edit, or delete income and expense categories."
+                : undefined
             }
-            icon={dialogMode === "create" ? Plus : LayoutGrid}
+            icon={dialogMode === "view" ? LayoutGrid : undefined}
             tone="info"
           />
 
           <FinanceModalBody>
             {dialogMode === "create" ? (
               <form onSubmit={addCategory} className="space-y-4">
-                <div className="flex min-w-0 items-center gap-3 rounded-[20px] border border-border bg-surface-secondary p-3">
-                  <CategoryVisualIcon
-                    color={draftVisual.color}
-                    iconKey={draftVisual.iconKey}
-                    label={draftName || `New ${draftType}`}
-                    size="sm"
-                  />
-                  <div className="min-w-0 flex-1">
-                    <p className="text-sm font-bold text-text-primary">
-                      {draftName.trim() || "New category"}
-                    </p>
-                    <p className="mt-0.5 text-xs text-text-secondary capitalize">
-                      {draftType} category
-                    </p>
-                  </div>
-                </div>
-
                 <FinanceFormField
                   label="Category name"
                   htmlFor="settings-category-name"
                 >
-                  <Input
+                  <CategoryVisualField
                     id="settings-category-name"
-                    value={draftName}
-                    onChange={(event: ChangeEvent<HTMLInputElement>) =>
-                      setDraftName(event.target.value)
-                    }
-                    placeholder="e.g. Salary, Rent, Fuel"
-                    autoComplete="off"
+                    name={draftName}
+                    type={draftType}
+                    visual={draftVisual}
+                    onNameChange={setDraftName}
+                    onVisualChange={(visual) => {
+                      setDraftVisual(visual);
+                      setDraftVisualTouched(true);
+                    }}
                     autoFocus
                   />
                 </FinanceFormField>
 
-                <FinanceFormField label="Type">
+                <div className="flex gap-3 rounded-[16px] border border-border bg-surface-secondary px-4 py-3.5">
+                  <Lightbulb
+                    size={20}
+                    className="mt-0.5 shrink-0 text-text-secondary"
+                    aria-hidden="true"
+                  />
+                  <p className="text-xs leading-5 text-text-secondary sm:text-sm sm:leading-6">
+                    Categories keep transactions, reports, emoji and color together.
+                    The selected visual is remembered everywhere without changing
+                    any existing financial data.
+                  </p>
+                </div>
+
+                <FinanceFormField label="Category type">
                   <TypeSelector value={draftType} onChange={setDraftType} />
                 </FinanceFormField>
 
-                <Button
-                  type="submit"
-                  size="lg"
-                  disabled={!draftName.trim() || savingId === "new"}
-                  className="w-full"
-                >
-                  {savingId === "new" ? (
-                    <Loader2 size={17} className="animate-spin" />
-                  ) : (
-                    <Plus size={17} />
-                  )}
-                  {savingId === "new" ? "Creating..." : "Create Category"}
-                </Button>
+                <div className="flex flex-col gap-3 border-t border-border pt-4 sm:flex-row sm:items-center sm:justify-between">
+                  <p className="text-xs font-semibold text-text-secondary">
+                    Permanent category memory
+                  </p>
+                  <Button
+                    type="submit"
+                    size="lg"
+                    disabled={!draftName.trim() || savingId === "new"}
+                    className="w-full sm:w-auto"
+                  >
+                    {savingId === "new" ? (
+                      <Loader2 size={17} className="animate-spin" />
+                    ) : (
+                      <Plus size={17} />
+                    )}
+                    {savingId === "new" ? "Creating..." : "Create category"}
+                  </Button>
+                </div>
               </form>
             ) : (
               <Tabs
