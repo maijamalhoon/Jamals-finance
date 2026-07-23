@@ -1,12 +1,25 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import { useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
-import AddExpenseButton from "@/components/expenses/AddExpenseButton";
-import AddGoalButton from "@/components/goals/AddGoalButton";
-import AddIncomeButton from "@/components/income/AddIncomeButton";
-import AddInvestmentButton from "@/components/investments/AddInvestmentButton";
+const AddExpenseButton = dynamic(
+  () => import("@/components/expenses/AddExpenseButton"),
+  { ssr: false },
+);
+const AddGoalButton = dynamic(
+  () => import("@/components/goals/AddGoalButton"),
+  { ssr: false },
+);
+const AddIncomeButton = dynamic(
+  () => import("@/components/income/AddIncomeButton"),
+  { ssr: false },
+);
+const AddInvestmentButton = dynamic(
+  () => import("@/components/investments/AddInvestmentButton"),
+  { ssr: false },
+);
 
 type LauncherKind = "income" | "expense" | "investment" | "goal";
 type EmptyCardKind =
@@ -81,6 +94,13 @@ const EMPTY_STATE_CONFIGS: EmptyStateConfig[] = [
   },
 ];
 
+const LAUNCHER_ORDER: LauncherKind[] = [
+  "income",
+  "expense",
+  "investment",
+  "goal",
+];
+
 function getCardHeadingText(section: HTMLElement) {
   return Array.from(section.querySelectorAll<HTMLElement>("h3, header span"))
     .map((element) => element.textContent?.trim().toLowerCase() ?? "")
@@ -101,8 +121,21 @@ function getEmptyCopyElements(emptyState: HTMLElement) {
   return { title, description };
 }
 
+function normalizeLaunchers(values: Iterable<LauncherKind>) {
+  const unique = new Set(values);
+  return LAUNCHER_ORDER.filter((launcher) => unique.has(launcher));
+}
+
+function sameLaunchers(left: LauncherKind[], right: LauncherKind[]) {
+  return (
+    left.length === right.length &&
+    left.every((launcher, index) => launcher === right[index])
+  );
+}
+
 export default function DashboardEmptyStateSync() {
   const [mounted, setMounted] = useState(false);
+  const [activeLaunchers, setActiveLaunchers] = useState<LauncherKind[]>([]);
   const launchersRef = useRef<HTMLDivElement>(null);
 
   useLayoutEffect(() => {
@@ -112,119 +145,196 @@ export default function DashboardEmptyStateSync() {
   useLayoutEffect(() => {
     if (!mounted) return;
 
-    const launcherButtons =
-      launchersRef.current?.querySelectorAll<HTMLButtonElement>(
-        "[data-dashboard-empty-launcher] > button",
+    const overview = document.querySelector<HTMLElement>(".dashboard-overview");
+    if (!overview) return;
+
+    const updateActiveLaunchers = () => {
+      const launchers = Array.from(
+        overview.querySelectorAll<HTMLElement>("[data-dashboard-empty-action]"),
+      ).flatMap((element) => {
+        const launcher = element.dataset.dashboardEmptyAction;
+        return LAUNCHER_ORDER.includes(launcher as LauncherKind)
+          ? [launcher as LauncherKind]
+          : [];
+      });
+      const next = normalizeLaunchers(launchers);
+      setActiveLaunchers((current) =>
+        sameLaunchers(current, next) ? current : next,
+      );
+    };
+
+    const synchronizeSection = (section: HTMLElement) => {
+      delete section.dataset.dashboardEmptyCard;
+
+      const staleActions = () =>
+        section
+          .querySelectorAll<HTMLElement>(
+            "[data-dashboard-empty-action-container]",
+          )
+          .forEach((element) => element.remove());
+
+      const headingText = getCardHeadingText(section);
+      const config = EMPTY_STATE_CONFIGS.find((item) =>
+        headingText.includes(item.cardLabel),
+      );
+      if (!config) {
+        staleActions();
+        return;
+      }
+
+      const emptyState = section.querySelector<HTMLElement>(
+        ".dashboard-chart-empty",
+      );
+      if (!emptyState) {
+        staleActions();
+        return;
+      }
+
+      const { title, description } = getEmptyCopyElements(emptyState);
+      const currentTitle = title?.textContent?.trim().toLowerCase() ?? "";
+      if (!title || !description || currentTitle.includes("unavailable")) {
+        staleActions();
+        return;
+      }
+
+      section.dataset.dashboardEmptyCard = config.kind;
+
+      if (title.textContent !== config.title) title.textContent = config.title;
+      if (description.textContent !== config.description) {
+        description.textContent = config.description;
+      }
+
+      emptyState
+        .querySelector<HTMLElement>("[data-empty-state]")
+        ?.setAttribute("data-empty-state-has-action", "true");
+
+      let actionContainer = emptyState.querySelector<HTMLElement>(
+        "[data-empty-state-action]",
+      );
+      if (!actionContainer) {
+        actionContainer = document.createElement("div");
+        actionContainer.setAttribute("data-empty-state-action", "");
+        const content =
+          emptyState.querySelector<HTMLElement>("[data-empty-state-content]") ??
+          title.parentElement ??
+          emptyState;
+        content.appendChild(actionContainer);
+      }
+
+      actionContainer.setAttribute(
+        "data-dashboard-empty-action-container",
+        config.launcher,
       );
 
-    launcherButtons?.forEach((button) => {
-      button.tabIndex = -1;
-      button.setAttribute("aria-hidden", "true");
-    });
+      let actionButton =
+        actionContainer.querySelector<HTMLButtonElement>("button");
+      if (!actionButton) {
+        actionButton = document.createElement("button");
+        actionButton.type = "button";
+        actionContainer.appendChild(actionButton);
+      }
 
-    const openLauncher = (launcher: LauncherKind) => {
-      launchersRef.current
-        ?.querySelector<HTMLButtonElement>(
-          `[data-dashboard-empty-launcher="${launcher}"] > button`,
-        )
-        ?.click();
+      actionButton.classList.add("finance-focus");
+      actionButton.setAttribute("data-dashboard-empty-action", config.launcher);
+      if (actionButton.textContent !== config.actionLabel) {
+        actionButton.textContent = config.actionLabel;
+      }
     };
 
-    const synchronizeEmptyStates = () => {
-      const overview = document.querySelector<HTMLElement>(".dashboard-overview");
-      if (!overview) return;
-
-      overview.querySelectorAll<HTMLElement>("section").forEach((section) => {
-        delete section.dataset.dashboardEmptyCard;
-
-        const headingText = getCardHeadingText(section);
-        const config = EMPTY_STATE_CONFIGS.find((item) =>
-          headingText.includes(item.cardLabel),
-        );
-        if (!config) return;
-
-        const emptyState = section.querySelector<HTMLElement>(
-          ".dashboard-chart-empty",
-        );
-        if (!emptyState) return;
-
-        const { title, description } = getEmptyCopyElements(emptyState);
-        const currentTitle = title?.textContent?.trim().toLowerCase() ?? "";
-        if (!title || !description || currentTitle.includes("unavailable")) return;
-
-        section.dataset.dashboardEmptyCard = config.kind;
-
-        if (title.textContent !== config.title) title.textContent = config.title;
-        if (description.textContent !== config.description) {
-          description.textContent = config.description;
-        }
-
-        const reusableEmptyState = emptyState.querySelector<HTMLElement>(
-          "[data-empty-state]",
-        );
-        reusableEmptyState?.setAttribute("data-empty-state-has-action", "true");
-
-        let actionContainer = emptyState.querySelector<HTMLElement>(
-          "[data-empty-state-action]",
-        );
-        let actionButton =
-          actionContainer?.querySelector<HTMLButtonElement>("button");
-        const hasExistingAction = Boolean(actionButton);
-
-        if (!actionContainer) {
-          actionContainer = document.createElement("div");
-          actionContainer.setAttribute("data-empty-state-action", "");
-          const content =
-            emptyState.querySelector<HTMLElement>("[data-empty-state-content]") ??
-            title.parentElement ??
-            emptyState;
-          content.appendChild(actionContainer);
-        }
-
-        actionContainer.setAttribute(
-          "data-dashboard-empty-action-container",
-          config.launcher,
-        );
-
-        if (!actionButton) {
-          actionButton = document.createElement("button");
-          actionButton.type = "button";
-          actionContainer.appendChild(actionButton);
-        }
-
-        actionButton.classList.add("finance-focus");
-        actionButton.setAttribute("data-dashboard-empty-action", config.launcher);
-
-        if (!hasExistingAction) {
-          actionButton.addEventListener("click", () =>
-            openLauncher(config.launcher),
-          );
-        }
-
-        if (actionButton.textContent !== config.actionLabel) {
-          actionButton.textContent = config.actionLabel;
-        }
-      });
+    const synchronizeSections = (sections: Iterable<HTMLElement>) => {
+      for (const section of sections) synchronizeSection(section);
+      updateActiveLaunchers();
     };
 
-    synchronizeEmptyStates();
+    synchronizeSections(
+      overview.querySelectorAll<HTMLElement>("section"),
+    );
 
+    const pendingSections = new Set<HTMLElement>();
     let frame = 0;
-    const observer = new MutationObserver(() => {
-      window.cancelAnimationFrame(frame);
-      frame = window.requestAnimationFrame(synchronizeEmptyStates);
+
+    const flushPendingSections = () => {
+      frame = 0;
+      const sections = Array.from(pendingSections);
+      pendingSections.clear();
+      synchronizeSections(sections);
+    };
+
+    const queueSection = (section: HTMLElement | null) => {
+      if (!section || !overview.contains(section)) return;
+      pendingSections.add(section);
+      if (!frame) frame = window.requestAnimationFrame(flushPendingSections);
+    };
+
+    const observer = new MutationObserver((mutations) => {
+      for (const mutation of mutations) {
+        if (mutation.target instanceof Element) {
+          queueSection(mutation.target.closest<HTMLElement>("section"));
+        }
+
+        mutation.addedNodes.forEach((node) => {
+          if (!(node instanceof HTMLElement)) return;
+          if (node.matches("section")) queueSection(node);
+          node
+            .querySelectorAll<HTMLElement>("section")
+            .forEach((section) => queueSection(section));
+        });
+      }
     });
 
-    const overview = document.querySelector<HTMLElement>(".dashboard-overview");
-    if (overview) {
-      observer.observe(overview, { childList: true, subtree: true });
-    }
+    const openLauncher = (launcher: LauncherKind, attempt = 0) => {
+      const button = launchersRef.current?.querySelector<HTMLButtonElement>(
+        `[data-dashboard-empty-launcher="${launcher}"] > button`,
+      );
+      if (button) {
+        button.click();
+        return;
+      }
+
+      setActiveLaunchers((current) =>
+        current.includes(launcher)
+          ? current
+          : normalizeLaunchers([...current, launcher]),
+      );
+
+      if (attempt < 20) {
+        window.setTimeout(() => openLauncher(launcher, attempt + 1), 50);
+      }
+    };
+
+    const handleClick = (event: Event) => {
+      if (!(event.target instanceof Element)) return;
+      const action = event.target.closest<HTMLElement>(
+        "[data-dashboard-empty-action]",
+      );
+      if (!action || !overview.contains(action)) return;
+
+      const launcher = action.dataset.dashboardEmptyAction;
+      if (!LAUNCHER_ORDER.includes(launcher as LauncherKind)) return;
+      openLauncher(launcher as LauncherKind);
+    };
+
+    overview.addEventListener("click", handleClick);
+    observer.observe(overview, { childList: true, subtree: true });
 
     return () => {
+      overview.removeEventListener("click", handleClick);
       observer.disconnect();
       window.cancelAnimationFrame(frame);
+      pendingSections.clear();
     };
   }, [mounted]);
+
+  useLayoutEffect(() => {
+    launchersRef.current
+      ?.querySelectorAll<HTMLButtonElement>(
+        "[data-dashboard-empty-launcher] > button",
+      )
+      .forEach((button) => {
+        button.tabIndex = -1;
+        button.setAttribute("aria-hidden", "true");
+      });
+  }, [activeLaunchers]);
 
   if (!mounted) return null;
 
@@ -309,18 +419,26 @@ export default function DashboardEmptyStateSync() {
         }
       `}</style>
       <div ref={launchersRef} data-dashboard-empty-launchers>
-        <div data-dashboard-empty-launcher="income">
-          <AddIncomeButton label="Add income" showIcon={false} />
-        </div>
-        <div data-dashboard-empty-launcher="expense">
-          <AddExpenseButton label="Add an expense" showIcon={false} />
-        </div>
-        <div data-dashboard-empty-launcher="investment">
-          <AddInvestmentButton label="Add an investment" showIcon={false} />
-        </div>
-        <div data-dashboard-empty-launcher="goal">
-          <AddGoalButton label="Create a goal" showIcon={false} />
-        </div>
+        {activeLaunchers.includes("income") ? (
+          <div data-dashboard-empty-launcher="income">
+            <AddIncomeButton label="Add income" showIcon={false} />
+          </div>
+        ) : null}
+        {activeLaunchers.includes("expense") ? (
+          <div data-dashboard-empty-launcher="expense">
+            <AddExpenseButton label="Add an expense" showIcon={false} />
+          </div>
+        ) : null}
+        {activeLaunchers.includes("investment") ? (
+          <div data-dashboard-empty-launcher="investment">
+            <AddInvestmentButton label="Add an investment" showIcon={false} />
+          </div>
+        ) : null}
+        {activeLaunchers.includes("goal") ? (
+          <div data-dashboard-empty-launcher="goal">
+            <AddGoalButton label="Create a goal" showIcon={false} />
+          </div>
+        ) : null}
       </div>
     </>,
     document.body,
