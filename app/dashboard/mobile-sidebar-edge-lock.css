@@ -1,0 +1,36 @@
+/*
+ * Final mobile/tablet navigation drawer position authority.
+ * This file must stay last in the dashboard CSS import order so generic
+ * dialog/sheet centering rules cannot move the drawer away from the viewport edge.
+ */
+@media (max-width: 1023px) {
+  html body
+    [data-slot="sheet-portal"]
+    [data-mobile-navigation-drawer][data-slot="sheet-content"][data-side="left"] {
+    position: fixed !important;
+    inset: 0 auto 0 0 !important;
+    inset-block: 0 !important;
+    inset-inline: 0 auto !important;
+    top: 0 !important;
+    right: auto !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    margin: 0 !important;
+    margin-inline: 0 !important;
+    translate: 0 0 !important;
+    transform: translate3d(0, 0, 0) !important;
+    transform-origin: left center !important;
+    place-self: stretch auto !important;
+    justify-self: start !important;
+  }
+
+  html body
+      [data-slot="sheet-portal"]
+      [data-mobile-navigation-drawer][data-slot="sheet-content"][data-side="left"][data-starting-style],
+  html body
+      [data-slot="sheet-portal"]
+      [data-mobile-navigation-drawer][data-slot="sheet-content"][data-side="left"][data-ending-style] {
+    translate: 0 0 !important;
+    transform: translate3d(-2.5rem, 0, 0) !important;
+  }
+}
