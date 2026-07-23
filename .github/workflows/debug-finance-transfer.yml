@@ -18,20 +18,13 @@ jobs:
       NEXT_PUBLIC_SUPABASE_ANON_KEY: ci-build-placeholder
       NEXT_PUBLIC_ENABLE_GOOGLE_AUTH: false
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
-        with:
-          persist-credentials: false
-          show-progress: false
-      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
-        with:
-          node-version: 22
-          cache: npm
-      - name: Install dependencies quietly
-        run: npm ci --silent
       - name: Print typecheck and lint diagnostics
         shell: bash
         run: |
           set +e
+          git clone --quiet --depth 1 --branch "$GITHUB_HEAD_REF" https://github.com/maijamalhoon/Jamals-finance.git repo
+          cd repo || exit 1
+          npm ci --silent
           npm run typecheck > /tmp/typecheck.log 2>&1
           typecheck_status=$?
           npm run lint > /tmp/lint.log 2>&1
