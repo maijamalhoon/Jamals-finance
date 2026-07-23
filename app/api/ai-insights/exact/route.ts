@@ -1,12 +1,3 @@
-import { getAppDateParts } from "@/lib/dates";
-import { getPayableStatus } from "@/lib/finance-options";
-import {
-  BASE_CURRENCY,
-  formatMoney,
-  isSupportedCurrency,
-  normalizeUsdToPkrRate,
-  type SupportedCurrency,
-} from "@/lib/currency";
 import {
   buildAssetBreakdownAnswer,
   isAssetBreakdownRequest,
@@ -19,9 +10,22 @@ import {
   type DeterministicFinanceIntent,
   type FinancePayableRecord,
 } from "@/lib/ai/deterministic-finance-chat";
+import { localizeVerifiedFinanceAnswer } from "@/lib/ai/localized-finance-answer";
+import { normalizeMultilingualFinanceQuestion } from "@/lib/ai/multilingual-finance-normalizer";
+import {
+  BASE_CURRENCY,
+  formatMoney,
+  isSupportedCurrency,
+  normalizeUsdToPkrRate,
+  type SupportedCurrency,
+} from "@/lib/currency";
+import { getAppDateParts } from "@/lib/dates";
+import { getPayableStatus } from "@/lib/finance-options";
+import type { AppLanguage } from "@/lib/i18n/config";
+import { resolveRequestLanguage } from "@/lib/i18n/request-language";
 import { createClient } from "@/lib/supabase/server";
-import { POST as postFallbackChat } from "../chat/route";
 import { NextRequest, NextResponse } from "next/server";
+import { POST as postFallbackChat } from "../chat/route";
 
 export const dynamic = "force-dynamic";
 
@@ -46,6 +50,142 @@ type DirectChatAnswer = {
   followUps: string[];
 };
 
+const COPY: Record<
+  AppLanguage,
+  {
+    questionRequired: string;
+    authRequired: string;
+    addIncome: (name: string) => string;
+    greeting: (name: string) => string;
+    correction: (name: string) => string;
+    dataUnavailable: (name: string) => string;
+    addIncomeFollowUps: [string, string];
+    greetingFollowUps: [string, string];
+    correctionFollowUps: [string, string];
+  }
+> = {
+  en: {
+    questionRequired: "Ask a finance question before sending.",
+    authRequired: "Please log in before using AI insights.",
+    addIncome: (name) =>
+      `${name}, open the Income page from the dashboard navigation, select Add Income, enter the amount, source, account, and date, then save it. The entry will appear in Income and Transactions.`,
+    greeting: (name) =>
+      `${name}, ask me for an exact spending, income, account, payable, or investment calculation. You can include a date, week, month, year, category, or asset name.`,
+    correction: (name) =>
+      `${name}, sorry that answer did not follow your question correctly. Ask the full finance question again, or give only the missing date or category and I will apply it to your previous finance question.`,
+    dataUnavailable: (name) =>
+      `${name}, I could not read the required finance records, so I did not estimate an answer. Please try again.`,
+    addIncomeFollowUps: [
+      "How much did I earn this month?",
+      "How many income entries do I have?",
+    ],
+    greetingFollowUps: [
+      "How much did I spend this month?",
+      "How many assets do I have and what are their names?",
+    ],
+    correctionFollowUps: [
+      "How much did I spend on July 16, 2026?",
+      "How many assets do I have and what are their names?",
+    ],
+  },
+  ur: {
+    questionRequired: "بھیجنے سے پہلے مالی سوال لکھیں۔",
+    authRequired: "AI Insights استعمال کرنے سے پہلے لاگ اِن کریں۔",
+    addIncome: (name) =>
+      `${name}، ڈیش بورڈ نیویگیشن سے Income صفحہ کھولیں، Add Income منتخب کریں، رقم، ذریعہ، اکاؤنٹ اور تاریخ درج کرکے محفوظ کریں۔ نئی انٹری Income اور Transactions میں نظر آئے گی۔`,
+    greeting: (name) =>
+      `${name}، خرچ، آمدنی، اکاؤنٹس، واجب الادا رقم یا سرمایہ کاری کا درست حساب پوچھیں۔ آپ تاریخ، ہفتہ، مہینہ، سال، کیٹیگری یا اثاثے کا نام بھی دے سکتے ہیں۔`,
+    correction: (name) =>
+      `${name}، معذرت، پچھلا جواب آپ کے سوال کے مطابق نہیں تھا۔ مکمل مالی سوال دوبارہ لکھیں، یا صرف رہ جانے والی تاریخ یا کیٹیگری دیں؛ میں اسے پچھلے سوال پر لاگو کر دوں گا۔`,
+    dataUnavailable: (name) =>
+      `${name}، مطلوبہ مالی ریکارڈ نہیں پڑھ سکا، اس لیے میں نے اندازہ نہیں لگایا۔ دوبارہ کوشش کریں۔`,
+    addIncomeFollowUps: [
+      "میں نے اس ماہ کتنی آمدنی حاصل کی؟",
+      "میری کتنی آمدنی انٹریز ہیں؟",
+    ],
+    greetingFollowUps: [
+      "میں نے اس ماہ کتنا خرچ کیا؟",
+      "میرے کتنے اثاثے ہیں اور ان کے نام کیا ہیں؟",
+    ],
+    correctionFollowUps: [
+      "میں نے 16 جولائی 2026 کو کتنا خرچ کیا؟",
+      "میرے کتنے اثاثے ہیں اور ان کے نام کیا ہیں؟",
+    ],
+  },
+  ar: {
+    questionRequired: "اكتب سؤالًا ماليًا قبل الإرسال.",
+    authRequired: "يرجى تسجيل الدخول قبل استخدام AI Insights.",
+    addIncome: (name) =>
+      `${name}، افتح صفحة الدخل من لوحة التحكم، واختر إضافة دخل، ثم أدخل المبلغ والمصدر والحساب والتاريخ واحفظه. سيظهر السجل في الدخل والمعاملات.`,
+    greeting: (name) =>
+      `${name}، اسألني عن حساب دقيق للإنفاق أو الدخل أو الحسابات أو المستحقات أو الاستثمارات. يمكنك تحديد تاريخ أو أسبوع أو شهر أو سنة أو فئة أو اسم أصل.`,
+    correction: (name) =>
+      `${name}، عذرًا، لم يتبع الرد السابق سؤالك بشكل صحيح. اكتب السؤال المالي كاملًا مرة أخرى، أو أرسل التاريخ أو الفئة الناقصة فقط وسأطبقها على سؤالك السابق.`,
+    dataUnavailable: (name) =>
+      `${name}، تعذر قراءة السجلات المالية المطلوبة، لذلك لم أقدّم تقديرًا. حاول مرة أخرى.`,
+    addIncomeFollowUps: [
+      "كم كسبت هذا الشهر؟",
+      "كم عدد سجلات الدخل لدي؟",
+    ],
+    greetingFollowUps: [
+      "كم أنفقت هذا الشهر؟",
+      "كم عدد أصولي وما أسماؤها؟",
+    ],
+    correctionFollowUps: [
+      "كم أنفقت في 16 يوليو 2026؟",
+      "كم عدد أصولي وما أسماؤها؟",
+    ],
+  },
+  hi: {
+    questionRequired: "भेजने से पहले वित्त संबंधी प्रश्न लिखें।",
+    authRequired: "AI Insights उपयोग करने से पहले लॉग इन करें।",
+    addIncome: (name) =>
+      `${name}, डैशबोर्ड नेविगेशन से Income पेज खोलें, Add Income चुनें, राशि, स्रोत, खाता और तारीख दर्ज करके सेव करें। नई एंट्री Income और Transactions में दिखाई देगी।`,
+    greeting: (name) =>
+      `${name}, खर्च, आय, खाते, देय राशि या निवेश की सटीक गणना पूछें। आप तारीख, सप्ताह, महीना, वर्ष, श्रेणी या संपत्ति का नाम भी दे सकते हैं।`,
+    correction: (name) =>
+      `${name}, क्षमा करें, पिछला उत्तर आपके प्रश्न के अनुसार नहीं था। पूरा वित्तीय प्रश्न फिर से लिखें, या केवल छूटी हुई तारीख या श्रेणी दें; मैं उसे पिछले प्रश्न पर लागू कर दूँगा।`,
+    dataUnavailable: (name) =>
+      `${name}, आवश्यक वित्तीय रिकॉर्ड नहीं पढ़े जा सके, इसलिए मैंने अनुमान नहीं लगाया। फिर कोशिश करें।`,
+    addIncomeFollowUps: [
+      "मैंने इस महीने कितनी आय कमाई?",
+      "मेरी कितनी आय एंट्रियाँ हैं?",
+    ],
+    greetingFollowUps: [
+      "मैंने इस महीने कितना खर्च किया?",
+      "मेरे पास कितनी संपत्तियाँ हैं और उनके नाम क्या हैं?",
+    ],
+    correctionFollowUps: [
+      "मैंने 16 जुलाई 2026 को कितना खर्च किया?",
+      "मेरे पास कितनी संपत्तियाँ हैं और उनके नाम क्या हैं?",
+    ],
+  },
+  es: {
+    questionRequired: "Escribe una pregunta financiera antes de enviarla.",
+    authRequired: "Inicia sesión antes de usar AI Insights.",
+    addIncome: (name) =>
+      `${name}, abre la página Income desde la navegación, selecciona Add Income, introduce el importe, la fuente, la cuenta y la fecha, y guarda. La entrada aparecerá en Income y Transactions.`,
+    greeting: (name) =>
+      `${name}, pregúntame por un cálculo exacto de gastos, ingresos, cuentas, importes pendientes o inversiones. Puedes indicar una fecha, semana, mes, año, categoría o activo.`,
+    correction: (name) =>
+      `${name}, lo siento, la respuesta anterior no siguió correctamente tu pregunta. Escribe de nuevo la pregunta financiera completa o proporciona solo la fecha o categoría que falta.`,
+    dataUnavailable: (name) =>
+      `${name}, no pude leer los registros financieros necesarios, así que no hice una estimación. Inténtalo de nuevo.`,
+    addIncomeFollowUps: [
+      "¿Cuánto gané este mes?",
+      "¿Cuántas entradas de ingresos tengo?",
+    ],
+    greetingFollowUps: [
+      "¿Cuánto gasté este mes?",
+      "¿Cuántos activos tengo y cuáles son sus nombres?",
+    ],
+    correctionFollowUps: [
+      "¿Cuánto gasté el 16 de julio de 2026?",
+      "¿Cuántos activos tengo y cuáles son sus nombres?",
+    ],
+  },
+};
+
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;
 }
@@ -61,6 +201,12 @@ function normalizeQuestion(value: string) {
     .replace(/[^a-z0-9]+/g, " ")
     .replace(/\s+/g, " ")
     .trim();
+}
+
+function cleanName(value: unknown) {
+  return typeof value === "string" && value.trim()
+    ? value.replace(/\s+/g, " ").trim().slice(0, 80)
+    : "Friend";
 }
 
 function getCurrencyContext(body: unknown): CurrencyContext {
@@ -87,7 +233,10 @@ function getCurrencyContext(body: unknown): CurrencyContext {
 function jsonResponse(payload: Record<string, unknown>, status = 200) {
   return NextResponse.json(payload, {
     status,
-    headers: { "Cache-Control": "no-store" },
+    headers: {
+      "Cache-Control": "no-store",
+      "X-Content-Type-Options": "nosniff",
+    },
   });
 }
 
@@ -119,9 +268,17 @@ function rememberFinanceQuestion(
   return response;
 }
 
-function getDirectChatAnswer(question: string): DirectChatAnswer | null {
+function getDirectChatAnswer({
+  question,
+  language,
+  displayName,
+}: {
+  question: string;
+  language: AppLanguage;
+  displayName: string;
+}): DirectChatAnswer | null {
   const normalized = normalizeQuestion(question);
-
+  const copy = COPY[language];
   const asksHowToAddIncome =
     /\b(how|where|steps?|way|can i)\b.*\b(add|record|create|enter)\b.*\b(income|earning|earnings)\b/.test(
       normalized,
@@ -132,34 +289,22 @@ function getDirectChatAnswer(question: string): DirectChatAnswer | null {
 
   if (asksHowToAddIncome) {
     return {
-      answer:
-        "Open the Income page from the dashboard navigation, tap Add Income, enter the amount, source, account, and date, then save it. The new entry will appear in Income and Transactions.",
-      followUps: [
-        "How much did I earn this month?",
-        "How many income entries do I have?",
-      ],
+      answer: copy.addIncome(displayName),
+      followUps: copy.addIncomeFollowUps,
     };
   }
 
   if (/^(hi|hey|hello|salam|assalam o alaikum|assalamualaikum)$/.test(normalized)) {
     return {
-      answer:
-        "Hi! Ask me for an exact spending, income, account, payable, or investment calculation. You can include a date, week, month, year, category, or asset name.",
-      followUps: [
-        "How much did I spend this month?",
-        "How many assets do I have and what are their names?",
-      ],
+      answer: copy.greeting(displayName),
+      followUps: copy.greetingFollowUps,
     };
   }
 
   if (/^(uff+|ugh+|hmm+|oh no|not correct|wrong)$/.test(normalized)) {
     return {
-      answer:
-        "Sorry, that answer did not follow your question correctly. Ask the full finance question again, or give only the missing date or category and I will apply it to your previous finance question.",
-      followUps: [
-        "How much did I spend on July 16, 2026?",
-        "How many assets do I have and what are their names?",
-      ],
+      answer: copy.correction(displayName),
+      followUps: copy.correctionFollowUps,
     };
   }
 
@@ -207,9 +352,14 @@ function resolveFinanceQuestion(
   };
 }
 
-function createFallbackRequest(request: NextRequest, body: unknown) {
+function createFallbackRequest(
+  request: NextRequest,
+  body: unknown,
+  language: AppLanguage,
+) {
   const headers = new Headers(request.headers);
   headers.set("Content-Type", "application/json");
+  headers.set("x-jf-language", language);
 
   return new NextRequest(new URL("/api/ai-insights/chat", request.url), {
     method: "POST",
@@ -295,29 +445,61 @@ async function getExactFinanceData(
 
 export async function POST(request: NextRequest) {
   const body = (await request.json().catch(() => null)) as unknown;
-  const question =
+  const language = resolveRequestLanguage(request, body);
+  const copy = COPY[language.code];
+  const originalQuestion =
     isRecord(body) && typeof body.question === "string"
       ? body.question.replace(/\s+/g, " ").trim().slice(0, 500)
       : "";
 
-  if (!question) {
+  if (!originalQuestion) {
     return jsonResponse(
-      {
-        error: "question_required",
-        message: "Ask a finance question before sending.",
-      },
+      { error: "question_required", message: copy.questionRequired },
       400,
     );
   }
 
-  const directAnswer = getDirectChatAnswer(question);
+  const supabase = await createClient();
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser();
+
+  if (authError || !user) {
+    return jsonResponse(
+      { error: "authentication_required", message: copy.authRequired },
+      401,
+    );
+  }
+
+  const metadataName = cleanName(user.user_metadata?.full_name);
+  const profileResult =
+    metadataName !== "Friend"
+      ? null
+      : await supabase
+          .from("profiles")
+          .select("full_name")
+          .eq("id", user.id)
+          .maybeSingle();
+  const displayName =
+    profileResult?.data?.full_name?.trim() || metadataName || "Friend";
+  const normalizedQuestion = normalizeMultilingualFinanceQuestion(
+    originalQuestion,
+  );
+  const directAnswer = getDirectChatAnswer({
+    question: normalizedQuestion,
+    language: language.code,
+    displayName,
+  });
+
   if (directAnswer) {
     return jsonResponse({
       provider: "local-conversation",
-      model: "finance-chat-conversation-v1",
+      model: "finance-chat-conversation-v2",
       aiAvailable: true,
       fallback: false,
       deterministic: true,
+      language: language.code,
       ...directAnswer,
     });
   }
@@ -325,39 +507,29 @@ export async function POST(request: NextRequest) {
   const now = getAppDateParts();
   const previousQuestion = getStoredFinanceQuestion(request);
   const assetBreakdownRequested = isAssetBreakdownRequest(
-    question,
+    normalizedQuestion,
     previousQuestion,
   );
   const { resolvedQuestion, intent } = resolveFinanceQuestion(
-    question,
+    normalizedQuestion,
     previousQuestion,
     now,
   );
 
   if (!intent && !assetBreakdownRequested) {
     const forwardedBody = isRecord(body)
-      ? { ...body, question: resolvedQuestion }
-      : { question: resolvedQuestion };
-    return postFallbackChat(createFallbackRequest(request, forwardedBody));
+      ? {
+          ...body,
+          question: originalQuestion,
+          language: language.code,
+        }
+      : { question: originalQuestion, language: language.code };
+    return postFallbackChat(
+      createFallbackRequest(request, forwardedBody, language.code),
+    );
   }
 
   try {
-    const supabase = await createClient();
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-
-    if (authError || !user) {
-      return jsonResponse(
-        {
-          error: "authentication_required",
-          message: "Please log in before using AI insights.",
-        },
-        401,
-      );
-    }
-
     const context = getCurrencyContext(body);
     const money = (value: number) =>
       formatMoney(value, {
@@ -367,19 +539,21 @@ export async function POST(request: NextRequest) {
 
     if (assetBreakdownRequested) {
       const data = await getExactFinanceData(supabase, { kind: "assets" });
-      const calculated = buildAssetBreakdownAnswer(
-        data.investments ?? [],
-        money,
-      );
+      const calculated = localizeVerifiedFinanceAnswer({
+        result: buildAssetBreakdownAnswer(data.investments ?? [], money),
+        language: language.code,
+        displayName,
+      });
 
       return rememberFinanceQuestion(
         jsonResponse({
           provider: "local-calculator",
-          model: "exact-finance-ledger-v4",
+          model: "exact-finance-ledger-v5",
           aiAvailable: true,
           fallback: false,
           deterministic: true,
           contextual: Boolean(previousQuestion),
+          language: language.code,
           ...calculated,
         }),
         ASSET_CONTEXT_QUESTION,
@@ -387,21 +561,26 @@ export async function POST(request: NextRequest) {
     }
 
     const data = await getExactFinanceData(supabase, intent!);
-    const calculated = buildDeterministicFinanceAnswer({
-      intent: intent!,
-      question: resolvedQuestion,
-      data,
-      money,
+    const calculated = localizeVerifiedFinanceAnswer({
+      result: buildDeterministicFinanceAnswer({
+        intent: intent!,
+        question: resolvedQuestion,
+        data,
+        money,
+      }),
+      language: language.code,
+      displayName,
     });
 
     return rememberFinanceQuestion(
       jsonResponse({
         provider: "local-calculator",
-        model: "exact-finance-ledger-v4",
+        model: "exact-finance-ledger-v5",
         aiAvailable: true,
         fallback: false,
         deterministic: true,
-        contextual: resolvedQuestion !== question,
+        contextual: resolvedQuestion !== normalizedQuestion,
+        language: language.code,
         ...calculated,
       }),
       resolvedQuestion,
@@ -412,13 +591,15 @@ export async function POST(request: NextRequest) {
       message: error instanceof Error ? error.message : undefined,
     });
 
-    return jsonResponse(
-      {
-        error: "finance_data_unavailable",
-        message:
-          "I could not read the required finance records, so I did not estimate an answer. Please try again.",
-      },
-      503,
-    );
+    return jsonResponse({
+      provider: "local-fallback",
+      model: "verified-finance-safety-v1",
+      aiAvailable: true,
+      fallback: true,
+      deterministic: true,
+      language: language.code,
+      answer: copy.dataUnavailable(displayName),
+      followUps: copy.greetingFollowUps,
+    });
   }
 }

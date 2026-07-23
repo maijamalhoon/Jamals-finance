@@ -27,6 +27,7 @@ import "./form-control-height-unify.css";
 // without changing Fast or No-animation behavior.
 import "./standard-motion-ultra.css";
 import { Toaster } from "sonner";
+import LanguageProvider from "@/components/i18n/LanguageProvider";
 import DesktopOverscrollBounce from "@/components/motion/DesktopOverscrollBounce";
 import MotionProvider from "@/components/motion/MotionProvider";
 import {
@@ -34,6 +35,7 @@ import {
   SUPPORTED_CURRENCIES,
 } from "@/lib/currency";
 import { ANIMATION_BOOTSTRAP_SCRIPT } from "@/lib/animation-preference";
+import { LANGUAGE_BOOTSTRAP_SCRIPT } from "@/lib/i18n/config";
 import PWARegister from "./pwa-register";
 import {
   THEME_BOOTSTRAP_SCRIPT,
@@ -301,6 +303,11 @@ export default function RootLayout({
         />
         <script
           dangerouslySetInnerHTML={{
+            __html: LANGUAGE_BOOTSTRAP_SCRIPT,
+          }}
+        />
+        <script
+          dangerouslySetInnerHTML={{
             __html: CURRENCY_BOOTSTRAP_SCRIPT,
           }}
         />
@@ -316,19 +323,21 @@ export default function RootLayout({
         />
       </head>
       <body className="bg-background text-foreground antialiased">
-        <MotionProvider>
-          {children}
-          <DesktopOverscrollBounce />
-          <PWARegister />
-          <Toaster
-            position="top-right"
-            toastOptions={{
-              classNames: {
-                toast: "theme-toast",
-              },
-            }}
-          />
-        </MotionProvider>
+        <LanguageProvider>
+          <MotionProvider>
+            {children}
+            <DesktopOverscrollBounce />
+            <PWARegister />
+            <Toaster
+              position="top-right"
+              toastOptions={{
+                classNames: {
+                  toast: "theme-toast",
+                },
+              }}
+            />
+          </MotionProvider>
+        </LanguageProvider>
       </body>
     </html>
   );
