@@ -136,3 +136,58 @@
     transform-origin: center !important;
   }
 }
+
+/*
+ * Keep mobile finance forms tied to the stable screen height while the software
+ * keyboard is open. Dynamic viewport units otherwise shrink the dialog and pull
+ * its header toward the dashboard header. The focused field can still scroll
+ * into view inside the modal body without resizing the modal shell itself.
+ */
+@media (max-width: 1024px) and (pointer: coarse) {
+  :global([data-dashboard-shell]) {
+    height: 100svh !important;
+    min-height: 100svh !important;
+  }
+
+  :global(
+    [data-slot="dialog-content"].finance-modal-content.finance-modal-content.finance-modal-content:has(
+        input:not([readonly]):focus,
+        textarea:focus,
+        [contenteditable="true"]:focus
+      )
+  ),
+  :global(
+    [role="dialog"].finance-modal-content.finance-modal-content.finance-modal-content:has(
+        input:not([readonly]):focus,
+        textarea:focus,
+        [contenteditable="true"]:focus
+      )
+  ) {
+    top: 50svh !important;
+    right: auto !important;
+    bottom: auto !important;
+    left: 50vw !important;
+    max-height: calc(
+      100svh - 0.75rem - env(safe-area-inset-top) - env(safe-area-inset-bottom)
+    ) !important;
+    margin: 0 !important;
+    transform: translate3d(-50%, -50%, 0) !important;
+    transform-origin: center !important;
+  }
+
+  :global(
+    .finance-modal-content.finance-modal-content
+      .finance-modal-body
+  ) {
+    scroll-padding-top: 1rem;
+    scroll-padding-bottom: max(18rem, 45svh);
+  }
+
+  :global(
+    .finance-modal-content.finance-modal-content
+      :is(input, textarea, select, [contenteditable="true"])
+  ) {
+    scroll-margin-top: 5rem;
+    scroll-margin-bottom: max(18rem, 45svh);
+  }
+}
