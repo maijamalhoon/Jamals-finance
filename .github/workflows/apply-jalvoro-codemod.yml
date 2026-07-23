@@ -1,0 +1,42 @@
+name: Apply JALVORO cleanup on current main
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    if: github.head_ref == 'agent/finish-jalvoro-visible-copy-v2'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out migration branch
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          ref: agent/finish-jalvoro-visible-copy-v2
+          fetch-depth: 1
+
+      - name: Run semantic JALVORO codemod
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat .github/jalvoro-codemod.part* > /tmp/jalvoro-codemod.b64
+          test "$(wc -c < /tmp/jalvoro-codemod.b64)" -eq 5600
+          base64 --decode /tmp/jalvoro-codemod.b64 | gzip -d > /tmp/apply-jalvoro-copy.py
+          python /tmp/apply-jalvoro-copy.py
+
+          rm -f .github/jalvoro-codemod.part*
+          rm -f .github/workflows/apply-jalvoro-codemod.yml
+
+      - name: Commit current-main migration
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "JALVORO CI"
+          git config user.email "actions@users.noreply.github.com"
+          git add -A
+          git commit -m "fix: centralize remaining JALVORO public copy"
+          git push origin HEAD:agent/finish-jalvoro-visible-copy-v2
