@@ -50,7 +50,7 @@ describe("JALVORO full-workspace icon runtime", () => {
     );
     expect(packageJson.scripts.postinstall).toBe("npm run generate:icons");
     expect(packageJson.scripts.predev).toBe("npm run generate:icons");
-    expect(packageJson.scripts.prebuild).toBe("npm run generate:icons");
+    expect(packageJson.scripts.prebuild).toBe("npm run generate:icons && npm run brand:sync");
     expect(packageJson.scripts.dev).toBe("next dev");
     expect(packageJson.scripts.build).toBe("next build");
   });
