@@ -1,6 +1,8 @@
 {
-  "status": "success",
-  "runId": "29957138823",
-  "commit": "517b1c5130b97b0a1f445686fd4959c66d4deeb2",
-  "workflow": "native-foundation-ci"
+  "status": "failure",
+  "runId": "29986668724",
+  "commit": "ff9946d082beb3eecc6c708926fa5b8a468d9185",
+  "branch": "native-personal-v0.6-ultra",
+  "workflow": "native-foundation-ci",
+  "milestone": "personal-platform-v0.6.0"
 }
