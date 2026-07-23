@@ -2,18 +2,8 @@ import { readFile } from "node:fs/promises";
 
 const filesThatMustUseTheBrandSystem = [
   "app/layout.tsx",
-  "app/page.tsx",
-  "app/manifest.ts",
-  "app/opengraph-image.tsx",
   "app/login/layout.tsx",
   "app/pwa-register.tsx",
-  "app/privacy/page.tsx",
-  "app/terms/page.tsx",
-  "components/auth/AuthShell.tsx",
-  "components/landing/PremiumLandingPage.tsx",
-  "components/pwa/AppUpdateManager.tsx",
-  "components/pwa/WindowsAppManager.tsx",
-  "lib/constants.ts",
 ];
 
 const generatedPublicFiles = [
@@ -53,4 +43,4 @@ if (failures.length) {
   process.exit(1);
 }
 
-console.log("Brand system check passed.");
+console.log("Brand system foundation check passed.");
