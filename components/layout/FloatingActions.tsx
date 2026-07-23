@@ -21,6 +21,7 @@ const TransactionModal = dynamic(
   () => import("@/components/dashboard/TransactionModal"),
   { ssr: false },
 );
+
 const InvestmentModal = dynamic(
   () => import("@/components/investments/InvestmentModal"),
   { ssr: false },
@@ -123,6 +124,7 @@ export default function FloatingActions() {
   const pathname = usePathname();
   const reduceMotion = useReducedMotion();
 
+  const [pageReady, setPageReady] = useState(false);
   const [open, setOpen] = useState(false);
   const [transactionOpen, setTransactionOpen] = useState(false);
   const [investmentOpen, setInvestmentOpen] = useState(false);
@@ -130,16 +132,55 @@ export default function FloatingActions() {
   const [txType, setTxType] = useState<"income" | "expense">("income");
 
   const modalOpen = transactionOpen || investmentOpen || externalDialogOpen;
-  const shouldAnimateAttention = !open && !modalOpen && !reduceMotion;
+  const shouldAnimateAttention =
+    pageReady && !open && !modalOpen && !reduceMotion;
 
   useEffect(() => {
     setOpen(false);
+    setPageReady(false);
+
+    let cancelled = false;
+    let firstFrame = 0;
+    let secondFrame = 0;
+    let revealTimer = 0;
+
+    const revealAfterLayoutSettles = () => {
+      firstFrame = window.requestAnimationFrame(() => {
+        secondFrame = window.requestAnimationFrame(() => {
+          revealTimer = window.setTimeout(() => {
+            if (!cancelled) setPageReady(true);
+          }, 180);
+        });
+      });
+    };
+
+    const handleWindowLoad = () => {
+      revealAfterLayoutSettles();
+    };
+
+    if (document.readyState === "complete") {
+      revealAfterLayoutSettles();
+    } else {
+      window.addEventListener("load", handleWindowLoad, { once: true });
+    }
+
+    return () => {
+      cancelled = true;
+      window.removeEventListener("load", handleWindowLoad);
+      window.cancelAnimationFrame(firstFrame);
+      window.cancelAnimationFrame(secondFrame);
+      window.clearTimeout(revealTimer);
+    };
   }, [pathname]);
 
   useEffect(() => {
     const updateDialogState = () => {
       setExternalDialogOpen(
-        Boolean(document.querySelector('[data-slot="dialog-content"], [role="dialog"]')),
+        Boolean(
+          document.querySelector(
+            '[data-slot="dialog-content"], [role="dialog"]',
+          ),
+        ),
       );
     };
 
@@ -184,13 +225,17 @@ export default function FloatingActions() {
 
   if (!pathname.startsWith("/dashboard")) return null;
 
+  const hidden = !pageReady || modalOpen;
+
   return (
     <>
       <div
-        className={`jf-floating-actions fixed bottom-[calc(5.25rem+env(safe-area-inset-bottom))] left-3 z-40 flex flex-col items-start gap-2.5 transition-all duration-200 print:hidden sm:bottom-[calc(5.75rem+env(safe-area-inset-bottom))] sm:left-5 lg:bottom-10 lg:left-8 ${
-          modalOpen ? "pointer-events-none translate-y-2 opacity-0" : ""
+        className={`jf-floating-actions fixed bottom-[calc(5.25rem+env(safe-area-inset-bottom))] left-3 z-40 flex flex-col items-start gap-2.5 will-change-transform transition-[opacity,transform] duration-300 ease-out print:hidden sm:bottom-[calc(5.75rem+env(safe-area-inset-bottom))] sm:left-5 lg:bottom-10 lg:left-8 ${
+          hidden
+            ? "pointer-events-none translate-y-3 opacity-0"
+            : "translate-y-0 opacity-100"
         }`}
-        aria-hidden={modalOpen ? "true" : undefined}
+        aria-hidden={hidden ? "true" : undefined}
       >
         <AnimatePresence>
           {open && !modalOpen ? (
