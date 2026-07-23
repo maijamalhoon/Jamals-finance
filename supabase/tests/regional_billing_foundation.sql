@@ -90,7 +90,9 @@ declare
   personal_snapshot jsonb;
   business_result jsonb;
   business_snapshot jsonb;
+  enterprise_snapshot jsonb;
   created_business_id uuid;
+  created_enterprise_group_id uuid;
   personal_duplicate_rejected boolean := false;
   business_duplicate_rejected boolean := false;
 begin
@@ -165,12 +167,40 @@ begin
     raise exception 'Business billing snapshot did not reflect the Growth trial.';
   end if;
 
+  created_enterprise_group_id := public.create_my_enterprise_billing_group(
+    'Regional Billing Enterprise Group',
+    'PK'
+  );
+
+  enterprise_snapshot := public.get_enterprise_group_billing_snapshot(
+    created_enterprise_group_id
+  );
+
+  if enterprise_snapshot->>'accountKind' <> 'enterprise_group'
+     or enterprise_snapshot->>'productUniverse' <> 'enterprise'
+     or enterprise_snapshot->>'planCode' <> 'business_free'
+     or enterprise_snapshot->>'status' <> 'free'
+     or (enterprise_snapshot->>'aiEnabled')::boolean <> false then
+    raise exception 'Enterprise scoped billing initialization failed.';
+  end if;
+
+  if not exists (
+    select 1
+    from billing.enterprise_group_members
+    where enterprise_group_id = created_enterprise_group_id
+      and user_id = '33333333-3333-4333-8333-333333333333'
+      and role = 'owner'
+      and status = 'active'
+  ) then
+    raise exception 'Enterprise owner membership was not initialized.';
+  end if;
+
   if (
     select count(*)
     from billing.accounts
     where owner_user_id = '33333333-3333-4333-8333-333333333333'
-  ) <> 2 then
-    raise exception 'Multiverse isolation failure: expected personal plus one business account.';
+  ) <> 3 then
+    raise exception 'Multiverse isolation failure: expected personal, business, and enterprise accounts.';
   end if;
 
   begin
