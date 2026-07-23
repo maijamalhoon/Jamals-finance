@@ -20,6 +20,13 @@ describe("launch readiness contracts", () => {
     }
   });
 
+  it("keeps public trust pages outside the authentication wall", () => {
+    const proxy = read("lib/supabase/proxy.ts");
+    for (const route of ["/privacy", "/terms", "/disclosures", "/support"]) {
+      expect(proxy).toContain(`\"${route}\"`);
+    }
+  });
+
   it("links account access to the full privacy notice", () => {
     const authShell = read("components/auth/AuthShell.tsx");
     expect(authShell).toContain('href="/privacy"');
