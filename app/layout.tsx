@@ -30,17 +30,23 @@ import { Toaster } from "sonner";
 import LanguageProvider from "@/components/i18n/LanguageProvider";
 import DesktopOverscrollBounce from "@/components/motion/DesktopOverscrollBounce";
 import MotionProvider from "@/components/motion/MotionProvider";
+import { ANIMATION_BOOTSTRAP_SCRIPT } from "@/lib/animation-preference";
+import {
+  APP_DESCRIPTION,
+  APP_NAME,
+  APP_TAGLINE,
+  APP_URL,
+} from "@/lib/brand";
 import {
   CURRENCY_STORAGE_KEY,
   SUPPORTED_CURRENCIES,
 } from "@/lib/currency";
-import { ANIMATION_BOOTSTRAP_SCRIPT } from "@/lib/animation-preference";
 import { LANGUAGE_BOOTSTRAP_SCRIPT } from "@/lib/i18n/config";
-import PWARegister from "./pwa-register";
 import {
   THEME_BOOTSTRAP_SCRIPT,
   THEME_VIEWPORT_COLORS,
 } from "@/lib/theme";
+import PWARegister from "./pwa-register";
 
 const geistSans = Geist({
   subsets: ["latin"],
@@ -50,8 +56,6 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
   variable: "--font-geist-mono",
 });
-
-const siteUrl = "https://jamals-finance-sable.vercel.app";
 
 const CURRENCY_BOOTSTRAP_SCRIPT = `
 (() => {
@@ -209,50 +213,48 @@ const NATIVE_TOOLTIP_CLEANUP_SCRIPT = `
 })();
 `;
 
+const defaultTitle = `${APP_NAME} — ${APP_TAGLINE}`;
+
 export const metadata: Metadata = {
-  metadataBase: new URL(siteUrl),
+  metadataBase: new URL(APP_URL),
   title: {
-    default: "Jamal's Finance — Calm Personal Finance Workspace",
-    template: "%s — Jamal's Finance",
+    default: defaultTitle,
+    template: `%s — ${APP_NAME}`,
   },
   verification: {
     google: "W-UmHqy2sJyd2xbsdPdPeqJLOhLS2cf_aszWJf15aMk",
   },
-  description:
-    "Track accounts, expenses, income, goals, liabilities, investments, and savings in one secure personal finance workspace.",
-  applicationName: "Jamal's Finance",
+  description: APP_DESCRIPTION,
+  applicationName: APP_NAME,
   keywords: [
-    "personal finance dashboard",
-    "finance tracker",
-    "expense tracker",
-    "income tracker",
-    "budget dashboard",
-    "savings goals",
-    "money management app",
-    "finance management",
-    "Jamal's Finance",
+    "personal finance workspace",
+    "business management platform",
+    "point of sale",
+    "ERP software",
+    "CRM software",
+    "accounting",
+    "inventory management",
+    "JALVORO",
   ],
   authors: [{ name: "Jamal Yaqoob" }],
   creator: "Jamal Yaqoob",
-  publisher: "Jamal's Finance",
-  category: "Finance",
+  publisher: APP_NAME,
+  category: "Business",
   alternates: {
     canonical: "/",
   },
   openGraph: {
-    title: "Jamal's Finance — Calm Personal Finance Workspace",
-    description:
-      "Track accounts, expenses, income, goals, liabilities, investments, and savings in one secure personal finance workspace.",
+    title: defaultTitle,
+    description: APP_DESCRIPTION,
     url: "/",
-    siteName: "Jamal's Finance",
+    siteName: APP_NAME,
     type: "website",
     locale: "en_US",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Jamal's Finance — Calm Personal Finance Workspace",
-    description:
-      "Track accounts, expenses, income, goals, liabilities, investments, and savings in one secure personal finance workspace.",
+    title: defaultTitle,
+    description: APP_DESCRIPTION,
   },
   robots: {
     index: true,
