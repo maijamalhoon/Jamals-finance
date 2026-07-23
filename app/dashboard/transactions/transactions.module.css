@@ -62,7 +62,7 @@
   margin: 0;
   color: var(--text-primary);
   font-family: var(--font-geist-sans), "Geist", ui-sans-serif, system-ui, sans-serif;
-  font-size: clamp(1rem, 0.78rem + 0.55vw, 1.45rem);
+  font-size: clamp(1.2rem, 0.96rem + 0.62vw, 1.7rem);
   font-weight: 760;
   line-height: 1.15;
   letter-spacing: -0.025em;
@@ -255,8 +255,8 @@
   }
 
   .heading :global(.page-title) {
-    font-size: 1rem;
-    line-height: 1.25rem;
+    font-size: 1.2rem;
+    line-height: 1.35rem;
   }
 
   .filtersShell {
@@ -366,7 +366,7 @@
   }
 
   .heading :global(.page-title) {
-    font-size: 0.95rem;
+    font-size: 1.2rem;
   }
 }
 
