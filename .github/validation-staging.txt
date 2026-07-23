@@ -3,3 +3,4 @@ Full quality-gate trigger for the latest main branch.
 Scope: npm ci, npm run check, npm run build.
 No production application code or configuration is changed.
 Date: 2026-07-23
+Contract repair trigger: 1
