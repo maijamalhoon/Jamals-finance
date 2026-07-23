@@ -24,35 +24,18 @@ jobs:
           ref: feat/category-manager-v2
           fetch-depth: 0
 
-      - name: Diagnose prepared patch
+      - name: Apply prepared patch
         shell: bash
         run: |
-          set +e
-          {
-            echo "HEAD=$(git rev-parse HEAD)"
-            echo "PARTS"
-            ls -l .automation/category-v2.part0*
-            cat .automation/category-v2.part0* > /tmp/category-v2.patch.gz.b64
-            echo "base64_cat_status=$?"
-            base64 --decode /tmp/category-v2.patch.gz.b64 > /tmp/category-v2.patch.gz
-            echo "base64_decode_status=$?"
-            gzip --test /tmp/category-v2.patch.gz
-            echo "gzip_test_status=$?"
-            gzip --decompress --stdout /tmp/category-v2.patch.gz > /tmp/category-v2.patch
-            echo "gzip_decode_status=$?"
-            wc -c /tmp/category-v2.patch.gz.b64 /tmp/category-v2.patch.gz /tmp/category-v2.patch
-            sha256sum /tmp/category-v2.patch.gz.b64 /tmp/category-v2.patch.gz /tmp/category-v2.patch
-            git apply --check --3way /tmp/category-v2.patch
-            echo "apply_status=$?"
-          } > /tmp/category-v2-diagnostics.txt 2>&1
-          cat /tmp/category-v2-diagnostics.txt
-          exit 0
-
-      - name: Upload diagnostics
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: category-v2-diagnostics
-          path: /tmp/category-v2-diagnostics.txt
-          if-no-files-found: error
-          retention-days: 1
+          set -euo pipefail
+          cat .automation/category-v2.part0* > /tmp/category-v2.patch.gz.b64
+          base64 --decode /tmp/category-v2.patch.gz.b64 > /tmp/category-v2.patch.gz
+          gzip --decompress --stdout /tmp/category-v2.patch.gz > /tmp/category-v2.patch
+          git apply --index --3way /tmp/category-v2.patch
+          rm -f .automation/category-v2.part0*
+          rm -f .github/workflows/apply-category-v2-patch.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "feat(categories): rebuild clean manager and secure mutations"
+          git push origin HEAD:feat/category-manager-v2
