@@ -1,8 +1,27 @@
-import { existsSync, mkdirSync, readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
+import {
+  existsSync,
+  mkdirSync,
+  readdirSync,
+  readFileSync,
+  statSync,
+  writeFileSync,
+} from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-import ts from "typescript";
+let ts = null;
+
+if (process.env.JALVORO_ICON_PARSER !== "fallback") {
+  try {
+    const typescriptModule = await import("typescript");
+    ts = typescriptModule.default ?? typescriptModule;
+  } catch (error) {
+    if (error?.code !== "ERR_MODULE_NOT_FOUND") throw error;
+    console.warn(
+      "TypeScript parser unavailable; using the dependency-free icon import parser.",
+    );
+  }
+}
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const output = path.join(
@@ -252,76 +271,130 @@ function sourceFiles(directory) {
   });
 }
 
+function addNamedBindings(bindings, names) {
+  for (const rawBinding of bindings.split(",")) {
+    const binding = rawBinding.trim();
+    if (!binding || /^type\b/.test(binding)) continue;
+
+    const sourceName = binding.split(/\s+as\s+/i)[0]?.trim();
+    if (sourceName && /^[A-Za-z_$][\w$]*$/.test(sourceName)) {
+      names.add(sourceName);
+    }
+  }
+}
+
+function collectWithFallbackParser(sourceText, names) {
+  const namespaceBindings = new Set();
+  const importPattern = /^\s*import\s+(?!type\b)(\{[\s\S]*?\}|\*\s+as\s+[A-Za-z_$][\w$]*|[A-Za-z_$][\w$]*(?:\s*,\s*(?:\{[\s\S]*?\}|\*\s+as\s+[A-Za-z_$][\w$]*))?)\s+from\s+["']lucide-react["']\s*;?/gm;
+  const exportPattern = /^\s*export\s*\{([\s\S]*?)\}\s*from\s*["']lucide-react["']\s*;?/gm;
+
+  for (const match of sourceText.matchAll(importPattern)) {
+    const clause = match[1].trim();
+    const namedBindings = clause.match(/\{([\s\S]*?)\}/)?.[1];
+    if (namedBindings) addNamedBindings(namedBindings, names);
+
+    const namespaceBinding = clause.match(
+      /\*\s+as\s+([A-Za-z_$][\w$]*)/,
+    )?.[1];
+    if (namespaceBinding) namespaceBindings.add(namespaceBinding);
+
+    const defaultBinding = clause.match(/^([A-Za-z_$][\w$]*)\s*(?:,|$)/)?.[1];
+    if (defaultBinding) namespaceBindings.add(defaultBinding);
+  }
+
+  for (const match of sourceText.matchAll(exportPattern)) {
+    addNamedBindings(match[1], names);
+  }
+
+  for (const namespaceBinding of namespaceBindings) {
+    const escapedBinding = namespaceBinding.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const accessPattern = new RegExp(
+      `\\b${escapedBinding}(?:\\.([A-Za-z_$][\\w$]*)|\\[\\s*["']([A-Za-z_$][\\w$]*)["']\\s*\\])`,
+      "g",
+    );
+
+    for (const match of sourceText.matchAll(accessPattern)) {
+      names.add(match[1] ?? match[2]);
+    }
+  }
+}
+
+function collectWithTypeScript(file, sourceText, names) {
+  const source = ts.createSourceFile(
+    file,
+    sourceText,
+    ts.ScriptTarget.Latest,
+    true,
+    file.endsWith("x") ? ts.ScriptKind.TSX : ts.ScriptKind.TS,
+  );
+  const namespaceBindings = new Set();
+
+  function visit(node) {
+    if (
+      ts.isImportDeclaration(node) &&
+      ts.isStringLiteral(node.moduleSpecifier) &&
+      node.moduleSpecifier.text === "lucide-react" &&
+      node.importClause &&
+      !node.importClause.isTypeOnly
+    ) {
+      const bindings = node.importClause.namedBindings;
+      if (bindings && ts.isNamedImports(bindings)) {
+        for (const element of bindings.elements) {
+          if (!element.isTypeOnly) {
+            names.add((element.propertyName ?? element.name).text);
+          }
+        }
+      } else if (bindings && ts.isNamespaceImport(bindings)) {
+        namespaceBindings.add(bindings.name.text);
+      }
+      if (node.importClause.name) namespaceBindings.add(node.importClause.name.text);
+    }
+
+    if (
+      ts.isExportDeclaration(node) &&
+      node.moduleSpecifier &&
+      ts.isStringLiteral(node.moduleSpecifier) &&
+      node.moduleSpecifier.text === "lucide-react" &&
+      node.exportClause &&
+      ts.isNamedExports(node.exportClause)
+    ) {
+      for (const element of node.exportClause.elements) {
+        if (!element.isTypeOnly) names.add((element.propertyName ?? element.name).text);
+      }
+    }
+
+    if (
+      ts.isPropertyAccessExpression(node) &&
+      ts.isIdentifier(node.expression) &&
+      namespaceBindings.has(node.expression.text)
+    ) {
+      names.add(node.name.text);
+    }
+
+    if (
+      ts.isElementAccessExpression(node) &&
+      ts.isIdentifier(node.expression) &&
+      namespaceBindings.has(node.expression.text) &&
+      node.argumentExpression &&
+      ts.isStringLiteral(node.argumentExpression)
+    ) {
+      names.add(node.argumentExpression.text);
+    }
+
+    ts.forEachChild(node, visit);
+  }
+
+  visit(source);
+}
+
 function importedNames() {
   const names = new Set();
   for (const file of sourceFiles(root)) {
     const sourceText = readFileSync(file, "utf8");
     if (!sourceText.includes("lucide-react")) continue;
-    const source = ts.createSourceFile(
-      file,
-      sourceText,
-      ts.ScriptTarget.Latest,
-      true,
-      file.endsWith("x") ? ts.ScriptKind.TSX : ts.ScriptKind.TS,
-    );
-    const namespaceBindings = new Set();
 
-    function visit(node) {
-      if (
-        ts.isImportDeclaration(node) &&
-        ts.isStringLiteral(node.moduleSpecifier) &&
-        node.moduleSpecifier.text === "lucide-react" &&
-        node.importClause &&
-        !node.importClause.isTypeOnly
-      ) {
-        const bindings = node.importClause.namedBindings;
-        if (bindings && ts.isNamedImports(bindings)) {
-          for (const element of bindings.elements) {
-            if (!element.isTypeOnly) {
-              names.add((element.propertyName ?? element.name).text);
-            }
-          }
-        } else if (bindings && ts.isNamespaceImport(bindings)) {
-          namespaceBindings.add(bindings.name.text);
-        }
-        if (node.importClause.name) namespaceBindings.add(node.importClause.name.text);
-      }
-
-      if (
-        ts.isExportDeclaration(node) &&
-        node.moduleSpecifier &&
-        ts.isStringLiteral(node.moduleSpecifier) &&
-        node.moduleSpecifier.text === "lucide-react" &&
-        node.exportClause &&
-        ts.isNamedExports(node.exportClause)
-      ) {
-        for (const element of node.exportClause.elements) {
-          if (!element.isTypeOnly) names.add((element.propertyName ?? element.name).text);
-        }
-      }
-
-      if (
-        ts.isPropertyAccessExpression(node) &&
-        ts.isIdentifier(node.expression) &&
-        namespaceBindings.has(node.expression.text)
-      ) {
-        names.add(node.name.text);
-      }
-
-      if (
-        ts.isElementAccessExpression(node) &&
-        ts.isIdentifier(node.expression) &&
-        namespaceBindings.has(node.expression.text) &&
-        node.argumentExpression &&
-        ts.isStringLiteral(node.argumentExpression)
-      ) {
-        names.add(node.argumentExpression.text);
-      }
-
-      ts.forEachChild(node, visit);
-    }
-
-    visit(source);
+    if (ts) collectWithTypeScript(file, sourceText, names);
+    else collectWithFallbackParser(sourceText, names);
   }
   return [...names].filter((name) => /^[A-Za-z_$][\w$]*$/.test(name)).sort();
 }
@@ -348,7 +421,9 @@ function generate() {
   mkdirSync(path.dirname(output), { recursive: true });
   const current = existsSync(output) ? readFileSync(output, "utf8") : "";
   if (current !== generated) writeFileSync(output, generated, "utf8");
-  console.log(`Generated ${names.length} JALVORO compatibility exports.`);
+  console.log(
+    `Generated ${names.length} JALVORO compatibility exports with ${ts ? "TypeScript" : "fallback"} parser.`,
+  );
 }
 
 generate();
