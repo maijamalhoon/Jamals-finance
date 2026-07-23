@@ -49,7 +49,22 @@ jobs:
         run: npm run lint
 
       - name: Typecheck
-        run: npm run typecheck
+        shell: bash
+        run: |
+          set +e
+          npm run typecheck > typecheck-report.txt 2>&1
+          status=$?
+          cat typecheck-report.txt
+          exit "$status"
+
+      - name: Upload typecheck diagnostics
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: typecheck-report
+          path: typecheck-report.txt
+          if-no-files-found: error
+          retention-days: 1
 
       - name: Run security contract tests
         run: npx vitest run lib/security-hardening.test.ts
