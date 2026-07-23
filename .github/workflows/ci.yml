@@ -61,20 +61,4 @@ jobs:
         run: npm test
 
       - name: Build production application
-        id: production_build
-        shell: bash
-        run: |
-          set +e
-          npm run build 2>&1 | tee /tmp/jalvoro-build.log
-          exit_code=${PIPESTATUS[0]}
-          echo "exit_code=${exit_code}" >> "${GITHUB_OUTPUT}"
-          exit "${exit_code}"
-
-      - name: Upload failed build diagnostics
-        if: failure() && steps.production_build.outputs.exit_code != '0'
-        uses: actions/upload-artifact@v4
-        with:
-          name: jalvoro-build-diagnostics
-          path: /tmp/jalvoro-build.log
-          if-no-files-found: error
-          retention-days: 1
+        run: npm run build
