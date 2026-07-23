@@ -45,4 +45,4 @@ gradle :shared:testAndroidHostTest
 gradle :androidApp:assembleDebug
 ```
 
-The downloadable APK must be produced by that successful GitHub Actions run. Before integration, the tested native-only overlay must be rebased onto the latest `main` so concurrent website and business-software commits remain intact.
+The downloadable APK must be produced by that successful GitHub Actions run. The final main gate preserves concurrent website, chart, CI, and business-software commits while testing the same verified native source.
