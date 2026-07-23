@@ -1,6 +1,8 @@
 import { ImageResponse } from "next/og";
 
-export const alt = "Jamal's Finance — calm personal finance workspace";
+import { APP_DESCRIPTION, APP_NAME, APP_TAGLINE } from "@/lib/brand";
+
+export const alt = `${APP_NAME} — ${APP_TAGLINE}`;
 
 export const size = {
   width: 1200,
@@ -29,40 +31,40 @@ export default function Image() {
           display: "flex",
           alignItems: "center",
           fontSize: 28,
-          fontWeight: 700,
+          fontWeight: 800,
           color: "#C2CEDD",
+          letterSpacing: "0.08em",
         }}
       >
-        Jamal&apos;s Finance
+        {APP_NAME}
       </div>
 
       <div
         style={{
           display: "flex",
           marginTop: 48,
-          maxWidth: 900,
+          maxWidth: 960,
           fontSize: 78,
           lineHeight: 1.04,
           letterSpacing: "-0.045em",
           fontWeight: 800,
         }}
       >
-        Your money picture, made clear.
+        {APP_TAGLINE}
       </div>
 
       <div
         style={{
           display: "flex",
           marginTop: 30,
-          maxWidth: 760,
+          maxWidth: 820,
           fontSize: 30,
           lineHeight: 1.4,
           color: "#94A4BA",
           fontWeight: 500,
         }}
       >
-        A private workspace for accurate tracking, thoughtful review, and
-        practical planning.
+        {APP_DESCRIPTION}
       </div>
 
       <div
@@ -75,7 +77,7 @@ export default function Image() {
           letterSpacing: "0.04em",
         }}
       >
-        TRACK  •  REVIEW  •  PLAN
+        PERSONAL  •  BUSINESS  •  POS  •  ERP  •  CRM
       </div>
     </div>,
     size,
