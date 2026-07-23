@@ -223,8 +223,8 @@ function RankedBreakdown({
                       </p>
                     </div>
                   </div>
-                  <div className="shrink-0 text-right">
-                    <p className="text-sm font-bold tabular-nums text-text-primary">
+                  <div className="min-w-0 max-w-[55%] text-right">
+                    <p className="break-words text-sm font-bold tabular-nums text-text-primary [overflow-wrap:anywhere]">
                       <Money amount={item.amount} />
                     </p>
                     <p className="mt-0.5 text-[10px] font-semibold text-text-tertiary">
@@ -232,7 +232,7 @@ function RankedBreakdown({
                     </p>
                   </div>
                 </div>
-                <div className="mt-2.5 h-1.5 overflow-hidden rounded-full bg-surface-secondary">
+                <div className="mt-2.5 h-1.5 w-full overflow-hidden rounded-full bg-surface-secondary">
                   <div
                     className="h-full rounded-full"
                     style={{
@@ -283,29 +283,29 @@ function AccountDistribution({
             const width = maximum > 0 ? (item.amount / maximum) * 100 : 0;
             return (
               <li key={item.name} className="py-3.5 first:pt-1 last:pb-0">
-                <div className="grid min-w-0 grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3">
+                <div className="grid min-w-0 grid-cols-[auto_minmax(0,1fr)] items-start gap-3">
                   <span className="grid size-7 shrink-0 place-items-center rounded-full bg-surface-secondary text-[10px] font-bold text-text-secondary">
                     {index + 1}
                   </span>
-                  <div className="min-w-0">
-                    <p className="truncate text-sm font-semibold text-text-primary">
+                  <div className="flex min-w-0 items-start justify-between gap-3">
+                    <p className="min-w-0 truncate text-sm font-semibold text-text-primary">
                       {item.name}
                     </p>
-                    <div className="mt-2 h-1 overflow-hidden rounded-full bg-surface-secondary">
-                      <div
-                        className="h-full rounded-full opacity-80"
-                        style={{ width: `${Math.max(3, width)}%`, backgroundColor: accent }}
-                      />
+                    <div className="min-w-0 max-w-[58%] text-right">
+                      <p className="break-words text-sm font-bold tabular-nums text-text-primary [overflow-wrap:anywhere]">
+                        <Money amount={item.amount} />
+                      </p>
+                      <p className="mt-0.5 text-[10px] text-text-tertiary">
+                        {compactCount(item.count)} {item.count === 1 ? "entry" : "entries"}
+                      </p>
                     </div>
                   </div>
-                  <div className="shrink-0 text-right">
-                    <p className="text-sm font-bold tabular-nums text-text-primary">
-                      <Money amount={item.amount} />
-                    </p>
-                    <p className="mt-0.5 text-[10px] text-text-tertiary">
-                      {compactCount(item.count)} {item.count === 1 ? "entry" : "entries"}
-                    </p>
-                  </div>
+                </div>
+                <div className="mt-2.5 h-1.5 w-full overflow-hidden rounded-full bg-surface-secondary">
+                  <div
+                    className="h-full rounded-full opacity-80"
+                    style={{ width: `${Math.max(3, width)}%`, backgroundColor: accent }}
+                  />
                 </div>
               </li>
             );
@@ -386,7 +386,7 @@ export default function TransactionTypeOverview({
         </div>
       </section>
 
-      <div className="grid min-w-0 gap-4 xl:grid-cols-[minmax(0,1.15fr)_minmax(20rem,0.85fr)]">
+      <div className="grid min-w-0 gap-4 xl:grid-cols-2">
         <RankedBreakdown
           title={breakdownTitle}
           label={breakdownLabel}
