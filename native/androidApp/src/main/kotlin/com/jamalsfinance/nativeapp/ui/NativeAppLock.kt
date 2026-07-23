@@ -114,12 +114,12 @@ internal fun NativeAppLockGate(
                 unlocking = true
                 message = null
                 authenticator.authenticate(
-                    onSuccess = {
+                    {
                         preferences.clearBackgroundTimestamp()
                         unlocking = false
                         unlocked = true
                     },
-                    onFailure = {
+                    {
                         unlocking = false
                         message = it
                     },
