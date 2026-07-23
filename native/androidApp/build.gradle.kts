@@ -20,16 +20,32 @@ fun clientConfig(name: String): String =
         ?: publicProperties.getProperty(name)
         ?: ""
 
+fun releaseSecret(name: String): String =
+    providers.environmentVariable(name).orNull
+        ?: providers.gradleProperty(name).orNull
+        ?: localProperties.getProperty(name)
+        ?: ""
+
+val releaseStorePath = releaseSecret("JAMALS_ANDROID_KEYSTORE_PATH")
+val releaseStorePassword = releaseSecret("JAMALS_ANDROID_STORE_PASSWORD")
+val releaseKeyAlias = releaseSecret("JAMALS_ANDROID_KEY_ALIAS")
+val releaseKeyPassword = releaseSecret("JAMALS_ANDROID_KEY_PASSWORD")
+val releaseStoreFile = releaseStorePath.takeIf(String::isNotBlank)?.let(rootProject::file)
+val releaseSigningReady = releaseStoreFile?.isFile == true &&
+    releaseStorePassword.isNotBlank() &&
+    releaseKeyAlias.isNotBlank() &&
+    releaseKeyPassword.isNotBlank()
+
 android {
     namespace = "com.jamalsfinance.nativeapp"
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "com.jamalsfinance.app.native.dev"
+        applicationId = "com.jamalsfinance.app.native"
         minSdk = 23
         targetSdk = 36
-        versionCode = 9
-        versionName = "0.9.0-offline-resilience"
+        versionCode = 10
+        versionName = "1.0.0-rc1"
 
         buildConfigField(
             "String",
@@ -41,16 +57,57 @@ android {
             "SUPABASE_PUBLISHABLE_KEY",
             "\"${clientConfig("JAMALS_SUPABASE_PUBLISHABLE_KEY")}\"",
         )
+        buildConfigField("boolean", "RELEASE_SIGNING_READY", releaseSigningReady.toString())
+    }
+
+    signingConfigs {
+        if (releaseSigningReady) {
+            create("release") {
+                storeFile = releaseStoreFile
+                storePassword = releaseStorePassword
+                keyAlias = releaseKeyAlias
+                keyPassword = releaseKeyPassword
+            }
+        }
+    }
+
+    buildTypes {
+        getByName("debug") {
+            applicationIdSuffix = ".dev"
+            versionNameSuffix = "-debug"
+            resValue("string", "app_name", "Jamal’s Finance Native Dev")
+        }
+        getByName("release") {
+            applicationIdSuffix = ".rc"
+            resValue("string", "app_name", "Jamal’s Finance RC")
+            isDebuggable = false
+            isMinifyEnabled = true
+            isShrinkResources = true
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro",
+            )
+            if (releaseSigningReady) {
+                signingConfig = signingConfigs.getByName("release")
+            }
+        }
     }
 
     buildFeatures {
         compose = true
         buildConfig = true
+        resValues = true
     }
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
+    }
+
+    lint {
+        abortOnError = true
+        checkReleaseBuilds = true
+        warningsAsErrors = false
     }
 
     packaging {
