@@ -6,6 +6,11 @@ import {
   isBusinessPlanKey,
   isSelfServeBusinessPlan,
 } from "@/lib/billing/checkout";
+import {
+  createBusinessCheckoutTransaction,
+  getBusinessPaddlePriceId,
+} from "@/lib/billing/paddle-api";
+import { getBusinessBillingAccess } from "@/lib/billing/server-access";
 import { createClient } from "@/lib/supabase/server";
 
 const UUID_PATTERN =
@@ -40,7 +45,10 @@ export async function POST(request: Request) {
   }
 
   if (!isBusinessPlanKey(plan) || !isSelfServeBusinessPlan(plan)) {
-    return noStoreJson({ error: "This plan is not available for self-service checkout." }, 400);
+    return noStoreJson(
+      { error: "This plan is not available for self-service checkout." },
+      400,
+    );
   }
 
   if (!isBillingCycle(cycle)) {
@@ -81,14 +89,30 @@ export async function POST(request: Request) {
     );
   }
 
-  const checkoutEnabled = process.env.BILLING_CHECKOUT_ENABLED === "true";
-  const paddleConfigured = Boolean(
-    process.env.NEXT_PUBLIC_PADDLE_CLIENT_TOKEN &&
-      process.env.PADDLE_API_KEY &&
-      process.env.PADDLE_WEBHOOK_SECRET,
-  );
+  const access = await getBusinessBillingAccess(businessId);
+  if (access.state !== "ready" || !access.accountId) {
+    return noStoreJson(
+      { error: "Billing account is not ready. No payment was attempted." },
+      503,
+    );
+  }
 
-  if (!checkoutEnabled || !paddleConfigured) {
+  if (
+    access.subscriptionStatus === "active" ||
+    access.subscriptionStatus === "past_due" ||
+    access.subscriptionStatus === "paused" ||
+    access.subscriptionStatus === "cancelled"
+  ) {
+    return noStoreJson(
+      {
+        error:
+          "This workspace already has a provider subscription. Use billing management instead of creating another subscription.",
+      },
+      409,
+    );
+  }
+
+  if (process.env.BILLING_CHECKOUT_ENABLED !== "true") {
     return noStoreJson(
       {
         error:
@@ -98,13 +122,31 @@ export async function POST(request: Request) {
     );
   }
 
-  return noStoreJson(
-    {
-      error: `Provider checkout adapter is not connected for ${businessPlanCode(
-        plan,
-        cycle,
-      )}.`,
-    },
-    501,
-  );
+  const planCode = businessPlanCode(plan, cycle);
+
+  try {
+    const priceId = getBusinessPaddlePriceId(plan, cycle);
+    const checkout = await createBusinessCheckoutTransaction({
+      accountId: access.accountId,
+      businessId,
+      planCode,
+      priceId,
+    });
+
+    return noStoreJson(
+      {
+        checkoutUrl: checkout.checkoutUrl,
+        transactionId: checkout.transactionId,
+      },
+      200,
+    );
+  } catch {
+    return noStoreJson(
+      {
+        error:
+          "Secure checkout could not be created. No subscription was changed and Continue Free remains available.",
+      },
+      503,
+    );
+  }
 }
