@@ -1,6 +1,7 @@
 name: Native foundation CI
 
 # Verification marker: adaptive-accessibility-v0.8.0
+# Integration gate: latest-main combined tree
 on:
   push:
     branches: [main, native-personal-v0.8-integrate]
