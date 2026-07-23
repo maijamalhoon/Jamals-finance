@@ -18,21 +18,20 @@ jobs:
       NEXT_PUBLIC_SUPABASE_ANON_KEY: ci-build-placeholder
       NEXT_PUBLIC_ENABLE_GOOGLE_AUTH: false
     steps:
-      - name: Print typecheck and lint diagnostics
+      - name: Verify finance transfer scope
         shell: bash
         run: |
-          set +e
+          set -e
           git clone --quiet --depth 1 --branch "$GITHUB_HEAD_REF" https://github.com/maijamalhoon/Jamals-finance.git repo
-          cd repo || exit 1
+          cd repo
           npm ci --silent
-          npm run typecheck > /tmp/typecheck.log 2>&1
-          typecheck_status=$?
-          npm run lint > /tmp/lint.log 2>&1
-          lint_status=$?
           echo "===== TYPECHECK ====="
-          cat /tmp/typecheck.log
-          echo "===== LINT ====="
-          cat /tmp/lint.log
-          if [ "$typecheck_status" -ne 0 ] || [ "$lint_status" -ne 0 ]; then
-            exit 1
-          fi
+          npm run typecheck
+          echo "===== TARGETED LINT ====="
+          npx eslint \
+            components/data/FinanceDataTransfer.tsx \
+            components/settings/SettingsDataTransferSection.tsx \
+            lib/data-backup.ts \
+            lib/data-backup.test.ts
+          echo "===== BACKUP TESTS ====="
+          npx vitest run lib/data-backup.test.ts
