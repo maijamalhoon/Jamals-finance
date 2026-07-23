@@ -219,6 +219,7 @@ export default function TransactionModal({
           .from("categories")
           .select("id, name, type, color, icon_key, parent_id")
           .eq("type", type)
+          .is("archived_at", null)
           .order("parent_id", { ascending: true, nullsFirst: true })
           .order("name"),
         supabase

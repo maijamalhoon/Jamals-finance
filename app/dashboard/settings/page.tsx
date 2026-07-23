@@ -58,8 +58,9 @@ export default async function SettingsPage() {
   ] = await Promise.all([
     supabase
       .from("categories")
-      .select("id, name, type, color, icon_key, parent_id")
+      .select("id, name, type, color, icon_key, parent_id, archived_at, created_at")
       .eq("user_id", user.id)
+      .is("archived_at", null)
       .order("type")
       .order("parent_id", { ascending: true, nullsFirst: true })
       .order("name"),

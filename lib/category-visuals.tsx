@@ -1,5 +1,7 @@
 import {
   BadgeDollarSign,
+  CalendarSync,
+  ChartCandlestick,
   Baby,
   Banknote,
   Bike,
@@ -8,18 +10,27 @@ import {
   Building2,
   Bus,
   Car,
+  Clapperboard,
+  CloudCog,
   Coffee,
   Coins,
   CreditCard,
   Droplets,
   Dumbbell,
+  FileText,
+  Footprints,
   Fuel,
   Gamepad2,
   Gift,
+  Glasses,
   GraduationCap,
+  Hammer,
   HandCoins,
+  HandHeart,
+  HeartHandshake,
   HeartPulse,
   Home,
+  KeyRound,
   Landmark,
   Laptop,
   Lightbulb,
@@ -29,6 +40,11 @@ import {
   PiggyBank,
   Plane,
   ReceiptText,
+  Scale,
+  Scissors,
+  ShieldCheck,
+  Smile,
+  Sprout,
   Repeat2,
   Shirt,
   ShoppingBag,
@@ -39,9 +55,11 @@ import {
   Store,
   Tags,
   Ticket,
+  Trophy,
   TrainFront,
   TrendingUp,
   UserRound,
+  UsersRound,
   Utensils,
   Wallet,
   WalletCards,
@@ -154,6 +172,24 @@ export const CATEGORY_ICON_MAP = {
   clothing: Shirt,
   medical: Stethoscope,
   salary: BadgeDollarSign,
+  charity: HeartHandshake,
+  insurance: ShieldCheck,
+  family: UsersRound,
+  legal: Scale,
+  footwear: Footprints,
+  beauty: Scissors,
+  sports: Trophy,
+  subscriptions: CalendarSync,
+  software: CloudCog,
+  construction: Hammer,
+  dental: Smile,
+  optical: Glasses,
+  entertainment: Clapperboard,
+  farming: Sprout,
+  help: HandHeart,
+  investments: ChartCandlestick,
+  bills: FileText,
+  rent: KeyRound,
   tags: Tags,
 } satisfies Record<string, LucideIcon>;
 
@@ -200,6 +236,24 @@ type CategoryIconRule = Readonly<{
  * whose previous icon value was an emoji or numbered badge.
  */
 const CATEGORY_ICON_RULES: readonly CategoryIconRule[] = [
+  { iconKey: "charity", aliases: ["charity", "donation", "zakat", "sadqa", "sadaqah", "khairat", "help others"] },
+  { iconKey: "help", aliases: ["help", "support", "welfare", "aid"] },
+  { iconKey: "insurance", aliases: ["insurance", "takaful", "protection plan"] },
+  { iconKey: "family", aliases: ["family", "parents", "household support"] },
+  { iconKey: "legal", aliases: ["legal", "lawyer", "advocate", "court", "security", "guard"] },
+  { iconKey: "footwear", aliases: ["shoe", "shoes", "footwear", "sneaker", "sandals"] },
+  { iconKey: "beauty", aliases: ["salon", "barber", "haircut", "beauty", "makeup", "cosmetic", "skincare"] },
+  { iconKey: "sports", aliases: ["sport", "sports", "cricket", "football", "tennis", "badminton"] },
+  { iconKey: "subscriptions", aliases: ["subscription", "membership", "netflix", "spotify"] },
+  { iconKey: "software", aliases: ["software", "saas", "hosting", "domain", "cloud", "app subscription"] },
+  { iconKey: "construction", aliases: ["construction", "renovation", "cement", "mistri", "labour", "labor", "hardware"] },
+  { iconKey: "dental", aliases: ["dental", "dentist", "teeth"] },
+  { iconKey: "optical", aliases: ["optical", "glasses", "eyesight", "eye care"] },
+  { iconKey: "entertainment", aliases: ["movie", "cinema", "film", "entertainment", "concert"] },
+  { iconKey: "farming", aliases: ["farm", "farming", "agriculture", "crop", "seed", "fertilizer", "garden"] },
+  { iconKey: "investments", aliases: ["investment", "investments", "stock", "stocks", "shares", "portfolio", "mutual fund"] },
+  { iconKey: "bills", aliases: ["bill", "bills", "invoice", "monthly bill"] },
+  { iconKey: "rent", type: "expense", aliases: ["rent", "kiraya", "lease payment"] },
   {
     iconKey: "salary",
     aliases: ["salary", "salery", "sallery", "payroll", "wage", "tankhwa", "tankha", "maash"],
@@ -611,11 +665,11 @@ function MarkerDrawIcon({
     >
       <Icon
         size={size}
-        strokeWidth={3.4}
+        strokeWidth={3}
         absoluteStrokeWidth
         strokeLinecap="round"
         strokeLinejoin="round"
-        className="absolute opacity-[0.18] [transform:translate(0.65px,0.45px)_rotate(-0.8deg)]"
+        className="absolute opacity-[0.1] [transform:translate(0.45px,0.35px)_rotate(-0.5deg)]"
       />
       <Icon
         size={size}
@@ -623,9 +677,9 @@ function MarkerDrawIcon({
         absoluteStrokeWidth
         strokeLinecap="round"
         strokeLinejoin="round"
-        className="relative drop-shadow-[0_0.5px_0_currentColor]"
+        className="relative"
       />
-      <span className="pointer-events-none absolute inset-x-[18%] bottom-[7%] h-px rotate-[-2deg] rounded-full bg-current opacity-15" />
+      <span className="pointer-events-none absolute inset-x-[18%] bottom-[7%] h-px rotate-[-2deg] rounded-full bg-current opacity-10" />
     </span>
   );
 }

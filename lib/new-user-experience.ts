@@ -168,11 +168,13 @@ async function loadLegacyNewUserExperienceState(
     supabase
       .from("categories")
       .select("id", { count: "exact", head: true })
-      .eq("type", "income"),
+      .eq("type", "income")
+      .is("archived_at", null),
     supabase
       .from("categories")
       .select("id", { count: "exact", head: true })
-      .eq("type", "expense"),
+      .eq("type", "expense")
+      .is("archived_at", null),
     supabase.from("goals").select("id", { count: "exact", head: true }),
     supabase.from("investments").select("id", { count: "exact", head: true }),
     supabase.from("liabilities").select("id", { count: "exact", head: true }),

@@ -59,6 +59,8 @@ export interface PersistentSettingsCategory extends CategoryVisualSource {
   color: string | null;
   icon_key: string | null;
   parent_id: string | null;
+  archived_at?: string | null;
+  created_at?: string | null;
 }
 
 type CategoriesMode = "home" | "view" | "create";
