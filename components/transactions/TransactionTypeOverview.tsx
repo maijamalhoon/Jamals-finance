@@ -4,7 +4,6 @@ import {
   ArrowUpRight,
   CalendarDays,
   Layers3,
-  Trophy,
   WalletCards,
 } from "lucide-react";
 
