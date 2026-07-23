@@ -63,7 +63,9 @@ export const SUPPORTED_APP_LANGUAGES = APP_LANGUAGE_OPTIONS.map(
 ) as AppLanguage[];
 
 const LANGUAGE_OPTIONS_BY_CODE = new Map<AppLanguage, AppLanguageOption>(
-  APP_LANGUAGE_OPTIONS.map((option) => [option.code, option]),
+  APP_LANGUAGE_OPTIONS.map(
+    (option) => [option.code, option] as const,
+  ),
 );
 
 export function isAppLanguage(value: unknown): value is AppLanguage {
@@ -104,7 +106,9 @@ export function getAppLanguageNativeName(value: unknown): string {
 }
 
 const LANGUAGE_DIRECTIONS = Object.fromEntries(
-  APP_LANGUAGE_OPTIONS.map((option) => [option.code, option.direction]),
+  APP_LANGUAGE_OPTIONS.map(
+    (option) => [option.code, option.direction] as const,
+  ),
 );
 
 export const LANGUAGE_BOOTSTRAP_SCRIPT = `
