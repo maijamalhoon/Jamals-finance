@@ -136,3 +136,65 @@
     transform-origin: center !important;
   }
 }
+
+/*
+ * While the software keyboard is open, fit the focused finance form inside the
+ * keyboard-resized dynamic viewport. The form starts at the safe top edge and
+ * finishes immediately above the keyboard; only its body scrolls.
+ */
+@media (max-width: 1024px) and (pointer: coarse) {
+  :global(
+    [data-slot="dialog-content"].finance-modal-content.finance-modal-content.finance-modal-content:has(
+        input:not([readonly]):focus,
+        textarea:focus,
+        [contenteditable="true"]:focus
+      )
+  ),
+  :global(
+    [role="dialog"].finance-modal-content.finance-modal-content.finance-modal-content:has(
+        input:not([readonly]):focus,
+        textarea:focus,
+        [contenteditable="true"]:focus
+      )
+  ) {
+    top: max(0.375rem, env(safe-area-inset-top)) !important;
+    right: auto !important;
+    bottom: auto !important;
+    left: 50vw !important;
+    width: min(
+      calc(
+        100vw - 0.75rem - env(safe-area-inset-left) -
+          env(safe-area-inset-right)
+      ),
+      var(--finance-modal-max-width, 28rem)
+    ) !important;
+    height: calc(
+      100dvh - 0.75rem - env(safe-area-inset-top) -
+        env(safe-area-inset-bottom)
+    ) !important;
+    max-height: calc(
+      100dvh - 0.75rem - env(safe-area-inset-top) -
+        env(safe-area-inset-bottom)
+    ) !important;
+    margin: 0 !important;
+    translate: none !important;
+    transform: translate3d(-50%, 0, 0) !important;
+    transform-origin: top center !important;
+  }
+
+  :global(
+    .finance-modal-content.finance-modal-content
+      .finance-modal-body
+  ) {
+    scroll-padding-top: 1rem;
+    scroll-padding-bottom: 1rem;
+  }
+
+  :global(
+    .finance-modal-content.finance-modal-content
+      :is(input, textarea, select, [contenteditable="true"])
+  ) {
+    scroll-margin-top: 4.5rem;
+    scroll-margin-bottom: 4.5rem;
+  }
+}
