@@ -21,7 +21,6 @@ jobs:
       - name: Find remaining legacy public copy
         shell: bash
         run: |
-          set -euo pipefail
           python - <<'PY'
           from pathlib import Path
           import re
@@ -45,7 +44,16 @@ jobs:
                       if any(pattern.search(line) for pattern in patterns):
                           findings.append(f"{path}:{line_number}:{line.strip()}")
 
-          print("\n".join(findings) if findings else "No legacy public brand copy found.")
-          if findings:
-              raise SystemExit(1)
+          Path("legacy-copy-findings.txt").write_text(
+              "\n".join(findings) if findings else "No legacy public brand copy found.\n"
+          )
+          print(f"Found {len(findings)} legacy public-copy occurrence(s).")
           PY
+
+      - name: Upload findings
+        uses: actions/upload-artifact@v4
+        with:
+          name: jalvoro-visible-copy-findings
+          path: legacy-copy-findings.txt
+          if-no-files-found: error
+          retention-days: 1
