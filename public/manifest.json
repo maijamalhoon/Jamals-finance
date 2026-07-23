@@ -1,14 +1,14 @@
 {
-  "name": "Jamal's Finance",
-  "short_name": "Jamal's Finance",
-  "description": "A secure personal finance dashboard for accounts, expenses, goals, investments, payables, and reports.",
+  "name": "JALVORO",
+  "short_name": "Jalvoro",
+  "description": "One connected platform for personal finance, shops, teams, and business operations.",
   "start_url": "/?source=pwa",
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait-primary",
   "background_color": "#F3F6FA",
-  "theme_color": "#2956C8",
-  "categories": ["finance", "productivity", "utilities"],
+  "theme_color": "#07365F",
+  "categories": ["business", "finance", "productivity", "utilities"],
   "lang": "en",
   "icons": [
     {
