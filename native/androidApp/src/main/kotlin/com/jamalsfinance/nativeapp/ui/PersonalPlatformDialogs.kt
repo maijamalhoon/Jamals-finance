@@ -4,8 +4,10 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.weight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.OutlinedTextField
@@ -17,7 +19,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.unit.dp
 
 @Composable
@@ -41,12 +42,8 @@ internal fun PersonalNameDialog(
                 enabled = !busy,
             )
         },
-        confirmButton = {
-            Button(onClick = onConfirm, enabled = !busy) { Text("Save") }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss, enabled = !busy) { Text("Cancel") }
-        },
+        confirmButton = { Button(onClick = onConfirm, enabled = !busy) { Text("Save") } },
+        dismissButton = { TextButton(onClick = onDismiss, enabled = !busy) { Text("Cancel") } },
     )
 }
 
@@ -88,12 +85,8 @@ internal fun PersonalPasswordDialog(
                 )
             }
         },
-        confirmButton = {
-            Button(onClick = onConfirm, enabled = !busy) { Text("Update") }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss, enabled = !busy) { Text("Cancel") }
-        },
+        confirmButton = { Button(onClick = onConfirm, enabled = !busy) { Text("Update") } },
+        dismissButton = { TextButton(onClick = onDismiss, enabled = !busy) { Text("Cancel") } },
     )
 }
 
@@ -113,8 +106,7 @@ internal fun <T> PersonalChoiceDialog(
             LazyColumn {
                 items(values) { value ->
                     androidx.compose.foundation.layout.Row(
-                        modifier = Modifier.fillMaxWidth()
-                            .padding(vertical = 5.dp),
+                        modifier = Modifier.fillMaxWidth().padding(vertical = 5.dp),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
                         RadioButton(
@@ -153,11 +145,7 @@ internal fun PersonalImportDialog(
                     "Existing records and repeated imports are protected from duplicates.",
             )
         },
-        confirmButton = {
-            Button(onClick = onConfirm, enabled = !busy) { Text("Import") }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss, enabled = !busy) { Text("Cancel") }
-        },
+        confirmButton = { Button(onClick = onConfirm, enabled = !busy) { Text("Import") } },
+        dismissButton = { TextButton(onClick = onDismiss, enabled = !busy) { Text("Cancel") } },
     )
 }
