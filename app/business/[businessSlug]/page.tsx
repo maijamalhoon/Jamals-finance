@@ -12,6 +12,7 @@ import {
   Building2,
   ClipboardCheck,
   ContactRound,
+  Factory,
   FileArchive,
   Handshake,
   Landmark,
@@ -81,6 +82,13 @@ const MODULES = [
     description: "Employee register, recurring pay components, approval-controlled runs, balanced accruals, and salary payments.",
     icon: WalletCards,
     route: "payroll",
+  },
+  {
+    key: "fixed-assets",
+    label: "Fixed assets",
+    description: "Asset register, capitalization, monthly depreciation, book value, disposal, and immutable journals.",
+    icon: Factory,
+    route: "fixed-assets",
   },
   {
     key: "documents",
@@ -241,6 +249,9 @@ export default async function BusinessWorkspacePage({
     payroll:
       ["owner", "admin", "accountant"].includes(role) ||
       hasAny("payroll.view", "payroll.manage", "payroll.process", "payroll.pay"),
+    "fixed-assets":
+      ["owner", "admin", "accountant", "manager"].includes(role) ||
+      hasAny("assets.view", "assets.manage", "assets.depreciate", "assets.dispose"),
     documents:
       ["owner", "admin", "accountant", "manager", "sales", "inventory", "viewer"].includes(role) ||
       hasAny("documents.view", "documents.manage"),
@@ -268,6 +279,7 @@ export default async function BusinessWorkspacePage({
     "banking",
     "budgeting",
     "payroll",
+    "fixed-assets",
     "documents",
     "branches",
     "approvals",
@@ -350,7 +362,7 @@ export default async function BusinessWorkspacePage({
               Modules selected for this business
             </h2>
             <p className="mt-2 max-w-3xl text-sm leading-6 text-text-secondary">
-              Modules are configured from the nature of business. Every operational module uses the same verified accounting, banking, budgeting, payroll, documents, branches, approvals, tax, permission, notification, and reporting source of truth.
+              Modules are configured from the nature of business. Every operational module uses the same verified accounting, banking, budgeting, payroll, fixed-asset, documents, branches, approvals, tax, permission, notification, and reporting source of truth.
             </p>
           </div>
 
@@ -418,9 +430,9 @@ export default async function BusinessWorkspacePage({
           <div className="flex items-start gap-3">
             <BookOpenCheck aria-hidden="true" className="mt-0.5 size-5 shrink-0" />
             <div>
-              <h2 className="font-black">Accounting, banking, budgeting, payroll, documents, branches, approvals, tax, access control, and alerts are active</h2>
+              <h2 className="font-black">Accounting, banking, budgeting, payroll, fixed assets, records, branches, approvals, tax, access control, and alerts are active</h2>
               <p className="mt-1 text-sm leading-6 opacity-80">
-                Balanced journals, reconciliation locks, approved budgets, approval-controlled payroll accruals and salary payments, private versioned records, protected branch scopes, maker–checker approvals, fiscal periods, tax returns, retained-earnings close, immutable posting, team audit history, CRM conversions, verified reports, and role-filtered alerts share one financial source of truth.
+                Balanced journals, reconciliation locks, approved budgets, approval-controlled payroll, capitalized assets, sequential depreciation, gain/loss disposal, private versioned records, protected branch scopes, maker–checker approvals, fiscal closing, team audit history, verified reports, and role-filtered alerts share one financial source of truth.
               </p>
             </div>
           </div>
