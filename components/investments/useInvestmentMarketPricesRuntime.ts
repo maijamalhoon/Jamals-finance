@@ -148,7 +148,7 @@ function useCryptoFallbackPrices(ids: readonly string[], enabled: boolean) {
             for (const id of normalizedIds) {
               next[id] = {
                 ...(next[id] ?? EMPTY_FALLBACK),
-                status: next[id]?.price !== null ? "connecting" : "unavailable",
+                status: next[id]?.price != null ? "connecting" : "unavailable",
               };
             }
             return next;
