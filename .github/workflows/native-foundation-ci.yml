@@ -1,6 +1,7 @@
 name: Native foundation CI
 
 # Verification marker: offline-resilience-v0.9.0
+# Latest branch source gate
 on:
   push:
     branches: [main, native-personal-v0.9-offline-resilience]
