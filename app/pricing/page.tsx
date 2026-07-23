@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
+import { headers } from "next/headers";
 import Link from "next/link";
 import { ArrowLeft, Globe2, LockKeyhole } from "lucide-react";
 
 import RegionalPricing from "@/components/billing/RegionalPricing";
+import { SUPPORTED_COUNTRY_CODES } from "@/lib/billing/catalog";
 
 export const metadata: Metadata = {
   title: "Regional pricing",
@@ -10,7 +12,18 @@ export const metadata: Metadata = {
   alternates: { canonical: "/pricing" },
 };
 
-export default function PricingPage() {
+const SUPPORTED_COUNTRIES = new Set<string>(SUPPORTED_COUNTRY_CODES);
+
+export default async function PricingPage() {
+  const requestHeaders = await headers();
+  const requestCountry = requestHeaders
+    .get("x-vercel-ip-country")
+    ?.trim()
+    .toUpperCase();
+  const initialCountryCode = requestCountry && SUPPORTED_COUNTRIES.has(requestCountry)
+    ? requestCountry
+    : null;
+
   return (
     <main className="min-h-screen bg-background px-[var(--space-page)] py-8 sm:py-12">
       <div className="mx-auto max-w-[92rem]">
@@ -38,7 +51,7 @@ export default function PricingPage() {
           </p>
         </section>
 
-        <RegionalPricing />
+        <RegionalPricing initialCountryCode={initialCountryCode} />
       </div>
     </main>
   );
