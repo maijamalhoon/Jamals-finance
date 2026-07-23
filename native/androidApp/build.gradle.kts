@@ -27,8 +27,8 @@ android {
         applicationId = "com.jamalsfinance.app.native.dev"
         minSdk = 23
         targetSdk = 36
-        versionCode = 8
-        versionName = "0.8.0-adaptive-accessibility"
+        versionCode = 9
+        versionName = "0.9.0-offline-resilience"
 
         buildConfigField(
             "String",
