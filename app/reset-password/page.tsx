@@ -26,6 +26,11 @@ import {
 import AuthShell from "@/components/auth/AuthShell";
 import { AuthFormSkeleton } from "@/components/loading/LoadingPrimitives";
 import { Button } from "@/components/ui/button";
+import { checkPasswordProtection } from "@/lib/auth/password-protection";
+import {
+  PASSWORD_MIN_LENGTH,
+  validatePasswordPolicy,
+} from "@/lib/auth/password-policy";
 import { createClient } from "@/lib/supabase/client";
 import {
   classifyAuthFailure,
@@ -579,8 +584,9 @@ export default function ResetPasswordPage() {
     setFieldErrors({});
     setFormError("");
 
-    if (password.length < 6) {
-      setFieldErrors({ password: "Use at least 6 characters." });
+    const passwordPolicy = validatePasswordPolicy(password);
+    if (!passwordPolicy.ok) {
+      setFieldErrors({ password: passwordPolicy.error });
       passwordInputRef.current?.focus();
       return;
     }
@@ -599,6 +605,14 @@ export default function ResetPasswordPage() {
 
     setRecoveryState("updating");
     setMessage("");
+
+    const passwordProtection = await checkPasswordProtection(password);
+    if (!passwordProtection.ok) {
+      setRecoveryState("ready");
+      setFieldErrors({ password: passwordProtection.error });
+      passwordInputRef.current?.focus();
+      return;
+    }
 
     let updateOutcome: PasswordUpdateOutcome = "thrown_error";
     let updateError: Awaited<
@@ -664,7 +678,7 @@ export default function ResetPasswordPage() {
             : {
                 eyebrow: recoveryState === "updating" ? "Saving securely" : "Password recovery",
                 title: recoveryState === "updating" ? "Updating your password" : "Choose a new password",
-                description: "Use at least 6 characters and confirm the same password below.",
+                description: `Use at least ${PASSWORD_MIN_LENGTH} characters. Known breached passwords are rejected before the update.`,
                 icon: LockKeyhole,
               };
 
@@ -740,11 +754,11 @@ export default function ResetPasswordPage() {
               setPassword(event.target.value);
               clearRecoveryFieldError("password");
             }}
-            placeholder="At least 6 characters"
+            placeholder={`At least ${PASSWORD_MIN_LENGTH} characters`}
             autoComplete="new-password"
             disabled={loading}
             error={fieldErrors.password}
-            helper="Use at least 6 characters. Password managers can save it after the update."
+            helper={`Use at least ${PASSWORD_MIN_LENGTH} characters with a letter and a number or symbol.`}
             inputRef={passwordInputRef}
             icon={<LockKeyhole className="h-4 w-4" />}
           />

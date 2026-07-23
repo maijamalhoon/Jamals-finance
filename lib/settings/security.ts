@@ -1,3 +1,5 @@
+import { validatePasswordPolicy } from "@/lib/auth/password-policy";
+
 export type ValidationResult<T> =
   | { ok: true; value: T }
   | { ok: false; error: string };
@@ -69,11 +71,9 @@ export function validatePasswordChange(input: {
     };
   }
 
-  if (input.newPassword.length < 8) {
-    return {
-      ok: false,
-      error: "New password must be at least 8 characters.",
-    };
+  const passwordPolicy = validatePasswordPolicy(input.newPassword);
+  if (!passwordPolicy.ok) {
+    return { ok: false, error: passwordPolicy.error };
   }
 
   if (input.newPassword !== input.confirmPassword) {

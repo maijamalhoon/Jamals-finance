@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { PASSWORD_POLICY_MESSAGE } from "../auth/password-policy";
 import {
   buildSettingsSnapshot,
   mapAuthError,
@@ -55,13 +56,13 @@ describe("settings security helpers", () => {
     expect(
       validatePasswordChange({
         verificationCode: " ",
-        newPassword: "password1",
-        confirmPassword: "password1",
+        newPassword: "Unique finance 2026!",
+        confirmPassword: "Unique finance 2026!",
       }),
     ).toMatchObject({ ok: false, error: "Enter the verification code." });
   });
 
-  it("rejects a password shorter than 8 characters", () => {
+  it("rejects a password that fails the strong password policy", () => {
     expect(
       validatePasswordChange({
         verificationCode: "123456",
@@ -70,7 +71,7 @@ describe("settings security helpers", () => {
       }),
     ).toMatchObject({
       ok: false,
-      error: "New password must be at least 8 characters.",
+      error: PASSWORD_POLICY_MESSAGE,
     });
   });
 
@@ -78,8 +79,8 @@ describe("settings security helpers", () => {
     expect(
       validatePasswordChange({
         verificationCode: "123456",
-        newPassword: "password1",
-        confirmPassword: "password2",
+        newPassword: "Unique finance 2026!",
+        confirmPassword: "Different finance 2026!",
       }),
     ).toMatchObject({ ok: false, error: "Passwords do not match." });
   });
@@ -88,12 +89,12 @@ describe("settings security helpers", () => {
     expect(
       validatePasswordChange({
         verificationCode: " 123456 ",
-        newPassword: " password1 ",
-        confirmPassword: " password1 ",
+        newPassword: " Unique finance 2026! ",
+        confirmPassword: " Unique finance 2026! ",
       }),
     ).toEqual({
       ok: true,
-      value: { verificationCode: "123456", newPassword: " password1 " },
+      value: { verificationCode: "123456", newPassword: " Unique finance 2026! " },
     });
   });
 
@@ -101,8 +102,8 @@ describe("settings security helpers", () => {
     expect(
       validatePasswordChange({
         verificationCode: "abcdef",
-        newPassword: "password1",
-        confirmPassword: "password1",
+        newPassword: "Unique finance 2026!",
+        confirmPassword: "Unique finance 2026!",
       }),
     ).toEqual({
       ok: false,
@@ -114,8 +115,8 @@ describe("settings security helpers", () => {
     expect(
       validatePasswordChange({
         verificationCode: "12ab34",
-        newPassword: "password1",
-        confirmPassword: "password1",
+        newPassword: "Unique finance 2026!",
+        confirmPassword: "Unique finance 2026!",
       }),
     ).toEqual({
       ok: false,
@@ -127,12 +128,12 @@ describe("settings security helpers", () => {
     expect(
       validatePasswordChange({
         verificationCode: "001234",
-        newPassword: "password1",
-        confirmPassword: "password1",
+        newPassword: "Unique finance 2026!",
+        confirmPassword: "Unique finance 2026!",
       }),
     ).toEqual({
       ok: true,
-      value: { verificationCode: "001234", newPassword: "password1" },
+      value: { verificationCode: "001234", newPassword: "Unique finance 2026!" },
     });
   });
 

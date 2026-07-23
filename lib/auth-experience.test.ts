@@ -82,6 +82,8 @@ describe("Node 8 authentication experience contracts", () => {
     expect(signupCall).toContain("/auth/callback?next=");
     expect(signupCall).toContain("onboardingDestination(safeNext)");
     expect(loginSource).toContain("router.replace(onboardingDestination(safeNext))");
+    expect(loginSource).toContain("checkPasswordProtection(password)");
+    expect(resetPasswordSource).toContain("checkPasswordProtection(password)");
   });
 
   it("retains Google OAuth redirect protection and provider parameters", () => {
@@ -198,7 +200,8 @@ describe("Node 8 authentication experience contracts", () => {
     expect(resetPasswordSource.match(/<AuthPasswordField/g) ?? []).toHaveLength(2);
     expect(resetPasswordSource).toContain("passwordInputRef.current?.focus()");
     expect(resetPasswordSource).toContain("confirmInputRef.current?.focus()");
-    expect(resetPasswordSource).toContain('setFieldErrors({ password: "Use at least 6 characters." })');
+    expect(resetPasswordSource).toContain("validatePasswordPolicy(password)");
+    expect(resetPasswordSource).toContain("passwordPolicy.error");
     expect(resetPasswordSource).toContain('setFieldErrors({ confirm: "The passwords do not match." })');
   });
 
