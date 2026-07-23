@@ -97,7 +97,7 @@ internal fun PrivacySecurityDashboard(
 
             item { PersonalSectionLabel("Privacy model") }
             item {
-                PersonalPanel {
+                PrivacyPanel {
                     Column(
                         modifier = Modifier.fillMaxWidth().padding(18.dp),
                         verticalArrangement = Arrangement.spacedBy(8.dp),
