@@ -32,13 +32,15 @@ function sourceFiles(directory: string): string[] {
 }
 
 describe("JALVORO full-workspace icon runtime", () => {
-  it("aliases the complete lucide package to the JALVORO runtime", () => {
+  it("aliases the complete lucide package for Turbopack and webpack", () => {
+    expect(nextConfigSource).toContain("turbopack:");
+    expect(nextConfigSource).toContain("resolveAlias:");
     expect(nextConfigSource).toContain('"lucide-react": jalvoroLucideRuntime');
     expect(nextConfigSource).toContain(
       '"components/icons/jalvoro/lucide-runtime.cjs"',
     );
-    expect(packageJson.scripts.dev).toContain("--webpack");
-    expect(packageJson.scripts.build).toContain("--webpack");
+    expect(packageJson.scripts.dev).toBe("next dev");
+    expect(packageJson.scripts.build).toBe("next build");
   });
 
   it("preserves caller-controlled dimensions, stroke, class and color props", () => {
