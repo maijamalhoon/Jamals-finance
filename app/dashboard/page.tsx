@@ -12,6 +12,7 @@ import {
   DashboardMotion,
   DashboardMotionItem,
 } from "@/components/dashboard/DashboardMotion";
+import { loadDashboardData } from "@/lib/dashboard/load-dashboard-data";
 import {
   buildDashboardBalanceSummary,
   buildDashboardCashFlow,
@@ -162,7 +163,7 @@ export default async function DashboardPage() {
   const daysInMonth = getDaysInMonth(year, month);
   const ranges = getDashboardPeriodRanges(todayKey);
 
-  const [
+  const {
     transactionsResult,
     recentResult,
     recentTransfersResult,
@@ -170,42 +171,7 @@ export default async function DashboardPage() {
     goalsResult,
     accountsResult,
     setupCountsResult,
-  ] = await Promise.all([
-    supabase
-      .from("transactions")
-      .select(
-        "id, type, amount, note, date, created_at, category_id, account_id, source_name, person_name, item_name, categories(id, name, color), accounts(name)",
-      )
-      .gte("date", ranges.query.start)
-      .lte("date", ranges.query.end)
-      .order("date", { ascending: true })
-      .order("created_at", { ascending: true }),
-    supabase
-      .from("transactions")
-      .select(
-        "id, type, amount, note, date, created_at, source_name, person_name, item_name, categories(id, name, color), accounts(name)",
-      )
-      .order("date", { ascending: false })
-      .order("created_at", { ascending: false })
-      .limit(12),
-    supabase
-      .from("account_transfers")
-      .select(
-        "id, amount, note, transfer_date, created_at, from_account:from_account_id(name), to_account:to_account_id(name)",
-      )
-      .order("transfer_date", { ascending: false })
-      .order("created_at", { ascending: false })
-      .limit(12),
-    supabase
-      .from("investments")
-      .select(
-        "id, name, type, quantity, purchase_price, current_price, purchased_at, asset_id, symbol, image_url, price_source, current_price_original, current_price_currency, price_updated_at, price_change_24h, is_live_priced",
-      )
-      .order("created_at", { ascending: false }),
-    supabase.from("goals").select("*").order("created_at").limit(6),
-    supabase.from("accounts").select("id, balance").eq("status", "active"),
-    supabase.rpc("get_dashboard_setup_counts").maybeSingle(),
-  ]);
+  } = await loadDashboardData(supabase, ranges.query);
 
   const queryFailures: Array<[string, QueryError]> = [
     ["period-transactions", transactionsResult.error],
