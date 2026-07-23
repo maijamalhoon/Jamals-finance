@@ -18,22 +18,34 @@ permissions:
 jobs:
   validation-report:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 30
+    env:
+      CI: "true"
+      NEXT_TELEMETRY_DISABLED: "1"
+      NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: ci-build-placeholder
+      NEXT_PUBLIC_ENABLE_GOOGLE_AUTH: "false"
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: "24.x"
           cache: npm
-      - run: npm ci
-      - name: Capture targeted lint and full typecheck reports
+      - run: npm ci --silent
+      - name: Capture complete validation report
         shell: bash
         run: |
           set +e
           npx eslint components/settings/CategoryManagementExperience.tsx --format json > category-lint.json 2>&1
           echo "$?" > category-lint-exit-code.txt
-          npx tsc --noEmit --pretty false > typecheck.txt 2>&1
+          npm run typecheck > typecheck.txt 2>&1
           echo "$?" > typecheck-exit-code.txt
+          npx vitest run lib/security-hardening.test.ts > security-tests.txt 2>&1
+          echo "$?" > security-tests-exit-code.txt
+          npm test > tests.txt 2>&1
+          echo "$?" > tests-exit-code.txt
+          npm run build > build.txt 2>&1
+          echo "$?" > build-exit-code.txt
           exit 0
       - uses: actions/upload-artifact@v4
         with:
@@ -43,5 +55,11 @@ jobs:
             category-lint-exit-code.txt
             typecheck.txt
             typecheck-exit-code.txt
+            security-tests.txt
+            security-tests-exit-code.txt
+            tests.txt
+            tests-exit-code.txt
+            build.txt
+            build-exit-code.txt
           if-no-files-found: error
           retention-days: 1
