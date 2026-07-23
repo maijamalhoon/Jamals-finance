@@ -18,6 +18,7 @@ import {
   CreditCard,
   Droplets,
   Dumbbell,
+  FileText,
   Fuel,
   Gamepad2,
   Gift,
@@ -28,6 +29,7 @@ import {
   HandCoins,
   HeartPulse,
   Home,
+  KeyRound,
   Landmark,
   Laptop,
   Lightbulb,
@@ -153,6 +155,9 @@ export const CATEGORY_ICON_MAP = {
   bonus: Sparkles,
   commission: BadgePercent,
   investment: ChartCandlestick,
+  investments: ChartCandlestick,
+  bills: FileText,
+  rent: KeyRound,
   help: CircleHelp,
   movies: Clapperboard,
   cloud: Cloud,
@@ -224,6 +229,19 @@ type CategoryIconRule = Readonly<{
  * whose previous icon value was an emoji or numbered badge.
  */
 const CATEGORY_ICON_RULES: readonly CategoryIconRule[] = [
+  {
+    iconKey: "investments",
+    aliases: ["investment", "investments", "stock", "stocks", "shares", "portfolio", "mutual fund"],
+  },
+  {
+    iconKey: "bills",
+    aliases: ["bill", "bills", "invoice", "monthly bill"],
+  },
+  {
+    iconKey: "rent",
+    type: "expense",
+    aliases: ["rent", "kiraya", "lease payment"],
+  },
   {
     iconKey: "salary",
     aliases: ["salary", "salery", "sallery", "payroll", "wage", "tankhwa", "tankha", "maash"],
