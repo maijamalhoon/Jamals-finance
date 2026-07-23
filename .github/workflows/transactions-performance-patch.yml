@@ -35,148 +35,86 @@ jobs:
         run: |
           python - <<'PY'
           from pathlib import Path
+          import re
 
-          def replace_once(path: str, old: str, new: str) -> None:
+          def sub_once(path: str, pattern: str, replacement: str, *, flags: int = 0) -> None:
               file_path = Path(path)
               source = file_path.read_text(encoding="utf-8")
-              count = source.count(old)
+              updated, count = re.subn(pattern, replacement, source, count=1, flags=flags)
               if count != 1:
-                  raise SystemExit(f"Expected one match in {path}, found {count}: {old[:100]!r}")
-              file_path.write_text(source.replace(old, new, 1), encoding="utf-8")
+                  raise SystemExit(f"Expected one match in {path}, found {count}: {pattern[:120]!r}")
+              file_path.write_text(updated, encoding="utf-8")
 
           page = "app/dashboard/transactions/page.tsx"
-          replace_once(
+          sub_once(
               page,
-              '''  const [rawTransactions, categoriesResult, accountsResult] = await Promise.all([
-              loadTransactions(supabase, {
-                type: requestedDatabaseType,
-                from,
-                to,
-                category,
-                account,
-                minAmount,
-                maxAmount,
-                includeDeleted: true,
-              }),
-              supabase
-                .from("categories")
-                .select("id, name, parent_id")
-                .order("name", { ascending: true }),
-              supabase
-                .from("accounts")
-                .select("id, name")
-                .order("name", { ascending: true }),
-            ]);''',
+              r'''  const \[rawTransactions, categoriesResult, accountsResult\] = await Promise\.all\(\[\n.*?\n  const accountOptions = \(accountsResult\.data \?\? \[\]\)\.map\(\(row\) => \(\{\n.*?\n  \}\)\);\n\n(?=  const transactions =)''',
               '''  const rawTransactions = await loadTransactions(supabase, {
-              type: requestedDatabaseType,
-              from,
-              to,
-              category,
-              account,
-              minAmount,
-              maxAmount,
-              includeDeleted: true,
-            });''',
-          )
-          replace_once(
-              page,
-              '''
-            if (categoriesResult.error) {
-              console.error("[transactions] Category filters unavailable", {
-                code: categoriesResult.error.code ?? "unknown",
-              });
-            }
+            type: requestedDatabaseType,
+            from,
+            to,
+            category,
+            account,
+            minAmount,
+            maxAmount,
+            includeDeleted: true,
+          });
 
-            if (accountsResult.error) {
-              console.error("[transactions] Account filters unavailable", {
-                code: accountsResult.error.code ?? "unknown",
-              });
-            }
-
-            const categoryRows = categoriesResult.data ?? [];
-            const categoryById = new Map(
-              categoryRows.map((row) => [row.id, row.name?.trim() || "Other"]),
-            );
-            const categoryOptions = categoryRows.map((row) => ({
-              value: row.id,
-              label:
-                row.parent_id && categoryById.has(row.parent_id)
-                  ? `${categoryById.get(row.parent_id)} / ${row.name}`
-                  : row.name,
-            }));
-            const accountOptions = (accountsResult.data ?? []).map((row) => ({
-              value: row.id,
-              label: row.name,
-            }));
-            ''',
-              '''
-            ''',
+''',
+              flags=re.S,
           )
-          replace_once(
+          sub_once(
               page,
-              '''            <TransactionFilters
-              categories={categoryOptions}
-              accounts={accountOptions}
-            />''',
+              r'''            <TransactionFilters\n              categories=\{categoryOptions\}\n              accounts=\{accountOptions\}\n            />''',
               '''            <TransactionFilters />''',
           )
 
           row = "components/transactions/TransactionRow.tsx"
-          replace_once(
+          sub_once(
               row,
-              'import { useMemo, useState } from "react";\nimport { usePathname, useRouter } from "next/navigation";',
-              'import { useState } from "react";\nimport dynamic from "next/dynamic";\nimport { usePathname, useRouter } from "next/navigation";',
+              r'''import \{ useMemo, useState \} from "react";\nimport \{ usePathname, useRouter \} from "next/navigation";''',
+              '''import dynamic from "next/dynamic";
+          import { usePathname, useRouter } from "next/navigation";
+          import { useState } from "react";''',
           )
-          replace_once(
+          sub_once(
               row,
-              '''import TransactionModal, {
-              ExistingTransaction,
-            } from "@/components/dashboard/TransactionModal";''',
+              r'''import TransactionModal, \{\n  ExistingTransaction,\n\} from "@/components/dashboard/TransactionModal";''',
               '''import type { ExistingTransaction } from "@/components/dashboard/TransactionModal";''',
           )
-          replace_once(
+          sub_once(
               row,
+              r'''\} from "@/lib/transaction-icons";\n\ntype TransactionType =''',
               '''} from "@/lib/transaction-icons";
 
-            type TransactionType =''',
-              '''} from "@/lib/transaction-icons";
+          const TransactionModal = dynamic(
+            () => import("@/components/dashboard/TransactionModal"),
+            { ssr: false },
+          );
 
-            const TransactionModal = dynamic(
-              () => import("@/components/dashboard/TransactionModal"),
-              { ssr: false },
-            );
-
-            type TransactionType =''',
+          type TransactionType =''',
           )
-          replace_once(
+          sub_once(row, r'''  const supabase = useMemo\(\(\) => createClient\(\), \[\]\);\n''', "")
+          sub_once(
               row,
-              '  const supabase = useMemo(() => createClient(), []);\n',
-              '',
+              r'''    const \{ error \} = await supabase\.rpc\("delete_goal_contribution", \{''',
+              '''    const { error } = await createClient().rpc("delete_goal_contribution", {''',
           )
-          replace_once(
+          sub_once(
               row,
-              '    const { error } = await supabase.rpc("delete_goal_contribution", {',
-              '    const { error } = await createClient().rpc("delete_goal_contribution", {',
-          )
-          replace_once(
-              row,
-              '''    const { error } = await supabase.rpc(
-              "delete_liability_payment_transaction",''',
+              r'''    const \{ error \} = await supabase\.rpc\(\n      "delete_liability_payment_transaction",''',
               '''    const { error } = await createClient().rpc(
               "delete_liability_payment_transaction",''',
           )
-          replace_once(
+          sub_once(
               row,
-              '''    const { error } = await supabase
-              .from(tableName)''',
+              r'''    const \{ error \} = await supabase\n      \.from\(tableName\)''',
               '''    const { error } = await createClient()
               .from(tableName)''',
           )
-          replace_once(
+          sub_once(
               row,
-              '''      {canEdit ? (
-              <TransactionModal
-                open={editOpen}''',
+              r'''      \{canEdit \? \(\n        <TransactionModal\n          open=\{editOpen\}''',
               '''      {canEdit && editOpen ? (
               <TransactionModal
                 open''',
