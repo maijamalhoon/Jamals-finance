@@ -9,7 +9,7 @@ True native personal-finance application isolated from the existing Next.js webs
 - Shared logic: Kotlin Multiplatform
 - Networking: Ktor Client
 - Backend: existing Supabase Auth, PostgreSQL, RLS and authenticated RPCs
-- Android session storage: AES-GCM key held by Android Keystore
+- Android session and offline cache encryption: AES-GCM keys held by Android Keystore
 - Architecture: modular repositories with unidirectional UI state
 
 There is no Chrome, WebView, Trusted Web Activity, or website rendering in this codebase.
@@ -40,35 +40,36 @@ gradle :shared:testAndroidHostTest :androidApp:assembleDebug
 
 The same command runs in native CI. A successful run publishes a development-only debug APK artifact from the exact tested commit.
 
-## Current milestone: v0.8.0 Adaptive Accessibility
+## Current milestone: v0.9.0 Offline Resilience
 
-- Complete personal finance workspaces from v0.1 through v0.7
-- Device App Lock, secure-window protection and local privacy controls
-- Shared KMP adaptive layout policy with host tests
-- Single-column phone launcher
-- Two-column tablet and large-window launcher
-- Automatic one-column fallback above 125% Android font scaling
-- Full-card workspace touch targets
-- TalkBack grouped module descriptions and heading semantics
-- Live announcements for login errors, configuration errors and session restoration
-- Opt-in high-contrast light and dark themes
-- Device-local Accessibility & Display workspace
-- Android accessibility settings shortcut
-- Existing compact spacing preference available from the accessibility workspace
-- Existing RLS, financial triggers and secure RPC boundaries reused
+- Complete personal finance workspaces from v0.1 through v0.8
+- Device App Lock, secure-window protection, adaptive layouts and accessibility controls
+- Live validated Android connectivity monitoring
+- App-wide offline read-only status banner
+- Keystore AES-GCM encrypted snapshots in Android no-backup storage
+- Per-user cached Accounts & Transactions
+- Per-user cached Goals & Payables
+- Per-user cached Investments with saved prices
+- Thirty-day cache expiry and future-clock/corruption rejection
+- Two-minute successful-refresh freshness window
+- Automatic network refresh after cached data is restored
+- Fail-fast offline behavior rather than long request timeouts
+- Offline financial writes are never silently queued
+- Shared KMP resilience policy with host tests
+- Existing Supabase Auth, RLS, triggers and authenticated RPC boundaries reused
 
-## Accessibility and data boundary
+## Offline and data boundary
 
-Accessibility and display choices stay on the Android device. They do not contain passwords, Supabase tokens, finance records, backup contents, biometric data, or business data. Android remains responsible for TalkBack, font scaling, screen credentials and accessibility services.
+Offline cache is read-only and scoped to the authenticated user. It does not contain passwords, Supabase tokens, profile images, backup files, reports, AI responses, or any business-software records. Creating or modifying financial records always requires a live authenticated server request.
 
 ## Build identity
 
 - Package: `com.jamalsfinance.app.native.dev`
-- Version code: `8`
-- Version name: `0.8.0-adaptive-accessibility`
+- Version code: `9`
+- Version name: `0.9.0-offline-resilience`
 - Minimum Android: API 23
 - Target / compile Android: API 36
 
 ## Remaining before production replacement
 
-This is a tested development milestone, not the final Play Store release. Remaining work includes final 1:1 personal-finance visual parity, exhaustive real-device regression testing, performance hardening, permanent production signing, package migration validation, release AAB generation, and Play Store release checks.
+This is a tested development milestone, not the final Play Store release. Remaining work includes final 1:1 personal-finance visual parity, exhaustive real-device regression testing, production performance profiling, permanent production signing, package migration validation, release AAB generation, and Play Store release checks.

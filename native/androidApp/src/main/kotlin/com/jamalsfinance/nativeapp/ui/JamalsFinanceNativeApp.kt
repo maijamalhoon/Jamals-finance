@@ -45,6 +45,7 @@ import com.jamalsfinance.shared.goals.GoalsPayablesRepository
 import com.jamalsfinance.shared.investments.InvestmentsAnalyticsRepository
 import com.jamalsfinance.shared.personal.PersonalPlatformRepository
 import com.jamalsfinance.shared.reports.ReportsInsightsRepository
+import com.jamalsfinance.shared.resilience.NetworkMonitor
 import kotlinx.coroutines.launch
 
 @Composable
@@ -56,9 +57,11 @@ fun JamalsFinanceNativeApp(
     reportsInsightsRepository: ReportsInsightsRepository?,
     personalPlatformRepository: PersonalPlatformRepository?,
     nativePreferences: AndroidNativePreferences,
+    networkMonitor: NetworkMonitor,
     onSecureWindowChanged: (Boolean) -> Unit,
 ) {
     val localPreferences by nativePreferences.state.collectAsStateWithLifecycle()
+    val online by networkMonitor.online.collectAsStateWithLifecycle()
 
     LaunchedEffect(localPreferences.blockScreenshots, onSecureWindowChanged) {
         onSecureWindowChanged(localPreferences.blockScreenshots)
@@ -69,39 +72,61 @@ fun JamalsFinanceNativeApp(
         highContrast = localPreferences.highContrast,
     ) {
         Surface(modifier = Modifier.fillMaxSize()) {
-            if (
-                authRepository == null ||
-                financeRepository == null ||
-                goalsPayablesRepository == null ||
-                investmentsAnalyticsRepository == null ||
-                reportsInsightsRepository == null ||
-                personalPlatformRepository == null
-            ) {
-                ConfigurationRequired()
-            } else {
-                val state by authRepository.state.collectAsStateWithLifecycle()
-                LaunchedEffect(authRepository) { authRepository.restoreSession() }
-                when (val current = state) {
-                    AuthState.Restoring -> CenteredProgress("Restoring your secure session")
-                    AuthState.SignedOut -> LoginScreen(authRepository)
-                    is AuthState.SignedIn -> NativeAppLockGate(
-                        preferences = nativePreferences,
+            Column(modifier = Modifier.fillMaxSize()) {
+                if (!online) OfflineModeBanner()
+                Box(modifier = Modifier.fillMaxWidth().weight(1f)) {
+                    if (
+                        authRepository == null ||
+                        financeRepository == null ||
+                        goalsPayablesRepository == null ||
+                        investmentsAnalyticsRepository == null ||
+                        reportsInsightsRepository == null ||
+                        personalPlatformRepository == null
                     ) {
-                        NativeModuleRootShell(
-                            email = current.session.user.email ?: "Signed in",
-                            financeRepository = financeRepository,
-                            goalsPayablesRepository = goalsPayablesRepository,
-                            investmentsAnalyticsRepository = investmentsAnalyticsRepository,
-                            reportsInsightsRepository = reportsInsightsRepository,
-                            personalPlatformRepository = personalPlatformRepository,
-                            nativePreferences = nativePreferences,
-                            onSignOut = { authRepository.signOut() },
-                        )
+                        ConfigurationRequired()
+                    } else {
+                        val state by authRepository.state.collectAsStateWithLifecycle()
+                        LaunchedEffect(authRepository) { authRepository.restoreSession() }
+                        when (val current = state) {
+                            AuthState.Restoring -> CenteredProgress("Restoring your secure session")
+                            AuthState.SignedOut -> LoginScreen(authRepository)
+                            is AuthState.SignedIn -> NativeAppLockGate(
+                                preferences = nativePreferences,
+                            ) {
+                                NativeModuleRootShell(
+                                    email = current.session.user.email ?: "Signed in",
+                                    financeRepository = financeRepository,
+                                    goalsPayablesRepository = goalsPayablesRepository,
+                                    investmentsAnalyticsRepository = investmentsAnalyticsRepository,
+                                    reportsInsightsRepository = reportsInsightsRepository,
+                                    personalPlatformRepository = personalPlatformRepository,
+                                    nativePreferences = nativePreferences,
+                                    onSignOut = { authRepository.signOut() },
+                                )
+                            }
+                            is AuthState.Failure -> LoginScreen(authRepository, current.message)
+                        }
                     }
-                    is AuthState.Failure -> LoginScreen(authRepository, current.message)
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun OfflineModeBanner() {
+    Surface(
+        modifier = Modifier
+            .fillMaxWidth()
+            .semantics { liveRegion = LiveRegionMode.Polite },
+        color = MaterialTheme.colorScheme.tertiaryContainer,
+        contentColor = MaterialTheme.colorScheme.onTertiaryContainer,
+    ) {
+        Text(
+            text = "Offline mode — securely saved data is read-only. Connect to refresh or make changes.",
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp),
+            style = MaterialTheme.typography.labelLarge,
+        )
     }
 }
 
