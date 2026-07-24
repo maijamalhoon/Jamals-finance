@@ -97,24 +97,55 @@ jobs:
           retention-days: 7
 
       - name: Run rollback-only billing contracts
+        id: billing_contracts
         shell: bash
         run: |
-          set -euo pipefail
+          set +e
           database_container="$(docker ps --format '{{.Names}}' | grep '^supabase_db_' | head -n 1)"
           if [[ -z "$database_container" ]]; then
-            echo "Supabase database container was not found." >&2
+            echo "Supabase database container was not found." | tee /tmp/billing-contract-diagnostic.log
             exit 1
           fi
 
+          : > /tmp/billing-contracts.log
+          exit_code=0
           for contract in \
             "${GITHUB_WORKSPACE}/supabase/tests/regional_billing_foundation.sql" \
             "${GITHUB_WORKSPACE}/supabase/tests/paddle_webhook_lifecycle.sql"
           do
-            echo "Running $contract"
+            echo "=== RUNNING ${contract} ===" | tee -a /tmp/billing-contracts.log
             docker exec -i "$database_container" \
               psql -U postgres -d postgres -v ON_ERROR_STOP=1 \
-              < "$contract"
+              < "$contract" >> /tmp/billing-contracts.log 2>&1
+            contract_code=$?
+            if [[ "$contract_code" -ne 0 ]]; then
+              exit_code="$contract_code"
+              break
+            fi
           done
+
+          {
+            echo "=== ACTIONABLE CONTRACT ERROR LINES ==="
+            grep -n -E "(ERROR:|CONTEXT:|DETAIL:|HINT:|failure|failed|Privacy|Security|contract)" \
+              /tmp/billing-contracts.log | tail -n 240 || true
+            echo
+            echo "=== FINAL 200 LINES ==="
+            tail -n 200 /tmp/billing-contracts.log
+          } > /tmp/billing-contract-diagnostic.log
+
+          cat /tmp/billing-contract-diagnostic.log
+          exit "$exit_code"
+
+      - name: Upload billing contract diagnostics
+        if: failure() && steps.database_start.outcome == 'success'
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: billing-lifecycle-contract-diagnostics
+          path: |
+            /tmp/billing-contracts.log
+            /tmp/billing-contract-diagnostic.log
+          if-no-files-found: error
+          retention-days: 7
 
       - name: Show local Supabase status on failure
         if: failure()
