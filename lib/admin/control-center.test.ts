@@ -50,15 +50,34 @@ const validSnapshot = {
     openRequests: 4,
     overdueRequests: 1,
     completedRequests30d: 8,
+    requestAuditEvents30d: 6,
+    requestOperationsAllowed: true,
+    requestQueue: [
+      {
+        requestCode: "PRV-A1B2C3D4E5F6",
+        requestType: "access",
+        status: "identity_verification",
+        verificationStatus: "pending",
+        source: "support",
+        createdAt: "2026-07-22T10:00:00.000Z",
+        dueAt: "2026-07-29T23:59:59.000Z",
+        assigned: true,
+        assignedToMe: true,
+        overdue: false,
+        manageable: true,
+      },
+    ],
     adminViews30d: 32,
     telemetryEventsStored: 6200,
     telemetrySubjectsStored: 870,
     expiredTelemetryPending: 0,
     expiredAdminAuditPending: 0,
+    expiredRequestAuditPending: 0,
     lastRetentionRunAt: "2026-07-23T19:00:00.000Z",
     lastRetentionRowsDeleted: 120,
     telemetryRetentionDays: 30,
     adminAuditRetentionMonths: 12,
+    requestAuditRetentionMonths: 12,
     rawIpStored: false,
     sessionReplayEnabled: false,
     financeContentInTelemetry: false,
@@ -70,7 +89,7 @@ function read(path: string) {
 }
 
 describe("admin control center contracts", () => {
-  it("accepts the aggregate-only snapshot contract", () => {
+  it("accepts the aggregate and opaque-ticket snapshot contract", () => {
     expect(parseAdminControlCenterSnapshot(validSnapshot)).toMatchObject({
       adminRole: "owner",
       featurePolicy: "unlimited",
@@ -80,6 +99,15 @@ describe("admin control center contracts", () => {
       privacy: {
         openRequests: 4,
         overdueRequests: 1,
+        requestAuditEvents30d: 6,
+        requestOperationsAllowed: true,
+        requestQueue: [
+          {
+            requestCode: "PRV-A1B2C3D4E5F6",
+            requestType: "access",
+            assignedToMe: true,
+          },
+        ],
         rawIpStored: false,
         sessionReplayEnabled: false,
         financeContentInTelemetry: false,
@@ -115,6 +143,54 @@ describe("admin control center contracts", () => {
         telemetry: {
           ...validSnapshot.telemetry,
           topRoutes: [{ route: "https://example.com/private", events: 1 }],
+        },
+      }),
+    ).toBeNull();
+  });
+
+  it("rejects unsafe or identity-bearing privacy queue shapes", () => {
+    expect(
+      parseAdminControlCenterSnapshot({
+        ...validSnapshot,
+        privacy: {
+          ...validSnapshot.privacy,
+          requestQueue: [
+            {
+              ...validSnapshot.privacy.requestQueue[0],
+              requestCode: "not-a-ticket",
+            },
+          ],
+        },
+      }),
+    ).toBeNull();
+
+    expect(
+      parseAdminControlCenterSnapshot({
+        ...validSnapshot,
+        privacy: {
+          ...validSnapshot.privacy,
+          requestQueue: [
+            {
+              ...validSnapshot.privacy.requestQueue[0],
+              status: "completed",
+            },
+          ],
+        },
+      }),
+    ).toBeNull();
+
+    expect(
+      parseAdminControlCenterSnapshot({
+        ...validSnapshot,
+        privacy: {
+          ...validSnapshot.privacy,
+          requestQueue: [
+            {
+              ...validSnapshot.privacy.requestQueue[0],
+              assigned: false,
+              assignedToMe: true,
+            },
+          ],
         },
       }),
     ).toBeNull();
@@ -159,20 +235,26 @@ describe("admin control center contracts", () => {
     expect(formatAdminCount(12500)).toMatch(/12\.5K/i);
   });
 
-  it("keeps the admin page server-rendered and single-RPC", () => {
+  it("keeps the admin page server-rendered and snapshot loading single-RPC", () => {
     const page = read("app/admin/page.tsx");
     const component = read("components/admin/AdminControlCenter.tsx");
     const privacyPanel = read("components/admin/PrivacyGovernancePanel.tsx");
+    const operations = read("components/admin/PrivacyRequestOperations.tsx");
+    const action = read("app/admin/privacy-actions.ts");
 
     expect(page).not.toContain('"use client"');
     expect(component).not.toContain('"use client"');
     expect(privacyPanel).not.toContain('"use client"');
+    expect(operations).not.toContain('"use client"');
+    expect(action).toContain('"use server"');
     expect(page.match(/\.rpc\(/g)).toHaveLength(1);
     expect(page).toContain('"get_platform_admin_snapshot"');
     expect(page).toContain('error?.code === "42501"');
-    expect(page).toContain("PrivacyGovernancePanel");
+    expect(page).toContain("PrivacyRequestOperations");
+    expect(action).toContain('"apply_privacy_request_workflow"');
     expect(component).not.toContain("recharts");
     expect(privacyPanel).not.toContain("recharts");
+    expect(operations).not.toContain("recharts");
   });
 
   it("keeps billing private, provider-neutral and free of raw payload storage", () => {
@@ -198,22 +280,27 @@ describe("admin control center contracts", () => {
   });
 
   it("keeps privacy requests structured, private and content-free", () => {
-    const migration = read(
+    const foundation = read(
       "supabase/migrations/20260724023000_privacy_governance_control_center.sql",
     );
+    const operations = read(
+      "supabase/migrations/20260724024500_privacy_request_operations.sql",
+    );
 
-    expect(migration).toContain("private.privacy_requests");
-    expect(migration).toContain("privacy_requests_deny_direct");
-    expect(migration).toContain("private.privacy_retention_runs");
-    expect(migration).toContain("purge_expired_privacy_operational_data");
-    expect(migration).toContain("expiredTelemetryPending");
-    expect(migration).toContain("rawIpStored', false");
-    expect(migration).toContain("sessionReplayEnabled', false");
-    expect(migration).toContain("financeContentInTelemetry', false");
-    expect(migration).not.toMatch(/request_(body|message|text)\s+(text|jsonb)/i);
-    expect(migration).not.toMatch(/finance_(value|content|record)\s+(text|jsonb|numeric)/i);
-    expect(migration).not.toMatch(/raw_ip\s+(text|inet)/i);
-    expect(migration).not.toMatch(/card_number\s+text/i);
-    expect(migration).not.toMatch(/password\s+text/i);
+    expect(foundation).toContain("private.privacy_requests");
+    expect(foundation).toContain("privacy_requests_deny_direct");
+    expect(foundation).toContain("private.privacy_retention_runs");
+    expect(operations).toContain("private.privacy_request_audit");
+    expect(operations).toContain("privacy_request_audit_deny_direct");
+    expect(operations).toContain("apply_privacy_request_workflow");
+    expect(operations).toContain("security invoker");
+    expect(operations).toContain("requestOperationsAllowed");
+    expect(operations).toContain("limit 30");
+    expect(operations).toContain("privacy_request_verification_required");
+    expect(operations).not.toMatch(/request_(body|message|text)\s+(text|jsonb)/i);
+    expect(operations).not.toMatch(/finance_(value|content|record)\s+(text|jsonb|numeric)/i);
+    expect(operations).not.toMatch(/raw_ip\s+(text|inet)/i);
+    expect(operations).not.toMatch(/card_number\s+text/i);
+    expect(operations).not.toMatch(/password\s+text/i);
   });
 });
