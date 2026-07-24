@@ -3,11 +3,13 @@ const PADDLE_ID_PATTERNS = {
   customer: /^ctm_[a-z0-9]{26}$/,
   subscription: /^sub_[a-z0-9]{26}$/,
   transaction: /^txn_[a-z0-9]{26}$/,
+  adjustment: /^adj_[a-z0-9]{26}$/,
   price: /^pri_[a-z0-9]{26}$/,
 } as const;
 
 const UUID_PATTERN =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+const SAFE_PROVIDER_ENUM_PATTERN = /^[a-z][a-z_]{1,39}$/;
 
 export type NormalizedPaddleEvent = {
   eventId: string;
@@ -17,12 +19,17 @@ export type NormalizedPaddleEvent = {
   providerCustomerId: string | null;
   providerSubscriptionId: string | null;
   providerTransactionId: string | null;
+  providerAdjustmentId: string | null;
   providerPriceId: string | null;
   status: string | null;
   periodStart: string | null;
   periodEnd: string | null;
   cancelAtPeriodEnd: boolean;
   billingCountry: string | null;
+  adjustmentAction: string | null;
+  adjustmentStatus: string | null;
+  adjustmentAmountMinor: number | null;
+  adjustmentCurrency: string | null;
 };
 
 type UnknownRecord = Record<string, unknown>;
@@ -44,6 +51,13 @@ function validString(
 function validDate(value: unknown): string | null {
   const normalized = validString(value);
   return normalized && !Number.isNaN(Date.parse(normalized)) ? normalized : null;
+}
+
+function validMinorAmount(value: unknown): number | null {
+  const normalized = validString(value, /^\d{1,18}$/);
+  if (!normalized) return null;
+  const amount = Number(normalized);
+  return Number.isSafeInteger(amount) && amount >= 0 ? amount : null;
 }
 
 function firstPriceId(items: unknown): string | null {
@@ -86,6 +100,15 @@ function subscriptionStatus(eventType: string, data: UnknownRecord): string | nu
   return validString(data.status);
 }
 
+function adjustmentAmount(data: UnknownRecord): number | null {
+  return isRecord(data.totals) ? validMinorAmount(data.totals.total) : null;
+}
+
+function adjustmentCurrency(data: UnknownRecord): string | null {
+  const currency = validString(data.currency_code)?.toUpperCase();
+  return currency && /^[A-Z]{3}$/.test(currency) ? currency : null;
+}
+
 export function normalizePaddleEvent(payload: unknown): NormalizedPaddleEvent | null {
   if (!isRecord(payload) || !isRecord(payload.data)) return null;
 
@@ -97,6 +120,7 @@ export function normalizePaddleEvent(payload: unknown): NormalizedPaddleEvent | 
   const data = payload.data;
   const subscriptionEvent = eventType.startsWith("subscription.");
   const transactionEvent = eventType.startsWith("transaction.");
+  const adjustmentEvent = eventType.startsWith("adjustment.");
   const dataId = validString(data.id);
 
   const providerSubscriptionId = subscriptionEvent
@@ -105,6 +129,9 @@ export function normalizePaddleEvent(payload: unknown): NormalizedPaddleEvent | 
   const providerTransactionId = transactionEvent
     ? validString(dataId, PADDLE_ID_PATTERNS.transaction)
     : validString(data.transaction_id, PADDLE_ID_PATTERNS.transaction);
+  const providerAdjustmentId = adjustmentEvent
+    ? validString(dataId, PADDLE_ID_PATTERNS.adjustment)
+    : validString(data.adjustment_id, PADDLE_ID_PATTERNS.adjustment);
 
   const period = isRecord(data.current_billing_period)
     ? data.current_billing_period
@@ -124,6 +151,7 @@ export function normalizePaddleEvent(payload: unknown): NormalizedPaddleEvent | 
     ),
     providerSubscriptionId,
     providerTransactionId,
+    providerAdjustmentId,
     providerPriceId: firstPriceId(data.items),
     status: subscriptionStatus(eventType, data),
     periodStart: period ? validDate(period.starts_at) : null,
@@ -131,6 +159,14 @@ export function normalizePaddleEvent(payload: unknown): NormalizedPaddleEvent | 
     cancelAtPeriodEnd:
       scheduledChange !== null && scheduledChange.action === "cancel",
     billingCountry: countryFromData(data),
+    adjustmentAction: adjustmentEvent
+      ? validString(data.action, SAFE_PROVIDER_ENUM_PATTERN)
+      : null,
+    adjustmentStatus: adjustmentEvent
+      ? validString(data.status, SAFE_PROVIDER_ENUM_PATTERN)
+      : null,
+    adjustmentAmountMinor: adjustmentEvent ? adjustmentAmount(data) : null,
+    adjustmentCurrency: adjustmentEvent ? adjustmentCurrency(data) : null,
   };
 }
 
