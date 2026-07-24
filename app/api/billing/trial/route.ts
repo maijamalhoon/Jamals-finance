@@ -10,6 +10,16 @@ function noStoreJson(body: object, status: number) {
 }
 
 export async function POST() {
+  if (process.env.BILLING_TRIAL_ENABLED !== "true") {
+    return noStoreJson(
+      {
+        error:
+          "The Pro trial is not active yet. Continue Free remains available.",
+      },
+      503,
+    );
+  }
+
   const supabase = await createClient();
   const {
     data: { user },
