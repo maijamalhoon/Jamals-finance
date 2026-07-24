@@ -18,6 +18,49 @@ export type AdminPlanBreakdown = {
   users: number;
 };
 
+export type PrivacyRequestType =
+  | "access"
+  | "export"
+  | "correction"
+  | "deletion"
+  | "restriction"
+  | "objection"
+  | "consent_review"
+  | "security_review";
+
+export type PrivacyRequestStatus =
+  | "pending"
+  | "identity_verification"
+  | "in_progress"
+  | "completed"
+  | "rejected"
+  | "cancelled";
+
+export type PrivacyVerificationStatus =
+  | "not_started"
+  | "pending"
+  | "verified"
+  | "failed";
+
+export type PrivacyRequestSource = "in_product" | "support" | "manual" | "system";
+
+export type PrivacyRequestQueueItem = {
+  requestCode: string;
+  requestType: PrivacyRequestType;
+  status: Extract<
+    PrivacyRequestStatus,
+    "pending" | "identity_verification" | "in_progress"
+  >;
+  verificationStatus: PrivacyVerificationStatus;
+  source: PrivacyRequestSource;
+  createdAt: string;
+  dueAt: string | null;
+  assigned: boolean;
+  assignedToMe: boolean;
+  overdue: boolean;
+  manageable: boolean;
+};
+
 export type AdminControlCenterSnapshot = {
   generatedAt: string;
   adminRole: PlatformAdminRole;
@@ -53,15 +96,20 @@ export type AdminControlCenterSnapshot = {
     openRequests: number;
     overdueRequests: number;
     completedRequests30d: number;
+    requestAuditEvents30d: number;
+    requestOperationsAllowed: boolean;
+    requestQueue: PrivacyRequestQueueItem[];
     adminViews30d: number;
     telemetryEventsStored: number;
     telemetrySubjectsStored: number;
     expiredTelemetryPending: number;
     expiredAdminAuditPending: number;
+    expiredRequestAuditPending: number;
     lastRetentionRunAt: string | null;
     lastRetentionRowsDeleted: number;
     telemetryRetentionDays: number;
     adminAuditRetentionMonths: number;
+    requestAuditRetentionMonths: number;
     rawIpStored: false;
     sessionReplayEnabled: false;
     financeContentInTelemetry: false;
@@ -73,6 +121,37 @@ const ADMIN_ROLES = new Set<PlatformAdminRole>([
   "admin",
   "analyst",
   "support",
+]);
+
+const PRIVACY_REQUEST_TYPES = new Set<PrivacyRequestType>([
+  "access",
+  "export",
+  "correction",
+  "deletion",
+  "restriction",
+  "objection",
+  "consent_review",
+  "security_review",
+]);
+
+const OPEN_PRIVACY_REQUEST_STATUSES = new Set<PrivacyRequestQueueItem["status"]>([
+  "pending",
+  "identity_verification",
+  "in_progress",
+]);
+
+const PRIVACY_VERIFICATION_STATUSES = new Set<PrivacyVerificationStatus>([
+  "not_started",
+  "pending",
+  "verified",
+  "failed",
+]);
+
+const PRIVACY_REQUEST_SOURCES = new Set<PrivacyRequestSource>([
+  "in_product",
+  "support",
+  "manual",
+  "system",
 ]);
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -96,6 +175,11 @@ function readNullableDate(value: unknown) {
   if (value === null) return null;
   const parsed = readString(value, 64);
   return parsed && !Number.isNaN(Date.parse(parsed)) ? parsed : undefined;
+}
+
+function readRequiredDate(value: unknown) {
+  const parsed = readString(value, 64);
+  return parsed && !Number.isNaN(Date.parse(parsed)) ? parsed : null;
 }
 
 function readCountBreakdown(
@@ -157,6 +241,62 @@ function readPlanBreakdown(value: unknown): AdminPlanBreakdown[] | null {
   return parsed;
 }
 
+function readPrivacyRequestQueue(value: unknown): PrivacyRequestQueueItem[] | null {
+  if (!Array.isArray(value) || value.length > 30) return null;
+
+  const parsed: PrivacyRequestQueueItem[] = [];
+  for (const item of value) {
+    if (!isRecord(item)) return null;
+
+    const requestCode = readString(item.requestCode, 16);
+    const requestType = item.requestType;
+    const status = item.status;
+    const verificationStatus = item.verificationStatus;
+    const source = item.source;
+    const createdAt = readRequiredDate(item.createdAt);
+    const dueAt = readNullableDate(item.dueAt);
+
+    if (
+      !requestCode?.match(/^PRV-[A-F0-9]{12}$/) ||
+      typeof requestType !== "string" ||
+      !PRIVACY_REQUEST_TYPES.has(requestType as PrivacyRequestType) ||
+      typeof status !== "string" ||
+      !OPEN_PRIVACY_REQUEST_STATUSES.has(status as PrivacyRequestQueueItem["status"]) ||
+      typeof verificationStatus !== "string" ||
+      !PRIVACY_VERIFICATION_STATUSES.has(
+        verificationStatus as PrivacyVerificationStatus,
+      ) ||
+      typeof source !== "string" ||
+      !PRIVACY_REQUEST_SOURCES.has(source as PrivacyRequestSource) ||
+      !createdAt ||
+      dueAt === undefined ||
+      typeof item.assigned !== "boolean" ||
+      typeof item.assignedToMe !== "boolean" ||
+      typeof item.overdue !== "boolean" ||
+      typeof item.manageable !== "boolean" ||
+      (item.assignedToMe && !item.assigned)
+    ) {
+      return null;
+    }
+
+    parsed.push({
+      requestCode,
+      requestType: requestType as PrivacyRequestType,
+      status: status as PrivacyRequestQueueItem["status"],
+      verificationStatus: verificationStatus as PrivacyVerificationStatus,
+      source: source as PrivacyRequestSource,
+      createdAt,
+      dueAt,
+      assigned: item.assigned,
+      assignedToMe: item.assignedToMe,
+      overdue: item.overdue,
+      manageable: item.manageable,
+    });
+  }
+
+  return parsed;
+}
+
 export function parseAdminControlCenterSnapshot(
   value: unknown,
 ): AdminControlCenterSnapshot | null {
@@ -209,15 +349,23 @@ export function parseAdminControlCenterSnapshot(
   const openRequests = readCount(privacy.openRequests);
   const overdueRequests = readCount(privacy.overdueRequests);
   const completedRequests30d = readCount(privacy.completedRequests30d);
+  const requestAuditEvents30d = readCount(privacy.requestAuditEvents30d);
+  const requestQueue = readPrivacyRequestQueue(privacy.requestQueue);
   const adminViews30d = readCount(privacy.adminViews30d);
   const telemetryEventsStored = readCount(privacy.telemetryEventsStored);
   const telemetrySubjectsStored = readCount(privacy.telemetrySubjectsStored);
   const expiredTelemetryPending = readCount(privacy.expiredTelemetryPending);
   const expiredAdminAuditPending = readCount(privacy.expiredAdminAuditPending);
+  const expiredRequestAuditPending = readCount(
+    privacy.expiredRequestAuditPending,
+  );
   const lastRetentionRowsDeleted = readCount(privacy.lastRetentionRowsDeleted);
   const telemetryRetentionDays = readCount(privacy.telemetryRetentionDays);
   const adminAuditRetentionMonths = readCount(
     privacy.adminAuditRetentionMonths,
+  );
+  const requestAuditRetentionMonths = readCount(
+    privacy.requestAuditRetentionMonths,
   );
   const lastRetentionRunAt = readNullableDate(privacy.lastRetentionRunAt);
 
@@ -241,21 +389,26 @@ export function parseAdminControlCenterSnapshot(
       openRequests,
       overdueRequests,
       completedRequests30d,
+      requestAuditEvents30d,
       adminViews30d,
       telemetryEventsStored,
       telemetrySubjectsStored,
       expiredTelemetryPending,
       expiredAdminAuditPending,
+      expiredRequestAuditPending,
       lastRetentionRowsDeleted,
       telemetryRetentionDays,
       adminAuditRetentionMonths,
+      requestAuditRetentionMonths,
     ].some((count) => count === null) ||
     typeof billing.providerConnected !== "boolean" ||
+    typeof privacy.requestOperationsAllowed !== "boolean" ||
     !plans ||
     !devices ||
     !countries ||
     !topRoutes ||
     !slowRoutes ||
+    !requestQueue ||
     lastRetentionRunAt === undefined ||
     privacy.rawIpStored !== false ||
     privacy.sessionReplayEnabled !== false ||
@@ -299,15 +452,20 @@ export function parseAdminControlCenterSnapshot(
       openRequests: openRequests!,
       overdueRequests: overdueRequests!,
       completedRequests30d: completedRequests30d!,
+      requestAuditEvents30d: requestAuditEvents30d!,
+      requestOperationsAllowed: privacy.requestOperationsAllowed,
+      requestQueue,
       adminViews30d: adminViews30d!,
       telemetryEventsStored: telemetryEventsStored!,
       telemetrySubjectsStored: telemetrySubjectsStored!,
       expiredTelemetryPending: expiredTelemetryPending!,
       expiredAdminAuditPending: expiredAdminAuditPending!,
+      expiredRequestAuditPending: expiredRequestAuditPending!,
       lastRetentionRunAt,
       lastRetentionRowsDeleted: lastRetentionRowsDeleted!,
       telemetryRetentionDays: telemetryRetentionDays!,
       adminAuditRetentionMonths: adminAuditRetentionMonths!,
+      requestAuditRetentionMonths: requestAuditRetentionMonths!,
       rawIpStored: false,
       sessionReplayEnabled: false,
       financeContentInTelemetry: false,
