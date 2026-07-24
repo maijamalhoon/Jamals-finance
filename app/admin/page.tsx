@@ -1,8 +1,10 @@
 import { notFound, redirect } from "next/navigation";
 
 import AdminControlCenter from "@/components/admin/AdminControlCenter";
+import BillingPlanOperations from "@/components/admin/BillingPlanOperations";
 import PrivacyGovernancePanel from "@/components/admin/PrivacyGovernancePanel";
 import PrivacyRequestOperations from "@/components/admin/PrivacyRequestOperations";
+import { parseBillingOperationsSnapshot } from "@/lib/admin/billing-operations";
 import { parseAdminControlCenterSnapshot } from "@/lib/admin/control-center";
 import { createClient } from "@/lib/supabase/server";
 
@@ -13,6 +15,13 @@ const PRIVACY_ACTION_RESULTS = new Set([
   "invalid",
   "forbidden",
   "missing",
+  "unavailable",
+]);
+
+const BILLING_ACTION_RESULTS = new Set([
+  "saved",
+  "invalid",
+  "forbidden",
   "unavailable",
 ]);
 
@@ -42,15 +51,17 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
   }
 
   const snapshot = parseAdminControlCenterSnapshot(data);
-  if (!snapshot) {
+  const billingOperations = parseBillingOperationsSnapshot(data);
+  if (!snapshot || !billingOperations) {
     throw new Error("Admin snapshot returned an invalid contract.");
   }
 
   const resolvedSearchParams = await searchParams;
-  const rawActionResult = resolvedSearchParams.privacyAction;
-  const actionResult =
-    typeof rawActionResult === "string" && PRIVACY_ACTION_RESULTS.has(rawActionResult)
-      ? (rawActionResult as
+  const rawPrivacyActionResult = resolvedSearchParams.privacyAction;
+  const privacyActionResult =
+    typeof rawPrivacyActionResult === "string" &&
+    PRIVACY_ACTION_RESULTS.has(rawPrivacyActionResult)
+      ? (rawPrivacyActionResult as
           | "updated"
           | "invalid"
           | "forbidden"
@@ -58,14 +69,31 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
           | "unavailable")
       : null;
 
+  const rawBillingActionResult = resolvedSearchParams.billingAction;
+  const billingActionResult =
+    typeof rawBillingActionResult === "string" &&
+    BILLING_ACTION_RESULTS.has(rawBillingActionResult)
+      ? (rawBillingActionResult as
+          | "saved"
+          | "invalid"
+          | "forbidden"
+          | "unavailable")
+      : null;
+
   return (
     <>
       <AdminControlCenter snapshot={snapshot} />
+      <section className="mx-auto w-full max-w-[1500px] pb-12">
+        <BillingPlanOperations
+          billing={billingOperations}
+          actionResult={billingActionResult}
+        />
+      </section>
       <PrivacyGovernancePanel privacy={snapshot.privacy} />
       <section className="mx-auto w-full max-w-[1500px] pb-12">
         <PrivacyRequestOperations
           privacy={snapshot.privacy}
-          actionResult={actionResult}
+          actionResult={privacyActionResult}
         />
       </section>
     </>
