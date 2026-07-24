@@ -25,7 +25,7 @@ export type CreateAdminInvitationState = {
   expiresAt: string | null;
 };
 
-export const initialCreateAdminInvitationState: CreateAdminInvitationState = {
+const emptyInvitationState: CreateAdminInvitationState = {
   status: "idle",
   accessCode: null,
   invitationCode: null,
@@ -66,7 +66,7 @@ export async function createAdminInvitationAction(
     !Number.isInteger(expiresInHours) ||
     !INVITE_EXPIRIES.has(expiresInHours)
   ) {
-    return { ...initialCreateAdminInvitationState, status: "invalid" };
+    return { ...emptyInvitationState, status: "invalid" };
   }
 
   const supabase = await createClient();
@@ -86,8 +86,13 @@ export async function createAdminInvitationAction(
 
   if (error) {
     return {
-      ...initialCreateAdminInvitationState,
-      status: error.code === "42501" ? "forbidden" : error.code === "22023" ? "invalid" : "unavailable",
+      ...emptyInvitationState,
+      status:
+        error.code === "42501"
+          ? "forbidden"
+          : error.code === "22023"
+            ? "invalid"
+            : "unavailable",
     };
   }
 
@@ -107,7 +112,7 @@ export async function createAdminInvitationAction(
     !expiresAt ||
     Number.isNaN(Date.parse(expiresAt))
   ) {
-    return { ...initialCreateAdminInvitationState, status: "unavailable" };
+    return { ...emptyInvitationState, status: "unavailable" };
   }
 
   revalidatePath("/admin");
