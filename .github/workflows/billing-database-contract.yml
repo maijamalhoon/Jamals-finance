@@ -1,0 +1,73 @@
+# Replays the complete database history on a fresh local Supabase database.
+name: Billing database contract
+
+on:
+  workflow_dispatch:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+    paths:
+      - ".github/workflows/billing-database-contract.yml"
+      - "supabase/migrations/**"
+      - "supabase/tests/**"
+      - "supabase/functions/paddle-webhook/**"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: billing-db-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  database-contract:
+    name: Fresh database and billing lifecycle
+    if: github.event_name != 'pull_request' || github.event.pull_request.draft == false
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+          show-progress: false
+
+      - name: Set up Supabase CLI
+        uses: supabase/setup-cli@3c2f5e2ae34c34e428e8e206e2c4d21fa2d20fbf # v2.1.1
+        with:
+          version: 2.109.1
+
+      - name: Initialize temporary local configuration
+        run: supabase init --force
+
+      - name: Start a fresh local database and apply every migration
+        run: supabase db start
+
+      - name: Run rollback-only billing contracts
+        shell: bash
+        run: |
+          set -euo pipefail
+          database_container="$(docker ps --format '{{.Names}}' | grep '^supabase_db_' | head -n 1)"
+          if [[ -z "$database_container" ]]; then
+            echo "Supabase database container was not found." >&2
+            exit 1
+          fi
+
+          for contract in \
+            supabase/tests/regional_billing_foundation.sql \
+            supabase/tests/paddle_webhook_lifecycle.sql
+          do
+            echo "Running $contract"
+            docker exec -i "$database_container" \
+              psql -U postgres -d postgres -v ON_ERROR_STOP=1 \
+              < "$contract"
+          done
+
+      - name: Show local Supabase status on failure
+        if: failure()
+        run: |
+          supabase status || true
+          docker ps -a || true
+
+      - name: Destroy local database
+        if: always()
+        run: supabase stop --no-backup || true
