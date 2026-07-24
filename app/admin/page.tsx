@@ -2,12 +2,14 @@ import { notFound, redirect } from "next/navigation";
 
 import AdminControlCenter from "@/components/admin/AdminControlCenter";
 import AdminTeamAccessPanel from "@/components/admin/AdminTeamAccessPanel";
+import AdminUserOperationsPanel from "@/components/admin/AdminUserOperationsPanel";
 import BillingPlanOperations from "@/components/admin/BillingPlanOperations";
 import PrivacyGovernancePanel from "@/components/admin/PrivacyGovernancePanel";
 import PrivacyRequestOperations from "@/components/admin/PrivacyRequestOperations";
 import { parseAdminAccessSnapshot } from "@/lib/admin/access-operations";
 import { parseBillingOperationsSnapshot } from "@/lib/admin/billing-operations";
 import { parseAdminControlCenterSnapshot } from "@/lib/admin/control-center";
+import { parseAdminUserOperationsSnapshot } from "@/lib/admin/user-operations";
 import { createClient } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
@@ -65,7 +67,13 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
   const snapshot = parseAdminControlCenterSnapshot(data);
   const billingOperations = parseBillingOperationsSnapshot(data);
   const accessOperations = parseAdminAccessSnapshot(data);
-  if (!snapshot || !billingOperations || !accessOperations) {
+  const userOperations = parseAdminUserOperationsSnapshot(data);
+  if (
+    !snapshot ||
+    !billingOperations ||
+    !accessOperations ||
+    !userOperations
+  ) {
     throw new Error("Admin snapshot returned an invalid contract.");
   }
 
@@ -115,6 +123,9 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
           access={accessOperations}
           actionResult={accessActionResult}
         />
+      </section>
+      <section className="mx-auto w-full max-w-[1500px] pb-12">
+        <AdminUserOperationsPanel operations={userOperations} />
       </section>
       <section className="mx-auto w-full max-w-[1500px] pb-12">
         <BillingPlanOperations
