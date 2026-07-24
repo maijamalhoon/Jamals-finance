@@ -2,6 +2,7 @@ import "server-only";
 
 import type {
   BillingCycle,
+  PaidPlanKey,
   PricedBusinessPlanKey,
 } from "./types";
 
@@ -11,8 +12,32 @@ const PADDLE_ID_PATTERNS = {
   transaction: /^txn_[a-z0-9]{26}$/,
   price: /^pri_[a-z0-9]{26}$/,
 } as const;
+const UUID_PATTERN =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
-const PRICE_ENV_NAMES: Record<
+const PERSONAL_PRICE_ENV_NAMES: Record<
+  PaidPlanKey,
+  Record<BillingCycle, string>
+> = {
+  go: {
+    monthly: "PADDLE_PRICE_GO_MONTHLY",
+    annual: "PADDLE_PRICE_GO_ANNUAL",
+  },
+  student: {
+    monthly: "PADDLE_PRICE_STUDENT_MONTHLY",
+    annual: "PADDLE_PRICE_STUDENT_ANNUAL",
+  },
+  plus: {
+    monthly: "PADDLE_PRICE_PLUS_MONTHLY",
+    annual: "PADDLE_PRICE_PLUS_ANNUAL",
+  },
+  pro: {
+    monthly: "PADDLE_PRICE_PRO_MONTHLY",
+    annual: "PADDLE_PRICE_PRO_ANNUAL",
+  },
+};
+
+const BUSINESS_PRICE_ENV_NAMES: Record<
   PricedBusinessPlanKey,
   Record<BillingCycle, string>
 > = {
@@ -85,28 +110,39 @@ async function paddleRequest<T>(
   return (await response.json()) as T;
 }
 
-export function getBusinessPaddlePriceId(
-  plan: PricedBusinessPlanKey,
-  cycle: BillingCycle,
-): string {
-  const priceId = requiredEnvironment(PRICE_ENV_NAMES[plan][cycle]);
+function getPaddlePriceId(environmentName: string): string {
+  const priceId = requiredEnvironment(environmentName);
   if (!PADDLE_ID_PATTERNS.price.test(priceId)) {
     throw new Error("invalid_paddle_price_id");
   }
   return priceId;
 }
 
-export async function createBusinessCheckoutTransaction({
-  accountId,
-  businessId,
-  planCode,
+export function getPersonalPaddlePriceId(
+  plan: PaidPlanKey,
+  cycle: BillingCycle,
+): string {
+  return getPaddlePriceId(PERSONAL_PRICE_ENV_NAMES[plan][cycle]);
+}
+
+export function getBusinessPaddlePriceId(
+  plan: PricedBusinessPlanKey,
+  cycle: BillingCycle,
+): string {
+  return getPaddlePriceId(BUSINESS_PRICE_ENV_NAMES[plan][cycle]);
+}
+
+async function createCheckoutTransaction({
   priceId,
+  customData,
 }: {
-  accountId: string;
-  businessId: string;
-  planCode: string;
   priceId: string;
+  customData: Record<string, string>;
 }): Promise<{ transactionId: string; checkoutUrl: string }> {
+  if (!PADDLE_ID_PATTERNS.price.test(priceId)) {
+    throw new Error("invalid_paddle_price_id");
+  }
+
   const response = await paddleRequest<PaddleTransactionResponse>(
     "/transactions",
     {
@@ -114,11 +150,7 @@ export async function createBusinessCheckoutTransaction({
       body: JSON.stringify({
         collection_mode: "automatic",
         items: [{ price_id: priceId, quantity: 1 }],
-        custom_data: {
-          jalvoro_billing_account_id: accountId,
-          jalvoro_business_id: businessId,
-          jalvoro_plan_code: planCode,
-        },
+        custom_data: customData,
       }),
     },
   );
@@ -135,6 +167,58 @@ export async function createBusinessCheckoutTransaction({
   }
 
   return { transactionId, checkoutUrl };
+}
+
+export async function createPersonalCheckoutTransaction({
+  accountId,
+  userId,
+  planCode,
+  priceId,
+}: {
+  accountId: string;
+  userId: string;
+  planCode: string;
+  priceId: string;
+}): Promise<{ transactionId: string; checkoutUrl: string }> {
+  if (!UUID_PATTERN.test(accountId) || !UUID_PATTERN.test(userId)) {
+    throw new Error("invalid_personal_checkout_scope");
+  }
+
+  return createCheckoutTransaction({
+    priceId,
+    customData: {
+      jalvoro_billing_account_id: accountId,
+      jalvoro_user_id: userId,
+      jalvoro_plan_code: planCode,
+      jalvoro_universe: "personal",
+    },
+  });
+}
+
+export async function createBusinessCheckoutTransaction({
+  accountId,
+  businessId,
+  planCode,
+  priceId,
+}: {
+  accountId: string;
+  businessId: string;
+  planCode: string;
+  priceId: string;
+}): Promise<{ transactionId: string; checkoutUrl: string }> {
+  if (!UUID_PATTERN.test(accountId) || !UUID_PATTERN.test(businessId)) {
+    throw new Error("invalid_business_checkout_scope");
+  }
+
+  return createCheckoutTransaction({
+    priceId,
+    customData: {
+      jalvoro_billing_account_id: accountId,
+      jalvoro_business_id: businessId,
+      jalvoro_plan_code: planCode,
+      jalvoro_universe: "business",
+    },
+  });
 }
 
 export async function createPaddlePortalSession({
