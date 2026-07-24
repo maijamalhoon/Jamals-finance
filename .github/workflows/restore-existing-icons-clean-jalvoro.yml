@@ -73,8 +73,6 @@ jobs:
           console.log(`Restored original icon module in ${changed} source files.`);
           NODE
 
-          # Restore the exact pre-rollout navigation icon mapping while keeping
-          # all navigation routes and business behavior unchanged.
           git checkout ae0a5078ce275d8b2fc2de6ac25d34640b0fd95a^ -- lib/navigation.ts
 
           rm -f components/icons/jalvoro/compat.tsx
@@ -155,10 +153,7 @@ jobs:
           ```tsx
           import { JalvoroSearchIcon } from "@/components/icons/jalvoro/components/actions";
 
-          // Clean default
           <JalvoroSearchIcon size={20} />
-
-          // Experimental preview only
           <JalvoroSearchIcon size={32} accent="wave" />
           ```
 
@@ -191,7 +186,7 @@ jobs:
 
           ## Accent policy
 
-          `wave`, `zigzag`, and `subtle` remain experimental options for isolated concept exploration only. Production rendering defaults to `none`, even when older metadata contains an accent placement.
+          `wave`, `zigzag`, and `subtle` remain experimental options for isolated concept exploration only. Production rendering defaults to `none`.
 
           ## Engineering boundary
 
@@ -248,6 +243,7 @@ jobs:
           const path = require('node:path');
           const roots = ['app', 'components', 'lib'];
           const extensions = new Set(['.js', '.jsx', '.mjs', '.cjs', '.ts', '.tsx']);
+          const jalvoroImport = /(?:from\s+|import\s*\()\s*["']@\/components\/icons\/jalvoro(?:\/[^"']*)?["']/;
           const offenders = [];
           let establishedImports = 0;
 
@@ -260,15 +256,16 @@ jobs:
               if (stat.isDirectory()) walk(absolute);
               else if (extensions.has(path.extname(entry))) {
                 const source = fs.readFileSync(absolute, 'utf8');
-                if (source.includes('@/components/icons/jalvoro')) offenders.push(absolute);
-                if (source.includes('lucide-react')) establishedImports += 1;
+                if (jalvoroImport.test(source)) offenders.push(absolute);
+                if (/(?:from\s+|import\s*\()\s*["']lucide-react["']/.test(source)) establishedImports += 1;
               }
             }
           }
 
           for (const root of roots) walk(root);
           if (offenders.length) {
-            console.error('JALVORO UI imports remain:', offenders);
+            console.error('JALVORO UI imports remain:');
+            for (const offender of offenders) console.error(`- ${offender}`);
             process.exit(1);
           }
           if (establishedImports === 0) {
