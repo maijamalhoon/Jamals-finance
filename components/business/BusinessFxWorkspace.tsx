@@ -17,7 +17,7 @@ import {
   TrendingDown,
   TrendingUp,
   WalletCards,
-} from "@/components/icons/jalvoro/compat";
+} from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";

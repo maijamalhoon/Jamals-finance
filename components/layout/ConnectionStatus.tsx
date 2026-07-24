@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { WifiOff } from "@/components/icons/jalvoro/compat";
+import { WifiOff } from "lucide-react";
 
 export default function ConnectionStatus() {
   const [online, setOnline] = useState(true);

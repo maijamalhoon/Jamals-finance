@@ -1,7 +1,7 @@
 "use client";
 
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
-import { Search, X } from "@/components/icons/jalvoro/compat";
+import { Search, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import {
   useCallback,

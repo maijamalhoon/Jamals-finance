@@ -1,6 +1,6 @@
 "use client";
 
-import type { LucideIcon } from "@/components/icons/jalvoro/compat";
+import type { LucideIcon } from "lucide-react";
 import {
   AlertTriangle,
   Bell,
@@ -19,7 +19,7 @@ import {
   Sparkles,
   UserCog,
   X,
-} from "@/components/icons/jalvoro/compat";
+} from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";

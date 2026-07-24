@@ -1,4 +1,4 @@
-import { ArrowLeft, SearchX } from "@/components/icons/jalvoro/compat";
+import { ArrowLeft, SearchX } from "lucide-react";
 import Link from "next/link";
 
 export default function NotFoundPage() {

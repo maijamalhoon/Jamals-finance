@@ -3,7 +3,7 @@
 import type { ReactNode } from "react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { ChevronDown, Filter, Search, X } from "@/components/icons/jalvoro/compat";
+import { ChevronDown, Filter, Search, X } from "lucide-react";
 
 export default function TransactionFilters() {
   const router = useRouter();

@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { CheckCircle2, LoaderCircle, ShieldAlert, UsersRound } from "@/components/icons/jalvoro/compat";
+import { CheckCircle2, LoaderCircle, ShieldAlert, UsersRound } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/client";

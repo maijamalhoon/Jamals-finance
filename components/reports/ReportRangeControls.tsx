@@ -6,7 +6,7 @@ import {
   CalendarRange,
   ChevronDown,
   Printer,
-} from "@/components/icons/jalvoro/compat";
+} from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 import { BackgroundRefreshStatus } from "@/components/loading/LoadingPrimitives";

@@ -5,7 +5,7 @@ import AccountsLiveGrid, {
 import AddAccountButton from "@/components/accounts/AddAccountButton";
 import EmptyState from "@/components/ui/empty-state";
 import { createClient } from "@/lib/supabase/server";
-import { AlertTriangle, Landmark } from "@/components/icons/jalvoro/compat";
+import { AlertTriangle, Landmark } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 

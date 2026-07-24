@@ -19,7 +19,7 @@ import {
   TrendingDown,
   Wrench,
   X,
-} from "@/components/icons/jalvoro/compat";
+} from "lucide-react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 

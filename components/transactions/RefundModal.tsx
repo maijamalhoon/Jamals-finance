@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { RotateCcw } from "@/components/icons/jalvoro/compat";
+import { RotateCcw } from "lucide-react";
 import { toast } from "sonner";
 
 import { useCurrency } from "@/components/currency/CurrencyProvider";

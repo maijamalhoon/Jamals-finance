@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { useEffect, useMemo } from "react";
-import { BriefcaseBusiness, Layers3, Package } from "@/components/icons/jalvoro/compat";
+import { BriefcaseBusiness, Layers3, Package } from "lucide-react";
 import { Cell, Pie, PieChart, Tooltip } from "recharts";
 
 import { useCurrency } from "@/components/currency/CurrencyProvider";

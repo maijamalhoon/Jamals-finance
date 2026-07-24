@@ -16,7 +16,7 @@ import {
   TrendingUp,
   WalletCards,
   X,
-} from "@/components/icons/jalvoro/compat";
+} from "lucide-react";
 
 import AccountModal from "@/components/accounts/AccountModal";
 import TransactionModal from "@/components/dashboard/TransactionModal";

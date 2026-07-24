@@ -1,6 +1,6 @@
 "use client";
 
-import { SlidersHorizontal, Tags } from "@/components/icons/jalvoro/compat";
+import { SlidersHorizontal, Tags } from "lucide-react";
 
 import CategorySettingsSection from "@/components/settings/CategorySettingsSection";
 import type { PersistentSettingsCategory } from "@/components/settings/CategoryManagementExperience";

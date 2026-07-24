@@ -11,7 +11,7 @@ import {
   Store,
   Trash2,
   WalletCards,
-} from "@/components/icons/jalvoro/compat";
+} from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";

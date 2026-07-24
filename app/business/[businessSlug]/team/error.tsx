@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { RotateCcw, ShieldAlert } from "@/components/icons/jalvoro/compat";
+import { RotateCcw, ShieldAlert } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 

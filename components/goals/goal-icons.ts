@@ -34,7 +34,7 @@ import {
   Tv,
   WalletCards,
   type LucideIcon,
-} from "@/components/icons/jalvoro/compat";
+} from "lucide-react";
 
 export type GoalIconValue =
   | "home"

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
-import { ArrowLeft, Crown, MailCheck, ShieldCheck, UserRoundCheck, UsersRound } from "@/components/icons/jalvoro/compat";
+import { ArrowLeft, Crown, MailCheck, ShieldCheck, UserRoundCheck, UsersRound } from "lucide-react";
 
 import BusinessFinancialPermissionPanel from "@/components/business/BusinessFinancialPermissionPanel";
 import BusinessTeamManager from "@/components/business/BusinessTeamManager";

@@ -1,5 +1,5 @@
 import type { CSSProperties, ReactNode } from "react";
-import { RefreshCw } from "@/components/icons/jalvoro/compat";
+import { RefreshCw } from "lucide-react";
 
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";

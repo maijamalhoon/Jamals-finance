@@ -63,7 +63,7 @@ import {
   Wrench,
   Zap,
   type LucideIcon,
-} from "@/components/icons/jalvoro/compat";
+} from "lucide-react";
 
 export type CategoryKind = "income" | "expense";
 

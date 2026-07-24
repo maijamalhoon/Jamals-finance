@@ -2,7 +2,7 @@
 
 import { APP_NAME } from "@/lib/brand";
 import { useRouter } from "next/navigation";
-import { LogOut } from "@/components/icons/jalvoro/compat";
+import { LogOut } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 
 export default function SignOutButton() {

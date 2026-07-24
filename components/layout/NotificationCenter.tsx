@@ -11,7 +11,7 @@ import {
   BellOff,
   HandCoins,
   Target,
-} from "@/components/icons/jalvoro/compat";
+} from "lucide-react";
 
 import {
   announceHeaderPopoverOpen,

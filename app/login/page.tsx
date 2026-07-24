@@ -18,7 +18,7 @@ import {
   MailCheck,
   ShieldCheck,
   UserRound,
-} from "@/components/icons/jalvoro/compat";
+} from "lucide-react";
 
 import {
   AuthFeedback,

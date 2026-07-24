@@ -2,7 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import AddInvestmentButton from "@/components/investments/AddInvestmentButton";
 import InvestmentOverviewLive from "@/components/investments/InvestmentOverviewLive";
 import EmptyState from "@/components/ui/empty-state";
-import { AlertTriangle, BarChart2 } from "@/components/icons/jalvoro/compat";
+import { AlertTriangle, BarChart2 } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 

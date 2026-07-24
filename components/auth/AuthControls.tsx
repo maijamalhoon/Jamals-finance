@@ -9,7 +9,7 @@ import {
   Info,
   LoaderCircle,
   TriangleAlert,
-} from "@/components/icons/jalvoro/compat";
+} from "lucide-react";
 import {
   type ComponentProps,
   type InputHTMLAttributes,

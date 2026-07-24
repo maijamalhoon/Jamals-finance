@@ -135,7 +135,7 @@ export function createJalvoroIcon(
     ) {
       const strokeWidth = resolveJalvoroStrokeWidth(context, strokeWidthOverride);
       const accent = definition.accent
-        ? (accentOverride ?? definition.defaultAccent)
+        ? (accentOverride ?? "none")
         : "none";
       const labelled = Boolean(
         title || props["aria-label"] || props["aria-labelledby"],

@@ -2,7 +2,7 @@
 
 import { type FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { FilePlus2, Plus, ShieldCheck, ShoppingCart, Trash2 } from "@/components/icons/jalvoro/compat";
+import { FilePlus2, Plus, ShieldCheck, ShoppingCart, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";

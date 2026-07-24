@@ -7,7 +7,7 @@ import {
   useRef,
   useState,
 } from "react";
-import { Search, X } from "@/components/icons/jalvoro/compat";
+import { Search, X } from "lucide-react";
 import { toast } from "sonner";
 
 import AccountSelect from "@/components/accounts/AccountSelect";

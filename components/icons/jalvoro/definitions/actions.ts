@@ -27,7 +27,7 @@ export const editIconDefinition = {
     { kind: "path", d: "m5.5 18.5 1.9-.5-1.4-1.4-.5 1.9Z", filled: true },
   ],
   accent: { x: 10.6, y: 15.7, width: 5.2, height: 0.55, rotation: -45 },
-  defaultAccent: "wave",
+  defaultAccent: "none",
 } as const satisfies JalvoroIconDefinition;
 
 export const deleteIconDefinition = {
@@ -44,7 +44,7 @@ export const deleteIconDefinition = {
     { kind: "line", x1: 13.7, y1: 10.5, x2: 13.3, y2: 17.2, strokeScale: 0.85 },
   ],
   accent: { x: 10.7, y: 13.7, width: 2.6, height: 0.55, rotation: 0 },
-  defaultAccent: "zigzag",
+  defaultAccent: "none",
 } as const satisfies JalvoroIconDefinition;
 
 export const copyIconDefinition = {
@@ -58,7 +58,7 @@ export const copyIconDefinition = {
     { kind: "path", d: "M15.5 7V5.8c0-.8-.6-1.4-1.4-1.4H6.4C5.6 4.4 5 5 5 5.8v8.4c0 .8.6 1.4 1.4 1.4H8" },
   ],
   accent: { x: 11, y: 12.4, width: 4, height: 0.55, rotation: 0 },
-  defaultAccent: "wave",
+  defaultAccent: "none",
 } as const satisfies JalvoroIconDefinition;
 
 export const searchIconDefinition = {
@@ -72,7 +72,7 @@ export const searchIconDefinition = {
     { kind: "path", d: "m15.2 15.2 4.3 4.3" },
   ],
   accent: { x: 7.9, y: 9.4, width: 3.1, height: 0.5, rotation: -8 },
-  defaultAccent: "subtle",
+  defaultAccent: "none",
 } as const satisfies JalvoroIconDefinition;
 
 export const filterIconDefinition = {
@@ -83,7 +83,7 @@ export const filterIconDefinition = {
   objects: 1,
   body: [{ kind: "path", d: "M4.5 5h15l-5.8 6.7v5.2l-3.4 2.1v-7.3L4.5 5Z" }],
   accent: { x: 9.9, y: 8.4, width: 3.7, height: 0.5, rotation: 0 },
-  defaultAccent: "wave",
+  defaultAccent: "none",
 } as const satisfies JalvoroIconDefinition;
 
 export const sortIconDefinition = {
@@ -97,7 +97,7 @@ export const sortIconDefinition = {
     { kind: "path", d: "M16 19V5m0 0-2.2 2.2M16 5l2.2 2.2" },
   ],
   accent: { x: 10.8, y: 11.8, width: 2.4, height: 0.42, rotation: 0 },
-  defaultAccent: "zigzag",
+  defaultAccent: "none",
 } as const satisfies JalvoroIconDefinition;
 
 export const shareIconDefinition = {
@@ -114,7 +114,7 @@ export const shareIconDefinition = {
     { kind: "line", x1: 7.8, y1: 12.9, x2: 15.7, y2: 17.1 },
   ],
   accent: { x: 10.8, y: 11.9, width: 2.5, height: 0.42, rotation: 0 },
-  defaultAccent: "subtle",
+  defaultAccent: "none",
 } as const satisfies JalvoroIconDefinition;
 
 export const exportIconDefinition = {
@@ -128,7 +128,7 @@ export const exportIconDefinition = {
     { kind: "path", d: "M12 4v10m0-10-3 3m3-3 3 3" },
   ],
   accent: { x: 8, y: 17, width: 3, height: 0.42, rotation: 0 },
-  defaultAccent: "wave",
+  defaultAccent: "none",
 } as const satisfies JalvoroIconDefinition;
 
 export const importIconDefinition = {
@@ -142,7 +142,7 @@ export const importIconDefinition = {
     { kind: "path", d: "M12 4v10m0 0-3-3m3 3 3-3" },
   ],
   accent: { x: 8, y: 17, width: 3, height: 0.42, rotation: 0 },
-  defaultAccent: "subtle",
+  defaultAccent: "none",
 } as const satisfies JalvoroIconDefinition;
 
 export const downloadIconDefinition = {
@@ -156,7 +156,7 @@ export const downloadIconDefinition = {
     { kind: "path", d: "M5 18.5h14" },
   ],
   accent: { x: 9.4, y: 17, width: 2.8, height: 0.42, rotation: 0 },
-  defaultAccent: "wave",
+  defaultAccent: "none",
 } as const satisfies JalvoroIconDefinition;
 
 export const uploadIconDefinition = {
@@ -170,7 +170,7 @@ export const uploadIconDefinition = {
     { kind: "path", d: "M5 19h14" },
   ],
   accent: { x: 9.4, y: 17.5, width: 2.8, height: 0.42, rotation: 0 },
-  defaultAccent: "subtle",
+  defaultAccent: "none",
 } as const satisfies JalvoroIconDefinition;
 
 export const refreshIconDefinition = {
@@ -184,7 +184,7 @@ export const refreshIconDefinition = {
     { kind: "path", d: "M18.5 4.5v3.7h-3.7" },
   ],
   accent: { x: 6.8, y: 15.9, width: 2.6, height: 0.42, rotation: 12 },
-  defaultAccent: "wave",
+  defaultAccent: "none",
 } as const satisfies JalvoroIconDefinition;
 
 export const checkIconDefinition = {
@@ -229,7 +229,7 @@ export const undoIconDefinition = {
   objects: 1,
   body: [{ kind: "path", d: "M9 8H5V4m0 4c1.7-2 4.1-3.2 6.8-3.2 4.5 0 8.2 3.5 8.2 7.8s-3.7 7.8-8.2 7.8c-2.4 0-4.6-1-6.1-2.5" }],
   accent: { x: 13.2, y: 17.3, width: 2.6, height: 0.42, rotation: -8 },
-  defaultAccent: "subtle",
+  defaultAccent: "none",
 } as const satisfies JalvoroIconDefinition;
 
 export const redoIconDefinition = {
@@ -240,7 +240,7 @@ export const redoIconDefinition = {
   objects: 1,
   body: [{ kind: "path", d: "M15 8h4V4m0 4c-1.7-2-4.1-3.2-6.8-3.2C7.7 4.8 4 8.3 4 12.6s3.7 7.8 8.2 7.8c2.4 0 4.6-1 6.1-2.5" }],
   accent: { x: 8.2, y: 17.3, width: 2.6, height: 0.42, rotation: 8 },
-  defaultAccent: "subtle",
+  defaultAccent: "none",
 } as const satisfies JalvoroIconDefinition;
 
 export const ACTIONS_ICON_DEFINITIONS = [

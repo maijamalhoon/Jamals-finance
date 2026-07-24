@@ -4,7 +4,7 @@ import {
   ShieldCheck,
   Sparkles,
   Wallet,
-} from "@/components/icons/jalvoro/compat";
+} from "lucide-react";
 
 interface TodaysOverviewProps {
   income: string;

@@ -8,7 +8,7 @@ import {
   LogOut,
   Settings2,
   UserRound,
-} from "@/components/icons/jalvoro/compat";
+} from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 

@@ -1,4 +1,4 @@
-import { ShoppingCart } from "@/components/icons/jalvoro/compat";
+import { ShoppingCart } from "lucide-react";
 
 export default function BusinessPurchasesLoading() {
   return (

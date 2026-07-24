@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useId, useMemo, useState } from "react";
-import { Activity, TrendingUp } from "@/components/icons/jalvoro/compat";
+import { Activity, TrendingUp } from "lucide-react";
 import {
   Area,
   AreaChart,

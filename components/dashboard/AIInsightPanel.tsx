@@ -7,7 +7,7 @@ import {
   AlertTriangle,
   Lightbulb,
   ArrowRight,
-} from "@/components/icons/jalvoro/compat";
+} from "lucide-react";
 import Link from "next/link";
 
 interface Insight {

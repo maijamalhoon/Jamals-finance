@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Check, ChevronRight, Palette, Search, X } from "@/components/icons/jalvoro/compat";
+import { Check, ChevronRight, Palette, Search, X } from "lucide-react";
 
 import {
   CATEGORY_ICON_CATALOG,

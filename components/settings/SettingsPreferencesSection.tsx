@@ -10,7 +10,7 @@ import {
   Loader2,
   Save,
   SlidersHorizontal,
-} from "@/components/icons/jalvoro/compat";
+} from "lucide-react";
 import { toast } from "sonner";
 import { useLanguage } from "@/components/i18n/LanguageProvider";
 import { Button } from "@/components/ui/button";

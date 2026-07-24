@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
-import { ArrowLeft } from "@/components/icons/jalvoro/compat";
+import { ArrowLeft } from "lucide-react";
 
 import BusinessPayrollWorkspace from "@/components/business/BusinessPayrollWorkspace";
 import type { BusinessPayrollSnapshot } from "@/components/business/payroll/types";

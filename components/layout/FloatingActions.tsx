@@ -15,7 +15,7 @@ import {
   Plus,
   TrendingUp,
   type LucideIcon,
-} from "@/components/icons/jalvoro/compat";
+} from "lucide-react";
 
 const TransactionModal = dynamic(
   () => import("@/components/dashboard/TransactionModal"),

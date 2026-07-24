@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
-import { ArrowLeft, CalendarRange, ShieldCheck } from "@/components/icons/jalvoro/compat";
+import { ArrowLeft, CalendarRange, ShieldCheck } from "lucide-react";
 
 import BusinessReportsWorkspace, {
   type BusinessReportSnapshot,

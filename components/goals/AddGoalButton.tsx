@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Plus, Target } from "@/components/icons/jalvoro/compat";
+import { Plus, Target } from "lucide-react";
 import PageHeadingActionPortal from "@/components/layout/PageHeadingActionPortal";
 import GoalModal, { type GoalAccount } from "./GoalModal";
 

@@ -1,4 +1,4 @@
-import type { LucideIcon } from "@/components/icons/jalvoro/compat";
+import type { LucideIcon } from "lucide-react";
 
 interface BottomInsightCardProps {
   label: string;

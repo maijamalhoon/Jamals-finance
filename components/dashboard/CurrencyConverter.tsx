@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { ArrowLeftRight, RefreshCw } from "@/components/icons/jalvoro/compat";
+import { ArrowLeftRight, RefreshCw } from "lucide-react";
 
 import { useCurrency } from "@/components/currency/CurrencyProvider";
 import type { SupportedCurrency } from "@/lib/currency";

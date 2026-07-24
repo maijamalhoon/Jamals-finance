@@ -24,7 +24,7 @@ import {
   TrendingUp,
   UsersRound,
   WalletCards,
-} from "@/components/icons/jalvoro/compat";
+} from "lucide-react";
 
 import BusinessNotificationBell from "@/components/business/BusinessNotificationBell";
 import { createClient } from "@/lib/supabase/server";
