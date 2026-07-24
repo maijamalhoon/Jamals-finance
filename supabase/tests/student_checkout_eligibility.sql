@@ -99,7 +99,8 @@ $$;
 reset role;
 
 update billing.student_verifications
-set expires_at = now() - interval '1 minute',
+set verified_at = now() - interval '1 year',
+    expires_at = now() - interval '1 minute',
     updated_at = now()
 where user_id = '66666666-6666-4666-8666-666666666666';
 
