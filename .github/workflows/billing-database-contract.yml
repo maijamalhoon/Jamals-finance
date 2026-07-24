@@ -56,7 +56,8 @@ jobs:
             20260724223500_preserve_billing_snapshot_contract.sql \
             20260724224000_enterprise_billing_access.sql \
             20260724225000_paddle_webhook_processing.sql \
-            20260724225500_paddle_billing_management_refs.sql
+            20260724225500_paddle_billing_management_refs.sql \
+            20260724230000_paddle_adjustments_and_disputes.sql
           do
             cp "${GITHUB_WORKSPACE}/supabase/migrations/${migration}" \
               "supabase/migrations/${migration}"
@@ -111,7 +112,8 @@ jobs:
           exit_code=0
           for contract in \
             "${GITHUB_WORKSPACE}/supabase/tests/regional_billing_foundation.sql" \
-            "${GITHUB_WORKSPACE}/supabase/tests/paddle_webhook_lifecycle.sql"
+            "${GITHUB_WORKSPACE}/supabase/tests/paddle_webhook_lifecycle.sql" \
+            "${GITHUB_WORKSPACE}/supabase/tests/paddle_adjustment_lifecycle.sql"
           do
             echo "=== RUNNING ${contract} ===" | tee -a /tmp/billing-contracts.log
             docker exec -i "$database_container" \
