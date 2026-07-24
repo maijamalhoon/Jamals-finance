@@ -5,6 +5,7 @@ import {
   isPaidPlanKey,
   personalPlanCode,
 } from "@/lib/billing/checkout";
+import { isPaddleCheckoutConfigured } from "@/lib/billing/launch-readiness";
 import {
   createPersonalCheckoutTransaction,
   getPersonalPaddlePriceId,
@@ -111,11 +112,11 @@ export async function POST(request: Request) {
     }
   }
 
-  if (process.env.BILLING_CHECKOUT_ENABLED !== "true") {
+  if (!isPaddleCheckoutConfigured()) {
     return noStoreJson(
       {
         error:
-          "Secure checkout is not active yet. Continue Free remains available and no payment was attempted.",
+          "Secure checkout is not fully configured yet. Continue Free remains available and no payment was attempted.",
       },
       503,
     );
