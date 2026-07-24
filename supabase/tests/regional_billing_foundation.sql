@@ -184,14 +184,6 @@ begin
     raise exception 'Enterprise scoped billing initialization failed.';
   end if;
 
-  if (
-    select count(*)
-    from billing.accounts
-    where owner_user_id = '33333333-3333-4333-8333-333333333333'
-  ) <> 3 then
-    raise exception 'Multiverse isolation failure: expected personal, business, and enterprise accounts.';
-  end if;
-
   begin
     perform 1 from billing.accounts;
     raise exception 'Security failure: authenticated role read private billing accounts.';
@@ -203,4 +195,17 @@ end;
 $$;
 
 reset role;
+
+do $$
+begin
+  if (
+    select count(*)
+    from billing.accounts
+    where owner_user_id = '33333333-3333-4333-8333-333333333333'
+  ) <> 3 then
+    raise exception 'Multiverse isolation failure: expected personal, business, and enterprise accounts.';
+  end if;
+end;
+$$;
+
 rollback;
