@@ -47,9 +47,9 @@ function numericEnv(name: string, fallback: number): number {
   return Number.isFinite(parsed) && parsed >= 0 ? parsed : fallback;
 }
 
-async function applyNormalizedEvent(
-  normalized: NonNullable<ReturnType<typeof normalizePaddleEvent>>,
-  payloadHash: string,
+async function callBillingRpc(
+  rpcName: string,
+  body: Record<string, unknown>,
 ): Promise<{ result?: string; reason?: string }> {
   const supabaseUrl = Deno.env.get("SUPABASE_URL");
   const secretKey = getSecretKey();
@@ -68,26 +68,11 @@ async function applyNormalizedEvent(
   }
 
   const response = await fetch(
-    `${supabaseUrl.replace(/\/$/, "")}/rest/v1/rpc/apply_paddle_webhook_event`,
+    `${supabaseUrl.replace(/\/$/, "")}/rest/v1/rpc/${rpcName}`,
     {
       method: "POST",
       headers,
-      body: JSON.stringify({
-        p_event_id: normalized.eventId,
-        p_event_type: normalized.eventType,
-        p_occurred_at: normalized.occurredAt,
-        p_payload_sha256: payloadHash,
-        p_account_id: normalized.accountId,
-        p_provider_customer_id: normalized.providerCustomerId,
-        p_provider_subscription_id: normalized.providerSubscriptionId,
-        p_provider_transaction_id: normalized.providerTransactionId,
-        p_provider_price_id: normalized.providerPriceId,
-        p_status: normalized.status,
-        p_period_start: normalized.periodStart,
-        p_period_end: normalized.periodEnd,
-        p_cancel_at_period_end: normalized.cancelAtPeriodEnd,
-        p_billing_country: normalized.billingCountry,
-      }),
+      body: JSON.stringify(body),
     },
   );
 
@@ -101,6 +86,57 @@ async function applyNormalizedEvent(
   }
 
   return result as { result?: string; reason?: string };
+}
+
+async function applyNormalizedEvent(
+  normalized: NonNullable<ReturnType<typeof normalizePaddleEvent>>,
+  payloadHash: string,
+): Promise<{ result?: string; reason?: string }> {
+  if (normalized.eventType.startsWith("adjustment.")) {
+    if (
+      !normalized.providerAdjustmentId ||
+      !normalized.providerTransactionId ||
+      !normalized.adjustmentAction ||
+      !normalized.adjustmentStatus ||
+      normalized.adjustmentAmountMinor === null ||
+      !normalized.adjustmentCurrency
+    ) {
+      throw new Error("invalid_adjustment_shape");
+    }
+
+    return callBillingRpc("apply_paddle_adjustment_event", {
+      p_event_id: normalized.eventId,
+      p_event_type: normalized.eventType,
+      p_occurred_at: normalized.occurredAt,
+      p_payload_sha256: payloadHash,
+      p_provider_adjustment_id: normalized.providerAdjustmentId,
+      p_provider_transaction_id: normalized.providerTransactionId,
+      p_action: normalized.adjustmentAction,
+      p_status: normalized.adjustmentStatus,
+      p_amount_minor: normalized.adjustmentAmountMinor,
+      p_currency: normalized.adjustmentCurrency,
+      p_account_id: normalized.accountId,
+      p_provider_customer_id: normalized.providerCustomerId,
+      p_provider_subscription_id: normalized.providerSubscriptionId,
+    });
+  }
+
+  return callBillingRpc("apply_paddle_webhook_event", {
+    p_event_id: normalized.eventId,
+    p_event_type: normalized.eventType,
+    p_occurred_at: normalized.occurredAt,
+    p_payload_sha256: payloadHash,
+    p_account_id: normalized.accountId,
+    p_provider_customer_id: normalized.providerCustomerId,
+    p_provider_subscription_id: normalized.providerSubscriptionId,
+    p_provider_transaction_id: normalized.providerTransactionId,
+    p_provider_price_id: normalized.providerPriceId,
+    p_status: normalized.status,
+    p_period_start: normalized.periodStart,
+    p_period_end: normalized.periodEnd,
+    p_cancel_at_period_end: normalized.cancelAtPeriodEnd,
+    p_billing_country: normalized.billingCountry,
+  });
 }
 
 Deno.serve(async (request: Request) => {
