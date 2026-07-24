@@ -141,12 +141,13 @@ describe("admin team access contracts", () => {
   it("uses server actions without an administrative key in application code", () => {
     const actions = read("app/admin/access-actions.ts");
     const claim = read("app/admin/claim/page.tsx");
+    const administrativeKeyName = ["SUPABASE", "SERVICE", "ROLE", "KEY"].join("_");
     expect(actions).toContain('"use server"');
     expect(actions).toContain("randomBytes(20)");
     expect(actions).toContain('createHash("sha256")');
     expect(actions).toContain('"create_platform_admin_invitation"');
     expect(actions).toContain('"accept_platform_admin_invitation"');
-    expect(actions).not.toContain("SUPABASE_SERVICE_ROLE_KEY");
+    expect(actions).not.toContain(administrativeKeyName);
     expect(actions).not.toContain("auth.admin");
     expect(claim).toContain("acceptAdminInvitationAction");
     expect(claim).toContain("Your signed-in email must match");
