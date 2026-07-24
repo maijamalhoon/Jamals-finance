@@ -12,17 +12,19 @@ import {
 import { redirect } from "next/navigation";
 
 import PersonalCheckoutAction from "@/components/billing/PersonalCheckoutAction";
+import PersonalTrialAction from "@/components/billing/PersonalTrialAction";
 import {
   formatUsdPrice,
   getPlanPrice,
   PLANS,
+  TRIAL_LENGTH_DAYS,
 } from "@/lib/billing/catalog";
 import { isBillingCycle, isPaidPlanKey } from "@/lib/billing/checkout";
 import { createClient } from "@/lib/supabase/server";
 
 export const metadata: Metadata = {
   title: "Review personal plan",
-  description: "Review one personal subscription before secure provider checkout.",
+  description: "Review one personal plan before trial or secure provider checkout.",
   robots: { index: false, follow: false },
 };
 
@@ -63,6 +65,7 @@ export default async function PersonalCheckoutPage({
   const plan = PLANS[rawPlan];
   const countryCode = normalizeCountry(country);
   const price = getPlanPrice(rawPlan, countryCode, rawCycle);
+  const proTrial = rawPlan === "pro";
   const { data: studentEligibility } =
     rawPlan === "student"
       ? await supabase.rpc("get_my_student_verification_status")
@@ -70,6 +73,7 @@ export default async function PersonalCheckoutPage({
   const studentVerified =
     rawPlan !== "student" || studentEligibility === "verified";
   const checkoutEnabled =
+    !proTrial &&
     studentVerified &&
     process.env.BILLING_CHECKOUT_ENABLED === "true" &&
     Boolean(
@@ -77,6 +81,8 @@ export default async function PersonalCheckoutPage({
         process.env.PADDLE_API_KEY &&
         process.env.PADDLE_WEBHOOK_SECRET,
     );
+  const trialEnabled =
+    proTrial && process.env.BILLING_TRIAL_ENABLED === "true";
 
   return (
     <main className="min-h-screen bg-background px-[var(--space-page)] py-8 sm:py-12">
@@ -91,7 +97,7 @@ export default async function PersonalCheckoutPage({
           </Link>
           <span className="inline-flex items-center gap-2 text-xs font-semibold text-text-muted">
             <LockKeyhole className="size-4" aria-hidden="true" />
-            Provider-hosted payment
+            {proTrial ? "No-card trial" : "Provider-hosted payment"}
           </span>
         </header>
 
@@ -111,9 +117,9 @@ export default async function PersonalCheckoutPage({
               Review {plan.name}.
             </h1>
             <p className="mt-3 text-sm leading-6 text-text-muted sm:text-base">
-              This subscription belongs only to your Personal Finance workspace.
-              No business, POS, dealership, restaurant, company, or enterprise
-              workspace is included in this invoice.
+              This plan belongs only to your Personal Finance workspace. No
+              business, POS, dealership, restaurant, company, or enterprise
+              workspace is included.
             </p>
 
             <div className="mt-7 rounded-2xl border border-border bg-surface-inset p-5">
@@ -121,15 +127,21 @@ export default async function PersonalCheckoutPage({
                 <div>
                   <p className="text-sm font-bold text-text-primary">{plan.name}</p>
                   <p className="mt-1 text-sm text-text-muted">
-                    {rawCycle === "annual" ? "Annual billing" : "Monthly billing"}
+                    {proTrial
+                      ? `${TRIAL_LENGTH_DAYS}-day trial, started manually`
+                      : rawCycle === "annual"
+                        ? "Annual billing"
+                        : "Monthly billing"}
                   </p>
                 </div>
                 <strong className="text-3xl font-extrabold text-text-primary">
-                  {formatUsdPrice(price)}
+                  {proTrial ? "$0 trial" : formatUsdPrice(price)}
                 </strong>
               </div>
               <p className="mt-4 text-sm leading-6 text-text-secondary">
-                {plan.description}
+                {proTrial
+                  ? "No card is required, no automatic charge is scheduled, and the workspace returns to Free when the trial ends."
+                  : plan.description}
               </p>
             </div>
 
@@ -140,18 +152,19 @@ export default async function PersonalCheckoutPage({
               </span>
               <span className="flex items-center gap-2">
                 <CreditCard className="size-4 text-primary" aria-hidden="true" />
-                JALVORO stores no card details
+                {proTrial ? "No card and no automatic charge" : "JALVORO stores no card details"}
               </span>
             </div>
           </article>
 
           <aside className="rounded-3xl border border-border bg-surface p-6 shadow-soft sm:p-8">
             <h2 className="text-xl font-extrabold text-text-primary">
-              Secure checkout
+              {proTrial ? "Start Pro trial" : "Secure checkout"}
             </h2>
             <p className="mt-3 text-sm leading-6 text-text-muted">
-              Final billing country, tax, currency, and payment method will be
-              confirmed by the payment provider before purchase.
+              {proTrial
+                ? "The trial starts only when you press the button. It cannot charge you now or later."
+                : "Final billing country, tax, currency, and payment method will be confirmed by the payment provider before purchase."}
             </p>
 
             {rawPlan === "student" && !studentVerified ? (
@@ -162,11 +175,15 @@ export default async function PersonalCheckoutPage({
             ) : null}
 
             <div className="mt-6 space-y-3">
-              <PersonalCheckoutAction
-                plan={rawPlan}
-                cycle={rawCycle}
-                enabled={checkoutEnabled}
-              />
+              {proTrial ? (
+                <PersonalTrialAction enabled={trialEnabled} />
+              ) : (
+                <PersonalCheckoutAction
+                  plan={rawPlan}
+                  cycle={rawCycle}
+                  enabled={checkoutEnabled}
+                />
+              )}
 
               <Link
                 href="/dashboard"
@@ -177,8 +194,9 @@ export default async function PersonalCheckoutPage({
             </div>
 
             <p className="mt-5 text-xs leading-5 text-text-muted">
-              Checkout remains disabled until Paddle products, regional price
-              IDs, webhook verification, and sandbox lifecycle tests are complete.
+              {proTrial
+                ? "Trial activation remains disabled until its database migration is applied through the controlled deployment process."
+                : "Checkout remains disabled until Paddle products, regional price IDs, webhook verification, and sandbox lifecycle tests are complete."}
             </p>
           </aside>
         </section>
