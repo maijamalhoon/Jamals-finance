@@ -1,9 +1,11 @@
 import { notFound, redirect } from "next/navigation";
 
 import AdminControlCenter from "@/components/admin/AdminControlCenter";
+import AdminTeamAccessPanel from "@/components/admin/AdminTeamAccessPanel";
 import BillingPlanOperations from "@/components/admin/BillingPlanOperations";
 import PrivacyGovernancePanel from "@/components/admin/PrivacyGovernancePanel";
 import PrivacyRequestOperations from "@/components/admin/PrivacyRequestOperations";
+import { parseAdminAccessSnapshot } from "@/lib/admin/access-operations";
 import { parseBillingOperationsSnapshot } from "@/lib/admin/billing-operations";
 import { parseAdminControlCenterSnapshot } from "@/lib/admin/control-center";
 import { createClient } from "@/lib/supabase/server";
@@ -22,6 +24,16 @@ const BILLING_ACTION_RESULTS = new Set([
   "saved",
   "invalid",
   "forbidden",
+  "unavailable",
+]);
+
+const ACCESS_ACTION_RESULTS = new Set([
+  "updated",
+  "revoked",
+  "accepted",
+  "invalid",
+  "forbidden",
+  "missing",
   "unavailable",
 ]);
 
@@ -52,7 +64,8 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
 
   const snapshot = parseAdminControlCenterSnapshot(data);
   const billingOperations = parseBillingOperationsSnapshot(data);
-  if (!snapshot || !billingOperations) {
+  const accessOperations = parseAdminAccessSnapshot(data);
+  if (!snapshot || !billingOperations || !accessOperations) {
     throw new Error("Admin snapshot returned an invalid contract.");
   }
 
@@ -80,9 +93,29 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
           | "unavailable")
       : null;
 
+  const rawAccessActionResult = resolvedSearchParams.accessAction;
+  const accessActionResult =
+    typeof rawAccessActionResult === "string" &&
+    ACCESS_ACTION_RESULTS.has(rawAccessActionResult)
+      ? (rawAccessActionResult as
+          | "updated"
+          | "revoked"
+          | "accepted"
+          | "invalid"
+          | "forbidden"
+          | "missing"
+          | "unavailable")
+      : null;
+
   return (
     <>
       <AdminControlCenter snapshot={snapshot} />
+      <section className="mx-auto w-full max-w-[1500px] pb-12">
+        <AdminTeamAccessPanel
+          access={accessOperations}
+          actionResult={accessActionResult}
+        />
+      </section>
       <section className="mx-auto w-full max-w-[1500px] pb-12">
         <BillingPlanOperations
           billing={billingOperations}
