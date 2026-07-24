@@ -4,9 +4,9 @@ import { useActionState, useState } from "react";
 
 import {
   createAdminInvitationAction,
-  initialCreateAdminInvitationState,
   revokeAdminInvitationAction,
   updateAdminMemberAction,
+  type CreateAdminInvitationState,
 } from "@/app/admin/access-actions";
 import { Button } from "@/components/ui/button";
 import {
@@ -21,7 +21,10 @@ import type {
   AdminAccessSnapshot,
   PlatformAdminRole,
 } from "@/lib/admin/access-operations";
-import { formatAdminCount, formatAdminGeneratedAt } from "@/lib/admin/control-center";
+import {
+  formatAdminCount,
+  formatAdminGeneratedAt,
+} from "@/lib/admin/control-center";
 import { cn } from "@/lib/utils";
 
 type AccessActionResult =
@@ -34,10 +37,54 @@ type AccessActionResult =
   | "unavailable"
   | null;
 
+const initialInvitationState: CreateAdminInvitationState = {
+  status: "idle",
+  accessCode: null,
+  invitationCode: null,
+  maskedEmail: null,
+  role: null,
+  expiresAt: null,
+};
+
 const inputClass =
   "min-h-11 w-full rounded-xl border border-border/80 bg-background px-3 py-2 text-sm text-foreground outline-none transition focus:border-info/60 focus:ring-2 focus:ring-info/15 disabled:cursor-not-allowed disabled:opacity-60";
 
-function Metric({ label, value, detail }: { label: string; value: number; detail: string }) {
+function Pill({
+  children,
+  tone = "neutral",
+}: {
+  children: React.ReactNode;
+  tone?: "neutral" | "positive" | "warning" | "danger" | "info";
+}) {
+  return (
+    <span
+      className={cn(
+        "inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-semibold",
+        tone === "neutral" &&
+          "border-border/70 bg-background text-muted-foreground",
+        tone === "positive" &&
+          "border-success/25 bg-success/5 text-success",
+        tone === "warning" &&
+          "border-warning/25 bg-warning/5 text-warning",
+        tone === "danger" &&
+          "border-destructive/25 bg-destructive/5 text-destructive",
+        tone === "info" && "border-info/25 bg-info/5 text-info",
+      )}
+    >
+      {children}
+    </span>
+  );
+}
+
+function Metric({
+  label,
+  value,
+  detail,
+}: {
+  label: string;
+  value: number;
+  detail: string;
+}) {
   return (
     <Card className="border-border/70 bg-card/88 shadow-sm">
       <CardHeader>
@@ -55,51 +102,33 @@ function Metric({ label, value, detail }: { label: string; value: number; detail
   );
 }
 
-function StatusPill({
-  children,
-  tone = "neutral",
-}: {
-  children: React.ReactNode;
-  tone?: "neutral" | "positive" | "warning" | "danger" | "info";
-}) {
-  return (
-    <span
-      className={cn(
-        "inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-semibold",
-        tone === "neutral" && "border-border/70 bg-background text-muted-foreground",
-        tone === "positive" && "border-success/25 bg-success/5 text-success",
-        tone === "warning" && "border-warning/25 bg-warning/5 text-warning",
-        tone === "danger" && "border-destructive/25 bg-destructive/5 text-destructive",
-        tone === "info" && "border-info/25 bg-info/5 text-info",
-      )}
-    >
-      {children}
-    </span>
-  );
-}
-
 function ActionNotice({ result }: { result: AccessActionResult }) {
   if (!result) return null;
-  const config = {
-    updated: ["Access updated", "The member role or access state was saved.", "positive"],
-    revoked: ["Invitation revoked", "The one-time invitation can no longer be accepted.", "positive"],
-    accepted: ["Invitation accepted", "The signed-in account now has its assigned panel role.", "positive"],
+
+  const messages = {
+    updated: ["Access updated", "The member access state was saved.", "positive"],
+    revoked: ["Invitation revoked", "The one-time code is no longer valid.", "positive"],
+    accepted: ["Invitation accepted", "The assigned panel role is now active.", "positive"],
     invalid: ["Request rejected", "The submitted access operation was invalid.", "warning"],
-    forbidden: ["Owner access required", "This access operation is not permitted for the current account.", "danger"],
-    missing: ["Record unavailable", "The member or invitation no longer exists in an actionable state.", "warning"],
-    unavailable: ["Operation unavailable", "No access state was changed. Try again after reviewing the panel status.", "danger"],
+    forbidden: ["Owner access required", "This operation is not permitted.", "danger"],
+    missing: ["Record unavailable", "The member or invitation is no longer actionable.", "warning"],
+    unavailable: ["Operation unavailable", "No access state was changed.", "danger"],
   }[result] as [string, string, "positive" | "warning" | "danger"];
+
   return (
     <div
       className={cn(
         "rounded-2xl border px-4 py-3",
-        config[2] === "positive" && "border-success/25 bg-success/5 text-success",
-        config[2] === "warning" && "border-warning/25 bg-warning/5 text-warning",
-        config[2] === "danger" && "border-destructive/25 bg-destructive/5 text-destructive",
+        messages[2] === "positive" &&
+          "border-success/25 bg-success/5 text-success",
+        messages[2] === "warning" &&
+          "border-warning/25 bg-warning/5 text-warning",
+        messages[2] === "danger" &&
+          "border-destructive/25 bg-destructive/5 text-destructive",
       )}
     >
-      <p className="font-semibold">{config[0]}</p>
-      <p className="mt-1 text-sm opacity-80">{config[1]}</p>
+      <p className="font-semibold">{messages[0]}</p>
+      <p className="mt-1 text-sm opacity-80">{messages[1]}</p>
     </div>
   );
 }
@@ -117,7 +146,7 @@ export default function AdminTeamAccessPanel({
 }) {
   const [inviteState, inviteAction, invitePending] = useActionState(
     createAdminInvitationAction,
-    initialCreateAdminInvitationState,
+    initialInvitationState,
   );
   const [copied, setCopied] = useState(false);
 
@@ -139,14 +168,15 @@ export default function AdminTeamAccessPanel({
             Private panel roles and invitations
           </h2>
           <p className="mt-2 max-w-3xl text-sm leading-6 text-muted-foreground">
-            Owner-controlled access codes, masked identities, last-owner protection and structured audit history.
+            Owner-controlled access codes, masked identities, lockout protection
+            and structured audit history.
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
-          <StatusPill tone={access.operationsAllowed ? "positive" : "warning"}>
+          <Pill tone={access.operationsAllowed ? "positive" : "warning"}>
             {access.operationsAllowed ? "Owner controls enabled" : "Read-only access"}
-          </StatusPill>
-          <StatusPill tone="info">Manual secure codes</StatusPill>
+          </Pill>
+          <Pill tone="info">Manual secure codes</Pill>
         </div>
       </div>
 
@@ -157,7 +187,7 @@ export default function AdminTeamAccessPanel({
         <Metric label="Admins" value={access.counts.activeAdmins} detail="Operational administrators." />
         <Metric label="Analysts" value={access.counts.activeAnalysts} detail="Read-only analysis access." />
         <Metric label="Support" value={access.counts.activeSupport} detail="Read-only support access." />
-        <Metric label="Disabled" value={access.counts.disabledMembers} detail="Access grants currently blocked." />
+        <Metric label="Disabled" value={access.counts.disabledMembers} detail="Blocked access grants." />
         <Metric label="Pending invites" value={access.counts.pendingInvitations} detail="Unexpired one-time codes." />
       </div>
 
@@ -166,14 +196,16 @@ export default function AdminTeamAccessPanel({
           <CardHeader>
             <CardTitle>Create team invitation</CardTitle>
             <CardDescription>
-              The code is shown once. Database storage contains only its SHA-256 hash.
+              The code is shown once; only its SHA-256 hash is stored.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             {access.operationsAllowed ? (
               <form action={inviteAction} className="space-y-3">
                 <label className="block space-y-1.5">
-                  <span className="text-xs font-semibold text-muted-foreground">Intended email</span>
+                  <span className="text-xs font-semibold text-muted-foreground">
+                    Intended email
+                  </span>
                   <input
                     className={inputClass}
                     type="email"
@@ -208,19 +240,19 @@ export default function AdminTeamAccessPanel({
                 </Button>
               </form>
             ) : (
-              <div className="rounded-2xl border border-dashed border-border/80 bg-surface-secondary/35 px-4 py-6 text-sm text-muted-foreground">
+              <p className="rounded-2xl border border-dashed border-border/80 bg-surface-secondary/35 px-4 py-6 text-sm text-muted-foreground">
                 Only an active Owner can create or revoke invitations.
-              </div>
+              </p>
             )}
 
             {inviteState.status !== "idle" && inviteState.status !== "created" ? (
-              <div className="rounded-2xl border border-warning/25 bg-warning/5 px-4 py-3 text-sm text-warning">
+              <p className="rounded-2xl border border-warning/25 bg-warning/5 px-4 py-3 text-sm text-warning">
                 {inviteState.status === "forbidden"
                   ? "Owner access is required."
                   : inviteState.status === "invalid"
                     ? "Check the email, role and expiry."
                     : "The invitation was not created."}
-              </div>
+              </p>
             ) : null}
 
             {inviteState.status === "created" && inviteState.accessCode ? (
@@ -250,7 +282,9 @@ export default function AdminTeamAccessPanel({
         <Card className="border-border/70 bg-card/88 shadow-sm">
           <CardHeader>
             <CardTitle>Security boundaries</CardTitle>
-            <CardDescription>Authorization comes from private database grants—not editable user metadata.</CardDescription>
+            <CardDescription>
+              Authorization comes from private database grants, not editable user metadata.
+            </CardDescription>
           </CardHeader>
           <CardContent className="grid gap-3 sm:grid-cols-2">
             {[
@@ -268,7 +302,7 @@ export default function AdminTeamAccessPanel({
             ))}
             <a
               href="/admin/claim"
-              className="finance-focus sm:col-span-2 rounded-2xl border border-info/25 bg-info/5 px-4 py-3 text-sm font-semibold text-info"
+              className="finance-focus rounded-2xl border border-info/25 bg-info/5 px-4 py-3 text-sm font-semibold text-info sm:col-span-2"
             >
               Open invitation acceptance page
             </a>
@@ -279,7 +313,9 @@ export default function AdminTeamAccessPanel({
       <Card className="border-border/70 bg-card/88 shadow-sm">
         <CardHeader>
           <CardTitle>Panel members</CardTitle>
-          <CardDescription>Only masked email labels and opaque member references are returned.</CardDescription>
+          <CardDescription>
+            Only masked email labels and opaque member references are returned.
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="overflow-x-auto rounded-2xl border border-border/70">
@@ -289,7 +325,7 @@ export default function AdminTeamAccessPanel({
                   <th className="px-4 py-3 font-semibold">Member</th>
                   <th className="px-4 py-3 font-semibold">Role</th>
                   <th className="px-4 py-3 font-semibold">Status</th>
-                  <th className="px-4 py-3 font-semibold">Last panel access</th>
+                  <th className="px-4 py-3 font-semibold">Last access</th>
                   <th className="px-4 py-3 text-right font-semibold">Controls</th>
                 </tr>
               </thead>
@@ -302,12 +338,12 @@ export default function AdminTeamAccessPanel({
                     </td>
                     <td className="px-4 py-3 capitalize text-muted-foreground">{member.role}</td>
                     <td className="px-4 py-3">
-                      <StatusPill tone={member.status === "active" ? "positive" : "danger"}>
-                        {member.status}
-                      </StatusPill>
+                      <Pill tone={member.status === "active" ? "positive" : "danger"}>{member.status}</Pill>
                     </td>
                     <td className="px-4 py-3 text-muted-foreground">
-                      {member.lastAccessAt ? `${formatAdminGeneratedAt(member.lastAccessAt)} UTC` : "No recorded view"}
+                      {member.lastAccessAt
+                        ? `${formatAdminGeneratedAt(member.lastAccessAt)} UTC`
+                        : "No recorded view"}
                     </td>
                     <td className="px-4 py-3">
                       {member.manageable ? (
@@ -331,9 +367,9 @@ export default function AdminTeamAccessPanel({
                           </form>
                         </div>
                       ) : (
-                        <div className="text-right text-xs text-muted-foreground">
+                        <p className="text-right text-xs text-muted-foreground">
                           {member.isSelf ? "Current account protected" : "Read only"}
-                        </div>
+                        </p>
                       )}
                     </td>
                   </tr>
@@ -352,17 +388,17 @@ export default function AdminTeamAccessPanel({
           </CardHeader>
           <CardContent className="space-y-3">
             {access.invitations.length === 0 ? (
-              <div className="rounded-2xl border border-dashed border-border/80 bg-surface-secondary/35 px-4 py-7 text-center text-sm text-muted-foreground">
+              <p className="rounded-2xl border border-dashed border-border/80 bg-surface-secondary/35 px-4 py-7 text-center text-sm text-muted-foreground">
                 No pending invitations.
-              </div>
+              </p>
             ) : (
               access.invitations.map((invite) => (
                 <div key={invite.invitationCode} className="flex flex-col gap-3 rounded-2xl border border-border/70 bg-background/70 p-4 sm:flex-row sm:items-center sm:justify-between">
                   <div>
                     <div className="flex flex-wrap items-center gap-2">
                       <p className="font-semibold text-foreground">{invite.maskedEmail}</p>
-                      <StatusPill tone={invite.status === "pending" ? "warning" : "danger"}>{invite.status}</StatusPill>
-                      <StatusPill>{invite.role}</StatusPill>
+                      <Pill tone={invite.status === "pending" ? "warning" : "danger"}>{invite.status}</Pill>
+                      <Pill>{invite.role}</Pill>
                     </div>
                     <p className="mt-2 font-mono text-xs text-muted-foreground">
                       {invite.invitationCode} · expires {formatAdminGeneratedAt(invite.expiresAt)} UTC
@@ -383,13 +419,13 @@ export default function AdminTeamAccessPanel({
         <Card className="border-border/70 bg-card/88 shadow-sm">
           <CardHeader>
             <CardTitle>Recent access audit</CardTitle>
-            <CardDescription>Structured events only; no raw email, tokens or arbitrary notes.</CardDescription>
+            <CardDescription>Structured events only; no raw identities, tokens or notes.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
             {access.recentEvents.length === 0 ? (
-              <div className="rounded-2xl border border-dashed border-border/80 bg-surface-secondary/35 px-4 py-7 text-center text-sm text-muted-foreground">
+              <p className="rounded-2xl border border-dashed border-border/80 bg-surface-secondary/35 px-4 py-7 text-center text-sm text-muted-foreground">
                 No team-access events recorded.
-              </div>
+              </p>
             ) : (
               access.recentEvents.map((event) => (
                 <div key={event.eventReference} className="rounded-2xl border border-border/70 bg-background/70 px-4 py-3">
