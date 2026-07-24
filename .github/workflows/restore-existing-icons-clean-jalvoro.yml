@@ -1,0 +1,319 @@
+name: Restore original UI icons and clean JALVORO library
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+concurrency:
+  group: restore-existing-icons-clean-jalvoro
+  cancel-in-progress: false
+
+jobs:
+  restore:
+    if: github.actor != 'github-actions[bot]' && github.head_ref == 'agent/restore-existing-icons-clean-jalvoro'
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    env:
+      CI: "true"
+      NEXT_TELEMETRY_DISABLED: "1"
+      NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: ci-build-placeholder
+      NEXT_PUBLIC_ENABLE_GOOGLE_AUTH: "false"
+    steps:
+      - name: Check out restoration branch
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          ref: agent/restore-existing-icons-clean-jalvoro
+          persist-credentials: true
+          fetch-depth: 0
+          show-progress: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        with:
+          node-version: 24
+          cache: npm
+          package-manager-cache: true
+
+      - name: Restore original workspace icon imports
+        shell: bash
+        run: |
+          node <<'NODE'
+          const fs = require('node:fs');
+          const path = require('node:path');
+          const ignored = new Set(['.git', '.next', '.vercel', 'build', 'coverage', 'design of  UI', 'node_modules', 'out']);
+          const extensions = new Set(['.js', '.jsx', '.mjs', '.cjs', '.ts', '.tsx']);
+          let changed = 0;
+
+          function walk(directory) {
+            for (const entry of fs.readdirSync(directory)) {
+              if (ignored.has(entry)) continue;
+              const absolute = path.join(directory, entry);
+              const stat = fs.statSync(absolute);
+              if (stat.isDirectory()) walk(absolute);
+              else if (extensions.has(path.extname(entry))) {
+                const before = fs.readFileSync(absolute, 'utf8');
+                const after = before
+                  .replaceAll('"@/components/icons/jalvoro/compat"', '"lucide-react"')
+                  .replaceAll("'@/components/icons/jalvoro/compat'", "'lucide-react'");
+                if (after !== before) {
+                  fs.writeFileSync(absolute, after, 'utf8');
+                  changed += 1;
+                }
+              }
+            }
+          }
+
+          walk(process.cwd());
+          console.log(`Restored original icon module in ${changed} source files.`);
+          NODE
+
+          # Restore the exact pre-rollout navigation icon mapping while keeping
+          # all navigation routes and business behavior unchanged.
+          git checkout ae0a5078ce275d8b2fc2de6ac25d34640b0fd95a^ -- lib/navigation.ts
+
+          rm -f components/icons/jalvoro/compat.tsx
+          rm -f components/icons/jalvoro/source-cleanup.test.ts
+          rm -f components/icons/jalvoro/lucide-runtime-contract.test.ts
+          rm -f components/icons/jalvoro/lucide-runtime.generated.tsx
+          rm -f scripts/generate-jalvoro-lucide-runtime.mjs
+          rm -f lib/jalvoro-icon-generator-runtime.test.ts
+          rm -f docs/jalvoro-full-workspace-migration.md
+          rm -f docs/jalvoro-icon-source-cleanup-report.md
+
+      - name: Restore icon dependency without rollout machinery
+        run: |
+          node <<'NODE'
+          const fs = require('node:fs');
+          const file = 'package.json';
+          const packageJson = JSON.parse(fs.readFileSync(file, 'utf8'));
+          packageJson.dependencies = packageJson.dependencies ?? {};
+          packageJson.dependencies['lucide-react'] = '^1.23.0';
+          packageJson.dependencies = Object.fromEntries(
+            Object.entries(packageJson.dependencies).sort(([left], [right]) => left.localeCompare(right)),
+          );
+          delete packageJson.scripts?.['generate:icons'];
+          delete packageJson.scripts?.postinstall;
+          if (packageJson.scripts?.predev === 'npm run generate:icons') delete packageJson.scripts.predev;
+          if (packageJson.scripts?.prebuild === 'npm run generate:icons') delete packageJson.scripts.prebuild;
+          fs.writeFileSync(file, `${JSON.stringify(packageJson, null, 2)}\n`, 'utf8');
+          NODE
+
+      - name: Make JALVORO icons clean by default
+        run: |
+          node <<'NODE'
+          const fs = require('node:fs');
+          const path = require('node:path');
+
+          const corePath = 'components/icons/jalvoro/core.tsx';
+          let core = fs.readFileSync(corePath, 'utf8');
+          core = core.replace(
+            '(accentOverride ?? definition.defaultAccent)',
+            '(accentOverride ?? "none")',
+          );
+          fs.writeFileSync(corePath, core, 'utf8');
+
+          const definitionsDir = 'components/icons/jalvoro/definitions';
+          for (const entry of fs.readdirSync(definitionsDir)) {
+            if (!entry.endsWith('.ts')) continue;
+            const file = path.join(definitionsDir, entry);
+            const before = fs.readFileSync(file, 'utf8');
+            const after = before.replace(
+              /defaultAccent:\s*"(?:wave|zigzag|subtle)"/g,
+              'defaultAccent: "none"',
+            );
+            fs.writeFileSync(file, after, 'utf8');
+          }
+          NODE
+
+          cat > components/icons/jalvoro/README.md <<'EOF'
+          # JALVORO Icons
+
+          First-party icon design laboratory for JALVORO.
+
+          ## Current integration boundary
+
+          The library is intentionally isolated from the existing product UI. Current application screens keep their established icons, sizes, colors, classes, spacing, hover states, and active states until a future icon is individually reviewed and approved.
+
+          ## Clean production default
+
+          - 24×24 source grid
+          - thin rounded outline
+          - `currentColor` only
+          - one clear object; two only when meaning requires it
+          - no automatic wave, zigzag, or decorative inner line
+          - no sparkle fallback for unrelated concepts
+          - readable at 16, 20, 24, and 32 pixels
+
+          Micro-accents remain available only as an explicit experimental prop for design-gallery review. They never render by default.
+
+          ```tsx
+          import { JalvoroSearchIcon } from "@/components/icons/jalvoro/components/actions";
+
+          // Clean default
+          <JalvoroSearchIcon size={20} />
+
+          // Experimental preview only
+          <JalvoroSearchIcon size={32} accent="wave" />
+          ```
+
+          ## Modification rule
+
+          Improve vector definitions inside `definitions/` and validate them in an isolated gallery before any product rollout. Do not replace existing application icons through aliases, compatibility fallbacks, or repository-wide codemods.
+          EOF
+
+          cat > docs/jalvoro-icon-system.md <<'EOF'
+          # JALVORO Icon System — Clean Design Standard
+
+          Status: isolated design system; not connected to existing workspace UI.
+
+          ## Product safety boundary
+
+          Existing application icons remain unchanged. JALVORO icons are developed and reviewed in the library first. Integration happens only icon-by-icon after visual approval.
+
+          ## Visual contract
+
+          1. One immediately recognizable object or concept.
+          2. Maximum two directly related objects when necessary.
+          3. Clean outer silhouette before internal detail.
+          4. No default wave, zigzag, sparkle, or decorative inner stroke.
+          5. Rounded line caps and joins.
+          6. Thin, balanced stroke with strong small-size readability.
+          7. `currentColor`; no embedded product colors.
+          8. No generic fallback icon for a specific category.
+          9. Every new symbol must be inspected at 16, 20, 24, and 32 pixels.
+          10. No workspace-wide replacement without explicit visual approval.
+
+          ## Accent policy
+
+          `wave`, `zigzag`, and `subtle` remain experimental options for isolated concept exploration only. Production rendering defaults to `none`, even when older metadata contains an accent placement.
+
+          ## Engineering boundary
+
+          - vectors live in `components/icons/jalvoro/definitions/`
+          - rendering behavior lives in `core.tsx`
+          - tokens live in `tokens.ts`
+          - existing screens continue to use their established icon source
+          - aliasing third-party packages to JALVORO is prohibited
+          - repository-wide icon codemods are prohibited without explicit approval
+
+          ## Review gate
+
+          A JALVORO icon may enter the product only after it has a unique semantic shape, no fallback reuse, clean default rendering, light/dark verification, and side-by-side approval against the existing icon.
+          EOF
+
+          cat > components/icons/jalvoro/clean-defaults.test.tsx <<'EOF'
+          import { renderToStaticMarkup } from "react-dom/server";
+          import { describe, expect, it } from "vitest";
+
+          import { JALVORO_ICON_DEFINITIONS } from "./definitions";
+          import { JalvoroIcon } from "./JalvoroIcon";
+          import { JALVORO_ICON_NAMES } from "./manifest";
+
+          describe("JALVORO clean defaults", () => {
+            it("renders every icon without a default micro-accent", () => {
+              for (const name of JALVORO_ICON_NAMES) {
+                const markup = renderToStaticMarkup(<JalvoroIcon name={name} />);
+                expect(markup).toContain('data-jalvoro-accent="none"');
+                expect(markup).not.toContain("data-jalvoro-micro-accent");
+              }
+            });
+
+            it("keeps all definition defaults clean", () => {
+              for (const definition of JALVORO_ICON_DEFINITIONS) {
+                expect(definition.defaultAccent).toBe("none");
+              }
+            });
+          });
+          EOF
+
+      - name: Remove one-time restoration workflow
+        run: rm -f .github/workflows/restore-existing-icons-clean-jalvoro.yml
+
+      - name: Refresh dependency lockfile
+        run: npm install --package-lock-only --ignore-scripts --silent
+
+      - name: Install final dependency graph
+        run: npm ci --ignore-scripts --silent
+
+      - name: Verify UI restoration boundary
+        run: |
+          node <<'NODE'
+          const fs = require('node:fs');
+          const path = require('node:path');
+          const roots = ['app', 'components', 'lib'];
+          const extensions = new Set(['.js', '.jsx', '.mjs', '.cjs', '.ts', '.tsx']);
+          const offenders = [];
+          let establishedImports = 0;
+
+          function walk(directory) {
+            if (!fs.existsSync(directory)) return;
+            for (const entry of fs.readdirSync(directory)) {
+              const absolute = path.join(directory, entry);
+              if (absolute.startsWith(path.join('components', 'icons', 'jalvoro'))) continue;
+              const stat = fs.statSync(absolute);
+              if (stat.isDirectory()) walk(absolute);
+              else if (extensions.has(path.extname(entry))) {
+                const source = fs.readFileSync(absolute, 'utf8');
+                if (source.includes('@/components/icons/jalvoro')) offenders.push(absolute);
+                if (source.includes('lucide-react')) establishedImports += 1;
+              }
+            }
+          }
+
+          for (const root of roots) walk(root);
+          if (offenders.length) {
+            console.error('JALVORO UI imports remain:', offenders);
+            process.exit(1);
+          }
+          if (establishedImports === 0) {
+            console.error('Original workspace icon imports were not restored.');
+            process.exit(1);
+          }
+
+          const packageJson = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+          if (!packageJson.dependencies?.['lucide-react']) {
+            console.error('Original icon dependency is missing.');
+            process.exit(1);
+          }
+          if (fs.existsSync('components/icons/jalvoro/compat.tsx')) {
+            console.error('Compatibility fallback still exists.');
+            process.exit(1);
+          }
+
+          const core = fs.readFileSync('components/icons/jalvoro/core.tsx', 'utf8');
+          if (!core.includes('(accentOverride ?? "none")')) {
+            console.error('Clean JALVORO default is not enforced.');
+            process.exit(1);
+          }
+          console.log(`Verified ${establishedImports} files using established workspace icons.`);
+          NODE
+
+      - name: Enforce zero known dependency vulnerabilities
+        run: npm audit --audit-level=low
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Run complete application suite
+        run: npm test
+
+      - name: Build production application
+        run: npm run build
+
+      - name: Commit validated restoration
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "Restore existing UI icons and clean JALVORO defaults"
+          git push origin HEAD:agent/restore-existing-icons-clean-jalvoro
