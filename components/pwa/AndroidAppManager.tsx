@@ -1,5 +1,6 @@
 "use client";
 
+import { APP_NAME } from "@/lib/brand";
 import { Download, Globe2, Smartphone } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
@@ -215,7 +216,7 @@ export default function AndroidAppManager() {
               className="mt-1 text-xl font-bold tracking-tight text-text-primary"
               id="android-app-title"
             >
-              Get Jamal&apos;s Finance
+              Get {APP_NAME}
             </h2>
             <p
               className="mt-2 text-sm leading-6 text-text-secondary"

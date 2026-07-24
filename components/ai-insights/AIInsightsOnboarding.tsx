@@ -1,5 +1,6 @@
 "use client";
 
+import { APP_AI_NAME } from "@/lib/brand";
 import { useEffect, useState } from "react";
 import { BrainCircuit, Calculator, ChartNoAxesCombined, ShieldCheck, X } from "lucide-react";
 
@@ -23,7 +24,7 @@ const COPY: Record<
 > = {
   en: {
     eyebrow: "Your finance intelligence",
-    title: "Meet Jamals Finance AI",
+    title: `Meet ${APP_AI_NAME}`,
     description:
       "Ask naturally—even with mixed wording or spelling mistakes. Answers use your own verified finance records and selected website language.",
     features: [
@@ -42,7 +43,7 @@ const COPY: Record<
   },
   ur: {
     eyebrow: "آپ کی مالی ذہانت",
-    title: "Jamals Finance AI سے ملیں",
+    title: `${APP_AI_NAME} سے ملیں`,
     description:
       "قدرتی انداز میں پوچھیں، چاہے زبان ملی جلی ہو یا اسپیلنگ غلط ہو۔ جواب آپ کے تصدیق شدہ مالی ریکارڈ اور منتخب ویب سائٹ زبان کے مطابق ہوگا۔",
     features: [
@@ -61,7 +62,7 @@ const COPY: Record<
   },
   ar: {
     eyebrow: "ذكاؤك المالي",
-    title: "تعرّف على Jamals Finance AI",
+    title: `تعرّف على ${APP_AI_NAME}`,
     description:
       "اسأل بطريقتك الطبيعية حتى مع خلط اللغات أو أخطاء الكتابة. تعتمد الإجابات على سجلاتك المالية الموثقة ولغة الموقع المختارة.",
     features: [
@@ -80,7 +81,7 @@ const COPY: Record<
   },
   hi: {
     eyebrow: "आपकी वित्तीय बुद्धिमत्ता",
-    title: "Jamals Finance AI से मिलें",
+    title: `${APP_AI_NAME} से मिलें`,
     description:
       "स्वाभाविक रूप से पूछें, चाहे भाषा मिली-जुली हो या वर्तनी गलत हो। उत्तर आपके सत्यापित वित्त रिकॉर्ड और चुनी हुई वेबसाइट भाषा का उपयोग करते हैं।",
     features: [
@@ -99,7 +100,7 @@ const COPY: Record<
   },
   es: {
     eyebrow: "Tu inteligencia financiera",
-    title: "Conoce Jamals Finance AI",
+    title: `Conoce ${APP_AI_NAME}`,
     description:
       "Pregunta con naturalidad, incluso mezclando idiomas o con errores. Las respuestas usan tus registros verificados y el idioma seleccionado del sitio.",
     features: [

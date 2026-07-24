@@ -1,5 +1,6 @@
 "use client";
 
+import { APP_AI_NAME } from "@/lib/brand";
 import { useEffect, useState, type FormEvent, type ReactNode } from "react";
 import {
   CalendarDays,
@@ -324,7 +325,7 @@ export default function SettingsPreferencesSection({
               </IconBubble>
             }
             title="Language"
-            description="Choose the website and Jamals Finance AI language for this device"
+            description={`Choose the website and ${APP_AI_NAME} language for this device`}
             value={languageOption.nativeName}
             onClick={() => setLanguageOpen(true)}
           />
@@ -417,7 +418,7 @@ export default function SettingsPreferencesSection({
           >
             <FinanceModalHeader
               title="Language"
-              description="This language is used by the website and Jamals Finance AI on this device."
+              description={`This language is used by the website and ${APP_AI_NAME} on this device.`}
               icon={Languages}
               tone="info"
             />

@@ -6,16 +6,10 @@ import "./finance-form-unification.css";
 import "./finance-form-theme-refinement.css";
 import "./finance-form-final-polish.css";
 import "./finance-form-content-fit.css";
-import "./auth-clean.css";
-import "./auth-clean-fixes.css";
 import "./light-background-tuning.css";
 import "./interaction-lock.css";
-import "./auth-control-alignment.css";
-// Authentication-only responsive layer; kept after legacy auth corrections.
-import "./auth-responsive-architecture.css";
 import "./scrollbar-visibility.css";
 import "./public-icon-surface-cleanup.css";
-import "./auth-adornment-alignment-fix.css";
 // Shared transform-only symbol rain for the landing and authentication surfaces.
 import "./landing-math-symbols.css";
 // Final dark-mode-only icon tone lift; light mode and semantic hues stay intact.
@@ -26,21 +20,29 @@ import "./form-control-height-unify.css";
 // Standard/green animation polish stays last so it can optimize every surface
 // without changing Fast or No-animation behavior.
 import "./standard-motion-ultra.css";
+// Cross-route accessibility, viewport and scroll stability safeguards.
+import "./global-ux-foundation.css";
 import { Toaster } from "sonner";
 import LanguageProvider from "@/components/i18n/LanguageProvider";
-import DesktopOverscrollBounce from "@/components/motion/DesktopOverscrollBounce";
+import DeferredDesktopOverscrollBounce from "@/components/motion/DeferredDesktopOverscrollBounce";
 import MotionProvider from "@/components/motion/MotionProvider";
+import { ANIMATION_BOOTSTRAP_SCRIPT } from "@/lib/animation-preference";
+import {
+  APP_DESCRIPTION,
+  APP_NAME,
+  APP_TAGLINE,
+  APP_URL,
+} from "@/lib/brand";
 import {
   CURRENCY_STORAGE_KEY,
   SUPPORTED_CURRENCIES,
 } from "@/lib/currency";
-import { ANIMATION_BOOTSTRAP_SCRIPT } from "@/lib/animation-preference";
 import { LANGUAGE_BOOTSTRAP_SCRIPT } from "@/lib/i18n/config";
-import PWARegister from "./pwa-register";
 import {
   THEME_BOOTSTRAP_SCRIPT,
   THEME_VIEWPORT_COLORS,
 } from "@/lib/theme";
+import PWARegister from "./pwa-register";
 
 const geistSans = Geist({
   subsets: ["latin"],
@@ -50,8 +52,6 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
   variable: "--font-geist-mono",
 });
-
-const siteUrl = "https://jamals-finance-sable.vercel.app";
 
 const CURRENCY_BOOTSTRAP_SCRIPT = `
 (() => {
@@ -84,35 +84,6 @@ const CURRENCY_BOOTSTRAP_SCRIPT = `
 })();
 `;
 
-const INTERACTION_LOCK_SCRIPT = `
-(() => {
-  try {
-    const marker = "__jfInteractionLockInstalled";
-    if (window[marker]) return;
-    window[marker] = true;
-
-    const preventNativeInteraction = (event) => event.preventDefault();
-
-    document.addEventListener("contextmenu", preventNativeInteraction, {
-      capture: true,
-    });
-    document.addEventListener("dragstart", preventNativeInteraction, {
-      capture: true,
-    });
-    document.addEventListener("selectstart", preventNativeInteraction, {
-      capture: true,
-    });
-    document.addEventListener(
-      "pointerdown",
-      (event) => {
-        if (event.button === 2) event.preventDefault();
-      },
-      { capture: true },
-    );
-  } catch {}
-})();
-`;
-
 const NATIVE_TOOLTIP_CLEANUP_SCRIPT = `
 (() => {
   try {
@@ -122,9 +93,15 @@ const NATIVE_TOOLTIP_CLEANUP_SCRIPT = `
 
     const accessibleSelector =
       "button, a, input, select, textarea, summary, [role], img, svg";
+    const pendingRoots = new Set();
+    let frameId = null;
 
     const cleanTitleAttribute = (element) => {
-      if (!(element instanceof Element) || !element.hasAttribute("title")) {
+      if (
+        !(element instanceof Element) ||
+        !element.hasAttribute("title") ||
+        !element.matches(accessibleSelector)
+      ) {
         return;
       }
 
@@ -133,68 +110,50 @@ const NATIVE_TOOLTIP_CLEANUP_SCRIPT = `
         element.hasAttribute("aria-label") ||
         element.hasAttribute("aria-labelledby");
 
-      if (
-        label &&
-        !hasAccessibleLabel &&
-        element.matches(accessibleSelector)
-      ) {
+      if (label && !hasAccessibleLabel) {
         element.setAttribute("aria-label", label);
       }
 
       element.removeAttribute("title");
     };
 
-    const cleanSvgTitle = (titleNode) => {
-      if (!(titleNode instanceof SVGTitleElement)) return;
-
-      const svg = titleNode.parentElement;
-      if (!(svg instanceof SVGElement)) return;
-
-      const label = titleNode.textContent?.trim();
-      const hasAccessibleLabel =
-        svg.hasAttribute("aria-label") ||
-        svg.hasAttribute("aria-labelledby");
-
-      if (
-        label &&
-        svg.getAttribute("aria-hidden") !== "true" &&
-        !hasAccessibleLabel
-      ) {
-        svg.setAttribute("aria-label", label);
-      }
-
-      titleNode.remove();
-    };
-
     const cleanWithin = (root) => {
       if (!(root instanceof Element || root instanceof Document)) return;
 
-      if (root instanceof Element) {
-        cleanTitleAttribute(root);
-        if (root.matches("svg > title")) cleanSvgTitle(root);
-      }
-
+      if (root instanceof Element) cleanTitleAttribute(root);
       root.querySelectorAll("[title]").forEach(cleanTitleAttribute);
-      root.querySelectorAll("svg > title").forEach(cleanSvgTitle);
     };
 
-    const runCleanup = () => cleanWithin(document);
+    const flush = () => {
+      frameId = null;
+      const roots = Array.from(pendingRoots);
+      pendingRoots.clear();
+      roots.forEach(cleanWithin);
+    };
+
+    const queueRoot = (root) => {
+      if (!(root instanceof Element || root instanceof Document)) return;
+      pendingRoots.add(root);
+      if (frameId === null) frameId = window.requestAnimationFrame(flush);
+    };
 
     if (document.readyState === "loading") {
-      document.addEventListener("DOMContentLoaded", runCleanup, { once: true });
+      document.addEventListener("DOMContentLoaded", () => queueRoot(document), {
+        once: true,
+      });
     } else {
-      runCleanup();
+      queueRoot(document);
     }
 
     const observer = new MutationObserver((mutations) => {
       for (const mutation of mutations) {
         if (mutation.type === "attributes") {
-          cleanTitleAttribute(mutation.target);
+          queueRoot(mutation.target);
           continue;
         }
 
         mutation.addedNodes.forEach((node) => {
-          if (node instanceof Element) cleanWithin(node);
+          if (node instanceof Element) queueRoot(node);
         });
       }
     });
@@ -205,54 +164,62 @@ const NATIVE_TOOLTIP_CLEANUP_SCRIPT = `
       attributes: true,
       attributeFilter: ["title"],
     });
+
+    window.addEventListener(
+      "pagehide",
+      () => {
+        observer.disconnect();
+        if (frameId !== null) window.cancelAnimationFrame(frameId);
+        pendingRoots.clear();
+      },
+      { once: true },
+    );
   } catch {}
 })();
 `;
 
+const defaultTitle = `${APP_NAME} — ${APP_TAGLINE}`;
+
 export const metadata: Metadata = {
-  metadataBase: new URL(siteUrl),
+  metadataBase: new URL(APP_URL),
   title: {
-    default: "Jamal's Finance — Calm Personal Finance Workspace",
-    template: "%s — Jamal's Finance",
+    default: defaultTitle,
+    template: `%s — ${APP_NAME}`,
   },
   verification: {
     google: "W-UmHqy2sJyd2xbsdPdPeqJLOhLS2cf_aszWJf15aMk",
   },
-  description:
-    "Track accounts, expenses, income, goals, liabilities, investments, and savings in one secure personal finance workspace.",
-  applicationName: "Jamal's Finance",
+  description: APP_DESCRIPTION,
+  applicationName: APP_NAME,
   keywords: [
-    "personal finance dashboard",
-    "finance tracker",
-    "expense tracker",
-    "income tracker",
-    "budget dashboard",
-    "savings goals",
-    "money management app",
-    "finance management",
-    "Jamal's Finance",
+    "personal finance workspace",
+    "business management platform",
+    "point of sale",
+    "ERP software",
+    "CRM software",
+    "accounting",
+    "inventory management",
+    "JALVORO",
   ],
   authors: [{ name: "Jamal Yaqoob" }],
   creator: "Jamal Yaqoob",
-  publisher: "Jamal's Finance",
-  category: "Finance",
+  publisher: APP_NAME,
+  category: "Business",
   alternates: {
     canonical: "/",
   },
   openGraph: {
-    title: "Jamal's Finance — Calm Personal Finance Workspace",
-    description:
-      "Track accounts, expenses, income, goals, liabilities, investments, and savings in one secure personal finance workspace.",
+    title: defaultTitle,
+    description: APP_DESCRIPTION,
     url: "/",
-    siteName: "Jamal's Finance",
+    siteName: APP_NAME,
     type: "website",
     locale: "en_US",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Jamal's Finance — Calm Personal Finance Workspace",
-    description:
-      "Track accounts, expenses, income, goals, liabilities, investments, and savings in one secure personal finance workspace.",
+    title: defaultTitle,
+    description: APP_DESCRIPTION,
   },
   robots: {
     index: true,
@@ -313,11 +280,6 @@ export default function RootLayout({
         />
         <script
           dangerouslySetInnerHTML={{
-            __html: INTERACTION_LOCK_SCRIPT,
-          }}
-        />
-        <script
-          dangerouslySetInnerHTML={{
             __html: NATIVE_TOOLTIP_CLEANUP_SCRIPT,
           }}
         />
@@ -326,7 +288,7 @@ export default function RootLayout({
         <LanguageProvider>
           <MotionProvider>
             {children}
-            <DesktopOverscrollBounce />
+            <DeferredDesktopOverscrollBounce />
             <PWARegister />
             <Toaster
               position="top-right"

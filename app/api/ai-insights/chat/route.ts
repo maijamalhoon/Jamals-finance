@@ -1,3 +1,4 @@
+import { APP_AI_NAME } from "@/lib/brand";
 import {
   buildAIPreferenceInstruction,
   loadAIPreferences,
@@ -120,7 +121,7 @@ const COPY: Record<
     questionRequired: "Ask a finance question before sending.",
     authRequired: "Please log in before using AI insights.",
     unsafe: (name) =>
-      `${name}, that topic is outside the safe scope of Jamals Finance AI. I can help with finance, accounts, savings, debt, goals, and investments.`,
+      `${name}, that topic is outside the safe scope of ${APP_AI_NAME}. I can help with finance, accounts, savings, debt, goals, and investments.`,
     localFallback: (name, net, balance) =>
       `${name}, I can still use your verified records. Your current-month net is ${net} and your estimated net balance is ${balance}. Ask for one exact metric, category, asset, or date range for a precise calculation.`,
     followUps: [
@@ -134,7 +135,7 @@ const COPY: Record<
     questionRequired: "بھیجنے سے پہلے مالی سوال لکھیں۔",
     authRequired: "AI Insights استعمال کرنے سے پہلے لاگ اِن کریں۔",
     unsafe: (name) =>
-      `${name}، یہ موضوع Jamals Finance AI کے محفوظ دائرۂ کار سے باہر ہے۔ میں مالیات، اکاؤنٹس، بچت، قرض، اہداف اور سرمایہ کاری میں مدد کر سکتا ہوں۔`,
+      `${name}، یہ موضوع ${APP_AI_NAME} کے محفوظ دائرۂ کار سے باہر ہے۔ میں مالیات، اکاؤنٹس، بچت، قرض، اہداف اور سرمایہ کاری میں مدد کر سکتا ہوں۔`,
     localFallback: (name, net, balance) =>
       `${name}، میں آپ کے تصدیق شدہ ریکارڈز کے ساتھ کام جاری رکھ سکتا ہوں۔ اس ماہ آپ کا خالص نتیجہ ${net} اور اندازاً خالص بیلنس ${balance} ہے۔ درست حساب کے لیے ایک مخصوص رقم، کیٹیگری، اثاثہ یا تاریخ پوچھیں۔`,
     followUps: [
@@ -148,7 +149,7 @@ const COPY: Record<
     questionRequired: "اكتب سؤالًا ماليًا قبل الإرسال.",
     authRequired: "يرجى تسجيل الدخول قبل استخدام الرؤى الذكية.",
     unsafe: (name) =>
-      `${name}، هذا الموضوع خارج النطاق الآمن لـ Jamals Finance AI. يمكنني المساعدة في المال والحسابات والادخار والديون والأهداف والاستثمارات.`,
+      `${name}، هذا الموضوع خارج النطاق الآمن لـ ${APP_AI_NAME}. يمكنني المساعدة في المال والحسابات والادخار والديون والأهداف والاستثمارات.`,
     localFallback: (name, net, balance) =>
       `${name}، يمكنني الاستمرار باستخدام سجلاتك الموثقة. صافي هذا الشهر هو ${net} وصافي الرصيد التقديري هو ${balance}. اطلب مقياسًا أو فئة أو أصلًا أو فترة زمنية محددة للحصول على حساب دقيق.`,
     followUps: [
@@ -162,7 +163,7 @@ const COPY: Record<
     questionRequired: "भेजने से पहले वित्त संबंधी प्रश्न लिखें।",
     authRequired: "AI Insights उपयोग करने से पहले लॉग इन करें।",
     unsafe: (name) =>
-      `${name}, यह विषय Jamals Finance AI के सुरक्षित दायरे से बाहर है। मैं वित्त, खाते, बचत, कर्ज, लक्ष्य और निवेश में सहायता कर सकता हूँ।`,
+      `${name}, यह विषय ${APP_AI_NAME} के सुरक्षित दायरे से बाहर है। मैं वित्त, खाते, बचत, कर्ज, लक्ष्य और निवेश में सहायता कर सकता हूँ।`,
     localFallback: (name, net, balance) =>
       `${name}, मैं आपके सत्यापित रिकॉर्ड के साथ काम जारी रख सकता हूँ। इस महीने का शुद्ध परिणाम ${net} और अनुमानित शुद्ध बैलेंस ${balance} है। सटीक गणना के लिए कोई एक मेट्रिक, श्रेणी, संपत्ति या तारीख सीमा पूछें।`,
     followUps: [
@@ -176,7 +177,7 @@ const COPY: Record<
     questionRequired: "Escribe una pregunta financiera antes de enviarla.",
     authRequired: "Inicia sesión antes de usar AI Insights.",
     unsafe: (name) =>
-      `${name}, ese tema está fuera del alcance seguro de Jamals Finance AI. Puedo ayudarte con finanzas, cuentas, ahorros, deudas, objetivos e inversiones.`,
+      `${name}, ese tema está fuera del alcance seguro de ${APP_AI_NAME}. Puedo ayudarte con finanzas, cuentas, ahorros, deudas, objetivos e inversiones.`,
     localFallback: (name, net, balance) =>
       `${name}, puedo seguir trabajando con tus registros verificados. Tu resultado neto del mes es ${net} y tu saldo neto estimado es ${balance}. Pide una métrica, categoría, activo o período concreto para obtener un cálculo preciso.`,
     followUps: [
@@ -434,7 +435,7 @@ function buildPrompt({
   displayName: string;
   preferences: AIPreferences;
 }) {
-  return `You are Jamals Finance AI, a finance and accounts assistant attached to the authenticated user's financial profile.
+  return `You are ${APP_AI_NAME}, a finance and accounts assistant attached to the authenticated user's financial profile.
 ${buildAIResponseLanguageInstruction(language)}
 Address every answer to the user by this exact profile name: ${JSON.stringify(displayName)}.
 Answer only finance, accounts, savings, debt, goals, investments, cash-flow, and financial-planning questions.

@@ -1,5 +1,6 @@
 "use client";
 
+import { APP_NAME } from "@/lib/brand";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -791,7 +792,7 @@ export default function LoginPage() {
             </form>
 
             <p className="auth-mode-switch">
-              {authMode === "login" ? "New to Jamal's Finance?" : "Already have an account?"}
+              {authMode === "login" ? `New to ${APP_NAME}?` : "Already have an account?"}
               <button
                 type="button"
                 onClick={() => switchAuthMode(authMode === "login" ? "signup" : "login")}

@@ -1,51 +1,49 @@
 import {
   BadgeDollarSign,
-  CalendarSync,
-  ChartCandlestick,
+  BadgePercent,
   Baby,
   Banknote,
   Bike,
   BookOpen,
   Briefcase,
+  ChartCandlestick,
   Building2,
   Bus,
   Car,
-  Clapperboard,
-  CloudCog,
   Coffee,
+  CircleHelp,
+  Clapperboard,
+  Cloud,
   Coins,
   CreditCard,
   Droplets,
   Dumbbell,
   FileText,
-  Footprints,
   Fuel,
   Gamepad2,
   Gift,
   Glasses,
-  GraduationCap,
   Hammer,
-  HandCoins,
-  HandHeart,
   HeartHandshake,
+  GraduationCap,
+  HandCoins,
   HeartPulse,
   Home,
   KeyRound,
   Landmark,
   Laptop,
   Lightbulb,
+  Music2,
   Package,
   Paintbrush,
   PawPrint,
   PiggyBank,
   Plane,
   ReceiptText,
+  Repeat2,
   Scale,
   Scissors,
   ShieldCheck,
-  Smile,
-  Sprout,
-  Repeat2,
   Shirt,
   ShoppingBag,
   ShoppingBasket,
@@ -55,11 +53,9 @@ import {
   Store,
   Tags,
   Ticket,
-  Trophy,
   TrainFront,
   TrendingUp,
   UserRound,
-  UsersRound,
   Utensils,
   Wallet,
   WalletCards,
@@ -157,6 +153,21 @@ export const CATEGORY_ICON_MAP = {
   groceries: ShoppingBasket,
   phone: Smartphone,
   bonus: Sparkles,
+  commission: BadgePercent,
+  investment: ChartCandlestick,
+  investments: ChartCandlestick,
+  bills: FileText,
+  rent: KeyRound,
+  help: CircleHelp,
+  movies: Clapperboard,
+  cloud: Cloud,
+  optical: Glasses,
+  construction: Hammer,
+  charity: HeartHandshake,
+  music: Music2,
+  legal: Scale,
+  beauty: Scissors,
+  insurance: ShieldCheck,
   store: Store,
   ticket: Ticket,
   train: TrainFront,
@@ -172,24 +183,6 @@ export const CATEGORY_ICON_MAP = {
   clothing: Shirt,
   medical: Stethoscope,
   salary: BadgeDollarSign,
-  charity: HeartHandshake,
-  insurance: ShieldCheck,
-  family: UsersRound,
-  legal: Scale,
-  footwear: Footprints,
-  beauty: Scissors,
-  sports: Trophy,
-  subscriptions: CalendarSync,
-  software: CloudCog,
-  construction: Hammer,
-  dental: Smile,
-  optical: Glasses,
-  entertainment: Clapperboard,
-  farming: Sprout,
-  help: HandHeart,
-  investments: ChartCandlestick,
-  bills: FileText,
-  rent: KeyRound,
   tags: Tags,
 } satisfies Record<string, LucideIcon>;
 
@@ -236,24 +229,19 @@ type CategoryIconRule = Readonly<{
  * whose previous icon value was an emoji or numbered badge.
  */
 const CATEGORY_ICON_RULES: readonly CategoryIconRule[] = [
-  { iconKey: "charity", aliases: ["charity", "donation", "zakat", "sadqa", "sadaqah", "khairat", "help others"] },
-  { iconKey: "help", aliases: ["help", "support", "welfare", "aid"] },
-  { iconKey: "insurance", aliases: ["insurance", "takaful", "protection plan"] },
-  { iconKey: "family", aliases: ["family", "parents", "household support"] },
-  { iconKey: "legal", aliases: ["legal", "lawyer", "advocate", "court", "security", "guard"] },
-  { iconKey: "footwear", aliases: ["shoe", "shoes", "footwear", "sneaker", "sandals"] },
-  { iconKey: "beauty", aliases: ["salon", "barber", "haircut", "beauty", "makeup", "cosmetic", "skincare"] },
-  { iconKey: "sports", aliases: ["sport", "sports", "cricket", "football", "tennis", "badminton"] },
-  { iconKey: "subscriptions", aliases: ["subscription", "membership", "netflix", "spotify"] },
-  { iconKey: "software", aliases: ["software", "saas", "hosting", "domain", "cloud", "app subscription"] },
-  { iconKey: "construction", aliases: ["construction", "renovation", "cement", "mistri", "labour", "labor", "hardware"] },
-  { iconKey: "dental", aliases: ["dental", "dentist", "teeth"] },
-  { iconKey: "optical", aliases: ["optical", "glasses", "eyesight", "eye care"] },
-  { iconKey: "entertainment", aliases: ["movie", "cinema", "film", "entertainment", "concert"] },
-  { iconKey: "farming", aliases: ["farm", "farming", "agriculture", "crop", "seed", "fertilizer", "garden"] },
-  { iconKey: "investments", aliases: ["investment", "investments", "stock", "stocks", "shares", "portfolio", "mutual fund"] },
-  { iconKey: "bills", aliases: ["bill", "bills", "invoice", "monthly bill"] },
-  { iconKey: "rent", type: "expense", aliases: ["rent", "kiraya", "lease payment"] },
+  {
+    iconKey: "investments",
+    aliases: ["investment", "investments", "stock", "stocks", "shares", "portfolio", "mutual fund"],
+  },
+  {
+    iconKey: "bills",
+    aliases: ["bill", "bills", "invoice", "monthly bill"],
+  },
+  {
+    iconKey: "rent",
+    type: "expense",
+    aliases: ["rent", "kiraya", "lease payment"],
+  },
   {
     iconKey: "salary",
     aliases: ["salary", "salery", "sallery", "payroll", "wage", "tankhwa", "tankha", "maash"],
@@ -271,7 +259,7 @@ const CATEGORY_ICON_RULES: readonly CategoryIconRule[] = [
     aliases: ["business", "karobar", "dukaan", "shop income", "trade income", "factory", "manufacturing"],
   },
   {
-    iconKey: "handCoins",
+    iconKey: "commission",
     aliases: ["commission", "comission", "brokerage", "tip income", "affiliate", "referral", "partnership"],
   },
   {
@@ -279,7 +267,7 @@ const CATEGORY_ICON_RULES: readonly CategoryIconRule[] = [
     aliases: ["bonus", "bounus", "incentive", "reward", "eidi", "cashback", "rebate"],
   },
   {
-    iconKey: "growth",
+    iconKey: "investment",
     aliases: ["profit", "munafa", "return", "capital gain", "dividend", "investment", "mutual fund", "stock", "shares", "portfolio", "agriculture income"],
   },
   {
@@ -304,12 +292,32 @@ const CATEGORY_ICON_RULES: readonly CategoryIconRule[] = [
     aliases: ["donation received", "charity received", "support received"],
   },
   {
+    iconKey: "help",
+    aliases: ["help", "assistance", "support expense", "emergency help"],
+  },
+  {
+    iconKey: "charity",
+    aliases: ["charity", "donation", "zakat", "sadqa", "sadaqah", "khairat"],
+  },
+  {
+    iconKey: "insurance",
+    aliases: ["insurance", "takaful", "coverage", "protection plan"],
+  },
+  {
+    iconKey: "legal",
+    aliases: ["legal", "lawyer", "court", "advocate", "security service"],
+  },
+  {
+    iconKey: "construction",
+    aliases: ["construction", "renovation", "labour", "labor", "mistri", "hardware"],
+  },
+  {
     iconKey: "home",
     aliases: ["house rent", "home rent", "rent", "kiraya", "mortgage", "lease", "property", "plot", "apartment", "flat", "furniture", "appliance", "cleaning", "housekeeping", "maid"],
   },
   {
     iconKey: "groceries",
-    aliases: ["grocery", "groceries", "grocries", "grocerries", "rashan", "ration", "supermarket", "fruit", "vegetable", "sabzi", "milk", "dairy", "doodh"],
+    aliases: ["grocery", "groceries", "grocries", "grocerries", "grocerirs", "grocerers", "rashan", "ration", "supermarket", "fruit", "vegetable", "sabzi", "milk", "dairy", "doodh"],
   },
   {
     iconKey: "drink",
@@ -354,8 +362,16 @@ const CATEGORY_ICON_RULES: readonly CategoryIconRule[] = [
     aliases: ["medicine", "medication", "pharmacy", "drug", "dawa", "dawai", "tablet"],
   },
   {
+    iconKey: "optical",
+    aliases: ["dental", "dentist", "eye", "glasses", "optical"],
+  },
+  {
+    iconKey: "insurance",
+    aliases: ["insurance", "takaful", "coverage", "protection plan"],
+  },
+  {
     iconKey: "health",
-    aliases: ["medical", "doctor", "health", "hospital", "clinic", "ilaaj", "treatment", "dental", "dentist", "eye", "glasses", "insurance", "takaful"],
+    aliases: ["medical", "doctor", "health", "hospital", "clinic", "ilaaj", "treatment"],
   },
   {
     iconKey: "education",
@@ -378,20 +394,36 @@ const CATEGORY_ICON_RULES: readonly CategoryIconRule[] = [
     aliases: ["personal", "personal care", "self care", "selfcare", "pocket money", "personal spending", "daily use"],
   },
   {
+    iconKey: "beauty",
+    aliases: ["salon", "barber", "haircut", "beauty", "cosmetic", "makeup", "skincare", "perfume"],
+  },
+  {
     iconKey: "clothing",
-    aliases: ["cloth", "clothing", "fashion", "shirt", "kapra", "kapray", "dress", "shoe", "footwear", "salon", "barber", "haircut", "beauty", "cosmetic", "makeup", "skincare", "perfume"],
+    aliases: ["cloth", "clothing", "fashion", "shirt", "kapra", "kapray", "dress", "shoe", "footwear"],
   },
   {
     iconKey: "fitness",
     aliases: ["gym", "fitness", "workout", "exercise", "sport", "cricket", "football", "tennis", "badminton"],
   },
   {
+    iconKey: "movies",
+    aliases: ["movie", "cinema", "film", "netflix", "entertainment"],
+  },
+  {
+    iconKey: "music",
+    aliases: ["music", "spotify", "concert", "audio", "subscription", "membership"],
+  },
+  {
     iconKey: "games",
-    aliases: ["game", "gaming", "playstation", "xbox", "movie", "cinema", "film", "netflix", "music", "spotify", "concert", "subscription", "membership"],
+    aliases: ["game", "gaming", "playstation", "xbox"],
+  },
+  {
+    iconKey: "cloud",
+    aliases: ["software", "app", "saas", "domain", "hosting", "cloud"],
   },
   {
     iconKey: "laptop",
-    aliases: ["software", "app", "saas", "domain", "hosting", "cloud", "laptop", "computer", "desktop", "pc", "electronics", "monitor", "keyboard", "mouse", "printer", "camera"],
+    aliases: ["laptop", "computer", "desktop", "pc", "electronics", "monitor", "keyboard", "mouse", "printer", "camera"],
   },
   {
     iconKey: "painting",
@@ -600,9 +632,14 @@ export function getCategoryVisual(
   // Legacy emoji/badge values are deliberately ignored for display. This
   // changes only the icon presentation; category IDs, names, colours and every
   // linked financial record remain untouched.
-  const iconKey = isValidCategoryIconKey(category.icon_key)
-    ? category.icon_key
-    : getSemanticCategoryIconKey(category.name, category.type);
+  const semanticIconKey = getSemanticCategoryIconKey(
+    category.name,
+    category.type,
+  );
+  const iconKey =
+    isValidCategoryIconKey(category.icon_key) && category.icon_key !== "tags"
+      ? category.icon_key
+      : semanticIconKey;
 
   return { color, iconKey };
 }
@@ -665,11 +702,11 @@ function MarkerDrawIcon({
     >
       <Icon
         size={size}
-        strokeWidth={3}
+        strokeWidth={3.4}
         absoluteStrokeWidth
         strokeLinecap="round"
         strokeLinejoin="round"
-        className="absolute opacity-[0.1] [transform:translate(0.45px,0.35px)_rotate(-0.5deg)]"
+        className="absolute opacity-[0.18] [transform:translate(0.65px,0.45px)_rotate(-0.8deg)]"
       />
       <Icon
         size={size}
@@ -677,9 +714,9 @@ function MarkerDrawIcon({
         absoluteStrokeWidth
         strokeLinecap="round"
         strokeLinejoin="round"
-        className="relative"
+        className="relative drop-shadow-[0_0.5px_0_currentColor]"
       />
-      <span className="pointer-events-none absolute inset-x-[18%] bottom-[7%] h-px rotate-[-2deg] rounded-full bg-current opacity-10" />
+      <span className="pointer-events-none absolute inset-x-[18%] bottom-[7%] h-px rotate-[-2deg] rounded-full bg-current opacity-15" />
     </span>
   );
 }

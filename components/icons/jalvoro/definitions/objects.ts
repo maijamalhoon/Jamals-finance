@@ -6,13 +6,13 @@ export const fileIconDefinition = {
     { kind: "path", d: "M6 3.8h8.3L18 7.5v12.7H6V3.8Z" },
     { kind: "path", d: "M14.3 3.8v3.7H18" },
   ],
-  accent: { x: 9, y: 12.5, width: 5, height: 0.48, rotation: 0 }, defaultAccent: "subtle",
+  accent: { x: 9, y: 12.5, width: 5, height: 0.48, rotation: 0 }, defaultAccent: "none",
 } as const satisfies JalvoroIconDefinition;
 
 export const folderIconDefinition = {
   name: "folder", label: "Folder", category: "objects", keywords: ["directory", "files"], objects: 1,
   body: [{ kind: "path", d: "M3.8 7.2c0-1 .8-1.8 1.8-1.8h4l1.8 2h7c1 0 1.8.8 1.8 1.8v8.5c0 1-.8 1.8-1.8 1.8H5.6c-1 0-1.8-.8-1.8-1.8V7.2Z" }],
-  accent: { x: 8, y: 13.6, width: 5.2, height: 0.5, rotation: 0 }, defaultAccent: "wave",
+  accent: { x: 8, y: 13.6, width: 5.2, height: 0.5, rotation: 0 }, defaultAccent: "none",
 } as const satisfies JalvoroIconDefinition;
 
 export const bellIconDefinition = {
@@ -21,7 +21,7 @@ export const bellIconDefinition = {
     { kind: "path", d: "M6.5 10.5c0-3.2 2.2-5.7 5.5-5.7s5.5 2.5 5.5 5.7v4.1l1.5 2.1H5l1.5-2.1v-4.1Z" },
     { kind: "path", d: "M9.8 19c.5.8 1.2 1.2 2.2 1.2s1.7-.4 2.2-1.2" },
   ],
-  accent: { x: 10.1, y: 9.2, width: 3.4, height: 0.48, rotation: 0 }, defaultAccent: "subtle",
+  accent: { x: 10.1, y: 9.2, width: 3.4, height: 0.48, rotation: 0 }, defaultAccent: "none",
 } as const satisfies JalvoroIconDefinition;
 
 export const clockIconDefinition = {
@@ -30,7 +30,7 @@ export const clockIconDefinition = {
     { kind: "circle", cx: 12, cy: 12, r: 8 },
     { kind: "path", d: "M12 7.5v4.8l3.2 1.8" },
   ],
-  accent: { x: 7.2, y: 15.9, width: 2.8, height: 0.42, rotation: 12 }, defaultAccent: "wave",
+  accent: { x: 7.2, y: 15.9, width: 2.8, height: 0.42, rotation: 12 }, defaultAccent: "none",
 } as const satisfies JalvoroIconDefinition;
 
 export const calendarIconDefinition = {
@@ -44,7 +44,7 @@ export const calendarIconDefinition = {
     { kind: "line", x1: 13.8, y1: 12.2, x2: 16, y2: 12.2, strokeScale: 0.8 },
     { kind: "line", x1: 8, y1: 16, x2: 10.2, y2: 16, strokeScale: 0.8 },
   ],
-  accent: { x: 13.7, y: 16, width: 2.4, height: 0.42, rotation: 0 }, defaultAccent: "zigzag",
+  accent: { x: 13.7, y: 16, width: 2.4, height: 0.42, rotation: 0 }, defaultAccent: "none",
 } as const satisfies JalvoroIconDefinition;
 
 export const tagIconDefinition = {
@@ -53,7 +53,7 @@ export const tagIconDefinition = {
     { kind: "path", d: "M4.2 5.2h7.6l8 8-6.8 6.8-8.8-8.8v-6Z" },
     { kind: "circle", cx: 8.3, cy: 9.1, r: 1.1 },
   ],
-  accent: { x: 11.7, y: 14.5, width: 3.4, height: 0.45, rotation: 45 }, defaultAccent: "subtle",
+  accent: { x: 11.7, y: 14.5, width: 3.4, height: 0.45, rotation: 45 }, defaultAccent: "none",
 } as const satisfies JalvoroIconDefinition;
 
 export const linkIconDefinition = {
@@ -63,7 +63,7 @@ export const linkIconDefinition = {
     { kind: "path", d: "m14.5 9.5 1.5-1.5c1.6-1.6 4.1-1.6 5.7 0s1.6 4.1 0 5.7l-2.4 2.4c-1.6 1.6-4.1 1.6-5.7 0" },
     { kind: "line", x1: 8.5, y1: 15.5, x2: 15.5, y2: 8.5 },
   ],
-  accent: { x: 10.7, y: 11.8, width: 2.5, height: 0.42, rotation: -45 }, defaultAccent: "wave",
+  accent: { x: 10.7, y: 11.8, width: 2.5, height: 0.42, rotation: -45 }, defaultAccent: "none",
 } as const satisfies JalvoroIconDefinition;
 
 export const imageIconDefinition = {
@@ -73,7 +73,7 @@ export const imageIconDefinition = {
     { kind: "circle", cx: 8.3, cy: 9, r: 1.5 },
     { kind: "path", d: "m5.5 17 4.2-4.3 2.8 2.7 2.2-2.1 3.8 3.7" },
   ],
-  accent: { x: 13.7, y: 8.4, width: 3, height: 0.42, rotation: 0 }, defaultAccent: "subtle",
+  accent: { x: 13.7, y: 8.4, width: 3, height: 0.42, rotation: 0 }, defaultAccent: "none",
 } as const satisfies JalvoroIconDefinition;
 
 export const cameraIconDefinition = {
@@ -82,7 +82,7 @@ export const cameraIconDefinition = {
     { kind: "path", d: "M4.5 8.2h3l1.3-2h6.4l1.3 2h3c.8 0 1.5.7 1.5 1.5v8.1c0 .8-.7 1.5-1.5 1.5h-15c-.8 0-1.5-.7-1.5-1.5V9.7c0-.8.7-1.5 1.5-1.5Z" },
     { kind: "circle", cx: 12, cy: 13.4, r: 3.5 },
   ],
-  accent: { x: 10.6, y: 13.4, width: 2.8, height: 0.42, rotation: 0 }, defaultAccent: "wave",
+  accent: { x: 10.6, y: 13.4, width: 2.8, height: 0.42, rotation: 0 }, defaultAccent: "none",
 } as const satisfies JalvoroIconDefinition;
 
 export const lockIconDefinition = {
@@ -93,7 +93,7 @@ export const lockIconDefinition = {
     { kind: "circle", cx: 12, cy: 14.5, r: 1, filled: true },
     { kind: "line", x1: 12, y1: 15.5, x2: 12, y2: 17.4, strokeScale: 0.75 },
   ],
-  accent: { x: 8, y: 13, width: 2.2, height: 0.38, rotation: 0 }, defaultAccent: "subtle",
+  accent: { x: 8, y: 13, width: 2.2, height: 0.38, rotation: 0 }, defaultAccent: "none",
 } as const satisfies JalvoroIconDefinition;
 
 export const keyIconDefinition = {
@@ -102,7 +102,7 @@ export const keyIconDefinition = {
     { kind: "circle", cx: 8, cy: 12, r: 3.8 },
     { kind: "path", d: "M11.8 12H20m-2.6 0v2m-2.6-2v2" },
   ],
-  accent: { x: 5.9, y: 11.9, width: 2.3, height: 0.4, rotation: 0 }, defaultAccent: "wave",
+  accent: { x: 5.9, y: 11.9, width: 2.3, height: 0.4, rotation: 0 }, defaultAccent: "none",
 } as const satisfies JalvoroIconDefinition;
 
 export const pencilIconDefinition = {
@@ -113,7 +113,7 @@ export const pencilIconDefinition = {
     { kind: "path", d: "M6.4 14.7 9.3 17.6" },
     { kind: "path", d: "m5.5 18.5 1.9-.5-1.4-1.4-.5 1.9Z", filled: true },
   ],
-  accent: { x: 10.6, y: 15.7, width: 5.2, height: 0.55, rotation: -45 }, defaultAccent: "wave",
+  accent: { x: 10.6, y: 15.7, width: 5.2, height: 0.55, rotation: -45 }, defaultAccent: "none",
 } as const satisfies JalvoroIconDefinition;
 
 export const OBJECTS_ICON_DEFINITIONS = [

@@ -27,7 +27,6 @@ import "./settings-profile-security-modal-polish.css";
 import "./settings-card-surface-unify.css";
 import "./settings-card-label-only.css";
 import "./settings-mobile-modal-centering.css";
-import "./settings-language-modal-match.css";
 
 export const dynamic = "force-dynamic";
 
@@ -58,7 +57,7 @@ export default async function SettingsPage() {
   ] = await Promise.all([
     supabase
       .from("categories")
-      .select("id, name, type, color, icon_key, parent_id, archived_at, created_at")
+      .select("id, name, type, color, icon_key, parent_id, created_at, archived_at, sort_order")
       .eq("user_id", user.id)
       .is("archived_at", null)
       .order("type")

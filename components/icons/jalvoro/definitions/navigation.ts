@@ -14,7 +14,7 @@ export const dashboardIconDefinition = {
     { kind: "line", x1: 5.4, y1: 18.5, x2: 18.6, y2: 18.5, strokeScale: 0.9 },
   ],
   accent: { x: 8.1, y: 9.2, width: 3.2, height: 0.55, rotation: -8 },
-  defaultAccent: "wave",
+  defaultAccent: "none",
 } as const satisfies JalvoroIconDefinition;
 
 export const transactionsIconDefinition = {
@@ -30,7 +30,7 @@ export const transactionsIconDefinition = {
     { kind: "path", d: "M9 15h5.2m-1.5-1.5 1.5 1.5-1.5 1.5", strokeScale: 0.9 },
   ],
   accent: { x: 9, y: 13.1, width: 2.4, height: 0.45, rotation: 0 },
-  defaultAccent: "subtle",
+  defaultAccent: "none",
 } as const satisfies JalvoroIconDefinition;
 
 export const accountsIconDefinition = {
@@ -50,7 +50,7 @@ export const accountsIconDefinition = {
     { kind: "line", x1: 3.8, y1: 20, x2: 20.2, y2: 20 },
   ],
   accent: { x: 10.4, y: 6.9, width: 3.2, height: 0.5, rotation: 0 },
-  defaultAccent: "wave",
+  defaultAccent: "none",
 } as const satisfies JalvoroIconDefinition;
 
 export const incomeIconDefinition = {
@@ -65,7 +65,7 @@ export const incomeIconDefinition = {
     { kind: "path", d: "M15 10.5 18.5 7m0 0v3.2m0-3.2h-3.2" },
   ],
   accent: { x: 14.4, y: 14.8, width: 2.6, height: 0.45, rotation: 18 },
-  defaultAccent: "zigzag",
+  defaultAccent: "none",
 } as const satisfies JalvoroIconDefinition;
 
 export const expensesIconDefinition = {
@@ -81,7 +81,7 @@ export const expensesIconDefinition = {
     { kind: "path", d: "M15 13.5v4m0 0-1.5-1.5m1.5 1.5 1.5-1.5" },
   ],
   accent: { x: 8.8, y: 14.6, width: 2.2, height: 0.45, rotation: -4 },
-  defaultAccent: "wave",
+  defaultAccent: "none",
 } as const satisfies JalvoroIconDefinition;
 
 export const goalsIconDefinition = {
@@ -97,7 +97,7 @@ export const goalsIconDefinition = {
     { kind: "path", d: "M15.2 8.8 19 5m0 0v3m0-3h-3" },
   ],
   accent: { x: 7.2, y: 15.7, width: 2.5, height: 0.45, rotation: 14 },
-  defaultAccent: "subtle",
+  defaultAccent: "none",
 } as const satisfies JalvoroIconDefinition;
 
 export const payablesIconDefinition = {
@@ -113,7 +113,7 @@ export const payablesIconDefinition = {
     { kind: "line", x1: 14.8, y1: 5.3, x2: 14.8, y2: 8.3, strokeScale: 0.75 },
   ],
   accent: { x: 13.4, y: 6.7, width: 2.5, height: 0.45, rotation: 0 },
-  defaultAccent: "wave",
+  defaultAccent: "none",
 } as const satisfies JalvoroIconDefinition;
 
 export const investmentsIconDefinition = {
@@ -129,7 +129,7 @@ export const investmentsIconDefinition = {
     { kind: "line", x1: 12, y1: 12.6, x2: 12, y2: 15.1, strokeScale: 0.85 },
   ],
   accent: { x: 8.3, y: 16.6, width: 3.4, height: 0.5, rotation: -6 },
-  defaultAccent: "zigzag",
+  defaultAccent: "none",
 } as const satisfies JalvoroIconDefinition;
 
 export const analyticsIconDefinition = {
@@ -146,7 +146,7 @@ export const analyticsIconDefinition = {
     { kind: "path", d: "m5.5 9.7 4-3 3 1.7 5-4" },
   ],
   accent: { x: 6, y: 8.4, width: 2.3, height: 0.45, rotation: -15 },
-  defaultAccent: "subtle",
+  defaultAccent: "none",
 } as const satisfies JalvoroIconDefinition;
 
 export const aiInsightsIconDefinition = {
@@ -162,7 +162,7 @@ export const aiInsightsIconDefinition = {
     { kind: "path", d: "M8.2 14.6 10.1 12m3.8 1.1 1.9 2.1" },
   ],
   accent: { x: 10.7, y: 16.2, width: 2.8, height: 0.5, rotation: 0 },
-  defaultAccent: "zigzag",
+  defaultAccent: "none",
 } as const satisfies JalvoroIconDefinition;
 
 export const reportsIconDefinition = {
@@ -179,7 +179,7 @@ export const reportsIconDefinition = {
     { kind: "path", d: "M9 17.2h1.5v-1.4H12v1.4h1.5v-3H15v3" },
   ],
   accent: { x: 8.8, y: 8.3, width: 2.5, height: 0.45, rotation: 0 },
-  defaultAccent: "wave",
+  defaultAccent: "none",
 } as const satisfies JalvoroIconDefinition;
 
 export const settingsIconDefinition = {
@@ -193,7 +193,7 @@ export const settingsIconDefinition = {
     { kind: "circle", cx: 12, cy: 11.8, r: 3 },
   ],
   accent: { x: 10.5, y: 11.8, width: 3, height: 0.48, rotation: 0 },
-  defaultAccent: "subtle",
+  defaultAccent: "none",
 } as const satisfies JalvoroIconDefinition;
 
 export const NAVIGATION_ICON_DEFINITIONS = [

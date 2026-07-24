@@ -18,7 +18,7 @@ export const gridIconDefinition = {
     { kind: "rect", x: 4, y: 14, width: 6, height: 6, rx: 1.2 },
     { kind: "rect", x: 14, y: 14, width: 6, height: 6, rx: 1.2 },
   ],
-  accent: { x: 5.7, y: 7, width: 2.6, height: 0.38, rotation: 0 }, defaultAccent: "subtle",
+  accent: { x: 5.7, y: 7, width: 2.6, height: 0.38, rotation: 0 }, defaultAccent: "none",
 } as const satisfies JalvoroIconDefinition;
 
 export const listIconDefinition = {
@@ -42,7 +42,7 @@ export const sidebarIconDefinition = {
     { kind: "line", x1: 5.7, y1: 8, x2: 7.2, y2: 8, strokeScale: 0.8 },
     { kind: "line", x1: 5.7, y1: 12, x2: 7.2, y2: 12, strokeScale: 0.8 },
   ],
-  accent: { x: 12, y: 7.4, width: 4.5, height: 0.42, rotation: 0 }, defaultAccent: "wave",
+  accent: { x: 12, y: 7.4, width: 4.5, height: 0.42, rotation: 0 }, defaultAccent: "none",
 } as const satisfies JalvoroIconDefinition;
 
 export const eyeIconDefinition = {
@@ -51,7 +51,7 @@ export const eyeIconDefinition = {
     { kind: "path", d: "M3.8 12s3-5.2 8.2-5.2 8.2 5.2 8.2 5.2-3 5.2-8.2 5.2S3.8 12 3.8 12Z" },
     { kind: "circle", cx: 12, cy: 12, r: 2.4 },
   ],
-  accent: { x: 10.7, y: 12, width: 2.6, height: 0.38, rotation: 0 }, defaultAccent: "subtle",
+  accent: { x: 10.7, y: 12, width: 2.6, height: 0.38, rotation: 0 }, defaultAccent: "none",
 } as const satisfies JalvoroIconDefinition;
 
 export const eyeOffIconDefinition = {

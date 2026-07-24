@@ -20,6 +20,7 @@
 /build-output.txt
 /qa-screenshots/
 
+
 # Environment files
 .env*
 !.env.example
