@@ -40,7 +40,35 @@ jobs:
         run: supabase init --force
 
       - name: Start a fresh local database and apply every migration
-        run: supabase db start
+        id: database_start
+        shell: bash
+        run: |
+          set +e
+          supabase db start > /tmp/supabase-db-start.log 2>&1
+          exit_code=$?
+
+          {
+            echo "=== ACTIONABLE DATABASE ERROR LINES ==="
+            grep -n -E "(Applying migration|ERROR:|error:|failed|Failure|SQLSTATE|cannot|does not exist|already exists|violates|syntax error)" \
+              /tmp/supabase-db-start.log | tail -n 240 || true
+            echo
+            echo "=== FINAL 160 LINES ==="
+            tail -n 160 /tmp/supabase-db-start.log
+          } > /tmp/supabase-db-diagnostic.log
+
+          cat /tmp/supabase-db-diagnostic.log
+          exit "$exit_code"
+
+      - name: Upload database migration diagnostics
+        if: failure()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: billing-database-migration-diagnostics
+          path: |
+            /tmp/supabase-db-start.log
+            /tmp/supabase-db-diagnostic.log
+          if-no-files-found: error
+          retention-days: 7
 
       - name: Run rollback-only billing contracts
         shell: bash
