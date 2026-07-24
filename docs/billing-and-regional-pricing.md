@@ -91,6 +91,8 @@ The isolated Supabase Edge Function:
 
 Subscription and transaction events cover activation, renewal, failure, recovery, pause, resume, cancellation, replay, and stale delivery.
 
+The original signature and transport version is ACTIVE and negative-path tested on the existing staging project. The newer adjustment-routing version must not be deployed there until the matching adjustment migration and RPC are present in that target database.
+
 ## Refunds, credits, and chargebacks
 
 Paddle adjustment events are stored in a separate private `billing.adjustments` table with only:
