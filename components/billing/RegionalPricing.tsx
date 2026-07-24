@@ -181,6 +181,9 @@ function PersonalPricing({
           const savings = paidPlanKey
             ? getAnnualSavingsPercent(paidPlanKey, countryCode)
             : 0;
+          const personalCheckoutPath = paidPlanKey
+            ? `/billing/personal-checkout?plan=${paidPlanKey}&cycle=${billingCycle}&country=${countryCode}`
+            : null;
 
           return (
             <article
@@ -251,7 +254,7 @@ function PersonalPricing({
                 href={
                   planKey === "free"
                     ? "/login?mode=signup"
-                    : "/login?mode=signup&intent=upgrade"
+                    : `/login?mode=signup&next=${encodeURIComponent(personalCheckoutPath ?? "/pricing")}`
                 }
                 featured={plan.recommended}
               >
