@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
-import { ArrowUp } from "@/components/icons/jalvoro/compat";
+import { ArrowUp } from "lucide-react";
 import GlobalFloatingSearchPlaceholders from "@/components/ui/GlobalFloatingSearchPlaceholders";
 import {
   getAnimationDurationScale,

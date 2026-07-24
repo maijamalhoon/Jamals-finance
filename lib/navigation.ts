@@ -1,23 +1,23 @@
 import {
-  JalvoroAccountsIcon,
-  JalvoroAiInsightsIcon,
-  JalvoroAnalyticsIcon,
-  JalvoroDashboardIcon,
-  JalvoroExpensesIcon,
-  JalvoroGoalsIcon,
-  JalvoroIncomeIcon,
-  JalvoroInvestmentsIcon,
-  JalvoroPayablesIcon,
-  JalvoroReportsIcon,
-  JalvoroSettingsIcon,
-  JalvoroTransactionsIcon,
-} from "@/components/icons/jalvoro/components/navigation";
-import type { JalvoroIconComponent } from "@/components/icons/jalvoro/types";
+  BadgeDollarSign,
+  BarChart3,
+  BrainCircuit,
+  BriefcaseBusiness,
+  FileBarChart,
+  Gauge,
+  HandCoins,
+  Landmark,
+  Receipt,
+  ReceiptText,
+  Settings2,
+  Target,
+  type LucideIcon,
+} from "lucide-react";
 
 export interface NavItem {
   label: string;
   href: string;
-  icon: JalvoroIconComponent;
+  icon: LucideIcon;
 }
 
 export interface NavGroup {
@@ -29,43 +29,91 @@ export const NAV_GROUPS: NavGroup[] = [
   {
     label: "Overview",
     items: [
-      { label: "Dashboard", href: "/dashboard", icon: JalvoroDashboardIcon },
+      {
+        label: "Dashboard",
+        href: "/dashboard",
+        icon: Gauge,
+      },
     ],
   },
   {
     label: "Money",
     items: [
-      { label: "Transactions", href: "/dashboard/transactions", icon: JalvoroTransactionsIcon },
-      { label: "Accounts", href: "/dashboard/accounts", icon: JalvoroAccountsIcon },
-      { label: "Income", href: "/dashboard/income", icon: JalvoroIncomeIcon },
-      { label: "Expenses", href: "/dashboard/expenses", icon: JalvoroExpensesIcon },
+      {
+        label: "Transactions",
+        href: "/dashboard/transactions",
+        icon: ReceiptText,
+      },
+      {
+        label: "Accounts",
+        href: "/dashboard/accounts",
+        icon: Landmark,
+      },
+      {
+        label: "Income",
+        href: "/dashboard/income",
+        icon: BadgeDollarSign,
+      },
+      {
+        label: "Expenses",
+        href: "/dashboard/expenses",
+        icon: Receipt,
+      },
     ],
   },
   {
     label: "Planning",
     items: [
-      { label: "Goals", href: "/dashboard/goals", icon: JalvoroGoalsIcon },
-      { label: "Payables", href: "/dashboard/payables", icon: JalvoroPayablesIcon },
+      {
+        label: "Goals",
+        href: "/dashboard/goals",
+        icon: Target,
+      },
+      {
+        label: "Payables",
+        href: "/dashboard/payables",
+        icon: HandCoins,
+      },
     ],
   },
   {
     label: "Growth",
     items: [
-      { label: "Investments", href: "/dashboard/investments", icon: JalvoroInvestmentsIcon },
+      {
+        label: "Investments",
+        href: "/dashboard/investments",
+        icon: BriefcaseBusiness,
+      },
     ],
   },
   {
     label: "Intelligence",
     items: [
-      { label: "Analytics", href: "/dashboard/analytics", icon: JalvoroAnalyticsIcon },
-      { label: "AI Insights", href: "/dashboard/ai-insights", icon: JalvoroAiInsightsIcon },
-      { label: "Reports", href: "/dashboard/reports", icon: JalvoroReportsIcon },
+      {
+        label: "Analytics",
+        href: "/dashboard/analytics",
+        icon: BarChart3,
+      },
+      {
+        label: "AI Insights",
+        href: "/dashboard/ai-insights",
+        icon: BrainCircuit,
+      },
+      {
+        label: "Reports",
+        href: "/dashboard/reports",
+        icon: FileBarChart,
+      },
     ],
   },
   {
     label: "Workspace",
     items: [
-      { label: "Settings", href: "/dashboard/settings", icon: JalvoroSettingsIcon },
+      {
+        label: "Settings",
+        href: "/dashboard/settings",
+        icon: Settings2,
+      },
     ],
   },
 ];

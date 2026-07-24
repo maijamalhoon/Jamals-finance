@@ -9,7 +9,7 @@ import {
   ArrowUpDown,
   TrendingUp,
   type LucideIcon,
-} from "@/components/icons/jalvoro/compat";
+} from "lucide-react";
 
 import { useCurrency } from "@/components/currency/CurrencyProvider";
 import CountedAmount from "@/components/motion/CountedAmount";

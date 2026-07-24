@@ -1,7 +1,7 @@
 "use client";
 
 import { APP_NAME } from "@/lib/brand";
-import { Download, Globe2, Smartphone } from "@/components/icons/jalvoro/compat";
+import { Download, Globe2, Smartphone } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Download } from "@/components/icons/jalvoro/compat";
+import { Download } from "lucide-react";
 import { toast } from "sonner";
 import { useCurrency } from "@/components/currency/CurrencyProvider";
 import PageHeadingActionPortal from "@/components/layout/PageHeadingActionPortal";

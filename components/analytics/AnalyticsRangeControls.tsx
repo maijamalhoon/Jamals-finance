@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
-import { CalendarRange } from "@/components/icons/jalvoro/compat";
+import { CalendarRange } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import DatePicker from "@/components/ui/date-picker";

@@ -9,7 +9,7 @@ import {
   TrendingDown,
   TrendingUp,
   WalletCards,
-} from "@/components/icons/jalvoro/compat";
+} from "lucide-react";
 
 import Money from "@/components/currency/Money";
 import CategoryBreakdown from "@/components/reports/CategoryBreakdown";

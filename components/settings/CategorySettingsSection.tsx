@@ -17,7 +17,7 @@ import {
   Search,
   SlidersHorizontal,
   Trash2,
-} from "@/components/icons/jalvoro/compat";
+} from "lucide-react";
 import { toast } from "sonner";
 
 import CategoryAppearancePicker from "@/components/settings/CategoryAppearancePicker";

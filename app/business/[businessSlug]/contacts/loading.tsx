@@ -1,4 +1,4 @@
-import { ContactRound } from "@/components/icons/jalvoro/compat";
+import { ContactRound } from "lucide-react";
 
 export default function BusinessContactsLoading() {
   return (

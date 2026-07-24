@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { BriefcaseBusiness, Plus } from "@/components/icons/jalvoro/compat";
+import { BriefcaseBusiness, Plus } from "lucide-react";
 
 import PageHeadingActionPortal from "@/components/layout/PageHeadingActionPortal";
 

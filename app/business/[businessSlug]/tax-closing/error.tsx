@@ -1,6 +1,6 @@
 "use client";
 
-import { RotateCcw } from "@/components/icons/jalvoro/compat";
+import { RotateCcw } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 

@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { BookOpenCheck, RefreshCcw, Trash2, Undo2 } from "@/components/icons/jalvoro/compat";
+import { BookOpenCheck, RefreshCcw, Trash2, Undo2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import type {

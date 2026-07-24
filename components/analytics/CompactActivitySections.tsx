@@ -1,6 +1,6 @@
 "use client";
 
-import { TrendingUp, WalletCards } from "@/components/icons/jalvoro/compat";
+import { TrendingUp, WalletCards } from "lucide-react";
 
 import { useCurrency } from "@/components/currency/CurrencyProvider";
 import { InlineNotice } from "@/components/ui/inline-notice";

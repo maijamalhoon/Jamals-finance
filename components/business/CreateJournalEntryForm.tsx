@@ -1,7 +1,7 @@
 "use client";
 
 import { type FormEvent, useMemo, useState } from "react";
-import { BookCheck, Plus, Trash2 } from "@/components/icons/jalvoro/compat";
+import { BookCheck, Plus, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 

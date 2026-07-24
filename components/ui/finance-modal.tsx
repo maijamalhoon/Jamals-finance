@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useMemo, useState } from "react";
-import type { LucideIcon } from "@/components/icons/jalvoro/compat";
+import type { LucideIcon } from "lucide-react";
 import {
   DialogDescription,
   DialogHeader,

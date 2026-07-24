@@ -16,7 +16,7 @@ import {
   ShieldCheck,
   UserRound,
   WalletCards,
-} from "@/components/icons/jalvoro/compat";
+} from "lucide-react";
 
 import {
   AuthFeedback,

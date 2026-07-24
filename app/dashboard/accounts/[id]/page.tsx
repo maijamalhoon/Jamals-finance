@@ -8,7 +8,7 @@ import {
   Landmark,
   RotateCcw,
   TrendingUp,
-} from "@/components/icons/jalvoro/compat";
+} from "lucide-react";
 
 import Money from "@/components/currency/Money";
 import EmptyState from "@/components/ui/empty-state";

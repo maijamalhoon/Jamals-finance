@@ -1,7 +1,7 @@
 "use client";
 
 import type { CSSProperties } from "react";
-import { BarChart3 } from "@/components/icons/jalvoro/compat";
+import { BarChart3 } from "lucide-react";
 import { Cell, Pie, PieChart, Tooltip } from "recharts";
 
 import DashboardCardViewLink from "@/components/dashboard/DashboardCardViewLink";

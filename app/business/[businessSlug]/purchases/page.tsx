@@ -11,7 +11,7 @@ import {
   ShieldCheck,
   ShoppingCart,
   Undo2,
-} from "@/components/icons/jalvoro/compat";
+} from "lucide-react";
 
 import CreateSupplierBillForm from "@/components/business/CreateSupplierBillForm";
 import RecordSupplierPaymentForm from "@/components/business/RecordSupplierPaymentForm";

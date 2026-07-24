@@ -1,6 +1,6 @@
 import { APP_NAME, brand } from "@/lib/brand";
 import Link from "next/link";
-import { ArrowLeft, CircleDollarSign, ShieldCheck } from "@/components/icons/jalvoro/compat";
+import { ArrowLeft, CircleDollarSign, ShieldCheck } from "lucide-react";
 import type { ReactNode } from "react";
 
 type LegalPageShellProps = {

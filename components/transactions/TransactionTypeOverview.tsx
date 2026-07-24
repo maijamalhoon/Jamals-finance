@@ -5,7 +5,7 @@ import {
   CalendarDays,
   Layers3,
   WalletCards,
-} from "@/components/icons/jalvoro/compat";
+} from "lucide-react";
 
 import Money from "@/components/currency/Money";
 import TransactionPagination from "@/components/transactions/TransactionPagination";

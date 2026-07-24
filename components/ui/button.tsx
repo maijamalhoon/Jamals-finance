@@ -1,6 +1,6 @@
 import { Button as ButtonPrimitive } from "@base-ui/react/button"
 import { cva, type VariantProps } from "class-variance-authority"
-import { LoaderCircle } from "@/components/icons/jalvoro/compat"
+import { LoaderCircle } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 

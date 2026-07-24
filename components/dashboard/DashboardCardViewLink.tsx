@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight } from "@/components/icons/jalvoro/compat";
+import { ArrowRight } from "lucide-react";
 
 export default function DashboardCardViewLink({
   href,

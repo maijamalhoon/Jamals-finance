@@ -2,7 +2,7 @@
 
 import { APP_NAME } from "@/lib/brand";
 import Link from "next/link";
-import { BrainCircuit, ShieldCheck, X } from "@/components/icons/jalvoro/compat";
+import { BrainCircuit, ShieldCheck, X } from "lucide-react";
 import type { ReactNode } from "react";
 import { useEffect, useState } from "react";
 

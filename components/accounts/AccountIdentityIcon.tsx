@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import type { LucideIcon } from "@/components/icons/jalvoro/compat";
+import type { LucideIcon } from "lucide-react";
 import {
   Banknote,
   BriefcaseBusiness,
@@ -10,7 +10,7 @@ import {
   PiggyBank,
   Smartphone,
   Wallet,
-} from "@/components/icons/jalvoro/compat";
+} from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import {

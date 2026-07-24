@@ -7,7 +7,7 @@ export const walletIconDefinition = {
     { kind: "path", d: "M4.5 8h11.8c1.8 0 3.2 1.4 3.2 3.2v3.3h-5c-1.2 0-2.2-1-2.2-2.2s1-2.2 2.2-2.2h5" },
     { kind: "circle", cx: 15.2, cy: 12.3, r: 0.65, filled: true },
   ],
-  accent: { x: 7.3, y: 15.9, width: 3.1, height: 0.5, rotation: 0 }, defaultAccent: "wave",
+  accent: { x: 7.3, y: 15.9, width: 3.1, height: 0.5, rotation: 0 }, defaultAccent: "none",
 } as const satisfies JalvoroIconDefinition;
 
 export const bankIconDefinition = {
@@ -22,7 +22,7 @@ export const bankIconDefinition = {
     { kind: "line", x1: 4.5, y1: 18.2, x2: 19.5, y2: 18.2 },
     { kind: "line", x1: 3.8, y1: 20, x2: 20.2, y2: 20 },
   ],
-  accent: { x: 10.3, y: 6.8, width: 3.4, height: 0.5, rotation: 0 }, defaultAccent: "zigzag",
+  accent: { x: 10.3, y: 6.8, width: 3.4, height: 0.5, rotation: 0 }, defaultAccent: "none",
 } as const satisfies JalvoroIconDefinition;
 
 export const cardIconDefinition = {
@@ -32,7 +32,7 @@ export const cardIconDefinition = {
     { kind: "line", x1: 3.8, y1: 9.4, x2: 20.2, y2: 9.4 },
     { kind: "line", x1: 7, y1: 14.2, x2: 11.2, y2: 14.2, strokeScale: 0.85 },
   ],
-  accent: { x: 14.8, y: 14.2, width: 2.7, height: 0.45, rotation: 0 }, defaultAccent: "subtle",
+  accent: { x: 14.8, y: 14.2, width: 2.7, height: 0.45, rotation: 0 }, defaultAccent: "none",
 } as const satisfies JalvoroIconDefinition;
 
 export const cashIconDefinition = {
@@ -42,7 +42,7 @@ export const cashIconDefinition = {
     { kind: "circle", cx: 12, cy: 12, r: 3 },
     { kind: "path", d: "M7 9.2c0 1.1-.9 2-2 2m14-2c-1.1 0-2-.9-2-2M7 14.8c0-1.1-.9-2-2-2m14 2c-1.1 0-2 .9-2 2" },
   ],
-  accent: { x: 10.5, y: 11.9, width: 3, height: 0.45, rotation: 0 }, defaultAccent: "wave",
+  accent: { x: 10.5, y: 11.9, width: 3, height: 0.45, rotation: 0 }, defaultAccent: "none",
 } as const satisfies JalvoroIconDefinition;
 
 export const coinIconDefinition = {
@@ -52,7 +52,7 @@ export const coinIconDefinition = {
     { kind: "circle", cx: 12, cy: 12, r: 5.2, strokeScale: 0.85 },
     { kind: "path", d: "M12 8.4v7.2M14.2 9.5c-.5-.6-1.2-.9-2.2-.9-1.2 0-2 .6-2 1.5 0 2.2 4.2 1.1 4.2 3.4 0 1-.9 1.7-2.3 1.7-1 0-1.9-.4-2.5-1", strokeScale: 0.72 },
   ],
-  accent: { x: 7.6, y: 16.1, width: 2.8, height: 0.45, rotation: 10 }, defaultAccent: "subtle",
+  accent: { x: 7.6, y: 16.1, width: 2.8, height: 0.45, rotation: 10 }, defaultAccent: "none",
 } as const satisfies JalvoroIconDefinition;
 
 export const receiptIconDefinition = {
@@ -63,7 +63,7 @@ export const receiptIconDefinition = {
     { kind: "line", x1: 9, y1: 11, x2: 15, y2: 11, strokeScale: 0.85 },
     { kind: "line", x1: 9, y1: 14, x2: 13, y2: 14, strokeScale: 0.85 },
   ],
-  accent: { x: 9, y: 16.4, width: 2.7, height: 0.45, rotation: 0 }, defaultAccent: "wave",
+  accent: { x: 9, y: 16.4, width: 2.7, height: 0.45, rotation: 0 }, defaultAccent: "none",
 } as const satisfies JalvoroIconDefinition;
 
 export const invoiceIconDefinition = {
@@ -75,7 +75,7 @@ export const invoiceIconDefinition = {
     { kind: "line", x1: 9, y1: 14, x2: 13, y2: 14, strokeScale: 0.85 },
     { kind: "path", d: "M12 16v2m1.2-1.6c-.3-.4-.7-.6-1.2-.6-.7 0-1.1.3-1.1.8 0 1.2 2.4.6 2.4 1.8 0 .5-.5.9-1.3.9-.5 0-1-.2-1.4-.6", strokeScale: 0.7 },
   ],
-  accent: { x: 8.7, y: 8.4, width: 2.4, height: 0.42, rotation: 0 }, defaultAccent: "zigzag",
+  accent: { x: 8.7, y: 8.4, width: 2.4, height: 0.42, rotation: 0 }, defaultAccent: "none",
 } as const satisfies JalvoroIconDefinition;
 
 export const budgetIconDefinition = {
@@ -86,7 +86,7 @@ export const budgetIconDefinition = {
     { kind: "path", d: "M14.6 7.4A6.5 6.5 0 0 1 18.5 12" },
     { kind: "rect", x: 17, y: 15.5, width: 3.2, height: 3.8, rx: 0.8 },
   ],
-  accent: { x: 7.5, y: 14.5, width: 2.6, height: 0.42, rotation: 0 }, defaultAccent: "wave",
+  accent: { x: 7.5, y: 14.5, width: 2.6, height: 0.42, rotation: 0 }, defaultAccent: "none",
 } as const satisfies JalvoroIconDefinition;
 
 export const savingsIconDefinition = {
@@ -96,7 +96,7 @@ export const savingsIconDefinition = {
     { kind: "circle", cx: 15.3, cy: 10.3, r: 0.55, filled: true },
     { kind: "line", x1: 9.4, y1: 7.6, x2: 13.4, y2: 7.6, strokeScale: 0.8 },
   ],
-  accent: { x: 8.7, y: 12.7, width: 3, height: 0.45, rotation: 0 }, defaultAccent: "subtle",
+  accent: { x: 8.7, y: 12.7, width: 3, height: 0.45, rotation: 0 }, defaultAccent: "none",
 } as const satisfies JalvoroIconDefinition;
 
 export const trendUpIconDefinition = {
@@ -105,7 +105,7 @@ export const trendUpIconDefinition = {
     { kind: "path", d: "M4.5 17.5 9 13l3 2.5 7.5-8" },
     { kind: "path", d: "M15.8 7.5h3.7v3.7" },
   ],
-  accent: { x: 7.4, y: 15, width: 2.3, height: 0.42, rotation: -35 }, defaultAccent: "wave",
+  accent: { x: 7.4, y: 15, width: 2.3, height: 0.42, rotation: -35 }, defaultAccent: "none",
 } as const satisfies JalvoroIconDefinition;
 
 export const trendDownIconDefinition = {
@@ -114,7 +114,7 @@ export const trendDownIconDefinition = {
     { kind: "path", d: "M4.5 6.5 9 11l3-2.5 7.5 8" },
     { kind: "path", d: "M15.8 16.5h3.7v-3.7" },
   ],
-  accent: { x: 7.4, y: 9, width: 2.3, height: 0.42, rotation: 35 }, defaultAccent: "zigzag",
+  accent: { x: 7.4, y: 9, width: 2.3, height: 0.42, rotation: 35 }, defaultAccent: "none",
 } as const satisfies JalvoroIconDefinition;
 
 export const transferIconDefinition = {
@@ -123,7 +123,7 @@ export const transferIconDefinition = {
     { kind: "path", d: "M5 8h12m0 0-2.5-2.5M17 8l-2.5 2.5" },
     { kind: "path", d: "M19 16H7m0 0 2.5 2.5M7 16l2.5-2.5" },
   ],
-  accent: { x: 10.7, y: 12, width: 2.6, height: 0.42, rotation: 0 }, defaultAccent: "wave",
+  accent: { x: 10.7, y: 12, width: 2.6, height: 0.42, rotation: 0 }, defaultAccent: "none",
 } as const satisfies JalvoroIconDefinition;
 
 export const exchangeIconDefinition = {
@@ -133,7 +133,7 @@ export const exchangeIconDefinition = {
     { kind: "circle", cx: 16, cy: 12, r: 4.2 },
     { kind: "path", d: "M10.8 8.8 13 6.8m0 0v2.4m0-2.4h-2.4M13.2 15.2 11 17.2m0 0v-2.4m0 2.4h2.4" },
   ],
-  accent: { x: 10.8, y: 11.9, width: 2.4, height: 0.42, rotation: 0 }, defaultAccent: "zigzag",
+  accent: { x: 10.8, y: 11.9, width: 2.4, height: 0.42, rotation: 0 }, defaultAccent: "none",
 } as const satisfies JalvoroIconDefinition;
 
 export const calendarMoneyIconDefinition = {
@@ -146,7 +146,7 @@ export const calendarMoneyIconDefinition = {
     { kind: "circle", cx: 12, cy: 14.2, r: 3.2 },
     { kind: "line", x1: 12, y1: 12.5, x2: 12, y2: 15.9, strokeScale: 0.75 },
   ],
-  accent: { x: 7, y: 17.7, width: 2.8, height: 0.42, rotation: 0 }, defaultAccent: "subtle",
+  accent: { x: 7, y: 17.7, width: 2.8, height: 0.42, rotation: 0 }, defaultAccent: "none",
 } as const satisfies JalvoroIconDefinition;
 
 export const shieldMoneyIconDefinition = {
@@ -156,7 +156,7 @@ export const shieldMoneyIconDefinition = {
     { kind: "circle", cx: 12, cy: 11.5, r: 3.1 },
     { kind: "line", x1: 12, y1: 9.8, x2: 12, y2: 13.2, strokeScale: 0.72 },
   ],
-  accent: { x: 8.4, y: 16.1, width: 3.2, height: 0.45, rotation: 0 }, defaultAccent: "wave",
+  accent: { x: 8.4, y: 16.1, width: 3.2, height: 0.45, rotation: 0 }, defaultAccent: "none",
 } as const satisfies JalvoroIconDefinition;
 
 export const taxIconDefinition = {
@@ -167,7 +167,7 @@ export const taxIconDefinition = {
     { kind: "line", x1: 7, y1: 17, x2: 17, y2: 7 },
     { kind: "rect", x: 4, y: 4, width: 16, height: 16, rx: 3 },
   ],
-  accent: { x: 10.7, y: 11.8, width: 2.6, height: 0.42, rotation: -45 }, defaultAccent: "zigzag",
+  accent: { x: 10.7, y: 11.8, width: 2.6, height: 0.42, rotation: -45 }, defaultAccent: "none",
 } as const satisfies JalvoroIconDefinition;
 
 export const FINANCE_ICON_DEFINITIONS = [

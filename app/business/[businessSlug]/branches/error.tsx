@@ -1,6 +1,6 @@
 "use client";
 
-import { MapPinOff, RefreshCcw } from "@/components/icons/jalvoro/compat";
+import { MapPinOff, RefreshCcw } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 

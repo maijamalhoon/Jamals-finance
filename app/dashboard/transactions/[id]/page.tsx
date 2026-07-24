@@ -20,7 +20,7 @@ import {
   Wallet,
   ChartNoAxesCombined,
   type LucideIcon,
-} from "@/components/icons/jalvoro/compat";
+} from "lucide-react";
 
 import TransactionReceiptActions from "@/components/transactions/TransactionReceiptActions";
 import {

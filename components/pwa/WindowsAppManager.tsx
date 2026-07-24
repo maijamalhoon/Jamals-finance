@@ -1,6 +1,6 @@
 "use client";
 
-import { Download, Globe2, MonitorDown } from "@/components/icons/jalvoro/compat";
+import { Download, Globe2, MonitorDown } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";

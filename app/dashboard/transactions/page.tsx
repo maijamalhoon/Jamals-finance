@@ -1,5 +1,5 @@
 import { Suspense, type ComponentProps } from "react";
-import { ArrowLeftRight } from "@/components/icons/jalvoro/compat";
+import { ArrowLeftRight } from "lucide-react";
 
 import AddIncomeButton from "@/components/income/AddIncomeButton";
 import { createClient } from "@/lib/supabase/server";

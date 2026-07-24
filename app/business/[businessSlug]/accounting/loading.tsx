@@ -1,4 +1,4 @@
-import { BookOpenCheck, LoaderCircle, Scale } from "@/components/icons/jalvoro/compat";
+import { BookOpenCheck, LoaderCircle, Scale } from "lucide-react";
 
 export default function BusinessAccountingLoading() {
   return (

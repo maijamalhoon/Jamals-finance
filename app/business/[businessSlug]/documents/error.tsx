@@ -1,6 +1,6 @@
 "use client";
 
-import { FileWarning, RefreshCcw } from "@/components/icons/jalvoro/compat";
+import { FileWarning, RefreshCcw } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 

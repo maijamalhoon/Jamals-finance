@@ -55,7 +55,7 @@ import {
   X,
   Zap,
   type LucideIcon,
-} from "@/components/icons/jalvoro/compat";
+} from "lucide-react";
 import { toast } from "sonner";
 
 import SettingsOneUI, {
